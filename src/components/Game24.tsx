@@ -278,7 +278,6 @@ export default function Game24() {
         {/* Center - Streak */}
         <div className="text-center">
           <div className="text-white text-lg font-semibold">Streak</div>
-          <div className="bg-blue-800 rounded-lg px-4 py-2 mt-1">
             <div className="text-white text-2xl font-bold">{score}</div>
           </div>
         </div>
