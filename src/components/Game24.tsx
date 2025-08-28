@@ -226,7 +226,7 @@ export default function Game24() {
     // Create temporary message element
     const messageEl = document.createElement('div')
     messageEl.textContent = message
-    messageEl.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-lg z-50 border border-white/20'
+    messageEl.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-lg z-20 border border-white/20'
     document.body.appendChild(messageEl)
     
     setTimeout(() => {
