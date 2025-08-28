@@ -267,7 +267,7 @@ export default function Game24() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div>
       {/* Header Section - Dark Blue Bar */}
       <div className="header-section">
         {/* Left - Home Button */}
