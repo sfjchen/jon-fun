@@ -247,7 +247,7 @@ export default function Game24() {
     const cardIndex = cards.findIndex(card => card.position === position)
     
     if (cardIndex === -1) {
-      return <div key={position} className="game-card empty"></div>
+      return <div key={position} className="game-card empty" style={{ opacity: 0, pointerEvents: 'none' }} />
     }
     
     const card = cards[cardIndex]
