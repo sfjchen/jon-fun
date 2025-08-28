@@ -1,5 +1,12 @@
 import Link from 'next/link'
 
+const features = [
+  'View global rankings for each game',
+  'Compare your scores with friends',
+  'Track your personal bests',
+  'Earn achievements and badges',
+]
+
 export default function LeaderboardsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
@@ -7,7 +14,7 @@ export default function LeaderboardsPage() {
         {/* Header */}
         <header className="text-center mb-12">
           <Link href="/" className="inline-block mb-4">
-            <button className="header-icon">🏠</button>
+            <button className="header-icon" aria-label="Go home">🏠</button>
           </Link>
           <h1 className="text-5xl font-bold text-white mb-4">🏆 Leaderboards</h1>
           <p className="text-xl text-gray-300">See the best players and compete for the top spot</p>
@@ -22,22 +29,12 @@ export default function LeaderboardsPage() {
               Leaderboards are currently in development. Soon you&apos;ll be able to:
             </p>
             <ul className="text-left text-gray-300 space-y-2 mb-8">
-              <li className="flex items-center">
-                <span className="text-green-400 mr-2">✓</span>
-                View global rankings for each game
-              </li>
-              <li className="flex items-center">
-                <span className="text-green-400 mr-2">✓</span>
-                Compare your scores with friends
-              </li>
-              <li className="flex items-center">
-                <span className="text-green-400 mr-2">✓</span>
-                Track your personal bests
-              </li>
-              <li className="flex items-center">
-                <span className="text-green-400 mr-2">✓</span>
-                Earn achievements and badges
-              </li>
+              {features.map((feature, index) => (
+                <li key={index} className="flex items-center">
+                  <span className="text-green-400 mr-2">✓</span>
+                  {feature}
+                </li>
+              ))}
             </ul>
             <Link href="/games/24">
               <button className="action-btn primary">

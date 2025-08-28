@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Solver24 } from '@/lib/solver24'
 import Link from 'next/link'
 
@@ -11,52 +11,45 @@ interface Card {
   position: number
 }
 
+interface GameState {
+  numbers: number[]
+  cards: Card[]
+  selectedCard: number | null
+  pendingOperation: string | null
+  score: number
+  level: number
+  totalTimeElapsed: number
+  roundTimeElapsed: number
+  gameStartTime: number
+  roundStartTime: number
+  isGameActive: boolean
+}
+
+const OPERATORS = [
+  { op: '+', class: 'plus', symbol: '+' },
+  { op: '-', class: 'minus', symbol: '−' },
+  { op: '*', class: 'multiply', symbol: '×' },
+  { op: '/', class: 'divide', symbol: '÷' },
+] as const
+
 export default function Game24() {
-  const [numbers, setNumbers] = useState<number[]>([])
-  const [cards, setCards] = useState<Card[]>([])
-  const [selectedCard, setSelectedCard] = useState<number | null>(null)
-  const [pendingOperation, setPendingOperation] = useState<string | null>(null)
-  const [score, setScore] = useState(0)
-  const [level, setLevel] = useState(1)
-  const [totalTimeElapsed, setTotalTimeElapsed] = useState(0)
-  const [roundTimeElapsed, setRoundTimeElapsed] = useState(0)
-  const [gameStartTime, setGameStartTime] = useState(0)
-  const [roundStartTime, setRoundStartTime] = useState(0)
-  const [isGameActive, setIsGameActive] = useState(false)
-  const [solver] = useState(() => new Solver24())
+  const [gameState, setGameState] = useState<GameState>({
+    numbers: [],
+    cards: [],
+    selectedCard: null,
+    pendingOperation: null,
+    score: 0,
+    level: 1,
+    totalTimeElapsed: 0,
+    roundTimeElapsed: 0,
+    gameStartTime: 0,
+    roundStartTime: 0,
+    isGameActive: false,
+  })
 
-  useEffect(() => {
-    setGameStartTime(Date.now())
-    // Ensure game starts with default numbers if generateNumbers fails
-    const defaultNumbers = [4, 6, 8, 1]
-    setNumbers(defaultNumbers)
-    setCards(defaultNumbers.map((num, index) => ({
-      value: num,
-      expression: num.toString(),
-      isResult: false,
-      position: index
-    })))
-    setIsGameActive(true)
-    setRoundStartTime(Date.now())
-    
-    // Try to generate new numbers
-    setTimeout(() => {
-      generateNumbers()
-    }, 100)
-  }, [])
+  const solver = useMemo(() => new Solver24(), [])
 
-  useEffect(() => {
-    if (!isGameActive) return
-
-    const interval = setInterval(() => {
-      setTotalTimeElapsed(Math.floor((Date.now() - gameStartTime) / 1000))
-      setRoundTimeElapsed(Math.floor((Date.now() - roundStartTime) / 1000))
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [isGameActive, gameStartTime, roundStartTime])
-
-  const generateNumbers = () => {
+  const generateNumbers = useCallback(() => {
     let attempts = 0
     let newNumbers: number[]
     
@@ -69,198 +62,263 @@ export default function Game24() {
       newNumbers = [4, 6, 8, 1] // Known solvable
     }
 
-    setNumbers(newNumbers)
     const newCards = newNumbers.map((num, index) => ({
       value: num,
       expression: num.toString(),
       isResult: false,
       position: index
     }))
-    setCards(newCards)
-  }
 
-  const newGame = () => {
-    generateNumbers()
-    setIsGameActive(true)
-    setGameStartTime(Date.now()) // Reset total timer
-    setRoundStartTime(Date.now())
-    setSelectedCard(null)
-    setPendingOperation(null)
-    setScore(0)
-    setLevel(0)
-  }
+    setGameState(prev => ({
+      ...prev,
+      numbers: newNumbers,
+      cards: newCards,
+    }))
+  }, [solver])
 
-  const resetRound = () => {
-    setCards(numbers.map((num, index) => ({
+  const initializeGame = useCallback(() => {
+    const now = Date.now()
+    const defaultNumbers = [4, 6, 8, 1]
+    const defaultCards = defaultNumbers.map((num, index) => ({
       value: num,
       expression: num.toString(),
       isResult: false,
       position: index
-    })))
-    setSelectedCard(null)
-    setPendingOperation(null)
-  }
+    }))
 
-  const startNewRound = () => {
+    setGameState(prev => ({
+      ...prev,
+      numbers: defaultNumbers,
+      cards: defaultCards,
+      gameStartTime: now,
+      roundStartTime: now,
+      isGameActive: true,
+    }))
+
+    // Generate new numbers after initialization
+    setTimeout(generateNumbers, 100)
+  }, [generateNumbers])
+
+  const newGame = useCallback(() => {
+    const now = Date.now()
+    setGameState(prev => ({
+      ...prev,
+      selectedCard: null,
+      pendingOperation: null,
+      score: 0,
+      level: 0,
+      gameStartTime: now,
+      roundStartTime: now,
+      isGameActive: true,
+    }))
     generateNumbers()
-    setRoundStartTime(Date.now())
-    setSelectedCard(null)
-    setPendingOperation(null)
-  }
+  }, [generateNumbers])
 
-  const selectCard = (index: number) => {
-    if (selectedCard === index && pendingOperation === null) {
-      setSelectedCard(null)
-      return
-    }
-    
-    if (pendingOperation !== null) {
-      performOperation(index)
-      return
-    }
-    
-    setSelectedCard(index)
-  }
+  const resetRound = useCallback(() => {
+    setGameState(prev => ({
+      ...prev,
+      cards: prev.numbers.map((num, index) => ({
+        value: num,
+        expression: num.toString(),
+        isResult: false,
+        position: index
+      })),
+      selectedCard: null,
+      pendingOperation: null,
+    }))
+  }, [])
 
-  const addOperator = (op: string) => {
-    if (selectedCard === null) return
-    setPendingOperation(op)
-  }
+  const startNewRound = useCallback(() => {
+    const now = Date.now()
+    setGameState(prev => ({
+      ...prev,
+      roundStartTime: now,
+      selectedCard: null,
+      pendingOperation: null,
+    }))
+    generateNumbers()
+  }, [generateNumbers])
 
-  const performOperation = (secondCardIndex: number) => {
-    if (selectedCard === null || pendingOperation === null) return
-    
-    const firstCard = cards[selectedCard]
-    const secondCard = cards[secondCardIndex]
-    
-    try {
-      let result: number
-      let expression: string
-      
-      switch (pendingOperation) {
-        case '+':
-          result = firstCard.value + secondCard.value
-          expression = `(${firstCard.expression} + ${secondCard.expression})`
-          break
-        case '-':
-          result = firstCard.value - secondCard.value
-          expression = `(${firstCard.expression} - ${secondCard.expression})`
-          break
-        case '*':
-          result = firstCard.value * secondCard.value
-          expression = `(${firstCard.expression} × ${secondCard.expression})`
-          break
-        case '/':
-          if (secondCard.value === 0) {
-            showTemporaryMessage('❌ Cannot divide by zero!')
-            setSelectedCard(null)
-            setPendingOperation(null)
-            return
-          }
-          result = firstCard.value / secondCard.value
-          expression = `(${firstCard.expression} ÷ ${secondCard.expression})`
-          break
-        default:
-          return
+  const selectCard = useCallback((index: number) => {
+    setGameState(prev => {
+      if (prev.selectedCard === index && prev.pendingOperation === null) {
+        return { ...prev, selectedCard: null }
       }
       
-      // Remove only the first card and update the second card to be the result
-      const newCards = cards.map((card, i) => {
-        if (i === selectedCard) {
-          return null // This card will be filtered out
-        } else if (i === secondCardIndex) {
-          // Update the second card to be the result
-          return {
-            value: result,
-            expression: expression,
-            isResult: true,
-            position: card.position
-          }
-        } else {
-          return card
+      if (prev.pendingOperation !== null) {
+        return prev // Will be handled by performOperation
+      }
+      
+      return { ...prev, selectedCard: index }
+    })
+  }, [])
+
+  const addOperator = useCallback((op: string) => {
+    setGameState(prev => {
+      if (prev.selectedCard === null) return prev
+      return { ...prev, pendingOperation: op }
+    })
+  }, [])
+
+  const performOperation = useCallback((secondCardIndex: number) => {
+    setGameState(prev => {
+      if (prev.selectedCard === null || prev.pendingOperation === null) return prev
+      
+      const firstCard = prev.cards[prev.selectedCard]
+      const secondCard = prev.cards[secondCardIndex]
+      
+      if (!firstCard || !secondCard) return prev
+      
+      try {
+        let result: number
+        let expression: string
+        
+        switch (prev.pendingOperation) {
+          case '+':
+            result = firstCard.value + secondCard.value
+            expression = `(${firstCard.expression} + ${secondCard.expression})`
+            break
+          case '-':
+            result = firstCard.value - secondCard.value
+            expression = `(${firstCard.expression} - ${secondCard.expression})`
+            break
+          case '*':
+            result = firstCard.value * secondCard.value
+            expression = `(${firstCard.expression} × ${secondCard.expression})`
+            break
+          case '/':
+            if (secondCard.value === 0) {
+              showTemporaryMessage('❌ Cannot divide by zero!')
+              return { ...prev, selectedCard: null, pendingOperation: null }
+            }
+            result = firstCard.value / secondCard.value
+            expression = `(${firstCard.expression} ÷ ${secondCard.expression})`
+            break
+          default:
+            return prev
         }
-      }).filter(card => card !== null) as Card[]
-      
-      setCards(newCards)
-      
-      // Find the index of the result card in the new array
-      const resultCardIndex = newCards.findIndex(card => card.position === secondCard.position)
-      setSelectedCard(resultCardIndex)
-      setPendingOperation(null)
-      
-      if (newCards.length === 1 && Math.abs(newCards[0].value - 24) < 0.001) {
-        handleWin()
-      } else if (newCards.length === 1 && Math.abs(newCards[0].value - 24) >= 0.001) {
-        handleLoss()
+        
+        const newCards = prev.cards.map((card, i) => {
+          if (i === prev.selectedCard) {
+            return null
+          } else if (i === secondCardIndex) {
+            return {
+              value: result,
+              expression: expression,
+              isResult: true,
+              position: card.position
+            }
+          } else {
+            return card
+          }
+        }).filter((card): card is Card => card !== null)
+        
+        const resultCardIndex = newCards.findIndex(card => card.position === secondCard.position)
+        
+        if (newCards.length === 1 && newCards[0] && Math.abs(newCards[0].value - 24) < 0.001) {
+          setTimeout(() => {
+            setGameState(current => ({
+              ...current,
+              score: current.score + 1,
+              level: current.level + 1,
+            }))
+            setTimeout(startNewRound, 1000)
+          }, 100)
+        } else if (newCards.length === 1 && newCards[0] && Math.abs(newCards[0].value - 24) >= 0.001) {
+          setTimeout(() => {
+            setGameState(current => ({
+              ...current,
+              score: 0,
+              level: 0,
+            }))
+            setTimeout(startNewRound, 1000)
+          }, 100)
+        }
+        
+        return {
+          ...prev,
+          cards: newCards,
+          selectedCard: resultCardIndex,
+          pendingOperation: null,
+        }
+        
+      } catch {
+        showTemporaryMessage('❌ Invalid operation')
+        return { ...prev, selectedCard: null, pendingOperation: null }
       }
-      
-    } catch {
-      showTemporaryMessage('❌ Invalid operation')
-      setSelectedCard(null)
-      setPendingOperation(null)
-    }
-  }
+    })
+  }, [startNewRound])
 
-  const handleWin = () => {
-    setScore(prev => prev + 1)
-    setLevel(prev => prev + 1)
-    setTimeout(() => startNewRound(), 1000)
-  }
-
-  const handleLoss = () => {
-    setScore(0)
-    setLevel(0)
-    setTimeout(() => startNewRound(), 1000)
-  }
-
-  const [showSolution, setShowSolution] = useState(false)
-  const [solutionText, setSolutionText] = useState('')
-
-  const showHint = () => {
-    const solution = solver.getSolution(numbers)
+  const showHint = useCallback(() => {
+    const solution = solver.getSolution(gameState.numbers)
     if (solution) {
-      setSolutionText(`💡 Solution: ${solution}`)
-      setShowSolution(true)
-      setTimeout(() => setShowSolution(false), 5000)
+      showTemporaryMessage(`💡 Solution: ${solution}`)
     } else {
-      setSolutionText('💡 No hint available')
-      setShowSolution(true)
-      setTimeout(() => setShowSolution(false), 3000)
+      showTemporaryMessage('💡 No hint available')
     }
-  }
+  }, [solver, gameState.numbers])
 
-  const showTemporaryMessage = (message: string) => {
-    // Create temporary message element
-    const messageEl = document.createElement('div')
-    messageEl.textContent = message
-    messageEl.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-lg z-50 border border-white/20'
-    document.body.appendChild(messageEl)
-    
-    setTimeout(() => {
-      if (document.body.contains(messageEl)) {
-        document.body.removeChild(messageEl)
-      }
-    }, 3000)
-  }
-
-  const formatTime = (seconds: number) => {
+  const formatTime = useCallback((seconds: number) => {
     const minutes = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${minutes}:${secs.toString().padStart(2, '0')}`
-  }
+  }, [])
 
-  // Create a 2x2 grid layout with proper positioning
-  const renderCardAtPosition = (position: number) => {
-    const cardIndex = cards.findIndex(card => card.position === position)
+  // Initialize game on mount
+  useEffect(() => {
+    initializeGame()
+  }, [initializeGame])
+
+  // Timer effect
+  useEffect(() => {
+    if (!gameState.isGameActive) return
+
+    const interval = setInterval(() => {
+      setGameState(prev => ({
+        ...prev,
+        totalTimeElapsed: Math.floor((Date.now() - prev.gameStartTime) / 1000),
+        roundTimeElapsed: Math.floor((Date.now() - prev.roundStartTime) / 1000),
+      }))
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [gameState.isGameActive, gameState.gameStartTime, gameState.roundStartTime])
+
+  // Handle operation when pending
+  useEffect(() => {
+    if (gameState.pendingOperation !== null && gameState.selectedCard !== null) {
+      const handleClick = (event: MouseEvent) => {
+        const target = event.target as HTMLElement
+        if (target.closest('.game-card') && !target.closest('.game-card.selected')) {
+          const cardIndex = gameState.cards.findIndex((_, index) => 
+            target.closest(`[data-card-index="${index}"]`)
+          )
+          if (cardIndex !== -1 && cardIndex !== gameState.selectedCard) {
+            performOperation(cardIndex)
+          }
+        }
+      }
+
+      document.addEventListener('click', handleClick)
+      return () => document.removeEventListener('click', handleClick)
+    }
+  }, [gameState.pendingOperation, gameState.selectedCard, gameState.cards, performOperation])
+
+  const renderCardAtPosition = useCallback((position: number) => {
+    const cardIndex = gameState.cards.findIndex(card => card.position === position)
     
     if (cardIndex === -1) {
       return <div key={position} className="game-card empty" style={{ opacity: 0, pointerEvents: 'none' }} />
     }
     
-    const card = cards[cardIndex]
-    const isSelected = selectedCard === cardIndex
+    const card = gameState.cards[cardIndex]
+    if (!card) {
+      return <div key={position} className="game-card empty" style={{ opacity: 0, pointerEvents: 'none' }} />
+    }
+    
+    const isSelected = gameState.selectedCard === cardIndex
     const isResult = card.isResult
-    const isPending = pendingOperation !== null && selectedCard === cardIndex
+    const isPending = gameState.pendingOperation !== null && gameState.selectedCard === cardIndex
     
     let cardClass = 'game-card'
     if (isSelected) cardClass += ' selected'
@@ -272,6 +330,7 @@ export default function Game24() {
         key={position}
         className={cardClass}
         onClick={() => selectCard(cardIndex)}
+        data-card-index={cardIndex}
       >
         <div className="card-content">
           <span className="card-number">{card.value}</span>
@@ -279,68 +338,49 @@ export default function Game24() {
         </div>
       </button>
     )
-  }
+  }, [gameState.cards, gameState.selectedCard, gameState.pendingOperation, selectCard])
 
   return (
     <div>
-      {/* Header Section - Transparent */}
+      {/* Header Section */}
       <div className="header-section bg-transparent">
-        {/* Left - Home Button */}
-        <Link href="/" className="header-icon">
+        <Link href="/" className="header-icon" aria-label="Go home">
           🏠
         </Link>
         
-        {/* Center - Streak */}
         <div className="text-center">
           <div className="text-white text-lg font-semibold">Streak</div>
           <div className="bg-blue-800 rounded-lg px-4 py-2 mt-1">
-            <div className="text-white text-2xl font-bold">{score}</div>
+            <div className="text-white text-2xl font-bold">{gameState.score}</div>
           </div>
         </div>
         
-        {/* Right - Reset Button */}
         <button 
           onClick={resetRound}
           className="header-icon text-2xl"
+          aria-label="Reset round"
         >
           ↻
         </button>
       </div>
 
-      {/* Solution Display */}
-      {showSolution && (
-        <div className="text-center py-2 px-4 mx-auto max-w-md">
-          <div className="bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-lg border border-white/20">
-            {solutionText}
-          </div>
-        </div>
-      )}
-
       {/* Main Content */}
       <div className="max-w-md mx-auto p-4">
-
-        {/* Game Board Section - 2x2 Grid */}
+        {/* Game Board Section */}
         <div className="game-board mb-6">
-          {renderCardAtPosition(0)}
-          {renderCardAtPosition(1)}
-          {renderCardAtPosition(2)}
-          {renderCardAtPosition(3)}
+          {[0, 1, 2, 3].map(position => renderCardAtPosition(position))}
         </div>
 
         {/* Operator Section */}
         <div className="flex justify-center gap-4 mb-6">
-          {[
-            { op: '+', class: 'plus' },
-            { op: '-', class: 'minus' },
-            { op: '*', class: 'multiply' },
-            { op: '/', class: 'divide' }
-          ].map(({ op, class: className }) => (
+          {OPERATORS.map(({ op, class: className, symbol }) => (
             <button
               key={op}
-              className={`operator-btn ${className} ${pendingOperation === op ? 'selected' : ''}`}
+              className={`operator-btn ${className} ${gameState.pendingOperation === op ? 'selected' : ''}`}
               onClick={() => addOperator(op)}
+              aria-label={`${op} operator`}
             >
-              {op === '*' ? '×' : op === '/' ? '÷' : op === '-' ? '−' : op}
+              {symbol}
             </button>
           ))}
         </div>
@@ -349,11 +389,11 @@ export default function Game24() {
         <div className="flex justify-between items-center mb-6 text-gray-300">
           <div className="text-center">
             <div className="text-sm opacity-80">Total Time</div>
-            <div className="text-lg font-bold">{formatTime(totalTimeElapsed)}</div>
+            <div className="text-lg font-bold">{formatTime(gameState.totalTimeElapsed)}</div>
           </div>
           <div className="text-center">
             <div className="text-sm opacity-80">Round Time</div>
-            <div className="text-lg font-bold">{formatTime(roundTimeElapsed)}</div>
+            <div className="text-lg font-bold">{formatTime(gameState.roundTimeElapsed)}</div>
           </div>
         </div>
 
@@ -375,4 +415,17 @@ export default function Game24() {
       </div>
     </div>
   )
+}
+
+function showTemporaryMessage(message: string) {
+  const messageEl = document.createElement('div')
+  messageEl.textContent = message
+  messageEl.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-lg z-50 border border-white/20'
+  document.body.appendChild(messageEl)
+  
+  setTimeout(() => {
+    if (document.body.contains(messageEl)) {
+      document.body.removeChild(messageEl)
+    }
+  }, 3000)
 }
