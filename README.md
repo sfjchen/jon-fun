@@ -71,7 +71,3 @@ npm run build
 ```
 
 Deploy to any static hosting service (Vercel, Netlify, GitHub Pages).
-
----
-
-Built with ❤️ for learning and fun!
