@@ -218,7 +218,7 @@ export default function Game24() {
     // Create temporary message element
     const messageEl = document.createElement('div')
     messageEl.textContent = message
-    messageEl.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white px-4 py-2 rounded-lg z-50'
+    messageEl.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-lg z-50 border border-white/20'
     document.body.appendChild(messageEl)
     
     setTimeout(() => {
@@ -278,6 +278,7 @@ export default function Game24() {
         {/* Center - Streak */}
         <div className="text-center">
           <div className="text-white text-lg font-semibold">Streak</div>
+          <div className="bg-blue-800 rounded-lg px-4 py-2 mt-1">
             <div className="text-white text-2xl font-bold">{score}</div>
           </div>
         </div>
@@ -321,7 +322,7 @@ export default function Game24() {
         </div>
 
         {/* Timer Section */}
-        <div className="flex justify-between items-center mb-6 text-gray-800">
+        <div className="flex justify-between items-center mb-6 text-gray-300">
           <div className="text-center">
             <div className="text-sm opacity-80">Total Time</div>
             <div className="text-lg font-bold">{formatTime(totalTimeElapsed)}</div>
