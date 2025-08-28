@@ -164,20 +164,28 @@ export default function Game24() {
           return
       }
       
-      const resultCard: Card = {
-        value: result,
-        expression: expression,
-        isResult: true,
-        position: secondCard.position
-      }
+      // Remove only the first card and update the second card to be the result
+      const newCards = cards.map((card, i) => {
+        if (i === selectedCard) {
+          return null // This card will be filtered out
+        } else if (i === secondCardIndex) {
+          // Update the second card to be the result
+          return {
+            value: result,
+            expression: expression,
+            isResult: true,
+            position: card.position
+          }
+        } else {
+          return card
+        }
+      }).filter(card => card !== null) as Card[]
       
-      // Remove both cards and add the result card
-      const newCards = cards.filter((_, i) => i !== selectedCard && i !== secondCardIndex)
-      newCards.push(resultCard)
       setCards(newCards)
       
-      // Select the result card
-      setSelectedCard(newCards.length - 1)
+      // Find the index of the result card in the new array
+      const resultCardIndex = newCards.findIndex(card => card.position === secondCard.position)
+      setSelectedCard(resultCardIndex)
       setPendingOperation(null)
       
       if (newCards.length === 1 && Math.abs(newCards[0].value - 24) < 0.001) {
