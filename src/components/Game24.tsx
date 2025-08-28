@@ -213,12 +213,19 @@ export default function Game24() {
     setTimeout(() => startNewRound(), 1000)
   }
 
+  const [showSolution, setShowSolution] = useState(false)
+  const [solutionText, setSolutionText] = useState('')
+
   const showHint = () => {
     const solution = solver.getSolution(numbers)
     if (solution) {
-      showTemporaryMessage(`💡 Solution: ${solution}`)
+      setSolutionText(`💡 Solution: ${solution}`)
+      setShowSolution(true)
+      setTimeout(() => setShowSolution(false), 5000)
     } else {
-      showTemporaryMessage('💡 No hint available')
+      setSolutionText('💡 No hint available')
+      setShowSolution(true)
+      setTimeout(() => setShowSolution(false), 3000)
     }
   }
 
@@ -226,7 +233,7 @@ export default function Game24() {
     // Create temporary message element
     const messageEl = document.createElement('div')
     messageEl.textContent = message
-    messageEl.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-lg z border border-white/20'
+    messageEl.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-lg z-50 border border-white/20'
     document.body.appendChild(messageEl)
     
     setTimeout(() => {
@@ -276,8 +283,8 @@ export default function Game24() {
 
   return (
     <div>
-      {/* Header Section - Dark Blue Bar */}
-      <div className="header-section">
+      {/* Header Section - Transparent */}
+      <div className="header-section bg-transparent">
         {/* Left - Home Button */}
         <Link href="/" className="header-icon">
           🏠
@@ -299,6 +306,15 @@ export default function Game24() {
           ↻
         </button>
       </div>
+
+      {/* Solution Display */}
+      {showSolution && (
+        <div className="text-center py-2 px-4 mx-auto max-w-md">
+          <div className="bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-lg border border-white/20">
+            {solutionText}
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="max-w-md mx-auto p-4">
