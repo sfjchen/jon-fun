@@ -96,7 +96,7 @@ export default function Home() {
               </div>
               
               <p className="text-gray-300 mb-6 text-lg">
-                We're working hard to bring you these exciting new features:
+                We&apos;re working hard to bring you these exciting new features:
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
