@@ -206,7 +206,7 @@ export default function Game24() {
   const showHint = () => {
     const solution = solver.getSolution(numbers)
     if (solution) {
-      showTemporaryMessage(`💡 Hint: ${solution}`)
+      showTemporaryMessage(`💡 Solution: ${solution}`)
     } else {
       showTemporaryMessage('💡 No hint available')
     }
