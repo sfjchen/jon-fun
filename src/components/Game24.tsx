@@ -267,7 +267,7 @@ export default function Game24() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className="min-h-screen">
       {/* Header Section - Dark Blue Bar */}
       <div className="header-section">
         {/* Left - Home Button */}
@@ -322,7 +322,7 @@ export default function Game24() {
         </div>
 
         {/* Timer Section */}
-        <div className="flex justify-between items-center mb-6 text-white">
+        <div className="flex justify-between items-center mb-6 text-gray-800">
           <div className="text-center">
             <div className="text-sm opacity-80">Total Time</div>
             <div className="text-lg font-bold">{formatTime(totalTimeElapsed)}</div>
