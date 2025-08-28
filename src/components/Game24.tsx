@@ -171,10 +171,12 @@ export default function Game24() {
         position: secondCard.position
       }
       
+      // Remove both cards and add the result card
       const newCards = cards.filter((_, i) => i !== selectedCard && i !== secondCardIndex)
       newCards.push(resultCard)
       setCards(newCards)
       
+      // Select the result card
       setSelectedCard(newCards.length - 1)
       setPendingOperation(null)
       
@@ -232,10 +234,40 @@ export default function Game24() {
     return `${minutes}:${secs.toString().padStart(2, '0')}`
   }
 
-  const positions = [0, 1, 2, 3]
+  // Create a 2x2 grid layout with proper positioning
+  const renderCardAtPosition = (position: number) => {
+    const cardIndex = cards.findIndex(card => card.position === position)
+    
+    if (cardIndex === -1) {
+      return <div key={position} className="game-card empty"></div>
+    }
+    
+    const card = cards[cardIndex]
+    const isSelected = selectedCard === cardIndex
+    const isResult = card.isResult
+    const isPending = pendingOperation !== null && selectedCard === cardIndex
+    
+    let cardClass = 'game-card'
+    if (isSelected) cardClass += ' selected'
+    if (isResult) cardClass += ' result'
+    if (isPending) cardClass += ' pending'
+    
+    return (
+      <button 
+        key={position}
+        className={cardClass}
+        onClick={() => selectCard(cardIndex)}
+      >
+        <div className="card-content">
+          <span className="card-number">{card.value}</span>
+          {isResult && <div className="card-expression">{card.expression}</div>}
+        </div>
+      </button>
+    )
+  }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       {/* Header Section - Dark Blue Bar */}
       <div className="header-section">
         {/* Left - Home Button */}
@@ -260,88 +292,62 @@ export default function Game24() {
         </button>
       </div>
 
-            {/* Main Content */}
+      {/* Main Content */}
       <div className="max-w-md mx-auto p-4">
 
-      {/* Game Board Section */}
-      <div className="game-board mb-6">
-        {positions.map(pos => {
-          const cardIndex = cards.findIndex(card => card.position === pos)
-          
-          if (cardIndex === -1) {
-            return <div key={pos} className="game-card empty"></div>
-          }
-          
-          const card = cards[cardIndex]
-          const isSelected = selectedCard === cardIndex
-          const isResult = card.isResult
-          const isPending = pendingOperation !== null && selectedCard === cardIndex
-          
-          let cardClass = 'game-card'
-          if (isSelected) cardClass += ' selected'
-          if (isResult) cardClass += ' result'
-          if (isPending) cardClass += ' pending'
-          
-          return (
-            <button 
-              key={pos}
-              className={cardClass}
-              onClick={() => selectCard(cardIndex)}
+        {/* Game Board Section - 2x2 Grid */}
+        <div className="game-board mb-6">
+          {renderCardAtPosition(0)}
+          {renderCardAtPosition(1)}
+          {renderCardAtPosition(2)}
+          {renderCardAtPosition(3)}
+        </div>
+
+        {/* Operator Section */}
+        <div className="flex justify-center gap-4 mb-6">
+          {[
+            { op: '+', class: 'plus' },
+            { op: '-', class: 'minus' },
+            { op: '*', class: 'multiply' },
+            { op: '/', class: 'divide' }
+          ].map(({ op, class: className }) => (
+            <button
+              key={op}
+              className={`operator-btn ${className} ${pendingOperation === op ? 'selected' : ''}`}
+              onClick={() => addOperator(op)}
             >
-              <div className="card-content">
-                <span className="card-number">{card.value}</span>
-                {isResult && <div className="card-expression">{card.expression}</div>}
-              </div>
+              {op === '*' ? '×' : op === '/' ? '÷' : op === '-' ? '−' : op}
             </button>
-          )
-        })}
-      </div>
+          ))}
+        </div>
 
-      {/* Operator Section */}
-      <div className="flex justify-center gap-4 mb-6">
-        {[
-          { op: '+', class: 'plus' },
-          { op: '-', class: 'minus' },
-          { op: '*', class: 'multiply' },
-          { op: '/', class: 'divide' }
-        ].map(({ op, class: className }) => (
-          <button
-            key={op}
-            className={`operator-btn ${className} ${pendingOperation === op ? 'selected' : ''}`}
-            onClick={() => addOperator(op)}
+        {/* Timer Section */}
+        <div className="flex justify-between items-center mb-6 text-white">
+          <div className="text-center">
+            <div className="text-sm opacity-80">Total Time</div>
+            <div className="text-lg font-bold">{formatTime(totalTimeElapsed)}</div>
+          </div>
+          <div className="text-center">
+            <div className="text-sm opacity-80">Round Time</div>
+            <div className="text-lg font-bold">{formatTime(roundTimeElapsed)}</div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-4">
+          <button 
+            onClick={newGame}
+            className="action-btn danger"
           >
-            {op === '*' ? '×' : op === '/' ? '÷' : op === '-' ? '−' : op}
+            <span>🔄 New Game</span>
           </button>
-        ))}
-      </div>
-
-      {/* Timer Section */}
-      <div className="flex justify-between items-center mb-6 text-white">
-        <div className="text-center">
-          <div className="text-sm opacity-80">Total Time</div>
-          <div className="text-lg font-bold">{formatTime(totalTimeElapsed)}</div>
+          <button 
+            onClick={showHint}
+            className="action-btn primary"
+          >
+            <span>💡 Solution</span>
+          </button>
         </div>
-        <div className="text-center">
-          <div className="text-sm opacity-80">Round Time</div>
-          <div className="text-lg font-bold">{formatTime(roundTimeElapsed)}</div>
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex gap-4">
-        <button 
-          onClick={newGame}
-          className="action-btn danger"
-        >
-          <span>🔄 New Game</span>
-        </button>
-                          <button 
-                    onClick={showHint}
-                    className="action-btn primary"
-                  >
-                    <span>💡 Solution</span>
-                  </button>
-      </div>
       </div>
     </div>
   )
