@@ -80,14 +80,6 @@ export default function Game24() {
   }
 
   const newGame = () => {
-    // Clear any existing temporary messages
-    const existingMessages = document.querySelectorAll('.fixed.top-1/2.left-1/2')
-    existingMessages.forEach(msg => {
-      if (document.body.contains(msg)) {
-        document.body.removeChild(msg)
-      }
-    })
-    
     generateNumbers()
     setIsGameActive(true)
     setGameStartTime(Date.now()) // Reset total timer
