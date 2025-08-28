@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { useState } from 'react'
 
 const games = [
   {
@@ -47,6 +50,8 @@ const futureFeatures = [
 ]
 
 export default function Home() {
+  const [showComingSoon, setShowComingSoon] = useState(false)
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       <div className="container mx-auto px-4 py-8">
@@ -59,13 +64,61 @@ export default function Home() {
         {/* Games Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {games.map((game) => (
-            <GameCard key={game.id} game={game} />
+            <GameCard 
+              key={game.id} 
+              game={game} 
+              onComingSoonClick={() => setShowComingSoon(true)}
+            />
           ))}
           
           {features.map((feature) => (
-            <GameCard key={feature.id} game={feature} />
+            <GameCard 
+              key={feature.id} 
+              game={feature} 
+              onComingSoonClick={() => setShowComingSoon(true)}
+            />
           ))}
         </div>
+
+        {/* Coming Soon Modal */}
+        {showComingSoon && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl font-bold text-white">🚧 Coming Soon</h2>
+                <button
+                  onClick={() => setShowComingSoon(false)}
+                  className="text-white hover:text-gray-300 text-2xl font-bold"
+                  aria-label="Close modal"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <p className="text-gray-300 mb-6 text-lg">
+                We're working hard to bring you these exciting new features:
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {futureFeatures.map((feature, index) => (
+                  <div key={index} className="flex items-start p-3 bg-white/5 rounded-lg border border-white/10">
+                    <span className="text-blue-400 mr-3 mt-1 text-lg">•</span>
+                    <span className="text-white text-sm">{feature}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-8 text-center">
+                <button
+                  onClick={() => setShowComingSoon(false)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+                >
+                  Got it!
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <footer className="text-center mt-16 text-gray-400">
@@ -86,9 +139,10 @@ interface GameCardProps {
     tags: string[]
     available: boolean
   }
+  onComingSoonClick: () => void
 }
 
-function GameCard({ game }: GameCardProps) {
+function GameCard({ game, onComingSoonClick }: GameCardProps) {
   const CardContent = () => (
     <div className="text-center">
       <div className="text-4xl mb-4">{game.icon}</div>
@@ -109,27 +163,19 @@ function GameCard({ game }: GameCardProps) {
         ))}
       </div>
       <div className="text-sm text-gray-500">
-        {game.available ? 'Click to play →' : 'Stay tuned!'}
+        {game.available ? 'Click to play →' : 'Click to see features →'}
       </div>
     </div>
   )
 
   if (!game.available) {
     return (
-      <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 opacity-60">
+      <button
+        onClick={onComingSoonClick}
+        className="w-full bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300 transform hover:scale-105 text-left"
+      >
         <CardContent />
-        <div className="mt-6 text-left">
-          <h3 className="text-lg font-semibold text-white mb-3">Future Features:</h3>
-          <ul className="text-sm text-gray-300 space-y-1">
-            {futureFeatures.map((feature, index) => (
-              <li key={index} className="flex items-start">
-                <span className="text-blue-400 mr-2 mt-1">•</span>
-                {feature}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      </button>
     )
   }
 
