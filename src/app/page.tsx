@@ -37,16 +37,14 @@ const features = [
 ]
 
 const futureFeatures = [
-  'User accounts and authentication',
+  'zetamac, typing speed, logic puzzles, hypothetical scenarios life hacks,',
+  'poker chip tracker, jeopardy maker, personalized kahoot',
+  'User accounts',
   'Real-time multiplayer lobbies',
   'Friend system and invitations',
-  'Tournament brackets and competitions',
   'Custom game settings and difficulty levels',
-  'Achievement system and badges',
   'Chat system for multiplayer games',
-  'Spectator mode for watching games',
   'Personal game history and statistics',
-  'Mobile app with push notifications',
 ]
 
 export default function Home() {
