@@ -126,35 +126,35 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
       {/* Board */}
       <div className="max-w-6xl mx-auto w-full">
         <div className="smooth-scroll-x">
-          <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))`, minWidth: `${board.categories.length * colMinWidthPx}px` }}>
-          {board.categories.map((cat, colIndex) => (
-            <div key={colIndex} className="px-2 py-2 border border-black/60 bg-[#1f3aa8] text-center font-semibold uppercase tracking-wide text-xs sm:text-sm md:text-lg select-none rounded-t-lg wrap-anywhere">
-              {cat.title}
+          <div style={{ minWidth: `${board.categories.length * colMinWidthPx}px` }}>
+            <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
+              {board.categories.map((cat, colIndex) => (
+                <div key={colIndex} className="px-2 py-2 border border-black/60 bg-[#1f3aa8] text-center font-semibold uppercase tracking-wide text-xs sm:text-sm md:text-lg select-none rounded-t-lg wrap-anywhere">
+                  {cat.title}
+                </div>
+              ))}
             </div>
-          ))}
-          </div>
-        </div>
 
-        <div className="smooth-scroll-x">
-          <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))`, minWidth: `${board.categories.length * colMinWidthPx}px` }}>
-          {board.categories.map((cat, colIndex) => (
-            <div key={colIndex} className="grid" style={{ gridTemplateRows: `repeat(${rowsCount}, minmax(0, 1fr))` }}>
-              {Array.from({ length: rowsCount }, (_, rowIndex) => {
-                const value = getClueValue(board, rowIndex)
-                const key = tileKey(colIndex, rowIndex)
-                const disabled = used[key]
-                return (
-                  <button
-                    key={rowIndex}
-                    onClick={() => { setFocused({ col: colIndex, row: rowIndex }); openTile(colIndex, rowIndex) }}
-                    className={`h-20 sm:h-24 md:h-28 lg:h-32 border border-black/60 text-2xl md:text-3xl font-extrabold rounded-b-lg ${disabled ? 'bg-[#0c1a5a]' : 'bg-[#10226d] hover:bg-[#13297f]'}`}
-                  >
-                    <span className={`${disabled ? 'text-[#6c79c9] opacity-60' : 'text-[#ffcc00]'} transition-opacity`}>${value}</span>
-                  </button>
-                )
-              })}
+            <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
+              {board.categories.map((cat, colIndex) => (
+                <div key={colIndex} className="grid" style={{ gridTemplateRows: `repeat(${rowsCount}, minmax(0, 1fr))` }}>
+                  {Array.from({ length: rowsCount }, (_, rowIndex) => {
+                    const value = getClueValue(board, rowIndex)
+                    const key = tileKey(colIndex, rowIndex)
+                    const disabled = used[key]
+                    return (
+                      <button
+                        key={rowIndex}
+                        onClick={() => { setFocused({ col: colIndex, row: rowIndex }); openTile(colIndex, rowIndex) }}
+                        className={`h-20 sm:h-24 md:h-28 lg:h-32 border border-black/60 text-2xl md:text-3xl font-extrabold rounded-b-lg ${disabled ? 'bg-[#0c1a5a]' : 'bg-[#10226d] hover:bg-[#13297f]'}`}
+                      >
+                        <span className={`${disabled ? 'text-[#6c79c9] opacity-60' : 'text-[#ffcc00]'} transition-opacity`}>${value}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              ))}
             </div>
-          ))}
           </div>
         </div>
       </div>

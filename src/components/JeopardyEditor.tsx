@@ -179,54 +179,54 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
         />
 
         <div className="smooth-scroll-x">
-          <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))`, minWidth: `${board.categories.length * 120}px` }}>
-            {board.categories.map((cat, colIndex) => (
-              <div
-                key={colIndex}
-                className="px-2 py-2 border border-black/30 bg-[#203a88] text-center font-semibold uppercase tracking-wide text-xs sm:text-sm md:text-lg select-none rounded-t-lg"
-                draggable
-                onDragStart={() => setDragCol(colIndex)}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={() => {
-                  reorderColumns(dragCol as number, colIndex)
-                  setDragCol(null)
-                }}
-              >
-                <input
-                  value={cat.title}
-                  onChange={(e) => updateCategoryTitle(colIndex, e.target.value)}
-                  className="w-full bg-transparent text-white text-center outline-none wrap-anywhere"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
+          <div style={{ minWidth: `${board.categories.length * 120}px` }}>
+            <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
+              {board.categories.map((cat, colIndex) => (
+                <div
+                  key={colIndex}
+                  className="px-2 py-2 border border-black/30 bg-[#203a88] text-center font-semibold uppercase tracking-wide text-xs sm:text-sm md:text-lg select-none rounded-t-lg"
+                  draggable
+                  onDragStart={() => setDragCol(colIndex)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => {
+                    reorderColumns(dragCol as number, colIndex)
+                    setDragCol(null)
+                  }}
+                >
+                  <input
+                    value={cat.title}
+                    onChange={(e) => updateCategoryTitle(colIndex, e.target.value)}
+                    className="w-full bg-transparent text-white text-center outline-none wrap-anywhere"
+                  />
+                </div>
+              ))}
+            </div>
 
-        {/* Board grid */}
-        <div className="smooth-scroll-x">
-          <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))`, minWidth: `${board.categories.length * 120}px` }}>
-            {board.categories.map((cat, colIndex) => (
-              <div key={colIndex} className="grid" style={{ gridTemplateRows: `repeat(${rowsCount}, minmax(0, 1fr))` }}>
-                {Array.from({ length: rowsCount }, (_, rowIndex) => {
-                  const value = getClueValue(board, rowIndex)
-                  const clue = cat.clues[rowIndex]
-                  const isFocused = focused.colIndex === colIndex && focused.rowIndex === rowIndex
-                  return (
-                    <button
-                      key={rowIndex}
-                      onClick={() => { setFocused({ colIndex, rowIndex }); setModal({ colIndex, rowIndex }) }}
-                      className={`h-20 sm:h-24 md:h-28 lg:h-32 border border-black/30 text-2xl md:text-3xl font-extrabold text-[#ffda79] flex items-center justify-center select-none rounded-b-lg ${isFocused ? 'bg-[#233a85]' : 'bg-[#1a2f73]'}`}
-                    >
-                      {clue?.question?.trim() || clue?.answer?.trim() ? (
-                        <span className="text-xs sm:text-sm text-white/80 px-2">Edit</span>
-                      ) : (
-                        <span>${value}</span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            ))}
+            {/* Board grid */}
+            <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
+              {board.categories.map((cat, colIndex) => (
+                <div key={colIndex} className="grid" style={{ gridTemplateRows: `repeat(${rowsCount}, minmax(0, 1fr))` }}>
+                  {Array.from({ length: rowsCount }, (_, rowIndex) => {
+                    const value = getClueValue(board, rowIndex)
+                    const clue = cat.clues[rowIndex]
+                    const isFocused = focused.colIndex === colIndex && focused.rowIndex === rowIndex
+                    return (
+                      <button
+                        key={rowIndex}
+                        onClick={() => { setFocused({ colIndex, rowIndex }); setModal({ colIndex, rowIndex }) }}
+                        className={`h-20 sm:h-24 md:h-28 lg:h-32 border border-black/30 text-2xl md:text-3xl font-extrabold text-[#ffda79] flex items-center justify-center select-none rounded-b-lg ${isFocused ? 'bg-[#233a85]' : 'bg-[#1a2f73]'}`}
+                      >
+                        {clue?.question?.trim() || clue?.answer?.trim() ? (
+                          <span className="text-xs sm:text-sm text-white/80 px-2">Edit</span>
+                        ) : (
+                          <span>${value}</span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
