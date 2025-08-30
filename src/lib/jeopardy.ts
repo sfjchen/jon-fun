@@ -56,7 +56,8 @@ export function createDefaultBoard(title = 'Title'): JeopardyBoard {
 }
 
 export function getClueValue(board: JeopardyBoard, rowIndex: number): number {
-  return board.baseValue + board.increment * rowIndex
+  // Ensure value depends strictly on row position (top=200 → downwards +200)
+  return board.baseValue * (rowIndex + 1)
 }
 
 // JSON IO
