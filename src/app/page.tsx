@@ -14,6 +14,15 @@ const games = [
     available: true,
   },
   {
+    id: 'jeopardy',
+    title: 'Jeopardy with Friends',
+    description: 'Create and play custom Jeopardy boards locally',
+    icon: '❓',
+    href: '/games/jeopardy',
+    tags: ['Party', 'Trivia'],
+    available: true,
+  },
+  {
     id: 'coming-soon',
     title: 'Coming Soon',
     description: 'More brain games are in development',
