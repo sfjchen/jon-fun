@@ -23,7 +23,7 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
   // Keep last-clicked cell for UX focus; currently not rendered
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [focused, setFocused] = useState<{ col: number; row: number } | null>(null)
-  const colMinWidthPx = 120
+  const colMinWidthPx = 90
 
   useEffect(() => {
     // normalize team list to 1-8

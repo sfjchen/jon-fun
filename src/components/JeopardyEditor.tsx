@@ -179,7 +179,7 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
         />
 
         <div className="smooth-scroll-x">
-          <div style={{ minWidth: `${board.categories.length * 120}px` }}>
+          <div style={{ minWidth: `${board.categories.length * 90}px` }}>
             <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
               {board.categories.map((cat, colIndex) => (
                 <div
