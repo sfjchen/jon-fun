@@ -43,6 +43,27 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
     }))
   }
 
+  function handleAddColumn() {
+    setBoard((prev) => ({
+      ...prev,
+      categories: [
+        ...prev.categories,
+        {
+          title: `category ${prev.categories.length + 1}`,
+          clues: Array.from({ length: rowsCount }, () => ({ question: '', answer: '' })),
+        },
+      ],
+    }))
+  }
+
+  function handleRemoveColumn() {
+    if (board.categories.length <= 1) return
+    setBoard((prev) => ({
+      ...prev,
+      categories: prev.categories.slice(0, prev.categories.length - 1),
+    }))
+  }
+
   function reorderColumns(from: number, to: number) {
     if (from === to || from == null || to == null) return
     setBoard((prev) => {
@@ -98,9 +119,11 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
     <div className="min-h-screen bg-[#142c6d] text-white p-4 flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <button onClick={onBack} className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg border border-white/20">← Back</button>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button onClick={handleAddRow} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg border border-white/20">+ Add Row</button>
           <button onClick={handleRemoveRow} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg border border-white/20">Remove Row</button>
+          <button onClick={handleAddColumn} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg border border-white/20">+ Add Column</button>
+          <button onClick={handleRemoveColumn} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg border border-white/20">Remove Column</button>
           <button onClick={() => downloadBoard(board)} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg border border-white/20">Download JSON</button>
           <button onClick={handleUploadClick} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg border border-white/20">Upload JSON</button>
           <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleFileChange} />

@@ -33,23 +33,17 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
     })
   }, [teamCount])
 
-  // Keyboard navigation and hotkeys (no scoring hotkeys per requirements)
+  // Only clue overlay hotkeys; board navigation is mouse/touch only
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (!open) {
-        if (e.key === 'ArrowLeft') setFocused((p) => ({ col: Math.max(0, p.col - 1), row: p.row }))
-        if (e.key === 'ArrowRight') setFocused((p) => ({ col: Math.min(board.categories.length - 1, p.col + 1), row: p.row }))
-        if (e.key === 'ArrowUp') setFocused((p) => ({ col: p.col, row: Math.max(0, p.row - 1) }))
-        if (e.key === 'ArrowDown') setFocused((p) => ({ col: p.col, row: Math.min(rowsCount - 1, p.row + 1) }))
-        if (e.key === 'Enter') openTile(focused.col, focused.row)
-      } else {
+      if (open) {
         if (e.key === ' ') { e.preventDefault(); setRevealed((r) => !r) }
         if (e.key === 'Escape') closeTile()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open, focused.col, focused.row, board.categories.length, rowsCount])
+  }, [open])
 
   function tileKey(col: number, row: number) {
     return `${col}:${row}`
@@ -143,9 +137,9 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
                     key={rowIndex}
                     disabled={disabled}
                     onClick={() => { setFocused({ col: colIndex, row: rowIndex }); openTile(colIndex, rowIndex) }}
-                    className={`h-24 md:h-28 lg:h-32 border border-black/30 text-3xl font-extrabold rounded-b-lg ${disabled ? 'bg-[#0f1d4d] text-[#0f1d4d]' : 'bg-[#1a2f73] hover:bg-[#233a85] text-[#ffda79]'} ${isFocus ? 'ring-2 ring-yellow-300' : ''}`}
+                    className={`h-24 md:h-28 lg:h-32 border border-black/30 text-3xl font-extrabold rounded-b-lg ${disabled ? 'bg-[#0f1d4d]' : 'bg-[#1a2f73] hover:bg-[#233a85]'} ${isFocus ? 'ring-2 ring-yellow-300' : ''}`}
                   >
-                    {disabled ? '' : `$${value}`}
+                    <span className={`${disabled ? 'text-[#4b5aa8] opacity-60' : 'text-[#ffda79]'} transition-opacity`}>${value}</span>
                   </button>
                 )
               })}

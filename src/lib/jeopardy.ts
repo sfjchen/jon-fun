@@ -37,11 +37,11 @@ export function slugify(input: string): string {
     .slice(0, 40) || 'board'
 }
 
-export function createDefaultBoard(title = 'Jeopardy w frens'): JeopardyBoard {
+export function createDefaultBoard(title = 'Title'): JeopardyBoard {
   const cols = 5
   const rows = 5
   const categories: JeopardyCategory[] = Array.from({ length: cols }, (_, c) => ({
-    title: c === 0 ? 'Spaceflight' : c === 1 ? 'philosophy' : c === 2 ? 'famous frenchmen' : c === 3 ? 'cooking' : 'fencing',
+    title: `category ${c + 1}`,
     clues: Array.from({ length: rows }, () => ({ question: '', answer: '' })),
   }))
 
