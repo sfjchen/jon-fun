@@ -15,12 +15,40 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
   const [dragCol, setDragCol] = useState<number | null>(null)
   const [modal, setModal] = useState<{ colIndex: number; rowIndex: number } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [focused, setFocused] = useState<{ colIndex: number; rowIndex: number }>({ colIndex: 0, rowIndex: 0 })
 
   useEffect(() => {
     if (initialBoard) setBoard(initialBoard)
   }, [initialBoard])
 
   const rowsCount = useMemo(() => (board.categories[0]?.clues.length ?? 5), [board])
+
+  // Keyboard navigation and open on Enter for the focused cell
+  useEffect(() => {
+    if (modal) return
+    function onKeyDown(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null
+      if (target && (target.closest('input') || target.closest('textarea'))) return
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        setFocused((p) => ({ colIndex: Math.max(0, p.colIndex - 1), rowIndex: p.rowIndex }))
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        setFocused((p) => ({ colIndex: Math.min(board.categories.length - 1, p.colIndex + 1), rowIndex: p.rowIndex }))
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setFocused((p) => ({ colIndex: p.colIndex, rowIndex: Math.max(0, p.rowIndex - 1) }))
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setFocused((p) => ({ colIndex: p.colIndex, rowIndex: Math.min(rowsCount - 1, p.rowIndex + 1) }))
+      } else if (e.key === 'Enter') {
+        e.preventDefault()
+        setModal({ colIndex: focused.colIndex, rowIndex: focused.rowIndex })
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [board.categories.length, rowsCount, focused, modal])
 
   function handleAddRow() {
     setBoard((prev) => ({
@@ -167,11 +195,13 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
               {Array.from({ length: rowsCount }, (_, rowIndex) => {
                 const value = getClueValue(board, rowIndex)
                 const clue = cat.clues[rowIndex]
+                const isFocused = focused.colIndex === colIndex && focused.rowIndex === rowIndex
                 return (
                   <button
                     key={rowIndex}
+                    onMouseEnter={() => setFocused({ colIndex, rowIndex })}
                     onClick={() => setModal({ colIndex, rowIndex })}
-                    className="h-24 md:h-28 lg:h-32 bg-[#1a2f73] border border-black/30 hover:bg-[#233a85] text-3xl font-extrabold text-[#ffda79] flex items-center justify-center select-none rounded-b-lg"
+                    className={`h-24 md:h-28 lg:h-32 border border-black/30 text-3xl font-extrabold text-[#ffda79] flex items-center justify-center select-none rounded-b-lg ${isFocused ? 'bg-[#233a85]' : 'bg-[#1a2f73] hover:bg-[#233a85]'}`}
                   >
                     {clue?.question?.trim() || clue?.answer?.trim() ? (
                       <span className="text-sm text-white/80 px-2">Edit</span>
@@ -207,6 +237,28 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
 function CellModal({ value, clue, onClose, onSave }: { value: number; clue: JeopardyClue; onClose: () => void; onSave: (clue: JeopardyClue) => void }) {
   const [q, setQ] = useState(clue?.question ?? '')
   const [a, setA] = useState(clue?.answer ?? '')
+  const qRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    qRef.current?.focus()
+    const el = qRef.current
+    if (el) {
+      const len = el.value.length
+      el.setSelectionRange(len, len)
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        onClose()
+      }
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        onSave({ question: q, answer: a })
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose, onSave, q, a])
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
@@ -219,7 +271,7 @@ function CellModal({ value, clue, onClose, onSave }: { value: number; clue: Jeop
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
           <div>
             <label className="text-sm text-white/70">Question Prompt</label>
-            <textarea value={q} onChange={(e) => setQ(e.target.value)} className="mt-1 w-full h-40 bg-[#152c70] border border-white/10 rounded-lg p-3 outline-none" />
+            <textarea ref={qRef} value={q} onChange={(e) => setQ(e.target.value)} className="mt-1 w-full h-40 bg-[#152c70] border border-white/10 rounded-lg p-3 outline-none" />
           </div>
           <div>
             <label className="text-sm text-white/70">Correct Response</label>
@@ -228,7 +280,6 @@ function CellModal({ value, clue, onClose, onSave }: { value: number; clue: Jeop
         </div>
 
         <div className="flex items-center justify-end gap-2 p-4 border-t border-white/10">
-          <button onClick={onClose} className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg">Cancel</button>
           <button onClick={() => onSave({ question: q, answer: a })} className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg">Continue</button>
         </div>
       </div>
