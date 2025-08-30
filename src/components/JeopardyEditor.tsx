@@ -185,9 +185,7 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
           ))}
         </div>
 
-        <div className="mt-6 text-center text-white/70 text-sm">
-          Drag category headers to reorder. Values auto-increment by +{board.increment}. Rows are uniform across columns.
-        </div>
+        <div className="mt-6 text-center text-white/70 text-sm">Drag category headers to reorder.</div>
       </div>
 
       {/* Modal */}

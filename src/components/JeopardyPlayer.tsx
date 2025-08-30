@@ -112,13 +112,13 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
       </div>
 
       <h1 className="text-center text-4xl font-bold mb-2">{board.title}</h1>
-      <div className="text-center text-white/70 text-sm mb-4">Hotkeys: Board—Arrows move, Enter open. Clue—Space reveal, Esc back.</div>
+      <div className="text-center text-white/70 text-sm mb-4">Hotkeys: Space reveals • Esc goes back</div>
 
       {/* Board */}
       <div className="max-w-6xl mx-auto w-full">
         <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
           {board.categories.map((cat, colIndex) => (
-            <div key={colIndex} className="p-2 border border-black/30 bg-[#203a88] text-center font-semibold uppercase tracking-wide text-lg select-none rounded-t-lg">
+            <div key={colIndex} className="p-2 border border-black/60 bg-[#1f3aa8] text-center font-semibold uppercase tracking-wide text-lg select-none rounded-t-lg">
               {cat.title}
             </div>
           ))}
@@ -131,15 +131,14 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
                 const value = getClueValue(board, rowIndex)
                 const key = tileKey(colIndex, rowIndex)
                 const disabled = used[key]
-                const isFocus = focused.col === colIndex && focused.row === rowIndex
                 return (
                   <button
                     key={rowIndex}
                     disabled={disabled}
                     onClick={() => { setFocused({ col: colIndex, row: rowIndex }); openTile(colIndex, rowIndex) }}
-                    className={`h-24 md:h-28 lg:h-32 border border-black/30 text-3xl font-extrabold rounded-b-lg ${disabled ? 'bg-[#0f1d4d]' : 'bg-[#1a2f73] hover:bg-[#233a85]'} ${isFocus ? 'ring-2 ring-yellow-300' : ''}`}
+                    className={`h-24 md:h-28 lg:h-32 border border-black/60 text-3xl font-extrabold rounded-b-lg ${disabled ? 'bg-[#0c1a5a]' : 'bg-[#10226d] hover:bg-[#13297f]'}`}
                   >
-                    <span className={`${disabled ? 'text-[#4b5aa8] opacity-60' : 'text-[#ffda79]'} transition-opacity`}>${value}</span>
+                    <span className={`${disabled ? 'text-[#6c79c9] opacity-60' : 'text-[#ffcc00]'} transition-opacity`}>${value}</span>
                   </button>
                 )
               })}
