@@ -18,8 +18,11 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
   const [open, setOpen] = useState<{ col: number; row: number } | null>(null)
   const [revealed, setRevealed] = useState(false)
   const [used, setUsed] = useState<Record<string, boolean>>({})
+  const [lastAnswered, setLastAnswered] = useState<{ col: number; row: number } | null>(null)
   const rowsCount = board.categories[0]?.clues.length ?? 5
-  const [focused, setFocused] = useState<{ col: number; row: number }>({ col: 0, row: 0 })
+  // Keep last-clicked cell for UX focus; currently not rendered
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [focused, setFocused] = useState<{ col: number; row: number } | null>(null)
 
   useEffect(() => {
     // normalize team list to 1-8
@@ -50,15 +53,20 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
   }
 
   function openTile(col: number, row: number) {
-    if (used[tileKey(col, row)]) return
     setOpen({ col, row })
     setRevealed(false)
   }
 
   function closeTile() {
-    setOpen(null)
+    setOpen((current) => {
+      if (current && revealed) {
+        const key = tileKey(current.col, current.row)
+        setUsed((u) => ({ ...u, [key]: true }))
+        setLastAnswered({ col: current.col, row: current.row })
+      }
+      return null
+    })
     setRevealed(false)
-    setUsed((u) => ({ ...u, [tileKey(focused.col, focused.row)]: true }))
   }
 
   function adjustScore(teamIndex: number, delta: number) {
@@ -134,7 +142,6 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
                 return (
                   <button
                     key={rowIndex}
-                    disabled={disabled}
                     onClick={() => { setFocused({ col: colIndex, row: rowIndex }); openTile(colIndex, rowIndex) }}
                     className={`h-24 md:h-28 lg:h-32 border border-black/60 text-3xl font-extrabold rounded-b-lg ${disabled ? 'bg-[#0c1a5a]' : 'bg-[#10226d] hover:bg-[#13297f]'}`}
                   >
@@ -162,8 +169,14 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
               className="w-full bg-[#0e235b] text-center text-2xl font-bold rounded-md py-2 outline-none"
             />
             <div className="grid grid-cols-2 gap-2 mt-2">
-              <button onClick={() => open ? adjustScore(i, getClueValue(board, open.row)) : null} className="bg-green-600 hover:bg-green-700 rounded-md py-1">+</button>
-              <button onClick={() => open ? adjustScore(i, -getClueValue(board, open.row)) : null} className="bg-red-600 hover:bg-red-700 rounded-md py-1">-</button>
+              <button onClick={() => {
+                const src = open ?? lastAnswered
+                if (src) adjustScore(i, getClueValue(board, src.row))
+              }} className="bg-green-600 hover:bg-green-700 rounded-md py-1">+</button>
+              <button onClick={() => {
+                const src = open ?? lastAnswered
+                if (src) adjustScore(i, -getClueValue(board, src.row))
+              }} className="bg-red-600 hover:bg-red-700 rounded-md py-1">-</button>
             </div>
           </div>
         ))}
