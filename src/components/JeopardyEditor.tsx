@@ -161,7 +161,7 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
         </div>
 
         {/* Board grid */}
-        <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
+        <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))`, gridAutoFlow: 'column' }}>
           {board.categories.map((cat, colIndex) => (
             <div key={colIndex} className="contents">
               {Array.from({ length: rowsCount }, (_, rowIndex) => {

@@ -124,7 +124,7 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
           ))}
         </div>
 
-        <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
+        <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))`, gridAutoFlow: 'column' }}>
           {board.categories.map((cat, colIndex) => (
             <div key={colIndex} className="contents">
               {Array.from({ length: rowsCount }, (_, rowIndex) => {
