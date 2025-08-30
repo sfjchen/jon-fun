@@ -215,7 +215,7 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
                     <button
                       key={rowIndex}
                       onClick={() => { setFocused({ colIndex, rowIndex }); setModal({ colIndex, rowIndex }) }}
-                      className={`h-20 sm:h-24 md:h-28 lg:h-32 border border-black/30 text-2xl md:text-3xl font-extrabold text-[#ffda79] flex items-center justify-center select-none rounded-b-lg ${isFocused ? 'bg-[#233a85]' : 'bg-[#1a2f73] hover:bg-[#233a85]'}`}
+                      className={`h-20 sm:h-24 md:h-28 lg:h-32 border border-black/30 text-2xl md:text-3xl font-extrabold text-[#ffda79] flex items-center justify-center select-none rounded-b-lg ${isFocused ? 'bg-[#233a85]' : 'bg-[#1a2f73]'}`}
                     >
                       {clue?.question?.trim() || clue?.answer?.trim() ? (
                         <span className="text-xs sm:text-sm text-white/80 px-2">Edit</span>
