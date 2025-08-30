@@ -23,7 +23,7 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
 
   const rowsCount = useMemo(() => (board.categories[0]?.clues.length ?? 5), [board])
 
-  // Keyboard navigation and open on Enter for the focused cell
+  // Keyboard navigation and open on Enter/Space for the focused cell
   useEffect(() => {
     if (modal) return
     function onKeyDown(e: KeyboardEvent) {
@@ -41,7 +41,14 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
       } else if (e.key === 'ArrowDown') {
         e.preventDefault()
         setFocused((p) => ({ colIndex: p.colIndex, rowIndex: Math.min(rowsCount - 1, p.rowIndex + 1) }))
-      } else if (e.key === 'Enter') {
+      } else if (e.key === 'Tab') {
+        e.preventDefault()
+        setFocused((p) => {
+          const nextRow = p.rowIndex < rowsCount - 1 ? p.rowIndex + 1 : 0
+          const nextCol = p.rowIndex < rowsCount - 1 ? p.colIndex : (p.colIndex + 1) % board.categories.length
+          return { colIndex: nextCol, rowIndex: nextRow }
+        })
+      } else if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault()
         setModal({ colIndex: focused.colIndex, rowIndex: focused.rowIndex })
       }
@@ -143,6 +150,11 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
     }
   }
 
+  // Ensure an initial hover on mount for new boards
+  useEffect(() => {
+    setFocused({ colIndex: 0, rowIndex: 0 })
+  }, [])
+
   return (
     <div className="min-h-screen bg-[#142c6d] text-white p-4 flex flex-col">
       <div className="flex items-center justify-between mb-4">
@@ -199,8 +211,7 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
                 return (
                   <button
                     key={rowIndex}
-                    onMouseEnter={() => setFocused({ colIndex, rowIndex })}
-                    onClick={() => setModal({ colIndex, rowIndex })}
+                    onClick={() => { setFocused({ colIndex, rowIndex }); setModal({ colIndex, rowIndex }) }}
                     className={`h-24 md:h-28 lg:h-32 border border-black/30 text-3xl font-extrabold text-[#ffda79] flex items-center justify-center select-none rounded-b-lg ${isFocused ? 'bg-[#233a85]' : 'bg-[#1a2f73] hover:bg-[#233a85]'}`}
                   >
                     {clue?.question?.trim() || clue?.answer?.trim() ? (

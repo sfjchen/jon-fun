@@ -23,6 +23,7 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
   // Keep last-clicked cell for UX focus; currently not rendered
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [focused, setFocused] = useState<{ col: number; row: number } | null>(null)
+  const colMinWidthPx = 120
 
   useEffect(() => {
     // normalize team list to 1-8
@@ -124,15 +125,18 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
 
       {/* Board */}
       <div className="max-w-6xl mx-auto w-full">
-        <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
+        <div className="smooth-scroll-x">
+          <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))`, minWidth: `${board.categories.length * colMinWidthPx}px` }}>
           {board.categories.map((cat, colIndex) => (
-            <div key={colIndex} className="p-2 border border-black/60 bg-[#1f3aa8] text-center font-semibold uppercase tracking-wide text-lg select-none rounded-t-lg">
+            <div key={colIndex} className="px-2 py-2 border border-black/60 bg-[#1f3aa8] text-center font-semibold uppercase tracking-wide text-xs sm:text-sm md:text-lg select-none rounded-t-lg wrap-anywhere">
               {cat.title}
             </div>
           ))}
+          </div>
         </div>
 
-        <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
+        <div className="smooth-scroll-x">
+          <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))`, minWidth: `${board.categories.length * colMinWidthPx}px` }}>
           {board.categories.map((cat, colIndex) => (
             <div key={colIndex} className="grid" style={{ gridTemplateRows: `repeat(${rowsCount}, minmax(0, 1fr))` }}>
               {Array.from({ length: rowsCount }, (_, rowIndex) => {
@@ -143,7 +147,7 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
                   <button
                     key={rowIndex}
                     onClick={() => { setFocused({ col: colIndex, row: rowIndex }); openTile(colIndex, rowIndex) }}
-                    className={`h-24 md:h-28 lg:h-32 border border-black/60 text-3xl font-extrabold rounded-b-lg ${disabled ? 'bg-[#0c1a5a]' : 'bg-[#10226d] hover:bg-[#13297f]'}`}
+                    className={`h-20 sm:h-24 md:h-28 lg:h-32 border border-black/60 text-2xl md:text-3xl font-extrabold rounded-b-lg ${disabled ? 'bg-[#0c1a5a]' : 'bg-[#10226d] hover:bg-[#13297f]'}`}
                   >
                     <span className={`${disabled ? 'text-[#6c79c9] opacity-60' : 'text-[#ffcc00]'} transition-opacity`}>${value}</span>
                   </button>
@@ -151,6 +155,7 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
               })}
             </div>
           ))}
+          </div>
         </div>
       </div>
 
@@ -184,21 +189,21 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
 
       {/* Overlay */}
       {open && (
-        <div className="fixed inset-0 bg-[#142c6d] text-white flex items-center justify-center p-6 z-50">
+        <div className="fixed inset-0 bg-[#142c6d] text-white flex items-center justify-center p-4 sm:p-6 z-50 overflow-y-auto">
           <div className="absolute top-2 left-2">
             <button onClick={closeTile} className="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg">ESC</button>
           </div>
           <div className="absolute top-2 right-2">
             <button onClick={() => setRevealed((r) => !r)} className="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg">Space: Reveal</button>
           </div>
-          <div className="max-w-5xl text-center">
-            <div className="text-white/80 text-lg mb-2">{board.categories[open.col]?.title} for ${getClueValue(board, open.row)}</div>
-            <div className="text-5xl md:text-6xl font-bold tracking-wide">
+          <div className="max-w-5xl text-center max-h-[85vh] overflow-y-auto">
+            <div className="text-white/80 text-sm sm:text-base md:text-lg mb-2 wrap-anywhere">{board.categories[open.col]?.title} for ${getClueValue(board, open.row)}</div>
+            <div className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-wide wrap-anywhere">
               {!revealed ? (
                 <div>{board.categories[open.col]?.clues[open.row]?.question || '—'}</div>
               ) : (
                 <div>
-                  <div className="opacity-70 text-4xl mb-6">{board.categories[open.col]?.clues[open.row]?.question || '—'}</div>
+                  <div className="opacity-70 text-2xl sm:text-3xl md:text-4xl mb-6">{board.categories[open.col]?.clues[open.row]?.question || '—'}</div>
                   <div className="text-[#ffda79]">{board.categories[open.col]?.clues[open.row]?.answer || '—'}</div>
                 </div>
               )}

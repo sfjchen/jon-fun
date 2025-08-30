@@ -10,6 +10,17 @@
 }
 
 @layer components {
+  /* Utility helpers for mobile overflow/wrapping */
+  .wrap-anywhere {
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .smooth-scroll-x {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
   /* Header Section */
   .header-section {
     background-color: rgb(30 58 138);
