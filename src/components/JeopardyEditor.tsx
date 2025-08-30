@@ -230,7 +230,9 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
           </div>
         </div>
 
-        <div className="mt-6 text-center text-white/70 text-sm">Drag category headers to reorder.</div>
+        <div className="mt-6 text-center text-white/70 text-sm">
+          Drag headers to reorder · Arrows navigate · Space/Return open · Tab ↓/wrap → · Esc close · Cmd/Ctrl+Enter save
+        </div>
       </div>
 
       {/* Modal */}
