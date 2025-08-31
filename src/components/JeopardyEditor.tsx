@@ -255,7 +255,14 @@ function CellModal({ value, clue, onClose, onSave }: { value: number; clue: Jeop
   const [q, setQ] = useState(clue?.question ?? '')
   const [a, setA] = useState(clue?.answer ?? '')
   const qRef = useRef<HTMLTextAreaElement>(null)
+  const qaRef = useRef<{ q: string; a: string }>({ q, a })
 
+  // Keep latest values for the key handler without re-binding the listener
+  useEffect(() => {
+    qaRef.current = { q, a }
+  }, [q, a])
+
+  // Focus question textarea on open only
   useEffect(() => {
     qRef.current?.focus()
     const el = qRef.current
@@ -263,6 +270,10 @@ function CellModal({ value, clue, onClose, onSave }: { value: number; clue: Jeop
       const len = el.value.length
       el.setSelectionRange(len, len)
     }
+  }, [])
+
+  // Global hotkeys for close and save (does not alter focus)
+  useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         e.preventDefault()
@@ -270,12 +281,13 @@ function CellModal({ value, clue, onClose, onSave }: { value: number; clue: Jeop
       }
       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
-        onSave({ question: q, answer: a })
+        const { q: qLatest, a: aLatest } = qaRef.current
+        onSave({ question: qLatest, answer: aLatest })
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onClose, onSave, q, a])
+  }, [onClose, onSave])
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
