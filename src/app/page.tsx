@@ -23,6 +23,15 @@ const games = [
     available: true,
   },
   {
+    id: 'poker',
+    title: 'Texas Hold\'em',
+    description: 'Poker chip tracker with online lobbies',
+    icon: '🃏',
+    href: '/games/poker',
+    tags: ['Multiplayer', 'Cards'],
+    available: true,
+  },
+  {
     id: 'coming-soon',
     title: 'Coming Soon',
     description: 'More brain games are in development',
@@ -47,9 +56,8 @@ const features = [
 
 const futureFeatures = [
   'zetamac, typing speed, logic puzzles, hypothetical scenarios life hacks,',
-  'poker chip tracker lobbies, personalized kahoot',
+  'personalized kahoot',
   'User accounts',
-  'Real-time multiplayer lobbies',
   'Friend system and invitations',
   'Custom game settings and difficulty levels',
   'Chat system for multiplayer games',
