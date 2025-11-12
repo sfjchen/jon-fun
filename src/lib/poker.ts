@@ -310,7 +310,8 @@ export function getNextPlayerPosition(currentPosition: number, players: Player[]
   const positions = activePlayers.map(p => p.position).sort((a, b) => a - b)
   const currentIndex = positions.indexOf(currentPosition)
   const nextIndex = (currentIndex + 1) % positions.length
-  return positions[nextIndex]
+  const nextPosition = positions[nextIndex]
+  return nextPosition !== undefined ? nextPosition : currentPosition
 }
 
 export function generateRoomPin(): string {
