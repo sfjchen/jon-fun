@@ -206,7 +206,7 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
           </div>
 
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-            <h2 className="text-2xl font-bold text-white mb-4">Players ({players.length}/9)</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">Players ({players.length}/12)</h2>
 
             {error && (
               <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200">
@@ -233,7 +233,7 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
                         <span className="text-xs bg-green-600 px-2 py-1 rounded">Host</span>
                       )}
                     </div>
-                    <div className="text-gray-400 text-sm mt-1">Position: {player.position}</div>
+                    <div className="text-gray-400 text-sm mt-1">Seat {player.position + 1} (Position {player.position})</div>
                   </div>
                 ))}
               </div>
