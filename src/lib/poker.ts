@@ -256,8 +256,10 @@ function getStraightHighCard(rankCounts: Map<Rank, number>): Rank {
 
 function compareHighCards(a: Rank[], b: Rank[]): number {
   for (let i = 0; i < Math.min(a.length, b.length); i++) {
-    const rankA = a[i] ? RANKS.indexOf(a[i]) : -1
-    const rankB = b[i] ? RANKS.indexOf(b[i]) : -1
+    const rankAValue = a[i]
+    const rankBValue = b[i]
+    const rankA = rankAValue ? RANKS.indexOf(rankAValue) : -1
+    const rankB = rankBValue ? RANKS.indexOf(rankBValue) : -1
     if (rankA !== rankB) {
       return rankA - rankB
     }
