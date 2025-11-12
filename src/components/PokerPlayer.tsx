@@ -24,11 +24,11 @@ export default function PokerPlayer({
 }: PokerPlayerProps) {
   return (
     <div
-      className={`absolute ${isActionOn ? 'ring-4 ring-yellow-400' : ''} ${
-        isCurrentPlayer ? 'ring-2 ring-green-400' : ''
-      } bg-white/10 backdrop-blur-sm rounded-xl p-4 border-2 ${
+      className={`absolute ${isActionOn ? 'ring-2 sm:ring-4 ring-yellow-400' : ''} ${
+        isCurrentPlayer ? 'ring-1 sm:ring-2 ring-green-400' : ''
+      } bg-white/10 backdrop-blur-sm rounded-xl p-2 sm:p-4 border-2 ${
         isActionOn ? 'border-yellow-400' : 'border-white/20'
-      } min-w-[120px] transition-all`}
+      } min-w-[100px] sm:min-w-[120px] max-w-[140px] transition-all text-xs sm:text-sm`}
       style={position}
     >
       <div className="text-center">

@@ -187,7 +187,7 @@ function GameCard({ game, onComingSoonClick }: GameCardProps) {
     return (
       <button
         onClick={onComingSoonClick}
-        className="w-full bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300 transform hover:scale-105 text-left"
+        className="w-full bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300 transform hover:scale-105 text-left h-full flex flex-col"
       >
         <CardContent />
       </button>
@@ -195,8 +195,8 @@ function GameCard({ game, onComingSoonClick }: GameCardProps) {
   }
 
   return (
-    <Link href={game.href} className="group">
-      <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 transform hover:scale-105 border border-white/20">
+    <Link href={game.href} className="group block h-full">
+      <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 transform hover:scale-105 border border-white/20 h-full flex flex-col">
         <CardContent />
       </div>
     </Link>
