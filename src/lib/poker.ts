@@ -72,7 +72,9 @@ function shuffleDeck(deck: Card[]): Card[] {
   const shuffled = [...deck]
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
-    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    const temp = shuffled[i]!
+    shuffled[i] = shuffled[j]!
+    shuffled[j] = temp
   }
   return shuffled
 }
@@ -113,7 +115,7 @@ function getCombinations<T>(arr: T[], k: number): T[][] {
 
   const result: T[][] = []
   for (let i = 0; i <= arr.length - k; i++) {
-    const head = arr[i]
+    const head = arr[i]!
     const tailCombos = getCombinations(arr.slice(i + 1), k - 1)
     for (const combo of tailCombos) {
       result.push([head, ...combo])

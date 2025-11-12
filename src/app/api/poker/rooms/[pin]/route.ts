@@ -66,7 +66,7 @@ export async function POST(
   try {
     const { pin } = await params
     const body = await request.json()
-    const { action, playerName, playerId, ...actionData } = body
+    const { action, playerName, ...actionData } = body
 
     if (!validateRoomPin(pin)) {
       return NextResponse.json({ error: 'Invalid room PIN' }, { status: 400 })
@@ -108,7 +108,7 @@ export async function POST(
           .order('position', { ascending: false })
           .limit(1)
 
-        const nextPosition = players && players.length > 0 ? players[0].position + 1 : 0
+        const nextPosition = players && players.length > 0 && players[0] ? players[0].position + 1 : 0
 
         const { error: joinError } = await supabase
           .from('poker_players')

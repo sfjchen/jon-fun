@@ -242,8 +242,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
     )
   }
 
-  const activePlayers = players.filter(p => p.isActive && !p.hasFolded)
-  const currentPlayer = players.find(p => p.id === currentPlayerId || p.name === currentPlayerId)
+  const currentPlayer = players.find(p => p.id === currentPlayerId)
   const isMyTurn = currentPlayer && gameState.action_on === currentPlayer.position
   const minBet = gameState.big_blind
   const maxBet = currentPlayer ? currentPlayer.chips : 0
