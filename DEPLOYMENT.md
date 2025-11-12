@@ -15,6 +15,13 @@ After making updates to the sfjc.dev site code, pages, or features:
    git acp -m "Your commit message describing the changes"
    ```
    Note: The `acp` command automatically does: `git add . && git commit -m "message" && git push`
+   
+   **Important**: If you're on a feature branch, merge to `main` for production deployment:
+   ```bash
+   git checkout main
+   git merge your-feature-branch
+   git push
+   ```
 
 3. **Vercel auto-deploys**: 
    - Vercel automatically detects the push to your main/master branch
@@ -90,5 +97,7 @@ git push
 ### Build failures?
 1. Check `npm run build` locally
 2. Review Vercel build logs
-3. Ensure all dependencies are in `package.json`
+3. Ensure all dependencies are in `package.json` **and committed to the branch being deployed**
+4. **Common issue**: Dependencies added on feature branch but not merged to main
+   - Solution: Merge feature branch to main, or ensure dependencies are in the deployed branch
 

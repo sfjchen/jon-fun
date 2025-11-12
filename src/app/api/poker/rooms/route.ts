@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { generateRoomPin, validateRoomPin } from '@/lib/poker'
+import { generateRoomPin } from '@/lib/poker'
 import { v4 as uuidv4 } from 'uuid'
 
 export async function POST(request: NextRequest) {
