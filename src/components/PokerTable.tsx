@@ -49,11 +49,17 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
   const [betAmount, setBetAmount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const playerId = sessionStorage.getItem('poker_playerId')
       setCurrentPlayerId(playerId)
+      
+      const checkMobile = () => setIsMobile(window.innerWidth < 768)
+      checkMobile()
+      window.addEventListener('resize', checkMobile)
+      return () => window.removeEventListener('resize', checkMobile)
     }
   }, [])
 
@@ -182,7 +188,8 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
     if (total === 0) return { top: '50%', left: '50%' }
 
     const angle = (index / total) * 2 * Math.PI - Math.PI / 2
-    const radius = 180
+    // Responsive radius: smaller on mobile, larger on desktop
+    const radius = isMobile ? 120 : 180
     const centerX = 50
     const centerY = 50
 
@@ -200,7 +207,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
       return (
         <div
           key={index}
-          className="w-12 h-16 bg-gray-800 border-2 border-gray-600 rounded flex items-center justify-center"
+          className="w-10 h-14 sm:w-12 sm:h-16 bg-gray-800 border-2 border-gray-600 rounded flex items-center justify-center"
         >
           <div className="text-gray-600 text-xs">?</div>
         </div>
@@ -210,10 +217,10 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
     return (
       <div
         key={index}
-        className={`w-12 h-16 bg-white border-2 border-gray-400 rounded flex flex-col items-center justify-center ${SUIT_COLORS[card.suit]}`}
+        className={`w-10 h-14 sm:w-12 sm:h-16 bg-white border-2 border-gray-400 rounded flex flex-col items-center justify-center ${SUIT_COLORS[card.suit]}`}
       >
-        <div className="text-sm font-bold">{card.rank}</div>
-        <div className="text-lg">{SUIT_SYMBOLS[card.suit]}</div>
+        <div className="text-xs sm:text-sm font-bold">{card.rank}</div>
+        <div className="text-sm sm:text-lg">{SUIT_SYMBOLS[card.suit]}</div>
       </div>
     )
   }
@@ -252,18 +259,18 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
     <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 p-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <button
             onClick={onBack}
-            className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg border border-white/20 text-white"
+            className="bg-white/10 hover:bg-white/20 px-3 py-2 sm:px-4 rounded-lg border border-white/20 text-white text-sm sm:text-base"
           >
             ← Back
           </button>
-          <div className="text-white">
-            <div className="text-sm text-gray-300">Hand #{gameState.hand_number}</div>
-            <div className="text-lg font-semibold capitalize">{gameState.betting_round.replace('-', ' ')}</div>
+          <div className="text-white text-center">
+            <div className="text-xs sm:text-sm text-gray-300">Hand #{gameState.hand_number}</div>
+            <div className="text-sm sm:text-lg font-semibold capitalize">{gameState.betting_round.replace('-', ' ')}</div>
           </div>
-          <div className="text-white text-sm">Room: {pin}</div>
+          <div className="text-white text-xs sm:text-sm">Room: {pin}</div>
         </div>
 
         {error && (
@@ -273,7 +280,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
         )}
 
         {/* Table Area */}
-        <div className="relative bg-gradient-to-br from-green-800 to-green-900 rounded-full border-8 border-amber-800 shadow-2xl" style={{ aspectRatio: '1', minHeight: '500px' }}>
+        <div className="relative bg-gradient-to-br from-green-800 to-green-900 rounded-full border-4 sm:border-8 border-amber-800 shadow-2xl mx-auto" style={{ aspectRatio: '1', width: '100%', maxWidth: '600px', minHeight: '300px' }}>
           {/* Community Cards */}
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex gap-2">
             {Array.from({ length: 5 }).map((_, i) =>
@@ -283,10 +290,10 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
           {/* Pot Display */}
           <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-            <div className="bg-black/50 backdrop-blur-sm rounded-lg px-6 py-3 border-2 border-yellow-400">
-              <div className="text-yellow-400 text-sm mb-1">Pot</div>
-              <div className="text-white text-3xl font-bold">
-                <PokerChips amount={gameState.pot_main} size="md" showLabel={true} />
+            <div className="bg-black/50 backdrop-blur-sm rounded-lg px-3 py-2 sm:px-6 sm:py-3 border-2 border-yellow-400">
+              <div className="text-yellow-400 text-xs sm:text-sm mb-1">Pot</div>
+              <div className="text-white text-xl sm:text-3xl font-bold">
+                <PokerChips amount={gameState.pot_main} size="sm" showLabel={true} />
               </div>
               {gameState.pot_side_pots && gameState.pot_side_pots.length > 0 && (
                 <div className="text-yellow-300 text-xs mt-1">
@@ -316,18 +323,18 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
         {/* Betting Controls */}
         {isMyTurn && currentPlayer && !currentPlayer.hasFolded && !currentPlayer.isAllIn && (
-          <div className="mt-6 bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+          <div className="mt-4 sm:mt-6 bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/20">
             <div className="text-white text-center mb-4">
-              <div className="text-xl font-semibold">Your Turn</div>
-              <div className="text-sm text-gray-300">
+              <div className="text-lg sm:text-xl font-semibold">Your Turn</div>
+              <div className="text-xs sm:text-sm text-gray-300">
                 Chips: ${currentPlayer.chips} | Current Bet: ${gameState.current_bet} | To Call: ${callAmount}
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3 justify-center mb-4">
+            <div className="flex flex-wrap gap-2 sm:gap-3 justify-center mb-4">
               <button
                 onClick={() => handleAction('fold')}
-                className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold"
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
               >
                 Fold
               </button>
@@ -335,14 +342,14 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
               {callAmount === 0 ? (
                 <button
                   onClick={() => handleAction('check')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
                 >
                   Check
                 </button>
               ) : (
                 <button
                   onClick={() => handleAction('call')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
                 >
                   Call ${callAmount}
                 </button>
@@ -350,24 +357,24 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
               {callAmount > 0 && (
                 <>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
                     <input
                       type="number"
                       value={betAmount || minBet}
                       onChange={(e) => setBetAmount(Math.max(minBet, Math.min(maxBet, parseInt(e.target.value) || minBet)))}
-                      className="w-24 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-center"
+                      className="w-20 sm:w-24 bg-white/10 border border-white/20 rounded-lg px-2 py-2 sm:px-3 sm:py-2 text-white text-center text-sm sm:text-base"
                       min={minBet}
                       max={maxBet}
                     />
                     <button
                       onClick={() => handleAction('bet')}
-                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold"
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
                     >
                       Bet ${betAmount || minBet}
                     </button>
                     <button
                       onClick={() => handleAction('raise')}
-                      className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-semibold"
+                      className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
                     >
                       Raise ${betAmount || minBet}
                     </button>
@@ -377,7 +384,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
               <button
                 onClick={() => handleAction('all-in')}
-                className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-semibold"
+                className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
               >
                 All-In ${currentPlayer.chips}
               </button>
