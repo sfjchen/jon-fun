@@ -2,13 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import PokerJoinForm from '@/components/PokerJoinForm'
 
 export default function PokerPage() {
   const router = useRouter()
   const [mode, setMode] = useState<'create' | 'join'>('create')
   const [hostName, setHostName] = useState('')
   const [joinPin, setJoinPin] = useState('')
-  const [joinName, setJoinName] = useState('')
   const [smallBlind, setSmallBlind] = useState(5)
   const [bigBlind, setBigBlind] = useState(10)
   const [loading, setLoading] = useState(false)
@@ -48,16 +48,24 @@ export default function PokerPage() {
     }
   }
 
+  const [showPositionSelection, setShowPositionSelection] = useState(false)
+
   const handleJoinRoom = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    setLoading(true)
-
+    
     if (!/^\d{4}$/.test(joinPin)) {
       setError('Please enter a valid 4-digit PIN')
-      setLoading(false)
       return
     }
+
+    // Show position selection
+    setShowPositionSelection(true)
+  }
+
+  const handleJoinWithPosition = async (playerName: string, position: number) => {
+    setError('')
+    setLoading(true)
 
     try {
       const response = await fetch(`/api/poker/rooms/${joinPin}`, {
@@ -65,7 +73,8 @@ export default function PokerPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'join',
-          playerName: joinName.trim(),
+          playerName: playerName.trim(),
+          position,
         }),
       })
 
@@ -77,7 +86,7 @@ export default function PokerPage() {
 
       // Store player info
       sessionStorage.setItem('poker_playerId', data.playerId)
-      sessionStorage.setItem('poker_playerName', joinName.trim())
+      sessionStorage.setItem('poker_playerName', playerName.trim())
 
       router.push(`/games/poker/lobby/${joinPin}`)
     } catch (err) {
@@ -173,6 +182,24 @@ export default function PokerPage() {
                   {loading ? 'Creating...' : 'Create Room'}
                 </button>
               </form>
+            ) : showPositionSelection ? (
+              <div>
+                <div className="mb-4">
+                  <button
+                    onClick={() => setShowPositionSelection(false)}
+                    className="text-white hover:text-gray-300 mb-2"
+                  >
+                    ← Back to PIN entry
+                  </button>
+                </div>
+                <PokerJoinForm
+                  pin={joinPin}
+                  onJoin={handleJoinWithPosition}
+                  onCancel={() => setShowPositionSelection(false)}
+                  loading={loading}
+                  error={error}
+                />
+              </div>
             ) : (
               <form onSubmit={handleJoinRoom} className="space-y-4">
                 <div>
@@ -188,25 +215,12 @@ export default function PokerPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-white mb-2">Your Name</label>
-                  <input
-                    type="text"
-                    value={joinName}
-                    onChange={(e) => setJoinName(e.target.value)}
-                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
-                    placeholder="Enter your name"
-                    required
-                    maxLength={20}
-                  />
-                </div>
-
                 <button
                   type="submit"
-                  disabled={loading || !joinPin || joinPin.length !== 4 || !joinName.trim()}
+                  disabled={!joinPin || joinPin.length !== 4}
                   className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors"
                 >
-                  {loading ? 'Joining...' : 'Join Room'}
+                  Continue to Select Seat
                 </button>
               </form>
             )}

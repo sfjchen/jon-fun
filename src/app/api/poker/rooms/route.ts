@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
     const roomId = uuidv4()
 
     // Create room
+    const now = new Date().toISOString()
     const { data: room, error: roomError } = await supabase
       .from('poker_rooms')
       .insert({
@@ -43,7 +44,8 @@ export async function POST(request: NextRequest) {
         small_blind: smallBlind,
         big_blind: bigBlind,
         status: 'waiting',
-        created_at: new Date().toISOString(),
+        created_at: now,
+        last_activity: now,
       })
       .select()
       .single()
