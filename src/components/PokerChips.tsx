@@ -55,6 +55,7 @@ export default function PokerChips({ amount, size = 'md', showLabel = true }: Po
     <div className="flex items-center gap-1 flex-wrap">
       {denominations.map(({ value, count }) => {
         const chipInfo = chipColors.find(c => c.value === value) || chipColors[0]
+        if (!chipInfo) return null
         return (
           <div key={value} className="flex items-center gap-0.5">
             {Array.from({ length: Math.min(count, 5) }).map((_, i) => (

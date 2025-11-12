@@ -72,7 +72,9 @@ function shuffleDeck(deck: Card[]): Card[] {
   const shuffled = [...deck]
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
-    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    const temp = shuffled[i]!
+    shuffled[i] = shuffled[j]!
+    shuffled[j] = temp
   }
   return shuffled
 }
@@ -113,7 +115,7 @@ function getCombinations<T>(arr: T[], k: number): T[][] {
 
   const result: T[][] = []
   for (let i = 0; i <= arr.length - k; i++) {
-    const head = arr[i]
+    const head = arr[i]!
     const tailCombos = getCombinations(arr.slice(i + 1), k - 1)
     for (const combo of tailCombos) {
       result.push([head, ...combo])
@@ -154,12 +156,12 @@ function evaluateHand(cards: Card[]): { rank: number; name: string; highCards: R
   }
 
   // Four of a Kind
-  if (rankArray[0][1] === 4) {
-    return { rank: 7, name: 'Four of a Kind', highCards: [rankArray[0][0], rankArray[1][0]] }
+  if (rankArray[0] && rankArray[0][1] === 4) {
+    return { rank: 7, name: 'Four of a Kind', highCards: [rankArray[0][0], rankArray[1]?.[0] || rankArray[0][0]] }
   }
 
   // Full House
-  if (rankArray[0][1] === 3 && rankArray[1][1] === 2) {
+  if (rankArray[0] && rankArray[1] && rankArray[0][1] === 3 && rankArray[1][1] === 2) {
     return { rank: 6, name: 'Full House', highCards: [rankArray[0][0], rankArray[1][0]] }
   }
 
@@ -176,19 +178,19 @@ function evaluateHand(cards: Card[]): { rank: number; name: string; highCards: R
   }
 
   // Three of a Kind
-  if (rankArray[0][1] === 3) {
+  if (rankArray[0] && rankArray[0][1] === 3) {
     const kickers = rankArray.slice(1).map(r => r[0]).slice(0, 2)
     return { rank: 3, name: 'Three of a Kind', highCards: [rankArray[0][0], ...kickers] }
   }
 
   // Two Pair
-  if (rankArray[0][1] === 2 && rankArray[1][1] === 2) {
+  if (rankArray[0] && rankArray[1] && rankArray[0][1] === 2 && rankArray[1][1] === 2) {
     const kicker = rankArray[2] ? rankArray[2][0] : rankArray[0][0]
     return { rank: 2, name: 'Two Pair', highCards: [rankArray[0][0], rankArray[1][0], kicker] }
   }
 
   // One Pair
-  if (rankArray[0][1] === 2) {
+  if (rankArray[0] && rankArray[0][1] === 2) {
     const kickers = rankArray.slice(1).map(r => r[0]).slice(0, 3)
     return { rank: 1, name: 'One Pair', highCards: [rankArray[0][0], ...kickers] }
   }
@@ -205,7 +207,8 @@ function isStraightCheck(rankCounts: Map<Rank, number>): boolean {
   for (let i = 0; i <= ranks.length - 5; i++) {
     let consecutive = 1
     for (let j = i + 1; j < ranks.length; j++) {
-      if (ranks[j] === ranks[j - 1] + 1) {
+      const prevRank = ranks[j - 1]
+      if (prevRank !== undefined && ranks[j] === prevRank + 1) {
         consecutive++
         if (consecutive === 5) return true
       } else {
@@ -236,10 +239,11 @@ function getStraightHighCard(rankCounts: Map<Rank, number>): Rank {
   for (let i = ranks.length - 1; i >= 4; i--) {
     let consecutive = 1
     for (let j = i - 1; j >= 0; j--) {
-      if (ranks[j] === ranks[j + 1] - 1) {
+      const nextRank = ranks[j + 1]
+      if (nextRank !== undefined && ranks[j] === nextRank - 1) {
         consecutive++
         if (consecutive === 5) {
-          return RANKS[ranks[i]]
+          return RANKS[ranks[i]!]!
         }
       } else {
         break
@@ -252,8 +256,8 @@ function getStraightHighCard(rankCounts: Map<Rank, number>): Rank {
 
 function compareHighCards(a: Rank[], b: Rank[]): number {
   for (let i = 0; i < Math.min(a.length, b.length); i++) {
-    const rankA = RANKS.indexOf(a[i])
-    const rankB = RANKS.indexOf(b[i])
+    const rankA = a[i] ? RANKS.indexOf(a[i]) : -1
+    const rankB = b[i] ? RANKS.indexOf(b[i]) : -1
     if (rankA !== rankB) {
       return rankA - rankB
     }
