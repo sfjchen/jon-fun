@@ -117,18 +117,21 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
       // Convert database players to Player type
       // Use player_id as the id for matching with currentPlayerId
-      const convertedPlayers: Player[] = (data.players || []).map((p: any) => ({
-        id: p.player_id, // Use player_id for matching
-        name: p.name,
-        chips: p.chips,
-        position: p.position,
-        isActive: p.is_active,
-        isAllIn: p.is_all_in,
-        currentBet: p.current_bet,
-        holeCards: p.hole_cards,
-        hasFolded: p.has_folded,
-        hasActed: p.has_acted,
-      }))
+      // Sort by position to ensure clockwise order
+      const convertedPlayers: Player[] = (data.players || [])
+        .map((p: any) => ({
+          id: p.player_id, // Use player_id for matching
+          name: p.name,
+          chips: p.chips,
+          position: p.position,
+          isActive: p.is_active,
+          isAllIn: p.is_all_in,
+          currentBet: p.current_bet,
+          holeCards: p.hole_cards,
+          hasFolded: p.has_folded,
+          hasActed: p.has_acted,
+        }))
+        .sort((a: Player, b: Player) => a.position - b.position) // Ensure clockwise order
 
       setPlayers(convertedPlayers)
       setGameState(data.gameState)

@@ -25,7 +25,7 @@ export async function GET(
       return NextResponse.json({ error: 'Room not found' }, { status: 404 })
     }
 
-    // Get players
+    // Get players - sorted by position for clockwise order
     const { data: players, error: playersError } = await supabase
       .from('poker_players')
       .select('*')
@@ -66,7 +66,7 @@ export async function POST(
   try {
     const { pin } = await params
     const body = await request.json()
-    const { action, playerName, ...actionData } = body
+    const { action, playerName, position, ...actionData } = body
 
     if (!validateRoomPin(pin)) {
       return NextResponse.json({ error: 'Invalid room PIN' }, { status: 400 })
@@ -89,27 +89,43 @@ export async function POST(
           return NextResponse.json({ error: 'Player name is required' }, { status: 400 })
         }
 
-        // Check if room is full (max 9 players)
-        const { count } = await supabase
-          .from('poker_players')
-          .select('*', { count: 'exact', head: true })
-          .eq('room_pin', pin)
-          .eq('is_active', true)
-
-        if ((count || 0) >= 9) {
-          return NextResponse.json({ error: 'Room is full' }, { status: 400 })
-        }
-
-        const newPlayerId = uuidv4()
-        const { data: players } = await supabase
+        // Get all active players
+        const { data: existingPlayers } = await supabase
           .from('poker_players')
           .select('position')
           .eq('room_pin', pin)
-          .order('position', { ascending: false })
-          .limit(1)
+          .eq('is_active', true)
 
-        const nextPosition = players && players.length > 0 && players[0] ? players[0].position + 1 : 0
+        const occupiedPositions = new Set((existingPlayers || []).map(p => p.position))
+        const maxPlayers = 12
 
+        if (occupiedPositions.size >= maxPlayers) {
+          return NextResponse.json({ error: 'Room is full (max 12 players)' }, { status: 400 })
+        }
+
+        // If position is provided, validate it
+        let selectedPosition: number
+        if (position !== undefined && position !== null) {
+          const pos = parseInt(position)
+          if (isNaN(pos) || pos < 0 || pos >= maxPlayers) {
+            return NextResponse.json({ error: 'Invalid position' }, { status: 400 })
+          }
+          if (occupiedPositions.has(pos)) {
+            return NextResponse.json({ error: 'Position already taken' }, { status: 400 })
+          }
+          selectedPosition = pos
+        } else {
+          // Find first available position (0-11)
+          selectedPosition = 0
+          for (let i = 0; i < maxPlayers; i++) {
+            if (!occupiedPositions.has(i)) {
+              selectedPosition = i
+              break
+            }
+          }
+        }
+
+        const newPlayerId = uuidv4()
         const { error: joinError } = await supabase
           .from('poker_players')
           .insert({
@@ -118,7 +134,7 @@ export async function POST(
             player_id: newPlayerId,
             name: playerName.trim(),
             chips: 0,
-            position: nextPosition,
+            position: selectedPosition,
             is_active: true,
             is_all_in: false,
             current_bet: 0,
@@ -131,7 +147,13 @@ export async function POST(
           return NextResponse.json({ error: 'Failed to join room' }, { status: 500 })
         }
 
-        return NextResponse.json({ playerId: newPlayerId, position: nextPosition })
+        // Update room last_activity timestamp
+        await supabase
+          .from('poker_rooms')
+          .update({ last_activity: new Date().toISOString() })
+          .eq('pin', pin)
+
+        return NextResponse.json({ playerId: newPlayerId, position: selectedPosition })
       }
 
       case 'start': {
@@ -146,6 +168,7 @@ export async function POST(
           .select('*')
           .eq('room_pin', pin)
           .eq('is_active', true)
+          .order('position', { ascending: true })
 
         if (!players || players.length < 2) {
           return NextResponse.json({ error: 'Need at least 2 players to start' }, { status: 400 })
@@ -154,7 +177,7 @@ export async function POST(
         // Update room status
         const { error: updateError } = await supabase
           .from('poker_rooms')
-          .update({ status: 'active' })
+          .update({ status: 'active', last_activity: new Date().toISOString() })
           .eq('pin', pin)
 
         if (updateError) {
@@ -197,4 +220,3 @@ export async function POST(
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-

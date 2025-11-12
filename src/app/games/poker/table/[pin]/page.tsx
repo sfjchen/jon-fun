@@ -20,10 +20,20 @@ export default function PokerTablePage({ params }: { params: Promise<{ pin: stri
     )
   }
 
+  const handleBack = () => {
+    // Clear session storage when leaving game
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('poker_hostId')
+      sessionStorage.removeItem('poker_playerId')
+      sessionStorage.removeItem('poker_playerName')
+    }
+    router.push('/games/poker')
+  }
+
   return (
     <PokerTable
       pin={pin}
-      onBack={() => router.push(`/games/poker/lobby/${pin}`)}
+      onBack={handleBack}
     />
   )
 }

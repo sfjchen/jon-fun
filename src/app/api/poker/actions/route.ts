@@ -94,6 +94,12 @@ export async function POST(request: NextRequest) {
         .eq('room_pin', pin)
     }
 
+    // Update room last_activity
+    await supabase
+      .from('poker_rooms')
+      .update({ last_activity: new Date().toISOString() })
+      .eq('pin', pin)
+
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error in POST /api/poker/actions:', error)
