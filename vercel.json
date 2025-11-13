@@ -8,5 +8,11 @@
       "main": true,
       "*": false
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/poker/cleanup",
+      "schedule": "0 */6 * * *"
+    }
+  ]
 }
