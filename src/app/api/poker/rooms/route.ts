@@ -35,25 +35,47 @@ export async function POST(request: NextRequest) {
 
     // Create room
     const now = new Date().toISOString()
+    const roomData: any = {
+      id: roomId,
+      pin,
+      host_id: hostId,
+      small_blind: smallBlind,
+      big_blind: bigBlind,
+      status: 'waiting',
+      created_at: now,
+      last_activity: now,
+    }
+    
+    // Include timer_per_turn - if column doesn't exist, try without it
+    roomData.timer_per_turn = timerPerTurn
+    
     const { data: room, error: roomError } = await supabase
       .from('poker_rooms')
-      .insert({
-        id: roomId,
-        pin,
-        host_id: hostId,
-        small_blind: smallBlind,
-        big_blind: bigBlind,
-        timer_per_turn: timerPerTurn,
-        status: 'waiting',
-        created_at: now,
-        last_activity: now,
-      })
+      .insert(roomData)
       .select()
       .single()
 
+    let finalRoom = room!
+    
     if (roomError) {
-      console.error('Error creating room:', roomError)
-      return NextResponse.json({ error: 'Failed to create room' }, { status: 500 })
+      // If error is about missing column, try without timer_per_turn
+      if (roomError.message?.includes('column') && roomError.message?.includes('timer_per_turn')) {
+        delete roomData.timer_per_turn
+        const { data: retryRoom, error: retryError } = await supabase
+          .from('poker_rooms')
+          .insert(roomData)
+          .select()
+          .single()
+        
+        if (retryError) {
+          console.error('Error creating room:', retryError)
+          return NextResponse.json({ error: 'Failed to create room' }, { status: 500 })
+        }
+        finalRoom = retryRoom
+      } else {
+        console.error('Error creating room:', roomError)
+        return NextResponse.json({ error: 'Failed to create room' }, { status: 500 })
+      }
     }
 
     // Create host player
@@ -84,7 +106,7 @@ export async function POST(request: NextRequest) {
       pin,
       hostId,
       room: {
-        ...room,
+        ...finalRoom,
         hostId,
       },
     })

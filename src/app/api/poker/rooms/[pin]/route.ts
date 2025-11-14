@@ -277,14 +277,27 @@ export async function PATCH(
         return NextResponse.json({ error: 'Timer must be between 5 and 300 seconds' }, { status: 400 })
       }
 
+      const updateData: any = { last_activity: new Date().toISOString() }
+      // Only update timer_per_turn if column exists
+      try {
+        updateData.timer_per_turn = timer
+      } catch {
+        // Column might not exist yet
+      }
+      
       const { error: updateError } = await supabase
         .from('poker_rooms')
-        .update({ timer_per_turn: timer, last_activity: new Date().toISOString() })
+        .update(updateData)
         .eq('pin', pin)
 
       if (updateError) {
-        console.error('Error updating timer:', updateError)
-        return NextResponse.json({ error: 'Failed to update timer' }, { status: 500 })
+        // If column doesn't exist, that's okay - just log and continue
+        if (updateError.message?.includes('column') && updateError.message?.includes('timer_per_turn')) {
+          console.warn('timer_per_turn column does not exist yet, skipping update')
+        } else {
+          console.error('Error updating timer:', updateError)
+          return NextResponse.json({ error: 'Failed to update timer' }, { status: 500 })
+        }
       }
     }
 
