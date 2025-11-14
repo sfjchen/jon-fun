@@ -185,6 +185,26 @@ export async function POST(
           return NextResponse.json({ error: 'Failed to start game' }, { status: 500 })
         }
 
+        // Determine blind structure based on player count
+        const playerCount = players.length
+        const useSingleBlind = playerCount <= 3 // Only big blind for 2-3 players
+        
+        // Calculate blind positions
+        let smallBlindPosition = -1
+        let bigBlindPosition = 0
+        let actionOnPosition = 1
+        
+        if (useSingleBlind) {
+          // Only big blind, no small blind
+          bigBlindPosition = 0
+          actionOnPosition = 1
+        } else {
+          // Standard: small blind, big blind, then action
+          smallBlindPosition = 0
+          bigBlindPosition = 1
+          actionOnPosition = 2
+        }
+
         // Initialize game state
         const { error: stateError } = await supabase
           .from('poker_game_state')
@@ -194,10 +214,10 @@ export async function POST(
             betting_round: 'pre-flop',
             current_bet: room.big_blind,
             dealer_position: 0,
-            small_blind_position: 0,
-            big_blind_position: 1,
-            action_on: 2,
-            small_blind: room.small_blind,
+            small_blind_position: useSingleBlind ? -1 : smallBlindPosition,
+            big_blind_position: bigBlindPosition,
+            action_on: actionOnPosition < playerCount ? actionOnPosition : 0,
+            small_blind: useSingleBlind ? 0 : room.small_blind,
             big_blind: room.big_blind,
             pot_main: 0,
             pot_side_pots: [],
@@ -217,6 +237,60 @@ export async function POST(
     }
   } catch (error) {
     console.error('Error in POST /api/poker/rooms/[pin]:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ pin: string }> }
+) {
+  try {
+    const { pin } = await params
+    const body = await request.json()
+    const { timer_per_turn, hostId } = body
+
+    if (!validateRoomPin(pin)) {
+      return NextResponse.json({ error: 'Invalid room PIN' }, { status: 400 })
+    }
+
+    // Check if room exists
+    const { data: room, error: roomError } = await supabase
+      .from('poker_rooms')
+      .select('*')
+      .eq('pin', pin)
+      .single()
+
+    if (roomError || !room) {
+      return NextResponse.json({ error: 'Room not found' }, { status: 404 })
+    }
+
+    // Only host can update
+    if (hostId !== room.host_id) {
+      return NextResponse.json({ error: 'Only host can update settings' }, { status: 403 })
+    }
+
+    // Validate timer
+    if (timer_per_turn !== undefined) {
+      const timer = parseInt(timer_per_turn)
+      if (isNaN(timer) || timer < 5 || timer > 300) {
+        return NextResponse.json({ error: 'Timer must be between 5 and 300 seconds' }, { status: 400 })
+      }
+
+      const { error: updateError } = await supabase
+        .from('poker_rooms')
+        .update({ timer_per_turn: timer, last_activity: new Date().toISOString() })
+        .eq('pin', pin)
+
+      if (updateError) {
+        console.error('Error updating timer:', updateError)
+        return NextResponse.json({ error: 'Failed to update timer' }, { status: 500 })
+      }
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Error in PATCH /api/poker/rooms/[pin]:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

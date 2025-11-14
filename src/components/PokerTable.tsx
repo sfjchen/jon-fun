@@ -45,11 +45,13 @@ const SUIT_COLORS: Record<string, string> = {
 export default function PokerTable({ pin, onBack }: PokerTableProps) {
   const [players, setPlayers] = useState<Player[]>([])
   const [gameState, setGameState] = useState<GameStateData | null>(null)
+  const [room, setRoom] = useState<{ timer_per_turn?: number } | null>(null)
   const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null)
   const [betAmount, setBetAmount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [isMobile, setIsMobile] = useState(false)
+  const [timeRemaining, setTimeRemaining] = useState<Record<number, number>>({})
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -106,6 +108,35 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
     }
   }, [pin])
 
+  // Timer countdown effect
+  useEffect(() => {
+    if (!gameState || !room?.timer_per_turn) return
+
+    const timerPerTurn = room.timer_per_turn
+    const actionOnPosition = gameState.action_on
+
+    // Reset timer for the player whose turn it is
+    setTimeRemaining((prev) => ({
+      ...prev,
+      [actionOnPosition]: timerPerTurn,
+    }))
+
+    const interval = setInterval(() => {
+      setTimeRemaining((prev) => {
+        const current = prev[actionOnPosition] || timerPerTurn
+        if (current <= 0) {
+          return prev
+        }
+        return {
+          ...prev,
+          [actionOnPosition]: current - 1,
+        }
+      })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [gameState?.action_on, room?.timer_per_turn])
+
   const loadGameData = async () => {
     try {
       const response = await fetch(`/api/poker/rooms/${pin}`)
@@ -135,6 +166,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
       setPlayers(convertedPlayers)
       setGameState(data.gameState)
+      setRoom(data.room)
       setLoading(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load game')
@@ -306,19 +338,25 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
             </div>
           </div>
 
-          {/* Players */}
-          {players.map((player, index) => {
-            const position = getPlayerPosition(index, players.length)
+          {/* Players - Show all 12 seats */}
+          {Array.from({ length: 12 }).map((_, seatIndex) => {
+            const player = players.find(p => p.position === seatIndex)
+            const position = getPlayerPosition(seatIndex, 12)
+            const timerPerTurn = room?.timer_per_turn || 40
+            const remaining = timeRemaining[seatIndex] ?? (gameState.action_on === seatIndex ? timerPerTurn : undefined)
+            
             return (
               <PokerPlayer
-                key={player.id}
-                player={player}
-                isCurrentPlayer={player.id === currentPlayerId}
-                isActionOn={gameState.action_on === player.position}
-                isDealer={gameState.dealer_position === player.position}
-                isSmallBlind={gameState.small_blind_position === player.position}
-                isBigBlind={gameState.big_blind_position === player.position}
+                key={seatIndex}
+                player={player || null}
+                isCurrentPlayer={player?.id === currentPlayerId}
+                isActionOn={gameState.action_on === seatIndex}
+                isDealer={gameState.dealer_position === seatIndex}
+                isSmallBlind={gameState.small_blind_position === seatIndex && gameState.small_blind_position >= 0}
+                isBigBlind={gameState.big_blind_position === seatIndex}
                 position={position}
+                timeRemaining={remaining}
+                totalTime={timerPerTurn}
               />
             )
           })}
