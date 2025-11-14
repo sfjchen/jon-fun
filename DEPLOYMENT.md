@@ -16,11 +16,12 @@ After making updates to the sfjc.dev site code, pages, or features:
    ```
    Note: The `acp` command automatically does: `git add . && git commit -m "message" && git push`
    
-   **Important**: If you're on a feature branch, merge to `main` for production deployment:
+   **IMPORTANT**: Always work on `main` branch or merge to `main` immediately for production deployment:
    ```bash
+   # If on a feature branch:
    git checkout main
    git merge your-feature-branch
-   git push
+   git push origin main
    ```
 
 3. **Vercel auto-deploys**: 
@@ -32,6 +33,34 @@ After making updates to the sfjc.dev site code, pages, or features:
    - Check Vercel dashboard: https://vercel.com/dashboard
    - Visit https://sfjc.dev to see your changes live
    - Deployment usually takes 1-3 minutes
+
+## Workflow: Always Deploy from Main
+
+**Key Principle**: All production deployments come from the `main` branch. 
+
+- ✅ **DO**: Make changes, commit to main, push to main
+- ❌ **DON'T**: Leave changes on feature branches without merging to main
+
+### Cursor Worktrees
+
+Cursor creates worktrees with separate branches (e.g., `chore-remove-poker-jZwYq`). To ensure deployment:
+
+1. **After making changes in a worktree**:
+   ```bash
+   # In the worktree directory
+   git acp -m "Your changes"
+   
+   # Then switch to main and merge
+   cd /path/to/main/repo
+   git checkout main
+   git pull origin main
+   git merge worktree-branch-name
+   git push origin main
+   ```
+
+2. **Or work directly on main** (recommended):
+   - Use the main repository directory, not worktrees
+   - Commit directly to main: `git acp -m "Changes"`
 
 ## Environment Variables Setup
 
@@ -88,6 +117,7 @@ git push
 2. Ensure environment variables are set in Vercel
 3. Check build logs in Vercel for errors
 4. Clear browser cache (hard refresh: Cmd+Shift+R / Ctrl+Shift+R)
+5. **Verify changes are on main branch**: `git log origin/main --oneline -5`
 
 ### Supabase connection issues?
 1. Verify environment variables are set correctly
@@ -101,3 +131,8 @@ git push
 4. **Common issue**: Dependencies added on feature branch but not merged to main
    - Solution: Merge feature branch to main, or ensure dependencies are in the deployed branch
 
+### Multiple branches confusion?
+- Cursor worktrees create separate branches automatically
+- Always merge worktree branches to main before expecting deployment
+- Check current branch: `git branch`
+- List all branches: `git branch -a`
