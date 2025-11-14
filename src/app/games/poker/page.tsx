@@ -11,6 +11,7 @@ export default function PokerPage() {
   const [joinPin, setJoinPin] = useState('')
   const [smallBlind, setSmallBlind] = useState(5)
   const [bigBlind, setBigBlind] = useState(10)
+  const [timerPerTurn, setTimerPerTurn] = useState(40)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -27,6 +28,7 @@ export default function PokerPage() {
           hostName: hostName.trim(),
           smallBlind,
           bigBlind,
+          timerPerTurn,
         }),
       })
 
@@ -149,7 +151,7 @@ export default function PokerPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-white mb-2">Small Blind</label>
                     <input
@@ -169,6 +171,18 @@ export default function PokerPage() {
                       onChange={(e) => setBigBlind(Math.max(smallBlind * 2, parseInt(e.target.value) || smallBlind * 2))}
                       className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
                       min={smallBlind * 2}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-white mb-2">Timer (seconds)</label>
+                    <input
+                      type="number"
+                      value={timerPerTurn}
+                      onChange={(e) => setTimerPerTurn(Math.max(5, Math.min(300, parseInt(e.target.value) || 40)))}
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                      min="5"
+                      max="300"
                       required
                     />
                   </div>

@@ -18,6 +18,7 @@ interface Room {
   host_id: string
   small_blind: number
   big_blind: number
+  timer_per_turn?: number
   status: string
   created_at: string
 }
@@ -34,8 +35,16 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
   const [loading, setLoading] = useState(true)
   const [starting, setStarting] = useState(false)
   const [error, setError] = useState('')
+  const [timerPerTurn, setTimerPerTurn] = useState(40)
+  const [updatingTimer, setUpdatingTimer] = useState(false)
   const hostId = typeof window !== 'undefined' ? sessionStorage.getItem('poker_hostId') : null
   const isHost = hostId && room?.host_id === hostId
+
+  useEffect(() => {
+    if (room?.timer_per_turn) {
+      setTimerPerTurn(room.timer_per_turn)
+    }
+  }, [room])
 
   useEffect(() => {
     loadRoomData()
@@ -136,6 +145,37 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
     navigator.clipboard.writeText(pin)
   }
 
+  const handleUpdateTimer = async () => {
+    if (!isHost || !room) return
+
+    setUpdatingTimer(true)
+    setError('')
+
+    try {
+      const response = await fetch(`/api/poker/rooms/${pin}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          timer_per_turn: timerPerTurn,
+          hostId,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update timer')
+      }
+
+      // Reload room data
+      loadRoomData()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update timer')
+    } finally {
+      setUpdatingTimer(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center">
@@ -192,7 +232,7 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
             </div>
 
             {room && (
-              <div className="grid grid-cols-2 gap-4 text-center mb-6">
+              <div className="grid grid-cols-3 gap-4 text-center mb-6">
                 <div className="bg-white/5 rounded-lg p-4">
                   <div className="text-gray-400 text-sm">Small Blind</div>
                   <div className="text-2xl font-bold text-white">${room.small_blind}</div>
@@ -200,6 +240,30 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
                 <div className="bg-white/5 rounded-lg p-4">
                   <div className="text-gray-400 text-sm">Big Blind</div>
                   <div className="text-2xl font-bold text-white">${room.big_blind}</div>
+                </div>
+                <div className="bg-white/5 rounded-lg p-4">
+                  <div className="text-gray-400 text-sm">Timer (seconds)</div>
+                  {isHost ? (
+                    <div className="flex items-center justify-center gap-2 mt-2">
+                      <input
+                        type="number"
+                        value={timerPerTurn}
+                        onChange={(e) => setTimerPerTurn(Math.max(5, Math.min(300, parseInt(e.target.value) || 40)))}
+                        className="w-16 bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-center text-lg"
+                        min="5"
+                        max="300"
+                      />
+                      <button
+                        onClick={handleUpdateTimer}
+                        disabled={updatingTimer}
+                        className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white px-3 py-1 rounded text-sm"
+                      >
+                        {updatingTimer ? '...' : 'Update'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="text-2xl font-bold text-white">{room.timer_per_turn || 40}s</div>
+                  )}
                 </div>
               </div>
             )}

@@ -1,16 +1,16 @@
-'use client'
-
-import PokerChips from './PokerChips'
 import type { Player } from '@/lib/poker'
+import PokerChips from './PokerChips'
 
 interface PokerPlayerProps {
-  player: Player
+  player: Player | null
   isCurrentPlayer: boolean
   isActionOn: boolean
   isDealer: boolean
   isSmallBlind: boolean
   isBigBlind: boolean
-  position: { top?: string; right?: string; bottom?: string; left?: string }
+  position: { top: string; left: string }
+  timeRemaining?: number
+  totalTime?: number
 }
 
 export default function PokerPlayer({
@@ -21,53 +21,102 @@ export default function PokerPlayer({
   isSmallBlind,
   isBigBlind,
   position,
+  timeRemaining,
+  totalTime,
 }: PokerPlayerProps) {
+  if (!player) {
+    return (
+      <div
+        className="absolute transform -translate-x-1/2 -translate-y-1/2"
+        style={position}
+      >
+        <div className="bg-gray-800/50 border-2 border-gray-600 rounded-lg p-2 min-w-[80px] text-center">
+          <div className="text-gray-500 text-xs">Empty</div>
+        </div>
+      </div>
+    )
+  }
+
+  const progress = totalTime && timeRemaining !== undefined 
+    ? Math.max(0, Math.min(100, (timeRemaining / totalTime) * 100))
+    : 100
+
   return (
     <div
-      className={`absolute ${isActionOn ? 'ring-2 sm:ring-4 ring-yellow-400' : ''} ${
-        isCurrentPlayer ? 'ring-1 sm:ring-2 ring-green-400' : ''
-      } bg-white/10 backdrop-blur-sm rounded-xl p-2 sm:p-4 border-2 ${
-        isActionOn ? 'border-yellow-400' : 'border-white/20'
-      } min-w-[100px] sm:min-w-[120px] max-w-[140px] transition-all text-xs sm:text-sm`}
+      className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${
+        isActionOn ? 'z-10' : ''
+      }`}
       style={position}
     >
-      <div className="text-center">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <div className="text-white font-semibold truncate">{player.name}</div>
+      <div
+        className={`bg-gradient-to-br from-gray-800 to-gray-900 border-2 rounded-lg p-2 min-w-[100px] sm:min-w-[120px] text-center transition-all ${
+          isActionOn
+            ? 'border-yellow-400 shadow-lg shadow-yellow-400/50 scale-110'
+            : isCurrentPlayer
+              ? 'border-blue-400'
+              : 'border-gray-600'
+        }`}
+      >
+        {/* Timer progress bar */}
+        {isActionOn && totalTime && timeRemaining !== undefined && (
+          <div className="mb-1 h-1 bg-gray-700 rounded-full overflow-hidden">
+            <div
+              className={`h-full transition-all ${
+                timeRemaining < totalTime * 0.2
+                  ? 'bg-red-500'
+                  : timeRemaining < totalTime * 0.5
+                    ? 'bg-yellow-500'
+                    : 'bg-green-500'
+              }`}
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        )}
+
+        {/* Player name - highlighted if action is on them */}
+        <div
+          className={`font-semibold text-sm sm:text-base ${
+            isActionOn
+              ? 'text-yellow-300 font-bold'
+              : isCurrentPlayer
+                ? 'text-blue-300'
+                : 'text-white'
+          }`}
+        >
+          {player.name}
+          {isCurrentPlayer && <span className="text-xs ml-1">(You)</span>}
+        </div>
+
+        {/* Status badges */}
+        <div className="flex flex-wrap gap-1 justify-center mt-1">
           {isDealer && (
-            <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded">D</span>
+            <span className="bg-blue-600 text-white text-xs px-1 rounded">D</span>
           )}
           {isSmallBlind && (
-            <span className="bg-purple-600 text-white text-xs px-2 py-0.5 rounded">SB</span>
+            <span className="bg-purple-600 text-white text-xs px-1 rounded">SB</span>
           )}
           {isBigBlind && (
-            <span className="bg-orange-600 text-white text-xs px-2 py-0.5 rounded">BB</span>
+            <span className="bg-orange-600 text-white text-xs px-1 rounded">BB</span>
+          )}
+          {player.hasFolded && (
+            <span className="bg-red-600 text-white text-xs px-1 rounded">Fold</span>
+          )}
+          {player.isAllIn && (
+            <span className="bg-yellow-600 text-white text-xs px-1 rounded">All-In</span>
           )}
         </div>
 
-        <div className="mb-2">
-          <PokerChips amount={player.chips} size="sm" showLabel={false} />
+        {/* Chips and bet */}
+        <div className="text-xs sm:text-sm text-gray-300 mt-1">
+          <div>
+            <PokerChips amount={player.chips} size="sm" />
+          </div>
+          {player.currentBet > 0 && (
+            <div className="text-yellow-400">
+              Bet: <PokerChips amount={player.currentBet} size="sm" />
+            </div>
+          )}
         </div>
-
-        {player.currentBet > 0 && (
-          <div className="bg-red-600/50 rounded px-2 py-1 mb-1">
-            <div className="text-white text-xs font-semibold">Bet: ${player.currentBet}</div>
-          </div>
-        )}
-
-        {player.hasFolded && (
-          <div className="bg-gray-800/50 rounded px-2 py-1 text-gray-400 text-xs">Folded</div>
-        )}
-
-        {player.isAllIn && !player.hasFolded && (
-          <div className="bg-yellow-600/50 rounded px-2 py-1 text-white text-xs font-semibold">
-            All-In
-          </div>
-        )}
-
-        {!player.hasFolded && !player.isAllIn && player.currentBet === 0 && player.hasActed && (
-          <div className="text-green-400 text-xs">Checked</div>
-        )}
       </div>
     </div>
   )
