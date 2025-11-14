@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { hostName, smallBlind = 5, bigBlind = 10 } = body
+    const { hostName, smallBlind = 5, bigBlind = 10, timerPerTurn = 40 } = body
 
     if (!hostName || typeof hostName !== 'string' || hostName.trim().length === 0) {
       return NextResponse.json({ error: 'Host name is required' }, { status: 400 })
@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
         host_id: hostId,
         small_blind: smallBlind,
         big_blind: bigBlind,
+        timer_per_turn: timerPerTurn,
         status: 'waiting',
         created_at: now,
         last_activity: now,
