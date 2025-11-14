@@ -12,3 +12,4 @@ WHERE last_activity IS NULL;
 -- Create index for cleanup queries
 CREATE INDEX IF NOT EXISTS idx_poker_rooms_last_activity ON poker_rooms(last_activity);
 
+
