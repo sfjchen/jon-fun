@@ -23,6 +23,15 @@ const games = [
     available: true,
   },
   {
+    id: 'poker',
+    title: 'Texas Hold\'em',
+    description: 'Poker chip tracker with real-time multiplayer lobbies',
+    icon: '🃏',
+    href: '/games/poker',
+    tags: ['Card Game', 'Multiplayer'],
+    available: true,
+  },
+  {
     id: 'coming-soon',
     title: 'Coming Soon',
     description: 'More brain games are in development',
