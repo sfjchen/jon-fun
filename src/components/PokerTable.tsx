@@ -355,7 +355,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
                 isSmallBlind={gameState.small_blind_position === seatIndex && gameState.small_blind_position >= 0}
                 isBigBlind={gameState.big_blind_position === seatIndex}
                 position={position}
-                timeRemaining={remaining}
+                {...(remaining !== undefined && { timeRemaining: remaining })}
                 totalTime={timerPerTurn}
               />
             )
