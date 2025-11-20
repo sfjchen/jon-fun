@@ -32,6 +32,15 @@ const games = [
     available: true,
   },
   {
+    id: 'chwazi',
+    title: 'Chwazi Finger Chooser',
+    description: 'Place fingers on screen to randomly select a winner',
+    icon: '👆',
+    href: '/games/chwazi',
+    tags: ['Utility', 'Party', 'Mobile'],
+    available: true,
+  },
+  {
     id: 'coming-soon',
     title: 'Coming Soon',
     description: 'More brain games are in development',
@@ -80,17 +89,17 @@ export default function Home() {
         {/* Games Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {games.map((game) => (
-            <GameCard 
-              key={game.id} 
-              game={game} 
+            <GameCard
+              key={game.id}
+              game={game}
               onComingSoonClick={() => setShowComingSoon(true)}
             />
           ))}
-          
+
           {features.map((feature) => (
-            <GameCard 
-              key={feature.id} 
-              game={feature} 
+            <GameCard
+              key={feature.id}
+              game={feature}
               onComingSoonClick={() => setShowComingSoon(true)}
             />
           ))}
@@ -110,11 +119,11 @@ export default function Home() {
                   ×
                 </button>
               </div>
-              
+
               <p className="text-gray-300 mb-6 text-lg">
                 We&apos;re working hard to bring you these exciting new features:
               </p>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {futureFeatures.map((feature, index) => (
                   <div key={index} className="flex items-start p-3 bg-white/5 rounded-lg border border-white/10">
@@ -123,7 +132,7 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              
+
               <div className="mt-8 text-center">
                 <button
                   onClick={() => setShowComingSoon(false)}
@@ -168,11 +177,10 @@ function GameCard({ game, onComingSoonClick }: GameCardProps) {
         {game.tags.map((tag) => (
           <span
             key={tag}
-            className={`px-2 py-1 rounded text-sm ${
-              game.available
+            className={`px-2 py-1 rounded text-sm ${game.available
                 ? 'bg-blue-500 text-white'
                 : 'bg-gray-500 text-white'
-            }`}
+              }`}
           >
             {tag}
           </span>
