@@ -49,9 +49,9 @@ export default function ChwaziGame() {
                 // Assign a random color that isn't currently used if possible, or just random
                 const usedColors = new Set(Array.from(newTouches.values()).map(t => t.color))
                 const availableColors = COLORS.filter(c => !usedColors.has(c))
-                const color = availableColors.length > 0
+                const color = (availableColors.length > 0
                     ? availableColors[Math.floor(Math.random() * availableColors.length)]
-                    : COLORS[Math.floor(Math.random() * COLORS.length)]
+                    : COLORS[Math.floor(Math.random() * COLORS.length)]) ?? '#FF6B6B'
 
                 newTouches.set(touch.identifier, {
                     id: touch.identifier,
@@ -125,7 +125,7 @@ export default function ChwaziGame() {
             timerRef.current = setTimeout(() => {
                 const touchIds = Array.from(touches.keys())
                 const randomWinner = touchIds[Math.floor(Math.random() * touchIds.length)]
-                setWinnerId(randomWinner)
+                setWinnerId(randomWinner ?? null)
                 setStatus('winner')
             }, 3000)
         }
