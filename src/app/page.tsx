@@ -26,11 +26,7 @@ const games = [
     id: 'poker',
     title: 'Texas Hold\'em',
     description: 'Poker chip tracker with real-time multiplayer lobbies',
-    icon: '🃏',
-    href: '/games/poker',
-    tags: ['Card Game', 'Multiplayer'],
-    available: true,
-  },
+    icon: '/poker-table.svg',
   {
     id: 'chwazi',
     title: 'Chwazi Finger Chooser',
