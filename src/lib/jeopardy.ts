@@ -84,10 +84,10 @@ export async function readBoardFromFile(file: File): Promise<JeopardyBoard> {
     id: parsed.id || generateShortId(parsed.title || 'board'),
     version: 1,
     title: parsed.title || 'Untitled',
-    categories: parsed.categories.map((cat: any) => ({
+    categories: parsed.categories.map((cat: { title?: unknown; clues?: unknown }) => ({
       title: typeof cat.title === 'string' ? cat.title : 'Category',
       clues: Array.isArray(cat.clues)
-        ? cat.clues.map((cl: any) => ({
+        ? cat.clues.map((cl: { question?: unknown; answer?: unknown }) => ({
             question: typeof cl?.question === 'string' ? cl.question : '',
             answer: typeof cl?.answer === 'string' ? cl.answer : '',
           }))

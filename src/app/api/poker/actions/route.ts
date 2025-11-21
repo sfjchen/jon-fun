@@ -50,7 +50,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Update player
-    const updates: any = {
+    const updates: {
+      has_acted: boolean
+      has_folded?: boolean
+      current_bet?: number
+      chips?: number
+      is_all_in?: boolean
+    } = {
       has_acted: true,
     }
 

@@ -47,6 +47,7 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   function tileKey(col: number, row: number) {
