@@ -15,17 +15,9 @@ After making updates to the sfjc.dev site code, pages, or features:
    git acp -m "Your commit message describing the changes"
    ```
    Note: The `acp` command automatically does: `git add . && git commit -m "message" && git push`
-   
-   **IMPORTANT**: Always work on `main` branch or merge to `main` immediately for production deployment:
-   ```bash
-   # If on a feature branch:
-   git checkout main
-   git merge your-feature-branch
-   git push origin main
-   ```
 
 3. **Vercel auto-deploys**: 
-   - Vercel automatically detects the push to your main/master branch
+   - Vercel automatically detects the push to your main branch
    - A new deployment is triggered automatically
    - You'll see the deployment progress in the Vercel dashboard
 
@@ -34,33 +26,13 @@ After making updates to the sfjc.dev site code, pages, or features:
    - Visit https://sfjc.dev to see your changes live
    - Deployment usually takes 1-3 minutes
 
-## Workflow: Always Deploy from Main
+## Workflow: Local Development Only
 
-**Key Principle**: All production deployments come from the `main` branch. 
+**Key Principle**: Work directly on the `main` branch in your local repository.
 
-- ✅ **DO**: Make changes, commit to main, push to main
-- ❌ **DON'T**: Leave changes on feature branches without merging to main
-
-### Cursor Worktrees
-
-Cursor creates worktrees with separate branches (e.g., `chore-remove-poker-jZwYq`). To ensure deployment:
-
-1. **After making changes in a worktree**:
-   ```bash
-   # In the worktree directory
-   git acp -m "Your changes"
-   
-   # Then switch to main and merge
-   cd /path/to/main/repo
-   git checkout main
-   git pull origin main
-   git merge worktree-branch-name
-   git push origin main
-   ```
-
-2. **Or work directly on main** (recommended):
-   - Use the main repository directory, not worktrees
-   - Commit directly to main: `git acp -m "Changes"`
+- ✅ **DO**: Make changes locally, commit to main, push to main
+- ✅ **DO**: Use local repository directory for all development
+- ❌ **DON'T**: Use worktrees or feature branches
 
 ## Environment Variables Setup
 
@@ -127,12 +99,4 @@ git push
 ### Build failures?
 1. Check `npm run build` locally
 2. Review Vercel build logs
-3. Ensure all dependencies are in `package.json` **and committed to the branch being deployed**
-4. **Common issue**: Dependencies added on feature branch but not merged to main
-   - Solution: Merge feature branch to main, or ensure dependencies are in the deployed branch
-
-### Multiple branches confusion?
-- Cursor worktrees create separate branches automatically
-- Always merge worktree branches to main before expecting deployment
-- Check current branch: `git branch`
-- List all branches: `git branch -a`
+3. Ensure all dependencies are in `package.json` and committed to main
