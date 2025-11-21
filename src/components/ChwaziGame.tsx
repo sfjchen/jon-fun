@@ -26,6 +26,7 @@ export default function ChwaziGame() {
     const [winnerId, setWinnerId] = useState<number | null>(null)
     const containerRef = useRef<HTMLDivElement>(null)
     const timerRef = useRef<NodeJS.Timeout | null>(null)
+    const touchesRef = useRef<Map<number, TouchPoint>>(new Map())
 
     // Handle touch events
     useEffect(() => {
@@ -61,6 +62,7 @@ export default function ChwaziGame() {
                 })
             })
             setTouches(newTouches)
+            touchesRef.current = newTouches
         }
 
         const handleTouchMove = (e: TouchEvent) => {
@@ -73,6 +75,7 @@ export default function ChwaziGame() {
                         newTouches.set(touch.identifier, { ...existing, x: touch.clientX, y: touch.clientY })
                     }
                 })
+                touchesRef.current = newTouches
                 return newTouches
             })
         }
@@ -84,6 +87,7 @@ export default function ChwaziGame() {
                 Array.from(e.changedTouches).forEach((touch) => {
                     newTouches.delete(touch.identifier)
                 })
+                touchesRef.current = newTouches
                 return newTouches
             })
         }
@@ -123,7 +127,7 @@ export default function ChwaziGame() {
             // Wait 3 seconds then pick a winner
             if (timerRef.current) clearTimeout(timerRef.current)
             timerRef.current = setTimeout(() => {
-                const touchIds = Array.from(touches.keys())
+                const touchIds = Array.from(touchesRef.current.keys())
                 const randomWinner = touchIds[Math.floor(Math.random() * touchIds.length)]
                 setWinnerId(randomWinner ?? null)
                 setStatus('winner')
