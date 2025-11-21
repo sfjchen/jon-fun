@@ -104,6 +104,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
       playerSubscription.unsubscribe()
       stateSubscription.unsubscribe()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pin])
 
   const loadGameData = async () => {
@@ -118,8 +119,20 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
       // Convert database players to Player type
       // Use player_id as the id for matching with currentPlayerId
       // Sort by position to ensure clockwise order
+      interface DbPlayer {
+        player_id: string
+        name: string
+        chips: number
+        position: number
+        is_active: boolean
+        is_all_in: boolean
+        current_bet: number
+        hole_cards: Card[] | null
+        has_folded: boolean
+        has_acted: boolean
+      }
       const convertedPlayers: Player[] = (data.players || [])
-        .map((p: any) => ({
+        .map((p: DbPlayer) => ({
           id: p.player_id, // Use player_id for matching
           name: p.name,
           chips: p.chips,
@@ -150,7 +163,10 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
     try {
       // Update player action in database
-      const actionData: any = {
+      const actionData: {
+        action: BettingAction
+        amount: number
+      } = {
         action,
         amount: amount || 0,
       }

@@ -25,10 +25,19 @@ const games = [
   {
     id: 'poker',
     title: 'Texas Hold\'em',
-    description: 'Poker chip tracker with online lobbies',
+    description: 'Poker chip tracker with real-time multiplayer lobbies',
     icon: '/poker-table.svg',
     href: '/games/poker',
-    tags: ['Multiplayer', 'Cards'],
+    tags: ['Card Game', 'Multiplayer'],
+    available: true,
+  },
+  {
+    id: 'chwazi',
+    title: 'Chwazi Finger Chooser',
+    description: 'Place fingers on screen to randomly select a winner',
+    icon: '👆',
+    href: '/games/chwazi',
+    tags: ['Utility', 'Party', 'Mobile'],
     available: true,
   },
   {
@@ -162,6 +171,7 @@ function GameCard({ game, onComingSoonClick }: GameCardProps) {
     <div className="text-center">
       <div className="text-4xl mb-4 flex justify-center items-center">
         {game.icon.startsWith('/') ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img 
             src={game.icon} 
             alt={game.title}

@@ -78,6 +78,7 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
       roomSubscription.unsubscribe()
       playerSubscription.unsubscribe()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pin])
 
   const loadRoomData = async () => {
