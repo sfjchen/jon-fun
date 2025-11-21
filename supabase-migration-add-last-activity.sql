@@ -13,3 +13,6 @@ WHERE last_activity IS NULL;
 CREATE INDEX IF NOT EXISTS idx_poker_rooms_last_activity ON poker_rooms(last_activity);
 
 
+
+
+

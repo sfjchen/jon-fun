@@ -26,7 +26,7 @@ const games = [
     id: 'poker',
     title: 'Texas Hold\'em',
     description: 'Poker chip tracker with online lobbies',
-    icon: '🃏',
+    icon: '/poker-table.svg',
     href: '/games/poker',
     tags: ['Multiplayer', 'Cards'],
     available: true,
@@ -149,7 +149,7 @@ interface GameCardProps {
     id: string
     title: string
     description: string
-    icon: string
+    icon: string // Can be emoji or image path
     href: string
     tags: string[]
     available: boolean
@@ -160,7 +160,17 @@ interface GameCardProps {
 function GameCard({ game, onComingSoonClick }: GameCardProps) {
   const CardContent = () => (
     <div className="text-center">
-      <div className="text-4xl mb-4">{game.icon}</div>
+      <div className="text-4xl mb-4 flex justify-center items-center">
+        {game.icon.startsWith('/') ? (
+          <img 
+            src={game.icon} 
+            alt={game.title}
+            className="w-16 h-16"
+          />
+        ) : (
+          <span>{game.icon}</span>
+        )}
+      </div>
       <h2 className="text-2xl font-bold text-white mb-2">{game.title}</h2>
       <p className="text-gray-300 mb-4">{game.description}</p>
       <div className="flex justify-center space-x-2 mb-4">
