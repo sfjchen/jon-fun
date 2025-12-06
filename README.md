@@ -231,24 +231,3 @@ src/
 - 📏 **Target length**: Keep under 250 lines total
 
 **When updating**: Modify the relevant section in-place, don't append new sections unless truly necessary.
-
-## 🐛 Troubleshooting
-
-**Changes not appearing on sfjc.dev?**
-1. Check Vercel dashboard for deployment status
-2. Verify changes are on main branch: `git log origin/main --oneline -5`
-3. Clear browser cache (Cmd+Shift+R / Ctrl+Shift+R)
-
-**Supabase connection issues?**
-1. Verify environment variables are set correctly
-2. Check Supabase project is active
-3. Ensure Realtime is enabled for tables in Supabase dashboard
-
-**Build failures?**
-1. Run `npm run build` locally
-2. Review Vercel build logs
-3. Ensure all dependencies are in `package.json`
-
-## 📄 License
-
-MIT License
