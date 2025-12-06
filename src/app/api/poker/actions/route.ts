@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     const now = new Date().toISOString()
-    const updates: Promise<unknown>[] = [
+    const dbUpdates = [
       supabase.from('poker_actions').insert({
         room_pin: pin,
         hand_number: gameState.hand_number,
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
     ]
 
     if (action === 'bet' || action === 'raise') {
-      updates.push(
+      dbUpdates.push(
         supabase
           .from('poker_game_state')
           .update({ current_bet: actionAmount })
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    await Promise.all(updates)
+    await Promise.all(dbUpdates)
 
     return NextResponse.json({ success: true })
   } catch {
