@@ -44,7 +44,7 @@ Environment variables are in `.env.local` (already configured):
 ### For Production (Vercel)
 Add these same variables in Vercel:
 
-1. Go to: https://vercel.com/jochen2sfusds-projects/jon-fun/settings/environment-variables
+1. Go to: https://vercel.com/jychen04s-projects/jon-fun/settings/environment-variables
 2. Add each variable:
    - **Key**: `NEXT_PUBLIC_SUPABASE_URL`
      **Value**: `https://nzviiorrlsdtwzvzodpg.supabase.co`
@@ -68,7 +68,7 @@ Add these same variables in Vercel:
 ### Vercel MCP  
 - **Status**: ✅ Connected and working
 - **Project**: `jon-fun` (prj_p0GxMYUx0l1bfSrEVJQ161WkgTFe)
-- **Team**: jochen2sfusd's projects
+- **Team**: jychen04's projects
 - **Usage**: Deployment management, project info, build logs
 
 ## Git Command Format

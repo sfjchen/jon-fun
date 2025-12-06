@@ -194,7 +194,7 @@ src/
 - **Supabase MCP**: Database queries, migrations, project management
 - **Vercel MCP**: Deployment management, project info, build logs
   - Project: `jon-fun` (prj_p0GxMYUx0l1bfSrEVJQ161WkgTFe)
-  - Team: jochen2sfusd's projects
+  - Team: jychen04's projects
 
 ## 🛠️ Available Scripts
 
@@ -213,6 +213,24 @@ src/
 5. **Optimized performance** - Memoization, parallel operations, minimal re-renders
 6. **Type safety** - Strict TypeScript, no `any` types
 7. **Minimal documentation** - Personal project, code should be self-explanatory
+
+## 📋 README Maintenance Guidelines
+
+**For AI Agents**: When making changes to the project, update this README if:
+- ✅ Adding a new game (update Games section)
+- ✅ Adding new database tables/columns (update Database Schema)
+- ✅ Adding new API routes (update API Routes)
+- ✅ Changing architectural patterns (update Key Architectural Decisions)
+- ✅ Adding new dependencies or tech stack changes (update Tech Stack)
+
+**Keep it concise**:
+- 🔄 **Replace/update** existing sections rather than adding new ones
+- 🗑️ **Remove outdated** information when updating
+- ❌ **Don't document** implementation details that change frequently
+- ❌ **Don't add** temporary fixes or workarounds
+- 📏 **Target length**: Keep under 250 lines total
+
+**When updating**: Modify the relevant section in-place, don't append new sections unless truly necessary.
 
 ## 🐛 Troubleshooting
 
