@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { JeopardyBoard } from '@/lib/jeopardy'
 import { getClueValue } from '@/lib/jeopardy'
 
@@ -37,6 +37,20 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
     })
   }, [teamCount])
 
+  const tileKey = useCallback((col: number, row: number) => `${col}:${row}`, [])
+
+  const closeTile = useCallback(() => {
+    setOpen((current) => {
+      if (current && revealed) {
+        const key = tileKey(current.col, current.row)
+        setUsed((u) => ({ ...u, [key]: true }))
+        setLastAnswered({ col: current.col, row: current.row })
+      }
+      return null
+    })
+    setRevealed(false)
+  }, [revealed, tileKey])
+
   // Only clue overlay hotkeys; board navigation is mouse/touch only
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -47,58 +61,41 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open])
+  }, [open, closeTile])
 
-  function tileKey(col: number, row: number) {
-    return `${col}:${row}`
-  }
-
-  function openTile(col: number, row: number) {
+  const openTile = useCallback((col: number, row: number) => {
     setOpen({ col, row })
     setRevealed(false)
-  }
+  }, [])
 
-  function closeTile() {
-    setOpen((current) => {
-      if (current && revealed) {
-        const key = tileKey(current.col, current.row)
-        setUsed((u) => ({ ...u, [key]: true }))
-        setLastAnswered({ col: current.col, row: current.row })
-      }
-      return null
-    })
-    setRevealed(false)
-  }
-
-  function adjustScore(teamIndex: number, delta: number) {
+  const adjustScore = useCallback((teamIndex: number, delta: number) => {
     setTeams((prev) => {
       const next = [...prev]
       const existing = next[teamIndex] ?? { name: `Team ${teamIndex + 1}`, score: 0 }
       next[teamIndex] = { ...existing, score: existing.score + delta }
       return next
     })
-  }
+  }, [])
 
-  function setScore(teamIndex: number, newScore: number) {
+  const setScore = useCallback((teamIndex: number, newScore: number) => {
     setTeams((prev) => {
       const next = [...prev]
       const existing = next[teamIndex] ?? { name: `Team ${teamIndex + 1}`, score: 0 }
       next[teamIndex] = { ...existing, score: newScore }
       return next
     })
-  }
+  }, [])
 
-  function resetTiles() {
+  const resetTiles = useCallback(() => {
     setUsed({})
     setOpen(null)
     setRevealed(false)
-  }
+  }, [])
 
-  function resetTilesAndScores() {
+  const resetTilesAndScores = useCallback(() => {
     resetTiles()
     setTeams((prev) => prev.map((t) => ({ ...t, score: 0 })))
-  }
+  }, [resetTiles])
 
   return (
     <div className="min-h-screen bg-[#142c6d] text-white p-4 flex flex-col">

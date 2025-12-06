@@ -33,7 +33,6 @@ export async function GET(
       .order('position', { ascending: true })
 
     if (playersError) {
-      console.error('Error fetching players:', playersError)
       return NextResponse.json({ error: 'Failed to fetch players' }, { status: 500 })
     }
 
@@ -53,8 +52,7 @@ export async function GET(
       players: players || [],
       gameState,
     })
-  } catch (error) {
-    console.error('Error in GET /api/poker/rooms/[pin]:', error)
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -126,10 +124,11 @@ export async function POST(
         }
 
         const newPlayerId = uuidv4()
+        const playerId = uuidv4()
         const { error: joinError } = await supabase
           .from('poker_players')
           .insert({
-            id: uuidv4(),
+            id: playerId,
             room_pin: pin,
             player_id: newPlayerId,
             name: playerName.trim(),
@@ -143,7 +142,6 @@ export async function POST(
           })
 
         if (joinError) {
-          console.error('Error joining room:', joinError)
           return NextResponse.json({ error: 'Failed to join room' }, { status: 500 })
         }
 
@@ -181,7 +179,6 @@ export async function POST(
           .eq('pin', pin)
 
         if (updateError) {
-          console.error('Error starting game:', updateError)
           return NextResponse.json({ error: 'Failed to start game' }, { status: 500 })
         }
 
@@ -226,7 +223,7 @@ export async function POST(
           })
 
         if (stateError) {
-          console.error('Error initializing game state:', stateError)
+          return NextResponse.json({ error: 'Failed to initialize game state' }, { status: 500 })
         }
 
         return NextResponse.json({ success: true })
@@ -235,8 +232,7 @@ export async function POST(
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
-  } catch (error) {
-    console.error('Error in POST /api/poker/rooms/[pin]:', error)
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -277,12 +273,12 @@ export async function PATCH(
         return NextResponse.json({ error: 'Timer must be between 5 and 300 seconds' }, { status: 400 })
       }
 
-      const updateData: any = { last_activity: new Date().toISOString() }
-      // Only update timer_per_turn if column exists
-      try {
-        updateData.timer_per_turn = timer
-      } catch {
-        // Column might not exist yet
+      const updateData: {
+        last_activity: string
+        timer_per_turn?: number
+      } = {
+        last_activity: new Date().toISOString(),
+        timer_per_turn: timer,
       }
       
       const { error: updateError } = await supabase
@@ -291,19 +287,14 @@ export async function PATCH(
         .eq('pin', pin)
 
       if (updateError) {
-        // If column doesn't exist, that's okay - just log and continue
-        if (updateError.message?.includes('column') && updateError.message?.includes('timer_per_turn')) {
-          console.warn('timer_per_turn column does not exist yet, skipping update')
-        } else {
-          console.error('Error updating timer:', updateError)
+        if (!(updateError.message?.includes('column') && updateError.message?.includes('timer_per_turn'))) {
           return NextResponse.json({ error: 'Failed to update timer' }, { status: 500 })
         }
       }
     }
 
     return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error in PATCH /api/poker/rooms/[pin]:', error)
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

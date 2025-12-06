@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { JeopardyBoard, JeopardyCategory, JeopardyClue } from '@/lib/jeopardy'
 import { createDefaultBoard, downloadBoard, getClueValue, readBoardFromFile, slugify } from '@/lib/jeopardy'
 
@@ -14,6 +14,7 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
   const [board, setBoard] = useState<JeopardyBoard>(() => initialBoard ?? createDefaultBoard())
   const [dragCol, setDragCol] = useState<number | null>(null)
   const [modal, setModal] = useState<{ colIndex: number; rowIndex: number } | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [focused, setFocused] = useState<{ colIndex: number; rowIndex: number }>({ colIndex: 0, rowIndex: 0 })
 
@@ -57,7 +58,7 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [board.categories.length, rowsCount, focused, modal])
 
-  function handleAddRow() {
+  const handleAddRow = useCallback(() => {
     setBoard((prev) => ({
       ...prev,
       categories: prev.categories.map((cat: JeopardyCategory) => ({
@@ -65,9 +66,9 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
         clues: [...cat.clues, { question: '', answer: '' }],
       })),
     }))
-  }
+  }, [])
 
-  function handleRemoveRow() {
+  const handleRemoveRow = useCallback(() => {
     if (rowsCount <= 1) return
     setBoard((prev) => ({
       ...prev,
@@ -76,9 +77,9 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
         clues: cat.clues.slice(0, cat.clues.length - 1),
       })),
     }))
-  }
+  }, [rowsCount])
 
-  function handleAddColumn() {
+  const handleAddColumn = useCallback(() => {
     setBoard((prev) => ({
       ...prev,
       categories: [
@@ -89,18 +90,20 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
         },
       ],
     }))
-  }
+  }, [rowsCount])
 
-  function handleRemoveColumn() {
-    if (board.categories.length <= 1) return
-    setBoard((prev) => ({
-      ...prev,
-      categories: prev.categories.slice(0, prev.categories.length - 1),
-    }))
-  }
+  const handleRemoveColumn = useCallback(() => {
+    setBoard((prev) => {
+      if (prev.categories.length <= 1) return prev
+      return {
+        ...prev,
+        categories: prev.categories.slice(0, prev.categories.length - 1),
+      }
+    })
+  }, [])
 
-  function reorderColumns(from: number, to: number) {
-    if (from === to || from == null || to == null) return
+  const reorderColumns = useCallback((from: number, to: number) => {
+    if (from === to || from === null || to === null) return
     setBoard((prev) => {
       if (from < 0 || to < 0 || from >= prev.categories.length || to >= prev.categories.length) return prev
       const next = [...prev.categories]
@@ -110,18 +113,18 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
       next.splice(to, 0, moved)
       return { ...prev, categories: next }
     })
-  }
+  }, [])
 
-  function updateCategoryTitle(index: number, title: string) {
+  const updateCategoryTitle = useCallback((index: number, title: string) => {
     setBoard((prev) => {
       const next = [...prev.categories]
       const existing = next[index] as JeopardyCategory
       next[index] = { ...existing, title }
       return { ...prev, categories: next }
     })
-  }
+  }, [])
 
-  function updateClue(colIndex: number, rowIndex: number, updater: (clue: JeopardyClue) => JeopardyClue) {
+  const updateClue = useCallback((colIndex: number, rowIndex: number, updater: (clue: JeopardyClue) => JeopardyClue) => {
     setBoard((prev) => {
       const next = [...prev.categories]
       const cat = next[colIndex] as JeopardyCategory
@@ -131,24 +134,26 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
       next[colIndex] = { ...cat, clues }
       return { ...prev, categories: next }
     })
-  }
+  }, [])
 
-  function handleUploadClick() {
+  const handleUploadClick = useCallback(() => {
     fileInputRef.current?.click()
-  }
+  }, [])
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     try {
       const loaded = await readBoardFromFile(file)
       setBoard(loaded)
+      setError(null)
     } catch {
-      alert('Failed to load board JSON')
+      setError('Failed to load board JSON')
+      setTimeout(() => setError(null), 3000)
     } finally {
       e.target.value = ''
     }
-  }
+  }, [])
 
   // Ensure an initial hover on mount for new boards
   useEffect(() => {
@@ -157,6 +162,11 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
 
   return (
     <div className="min-h-screen bg-[#142c6d] text-white p-4 flex flex-col">
+      {error && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-lg z-50">
+          {error}
+        </div>
+      )}
       <div className="flex items-center justify-between mb-4">
         <button onClick={onBack} className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg border border-white/20">← Back</button>
         <div className="flex gap-2 flex-wrap">

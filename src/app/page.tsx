@@ -64,8 +64,8 @@ const features = [
 ]
 
 const futureFeatures = [
-  'zetamac, typing speed, logic puzzles, hypothetical scenarios life hacks,',
-  'poker chip tracker lobbies, personalized kahoot',
+  'Zetamac, typing speed, logic puzzles, hypothetical scenarios, life hacks',
+  'Poker chip tracker lobbies, personalized kahoot',
   'User accounts',
   'Real-time multiplayer lobbies',
   'Friend system and invitations',

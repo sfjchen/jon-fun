@@ -4,7 +4,6 @@ import { supabase } from '@/lib/supabase'
 // This endpoint should be called by a cron job to clean up inactive rooms
 export async function POST(request: NextRequest) {
   try {
-    // Check for authorization (you can add API key check here)
     const authHeader = request.headers.get('authorization')
     const expectedKey = process.env.CLEANUP_API_KEY
     
@@ -22,7 +21,6 @@ export async function POST(request: NextRequest) {
       .or(`last_activity.is.null,last_activity.lt.${twentyFourHoursAgo.toISOString()}`)
 
     if (fetchError) {
-      console.error('Error fetching inactive rooms:', fetchError)
       return NextResponse.json({ error: 'Failed to fetch rooms' }, { status: 500 })
     }
 
@@ -32,10 +30,12 @@ export async function POST(request: NextRequest) {
 
     const pins = inactiveRooms.map(r => r.pin)
 
-    // Delete related data first (foreign key constraints)
-    await supabase.from('poker_actions').delete().in('room_pin', pins)
-    await supabase.from('poker_game_state').delete().in('room_pin', pins)
-    await supabase.from('poker_players').delete().in('room_pin', pins)
+    // Delete related data first (foreign key constraints) - run in parallel
+    await Promise.all([
+      supabase.from('poker_actions').delete().in('room_pin', pins),
+      supabase.from('poker_game_state').delete().in('room_pin', pins),
+      supabase.from('poker_players').delete().in('room_pin', pins),
+    ])
     
     // Delete rooms
     const { error: deleteError } = await supabase
@@ -44,7 +44,6 @@ export async function POST(request: NextRequest) {
       .in('pin', pins)
 
     if (deleteError) {
-      console.error('Error deleting rooms:', deleteError)
       return NextResponse.json({ error: 'Failed to delete rooms' }, { status: 500 })
     }
 
@@ -52,8 +51,7 @@ export async function POST(request: NextRequest) {
       deleted: inactiveRooms.length, 
       message: `Deleted ${inactiveRooms.length} inactive room(s)` 
     })
-  } catch (error) {
-    console.error('Error in cleanup:', error)
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -62,8 +60,4 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   return POST(new NextRequest('http://localhost', { method: 'POST' }))
 }
-
-
-
-
 

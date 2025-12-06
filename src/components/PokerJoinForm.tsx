@@ -34,8 +34,8 @@ export default function PokerJoinForm({ pin, onJoin, onCancel, loading, error }:
           }
         }
       }
-    } catch (err) {
-      console.error('Error loading positions:', err)
+    } catch {
+      // Silently fail - positions will be auto-selected
     }
   }
 

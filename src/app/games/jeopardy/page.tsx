@@ -1,14 +1,15 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import JeopardyEditor from '../../../components/JeopardyEditor'
-import JeopardyPlayer from '../../../components/JeopardyPlayer'
+import JeopardyEditor from '@/components/JeopardyEditor'
+import JeopardyPlayer from '@/components/JeopardyPlayer'
 import type { JeopardyBoard } from '@/lib/jeopardy'
 import { readBoardFromFile, createDefaultBoard } from '@/lib/jeopardy'
 
 export default function JeopardyPage() {
   const [mode, setMode] = useState<'menu' | 'editor' | 'player'>('menu')
   const [currentBoard, setCurrentBoard] = useState<JeopardyBoard | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const editFileRef = useRef<HTMLInputElement>(null)
   const playFileRef = useRef<HTMLInputElement>(null)
 
@@ -37,6 +38,11 @@ export default function JeopardyPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center p-4">
+      {error && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-lg z-50">
+          {error}
+        </div>
+      )}
       <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 max-w-md w-full">
         <h1 className="text-4xl font-bold text-white text-center mb-8">❓ Jeopardy with Friends</h1>
         
@@ -62,8 +68,10 @@ export default function JeopardyPage() {
                 const loaded = await readBoardFromFile(file)
                 setCurrentBoard(loaded)
                 setMode('editor')
+                setError(null)
               } catch {
-                alert('Failed to parse JSON')
+                setError('Failed to parse JSON')
+                setTimeout(() => setError(null), 3000)
               } finally {
                 e.target.value = ''
               }
@@ -82,8 +90,10 @@ export default function JeopardyPage() {
                 const loaded = await readBoardFromFile(file)
                 setCurrentBoard(loaded)
                 setMode('player')
+                setError(null)
               } catch {
-                alert('Failed to parse JSON')
+                setError('Failed to parse JSON')
+                setTimeout(() => setError(null), 3000)
               } finally {
                 e.target.value = ''
               }

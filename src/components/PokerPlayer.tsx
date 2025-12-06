@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { Player } from '@/lib/poker'
 import PokerChips from './PokerChips'
 
@@ -13,7 +14,7 @@ interface PokerPlayerProps {
   totalTime?: number
 }
 
-export default function PokerPlayer({
+function PokerPlayer({
   player,
   isCurrentPlayer,
   isActionOn,
@@ -121,4 +122,6 @@ export default function PokerPlayer({
     </div>
   )
 }
+
+export default memo(PokerPlayer)
 

@@ -1,10 +1,12 @@
+import { memo } from 'react'
+
 interface PokerChipsProps {
   amount: number
   size?: 'sm' | 'md' | 'lg'
   showLabel?: boolean
 }
 
-export default function PokerChips({ amount, size = 'md', showLabel = false }: PokerChipsProps) {
+function PokerChips({ amount, size = 'md', showLabel = false }: PokerChipsProps) {
   const sizeClasses = {
     sm: 'text-sm',
     md: 'text-base',
@@ -18,4 +20,6 @@ export default function PokerChips({ amount, size = 'md', showLabel = false }: P
     </span>
   )
 }
+
+export default memo(PokerChips)
 

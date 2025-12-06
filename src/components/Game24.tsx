@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Solver24 } from '@/lib/solver24'
 import Link from 'next/link'
 
@@ -46,8 +46,22 @@ export default function Game24() {
     roundStartTime: 0,
     isGameActive: false,
   })
+  const [message, setMessage] = useState<string | null>(null)
 
   const solver = useMemo(() => new Solver24(), [])
+
+  const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const showTemporaryMessage = useCallback((msg: string) => {
+    if (messageTimeoutRef.current) {
+      clearTimeout(messageTimeoutRef.current)
+    }
+    setMessage(msg)
+    messageTimeoutRef.current = setTimeout(() => {
+      setMessage(null)
+      messageTimeoutRef.current = null
+    }, 3000)
+  }, [])
 
   const generateNumbers = useCallback(() => {
     let attempts = 0
@@ -247,7 +261,7 @@ export default function Game24() {
         return { ...prev, selectedCard: null, pendingOperation: null }
       }
     })
-  }, [startNewRound])
+  }, [startNewRound, showTemporaryMessage])
 
   const showHint = useCallback(() => {
     const solution = solver.getSolution(gameState.numbers)
@@ -256,7 +270,7 @@ export default function Game24() {
     } else {
       showTemporaryMessage('💡 No hint available')
     }
-  }, [solver, gameState.numbers])
+  }, [solver, gameState.numbers, showTemporaryMessage])
 
   const formatTime = useCallback((seconds: number) => {
     const minutes = Math.floor(seconds / 60)
@@ -267,6 +281,11 @@ export default function Game24() {
   // Initialize game on mount
   useEffect(() => {
     initializeGame()
+    return () => {
+      if (messageTimeoutRef.current) {
+        clearTimeout(messageTimeoutRef.current)
+      }
+    }
   }, [initializeGame])
 
   // Timer effect
@@ -282,7 +301,7 @@ export default function Game24() {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [gameState.isGameActive, gameState.gameStartTime, gameState.roundStartTime])
+  }, [gameState.isGameActive])
 
   // Handle operation when pending
   useEffect(() => {
@@ -413,19 +432,13 @@ export default function Game24() {
           </button>
         </div>
       </div>
+
+      {/* Message overlay */}
+      {message && (
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-lg z-50 border border-white/20">
+          {message}
+        </div>
+      )}
     </div>
   )
-}
-
-function showTemporaryMessage(message: string) {
-  const messageEl = document.createElement('div')
-  messageEl.textContent = message
-  messageEl.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-lg z-50 border border-white/20'
-  document.body.appendChild(messageEl)
-  
-  setTimeout(() => {
-    if (document.body.contains(messageEl)) {
-      document.body.removeChild(messageEl)
-    }
-  }, 3000)
 }

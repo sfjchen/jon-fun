@@ -35,7 +35,17 @@ export async function POST(request: NextRequest) {
 
     // Create room
     const now = new Date().toISOString()
-    const roomData: any = {
+    const roomData: {
+      id: string
+      pin: string
+      host_id: string
+      small_blind: number
+      big_blind: number
+      status: string
+      created_at: string
+      last_activity: string
+      timer_per_turn?: number
+    } = {
       id: roomId,
       pin,
       host_id: hostId,
@@ -44,10 +54,8 @@ export async function POST(request: NextRequest) {
       status: 'waiting',
       created_at: now,
       last_activity: now,
+      timer_per_turn: timerPerTurn,
     }
-    
-    // Include timer_per_turn - if column doesn't exist, try without it
-    roomData.timer_per_turn = timerPerTurn
     
     const { data: room, error: roomError } = await supabase
       .from('poker_rooms')
@@ -68,12 +76,10 @@ export async function POST(request: NextRequest) {
           .single()
         
         if (retryError) {
-          console.error('Error creating room:', retryError)
           return NextResponse.json({ error: 'Failed to create room' }, { status: 500 })
         }
         finalRoom = retryRoom
       } else {
-        console.error('Error creating room:', roomError)
         return NextResponse.json({ error: 'Failed to create room' }, { status: 500 })
       }
     }
@@ -96,8 +102,6 @@ export async function POST(request: NextRequest) {
       })
 
     if (playerError) {
-      console.error('Error creating host player:', playerError)
-      // Clean up room
       await supabase.from('poker_rooms').delete().eq('pin', pin)
       return NextResponse.json({ error: 'Failed to create host player' }, { status: 500 })
     }
@@ -110,8 +114,7 @@ export async function POST(request: NextRequest) {
         hostId,
       },
     })
-  } catch (error) {
-    console.error('Error in POST /api/poker/rooms:', error)
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

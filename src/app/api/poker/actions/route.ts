@@ -78,37 +78,38 @@ export async function POST(request: NextRequest) {
       .eq('player_id', playerId)
 
     if (updateError) {
-      console.error('Error updating player:', updateError)
       return NextResponse.json({ error: 'Failed to update player' }, { status: 500 })
     }
 
-    // Record action
-    await supabase.from('poker_actions').insert({
-      room_pin: pin,
-      hand_number: gameState.hand_number,
-      player_id: playerId,
-      action: action as BettingAction,
-      amount: actionAmount,
-      timestamp: new Date().toISOString(),
-    })
+    const now = new Date().toISOString()
+    const updates: Promise<unknown>[] = [
+      supabase.from('poker_actions').insert({
+        room_pin: pin,
+        hand_number: gameState.hand_number,
+        player_id: playerId,
+        action: action as BettingAction,
+        amount: actionAmount,
+        timestamp: now,
+      }),
+      supabase
+        .from('poker_rooms')
+        .update({ last_activity: now })
+        .eq('pin', pin),
+    ]
 
-    // Update game state current bet if needed
     if (action === 'bet' || action === 'raise') {
-      await supabase
-        .from('poker_game_state')
-        .update({ current_bet: actionAmount })
-        .eq('room_pin', pin)
+      updates.push(
+        supabase
+          .from('poker_game_state')
+          .update({ current_bet: actionAmount })
+          .eq('room_pin', pin)
+      )
     }
 
-    // Update room last_activity
-    await supabase
-      .from('poker_rooms')
-      .update({ last_activity: new Date().toISOString() })
-      .eq('pin', pin)
+    await Promise.all(updates)
 
     return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error in POST /api/poker/actions:', error)
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

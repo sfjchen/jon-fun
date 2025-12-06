@@ -35,34 +35,33 @@ export default function ChwaziGame() {
 
         const handleTouchStart = (e: TouchEvent) => {
             e.preventDefault()
-            const newTouches = new Map(touches)
+            setTouches(prev => {
+                const newTouches = new Map(prev)
 
-            // Reset if game over and new touch detected
-            if (status === 'winner') {
-                setStatus('waiting')
-                setWinnerId(null)
-                setTouches(new Map()) // Clear old touches to start fresh or keep them? 
-                // Usually Chwazi keeps fingers that are still down. 
-                // For simplicity, let's just process the current active touches from the event
-            }
+                // Reset if game over and new touch detected
+                if (status === 'winner') {
+                    setStatus('waiting')
+                    setWinnerId(null)
+                    newTouches.clear()
+                }
 
-            Array.from(e.changedTouches).forEach((touch) => {
-                // Assign a random color that isn't currently used if possible, or just random
-                const usedColors = new Set(Array.from(newTouches.values()).map(t => t.color))
-                const availableColors = COLORS.filter(c => !usedColors.has(c))
-                const color = (availableColors.length > 0
-                    ? availableColors[Math.floor(Math.random() * availableColors.length)]
-                    : COLORS[Math.floor(Math.random() * COLORS.length)]) ?? '#FF6B6B'
+                Array.from(e.changedTouches).forEach((touch) => {
+                    const usedColors = new Set(Array.from(newTouches.values()).map(t => t.color))
+                    const availableColors = COLORS.filter(c => !usedColors.has(c))
+                    const color = (availableColors.length > 0
+                        ? availableColors[Math.floor(Math.random() * availableColors.length)]
+                        : COLORS[Math.floor(Math.random() * COLORS.length)]) ?? '#FF6B6B'
 
-                newTouches.set(touch.identifier, {
-                    id: touch.identifier,
-                    x: touch.clientX,
-                    y: touch.clientY,
-                    color
+                    newTouches.set(touch.identifier, {
+                        id: touch.identifier,
+                        x: touch.clientX,
+                        y: touch.clientY,
+                        color
+                    })
                 })
+                touchesRef.current = newTouches
+                return newTouches
             })
-            setTouches(newTouches)
-            touchesRef.current = newTouches
         }
 
         const handleTouchMove = (e: TouchEvent) => {
@@ -104,7 +103,7 @@ export default function ChwaziGame() {
             container.removeEventListener('touchend', handleTouchEnd)
             container.removeEventListener('touchcancel', handleTouchEnd)
         }
-    }, [status, touches]) // Dependencies might need tuning to avoid stale closures but we use functional updates for state
+    }, [status])
 
     // Game Logic
     useEffect(() => {

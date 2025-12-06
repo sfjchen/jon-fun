@@ -94,7 +94,7 @@ git push
 ### Supabase connection issues?
 1. Verify environment variables are set correctly
 2. Check Supabase project is active
-3. Ensure Realtime is enabled for tables (run `supabase-schema.sql`)
+3. Ensure Realtime is enabled for tables in Supabase dashboard
 
 ### Build failures?
 1. Check `npm run build` locally

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { Player, BettingAction, Card } from '@/lib/poker'
 import PokerPlayer from './PokerPlayer'
@@ -21,6 +21,19 @@ interface GameStateData {
   pot_side_pots: Array<{ amount: number; eligiblePlayers: string[] }>
   community_cards: Card[]
   is_game_active: boolean
+}
+
+interface DbPlayer {
+  player_id: string
+  name: string
+  chips: number
+  position: number
+  is_active: boolean
+  is_all_in: boolean
+  current_bet: number
+  hole_cards: Card[] | null
+  has_folded: boolean
+  has_acted: boolean
 }
 
 interface PokerTableProps {
@@ -53,6 +66,40 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
   const [isMobile, setIsMobile] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<Record<number, number>>({})
 
+  const loadGameData = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/poker/rooms/${pin}`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to load game')
+      }
+
+      const convertedPlayers: Player[] = (data.players || [])
+        .map((p: DbPlayer) => ({
+          id: p.player_id,
+          name: p.name,
+          chips: p.chips,
+          position: p.position,
+          isActive: p.is_active,
+          isAllIn: p.is_all_in,
+          currentBet: p.current_bet,
+          holeCards: p.hole_cards,
+          hasFolded: p.has_folded,
+          hasActed: p.has_acted,
+        }))
+        .sort((a: Player, b: Player) => a.position - b.position)
+
+      setPlayers(convertedPlayers)
+      setGameState(data.gameState)
+      setRoom(data.room)
+      setLoading(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load game')
+      setLoading(false)
+    }
+  }, [pin])
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const playerId = sessionStorage.getItem('poker_playerId')
@@ -68,7 +115,6 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
   useEffect(() => {
     loadGameData()
 
-    // Subscribe to player changes
     const playerSubscription = supabase
       .channel(`table-players:${pin}`)
       .on(
@@ -85,7 +131,6 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
       )
       .subscribe()
 
-    // Subscribe to game state changes
     const stateSubscription = supabase
       .channel(`table-state:${pin}`)
       .on(
@@ -106,8 +151,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
       playerSubscription.unsubscribe()
       stateSubscription.unsubscribe()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pin])
+  }, [pin, loadGameData])
 
   // Timer countdown effect
   useEffect(() => {
@@ -116,15 +160,14 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
     const timerPerTurn = room.timer_per_turn
     const actionOnPosition = gameState.action_on
 
-    // Reset timer for the player whose turn it is
     setTimeRemaining((prev) => ({
       ...prev,
       [actionOnPosition]: timerPerTurn,
     }))
 
-    const interval = setInterval(() => {
+    const intervalId = setInterval(() => {
       setTimeRemaining((prev) => {
-        const current = prev[actionOnPosition] || timerPerTurn
+        const current = prev[actionOnPosition] ?? timerPerTurn
         if (current <= 0) {
           return prev
         }
@@ -135,57 +178,8 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
       })
     }, 1000)
 
-    return () => clearInterval(interval)
+    return () => clearInterval(intervalId)
   }, [gameState?.action_on, room?.timer_per_turn])
-
-  const loadGameData = async () => {
-    try {
-      const response = await fetch(`/api/poker/rooms/${pin}`)
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to load game')
-      }
-
-      // Convert database players to Player type
-      // Use player_id as the id for matching with currentPlayerId
-      // Sort by position to ensure clockwise order
-      interface DbPlayer {
-        player_id: string
-        name: string
-        chips: number
-        position: number
-        is_active: boolean
-        is_all_in: boolean
-        current_bet: number
-        hole_cards: Card[] | null
-        has_folded: boolean
-        has_acted: boolean
-      }
-      const convertedPlayers: Player[] = (data.players || [])
-        .map((p: DbPlayer) => ({
-          id: p.player_id, // Use player_id for matching
-          name: p.name,
-          chips: p.chips,
-          position: p.position,
-          isActive: p.is_active,
-          isAllIn: p.is_all_in,
-          currentBet: p.current_bet,
-          holeCards: p.hole_cards,
-          hasFolded: p.has_folded,
-          hasActed: p.has_acted,
-        }))
-        .sort((a: Player, b: Player) => a.position - b.position) // Ensure clockwise order
-
-      setPlayers(convertedPlayers)
-      setGameState(data.gameState)
-      setRoom(data.room)
-      setLoading(false)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load game')
-      setLoading(false)
-    }
-  }
 
   const handleAction = async (action: BettingAction, amount?: number) => {
     if (!currentPlayerId || !gameState) return

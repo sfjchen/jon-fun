@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
 interface Player {
@@ -40,6 +40,28 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
   const hostId = typeof window !== 'undefined' ? sessionStorage.getItem('poker_hostId') : null
   const isHost = hostId && room?.host_id === hostId
 
+  const loadRoomData = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/poker/rooms/${pin}`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to load room')
+      }
+
+      setRoom(data.room)
+      setPlayers(data.players || [])
+      setLoading(false)
+
+      if (data.room.status === 'active') {
+        onStartGame()
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load room')
+      setLoading(false)
+    }
+  }, [pin, onStartGame])
+
   useEffect(() => {
     if (room?.timer_per_turn) {
       setTimerPerTurn(room.timer_per_turn)
@@ -49,7 +71,6 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
   useEffect(() => {
     loadRoomData()
 
-    // Subscribe to room changes
     const roomSubscription = supabase
       .channel(`room:${pin}`)
       .on(
@@ -66,7 +87,6 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
       )
       .subscribe()
 
-    // Subscribe to player changes
     const playerSubscription = supabase
       .channel(`players:${pin}`)
       .on(
@@ -87,31 +107,7 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
       roomSubscription.unsubscribe()
       playerSubscription.unsubscribe()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pin])
-
-  const loadRoomData = async () => {
-    try {
-      const response = await fetch(`/api/poker/rooms/${pin}`)
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to load room')
-      }
-
-      setRoom(data.room)
-      setPlayers(data.players || [])
-      setLoading(false)
-
-      // If game started, redirect to table
-      if (data.room.status === 'active') {
-        onStartGame()
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load room')
-      setLoading(false)
-    }
-  }
+  }, [pin, loadRoomData])
 
   const handleStartGame = async () => {
     if (!isHost) return
