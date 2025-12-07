@@ -178,7 +178,7 @@ src/
 - **Vercel auto-deploys** on push (1-3 minutes); verify via Vercel dashboard or https://sfjc.dev and redeploy latest if env vars change
 
 ### ⚠️ IMPORTANT: After Making Changes
-**Always run `git acp -m "your message"` after every set of edits to update deployment before ending agent response.**
+**Always run `git acp -m "your message"` to add/commit/push in one step, after every edit**
 
 ### Environment Variables
 

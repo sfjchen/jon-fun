@@ -37,7 +37,7 @@ export default function ChwaziGame() {
   const selectionTimerRef = useRef<NodeJS.Timeout | null>(null)
   const rafRef = useRef<number | null>(null)
   const tiltRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
-  const permissionRequestedRef = useRef(false)
+  const motionPermissionRef = useRef<'unknown' | 'granted' | 'denied'>('unknown')
 
   const setStatusSafe = (next: Status) => {
     statusRef.current = next
@@ -75,7 +75,7 @@ export default function ChwaziGame() {
       const winner = (() => {
         const tilt = tiltRef.current
         const magnitude = Math.hypot(tilt.x, tilt.y)
-        if (magnitude < 0.15) {
+        if (magnitude < 0.05) {
           return ids[Math.floor(Math.random() * ids.length)] ?? null
         }
 
@@ -139,18 +139,24 @@ export default function ChwaziGame() {
     if (!container) return
 
     const requestOrientationPermission = () => {
+      if (motionPermissionRef.current === 'granted') return
       if (typeof DeviceOrientationEvent === 'undefined') return
       const deviceOrientationEvent = DeviceOrientationEvent as unknown as {
         requestPermission?: () => Promise<'granted' | 'denied' | 'default'>
       }
-      const needsPermission =
-        typeof deviceOrientationEvent.requestPermission === 'function' && !permissionRequestedRef.current
 
-      if (!needsPermission) return
-      permissionRequestedRef.current = true
-      deviceOrientationEvent.requestPermission?.().catch(() => {
-        // ignore permission errors; fallback to random selection
-      })
+      if (typeof deviceOrientationEvent.requestPermission === 'function') {
+        deviceOrientationEvent
+          .requestPermission?.()
+          .then((result) => {
+            motionPermissionRef.current = result === 'granted' ? 'granted' : 'denied'
+          })
+          .catch(() => {
+            motionPermissionRef.current = 'denied'
+          })
+      } else {
+        motionPermissionRef.current = 'granted'
+      }
     }
 
     const handleOrientation = (event: DeviceOrientationEvent) => {

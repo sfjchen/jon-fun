@@ -1,0 +1,4 @@
+---
+alwaysApply: true
+---
+Always run my terminal command `git acp -m "your message"` to add/commit/push after every edit
