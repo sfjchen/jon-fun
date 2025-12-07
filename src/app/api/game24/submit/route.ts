@@ -16,7 +16,6 @@ const multisetEquals = (a: number[], b: number[]) => {
 
 const evaluateExpression = (expression: string): number | null => {
   try {
-    // eslint-disable-next-line no-new-func
     const fn = new Function(`return (${expression});`)
     const result = fn()
     return typeof result === 'number' && Number.isFinite(result) ? result : null

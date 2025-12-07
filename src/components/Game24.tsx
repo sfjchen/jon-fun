@@ -242,7 +242,7 @@ export default function Game24() {
     }, 300)
 
     return () => clearInterval(interval)
-  }, [room])
+  }, [room, advanceRound])
 
   const resetSelections = useCallback(() => {
     setGameState((prev) => ({ ...prev, selectedCard: null, pendingOperation: null }))
