@@ -112,8 +112,45 @@ src/
 - `amount` (integer)
 - `timestamp` (timestamp)
 
+**`game24_rooms`**
+- `id` (uuid, primary key)
+- `pin` (text, unique, 4-digit)
+- `host_id` (uuid, nullable)
+- `status` ('waiting' | 'active' | 'intermission' | 'finished')
+- `round_number` (integer)
+- `current_round_started_at`, `intermission_until` (timestamptz)
+- `max_players` (integer, default 20)
+- `created_at`, `updated_at`, `last_activity` (timestamptz)
+
+**`game24_players`**
+- `id` (uuid, primary key)
+- `room_pin` (text, fk → game24_rooms.pin)
+- `player_id` (uuid)
+- `name` (text)
+- `score` (integer)
+- `is_connected` (boolean)
+- `joined_at` (timestamptz)
+
+**`game24_rounds`**
+- `room_pin` (text, fk → game24_rooms.pin)
+- `round_number` (integer)
+- `numbers` (integer[])
+- `started_at` (timestamptz)
+
+**`game24_submissions`**
+- `room_pin` (text, fk → game24_rooms.pin)
+- `round_number` (integer)
+- `player_id` (uuid)
+- `expression` (text)
+- `is_correct` (boolean)
+- `score_awarded` (integer)
+- `submitted_at` (timestamptz)
+
 ### Indexes
 - `idx_poker_rooms_last_activity` on `poker_rooms(last_activity)` for cleanup queries
+- `idx_game24_rooms_last_activity` on `game24_rooms(last_activity)`
+- `game24_rounds_room_pin_round_number_key`
+- `idx_game24_submissions_room_round` / `idx_game24_submissions_player_round`
 
 ## 🔌 API Routes
 
@@ -137,6 +174,21 @@ src/
 **`POST /api/poker/cleanup`**: Cleanup inactive rooms (cron)
 - Deletes rooms inactive >24 hours
 - Requires `CLEANUP_API_KEY` env var (optional)
+
+**`POST /api/game24/rooms`**: Create Game24 room (4-digit PIN)
+- Body: `{ hostName }`
+- Returns: `{ pin, hostId, playerId }`
+
+**`GET /api/game24/rooms/[pin]`**: Room, players, current round numbers
+
+**`POST /api/game24/rooms/[pin]`**:
+- `action: 'join'` `{ playerName }`
+- `action: 'start'` `{ hostId }` (host only; needs ≥2 players)
+- `action: 'play-again'` `{ playerId }` (resets lobby, caller becomes host)
+
+**`POST /api/game24/submit`**: Submit expression; validates with round numbers; scores 1000→0 over 15s (one correct per player/round)
+
+**`POST /api/game24/next-round`**: Advance state (active → intermission (5s) → next round up to 8, then finished)
 
 ## 💻 Coding Conventions & Patterns
 

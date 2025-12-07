@@ -1,8 +1,14 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { Solver24 } from '@/lib/solver24'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
+import {
+  GAME24_MAX_PLAYERS,
+  GAME24_MAX_ROUNDS,
+  GAME24_ROUND_DURATION_MS,
+  validateRoomPin,
+} from '@/lib/game24'
 
 interface Card {
   value: number
@@ -16,13 +22,28 @@ interface GameState {
   cards: Card[]
   selectedCard: number | null
   pendingOperation: string | null
+}
+
+interface Room {
+  pin: string
+  host_id: string | null
+  status: 'waiting' | 'active' | 'intermission' | 'finished'
+  round_number: number
+  current_round_started_at: string | null
+  intermission_until: string | null
+  max_players: number
+}
+
+interface RoundData {
+  round_number: number
+  numbers: number[]
+  started_at: string
+}
+
+interface Player {
+  player_id: string
+  name: string
   score: number
-  level: number
-  totalTimeElapsed: number
-  roundTimeElapsed: number
-  gameStartTime: number
-  roundStartTime: number
-  isGameActive: boolean
 }
 
 const OPERATORS = [
@@ -32,27 +53,48 @@ const OPERATORS = [
   { op: '/', class: 'divide', symbol: '÷' },
 ] as const
 
+const buildCards = (numbers: number[]): Card[] =>
+  numbers.map((num, index) => ({
+    value: num,
+    expression: num.toString(),
+    isResult: false,
+    position: index,
+  }))
+
+const formatSeconds = (seconds: number) => {
+  const clamped = Math.max(0, seconds)
+  return clamped.toFixed(1).replace(/\.0$/, '')
+}
+
 export default function Game24() {
   const [gameState, setGameState] = useState<GameState>({
     numbers: [],
     cards: [],
     selectedCard: null,
     pendingOperation: null,
-    score: 0,
-    level: 1,
-    totalTimeElapsed: 0,
-    roundTimeElapsed: 0,
-    gameStartTime: 0,
-    roundStartTime: 0,
-    isGameActive: false,
   })
   const [message, setMessage] = useState<string | null>(null)
+  const [pinInput, setPinInput] = useState('')
+  const [nameInput, setNameInput] = useState('')
+  const [room, setRoom] = useState<Room | null>(null)
+  const [players, setPlayers] = useState<Player[]>([])
+  const [round, setRound] = useState<RoundData | null>(null)
+  const [playerId, setPlayerId] = useState<string | null>(null)
+  const [hostId, setHostId] = useState<string | null>(null)
+  const [hasSubmitted, setHasSubmitted] = useState(false)
+  const [phase, setPhase] = useState<'idle' | 'waiting' | 'active' | 'intermission' | 'finished'>('idle')
+  const [loadingRoom, setLoadingRoom] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [roundRemainingMs, setRoundRemainingMs] = useState(0)
+  const [intermissionRemainingMs, setIntermissionRemainingMs] = useState(0)
 
-  const solver = useMemo(() => new Solver24(), [])
-
+  const pendingAdvanceRef = useRef(false)
   const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const hasActiveSubscription = useRef(false)
 
-  const showTemporaryMessage = useCallback((msg: string) => {
+  const isHost = hostId && room?.host_id === hostId
+
+  const showTemporaryMessage = useCallback((msg: string, durationMs = 2500) => {
     if (messageTimeoutRef.current) {
       clearTimeout(messageTimeoutRef.current)
     }
@@ -60,256 +102,274 @@ export default function Game24() {
     messageTimeoutRef.current = setTimeout(() => {
       setMessage(null)
       messageTimeoutRef.current = null
-    }, 3000)
+    }, durationMs)
   }, [])
 
-  const generateNumbers = useCallback(() => {
-    let newNumbers: number[] = [4, 6, 8, 1]
-    const maxAttempts = 50
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      const candidate = Array.from({ length: 4 }, () => Math.floor(Math.random() * 9) + 1)
-      if (solver.hasSolution(candidate)) {
-        newNumbers = candidate
-        break
+  const saveSession = useCallback(
+    (data: { pin?: string; playerId?: string; hostId?: string; playerName?: string }) => {
+      if (typeof window === 'undefined') return
+      if (data.pin) sessionStorage.setItem('game24_pin', data.pin)
+      if (data.playerId) sessionStorage.setItem('game24_playerId', data.playerId)
+      if (data.hostId !== undefined) sessionStorage.setItem('game24_hostId', data.hostId ?? '')
+      if (data.playerName) sessionStorage.setItem('game24_playerName', data.playerName)
+    },
+    []
+  )
+
+  const loadRoomData = useCallback(
+    async (pin: string) => {
+      setLoadingRoom(true)
+      setError(null)
+      try {
+        const response = await fetch(`/api/game24/rooms/${pin}`)
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to load room')
+        }
+
+        setRoom(data.room)
+        setPlayers(data.players || [])
+        setRound(data.round || null)
+        setHostId(data.room.host_id ?? null)
+        setPhase(data.room.status ?? 'waiting')
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load room')
+      } finally {
+        setLoadingRoom(false)
       }
+    },
+    []
+  )
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const savedPin = sessionStorage.getItem('game24_pin') || ''
+    const savedPlayerId = sessionStorage.getItem('game24_playerId') || ''
+    const savedHostId = sessionStorage.getItem('game24_hostId') || ''
+    const savedName = sessionStorage.getItem('game24_playerName') || ''
+    if (savedPin && savedPlayerId) {
+      setPinInput(savedPin)
+      setPlayerId(savedPlayerId)
+      setHostId(savedHostId || null)
+      setNameInput(savedName)
+      loadRoomData(savedPin)
     }
+  }, [loadRoomData])
 
-    const newCards = newNumbers.map((num, index) => ({
-      value: num,
-      expression: num.toString(),
-      isResult: false,
-      position: index
-    }))
+  useEffect(() => {
+    if (!room) {
+      setPhase('idle')
+      return
+    }
+    setPhase(room.status)
+  }, [room])
 
-    setGameState(prev => ({
-      ...prev,
-      numbers: newNumbers,
-      cards: newCards,
-    }))
-  }, [solver])
-
-  const initializeGame = useCallback(() => {
-    const now = Date.now()
-    const defaultNumbers = [4, 6, 8, 1]
-    const defaultCards = defaultNumbers.map((num, index) => ({
-      value: num,
-      expression: num.toString(),
-      isResult: false,
-      position: index
-    }))
-
-    setGameState(prev => ({
-      ...prev,
-      numbers: defaultNumbers,
-      cards: defaultCards,
-      gameStartTime: now,
-      roundStartTime: now,
-      isGameActive: true,
-    }))
-
-    // Generate new numbers after initialization
-    setTimeout(generateNumbers, 100)
-  }, [generateNumbers])
-
-  const newGame = useCallback(() => {
-    const now = Date.now()
-    setGameState(prev => ({
-      ...prev,
+  useEffect(() => {
+    if (!round || !round.numbers) return
+    setGameState({
+      numbers: round.numbers,
+      cards: buildCards(round.numbers),
       selectedCard: null,
       pendingOperation: null,
-      score: 0,
-      level: 0,
-      gameStartTime: now,
-      roundStartTime: now,
-      isGameActive: true,
-    }))
-    generateNumbers()
-  }, [generateNumbers])
+    })
+    setHasSubmitted(false)
+  }, [round])
 
-  const resetRound = useCallback(() => {
-    setGameState(prev => ({
-      ...prev,
-      cards: prev.numbers.map((num, index) => ({
-        value: num,
-        expression: num.toString(),
-        isResult: false,
-        position: index
-      })),
-      selectedCard: null,
-      pendingOperation: null,
-    }))
+  useEffect(() => {
+    if (!pinInput || !room) return
+    if (hasActiveSubscription.current) return
+    hasActiveSubscription.current = true
+
+    const roomChannel = supabase
+      .channel(`game24:room:${pinInput}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'game24_rooms', filter: `pin=eq.${pinInput}` },
+        () => loadRoomData(pinInput)
+      )
+      .subscribe()
+
+    const playersChannel = supabase
+      .channel(`game24:players:${pinInput}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'game24_players', filter: `room_pin=eq.${pinInput}` },
+        () => loadRoomData(pinInput)
+      )
+      .subscribe()
+
+    const roundsChannel = supabase
+      .channel(`game24:rounds:${pinInput}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'game24_rounds', filter: `room_pin=eq.${pinInput}` },
+        () => loadRoomData(pinInput)
+      )
+      .subscribe()
+
+    return () => {
+      roomChannel.unsubscribe()
+      playersChannel.unsubscribe()
+      roundsChannel.unsubscribe()
+      hasActiveSubscription.current = false
+    }
+  }, [pinInput, room, loadRoomData])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (room?.status === 'active' && room.current_round_started_at) {
+        const elapsed = Date.now() - new Date(room.current_round_started_at).getTime()
+        const remaining = Math.max(0, GAME24_ROUND_DURATION_MS - elapsed)
+        setRoundRemainingMs(remaining)
+        if (remaining <= 0 && !pendingAdvanceRef.current) {
+          pendingAdvanceRef.current = true
+          advanceRound()
+        }
+      } else {
+        setRoundRemainingMs(0)
+      }
+
+      if (room?.status === 'intermission' && room.intermission_until) {
+        const remaining = new Date(room.intermission_until).getTime() - Date.now()
+        setIntermissionRemainingMs(Math.max(0, remaining))
+        if (remaining <= 0 && !pendingAdvanceRef.current) {
+          pendingAdvanceRef.current = true
+          advanceRound()
+        }
+      } else {
+        setIntermissionRemainingMs(0)
+      }
+    }, 300)
+
+    return () => clearInterval(interval)
+  }, [room])
+
+  const resetSelections = useCallback(() => {
+    setGameState((prev) => ({ ...prev, selectedCard: null, pendingOperation: null }))
   }, [])
-
-  const startNewRound = useCallback(() => {
-    const now = Date.now()
-    setGameState(prev => ({
-      ...prev,
-      roundStartTime: now,
-      selectedCard: null,
-      pendingOperation: null,
-    }))
-    generateNumbers()
-  }, [generateNumbers])
 
   const selectCard = useCallback((index: number) => {
-    setGameState(prev => {
+    setGameState((prev) => {
       if (prev.selectedCard === index && prev.pendingOperation === null) {
         return { ...prev, selectedCard: null }
       }
-      
       if (prev.pendingOperation !== null) {
-        return prev // Will be handled by performOperation
+        return prev
       }
-      
       return { ...prev, selectedCard: index }
     })
   }, [])
 
   const addOperator = useCallback((op: string) => {
-    setGameState(prev => {
+    if (phase !== 'active') return
+    setGameState((prev) => {
       if (prev.selectedCard === null) return prev
       return { ...prev, pendingOperation: op }
     })
-  }, [])
+  }, [phase])
 
-  const performOperation = useCallback((secondCardIndex: number) => {
-    setGameState(prev => {
-      if (prev.selectedCard === null || prev.pendingOperation === null) return prev
-      
-      const firstCard = prev.cards[prev.selectedCard]
-      const secondCard = prev.cards[secondCardIndex]
-      
-      if (!firstCard || !secondCard) return prev
-      
-      try {
-        let result: number
-        let expression: string
-        
-        switch (prev.pendingOperation) {
-          case '+':
-            result = firstCard.value + secondCard.value
-            expression = `(${firstCard.expression} + ${secondCard.expression})`
-            break
-          case '-':
-            result = firstCard.value - secondCard.value
-            expression = `(${firstCard.expression} - ${secondCard.expression})`
-            break
-          case '*':
-            result = firstCard.value * secondCard.value
-            expression = `(${firstCard.expression} × ${secondCard.expression})`
-            break
-          case '/':
-            if (secondCard.value === 0) {
-              showTemporaryMessage('❌ Cannot divide by zero!')
-              return { ...prev, selectedCard: null, pendingOperation: null }
-            }
-            result = firstCard.value / secondCard.value
-            expression = `(${firstCard.expression} ÷ ${secondCard.expression})`
-            break
-          default:
-            return prev
-        }
-        
-        const newCards = prev.cards.map((card, i) => {
-          if (i === prev.selectedCard) {
-            return null
-          } else if (i === secondCardIndex) {
-            return {
-              value: result,
-              expression: expression,
-              isResult: true,
-              position: card.position
-            }
-          } else {
-            return card
+  const submitSolution = useCallback(
+    async (expression: string) => {
+      if (!room || !playerId || !pinInput || hasSubmitted || phase !== 'active') return
+      setHasSubmitted(true)
+      const response = await fetch('/api/game24/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: pinInput, playerId, expression }),
+      })
+      const data = await response.json()
+      if (!response.ok) {
+        setHasSubmitted(false)
+        showTemporaryMessage(data.error || 'Failed to submit')
+        return
+      }
+      showTemporaryMessage(`Submitted! +${data.scoreAwarded ?? 0} pts`, 1500)
+    },
+    [room, playerId, pinInput, hasSubmitted, phase, showTemporaryMessage]
+  )
+
+  const performOperation = useCallback(
+    (secondCardIndex: number) => {
+      if (phase !== 'active') return
+      setGameState((prev) => {
+        if (prev.selectedCard === null || prev.pendingOperation === null) return prev
+
+        const firstCard = prev.cards[prev.selectedCard]
+        const secondCard = prev.cards[secondCardIndex]
+
+        if (!firstCard || !secondCard) return prev
+
+        try {
+          let result: number
+          let expression: string
+
+          switch (prev.pendingOperation) {
+            case '+':
+              result = firstCard.value + secondCard.value
+              expression = `(${firstCard.expression} + ${secondCard.expression})`
+              break
+            case '-':
+              result = firstCard.value - secondCard.value
+              expression = `(${firstCard.expression} - ${secondCard.expression})`
+              break
+            case '*':
+              result = firstCard.value * secondCard.value
+              expression = `(${firstCard.expression} × ${secondCard.expression})`
+              break
+            case '/':
+              if (secondCard.value === 0) {
+                showTemporaryMessage('❌ Cannot divide by zero!')
+                return { ...prev, selectedCard: null, pendingOperation: null }
+              }
+              result = firstCard.value / secondCard.value
+              expression = `(${firstCard.expression} ÷ ${secondCard.expression})`
+              break
+            default:
+              return prev
           }
-        }).filter((card): card is Card => card !== null)
-        
-        const resultCardIndex = newCards.findIndex(card => card.position === secondCard.position)
-        
-        if (newCards.length === 1 && newCards[0] && Math.abs(newCards[0].value - 24) < 0.001) {
-          setTimeout(() => {
-            setGameState(current => ({
-              ...current,
-              score: current.score + 1,
-              level: current.level + 1,
-            }))
-            setTimeout(startNewRound, 1000)
-          }, 100)
-        } else if (newCards.length === 1 && newCards[0] && Math.abs(newCards[0].value - 24) >= 0.001) {
-          setTimeout(() => {
-            setGameState(current => ({
-              ...current,
-              score: 0,
-              level: 0,
-            }))
-            setTimeout(startNewRound, 1000)
-          }, 100)
+
+          const newCards = prev.cards
+            .map((card, i) => {
+              if (i === prev.selectedCard) return null
+              if (i === secondCardIndex) {
+                return {
+                  value: result,
+                  expression,
+                  isResult: true,
+                  position: card.position,
+                }
+              }
+              return card
+            })
+            .filter((card): card is Card => card !== null)
+
+          const resultCardIndex = newCards.findIndex((card) => card.position === secondCard.position)
+
+          if (newCards.length === 1 && Math.abs(newCards[0]!.value - 24) < 0.001) {
+            submitSolution(newCards[0]!.expression)
+          }
+
+          return {
+            ...prev,
+            cards: newCards,
+            selectedCard: resultCardIndex,
+            pendingOperation: null,
+          }
+        } catch {
+          showTemporaryMessage('❌ Invalid operation')
+          return { ...prev, selectedCard: null, pendingOperation: null }
         }
-        
-        return {
-          ...prev,
-          cards: newCards,
-          selectedCard: resultCardIndex,
-          pendingOperation: null,
-        }
-        
-      } catch {
-        showTemporaryMessage('❌ Invalid operation')
-        return { ...prev, selectedCard: null, pendingOperation: null }
-      }
-    })
-  }, [startNewRound, showTemporaryMessage])
+      })
+    },
+    [phase, submitSolution, showTemporaryMessage]
+  )
 
-  const showHint = useCallback(() => {
-    const solution = solver.getSolution(gameState.numbers)
-    if (solution) {
-      showTemporaryMessage(`💡 Solution: ${solution}`)
-    } else {
-      showTemporaryMessage('💡 No hint available')
-    }
-  }, [solver, gameState.numbers, showTemporaryMessage])
-
-  const formatTime = useCallback((seconds: number) => {
-    const minutes = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${minutes}:${secs.toString().padStart(2, '0')}`
-  }, [])
-
-  // Initialize game on mount
-  useEffect(() => {
-    initializeGame()
-    return () => {
-      if (messageTimeoutRef.current) {
-        clearTimeout(messageTimeoutRef.current)
-      }
-    }
-  }, [initializeGame])
-
-  // Timer effect
-  useEffect(() => {
-    if (!gameState.isGameActive) return
-
-    const interval = setInterval(() => {
-      setGameState(prev => ({
-        ...prev,
-        totalTimeElapsed: Math.floor((Date.now() - prev.gameStartTime) / 1000),
-        roundTimeElapsed: Math.floor((Date.now() - prev.roundStartTime) / 1000),
-      }))
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [gameState.isGameActive])
-
-  // Handle operation when pending
   useEffect(() => {
     if (gameState.pendingOperation !== null && gameState.selectedCard !== null) {
       const handleClick = (event: MouseEvent) => {
         const target = event.target as HTMLElement
         if (target.closest('.game-card') && !target.closest('.game-card.selected')) {
-          const cardIndex = gameState.cards.findIndex((_, index) => 
-            target.closest(`[data-card-index="${index}"]`)
-          )
+          const cardIndex = gameState.cards.findIndex((_, index) => target.closest(`[data-card-index="${index}"]`))
           if (cardIndex !== -1 && cardIndex !== gameState.selectedCard) {
             performOperation(cardIndex)
           }
@@ -321,117 +381,394 @@ export default function Game24() {
     }
   }, [gameState.pendingOperation, gameState.selectedCard, gameState.cards, performOperation])
 
-  const renderCardAtPosition = useCallback((position: number) => {
-    const cardIndex = gameState.cards.findIndex(card => card.position === position)
-    
-    if (cardIndex === -1) {
-      return <div key={position} className="game-card empty" style={{ opacity: 0, pointerEvents: 'none' }} />
+  const createRoom = async () => {
+    if (!nameInput.trim()) {
+      setError('Name is required')
+      return
     }
-    
-    const card = gameState.cards[cardIndex]
-    if (!card) {
-      return <div key={position} className="game-card empty" style={{ opacity: 0, pointerEvents: 'none' }} />
+    setError(null)
+    setLoadingRoom(true)
+    try {
+      const response = await fetch('/api/game24/rooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hostName: nameInput.trim() }),
+      })
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create room')
+      }
+      setPinInput(data.pin)
+      setPlayerId(data.playerId)
+      setHostId(data.hostId)
+      saveSession({ pin: data.pin, playerId: data.playerId, hostId: data.hostId, playerName: nameInput.trim() })
+      await loadRoomData(data.pin)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create room')
+    } finally {
+      setLoadingRoom(false)
     }
-    
-    const isSelected = gameState.selectedCard === cardIndex
-    const isResult = card.isResult
-    const isPending = gameState.pendingOperation !== null && gameState.selectedCard === cardIndex
-    
-    let cardClass = 'game-card'
-    if (isSelected) cardClass += ' selected'
-    if (isResult) cardClass += ' result'
-    if (isPending) cardClass += ' pending'
-    
-    return (
-      <button 
-        key={position}
-        className={cardClass}
-        onClick={() => selectCard(cardIndex)}
-        data-card-index={cardIndex}
-      >
-        <div className="card-content">
-          <span className="card-number">{card.value}</span>
-          {isResult && <div className="card-expression">{card.expression}</div>}
-        </div>
-      </button>
-    )
-  }, [gameState.cards, gameState.selectedCard, gameState.pendingOperation, selectCard])
+  }
+
+  const joinRoom = async () => {
+    if (!nameInput.trim() || !validateRoomPin(pinInput)) {
+      setError('Valid name and 4-digit PIN required')
+      return
+    }
+    setError(null)
+    setLoadingRoom(true)
+    try {
+      const response = await fetch(`/api/game24/rooms/${pinInput}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'join', playerName: nameInput.trim() }),
+      })
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to join room')
+      }
+      setPlayerId(data.playerId)
+      saveSession({ pin: pinInput, playerId: data.playerId, playerName: nameInput.trim() })
+      await loadRoomData(pinInput)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to join room')
+    } finally {
+      setLoadingRoom(false)
+    }
+  }
+
+  const startGame = async () => {
+    if (!isHost || !pinInput) return
+    const response = await fetch(`/api/game24/rooms/${pinInput}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'start', hostId }),
+    })
+    const data = await response.json()
+    if (!response.ok) {
+      showTemporaryMessage(data.error || 'Failed to start')
+      return
+    }
+    await loadRoomData(pinInput)
+  }
+
+  const playAgain = async () => {
+    if (!pinInput || !playerId) return
+    const response = await fetch(`/api/game24/rooms/${pinInput}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'play-again', playerId }),
+    })
+    const data = await response.json()
+    if (!response.ok) {
+      showTemporaryMessage(data.error || 'Failed to reset')
+      return
+    }
+    setHostId(data.hostId ?? null)
+    setPlayerId(data.playerId ?? playerId)
+    saveSession({ hostId: data.hostId ?? null, playerId: data.playerId ?? playerId })
+    await loadRoomData(pinInput)
+  }
+
+  const advanceRound = async () => {
+    if (!pinInput) return
+    try {
+      const response = await fetch('/api/game24/next-round', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: pinInput }),
+      })
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to advance round')
+      }
+      pendingAdvanceRef.current = false
+      await loadRoomData(pinInput)
+    } catch (err) {
+      pendingAdvanceRef.current = false
+      showTemporaryMessage(err instanceof Error ? err.message : 'Failed to advance round')
+    }
+  }
+
+  const sortedPlayers = useMemo(() => {
+    const list = [...players]
+    list.sort((a, b) => {
+      if (b.score === a.score) return a.name.localeCompare(b.name)
+      return (b.score ?? 0) - (a.score ?? 0)
+    })
+    return list
+  }, [players])
+
+  const renderCardAtPosition = useCallback(
+    (position: number) => {
+      const cardIndex = gameState.cards.findIndex((card) => card.position === position)
+
+      if (cardIndex === -1) {
+        return <div key={position} className="game-card empty" style={{ opacity: 0, pointerEvents: 'none' }} />
+      }
+
+      const card = gameState.cards[cardIndex]
+      if (!card) {
+        return <div key={position} className="game-card empty" style={{ opacity: 0, pointerEvents: 'none' }} />
+      }
+
+      const isSelected = gameState.selectedCard === cardIndex
+      const isResult = card.isResult
+      const isPending = gameState.pendingOperation !== null && gameState.selectedCard === cardIndex
+
+      let cardClass = 'game-card'
+      if (isSelected) cardClass += ' selected'
+      if (isResult) cardClass += ' result'
+      if (isPending) cardClass += ' pending'
+
+      return (
+        <button
+          key={position}
+          className={cardClass}
+          onClick={() => selectCard(cardIndex)}
+          data-card-index={cardIndex}
+          disabled={phase !== 'active'}
+        >
+          <div className="card-content">
+            <span className="card-number">{card.value}</span>
+            {isResult && <div className="card-expression">{card.expression}</div>}
+          </div>
+        </button>
+      )
+    },
+    [gameState.cards, gameState.selectedCard, gameState.pendingOperation, selectCard, phase]
+  )
+
+  const roundProgressRatio =
+    room?.status === 'active' && GAME24_ROUND_DURATION_MS > 0
+      ? Math.max(0, Math.min(1, roundRemainingMs / GAME24_ROUND_DURATION_MS))
+      : 0
 
   return (
-    <div>
-      {/* Header Section */}
-      <div className="header-section bg-transparent">
-        <Link href="/" className="header-icon" aria-label="Go home">
-          🏠
-        </Link>
-        
-        <div className="text-center">
-          <div className="text-white text-lg font-semibold">Streak</div>
-          <div className="bg-blue-800 rounded-lg px-4 py-2 mt-1">
-            <div className="text-white text-2xl font-bold">{gameState.score}</div>
-          </div>
-        </div>
-        
-        <button 
-          onClick={resetRound}
-          className="header-icon text-2xl"
-          aria-label="Reset round"
-        >
-          ↻
-        </button>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-md mx-auto p-4">
-        {/* Game Board Section */}
-        <div className="game-board mb-6">
-          {[0, 1, 2, 3].map(position => renderCardAtPosition(position))}
-        </div>
-
-        {/* Operator Section */}
-        <div className="flex justify-center gap-4 mb-6">
-          {OPERATORS.map(({ op, class: className, symbol }) => (
-            <button
-              key={op}
-              className={`operator-btn ${className} ${gameState.pendingOperation === op ? 'selected' : ''}`}
-              onClick={() => addOperator(op)}
-              aria-label={`${op} operator`}
-            >
-              {symbol}
-            </button>
-          ))}
-        </div>
-
-        {/* Timer Section */}
-        <div className="flex justify-between items-center mb-6 text-gray-300">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        <div className="flex items-center justify-between mb-6 text-white">
+          <Link href="/" className="header-icon" aria-label="Go home">
+            🏠
+          </Link>
           <div className="text-center">
-            <div className="text-sm opacity-80">Total Time</div>
-            <div className="text-lg font-bold">{formatTime(gameState.totalTimeElapsed)}</div>
+            <div className="text-lg font-semibold">Your Score</div>
+            <div className="bg-white/10 rounded-lg px-4 py-2 mt-1 text-2xl font-bold">
+              {players.find((p) => p.player_id === playerId)?.score ?? 0}
+            </div>
           </div>
-          <div className="text-center">
-            <div className="text-sm opacity-80">Round Time</div>
-            <div className="text-lg font-bold">{formatTime(gameState.roundTimeElapsed)}</div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-4">
-          <button 
-            onClick={newGame}
-            className="action-btn danger"
-          >
-            <span>🔄 New Game</span>
-          </button>
-          <button 
-            onClick={showHint}
-            className="action-btn primary"
-          >
-            <span>💡 Solution</span>
+          <button onClick={resetSelections} className="header-icon text-2xl" aria-label="Reset selection">
+            ↻
           </button>
         </div>
+
+        <div className="grid lg:grid-cols-[320px_1fr] gap-6">
+          <aside className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white">
+            {!room && (
+              <div className="space-y-4">
+                <div>
+                  <div className="text-sm text-gray-200 mb-1">Name</div>
+                  <input
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-white"
+                    placeholder="Enter your name"
+                  />
+                </div>
+                <div className="flex items-end gap-2">
+                  <div className="flex-1">
+                    <div className="text-sm text-gray-200 mb-1">Room PIN</div>
+                    <input
+                      value={pinInput}
+                      onChange={(e) => setPinInput(e.target.value)}
+                      maxLength={4}
+                      className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-white"
+                      placeholder="1234"
+                    />
+                  </div>
+                  <button
+                    onClick={joinRoom}
+                    disabled={loadingRoom}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-3 py-2 rounded"
+                  >
+                    Join
+                  </button>
+                </div>
+                <button
+                  onClick={createRoom}
+                  disabled={loadingRoom}
+                  className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white px-3 py-2 rounded"
+                >
+                  Create Room
+                </button>
+                {error && <div className="text-red-300 text-sm">{error}</div>}
+              </div>
+            )}
+
+            {room && (
+              <div className="space-y-4">
+                <div>
+                  <div className="text-sm text-gray-300">Room PIN</div>
+                  <div className="text-3xl font-bold tracking-widest">{room.pin}</div>
+                  <div className="text-xs text-gray-300 mt-1">Share the PIN to let others join</div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-300">Status</div>
+                  <div className="text-sm font-semibold">
+                    {room.status === 'waiting' && 'Waiting'}
+                    {room.status === 'active' && `Round ${room.round_number}/${GAME24_MAX_ROUNDS}`}
+                    {room.status === 'intermission' && 'Intermission'}
+                    {room.status === 'finished' && 'Finished'}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-lg font-semibold">Players ({players.length}/{room.max_players ?? GAME24_MAX_PLAYERS})</div>
+                    {isHost && <span className="text-xs bg-green-600 px-2 py-1 rounded">Host</span>}
+                  </div>
+                  <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                    {sortedPlayers.map((p) => (
+                      <div
+                        key={p.player_id}
+                        className={`bg-white/5 border rounded-lg px-3 py-2 flex items-center justify-between ${
+                          p.player_id === room.host_id ? 'border-green-400/60' : 'border-white/10'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="text-white font-semibold truncate">{p.name}</div>
+                          {p.player_id === room.host_id && <span className="text-xs bg-green-600 px-2 py-0.5 rounded">Host</span>}
+                        </div>
+                        <div className="text-sm text-gray-200 font-mono">{p.score ?? 0}</div>
+                      </div>
+                    ))}
+                    {players.length === 0 && <div className="text-gray-300 text-sm">No players yet</div>}
+                  </div>
+                </div>
+
+                {room.status === 'waiting' && isHost && (
+                  <button
+                    onClick={startGame}
+                    disabled={players.length < 2 || loadingRoom}
+                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white py-2 rounded font-semibold"
+                  >
+                    {players.length < 2 ? 'Need at least 2 players' : 'Start Game'}
+                  </button>
+                )}
+
+                {room.status === 'finished' && (
+                  <button
+                    onClick={playAgain}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded font-semibold"
+                  >
+                    Play Again
+                  </button>
+                )}
+
+                {error && <div className="text-red-300 text-sm">{error}</div>}
+              </div>
+            )}
+          </aside>
+
+          <main className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white relative overflow-hidden">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-lg font-semibold">
+                {room?.status === 'active' ? `Round ${room.round_number}/${GAME24_MAX_ROUNDS}` : 'Get ready'}
+              </div>
+              <div className="text-sm text-gray-200">
+                {room?.status === 'intermission'
+                  ? `Next round in ${formatSeconds(intermissionRemainingMs / 1000)}s`
+                  : room?.status === 'active'
+                    ? `${formatSeconds(roundRemainingMs / 1000)}s left`
+                    : room?.status === 'finished'
+                      ? 'Game over'
+                      : 'Waiting to start'}
+              </div>
+            </div>
+
+            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-4">
+              <div
+                className="h-full bg-green-400 transition-all"
+                style={{ width: `${roundProgressRatio * 100}%` }}
+              />
+            </div>
+
+            {room?.status === 'intermission' && (
+              <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-10">
+                <div className="text-2xl font-bold">Scores</div>
+                <div className="w-full max-w-md space-y-2">
+                  {sortedPlayers.map((p, idx) => (
+                    <div
+                      key={p.player_id}
+                      className="flex items-center justify-between bg-white/10 px-3 py-2 rounded border border-white/10"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-300 w-6 text-right">{idx + 1}.</span>
+                        <span className="font-semibold">{p.name}</span>
+                      </div>
+                      <span className="font-mono text-sm">{p.score ?? 0}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-sm text-gray-200">Next round auto-starts</div>
+              </div>
+            )}
+
+            {room?.status === 'finished' && (
+              <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-20">
+                <div className="text-3xl font-bold">Final Rankings</div>
+                <div className="w-full max-w-md space-y-2">
+                  {sortedPlayers.map((p, idx) => (
+                    <div
+                      key={p.player_id}
+                      className="flex items-center justify-between bg-white/10 px-3 py-2 rounded border border-white/10"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-300 w-6 text-right">{idx + 1}.</span>
+                        <span className="font-semibold">{p.name}</span>
+                      </div>
+                      <span className="font-mono text-sm">{p.score ?? 0}</span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={playAgain}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-semibold"
+                >
+                  Play Again
+                </button>
+              </div>
+            )}
+
+            <div className="max-w-xl mx-auto p-4">
+              <div className="game-board mb-6">
+                {[0, 1, 2, 3].map((position) => renderCardAtPosition(position))}
+              </div>
+
+              <div className="flex justify-center gap-4 mb-6">
+                {OPERATORS.map(({ op, class: className, symbol }) => (
+                  <button
+                    key={op}
+                    className={`operator-btn ${className} ${gameState.pendingOperation === op ? 'selected' : ''}`}
+                    onClick={() => addOperator(op)}
+                    aria-label={`${op} operator`}
+                    disabled={phase !== 'active'}
+                  >
+                    {symbol}
+                  </button>
+                ))}
+              </div>
+
+              <div className="text-center text-gray-200 text-sm">
+                {phase === 'waiting' && 'Waiting for host to start...'}
+                {phase === 'active' && (hasSubmitted ? 'You submitted this round.' : 'Solve to score up to 1000 points.')}
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
 
-      {/* Message overlay */}
       {message && (
         <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-lg z-50 border border-white/20">
           {message}
