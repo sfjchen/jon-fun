@@ -89,28 +89,18 @@ export async function POST(request: NextRequest) {
       const nextRound = (room.round_number ?? 0) + 1
       const numbers = generateSolvableNumbers()
 
-      const insertRound = async () =>
-        supabase.from('game24_rounds').insert({
-          id: uuidv4(),
-          room_pin: pin,
-          round_number: nextRound,
-          numbers,
-          started_at: nowIso,
-        })
-
-      let roundError = null
-      const roundResp = await insertRound()
-      if (roundResp.error?.code === '23505') {
-        // retry with a new id
-        const retry = await insertRound()
-        roundError = retry.error
-      } else {
-        roundError = roundResp.error
-      }
-
-      if (roundError) {
-        return NextResponse.json({ error: 'Failed to create next round' }, { status: 500 })
-      }
+      const { error: roundError } = await supabase
+        .from('game24_rounds')
+        .upsert(
+          {
+            id: uuidv4(),
+            room_pin: pin,
+            round_number: nextRound,
+            numbers,
+            started_at: nowIso,
+          },
+          { onConflict: 'room_pin,round_number' }
+        )
 
       const { error: roomUpdateError } = await supabase
         .from('game24_rooms')

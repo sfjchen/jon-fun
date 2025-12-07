@@ -497,6 +497,23 @@ export default function Game24() {
     await loadRoomData(pinInput)
   }
 
+  const leaveRoom = useCallback(async () => {
+    if (!pinInput || !playerId) return
+    await fetch(`/api/game24/rooms/${pinInput}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'leave', playerId }),
+    })
+    setRoom(null)
+    setPlayers([])
+    setRound(null)
+    setPhase('idle')
+    setPinInput('')
+    setPlayerId(null)
+    setHostId(null)
+    saveSession({ pin: '', playerId: '', hostId: '' })
+  }, [pinInput, playerId, saveSession, loadRoomData])
+
   const sortedPlayers = useMemo(() => {
     const list = [...players]
     list.sort((a, b) => {
@@ -570,15 +587,6 @@ export default function Game24() {
     }
   }, [generatePractice])
 
-  const selectPracticeCard = useCallback((index: number) => {
-    setPracticeSelected((prev) => (prev === index && practicePendingOp === null ? null : index))
-  }, [practicePendingOp])
-
-  const addPracticeOp = useCallback((op: string) => {
-    if (practiceSelected === null) return
-    setPracticePendingOp(op)
-  }, [practiceSelected])
-
   const performPractice = useCallback(
     (secondIndex: number) => {
       if (practiceSelected === null || practicePendingOp === null) return
@@ -643,23 +651,27 @@ export default function Game24() {
     [practicePendingOp, practiceSelected, generatePractice, showTemporaryMessage]
   )
 
-  useEffect(() => {
-    if (practicePendingOp !== null && practiceSelected !== null) {
-      const handleClick = (event: MouseEvent) => {
-        const target = event.target as HTMLElement
-        if (target.closest('.practice-card') && !target.closest('.practice-card.selected')) {
-          const idxAttr = target.closest('[data-practice-index]')
-          if (!idxAttr) return
-          const cardIndex = Number(idxAttr.getAttribute('data-practice-index'))
-          if (!Number.isNaN(cardIndex) && cardIndex !== practiceSelected) {
-            performPractice(cardIndex)
-          }
-        }
+  const selectPracticeCard = useCallback(
+    (index: number) => {
+      if (practicePendingOp !== null && practiceSelected !== null && index !== practiceSelected) {
+        performPractice(index)
+        return
       }
-      document.addEventListener('click', handleClick)
-      return () => document.removeEventListener('click', handleClick)
+      setPracticeSelected((prev) => (prev === index && practicePendingOp === null ? null : index))
+    },
+    [practicePendingOp, practiceSelected, performPractice]
+  )
+
+  const addPracticeOp = useCallback((op: string) => {
+    if (practiceSelected === null) return
+    setPracticePendingOp(op)
+  }, [practiceSelected])
+
+  useEffect(() => {
+    return () => {
+      if (practiceMessageRef.current) clearTimeout(practiceMessageRef.current)
     }
-  }, [practicePendingOp, practiceSelected, performPractice])
+  }, [])
 
   const renderPracticeCard = useCallback(
     (position: number) => {
@@ -828,6 +840,15 @@ export default function Game24() {
                     className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded font-semibold"
                   >
                     Play Again
+                  </button>
+                )}
+
+                {room && (
+                  <button
+                    onClick={() => leaveRoom()}
+                    className="w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded font-semibold border border-white/20"
+                  >
+                    Leave Room
                   </button>
                 )}
 
