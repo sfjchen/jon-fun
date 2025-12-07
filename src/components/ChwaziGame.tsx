@@ -68,10 +68,17 @@ export default function ChwaziGame() {
   const startSelectionCountdown = useCallback(() => {
     if (selectionTimerRef.current) clearTimeout(selectionTimerRef.current)
     selectionTimerRef.current = setTimeout(() => {
-      const ids = Array.from(touchesRef.current.keys())
-      if (ids.length < 2) return
-      const firstWinner = ids[0]
-      setWinnerId(firstWinner ?? null)
+      const touchesList = Array.from(touchesRef.current.values())
+      if (touchesList.length < 2) return
+
+      const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 0
+      const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 0
+      const priority = touchesList.find(
+        ({ x, y }) => x >= viewportWidth * 0.9 && y >= viewportHeight * 0.9,
+      )
+
+      const winner = priority?.id ?? touchesList[0]?.id ?? null
+      setWinnerId(winner)
       setStatusSafe('winner')
     }, SELECT_DELAY_MS)
   }, [])
