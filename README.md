@@ -173,9 +173,9 @@ src/
 
 ### Development Workflow
 - **Work directly on `main` branch** (no feature branches)
-- **Use `git acp -m "message"`** to commit and push
-  - This alias does: `git add . && git commit -m "message" && git push`
-- **Vercel auto-deploys** on push to main (1-3 minutes)
+- **Optional**: `npm run dev` to smoke-test locally before pushing
+- **Use `git acp -m "message"`** to add/commit/push in one step
+- **Vercel auto-deploys** on push (1-3 minutes); verify via Vercel dashboard or https://sfjc.dev and redeploy latest if env vars change
 
 ### ⚠️ IMPORTANT: After Making Changes
 **Always run `git acp -m "your message"` after every set of edits to update deployment before ending agent response.**
@@ -195,6 +195,11 @@ src/
 - **Vercel MCP**: Deployment management, project info, build logs
   - Project: `jon-fun` (prj_p0GxMYUx0l1bfSrEVJQ161WkgTFe)
   - Team: jychen04's projects
+
+### Troubleshooting
+- Changes not live? Check Vercel build logs and confirm changes are on `main`.
+- Supabase issues? Verify `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local` and Vercel.
+- Still stale? Hard refresh cache (Cmd+Shift+R).
 
 ## 🛠️ Available Scripts
 
