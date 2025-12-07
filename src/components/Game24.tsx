@@ -83,6 +83,7 @@ export default function Game24() {
   const [round, setRound] = useState<RoundData | null>(null)
   const [playerId, setPlayerId] = useState<string | null>(null)
   const [hostId, setHostId] = useState<string | null>(null)
+  const [offlineScore, setOfflineScore] = useState(0)
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const [phase, setPhase] = useState<'idle' | 'waiting' | 'active' | 'intermission' | 'finished'>('idle')
   const [loadingRoom, setLoadingRoom] = useState(false)
@@ -647,6 +648,7 @@ export default function Game24() {
 
         const solved = updated.length === 1 && Math.abs(updated[0]!.value - 24) < 0.001
         if (solved) {
+          setOfflineScore((prev) => prev + 1000)
           practiceMessageRef.current = setTimeout(() => {
             showTemporaryMessage('Solved! New puzzle coming up.', 1800)
             generatePractice()
@@ -730,6 +732,11 @@ export default function Game24() {
     room?.status === 'active' && GAME24_ROUND_DURATION_MS > 0
       ? Math.max(0, Math.min(1, roundRemainingMs / GAME24_ROUND_DURATION_MS))
       : 0
+
+  const displayedScore =
+    room && room.status !== 'waiting'
+      ? players.find((p) => p.player_id === playerId)?.score ?? 0
+      : offlineScore
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
@@ -860,7 +867,7 @@ export default function Game24() {
               <div className="text-center">
                 <div className="text-lg font-semibold">Your Score</div>
                 <div className="bg-white/10 rounded-lg px-4 py-2 mt-1 text-2xl font-bold">
-                  {players.find((p) => p.player_id === playerId)?.score ?? 0}
+                  {displayedScore}
                 </div>
               </div>
               <button onClick={resetSelections} className="header-icon text-2xl" aria-label="Reset selection">
