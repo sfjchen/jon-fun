@@ -299,10 +299,11 @@ export default function Game24() {
     async (expression: string) => {
       if (!room || !playerId || !pinInput || hasSubmitted || phase !== 'active') return
       setHasSubmitted(true)
+      const normalizedExpression = expression.replace(/×/g, '*').replace(/÷/g, '/')
       const response = await fetch('/api/game24/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin: pinInput, playerId, expression }),
+        body: JSON.stringify({ pin: pinInput, playerId, expression: normalizedExpression }),
       })
       const data = await response.json()
       if (!response.ok) {
@@ -369,9 +370,9 @@ export default function Game24() {
             return card
             })
             .filter((card): card is Card => card !== null)
-
+        
           const resultCardIndex = newCards.findIndex((card) => card.position === secondCard.position)
-
+        
           if (newCards.length === 1 && Math.abs(newCards[0]!.value - 24) < 0.001) {
             submitSolution(newCards[0]!.expression)
         }
@@ -755,7 +756,7 @@ export default function Game24() {
                     onClick={joinRoom}
                     disabled={loadingRoom}
                     className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-3 py-2 rounded"
-                  >
+        >
                     Join
         </button>
                 </div>
@@ -837,27 +838,27 @@ export default function Game24() {
           </aside>
 
           <main className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white relative overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-lg font-semibold">
-                {room?.status === 'active' ? `Round ${room.round_number}/${GAME24_MAX_ROUNDS}` : 'Get ready'}
-              </div>
-              <div className="text-sm text-gray-200">
-                {room?.status === 'intermission'
-                  ? `Next round in ${formatSeconds(intermissionRemainingMs / 1000)}s`
-                  : room?.status === 'active'
-                    ? `${formatSeconds(roundRemainingMs / 1000)}s left`
-                    : room?.status === 'finished'
-                      ? 'Game over'
-                      : 'Waiting to start'}
-              </div>
-      </div>
+            {(room?.status === 'active' || room?.status === 'intermission') && (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-lg font-semibold">
+                    {room?.status === 'active' ? `Round ${room.round_number}/${GAME24_MAX_ROUNDS}` : 'Intermission'}
+                  </div>
+                  <div className="text-sm text-gray-200">
+                    {room?.status === 'intermission'
+                      ? `Next round in ${formatSeconds(intermissionRemainingMs / 1000)}s`
+                      : `${formatSeconds(roundRemainingMs / 1000)}s left (24s round)`}
+                  </div>
+                </div>
 
-            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-4">
-              <div
-                className="h-full bg-green-400 transition-all"
-                style={{ width: `${roundProgressRatio * 100}%` }}
-              />
-        </div>
+                <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-4">
+                  <div
+                    className="h-full bg-green-400 transition-all"
+                    style={{ width: `${roundProgressRatio * 100}%` }}
+                  />
+                </div>
+              </>
+            )}
 
                 {room?.status === 'intermission' && (
               <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-10">
@@ -908,68 +909,64 @@ export default function Game24() {
 
             <div className="max-w-xl mx-auto p-4 space-y-8">
               <div>
-                <div className="game-board mb-4">
-                  {[0, 1, 2, 3].map((position) => renderCardAtPosition(position))}
-                </div>
-                <div className="flex justify-center gap-4 mb-4">
-          {OPERATORS.map(({ op, class: className, symbol }) => (
-            <button
-              key={op}
-              className={`operator-btn ${className} ${gameState.pendingOperation === op ? 'selected' : ''}`}
-              onClick={() => addOperator(op)}
-              aria-label={`${op} operator`}
-                      disabled={phase !== 'active'}
-            >
-              {symbol}
-            </button>
-          ))}
-        </div>
-                <div className="text-center text-gray-200 text-sm">
-                  {phase === 'waiting' && 'Waiting for host to start...'}
-                  {phase === 'active' && (hasSubmitted ? 'You submitted this round.' : 'Solve to score up to 1000 points.')}
-                  {phase === 'finished' && 'Game finished. Use Play Again to restart.'}
-          </div>
-        </div>
-
-              <div className="bg-white/5 border border-white/15 rounded-2xl p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-lg font-semibold">Practice (offline)</div>
-                  <button
-                    onClick={generatePractice}
-                    className="text-sm bg-white/10 hover:bg-white/20 px-3 py-1 rounded border border-white/20"
-                  >
-                    New Puzzle
-                  </button>
-                </div>
-                <div className="game-board mb-4">
-                  {[0, 1, 2, 3].map((position) => renderPracticeCard(position))}
-                </div>
-                <div className="flex justify-center gap-4 mb-4">
-                  {OPERATORS.map(({ op, class: className, symbol }) => (
-                    <button
-                      key={op}
-                      className={`operator-btn ${className} ${practicePendingOp === op ? 'selected' : ''}`}
-                      onClick={() => addPracticeOp(op)}
-                      aria-label={`${op} operator`}
-                    >
-                      {symbol}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex justify-center gap-3">
-          <button 
-                    onClick={generatePractice}
-            className="action-btn danger"
-          >
-                    🔄 Reset
-          </button>
-          <button 
-                    onClick={showPracticeSolution}
-            className="action-btn primary"
-          >
-                    💡 Solution
-          </button>
-                </div>
+                {phase === 'active' ? (
+                  <>
+                    <div className="game-board mb-4">
+                      {[0, 1, 2, 3].map((position) => renderCardAtPosition(position))}
+                    </div>
+                    <div className="flex justify-center gap-4 mb-4">
+                      {OPERATORS.map(({ op, class: className, symbol }) => (
+                        <button
+                          key={op}
+                          className={`operator-btn ${className} ${gameState.pendingOperation === op ? 'selected' : ''}`}
+                          onClick={() => addOperator(op)}
+                          aria-label={`${op} operator`}
+                          disabled={phase !== 'active'}
+                        >
+                          {symbol}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="text-center text-gray-200 text-sm">
+                      {hasSubmitted ? 'You submitted this round.' : 'Solve to score up to 1000 points (now over 24s).'}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="game-board mb-4">
+                      {[0, 1, 2, 3].map((position) => renderPracticeCard(position))}
+                    </div>
+                    <div className="flex justify-center gap-4 mb-4">
+                      {OPERATORS.map(({ op, class: className, symbol }) => (
+                        <button
+                          key={op}
+                          className={`operator-btn ${className} ${practicePendingOp === op ? 'selected' : ''}`}
+                          onClick={() => addPracticeOp(op)}
+                          aria-label={`${op} operator`}
+                        >
+                          {symbol}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex justify-center gap-3 mb-2">
+                      <button
+                        onClick={generatePractice}
+                        className="action-btn danger"
+                      >
+                        🔄 New Puzzle
+                      </button>
+                      <button
+                        onClick={showPracticeSolution}
+                        className="action-btn primary"
+                      >
+                        💡 Solution
+                      </button>
+                    </div>
+                    <div className="text-center text-gray-200 text-sm">
+                      Free play while waiting/not in a room. Timer/solution disable only when a round is active.
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </main>

@@ -4,7 +4,7 @@ export type Game24Status = 'waiting' | 'active' | 'intermission' | 'finished'
 
 export const GAME24_MAX_PLAYERS = 20
 export const GAME24_MAX_ROUNDS = 8
-export const GAME24_ROUND_DURATION_MS = 15_000
+export const GAME24_ROUND_DURATION_MS = 24_000
 export const GAME24_INTERMISSION_MS = 5_000
 
 export { generateRoomPin, validateRoomPin }

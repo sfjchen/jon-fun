@@ -37,7 +37,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'playerId and expression are required' }, { status: 400 })
     }
 
-    if (!isExpressionSafe(expression)) {
+    const normalizedExpression = expression.replace(/×/g, '*').replace(/÷/g, '/')
+
+    if (!isExpressionSafe(normalizedExpression)) {
       return NextResponse.json({ error: 'Invalid characters in expression' }, { status: 400 })
     }
 
@@ -77,14 +79,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Round not found' }, { status: 404 })
     }
 
-    const usedNumbers = extractNumbers(expression)
+    const usedNumbers = extractNumbers(normalizedExpression)
     const roundNumbers = Array.isArray(round.numbers) ? round.numbers.map((n: number) => Number(n)) : []
 
     if (!multisetEquals(usedNumbers, roundNumbers)) {
       return NextResponse.json({ error: 'Expression must use the provided numbers' }, { status: 400 })
     }
 
-    const result = evaluateExpression(expression)
+    const result = evaluateExpression(normalizedExpression)
     if (result === null || Math.abs(result - 24) > 0.001) {
       return NextResponse.json({ error: 'Expression does not evaluate to 24' }, { status: 400 })
     }
