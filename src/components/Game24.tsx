@@ -97,7 +97,6 @@ export default function Game24() {
 
   const pendingAdvanceRef = useRef(false)
   const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const hasActiveSubscription = useRef(false)
 
   const isHost = hostId && room?.host_id === hostId
 
@@ -183,9 +182,7 @@ export default function Game24() {
   }, [round])
 
   useEffect(() => {
-    if (!pinInput || !room) return
-    if (hasActiveSubscription.current) return
-    hasActiveSubscription.current = true
+    if (!pinInput) return
 
     const roomChannel = supabase
       .channel(`game24:room:${pinInput}`)
@@ -218,9 +215,8 @@ export default function Game24() {
       roomChannel.unsubscribe()
       playersChannel.unsubscribe()
       roundsChannel.unsubscribe()
-      hasActiveSubscription.current = false
     }
-  }, [pinInput, room, loadRoomData])
+  }, [pinInput, loadRoomData])
 
   const advanceRound = useCallback(async () => {
     if (!pinInput) return
@@ -244,8 +240,10 @@ export default function Game24() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (room?.status === 'active' && room.current_round_started_at) {
-        const elapsed = Date.now() - new Date(room.current_round_started_at).getTime()
+      const startTime = room?.current_round_started_at ?? round?.started_at ?? null
+
+      if (room?.status === 'active' && startTime) {
+        const elapsed = Date.now() - new Date(startTime).getTime()
         const remaining = Math.max(0, GAME24_ROUND_DURATION_MS - elapsed)
         setRoundRemainingMs(remaining)
         if (remaining <= 0 && !pendingAdvanceRef.current) {
@@ -269,11 +267,23 @@ export default function Game24() {
     }, 300)
 
     return () => clearInterval(interval)
-  }, [room, advanceRound])
+  }, [room, round, advanceRound])
+
+  useEffect(() => {
+    if (room?.status) {
+      pendingAdvanceRef.current = false
+    }
+  }, [room?.status, room?.round_number, room?.current_round_started_at])
 
   const resetSelections = useCallback(() => {
-    setGameState((prev) => ({ ...prev, selectedCard: null, pendingOperation: null }))
-  }, [])
+    if (phase === 'active') {
+      setGameState((prev) => ({ ...prev, selectedCard: null, pendingOperation: null }))
+    } else {
+      setPracticeCards(buildCards(practiceNumbers))
+      setPracticeSelected(null)
+      setPracticePendingOp(null)
+    }
+  }, [phase, practiceNumbers])
 
   const selectCard = useCallback((index: number) => {
     setGameState((prev) => {
@@ -319,74 +329,74 @@ export default function Game24() {
     (secondCardIndex: number) => {
       if (phase !== 'active') return
       setGameState((prev) => {
-      if (prev.selectedCard === null || prev.pendingOperation === null) return prev
-      
-      const firstCard = prev.cards[prev.selectedCard]
-      const secondCard = prev.cards[secondCardIndex]
-      
-      if (!firstCard || !secondCard) return prev
-      
-      try {
-        let result: number
-        let expression: string
-        
-        switch (prev.pendingOperation) {
-          case '+':
-            result = firstCard.value + secondCard.value
-            expression = `(${firstCard.expression} + ${secondCard.expression})`
-            break
-          case '-':
-            result = firstCard.value - secondCard.value
-            expression = `(${firstCard.expression} - ${secondCard.expression})`
-            break
-          case '*':
-            result = firstCard.value * secondCard.value
-            expression = `(${firstCard.expression} × ${secondCard.expression})`
-            break
-          case '/':
-            if (secondCard.value === 0) {
-              showTemporaryMessage('❌ Cannot divide by zero!')
-              return { ...prev, selectedCard: null, pendingOperation: null }
-            }
-            result = firstCard.value / secondCard.value
-            expression = `(${firstCard.expression} ÷ ${secondCard.expression})`
-            break
-          default:
-            return prev
-        }
-        
+        if (prev.selectedCard === null || prev.pendingOperation === null) return prev
+
+        const firstCard = prev.cards[prev.selectedCard]
+        const secondCard = prev.cards[secondCardIndex]
+
+        if (!firstCard || !secondCard) return prev
+
+        try {
+          let result: number
+          let expression: string
+
+          switch (prev.pendingOperation) {
+            case '+':
+              result = firstCard.value + secondCard.value
+              expression = `(${firstCard.expression} + ${secondCard.expression})`
+              break
+            case '-':
+              result = firstCard.value - secondCard.value
+              expression = `(${firstCard.expression} - ${secondCard.expression})`
+              break
+            case '*':
+              result = firstCard.value * secondCard.value
+              expression = `(${firstCard.expression} × ${secondCard.expression})`
+              break
+            case '/':
+              if (secondCard.value === 0) {
+                showTemporaryMessage('❌ Cannot divide by zero!')
+                return { ...prev, selectedCard: null, pendingOperation: null }
+              }
+              result = firstCard.value / secondCard.value
+              expression = `(${firstCard.expression} ÷ ${secondCard.expression})`
+              break
+            default:
+              return prev
+          }
+
           const newCards = prev.cards
             .map((card, i) => {
               if (i === prev.selectedCard) return null
               if (i === secondCardIndex) {
-            return {
-              value: result,
+                return {
+                  value: result,
                   expression,
-              isResult: true,
+                  isResult: true,
                   position: card.position,
                 }
-            }
-            return card
+              }
+              return card
             })
             .filter((card): card is Card => card !== null)
-        
+
           const resultCardIndex = newCards.findIndex((card) => card.position === secondCard.position)
-        
+
           if (newCards.length === 1 && Math.abs(newCards[0]!.value - 24) < 0.001) {
             submitSolution(newCards[0]!.expression)
+          }
+
+          return {
+            ...prev,
+            cards: newCards,
+            selectedCard: resultCardIndex,
+            pendingOperation: null,
+          }
+        } catch {
+          showTemporaryMessage('❌ Invalid operation')
+          return { ...prev, selectedCard: null, pendingOperation: null }
         }
-        
-        return {
-          ...prev,
-          cards: newCards,
-          selectedCard: resultCardIndex,
-          pendingOperation: null,
-        }
-      } catch {
-        showTemporaryMessage('❌ Invalid operation')
-        return { ...prev, selectedCard: null, pendingOperation: null }
-      }
-    })
+      })
     },
     [phase, submitSolution, showTemporaryMessage]
   )
@@ -723,23 +733,8 @@ export default function Game24() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="flex items-center justify-between mb-6 text-white">
-        <Link href="/" className="header-icon" aria-label="Go home">
-          🏠
-        </Link>
-        <div className="text-center">
-            <div className="text-lg font-semibold">Your Score</div>
-            <div className="bg-white/10 rounded-lg px-4 py-2 mt-1 text-2xl font-bold">
-              {players.find((p) => p.player_id === playerId)?.score ?? 0}
-            </div>
-          </div>
-          <button onClick={resetSelections} className="header-icon text-2xl" aria-label="Reset selection">
-            ↻
-          </button>
-        </div>
-        
-        <div className="grid lg:grid-cols-[320px_1fr] gap-6">
+      <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col gap-6">
+        <div className="grid lg:grid-cols-[320px_1fr] gap-6 order-1">
           <aside className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white">
             {!room && (
               <div className="space-y-4">
@@ -858,6 +853,21 @@ export default function Game24() {
           </aside>
 
           <main className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white relative overflow-hidden">
+            <div className="flex items-center justify-between mb-6 text-white">
+              <Link href="/" className="header-icon" aria-label="Go home">
+                🏠
+              </Link>
+              <div className="text-center">
+                <div className="text-lg font-semibold">Your Score</div>
+                <div className="bg-white/10 rounded-lg px-4 py-2 mt-1 text-2xl font-bold">
+                  {players.find((p) => p.player_id === playerId)?.score ?? 0}
+                </div>
+              </div>
+              <button onClick={resetSelections} className="header-icon text-2xl" aria-label="Reset selection">
+                ↻
+              </button>
+            </div>
+
             {(room?.status === 'active' || room?.status === 'intermission') && (
               <>
                 <div className="flex items-center justify-between mb-4">
