@@ -195,7 +195,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
     }, 1000)
 
     return () => clearInterval(intervalId)
-  }, [gameState?.action_on, room?.timer_per_turn])
+  }, [gameState, room?.timer_per_turn])
 
   const handleAction = async (action: BettingAction, amount?: number) => {
     if (!currentPlayerId || !gameState) return

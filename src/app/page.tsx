@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState } from 'react'
 
 const games = [
@@ -168,10 +169,13 @@ function GameCard({ game, onComingSoonClick }: GameCardProps) {
     <div className="text-center">
       <div className="mb-4 flex justify-center items-center h-16">
         {game.icon.startsWith('/') ? (
-          <img
+          <Image
             src={game.icon}
             alt={game.title}
+            width={64}
+            height={64}
             className="h-14 w-14 sm:h-16 sm:w-16 object-contain drop-shadow-lg"
+            priority
           />
         ) : (
           <span className="text-5xl leading-none">{game.icon}</span>

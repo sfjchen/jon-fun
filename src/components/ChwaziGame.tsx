@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 type Status = 'idle' | 'primed' | 'selecting' | 'winner'
 
@@ -65,7 +65,7 @@ export default function ChwaziGame() {
     return color ?? '#ff5252'
   }
 
-  const startSelectionCountdown = () => {
+  const startSelectionCountdown = useCallback(() => {
     if (selectionTimerRef.current) clearTimeout(selectionTimerRef.current)
     selectionTimerRef.current = setTimeout(() => {
       const ids = Array.from(touchesRef.current.keys())
@@ -74,18 +74,18 @@ export default function ChwaziGame() {
       setWinnerId(randomWinner ?? null)
       setStatusSafe('winner')
     }, SELECT_DELAY_MS)
-  }
+  }, [])
 
-  const startPrimeCountdown = () => {
+  const startPrimeCountdown = useCallback(() => {
     if (primeTimerRef.current) clearTimeout(primeTimerRef.current)
     primeTimerRef.current = setTimeout(() => {
       if (touchesRef.current.size < 2) return
       setStatusSafe('selecting')
       startSelectionCountdown()
     }, PRIME_DELAY_MS)
-  }
+  }, [startSelectionCountdown])
 
-  const evaluateState = () => {
+  const evaluateState = useCallback(() => {
     const fingerCount = touchesRef.current.size
 
     if (fingerCount < 2) {
@@ -110,7 +110,7 @@ export default function ChwaziGame() {
     if (statusRef.current === 'selecting') {
       startSelectionCountdown()
     }
-  }
+  }, [startPrimeCountdown, startSelectionCountdown])
 
   useEffect(() => {
     const container = containerRef.current
@@ -181,7 +181,7 @@ export default function ChwaziGame() {
         cancelAnimationFrame(rafRef.current)
       }
     }
-  }, [])
+  }, [evaluateState])
 
   return (
     <div

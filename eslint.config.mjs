@@ -10,6 +10,19 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  {
+    ignores: [
+      "node_modules/**",
+      ".next/**",
+      ".vercel/**",
+      "out/**",
+      "build/**",
+      "public/**",
+      "next-env.d.ts",
+      "*.config.js",
+      "*.config.mjs",
+    ],
+  },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     rules: {
@@ -21,15 +34,6 @@ const eslintConfig = [
       "@typescript-eslint/triple-slash-reference": "warn",
       "import/no-anonymous-default-export": "warn",
     },
-    ignores: [
-      "node_modules/**",
-      ".next/**",
-      "out/**",
-      "build/**",
-      "next-env.d.ts",
-      "*.config.js",
-      "*.config.mjs",
-    ],
   },
 ];
 
