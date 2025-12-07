@@ -178,7 +178,7 @@ src/
 - **Vercel auto-deploys** on push to main (1-3 minutes)
 
 ### ⚠️ IMPORTANT: After Making Changes
-**Always run `git acp -m "your message"` at the end of each prompt/session to update deployment.**
+**Always run `git acp -m "your message"` after every set of edits to update deployment before ending agent response.**
 
 ### Environment Variables
 

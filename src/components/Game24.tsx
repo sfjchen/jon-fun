@@ -64,16 +64,14 @@ export default function Game24() {
   }, [])
 
   const generateNumbers = useCallback(() => {
-    let attempts = 0
-    let newNumbers: number[]
-    
-    do {
-      newNumbers = Array.from({ length: 4 }, () => Math.floor(Math.random() * 9) + 1)
-      attempts++
-    } while (!solver.hasSolution(newNumbers) && attempts < 100)
-
-    if (!solver.hasSolution(newNumbers)) {
-      newNumbers = [4, 6, 8, 1] // Known solvable
+    let newNumbers: number[] = [4, 6, 8, 1]
+    const maxAttempts = 50
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const candidate = Array.from({ length: 4 }, () => Math.floor(Math.random() * 9) + 1)
+      if (solver.hasSolution(candidate)) {
+        newNumbers = candidate
+        break
+      }
     }
 
     const newCards = newNumbers.map((num, index) => ({

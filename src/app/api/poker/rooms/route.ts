@@ -12,76 +12,68 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Host name is required' }, { status: 400 })
     }
 
-    // Generate unique 4-digit PIN
-    let pin: string
-    let attempts = 0
-    do {
-      pin = generateRoomPin()
-      const { data: existing } = await supabase
-        .from('poker_rooms')
-        .select('pin')
-        .eq('pin', pin)
-        .single()
-      if (!existing) break
-      attempts++
-    } while (attempts < 100)
-
-    if (attempts >= 100) {
-      return NextResponse.json({ error: 'Failed to generate unique room PIN' }, { status: 500 })
-    }
-
     const hostId = uuidv4()
     const roomId = uuidv4()
 
-    // Create room
+    // Create room with minimal round-trips: generate PIN, insert, retry on unique conflicts
     const now = new Date().toISOString()
-    const roomData: {
-      id: string
-      pin: string
-      host_id: string
-      small_blind: number
-      big_blind: number
-      status: string
-      created_at: string
-      last_activity: string
-      timer_per_turn?: number
-    } = {
-      id: roomId,
-      pin,
-      host_id: hostId,
-      small_blind: smallBlind,
-      big_blind: bigBlind,
-      status: 'waiting',
-      created_at: now,
-      last_activity: now,
-      timer_per_turn: timerPerTurn,
-    }
-    
-    const { data: room, error: roomError } = await supabase
-      .from('poker_rooms')
-      .insert(roomData)
-      .select()
-      .single()
+    let finalRoom:
+      | {
+          id: string
+          pin: string
+          host_id: string
+          small_blind: number
+          big_blind: number
+          status: string
+          created_at: string
+          last_activity: string
+          timer_per_turn?: number
+        }
+      | null = null
 
-    let finalRoom = room!
-    
-    if (roomError) {
-      // If error is about missing column, try without timer_per_turn
-      if (roomError.message?.includes('column') && roomError.message?.includes('timer_per_turn')) {
-        delete roomData.timer_per_turn
-        const { data: retryRoom, error: retryError } = await supabase
-          .from('poker_rooms')
-          .insert(roomData)
-          .select()
-          .single()
-        
-        if (retryError) {
+    for (let attempt = 0; attempt < 8 && !finalRoom; attempt++) {
+      const pin = generateRoomPin()
+      const baseRoomData = {
+        id: roomId,
+        pin,
+        host_id: hostId,
+        small_blind: smallBlind,
+        big_blind: bigBlind,
+        status: 'waiting',
+        created_at: now,
+        last_activity: now,
+        timer_per_turn: timerPerTurn,
+      }
+
+      const tryInsert = async (data: typeof baseRoomData) =>
+        supabase.from('poker_rooms').insert(data).select().single()
+
+      const { data: room, error: roomError } = await tryInsert(baseRoomData)
+
+      if (room) {
+        finalRoom = room
+        break
+      }
+
+      if (roomError?.message?.includes('column') && roomError.message.includes('timer_per_turn')) {
+        const { data: retryRoom, error: retryError } = await tryInsert({
+          ...baseRoomData,
+          timer_per_turn: undefined,
+        })
+        if (retryRoom) {
+          finalRoom = retryRoom
+          break
+        }
+        if (!retryError?.code?.toString().includes('23505') && !retryError?.message?.includes('duplicate')) {
           return NextResponse.json({ error: 'Failed to create room' }, { status: 500 })
         }
-        finalRoom = retryRoom
-      } else {
+      } else if (!roomError?.code?.toString().includes('23505') && !roomError?.message?.includes('duplicate')) {
         return NextResponse.json({ error: 'Failed to create room' }, { status: 500 })
       }
+    }
+
+    if (!finalRoom) {
+      return NextResponse.json({ error: 'Failed to generate unique room PIN' }, { status: 500 })
     }
 
     // Create host player
@@ -89,7 +81,7 @@ export async function POST(request: NextRequest) {
       .from('poker_players')
       .insert({
         id: uuidv4(),
-        room_pin: pin,
+        room_pin: finalRoom.pin,
         player_id: hostId,
         name: hostName.trim(),
         chips: 0,
@@ -102,12 +94,12 @@ export async function POST(request: NextRequest) {
       })
 
     if (playerError) {
-      await supabase.from('poker_rooms').delete().eq('pin', pin)
+      await supabase.from('poker_rooms').delete().eq('pin', finalRoom.pin)
       return NextResponse.json({ error: 'Failed to create host player' }, { status: 500 })
     }
 
     return NextResponse.json({
-      pin,
+      pin: finalRoom.pin,
       hostId,
       room: {
         ...finalRoom,

@@ -2,33 +2,52 @@ export class Solver24 {
   private static readonly OPERATORS = ['+', '-', '*', '/'] as const
   private static readonly TARGET = 24
   private static readonly EPSILON = 0.001
+  private readonly hasSolutionCache = new Map<string, boolean>()
+  private readonly solutionCache = new Map<string, string | null>()
+
+  private getKey(numbers: number[]): string {
+    return [...numbers].sort((a, b) => a - b).join(',')
+  }
 
   hasSolution(numbers: number[]): boolean {
     if (numbers.length !== 4) return false
-    
+
+    const key = this.getKey(numbers)
+    const cached = this.hasSolutionCache.get(key)
+    if (cached !== undefined) return cached
+
     const permutations = this.getPermutations(numbers)
-    
+
     for (const perm of permutations) {
       if (this.canMakeTarget(perm)) {
+        this.hasSolutionCache.set(key, true)
         return true
       }
     }
-    
+
+    this.hasSolutionCache.set(key, false)
     return false
   }
 
   getSolution(numbers: number[]): string | null {
     if (numbers.length !== 4) return null
-    
+
+    const key = this.getKey(numbers)
+    if (this.solutionCache.has(key)) {
+      return this.solutionCache.get(key) ?? null
+    }
+
     const permutations = this.getPermutations(numbers)
-    
+
     for (const perm of permutations) {
       const solution = this.findSolution(perm)
       if (solution) {
+        this.solutionCache.set(key, solution)
         return solution
       }
     }
-    
+
+    this.solutionCache.set(key, null)
     return null
   }
 

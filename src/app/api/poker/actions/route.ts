@@ -16,37 +16,53 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Player ID and action are required' }, { status: 400 })
     }
 
-    // Get current game state
-    const { data: gameState, error: stateError } = await supabase
-      .from('poker_game_state')
-      .select('*')
-      .eq('room_pin', pin)
-      .single()
+    const [gameStateResult, playerResult] = await Promise.all([
+      supabase
+        .from('poker_game_state')
+        .select('*')
+        .eq('room_pin', pin)
+        .single(),
+      supabase
+        .from('poker_players')
+        .select('*')
+        .eq('room_pin', pin)
+        .eq('player_id', playerId)
+        .single(),
+    ])
 
-    if (stateError || !gameState) {
+    const gameState = gameStateResult.data
+    const player = playerResult.data
+
+    if (gameStateResult.error || !gameState || !gameState.is_game_active) {
       return NextResponse.json({ error: 'Game not found or not active' }, { status: 404 })
     }
 
-    // Get player
-    const { data: player, error: playerError } = await supabase
-      .from('poker_players')
-      .select('*')
-      .eq('room_pin', pin)
-      .eq('player_id', playerId)
-      .single()
-
-    if (playerError || !player) {
+    if (playerResult.error || !player) {
       return NextResponse.json({ error: 'Player not found' }, { status: 404 })
     }
 
+    if (gameState.action_on !== player.position) {
+      return NextResponse.json({ error: 'Not your turn' }, { status: 409 })
+    }
+
     // Calculate action amount
-    let actionAmount = amount || 0
+    const chipsAvailable = Math.max(0, player.chips)
+    let actionAmount = amount ?? 0
     if (action === 'call') {
-      actionAmount = Math.max(0, gameState.current_bet - player.current_bet)
+      actionAmount = Math.min(Math.max(0, gameState.current_bet - player.current_bet), chipsAvailable)
     } else if (action === 'bet' || action === 'raise') {
-      actionAmount = amount || gameState.big_blind
+      const minBet = gameState.big_blind ?? 0
+      actionAmount = Math.max(minBet, Math.min(chipsAvailable, amount ?? minBet))
     } else if (action === 'all-in') {
-      actionAmount = player.chips
+      actionAmount = chipsAvailable
+    } else if (action === 'check' || action === 'fold') {
+      actionAmount = 0
+    } else {
+      return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+    }
+
+    if (actionAmount < 0) {
+      return NextResponse.json({ error: 'Invalid amount' }, { status: 400 })
     }
 
     // Update player
@@ -82,6 +98,11 @@ export async function POST(request: NextRequest) {
     }
 
     const now = new Date().toISOString()
+    const newCurrentBet =
+      action === 'bet' || action === 'raise'
+        ? Math.max(gameState.current_bet ?? 0, (player.current_bet ?? 0) + actionAmount)
+        : gameState.current_bet
+
     const dbUpdates = [
       supabase.from('poker_actions').insert({
         room_pin: pin,
@@ -101,7 +122,7 @@ export async function POST(request: NextRequest) {
       dbUpdates.push(
         supabase
           .from('poker_game_state')
-          .update({ current_bet: actionAmount })
+          .update({ current_bet: newCurrentBet })
           .eq('room_pin', pin)
       )
     }

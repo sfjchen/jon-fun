@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { Player, BettingAction, Card } from '@/lib/poker'
 import PokerPlayer from './PokerPlayer'
@@ -65,10 +65,13 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
   const [error, setError] = useState('')
   const [isMobile, setIsMobile] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<Record<number, number>>({})
+  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const fetchAbortRef = useRef<AbortController | null>(null)
 
-  const loadGameData = useCallback(async () => {
+  const loadGameData = useCallback(async (signal?: AbortSignal) => {
     try {
-      const response = await fetch(`/api/poker/rooms/${pin}`)
+      const init: RequestInit | undefined = signal ? { signal } : undefined
+      const response = await fetch(`/api/poker/rooms/${pin}`, init)
       const data = await response.json()
 
       if (!response.ok) {
@@ -95,10 +98,23 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
       setRoom(data.room)
       setLoading(false)
     } catch (err) {
+      if (signal?.aborted) return
       setError(err instanceof Error ? err.message : 'Failed to load game')
       setLoading(false)
     }
   }, [pin])
+
+  const scheduleLoad = useCallback(() => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current)
+    }
+    debounceTimeoutRef.current = setTimeout(() => {
+      fetchAbortRef.current?.abort()
+      const controller = new AbortController()
+      fetchAbortRef.current = controller
+      void loadGameData(controller.signal)
+    }, 120)
+  }, [loadGameData])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -125,9 +141,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
           table: 'poker_players',
           filter: `room_pin=eq.${pin}`,
         },
-        () => {
-          loadGameData()
-        }
+        scheduleLoad
       )
       .subscribe()
 
@@ -141,17 +155,19 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
           table: 'poker_game_state',
           filter: `room_pin=eq.${pin}`,
         },
-        () => {
-          loadGameData()
-        }
+        scheduleLoad
       )
       .subscribe()
 
     return () => {
       playerSubscription.unsubscribe()
       stateSubscription.unsubscribe()
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current)
+      }
+      fetchAbortRef.current?.abort()
     }
-  }, [pin, loadGameData])
+  }, [pin, loadGameData, scheduleLoad])
 
   // Timer countdown effect
   useEffect(() => {

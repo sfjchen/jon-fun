@@ -145,10 +145,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Footer */}
-        <footer className="text-center mt-16 text-gray-400">
-          <p>© 2024 Game Hub</p>
-        </footer>
       </div>
     </div>
   )
@@ -170,15 +166,15 @@ interface GameCardProps {
 function GameCard({ game, onComingSoonClick }: GameCardProps) {
   const CardContent = () => (
     <div className="text-center">
-      <div className="text-4xl mb-4 flex justify-center items-center">
+      <div className="mb-4 flex justify-center items-center h-16">
         {game.icon.startsWith('/') ? (
           <img
             src={game.icon}
             alt={game.title}
-            className="w-16 h-16"
+            className="h-14 w-14 sm:h-16 sm:w-16 object-contain drop-shadow-lg"
           />
         ) : (
-          <span>{game.icon}</span>
+          <span className="text-5xl leading-none">{game.icon}</span>
         )}
       </div>
       <h2 className="text-2xl font-bold text-white mb-2">{game.title}</h2>

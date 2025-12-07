@@ -2,185 +2,267 @@
 
 import { useEffect, useRef, useState } from 'react'
 
+type Status = 'idle' | 'primed' | 'selecting' | 'winner'
+
 interface TouchPoint {
-    id: number
-    x: number
-    y: number
-    color: string
+  id: number
+  x: number
+  y: number
+  color: string
 }
 
-const COLORS = [
-    '#FF6B6B', // Red
-    '#4ECDC4', // Teal
-    '#45B7D1', // Blue
-    '#96CEB4', // Green
-    '#FFEEAD', // Yellow
-    '#D4A5A5', // Pink
-    '#9B59B6', // Purple
-    '#3498DB', // Dark Blue
+const CHWAZI_COLORS = [
+  '#ff5252',
+  '#ffb300',
+  '#7c4dff',
+  '#1de9b6',
+  '#40c4ff',
+  '#ff4081',
+  '#aeea00',
+  '#ff6e40',
 ]
 
+const PRIME_DELAY_MS = 650
+const SELECT_DELAY_MS = 950
+
 export default function ChwaziGame() {
-    const [touches, setTouches] = useState<Map<number, TouchPoint>>(new Map())
-    const [status, setStatus] = useState<'waiting' | 'selecting' | 'winner'>('waiting')
-    const [winnerId, setWinnerId] = useState<number | null>(null)
-    const containerRef = useRef<HTMLDivElement>(null)
-    const timerRef = useRef<NodeJS.Timeout | null>(null)
-    const touchesRef = useRef<Map<number, TouchPoint>>(new Map())
+  const [touches, setTouches] = useState<Map<number, TouchPoint>>(new Map())
+  const [status, setStatus] = useState<Status>('idle')
+  const [winnerId, setWinnerId] = useState<number | null>(null)
 
-    // Handle touch events
-    useEffect(() => {
-        const container = containerRef.current
-        if (!container) return
+  const containerRef = useRef<HTMLDivElement>(null)
+  const touchesRef = useRef<Map<number, TouchPoint>>(new Map())
+  const statusRef = useRef<Status>('idle')
+  const primeTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const selectionTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const rafRef = useRef<number | null>(null)
 
-        const handleTouchStart = (e: TouchEvent) => {
-            e.preventDefault()
-            setTouches(prev => {
-                const newTouches = new Map(prev)
+  const setStatusSafe = (next: Status) => {
+    statusRef.current = next
+    setStatus(next)
+  }
 
-                // Reset if game over and new touch detected
-                if (status === 'winner') {
-                    setStatus('waiting')
-                    setWinnerId(null)
-                    newTouches.clear()
-                }
+  const clearTimers = () => {
+    if (primeTimerRef.current) clearTimeout(primeTimerRef.current)
+    if (selectionTimerRef.current) clearTimeout(selectionTimerRef.current)
+    primeTimerRef.current = null
+    selectionTimerRef.current = null
+  }
 
-                Array.from(e.changedTouches).forEach((touch) => {
-                    const usedColors = new Set(Array.from(newTouches.values()).map(t => t.color))
-                    const availableColors = COLORS.filter(c => !usedColors.has(c))
-                    const color = (availableColors.length > 0
-                        ? availableColors[Math.floor(Math.random() * availableColors.length)]
-                        : COLORS[Math.floor(Math.random() * COLORS.length)]) ?? '#FF6B6B'
+  const scheduleCommitTouches = () => {
+    if (rafRef.current !== null) return
+    rafRef.current = requestAnimationFrame(() => {
+      setTouches(new Map(touchesRef.current))
+      rafRef.current = null
+    })
+  }
 
-                    newTouches.set(touch.identifier, {
-                        id: touch.identifier,
-                        x: touch.clientX,
-                        y: touch.clientY,
-                        color
-                    })
-                })
-                touchesRef.current = newTouches
-                return newTouches
-            })
-        }
+  const pickColor = (currentTouches: Map<number, TouchPoint>): string => {
+    const usedColors = new Set(Array.from(currentTouches.values()).map((touch) => touch.color))
+    const available = CHWAZI_COLORS.filter((color) => !usedColors.has(color))
+    const palette = available.length > 0 ? available : CHWAZI_COLORS
+    const color = palette[Math.floor(Math.random() * palette.length)] ?? CHWAZI_COLORS[0]
+    return color ?? '#ff5252'
+  }
 
-        const handleTouchMove = (e: TouchEvent) => {
-            e.preventDefault()
-            setTouches(prev => {
-                const newTouches = new Map(prev)
-                Array.from(e.changedTouches).forEach((touch) => {
-                    if (newTouches.has(touch.identifier)) {
-                        const existing = newTouches.get(touch.identifier)!
-                        newTouches.set(touch.identifier, { ...existing, x: touch.clientX, y: touch.clientY })
-                    }
-                })
-                touchesRef.current = newTouches
-                return newTouches
-            })
-        }
+  const startSelectionCountdown = () => {
+    if (selectionTimerRef.current) clearTimeout(selectionTimerRef.current)
+    selectionTimerRef.current = setTimeout(() => {
+      const ids = Array.from(touchesRef.current.keys())
+      if (ids.length < 2) return
+      const randomWinner = ids[Math.floor(Math.random() * ids.length)]
+      setWinnerId(randomWinner ?? null)
+      setStatusSafe('winner')
+    }, SELECT_DELAY_MS)
+  }
 
-        const handleTouchEnd = (e: TouchEvent) => {
-            e.preventDefault()
-            setTouches(prev => {
-                const newTouches = new Map(prev)
-                Array.from(e.changedTouches).forEach((touch) => {
-                    newTouches.delete(touch.identifier)
-                })
-                touchesRef.current = newTouches
-                return newTouches
-            })
-        }
+  const startPrimeCountdown = () => {
+    if (primeTimerRef.current) clearTimeout(primeTimerRef.current)
+    primeTimerRef.current = setTimeout(() => {
+      if (touchesRef.current.size < 2) return
+      setStatusSafe('selecting')
+      startSelectionCountdown()
+    }, PRIME_DELAY_MS)
+  }
 
-        // Add non-passive listeners to prevent scrolling
-        container.addEventListener('touchstart', handleTouchStart, { passive: false })
-        container.addEventListener('touchmove', handleTouchMove, { passive: false })
-        container.addEventListener('touchend', handleTouchEnd, { passive: false })
-        container.addEventListener('touchcancel', handleTouchEnd, { passive: false })
+  const evaluateState = () => {
+    const fingerCount = touchesRef.current.size
 
-        return () => {
-            container.removeEventListener('touchstart', handleTouchStart)
-            container.removeEventListener('touchmove', handleTouchMove)
-            container.removeEventListener('touchend', handleTouchEnd)
-            container.removeEventListener('touchcancel', handleTouchEnd)
-        }
-    }, [status])
+    if (fingerCount < 2) {
+      clearTimers()
+      if (statusRef.current !== 'idle') {
+        setStatusSafe('idle')
+      }
+      setWinnerId(null)
+      return
+    }
 
-    // Game Logic
-    useEffect(() => {
-        // If we are in winner state, don't do anything until reset
-        if (status === 'winner') return
+    if (statusRef.current === 'winner') {
+      setWinnerId(null)
+      setStatusSafe('primed')
+    }
 
-        // If less than 2 fingers, cancel any selection
-        if (touches.size < 2) {
-            if (status === 'selecting') {
-                setStatus('waiting')
-                if (timerRef.current) clearTimeout(timerRef.current)
-            }
-            return
-        }
+    if (statusRef.current === 'idle' || statusRef.current === 'primed') {
+      startPrimeCountdown()
+      return
+    }
 
-        // If 2 or more fingers and waiting, start selecting
-        if (status === 'waiting' && touches.size >= 2) {
-            setStatus('selecting')
+    if (statusRef.current === 'selecting') {
+      startSelectionCountdown()
+    }
+  }
 
-            // Wait 3 seconds then pick a winner
-            if (timerRef.current) clearTimeout(timerRef.current)
-            timerRef.current = setTimeout(() => {
-                const touchIds = Array.from(touchesRef.current.keys())
-                const randomWinner = touchIds[Math.floor(Math.random() * touchIds.length)]
-                setWinnerId(randomWinner ?? null)
-                setStatus('winner')
-            }, 3000)
-        }
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
 
-        // If touches change during selection, we might want to reset timer?
-        // For now, let's keep it simple: as long as >= 2 fingers, keep selecting.
-        // If it drops < 2, we handled that above.
+    const handleTouchStart = (e: TouchEvent) => {
+      e.preventDefault()
+      const updated = new Map(touchesRef.current)
 
-        return () => {
-            if (timerRef.current) clearTimeout(timerRef.current)
-        }
-    }, [touches.size, status]) // Only re-run if count or status changes
+      if (statusRef.current === 'winner') {
+        setStatusSafe('idle')
+        setWinnerId(null)
+      }
 
-    return (
-        <div
-            ref={containerRef}
-            className="fixed inset-0 bg-black touch-none select-none overflow-hidden"
-        >
-            {/* Instructions */}
-            {touches.size === 0 && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <p className="text-gray-500 text-xl animate-pulse">Place fingers on screen</p>
-                </div>
-            )}
+      Array.from(e.changedTouches).forEach((touch) => {
+        updated.set(touch.identifier, {
+          id: touch.identifier,
+          x: touch.clientX,
+          y: touch.clientY,
+          color: pickColor(updated),
+        })
+      })
 
-            {/* Touch Points */}
-            {Array.from(touches.values()).map((touch) => {
-                const isWinner = status === 'winner' && touch.id === winnerId
-                const isLoser = status === 'winner' && touch.id !== winnerId
+      touchesRef.current = updated
+      scheduleCommitTouches()
+      evaluateState()
+    }
 
-                return (
-                    <div
-                        key={touch.id}
-                        className={`absolute rounded-full transition-all duration-300 ease-out transform -translate-x-1/2 -translate-y-1/2
-              ${isWinner ? 'scale-150 z-10 ring-8 ring-white' : ''}
-              ${isLoser ? 'opacity-20 scale-75' : 'opacity-80'}
-              ${status === 'selecting' ? 'animate-pulse' : ''}
-            `}
-                        style={{
-                            left: touch.x,
-                            top: touch.y,
-                            width: '100px',
-                            height: '100px',
-                            backgroundColor: touch.color,
-                            boxShadow: `0 0 30px ${touch.color}`,
-                        }}
-                    >
-                        {/* Inner ring for visual flair */}
-                        <div className="absolute inset-2 rounded-full border-4 border-white/30" />
-                    </div>
-                )
-            })}
+    const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault()
+      const updated = new Map(touchesRef.current)
+
+      Array.from(e.changedTouches).forEach((touch) => {
+        if (!updated.has(touch.identifier)) return
+        const existing = updated.get(touch.identifier)!
+        updated.set(touch.identifier, { ...existing, x: touch.clientX, y: touch.clientY })
+      })
+
+      touchesRef.current = updated
+      scheduleCommitTouches()
+    }
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      e.preventDefault()
+      const updated = new Map(touchesRef.current)
+
+      Array.from(e.changedTouches).forEach((touch) => {
+        updated.delete(touch.identifier)
+      })
+
+      touchesRef.current = updated
+      scheduleCommitTouches()
+      evaluateState()
+    }
+
+    container.addEventListener('touchstart', handleTouchStart, { passive: false })
+    container.addEventListener('touchmove', handleTouchMove, { passive: false })
+    container.addEventListener('touchend', handleTouchEnd, { passive: false })
+    container.addEventListener('touchcancel', handleTouchEnd, { passive: false })
+
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStart)
+      container.removeEventListener('touchmove', handleTouchMove)
+      container.removeEventListener('touchend', handleTouchEnd)
+      container.removeEventListener('touchcancel', handleTouchEnd)
+      clearTimers()
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current)
+      }
+    }
+  }, [])
+
+  return (
+    <div
+      ref={containerRef}
+      className="fixed inset-0 bg-[#05070f] text-white touch-none select-none overflow-hidden"
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(64,196,255,0.08),transparent_35%),radial-gradient(circle_at_80%_30%,rgba(255,64,129,0.12),transparent_35%),radial-gradient(circle_at_50%_80%,rgba(29,233,182,0.12),transparent_35%)]" />
+
+      <div className="relative h-full w-full">
+        <div className="absolute top-6 w-full flex justify-center">
+          <div className="px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-sm font-medium tracking-wide text-gray-100">
+            {status === 'selecting'
+              ? 'Selecting…'
+              : status === 'winner'
+                ? 'Winner chosen'
+                : 'Place and hold your fingers'}
+          </div>
         </div>
-    )
+
+        {touches.size === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <p className="text-gray-400 text-xl font-semibold tracking-wide animate-pulse">
+              Place your fingers on the screen
+            </p>
+          </div>
+        )}
+
+        {Array.from(touches.values()).map((touch) => {
+          const isWinner = winnerId === touch.id && status === 'winner'
+          const dimmed = status === 'winner' && !isWinner
+          const isSelecting = status === 'selecting'
+          const size = 96
+
+          return (
+            <div
+              key={touch.id}
+              className={`absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ease-out ${isWinner ? 'scale-150' : isSelecting ? 'scale-110' : 'scale-100'} ${dimmed ? 'opacity-30' : 'opacity-90'}`}
+              style={{
+                left: touch.x,
+                top: touch.y,
+                width: size,
+                height: size,
+              }}
+            >
+              <div
+                className={`absolute inset-0 rounded-full ${isSelecting || isWinner ? 'animate-ping' : ''}`}
+                style={{
+                  backgroundColor: `${touch.color}33`,
+                  boxShadow: `0 0 40px ${touch.color}55`,
+                }}
+              />
+
+              <div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: `radial-gradient(circle at 30% 30%, #ffffff, ${touch.color})`,
+                  boxShadow: `0 10px 35px ${touch.color}aa, inset 0 0 14px #ffffff22`,
+                  border: `4px solid ${isWinner ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.45)'}`,
+                }}
+              />
+
+              <div className="absolute inset-2 rounded-full border-2 border-white/30" />
+
+              {isWinner && (
+                <div
+                  className="absolute inset-[-16px] rounded-full animate-ping"
+                  style={{ backgroundColor: `${touch.color}33` }}
+                />
+              )}
+            </div>
+          )
+        })}
+
+        {status === 'winner' && winnerId !== null && (
+          <div className="absolute bottom-10 w-full flex justify-center pointer-events-none">
+            <div className="bg-white/5 border border-white/10 px-4 py-2 rounded-full text-sm backdrop-blur-sm">
+              Chwazi picked the highlighted finger
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
