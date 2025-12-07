@@ -102,6 +102,10 @@ export async function POST(request: NextRequest) {
           { onConflict: 'room_pin,round_number' }
         )
 
+      if (roundError) {
+        return NextResponse.json({ error: 'Failed to create next round' }, { status: 500 })
+      }
+
       const { error: roomUpdateError } = await supabase
         .from('game24_rooms')
         .update({
