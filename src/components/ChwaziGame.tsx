@@ -36,6 +36,8 @@ export default function ChwaziGame() {
   const primeTimerRef = useRef<NodeJS.Timeout | null>(null)
   const selectionTimerRef = useRef<NodeJS.Timeout | null>(null)
   const rafRef = useRef<number | null>(null)
+  const tiltRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
+  const permissionRequestedRef = useRef(false)
 
   const setStatusSafe = (next: Status) => {
     statusRef.current = next
@@ -70,8 +72,28 @@ export default function ChwaziGame() {
     selectionTimerRef.current = setTimeout(() => {
       const ids = Array.from(touchesRef.current.keys())
       if (ids.length < 2) return
-      const randomWinner = ids[Math.floor(Math.random() * ids.length)]
-      setWinnerId(randomWinner ?? null)
+      const winner = (() => {
+        const tilt = tiltRef.current
+        const magnitude = Math.hypot(tilt.x, tilt.y)
+        if (magnitude < 0.15) {
+          return ids[Math.floor(Math.random() * ids.length)] ?? null
+        }
+
+        let bestId: number | null = null
+        let bestScore = -Infinity
+
+        touchesRef.current.forEach((touch, id) => {
+          const score = (touch.x * tilt.x + touch.y * tilt.y) / magnitude
+          if (score > bestScore) {
+            bestScore = score
+            bestId = id
+          }
+        })
+
+        return bestId
+      })()
+
+      setWinnerId(winner)
       setStatusSafe('winner')
     }, SELECT_DELAY_MS)
   }, [])
@@ -116,6 +138,32 @@ export default function ChwaziGame() {
     const container = containerRef.current
     if (!container) return
 
+    const requestOrientationPermission = () => {
+      if (typeof DeviceOrientationEvent === 'undefined') return
+      const deviceOrientationEvent = DeviceOrientationEvent as unknown as {
+        requestPermission?: () => Promise<'granted' | 'denied' | 'default'>
+      }
+      const needsPermission =
+        typeof deviceOrientationEvent.requestPermission === 'function' && !permissionRequestedRef.current
+
+      if (!needsPermission) return
+      permissionRequestedRef.current = true
+      deviceOrientationEvent.requestPermission?.().catch(() => {
+        // ignore permission errors; fallback to random selection
+      })
+    }
+
+    const handleOrientation = (event: DeviceOrientationEvent) => {
+      const { beta, gamma } = event
+      if (beta == null || gamma == null) return
+      tiltRef.current = {
+        x: Math.sin((gamma * Math.PI) / 180),
+        y: Math.sin((beta * Math.PI) / 180),
+      }
+    }
+
+    window.addEventListener('deviceorientation', handleOrientation)
+
     const handleTouchStart = (e: TouchEvent) => {
       e.preventDefault()
       const updated = new Map(touchesRef.current)
@@ -124,6 +172,8 @@ export default function ChwaziGame() {
         setStatusSafe('idle')
         setWinnerId(null)
       }
+
+       requestOrientationPermission()
 
       Array.from(e.changedTouches).forEach((touch) => {
         updated.set(touch.identifier, {
@@ -172,6 +222,7 @@ export default function ChwaziGame() {
     container.addEventListener('touchcancel', handleTouchEnd, { passive: false })
 
     return () => {
+      window.removeEventListener('deviceorientation', handleOrientation)
       container.removeEventListener('touchstart', handleTouchStart)
       container.removeEventListener('touchmove', handleTouchMove)
       container.removeEventListener('touchend', handleTouchEnd)
