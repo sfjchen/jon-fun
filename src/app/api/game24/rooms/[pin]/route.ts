@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { supabase } from '@/lib/supabase'
-import { GAME24_MAX_PLAYERS, GAME24_MAX_ROUNDS, GAME24_ROUND_DURATION_MS, Game24Status, validateRoomPin } from '@/lib/game24'
+import { GAME24_MAX_PLAYERS, Game24Status, validateRoomPin } from '@/lib/game24'
 import { Solver24 } from '@/lib/solver24'
 
 const solver = new Solver24()
