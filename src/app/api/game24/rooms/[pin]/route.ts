@@ -146,8 +146,8 @@ export async function POST(
           .select('*')
           .eq('room_pin', pin)
 
-        if (!players || players.length < 2) {
-          return NextResponse.json({ error: 'Need at least 2 players to start' }, { status: 400 })
+        if (!players || players.length < 1) {
+          return NextResponse.json({ error: 'Need at least 1 player to start' }, { status: 400 })
         }
 
         // Reset prior state

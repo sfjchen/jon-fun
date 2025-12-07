@@ -9,6 +9,7 @@ import {
   GAME24_ROUND_DURATION_MS,
   validateRoomPin,
 } from '@/lib/game24'
+import { Solver24 } from '@/lib/solver24'
 
 interface Card {
   value: number
@@ -67,6 +68,7 @@ const formatSeconds = (seconds: number) => {
 }
 
 export default function Game24() {
+  const solver = useMemo(() => new Solver24(), [])
   const [gameState, setGameState] = useState<GameState>({
     numbers: [],
     cards: [],
@@ -87,6 +89,11 @@ export default function Game24() {
   const [error, setError] = useState<string | null>(null)
   const [roundRemainingMs, setRoundRemainingMs] = useState(0)
   const [intermissionRemainingMs, setIntermissionRemainingMs] = useState(0)
+  const [practiceCards, setPracticeCards] = useState<Card[]>(buildCards([4, 6, 8, 1]))
+  const [practiceSelected, setPracticeSelected] = useState<number | null>(null)
+  const [practicePendingOp, setPracticePendingOp] = useState<string | null>(null)
+  const [practiceNumbers, setPracticeNumbers] = useState<number[]>([4, 6, 8, 1])
+  const practiceMessageRef = useRef<NodeJS.Timeout | null>(null)
 
   const pendingAdvanceRef = useRef(false)
   const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -312,54 +319,54 @@ export default function Game24() {
     (secondCardIndex: number) => {
       if (phase !== 'active') return
       setGameState((prev) => {
-        if (prev.selectedCard === null || prev.pendingOperation === null) return prev
-
-        const firstCard = prev.cards[prev.selectedCard]
-        const secondCard = prev.cards[secondCardIndex]
-
-        if (!firstCard || !secondCard) return prev
-
-        try {
-          let result: number
-          let expression: string
-
-          switch (prev.pendingOperation) {
-            case '+':
-              result = firstCard.value + secondCard.value
-              expression = `(${firstCard.expression} + ${secondCard.expression})`
-              break
-            case '-':
-              result = firstCard.value - secondCard.value
-              expression = `(${firstCard.expression} - ${secondCard.expression})`
-              break
-            case '*':
-              result = firstCard.value * secondCard.value
-              expression = `(${firstCard.expression} × ${secondCard.expression})`
-              break
-            case '/':
-              if (secondCard.value === 0) {
-                showTemporaryMessage('❌ Cannot divide by zero!')
-                return { ...prev, selectedCard: null, pendingOperation: null }
-              }
-              result = firstCard.value / secondCard.value
-              expression = `(${firstCard.expression} ÷ ${secondCard.expression})`
-              break
-            default:
-              return prev
-          }
-
+      if (prev.selectedCard === null || prev.pendingOperation === null) return prev
+      
+      const firstCard = prev.cards[prev.selectedCard]
+      const secondCard = prev.cards[secondCardIndex]
+      
+      if (!firstCard || !secondCard) return prev
+      
+      try {
+        let result: number
+        let expression: string
+        
+        switch (prev.pendingOperation) {
+          case '+':
+            result = firstCard.value + secondCard.value
+            expression = `(${firstCard.expression} + ${secondCard.expression})`
+            break
+          case '-':
+            result = firstCard.value - secondCard.value
+            expression = `(${firstCard.expression} - ${secondCard.expression})`
+            break
+          case '*':
+            result = firstCard.value * secondCard.value
+            expression = `(${firstCard.expression} × ${secondCard.expression})`
+            break
+          case '/':
+            if (secondCard.value === 0) {
+              showTemporaryMessage('❌ Cannot divide by zero!')
+              return { ...prev, selectedCard: null, pendingOperation: null }
+            }
+            result = firstCard.value / secondCard.value
+            expression = `(${firstCard.expression} ÷ ${secondCard.expression})`
+            break
+          default:
+            return prev
+        }
+        
           const newCards = prev.cards
             .map((card, i) => {
               if (i === prev.selectedCard) return null
               if (i === secondCardIndex) {
-                return {
-                  value: result,
+            return {
+              value: result,
                   expression,
-                  isResult: true,
+              isResult: true,
                   position: card.position,
                 }
-              }
-              return card
+            }
+            return card
             })
             .filter((card): card is Card => card !== null)
 
@@ -367,19 +374,19 @@ export default function Game24() {
 
           if (newCards.length === 1 && Math.abs(newCards[0]!.value - 24) < 0.001) {
             submitSolution(newCards[0]!.expression)
-          }
-
-          return {
-            ...prev,
-            cards: newCards,
-            selectedCard: resultCardIndex,
-            pendingOperation: null,
-          }
-        } catch {
-          showTemporaryMessage('❌ Invalid operation')
-          return { ...prev, selectedCard: null, pendingOperation: null }
         }
-      })
+        
+        return {
+          ...prev,
+          cards: newCards,
+          selectedCard: resultCardIndex,
+          pendingOperation: null,
+        }
+      } catch {
+        showTemporaryMessage('❌ Invalid operation')
+        return { ...prev, selectedCard: null, pendingOperation: null }
+      }
+    })
     },
     [phase, submitSolution, showTemporaryMessage]
   )
@@ -502,31 +509,31 @@ export default function Game24() {
   const renderCardAtPosition = useCallback(
     (position: number) => {
       const cardIndex = gameState.cards.findIndex((card) => card.position === position)
-
-      if (cardIndex === -1) {
-        return <div key={position} className="game-card empty" style={{ opacity: 0, pointerEvents: 'none' }} />
-      }
-
-      const card = gameState.cards[cardIndex]
-      if (!card) {
-        return <div key={position} className="game-card empty" style={{ opacity: 0, pointerEvents: 'none' }} />
-      }
-
-      const isSelected = gameState.selectedCard === cardIndex
-      const isResult = card.isResult
-      const isPending = gameState.pendingOperation !== null && gameState.selectedCard === cardIndex
-
-      let cardClass = 'game-card'
-      if (isSelected) cardClass += ' selected'
-      if (isResult) cardClass += ' result'
-      if (isPending) cardClass += ' pending'
-
-      return (
-        <button
-          key={position}
-          className={cardClass}
-          onClick={() => selectCard(cardIndex)}
-          data-card-index={cardIndex}
+    
+    if (cardIndex === -1) {
+      return <div key={position} className="game-card empty" style={{ opacity: 0, pointerEvents: 'none' }} />
+    }
+    
+    const card = gameState.cards[cardIndex]
+    if (!card) {
+      return <div key={position} className="game-card empty" style={{ opacity: 0, pointerEvents: 'none' }} />
+    }
+    
+    const isSelected = gameState.selectedCard === cardIndex
+    const isResult = card.isResult
+    const isPending = gameState.pendingOperation !== null && gameState.selectedCard === cardIndex
+    
+    let cardClass = 'game-card'
+    if (isSelected) cardClass += ' selected'
+    if (isResult) cardClass += ' result'
+    if (isPending) cardClass += ' pending'
+    
+    return (
+      <button 
+        key={position}
+        className={cardClass}
+        onClick={() => selectCard(cardIndex)}
+        data-card-index={cardIndex}
           disabled={phase !== 'active'}
         >
           <div className="card-content">
@@ -539,6 +546,164 @@ export default function Game24() {
     [gameState.cards, gameState.selectedCard, gameState.pendingOperation, selectCard, phase]
   )
 
+  // Practice mode helpers (offline, no timer, hint enabled)
+  const generatePractice = useCallback(() => {
+    let numbers = [4, 6, 8, 1]
+    const maxAttempts = 80
+    for (let i = 0; i < maxAttempts; i++) {
+      const candidate = Array.from({ length: 4 }, () => Math.floor(Math.random() * 9) + 1)
+      if (solver.hasSolution(candidate)) {
+        numbers = candidate
+        break
+      }
+    }
+    setPracticeNumbers(numbers)
+    setPracticeCards(buildCards(numbers))
+    setPracticeSelected(null)
+    setPracticePendingOp(null)
+  }, [solver])
+
+  useEffect(() => {
+    generatePractice()
+    return () => {
+      if (practiceMessageRef.current) clearTimeout(practiceMessageRef.current)
+    }
+  }, [generatePractice])
+
+  const selectPracticeCard = useCallback((index: number) => {
+    setPracticeSelected((prev) => (prev === index && practicePendingOp === null ? null : index))
+  }, [practicePendingOp])
+
+  const addPracticeOp = useCallback((op: string) => {
+    if (practiceSelected === null) return
+    setPracticePendingOp(op)
+  }, [practiceSelected])
+
+  const performPractice = useCallback(
+    (secondIndex: number) => {
+      if (practiceSelected === null || practicePendingOp === null) return
+      setPracticeCards((prev) => {
+        const firstCard = prev[practiceSelected]
+        const secondCard = prev[secondIndex]
+        if (!firstCard || !secondCard) return prev
+
+        let result: number
+        let expression: string
+
+        switch (practicePendingOp) {
+          case '+':
+            result = firstCard.value + secondCard.value
+            expression = `(${firstCard.expression} + ${secondCard.expression})`
+            break
+          case '-':
+            result = firstCard.value - secondCard.value
+            expression = `(${firstCard.expression} - ${secondCard.expression})`
+            break
+          case '*':
+            result = firstCard.value * secondCard.value
+            expression = `(${firstCard.expression} × ${secondCard.expression})`
+            break
+          case '/':
+            if (secondCard.value === 0) {
+              showTemporaryMessage('❌ Cannot divide by zero!')
+              setPracticeSelected(null)
+              setPracticePendingOp(null)
+              return prev
+            }
+            result = firstCard.value / secondCard.value
+            expression = `(${firstCard.expression} ÷ ${secondCard.expression})`
+            break
+          default:
+            return prev
+        }
+
+        const updated = prev
+          .map((card, i) => {
+            if (i === practiceSelected) return null
+            if (i === secondIndex) {
+              return { value: result, expression, isResult: true, position: card.position }
+            }
+            return card
+          })
+          .filter((card): card is Card => card !== null)
+
+        const solved = updated.length === 1 && Math.abs(updated[0]!.value - 24) < 0.001
+        if (solved) {
+          practiceMessageRef.current = setTimeout(() => {
+            showTemporaryMessage('Solved! New puzzle coming up.', 1800)
+            generatePractice()
+          }, 100)
+        }
+
+        setPracticeSelected(updated.findIndex((c) => c.position === secondCard.position))
+        setPracticePendingOp(null)
+        return updated
+      })
+    },
+    [practicePendingOp, practiceSelected, generatePractice, showTemporaryMessage]
+  )
+
+  useEffect(() => {
+    if (practicePendingOp !== null && practiceSelected !== null) {
+      const handleClick = (event: MouseEvent) => {
+        const target = event.target as HTMLElement
+        if (target.closest('.practice-card') && !target.closest('.practice-card.selected')) {
+          const idxAttr = target.closest('[data-practice-index]')
+          if (!idxAttr) return
+          const cardIndex = Number(idxAttr.getAttribute('data-practice-index'))
+          if (!Number.isNaN(cardIndex) && cardIndex !== practiceSelected) {
+            performPractice(cardIndex)
+          }
+        }
+      }
+      document.addEventListener('click', handleClick)
+      return () => document.removeEventListener('click', handleClick)
+    }
+  }, [practicePendingOp, practiceSelected, performPractice])
+
+  const renderPracticeCard = useCallback(
+    (position: number) => {
+      const cardIndex = practiceCards.findIndex((card) => card.position === position)
+      if (cardIndex === -1) {
+        return <div key={position} className="game-card empty" style={{ opacity: 0, pointerEvents: 'none' }} />
+      }
+      const card = practiceCards[cardIndex]
+      if (!card) {
+        return <div key={position} className="game-card empty" style={{ opacity: 0, pointerEvents: 'none' }} />
+      }
+      const isSelected = practiceSelected === cardIndex
+      const isResult = card.isResult
+      const isPending = practicePendingOp !== null && practiceSelected === cardIndex
+      let cardClass = 'game-card practice-card'
+      if (isSelected) cardClass += ' selected'
+      if (isResult) cardClass += ' result'
+      if (isPending) cardClass += ' pending'
+      return (
+        <button
+          key={position}
+          className={cardClass}
+          onClick={() => selectPracticeCard(cardIndex)}
+          data-practice-index={cardIndex}
+      >
+        <div className="card-content">
+          <span className="card-number">{card.value}</span>
+          {isResult && <div className="card-expression">{card.expression}</div>}
+        </div>
+      </button>
+    )
+    },
+    [practiceCards, practicePendingOp, practiceSelected, selectPracticeCard]
+  )
+
+  const showPracticeSolution = useCallback(() => {
+    const solution = solver.getSolution(practiceNumbers)
+    if (solution) {
+      showTemporaryMessage(`💡 Solution: ${solution}`)
+    } else {
+      showTemporaryMessage('No solution found')
+    }
+  }, [practiceNumbers, solver, showTemporaryMessage])
+
   const roundProgressRatio =
     room?.status === 'active' && GAME24_ROUND_DURATION_MS > 0
       ? Math.max(0, Math.min(1, roundRemainingMs / GAME24_ROUND_DURATION_MS))
@@ -548,10 +713,10 @@ export default function Game24() {
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6 text-white">
-          <Link href="/" className="header-icon" aria-label="Go home">
-            🏠
-          </Link>
-          <div className="text-center">
+        <Link href="/" className="header-icon" aria-label="Go home">
+          🏠
+        </Link>
+        <div className="text-center">
             <div className="text-lg font-semibold">Your Score</div>
             <div className="bg-white/10 rounded-lg px-4 py-2 mt-1 text-2xl font-bold">
               {players.find((p) => p.player_id === playerId)?.score ?? 0}
@@ -561,7 +726,7 @@ export default function Game24() {
             ↻
           </button>
         </div>
-
+        
         <div className="grid lg:grid-cols-[320px_1fr] gap-6">
           <aside className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white">
             {!room && (
@@ -586,13 +751,13 @@ export default function Game24() {
                       placeholder="1234"
                     />
                   </div>
-                  <button
+        <button 
                     onClick={joinRoom}
                     disabled={loadingRoom}
                     className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-3 py-2 rounded"
                   >
                     Join
-                  </button>
+        </button>
                 </div>
                 <button
                   onClick={createRoom}
@@ -650,10 +815,10 @@ export default function Game24() {
                 {room.status === 'waiting' && isHost && (
                   <button
                     onClick={startGame}
-                    disabled={players.length < 2 || loadingRoom}
+                    disabled={players.length < 1 || loadingRoom}
                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white py-2 rounded font-semibold"
                   >
-                    {players.length < 2 ? 'Need at least 2 players' : 'Start Game'}
+                    {players.length < 1 ? 'Need at least 1 player' : 'Start Game'}
                   </button>
                 )}
 
@@ -685,16 +850,16 @@ export default function Game24() {
                       ? 'Game over'
                       : 'Waiting to start'}
               </div>
-            </div>
+      </div>
 
             <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-4">
               <div
                 className="h-full bg-green-400 transition-all"
                 style={{ width: `${roundProgressRatio * 100}%` }}
               />
-            </div>
+        </div>
 
-            {room?.status === 'intermission' && (
+                {room?.status === 'intermission' && (
               <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-10">
                 <div className="text-2xl font-bold">Scores</div>
                 <div className="w-full max-w-md space-y-2">
@@ -741,28 +906,70 @@ export default function Game24() {
               </div>
             )}
 
-            <div className="max-w-xl mx-auto p-4">
-              <div className="game-board mb-6">
-                {[0, 1, 2, 3].map((position) => renderCardAtPosition(position))}
-              </div>
+            <div className="max-w-xl mx-auto p-4 space-y-8">
+              <div>
+                <div className="game-board mb-4">
+                  {[0, 1, 2, 3].map((position) => renderCardAtPosition(position))}
+                </div>
+                <div className="flex justify-center gap-4 mb-4">
+          {OPERATORS.map(({ op, class: className, symbol }) => (
+            <button
+              key={op}
+              className={`operator-btn ${className} ${gameState.pendingOperation === op ? 'selected' : ''}`}
+              onClick={() => addOperator(op)}
+              aria-label={`${op} operator`}
+                      disabled={phase !== 'active'}
+            >
+              {symbol}
+            </button>
+          ))}
+        </div>
+                <div className="text-center text-gray-200 text-sm">
+                  {phase === 'waiting' && 'Waiting for host to start...'}
+                  {phase === 'active' && (hasSubmitted ? 'You submitted this round.' : 'Solve to score up to 1000 points.')}
+                  {phase === 'finished' && 'Game finished. Use Play Again to restart.'}
+          </div>
+        </div>
 
-              <div className="flex justify-center gap-4 mb-6">
-                {OPERATORS.map(({ op, class: className, symbol }) => (
+              <div className="bg-white/5 border border-white/15 rounded-2xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-lg font-semibold">Practice (offline)</div>
                   <button
-                    key={op}
-                    className={`operator-btn ${className} ${gameState.pendingOperation === op ? 'selected' : ''}`}
-                    onClick={() => addOperator(op)}
-                    aria-label={`${op} operator`}
-                    disabled={phase !== 'active'}
+                    onClick={generatePractice}
+                    className="text-sm bg-white/10 hover:bg-white/20 px-3 py-1 rounded border border-white/20"
                   >
-                    {symbol}
+                    New Puzzle
                   </button>
-                ))}
-              </div>
-
-              <div className="text-center text-gray-200 text-sm">
-                {phase === 'waiting' && 'Waiting for host to start...'}
-                {phase === 'active' && (hasSubmitted ? 'You submitted this round.' : 'Solve to score up to 1000 points.')}
+                </div>
+                <div className="game-board mb-4">
+                  {[0, 1, 2, 3].map((position) => renderPracticeCard(position))}
+                </div>
+                <div className="flex justify-center gap-4 mb-4">
+                  {OPERATORS.map(({ op, class: className, symbol }) => (
+                    <button
+                      key={op}
+                      className={`operator-btn ${className} ${practicePendingOp === op ? 'selected' : ''}`}
+                      onClick={() => addPracticeOp(op)}
+                      aria-label={`${op} operator`}
+                    >
+                      {symbol}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex justify-center gap-3">
+          <button 
+                    onClick={generatePractice}
+            className="action-btn danger"
+          >
+                    🔄 Reset
+          </button>
+          <button 
+                    onClick={showPracticeSolution}
+            className="action-btn primary"
+          >
+                    💡 Solution
+          </button>
+                </div>
               </div>
             </div>
           </main>
