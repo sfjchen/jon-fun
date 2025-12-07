@@ -215,6 +215,26 @@ export default function Game24() {
     }
   }, [pinInput, room, loadRoomData])
 
+  const advanceRound = useCallback(async () => {
+    if (!pinInput) return
+    try {
+      const response = await fetch('/api/game24/next-round', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: pinInput }),
+      })
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to advance round')
+      }
+      pendingAdvanceRef.current = false
+      await loadRoomData(pinInput)
+    } catch (err) {
+      pendingAdvanceRef.current = false
+      showTemporaryMessage(err instanceof Error ? err.message : 'Failed to advance round')
+    }
+  }, [pinInput, loadRoomData, showTemporaryMessage])
+
   useEffect(() => {
     const interval = setInterval(() => {
       if (room?.status === 'active' && room.current_round_started_at) {
@@ -468,26 +488,6 @@ export default function Game24() {
     setPlayerId(data.playerId ?? playerId)
     saveSession({ hostId: data.hostId ?? null, playerId: data.playerId ?? playerId })
     await loadRoomData(pinInput)
-  }
-
-  const advanceRound = async () => {
-    if (!pinInput) return
-    try {
-      const response = await fetch('/api/game24/next-round', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin: pinInput }),
-      })
-      const data = await response.json()
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to advance round')
-      }
-      pendingAdvanceRef.current = false
-      await loadRoomData(pinInput)
-    } catch (err) {
-      pendingAdvanceRef.current = false
-      showTemporaryMessage(err instanceof Error ? err.message : 'Failed to advance round')
-    }
   }
 
   const sortedPlayers = useMemo(() => {
