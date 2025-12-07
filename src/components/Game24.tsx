@@ -288,9 +288,8 @@ export default function Game24() {
   }, [])
 
   const addOperator = useCallback((op: string) => {
-    if (phase !== 'active') return
     setGameState((prev) => {
-      if (prev.selectedCard === null) return prev
+      if (phase !== 'active' || prev.selectedCard === null) return prev
       return { ...prev, pendingOperation: op }
     })
   }, [phase])
@@ -533,8 +532,8 @@ export default function Game24() {
       <button 
         key={position}
         className={cardClass}
-        onClick={() => selectCard(cardIndex)}
-        data-card-index={cardIndex}
+          onClick={() => selectCard(cardIndex)}
+          data-card-index={cardIndex}
           disabled={phase !== 'active'}
         >
           <div className="card-content">

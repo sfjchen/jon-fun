@@ -239,6 +239,29 @@ export async function POST(
         return NextResponse.json({ pin, hostId: newHostId, playerId: newHostId })
       }
 
+      case 'leave': {
+        const { playerId } = body
+        if (!playerId) {
+          return NextResponse.json({ error: 'playerId is required' }, { status: 400 })
+        }
+
+        await supabase.from('game24_players').delete().eq('room_pin', pin).eq('player_id', playerId)
+
+        const { count: remaining } = await supabase
+          .from('game24_players')
+          .select('*', { count: 'exact', head: true })
+          .eq('room_pin', pin)
+
+        if ((remaining ?? 0) === 0) {
+          await supabase.from('game24_rooms').delete().eq('pin', pin)
+        } else {
+          const nowIso = new Date().toISOString()
+          await supabase.from('game24_rooms').update({ last_activity: nowIso }).eq('pin', pin)
+        }
+
+        return NextResponse.json({ success: true })
+      }
+
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
