@@ -123,30 +123,27 @@ export default function Game24() {
     []
   )
 
-  const loadRoomData = useCallback(
-    async (pin: string) => {
-      setLoadingRoom(true)
-      setError(null)
-      try {
-        const response = await fetch(`/api/game24/rooms/${pin}`)
-        const data = await response.json()
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to load room')
-        }
-
-        setRoom(data.room)
-        setPlayers(data.players || [])
-        setRound(data.round || null)
-        setHostId(data.room.host_id ?? null)
-        setPhase(data.room.status ?? 'waiting')
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load room')
-      } finally {
-        setLoadingRoom(false)
+  const loadRoomData = useCallback(async (pin: string) => {
+    setLoadingRoom(true)
+    setError(null)
+    try {
+      const response = await fetch(`/api/game24/rooms/${pin}`)
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to load room')
       }
-    },
-    []
-  )
+
+      setRoom(data.room)
+      setPlayers(data.players || [])
+      setRound(data.round || null)
+      setHostId(data.room.host_id ?? null)
+      setPhase(data.room.status ?? 'waiting')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load room')
+    } finally {
+      setLoadingRoom(false)
+    }
+  }, [])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -154,14 +151,17 @@ export default function Game24() {
     const savedPlayerId = sessionStorage.getItem('game24_playerId') || ''
     const savedHostId = sessionStorage.getItem('game24_hostId') || ''
     const savedName = sessionStorage.getItem('game24_playerName') || ''
+
+    // Prefill but do NOT auto-rejoin; require explicit join/resume.
     if (savedPin && savedPlayerId) {
       setPinInput(savedPin)
       setPlayerId(savedPlayerId)
       setHostId(savedHostId || null)
       setNameInput(savedName)
-      loadRoomData(savedPin)
+    } else {
+      setNameInput(savedName || '')
     }
-  }, [loadRoomData])
+  }, [])
 
   useEffect(() => {
     if (!room) {
@@ -244,12 +244,17 @@ export default function Game24() {
       const startTime = room?.current_round_started_at ?? round?.started_at ?? null
 
       if (room?.status === 'active' && startTime) {
-        const elapsed = Date.now() - new Date(startTime).getTime()
-        const remaining = Math.max(0, GAME24_ROUND_DURATION_MS - elapsed)
+        const startTs = new Date(startTime).getTime()
+        if (!Number.isFinite(startTs)) {
+          setRoundRemainingMs(0)
+        } else {
+          const elapsed = Math.max(0, Date.now() - startTs)
+          const remaining = Math.max(0, GAME24_ROUND_DURATION_MS - elapsed)
         setRoundRemainingMs(remaining)
-        if (remaining <= 0 && !pendingAdvanceRef.current) {
-          pendingAdvanceRef.current = true
-          advanceRound()
+          if (remaining <= 0 && !pendingAdvanceRef.current && elapsed >= GAME24_ROUND_DURATION_MS) {
+            pendingAdvanceRef.current = true
+            advanceRound()
+          }
         }
       } else {
         setRoundRemainingMs(0)
@@ -277,14 +282,19 @@ export default function Game24() {
   }, [room?.status, room?.round_number, room?.current_round_started_at])
 
   const resetSelections = useCallback(() => {
-    if (phase === 'active') {
-      setGameState((prev) => ({ ...prev, selectedCard: null, pendingOperation: null }))
+    if (phase === 'active' && (round?.numbers?.length ?? 0) > 0) {
+      setGameState({
+        numbers: round!.numbers,
+        cards: buildCards(round!.numbers),
+        selectedCard: null,
+        pendingOperation: null,
+      })
     } else {
       setPracticeCards(buildCards(practiceNumbers))
       setPracticeSelected(null)
       setPracticePendingOp(null)
     }
-  }, [phase, practiceNumbers])
+  }, [phase, practiceNumbers, round])
 
   const selectCard = useCallback((index: number) => {
     setGameState((prev) => {
@@ -739,8 +749,8 @@ export default function Game24() {
       : offlineScore
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col gap-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-start lg:items-center">
+      <div className="max-w-6xl mx-auto px-4 py-10 lg:py-14 flex flex-col gap-6 w-full">
         <div className="grid lg:grid-cols-[320px_1fr] gap-6 order-1">
           <aside className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white">
             {!room && (
