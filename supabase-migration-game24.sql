@@ -55,3 +55,48 @@ create table if not exists game24_submissions (
 create index if not exists idx_game24_submissions_room_round on game24_submissions(room_pin, round_number);
 create index if not exists idx_game24_submissions_player_round on game24_submissions(player_id, round_number);
 
+-- RLS policies (permissive, anon-friendly like poker)
+alter table game24_rooms enable row level security;
+alter table game24_players enable row level security;
+alter table game24_rounds enable row level security;
+alter table game24_submissions enable row level security;
+
+do $$ begin
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'game24_rooms' and policyname = 'game24 rooms select') then
+    create policy "game24 rooms select" on game24_rooms for select to public using (true);
+  end if;
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'game24_rooms' and policyname = 'game24 rooms insert') then
+    create policy "game24 rooms insert" on game24_rooms for insert to public with check (true);
+  end if;
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'game24_rooms' and policyname = 'game24 rooms update') then
+    create policy "game24 rooms update" on game24_rooms for update to public using (true);
+  end if;
+
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'game24_players' and policyname = 'game24 players select') then
+    create policy "game24 players select" on game24_players for select to public using (true);
+  end if;
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'game24_players' and policyname = 'game24 players insert') then
+    create policy "game24 players insert" on game24_players for insert to public with check (true);
+  end if;
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'game24_players' and policyname = 'game24 players update') then
+    create policy "game24 players update" on game24_players for update to public using (true);
+  end if;
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'game24_players' and policyname = 'game24 players delete') then
+    create policy "game24 players delete" on game24_players for delete to public using (true);
+  end if;
+
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'game24_rounds' and policyname = 'game24 rounds select') then
+    create policy "game24 rounds select" on game24_rounds for select to public using (true);
+  end if;
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'game24_rounds' and policyname = 'game24 rounds insert') then
+    create policy "game24 rounds insert" on game24_rounds for insert to public with check (true);
+  end if;
+
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'game24_submissions' and policyname = 'game24 submissions select') then
+    create policy "game24 submissions select" on game24_submissions for select to public using (true);
+  end if;
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'game24_submissions' and policyname = 'game24 submissions insert') then
+    create policy "game24 submissions insert" on game24_submissions for insert to public with check (true);
+  end if;
+end $$;
+
