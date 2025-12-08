@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { GAME24_ROUND_DURATION_MS, scoreForElapsed, validateRoomPin } from '@/lib/game24'
+import {
+  GAME24_INTERMISSION_MS,
+  GAME24_ROUND_DURATION_MS,
+  Game24Status,
+  scoreForElapsed,
+  validateRoomPin,
+} from '@/lib/game24'
 
 const isExpressionSafe = (expression: string) => /^[\d+\-*/().\s]+$/.test(expression)
 
@@ -133,7 +139,37 @@ export async function POST(request: NextRequest) {
       supabase.from('game24_rooms').update({ last_activity: nowIso }).eq('pin', pin),
     ])
 
-    return NextResponse.json({ success: true, scoreAwarded })
+    let roundFinished = false
+
+    const [{ count: playerCount }, { count: correctCount }] = await Promise.all([
+      supabase.from('game24_players').select('*', { count: 'exact', head: true }).eq('room_pin', pin),
+      supabase
+        .from('game24_submissions')
+        .select('*', { count: 'exact', head: true })
+        .eq('room_pin', pin)
+        .eq('round_number', room.round_number)
+        .eq('is_correct', true),
+    ])
+
+    if ((playerCount ?? 0) > 0 && correctCount !== null && correctCount >= (playerCount ?? 0)) {
+      const intermissionUntil = new Date(Date.now() + GAME24_INTERMISSION_MS).toISOString()
+      const { error: finishError } = await supabase
+        .from('game24_rooms')
+        .update({
+          status: 'intermission' as Game24Status,
+          intermission_until: intermissionUntil,
+          last_activity: nowIso,
+          updated_at: nowIso,
+        })
+        .eq('pin', pin)
+        .eq('status', 'active')
+
+      if (!finishError) {
+        roundFinished = true
+      }
+    }
+
+    return NextResponse.json({ success: true, scoreAwarded, roundFinished })
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

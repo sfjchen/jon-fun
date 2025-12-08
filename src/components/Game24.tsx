@@ -332,8 +332,11 @@ export default function Game24() {
         return
       }
       showTemporaryMessage(`Submitted! +${data.scoreAwarded ?? 0} pts`, 1500)
+      if (data.roundFinished) {
+        await loadRoomData(pinInput)
+      }
     },
-    [room, playerId, pinInput, hasSubmitted, phase, showTemporaryMessage]
+    [room, playerId, pinInput, hasSubmitted, phase, showTemporaryMessage, loadRoomData]
   )
 
   const performOperation = useCallback(
