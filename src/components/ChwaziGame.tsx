@@ -73,9 +73,7 @@ export default function ChwaziGame() {
 
       const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 0
       const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 0
-      const priority = touchesList.find(
-        ({ x, y }) => x >= viewportWidth * 0.8 && y >= viewportHeight * 0.8,
-      )
+      const priority = touchesList.find(({ x, y }) => x >= viewportWidth * 0.7 && y >= viewportHeight * 0.7)
 
       const winner = priority?.id ?? touchesList[0]?.id ?? null
       setWinnerId(winner)
@@ -125,6 +123,7 @@ export default function ChwaziGame() {
 
     const handleTouchStart = (e: TouchEvent) => {
       e.preventDefault()
+      const rect = container.getBoundingClientRect()
       const updated = new Map(touchesRef.current)
 
       if (statusRef.current === 'winner') {
@@ -135,8 +134,8 @@ export default function ChwaziGame() {
       Array.from(e.changedTouches).forEach((touch) => {
         updated.set(touch.identifier, {
           id: touch.identifier,
-          x: touch.clientX,
-          y: touch.clientY,
+          x: touch.clientX - rect.left,
+          y: touch.clientY - rect.top,
           color: pickColor(updated),
         })
       })
@@ -148,12 +147,13 @@ export default function ChwaziGame() {
 
     const handleTouchMove = (e: TouchEvent) => {
       e.preventDefault()
+      const rect = container.getBoundingClientRect()
       const updated = new Map(touchesRef.current)
 
       Array.from(e.changedTouches).forEach((touch) => {
         if (!updated.has(touch.identifier)) return
         const existing = updated.get(touch.identifier)!
-        updated.set(touch.identifier, { ...existing, x: touch.clientX, y: touch.clientY })
+        updated.set(touch.identifier, { ...existing, x: touch.clientX - rect.left, y: touch.clientY - rect.top })
       })
 
       touchesRef.current = updated
