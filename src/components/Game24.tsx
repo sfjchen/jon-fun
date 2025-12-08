@@ -978,7 +978,7 @@ export default function Game24() {
                       ))}
                     </div>
                     <div className="text-center text-gray-200 text-sm">
-                      {hasSubmitted ? 'You submitted this round.' : 'Solve to score up to 1000 points (now over 24s).'}
+                      {hasSubmitted ? 'You submitted this round.' : 'Solve to score up to 2000 points (20s round).'}
                     </div>
                   </>
                 ) : (
