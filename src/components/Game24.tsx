@@ -270,7 +270,7 @@ export default function Game24() {
       } else {
         setIntermissionRemainingMs(0)
       }
-    }, 300)
+    }, 100)
 
     return () => clearInterval(interval)
   }, [room, round, advanceRound])
@@ -894,14 +894,14 @@ export default function Game24() {
                   <div className="text-sm text-gray-200">
                     {room?.status === 'intermission'
                       ? `Next round in ${formatSeconds(intermissionRemainingMs / 1000)}s`
-                      : `${formatSeconds(roundRemainingMs / 1000)}s left (24s round)`}
+                      : ''}
                   </div>
                 </div>
 
                 <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-4">
                   <div
                     className="h-full bg-green-400 transition-all"
-                    style={{ width: `${roundProgressRatio * 100}%` }}
+                    style={{ width: `${roundProgressRatio * 100}%`, transition: 'width 0.18s linear' }}
                   />
                 </div>
               </>
