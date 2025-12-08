@@ -226,19 +226,19 @@ export default function ChwaziGame() {
           const isSelecting = status === 'selecting'
           const size = 96
           const scale = isWinner ? 1.35 : isSelecting ? 1.12 : 1
+          const left = touch.x - size / 2
+          const top = touch.y - size / 2
 
           return (
             <div
               key={touch.id}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 will-change-transform ${
-                dimmed ? 'opacity-35' : 'opacity-95'
-              }`}
+              className={`absolute will-change-transform ${dimmed ? 'opacity-35' : 'opacity-95'}`}
               style={{
-                left: touch.x,
-                top: touch.y,
+                left,
+                top,
                 width: size,
                 height: size,
-                transform: `translate(-50%, -50%) scale(${scale})`,
+                transform: `scale(${scale})`,
               }}
             >
               <div
