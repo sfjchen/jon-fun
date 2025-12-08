@@ -81,6 +81,7 @@ export default function Game24() {
   const [room, setRoom] = useState<Room | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
   const [round, setRound] = useState<RoundData | null>(null)
+  const [roundScores, setRoundScores] = useState<Record<string, number>>({})
   const [playerId, setPlayerId] = useState<string | null>(null)
   const [hostId, setHostId] = useState<string | null>(null)
   const [offlineScore, setOfflineScore] = useState(0)
@@ -134,8 +135,9 @@ export default function Game24() {
       }
 
       setRoom(data.room)
-      setPlayers(data.players || [])
-      setRound(data.round || null)
+        setPlayers(data.players || [])
+        setRound(data.round || null)
+        setRoundScores(data.roundScores || {})
       setHostId(data.room.host_id ?? null)
       setPhase(data.room.status ?? 'waiting')
     } catch (err) {
@@ -212,10 +214,20 @@ export default function Game24() {
       )
       .subscribe()
 
+    const submissionsChannel = supabase
+      .channel(`game24:submissions:${pinInput}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'game24_submissions', filter: `room_pin=eq.${pinInput}` },
+        () => loadRoomData(pinInput)
+      )
+      .subscribe()
+
     return () => {
       roomChannel.unsubscribe()
       playersChannel.unsubscribe()
       roundsChannel.unsubscribe()
+      submissionsChannel.unsubscribe()
     }
   }, [pinInput, loadRoomData])
 
@@ -489,11 +501,11 @@ export default function Game24() {
   }
 
   const startGame = async () => {
-    if (!isHost || !pinInput) return
+    if (!pinInput || !playerId) return
     const response = await fetch(`/api/game24/rooms/${pinInput}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'start', hostId }),
+      body: JSON.stringify({ action: 'start', playerId }),
     })
     const data = await response.json()
     if (!response.ok) {
@@ -821,25 +833,32 @@ export default function Game24() {
                     {isHost && <span className="text-xs bg-green-600 px-2 py-1 rounded">Host</span>}
                   </div>
                   <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                    {sortedPlayers.map((p) => (
-                      <div
-                        key={p.player_id}
-                        className={`bg-white/5 border rounded-lg px-3 py-2 flex items-center justify-between ${
-                          p.player_id === room.host_id ? 'border-green-400/60' : 'border-white/10'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="text-white font-semibold truncate">{p.name}</div>
-                          {p.player_id === room.host_id && <span className="text-xs bg-green-600 px-2 py-0.5 rounded">Host</span>}
+                    {sortedPlayers.map((p) => {
+                      const roundScore = roundScores[p.player_id]
+                      const showRoundScore = roundScore !== undefined && roundScore > 0 && room.status !== 'waiting'
+                      return (
+                        <div
+                          key={p.player_id}
+                          className={`bg-white/5 border rounded-lg px-3 py-2 flex items-center justify-between ${
+                            p.player_id === room.host_id ? 'border-green-400/60' : 'border-white/10'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="text-white font-semibold truncate">{p.name}</div>
+                            {p.player_id === room.host_id && <span className="text-xs bg-green-600 px-2 py-0.5 rounded">Host</span>}
+                          </div>
+                          <div className="text-sm text-gray-200 font-mono flex items-center gap-1">
+                            <span>{p.score ?? 0}</span>
+                            {showRoundScore && <span className="text-green-300 font-semibold">+{roundScore}</span>}
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-200 font-mono">{p.score ?? 0}</div>
-                      </div>
-                    ))}
+                      )
+                    })}
                     {players.length === 0 && <div className="text-gray-300 text-sm">No players yet</div>}
                   </div>
                 </div>
 
-                {room.status === 'waiting' && isHost && (
+                {room.status === 'waiting' && (
                   <button
                     onClick={startGame}
                     disabled={players.length < 1 || loadingRoom}
@@ -914,18 +933,25 @@ export default function Game24() {
               <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-10">
                 <div className="text-2xl font-bold">Scores</div>
                 <div className="w-full max-w-md space-y-2">
-                  {sortedPlayers.map((p, idx) => (
-                    <div
-                      key={p.player_id}
-                      className="flex items-center justify-between bg-white/10 px-3 py-2 rounded border border-white/10"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-300 w-6 text-right">{idx + 1}.</span>
-                        <span className="font-semibold">{p.name}</span>
+                  {sortedPlayers.map((p, idx) => {
+                    const roundScore = roundScores[p.player_id]
+                    const showRoundScore = roundScore !== undefined && roundScore > 0
+                    return (
+                      <div
+                        key={p.player_id}
+                        className="flex items-center justify-between bg-white/10 px-3 py-2 rounded border border-white/10"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-300 w-6 text-right">{idx + 1}.</span>
+                          <span className="font-semibold">{p.name}</span>
+                        </div>
+                        <span className="font-mono text-sm flex items-center gap-2">
+                          <span>{p.score ?? 0}</span>
+                          {showRoundScore && <span className="text-green-300 font-semibold">+{roundScore}</span>}
+                        </span>
                       </div>
-                      <span className="font-mono text-sm">{p.score ?? 0}</span>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
                 <div className="text-sm text-gray-200">Next round auto-starts</div>
               </div>
