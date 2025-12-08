@@ -51,6 +51,7 @@ export async function GET(
     }
 
     let round = null
+    let roundScores: Record<string, number> = {}
     if (room.round_number > 0) {
       const { data: roundData } = await supabase
         .from('game24_rounds')
@@ -59,12 +60,28 @@ export async function GET(
         .eq('round_number', room.round_number)
         .single()
       round = roundData ?? null
+
+      const { data: submissions } = await supabase
+        .from('game24_submissions')
+        .select('player_id, score_awarded')
+        .eq('room_pin', pin)
+        .eq('round_number', room.round_number)
+        .eq('is_correct', true)
+
+      if (submissions) {
+        submissions.forEach((sub) => {
+          if (sub.player_id) {
+            roundScores[sub.player_id] = sub.score_awarded ?? 0
+          }
+        })
+      }
     }
 
     return NextResponse.json({
       room,
       players: players || [],
       round,
+      roundScores,
     })
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -137,8 +154,9 @@ export async function POST(
       }
 
       case 'start': {
-        if (!hostId || hostId !== room.host_id) {
-          return NextResponse.json({ error: 'Only host can start the game' }, { status: 403 })
+        const { playerId } = body
+        if (!playerId) {
+          return NextResponse.json({ error: 'playerId is required' }, { status: 400 })
         }
 
         const { data: players } = await supabase
@@ -150,7 +168,7 @@ export async function POST(
           return NextResponse.json({ error: 'Need at least 1 player to start' }, { status: 400 })
         }
 
-        // Reset prior state
+        // Reset prior state but keep players
         await Promise.all([
           supabase.from('game24_submissions').delete().eq('room_pin', pin),
           supabase.from('game24_rounds').delete().eq('room_pin', pin),
@@ -189,44 +207,15 @@ export async function POST(
       }
 
       case 'play-again': {
-        const { playerId } = body
-        if (!playerId) {
-          return NextResponse.json({ error: 'playerId is required' }, { status: 400 })
-        }
-
-        const { data: player } = await supabase
-          .from('game24_players')
-          .select('*')
-          .eq('room_pin', pin)
-          .eq('player_id', playerId)
-          .single()
-
-        if (!player) {
-          return NextResponse.json({ error: 'Player not found' }, { status: 404 })
-        }
-
-        // Clear state and players, then re-add caller as host
         await Promise.all([
           supabase.from('game24_submissions').delete().eq('room_pin', pin),
           supabase.from('game24_rounds').delete().eq('room_pin', pin),
-          supabase.from('game24_players').delete().eq('room_pin', pin),
+          supabase.from('game24_players').update({ score: 0 }).eq('room_pin', pin),
         ])
-
-        const newHostId = playerId
-        await supabase.from('game24_players').insert({
-          id: uuidv4(),
-          room_pin: pin,
-          player_id: newHostId,
-          name: player.name,
-          score: 0,
-          is_connected: true,
-          joined_at: now,
-        })
 
         await supabase
           .from('game24_rooms')
           .update({
-            host_id: newHostId,
             status: 'waiting' as Game24Status,
             round_number: 0,
             current_round_started_at: null,
@@ -236,7 +225,7 @@ export async function POST(
           })
           .eq('pin', pin)
 
-        return NextResponse.json({ pin, hostId: newHostId, playerId: newHostId })
+        return NextResponse.json({ pin })
       }
 
       case 'leave': {
