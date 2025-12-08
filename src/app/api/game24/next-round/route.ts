@@ -46,6 +46,16 @@ export async function POST(request: NextRequest) {
     }
 
     if (room.status === 'active') {
+      const roundStart = room.current_round_started_at ? new Date(room.current_round_started_at).getTime() : null
+      if (!roundStart) {
+        return NextResponse.json({ error: 'Round start missing' }, { status: 409 })
+      }
+      const elapsed = now.getTime() - roundStart
+      const remaining = Math.max(0, GAME24_ROUND_DURATION_MS - elapsed)
+      if (remaining > 0) {
+        return NextResponse.json({ status: 'active', waitMs: remaining })
+      }
+
       const intermissionUntil = new Date(now.getTime() + GAME24_INTERMISSION_MS).toISOString()
       const { error: updateError } = await supabase
         .from('game24_rooms')
