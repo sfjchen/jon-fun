@@ -159,6 +159,20 @@ export async function POST(
           return NextResponse.json({ error: 'playerId is required' }, { status: 400 })
         }
 
+        if (room.status !== 'waiting') {
+          const { data: existingRound } = await supabase
+            .from('game24_rounds')
+            .select('*')
+            .eq('room_pin', pin)
+            .eq('round_number', room.round_number || 1)
+            .single()
+          return NextResponse.json({
+            success: true,
+            status: room.status,
+            round: existingRound ?? null,
+          })
+        }
+
         const { data: players } = await supabase
           .from('game24_players')
           .select('*')
@@ -178,29 +192,43 @@ export async function POST(
         const numbers = generateSolvableNumbers()
         const roundStart = now
 
-        const [{ error: roundError }] = await Promise.all([
-          supabase.from('game24_rounds').insert({
-            id: uuidv4(),
-            room_pin: pin,
-            round_number: 1,
-            numbers,
-            started_at: roundStart,
-          }),
-          supabase
-            .from('game24_rooms')
-            .update({
-              status: 'active',
+        const { error: roundError } = await supabase
+          .from('game24_rounds')
+          .upsert(
+            {
+              id: uuidv4(),
+              room_pin: pin,
               round_number: 1,
-              current_round_started_at: roundStart,
-              intermission_until: null,
-              last_activity: roundStart,
-              updated_at: roundStart,
-            })
-            .eq('pin', pin),
-        ])
+              numbers,
+              started_at: roundStart,
+            },
+            { onConflict: 'room_pin,round_number' }
+          )
 
-        if (roundError) {
-          return NextResponse.json({ error: 'Failed to initialize round' }, { status: 500 })
+        const { error: roomUpdateError } = await supabase
+          .from('game24_rooms')
+          .update({
+            status: 'active',
+            round_number: 1,
+            current_round_started_at: roundStart,
+            intermission_until: null,
+            last_activity: roundStart,
+            updated_at: roundStart,
+          })
+          .eq('pin', pin)
+
+        if (roundError || roomUpdateError) {
+          // If another concurrent start already created the round, return existing state instead of error
+          const { data: existingRound } = await supabase
+            .from('game24_rounds')
+            .select('*')
+            .eq('room_pin', pin)
+            .eq('round_number', 1)
+            .single()
+          return NextResponse.json({
+            success: true,
+            round: existingRound ?? { round_number: 1, numbers, started_at: roundStart },
+          })
         }
 
         return NextResponse.json({ success: true, round: { round_number: 1, numbers, started_at: roundStart } })

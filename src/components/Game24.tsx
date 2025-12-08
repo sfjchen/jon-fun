@@ -253,7 +253,7 @@ export default function Game24() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const startTime = room?.current_round_started_at ?? round?.started_at ?? null
+    const startTime = room?.current_round_started_at ?? round?.started_at ?? null
 
       if (room?.status === 'active' && startTime) {
         const startTs = new Date(startTime).getTime()
@@ -355,54 +355,54 @@ export default function Game24() {
     (secondCardIndex: number) => {
       if (phase !== 'active') return
       setGameState((prev) => {
-        if (prev.selectedCard === null || prev.pendingOperation === null) return prev
-
-        const firstCard = prev.cards[prev.selectedCard]
-        const secondCard = prev.cards[secondCardIndex]
-
-        if (!firstCard || !secondCard) return prev
-
-        try {
-          let result: number
-          let expression: string
-
-          switch (prev.pendingOperation) {
-            case '+':
-              result = firstCard.value + secondCard.value
-              expression = `(${firstCard.expression} + ${secondCard.expression})`
-              break
-            case '-':
-              result = firstCard.value - secondCard.value
-              expression = `(${firstCard.expression} - ${secondCard.expression})`
-              break
-            case '*':
-              result = firstCard.value * secondCard.value
-              expression = `(${firstCard.expression} × ${secondCard.expression})`
-              break
-            case '/':
-              if (secondCard.value === 0) {
-                showTemporaryMessage('❌ Cannot divide by zero!')
-                return { ...prev, selectedCard: null, pendingOperation: null }
-              }
-              result = firstCard.value / secondCard.value
-              expression = `(${firstCard.expression} ÷ ${secondCard.expression})`
-              break
-            default:
-              return prev
-          }
-
+      if (prev.selectedCard === null || prev.pendingOperation === null) return prev
+      
+      const firstCard = prev.cards[prev.selectedCard]
+      const secondCard = prev.cards[secondCardIndex]
+      
+      if (!firstCard || !secondCard) return prev
+      
+      try {
+        let result: number
+        let expression: string
+        
+        switch (prev.pendingOperation) {
+          case '+':
+            result = firstCard.value + secondCard.value
+            expression = `(${firstCard.expression} + ${secondCard.expression})`
+            break
+          case '-':
+            result = firstCard.value - secondCard.value
+            expression = `(${firstCard.expression} - ${secondCard.expression})`
+            break
+          case '*':
+            result = firstCard.value * secondCard.value
+            expression = `(${firstCard.expression} × ${secondCard.expression})`
+            break
+          case '/':
+            if (secondCard.value === 0) {
+              showTemporaryMessage('❌ Cannot divide by zero!')
+              return { ...prev, selectedCard: null, pendingOperation: null }
+            }
+            result = firstCard.value / secondCard.value
+            expression = `(${firstCard.expression} ÷ ${secondCard.expression})`
+            break
+          default:
+            return prev
+        }
+        
           const newCards = prev.cards
             .map((card, i) => {
               if (i === prev.selectedCard) return null
               if (i === secondCardIndex) {
-                return {
-                  value: result,
+            return {
+              value: result,
                   expression,
-                  isResult: true,
+              isResult: true,
                   position: card.position,
                 }
-              }
-              return card
+            }
+            return card
             })
             .filter((card): card is Card => card !== null)
 
@@ -410,19 +410,19 @@ export default function Game24() {
 
           if (newCards.length === 1 && Math.abs(newCards[0]!.value - 24) < 0.001) {
             submitSolution(newCards[0]!.expression)
-          }
-
-          return {
-            ...prev,
-            cards: newCards,
-            selectedCard: resultCardIndex,
-            pendingOperation: null,
-          }
-        } catch {
-          showTemporaryMessage('❌ Invalid operation')
-          return { ...prev, selectedCard: null, pendingOperation: null }
         }
-      })
+        
+        return {
+          ...prev,
+          cards: newCards,
+          selectedCard: resultCardIndex,
+          pendingOperation: null,
+        }
+      } catch {
+        showTemporaryMessage('❌ Invalid operation')
+        return { ...prev, selectedCard: null, pendingOperation: null }
+      }
+    })
     },
     [phase, submitSolution, showTemporaryMessage]
   )
@@ -585,8 +585,8 @@ export default function Game24() {
       <button 
         key={position}
         className={cardClass}
-          onClick={() => selectCard(cardIndex)}
-          data-card-index={cardIndex}
+        onClick={() => selectCard(cardIndex)}
+        data-card-index={cardIndex}
           disabled={phase !== 'active'}
         >
           <div className="card-content">
@@ -827,7 +827,7 @@ export default function Game24() {
                   </div>
                 </div>
 
-                <div>
+    <div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-lg font-semibold">Players ({players.length}/{room.max_players ?? GAME24_MAX_PLAYERS})</div>
                     {isHost && <span className="text-xs bg-green-600 px-2 py-1 rounded">Host</span>}
@@ -893,9 +893,9 @@ export default function Game24() {
 
           <main className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white relative overflow-hidden">
             <div className="flex items-center justify-between mb-6 text-white">
-              <Link href="/" className="header-icon" aria-label="Go home">
-                🏠
-              </Link>
+        <Link href="/" className="header-icon" aria-label="Go home">
+          🏠
+        </Link>
               <div className="text-center">
                 <div className="text-lg font-semibold">Your Score</div>
                 <div className="bg-white/10 rounded-lg px-4 py-2 mt-1 text-2xl font-bold">
@@ -917,9 +917,9 @@ export default function Game24() {
                     {room?.status === 'intermission'
                       ? `Next round in ${formatSeconds(intermissionRemainingMs / 1000)}s`
                       : ''}
-                  </div>
-                </div>
-
+          </div>
+        </div>
+        
                 <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-4">
                   <div
                     className="h-full bg-green-400 transition-all"
@@ -974,13 +974,13 @@ export default function Game24() {
                     </div>
                   ))}
                 </div>
-                <button
+        <button 
                   onClick={playAgain}
                   className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-semibold"
-                >
+        >
                   Play Again
-                </button>
-              </div>
+        </button>
+      </div>
             )}
 
             <div className="max-w-xl mx-auto p-4 space-y-8">
@@ -989,29 +989,29 @@ export default function Game24() {
                   <>
                     <div className="game-board mb-4">
                       {[0, 1, 2, 3].map((position) => renderCardAtPosition(position))}
-                    </div>
+        </div>
                     <div className="flex justify-center gap-4 mb-4">
-                      {OPERATORS.map(({ op, class: className, symbol }) => (
-                        <button
-                          key={op}
-                          className={`operator-btn ${className} ${gameState.pendingOperation === op ? 'selected' : ''}`}
-                          onClick={() => addOperator(op)}
-                          aria-label={`${op} operator`}
+          {OPERATORS.map(({ op, class: className, symbol }) => (
+            <button
+              key={op}
+              className={`operator-btn ${className} ${gameState.pendingOperation === op ? 'selected' : ''}`}
+              onClick={() => addOperator(op)}
+              aria-label={`${op} operator`}
                           disabled={phase !== 'active'}
-                        >
-                          {symbol}
-                        </button>
-                      ))}
-                    </div>
+            >
+              {symbol}
+            </button>
+          ))}
+        </div>
                     <div className="text-center text-gray-200 text-sm">
                       {hasSubmitted ? 'You submitted this round.' : 'Solve to score up to 2000 points (20s round).'}
-                    </div>
+          </div>
                   </>
                 ) : (
                   <>
                     <div className="game-board mb-4">
                       {[0, 1, 2, 3].map((position) => renderPracticeCard(position))}
-                    </div>
+          </div>
                     <div className="flex justify-center gap-4 mb-4">
                       {OPERATORS.map(({ op, class: className, symbol }) => (
                         <button
@@ -1023,20 +1023,20 @@ export default function Game24() {
                           {symbol}
                         </button>
                       ))}
-                    </div>
+        </div>
                     <div className="flex justify-center gap-3 mb-2">
-                      <button
+          <button 
                         onClick={generatePractice}
-                        className="action-btn danger"
-                      >
+            className="action-btn danger"
+          >
                         🔄 New Puzzle
-                      </button>
-                      <button
+          </button>
+          <button 
                         onClick={showPracticeSolution}
-                        className="action-btn primary"
-                      >
+            className="action-btn primary"
+          >
                         💡 Solution
-                      </button>
+          </button>
                     </div>
                     <div className="text-center text-gray-200 text-sm">
                       Free play while waiting/not in a room. Timer/solution disable only when a round is active.
