@@ -221,23 +221,28 @@ export default function ChwaziGame() {
           const dimmed = status === 'winner' && !isWinner
           const isSelecting = status === 'selecting'
           const size = 96
+          const scale = isWinner ? 1.35 : isSelecting ? 1.12 : 1
 
           return (
             <div
               key={touch.id}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ease-out ${isWinner ? 'scale-150' : isSelecting ? 'scale-110' : 'scale-100'} ${dimmed ? 'opacity-30' : 'opacity-90'}`}
+              className={`absolute -translate-x-1/2 -translate-y-1/2 will-change-transform ${
+                dimmed ? 'opacity-35' : 'opacity-95'
+              }`}
               style={{
                 left: touch.x,
                 top: touch.y,
                 width: size,
                 height: size,
+                transform: `translate(-50%, -50%) scale(${scale})`,
               }}
             >
               <div
-                className={`absolute inset-0 rounded-full ${isSelecting || isWinner ? 'animate-ping' : ''}`}
+                className={`absolute inset-0 rounded-full ${isWinner ? 'animate-ping' : ''}`}
                 style={{
-                  backgroundColor: `${touch.color}33`,
-                  boxShadow: `0 0 40px ${touch.color}55`,
+                  backgroundColor: `${touch.color}2a`,
+                  boxShadow: `0 0 26px ${touch.color}66`,
+                  filter: 'blur(3px)',
                 }}
               />
 
@@ -245,16 +250,16 @@ export default function ChwaziGame() {
                 className="absolute inset-0 rounded-full"
                 style={{
                   background: `radial-gradient(circle at 30% 30%, #ffffff, ${touch.color})`,
-                  boxShadow: `0 10px 35px ${touch.color}aa, inset 0 0 14px #ffffff22`,
-                  border: `4px solid ${isWinner ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.45)'}`,
+                  boxShadow: `0 8px 24px ${touch.color}88, inset 0 0 12px #ffffff22`,
+                  border: `3px solid ${isWinner ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.4)'}`,
                 }}
               />
 
-              <div className="absolute inset-2 rounded-full border-2 border-white/30" />
+              <div className="absolute inset-3 rounded-full border border-white/25" />
 
               {isWinner && (
                 <div
-                  className="absolute inset-[-16px] rounded-full animate-ping"
+                  className="absolute inset-[-14px] rounded-full animate-ping"
                   style={{ backgroundColor: `${touch.color}33` }}
                 />
               )}
