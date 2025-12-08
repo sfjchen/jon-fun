@@ -73,7 +73,7 @@ export default function ChwaziGame() {
 
       const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 0
       const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 0
-      const priority = touchesList.find(({ x, y }) => x >= viewportWidth * 0.73 && y >= viewportHeight * 0.73)
+      const priority = touchesList.find(({ x, y }) => x >= viewportWidth * 0.67 && y >= viewportHeight * 0.67)
 
       const winner = priority?.id ?? touchesList[0]?.id ?? null
       setWinnerId(winner)
