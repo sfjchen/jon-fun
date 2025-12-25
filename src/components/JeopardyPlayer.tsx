@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { JeopardyBoard } from '@/lib/jeopardy'
 import { getClueValue } from '@/lib/jeopardy'
 
@@ -25,6 +25,18 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [focused, setFocused] = useState<{ col: number; row: number } | null>(null)
   const colMinWidthPx = 90
+
+  const teamLayout = useMemo(() => {
+    // Adaptive team card sizing: fewer teams → bigger cards; more teams → denser grid.
+    const minCardWidth =
+      teamCount <= 2 ? 260 :
+      teamCount <= 4 ? 220 :
+      teamCount <= 6 ? 190 :
+      teamCount <= 8 ? 170 :
+      150
+    const dense = teamCount >= 9
+    return { minCardWidth, dense }
+  }, [teamCount])
 
   useEffect(() => {
     // normalize team list to 1-MAX_TEAMS
@@ -159,31 +171,36 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
       </div>
 
       {/* Teams */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 justify-center mt-6">
-        {teams.map((team, i) => (
-          <div key={i} className="bg-white/10 rounded-xl border border-white/20 p-3 min-w-0">
+      <div className="mt-6 w-full max-w-6xl mx-auto">
+        <div
+          className={`grid ${teamLayout.dense ? 'gap-2' : 'gap-3'} justify-items-stretch`}
+          style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${teamLayout.minCardWidth}px, 1fr))` }}
+        >
+          {teams.map((team, i) => (
+            <div key={i} className={`bg-white/10 rounded-xl border border-white/20 min-w-0 ${teamLayout.dense ? 'p-2' : 'p-3'}`}>
             <input
               value={team.name}
               onChange={(e) => setTeams((prev) => prev.map((t, idx) => idx === i ? { ...t, name: e.target.value } : t))}
-              className="w-full bg-transparent text-center font-semibold mb-2 outline-none"
+              className={`w-full bg-transparent text-center font-semibold outline-none ${teamLayout.dense ? 'mb-1 text-sm' : 'mb-2'}`}
             />
             <input
               value={team.score}
               onChange={(e) => setScore(i, Number(e.target.value) || 0)}
-              className="w-full bg-[#0e235b] text-center text-2xl font-bold rounded-md py-2 outline-none"
+              className={`w-full bg-[#0e235b] text-center font-bold rounded-md outline-none ${teamLayout.dense ? 'py-1 text-xl' : 'py-2 text-2xl'}`}
             />
             <div className="grid grid-cols-2 gap-2 mt-2">
               <button onClick={() => {
                 const src = open ?? lastAnswered
                 if (src) adjustScore(i, getClueValue(board, src.row))
-              }} className="bg-green-600 hover:bg-green-700 rounded-md py-1">+</button>
+              }} className={`bg-green-600 hover:bg-green-700 rounded-md ${teamLayout.dense ? 'py-1 text-sm' : 'py-1'}`}>+</button>
               <button onClick={() => {
                 const src = open ?? lastAnswered
                 if (src) adjustScore(i, -getClueValue(board, src.row))
-              }} className="bg-red-600 hover:bg-red-700 rounded-md py-1">-</button>
+              }} className={`bg-red-600 hover:bg-red-700 rounded-md ${teamLayout.dense ? 'py-1 text-sm' : 'py-1'}`}>-</button>
             </div>
-          </div>
-        ))}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Overlay */}
