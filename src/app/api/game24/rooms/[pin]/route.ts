@@ -51,7 +51,7 @@ export async function GET(
     }
 
     let round = null
-    let roundScores: Record<string, number> = {}
+    const roundScores: Record<string, number> = {}
     if (room.round_number > 0) {
       const { data: roundData } = await supabase
         .from('game24_rounds')
@@ -95,7 +95,7 @@ export async function POST(
   try {
     const { pin } = await params
     const body = await request.json()
-    const { action, playerName, hostId } = body
+    const { action, playerName } = body
 
     if (!validateRoomPin(pin)) {
       return NextResponse.json({ error: 'Invalid room PIN' }, { status: 400 })

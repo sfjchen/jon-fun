@@ -548,7 +548,7 @@ export default function Game24() {
     setPlayerId(null)
     setHostId(null)
     saveSession({ pin: '', playerId: '', hostId: '' })
-  }, [pinInput, playerId, saveSession, loadRoomData])
+  }, [pinInput, playerId, saveSession])
 
   const sortedPlayers = useMemo(() => {
     const list = [...players]
