@@ -13,6 +13,7 @@ interface JeopardyPlayerProps {
 type Team = { name: string; score: number }
 
 export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayerProps) {
+  const MAX_TEAMS = 12
   const [teams, setTeams] = useState<Team[]>([{ name: 'Team 1', score: 0 }, { name: 'Team 2', score: 0 }])
   const [teamCount, setTeamCount] = useState(2)
   const [open, setOpen] = useState<{ col: number; row: number } | null>(null)
@@ -26,7 +27,7 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
   const colMinWidthPx = 90
 
   useEffect(() => {
-    // normalize team list to 1-8
+    // normalize team list to 1-MAX_TEAMS
     setTeams((prev) => {
       const next: Team[] = Array.from({ length: teamCount }, (_, i) => {
         const existing = prev[i]
@@ -106,9 +107,9 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
           <select
             className="bg-white/10 border border-white/20 rounded-lg px-2 py-1"
             value={teamCount}
-            onChange={(e) => setTeamCount(Math.min(8, Math.max(1, Number(e.target.value))))}
+            onChange={(e) => setTeamCount(Math.min(MAX_TEAMS, Math.max(1, Number(e.target.value))))}
           >
-            {Array.from({ length: 8 }, (_, i) => i + 1).map((n) => (
+            {Array.from({ length: MAX_TEAMS }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>{n}</option>
             ))}
           </select>
@@ -158,9 +159,9 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
       </div>
 
       {/* Teams */}
-      <div className="flex flex-wrap items-stretch gap-3 justify-center mt-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 justify-center mt-6">
         {teams.map((team, i) => (
-          <div key={i} className="bg-white/10 rounded-xl border border-white/20 p-3 w-44">
+          <div key={i} className="bg-white/10 rounded-xl border border-white/20 p-3 min-w-0">
             <input
               value={team.name}
               onChange={(e) => setTeams((prev) => prev.map((t, idx) => idx === i ? { ...t, name: e.target.value } : t))}
