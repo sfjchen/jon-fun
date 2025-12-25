@@ -1,0 +1,10 @@
+---
+alwaysApply: true
+---
+- Always plan the code before writing it.
+- Think about how the new code will fit into the existing codebase.
+- Think about how the new code will interact with the other parts of the codebase.
+- Think about how the new code will handle errors and edge cases.
+- Think about how the new code will be used by the frontend.
+- Think about how the new code will be used by the users.
+- Think about how the new code will be used by the developer (me).
