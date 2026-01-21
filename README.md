@@ -1,6 +1,6 @@
 # Jon-fun - Game Hub
 
-A personal collection of fun brain games built with Next.js, TypeScript, and Supabase. Deployed at [sfjc.dev](https://sfjc.dev).
+A personal collection of fun games built with Next.js, TypeScript, and Supabase. Deployed at [sfjc.dev](https://sfjc.dev).
 
 ## 🎮 Games
 
@@ -66,6 +66,7 @@ src/
 ### Tables
 
 **`poker_rooms`**
+
 - `id` (uuid, primary key)
 - `pin` (text, unique, 4-digit room code)
 - `host_id` (uuid)
@@ -77,6 +78,7 @@ src/
 - `last_activity` (timestamp, indexed for cleanup)
 
 **`poker_players`**
+
 - `id` (uuid, primary key)
 - `room_pin` (text, foreign key → poker_rooms.pin)
 - `player_id` (uuid, unique per player)
@@ -91,6 +93,7 @@ src/
 - `has_acted` (boolean)
 
 **`poker_game_state`**
+
 - `room_pin` (text, foreign key → poker_rooms.pin)
 - `hand_number` (integer)
 - `betting_round` (text: 'preflop' | 'flop' | 'turn' | 'river')
@@ -105,6 +108,7 @@ src/
 - `is_game_active` (boolean)
 
 **`poker_actions`**
+
 - `room_pin` (text, foreign key → poker_rooms.pin)
 - `hand_number` (integer)
 - `player_id` (uuid)
@@ -113,6 +117,7 @@ src/
 - `timestamp` (timestamp)
 
 **`game24_rooms`**
+
 - `id` (uuid, primary key)
 - `pin` (text, unique, 4-digit)
 - `host_id` (uuid, nullable)
@@ -123,6 +128,7 @@ src/
 - `created_at`, `updated_at`, `last_activity` (timestamptz)
 
 **`game24_players`**
+
 - `id` (uuid, primary key)
 - `room_pin` (text, fk → game24_rooms.pin)
 - `player_id` (uuid)
@@ -132,12 +138,14 @@ src/
 - `joined_at` (timestamptz)
 
 **`game24_rounds`**
+
 - `room_pin` (text, fk → game24_rooms.pin)
 - `round_number` (integer)
 - `numbers` (integer[])
 - `started_at` (timestamptz)
 
 **`game24_submissions`**
+
 - `room_pin` (text, fk → game24_rooms.pin)
 - `round_number` (integer)
 - `player_id` (uuid)
@@ -147,6 +155,7 @@ src/
 - `submitted_at` (timestamptz)
 
 ### Indexes
+
 - `idx_poker_rooms_last_activity` on `poker_rooms(last_activity)` for cleanup queries
 - `idx_game24_rooms_last_activity` on `game24_rooms(last_activity)`
 - `game24_rounds_room_pin_round_number_key`
@@ -155,33 +164,41 @@ src/
 ## 🔌 API Routes
 
 **`POST /api/poker/rooms`**: Create new poker room
+
 - Body: `{ hostName, smallBlind?, bigBlind?, timerPerTurn? }`
 - Returns: `{ pin, hostId, playerId }`
 
 **`GET /api/poker/rooms/[pin]`**: Get room data
+
 - Returns: Room with players and game state
 
 **`POST /api/poker/rooms/[pin]`**: Join room or start game
+
 - Body: `{ action: 'join' | 'start', playerName?, position?, hostId? }`
 
 **`PATCH /api/poker/rooms/[pin]`**: Update room settings
+
 - Body: `{ timer_per_turn?, hostId }`
 - Only host can update
 
 **`POST /api/poker/actions`**: Player betting action
+
 - Body: `{ pin, playerId, action, amount? }`
 
 **`POST /api/poker/cleanup`**: Cleanup inactive rooms (cron)
+
 - Deletes rooms inactive >24 hours
 - Requires `CLEANUP_API_KEY` env var (optional)
 
 **`POST /api/game24/rooms`**: Create Game24 room (4-digit PIN)
+
 - Body: `{ hostName }`
 - Returns: `{ pin, hostId, playerId }`
 
 **`GET /api/game24/rooms/[pin]`**: Room, players, current round numbers
 
 **`POST /api/game24/rooms/[pin]`**:
+
 - `action: 'join'` `{ playerName }`
 - `action: 'start'` `{ hostId }` (host only; needs ≥2 players)
 - `action: 'play-again'` `{ playerId }` (resets lobby, caller becomes host)
@@ -193,17 +210,20 @@ src/
 ## 💻 Coding Conventions & Patterns
 
 ### React Optimization
+
 - **Always use `useCallback`** for functions passed as props or in dependencies
 - **Use `useMemo`** for expensive computations
 - **Wrap components in `memo()`** if they receive stable props (e.g., `PokerChips`, `PokerPlayer`)
 - **Functional state updates** when state depends on previous state
 
 ### TypeScript
+
 - **No `any` types** - use proper interfaces/types
 - **Strict mode enabled** - `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`
 - **Define interfaces** for API request/response bodies
 
 ### Code Quality
+
 - **No `console.log/error/warn`** statements
 - **Use `@/` alias** for imports (not relative paths like `../../../`)
 - **Parallelize operations** with `Promise.all` for independent database calls
@@ -211,11 +231,13 @@ src/
 - **Use nullish coalescing (`??`)** for default values
 
 ### State Management
+
 - **React hooks** for component state
 - **`sessionStorage`** for poker game state (hostId, playerId, playerName)
 - **Supabase Realtime** subscriptions for multiplayer updates
 
 ### API Routes
+
 - **Proper error handling** with try/catch
 - **Validate inputs** before database operations
 - **Return appropriate HTTP status codes** (400, 401, 403, 404, 500)
@@ -224,31 +246,37 @@ src/
 ## 🔄 Workflow & Deployment
 
 ### Development Workflow
+
 - **Work directly on `main` branch** (no feature branches)
 - **Optional**: `npm run dev` to smoke-test locally before pushing
 - **Use `git acp -m "message"`** to add/commit/push in one step
 - **Vercel auto-deploys** on push (1-3 minutes); verify via Vercel dashboard or https://sfjc.dev and redeploy latest if env vars change
 
 ### ⚠️ IMPORTANT: After Making Changes
+
 **Always run `git acp -m "your message"` after every set of edits to update deployment before ending agent response.**
 
 ### Environment Variables
 
 **Local (`.env.local`):**
+
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
 **Production (Vercel):**
+
 - Same variables configured in Vercel dashboard
 - `CLEANUP_API_KEY` (optional, for cleanup endpoint)
 
 ### MCP Servers
+
 - **Supabase MCP**: Database queries, migrations, project management
 - **Vercel MCP**: Deployment management, project info, build logs
   - Project: `jon-fun` (prj_p0GxMYUx0l1bfSrEVJQ161WkgTFe)
   - Team: jychen04's projects
 
 ### Troubleshooting
+
 - Changes not live? Check Vercel build logs and confirm changes are on `main`.
 - Supabase issues? Verify `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local` and Vercel.
 - Still stale? Hard refresh cache (Cmd+Shift+R).
@@ -274,6 +302,7 @@ src/
 ## 📋 README Maintenance Guidelines
 
 **For AI Agents**: When making changes to the project, update this README if:
+
 - ✅ Adding a new game (update Games section)
 - ✅ Adding new database tables/columns (update Database Schema)
 - ✅ Adding new API routes (update API Routes)
@@ -281,6 +310,7 @@ src/
 - ✅ Adding new dependencies or tech stack changes (update Tech Stack)
 
 **Keep it concise**:
+
 - 🔄 **Replace/update** existing sections rather than adding new ones
 - 🗑️ **Remove outdated** information when updating
 - ❌ **Don't document** implementation details that change frequently
