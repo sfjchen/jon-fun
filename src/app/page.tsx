@@ -42,6 +42,15 @@ const games = [
     available: true,
   },
   {
+    id: 'tmr',
+    title: 'TMR System',
+    description: 'Targeted Memory Reactivation for enhanced learning and memory consolidation',
+    icon: '🧠',
+    href: '/games/tmr',
+    tags: ['Learning', 'Memory', 'Science'],
+    available: true,
+  },
+  {
     id: 'coming-soon',
     title: 'Coming Soon',
     description: 'More brain games are in development',
