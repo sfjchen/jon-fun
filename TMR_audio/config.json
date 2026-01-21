@@ -1,0 +1,18 @@
+{
+  "cue_file": "tmr_cue.wav",
+  "pink_noise_file": "pink_noise.wav",
+  
+  "study_duration_minutes": 25,
+  "cue_interval_seconds": 60,
+  "study_volume": 0.5,
+  
+  "sleep_onset_delay_minutes": 90,
+  "sleep_cue_interval_seconds": 10,
+  "cues_per_window": 30,
+  "sleep_volume": 0.2,
+  "use_pink_noise": false,
+  "pink_noise_volume": 0.1,
+  
+  "session_log_file": "study_sessions.json",
+  "sleep_log_file": "sleep_sessions.json"
+}
