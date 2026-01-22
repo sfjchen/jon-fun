@@ -41,50 +41,65 @@ class SleepReactivation:
     
     def calculate_sleep_windows(self, sleep_onset_delay_minutes=0):
         """
-        Calculate optimal TMR reactivation windows based on PERSONALIZED sleep cycles.
+        Calculate optimal TMR reactivation windows based on personalized sleep cycles.
         
-        Based on Apple Watch data analysis:
-        - Cycle 1 (105 min): Heavy deep sleep, 60-90 min window
-        - Cycle 2 (75 min): Moderate deep sleep, 120-165 min window  
-        - Cycle 3 (75 min): Light sleep, 195-235 min window
-        - Cycle 4 (70 min): Very light, 265-300 min window
+        Uses sleep cycle durations and window offsets from config when provided.
+        Falls back to research-based defaults otherwise.
         
         Args:
             sleep_onset_delay_minutes: Minutes to wait before starting (default: 0, start immediately)
         """
         windows = []
+        cycles = self.config.get("sleep_cycles")
         
-        # Personalized sleep cycle windows based on your Apple Watch data
-        # Cycle 1: 0-105 min, target 60-90 min (peak deep sleep)
+        if cycles:
+            cumulative_start = 0
+            for cycle in cycles:
+                duration = cycle.get("duration_minutes")
+                window_start_offset = cycle.get("window_start_offset_minutes", 0)
+                window_end_offset = cycle.get("window_end_offset_minutes", duration)
+                
+                if not duration:
+                    continue
+                
+                window_start = sleep_onset_delay_minutes + cumulative_start + window_start_offset
+                window_end = sleep_onset_delay_minutes + cumulative_start + min(window_end_offset, duration)
+                
+                windows.append({
+                    "start_minutes": window_start,
+                    "end_minutes": window_end,
+                    "cycle": cycle.get("cycle"),
+                    "description": cycle.get("description", "Sleep cycle window")
+                })
+                
+                cumulative_start += duration
+            
+            return windows
+        
+        # Defaults (research-based)
         windows.append({
             "start_minutes": sleep_onset_delay_minutes + 60,
             "end_minutes": sleep_onset_delay_minutes + 90,
             "cycle": 1,
-            "description": "Peak deep sleep - first cycle (105 min)"
+            "description": "Peak deep sleep - first cycle"
         })
-        
-        # Cycle 2: 105-180 min, target 120-165 min (some deep sleep)
         windows.append({
             "start_minutes": sleep_onset_delay_minutes + 120,
             "end_minutes": sleep_onset_delay_minutes + 165,
             "cycle": 2,
-            "description": "Moderate deep sleep - second cycle (75 min)"
+            "description": "Moderate deep sleep - second cycle"
         })
-        
-        # Cycle 3: 180-255 min, target 195-235 min (light sleep)
         windows.append({
             "start_minutes": sleep_onset_delay_minutes + 195,
             "end_minutes": sleep_onset_delay_minutes + 235,
             "cycle": 3,
-            "description": "Light sleep - third cycle (75 min)"
+            "description": "Light sleep - third cycle"
         })
-        
-        # Cycle 4: 255-325 min, target 265-300 min (very light)
         windows.append({
             "start_minutes": sleep_onset_delay_minutes + 265,
             "end_minutes": sleep_onset_delay_minutes + 300,
             "cycle": 4,
-            "description": "Very light sleep - fourth cycle (70 min)"
+            "description": "Very light sleep - fourth cycle"
         })
         
         return windows
@@ -107,11 +122,20 @@ class SleepReactivation:
         
         print(f"\n{'='*60}")
         print(f"TMR Sleep Reactivation Armed (PERSONALIZED)")
-        print(f"Based on your Apple Watch sleep data analysis:")
-        print(f"  - Cycle 1 (105 min): 60-90 min - Peak deep sleep")
-        print(f"  - Cycle 2 (75 min): 120-165 min - Moderate deep sleep")
-        print(f"  - Cycle 3 (75 min): 195-235 min - Light sleep")
-        print(f"  - Cycle 4 (70 min): 265-300 min - Very light sleep")
+        print(f"Typical sleep latency: 10-15 minutes")
+        cycles = self.config.get("sleep_cycles") or []
+        if cycles:
+            print("Based on your Apple Watch sleep data analysis:")
+            for cycle in cycles:
+                duration = cycle.get("duration_minutes")
+                window_start_offset = cycle.get("window_start_offset_minutes")
+                window_end_offset = cycle.get("window_end_offset_minutes")
+                description = cycle.get("description", "Sleep cycle window")
+                if duration is not None and window_start_offset is not None and window_end_offset is not None:
+                    print(f"  - Cycle {cycle.get('cycle')} ({duration} min): "
+                          f"{window_start_offset}-{window_end_offset} min - {description}")
+        else:
+            print("Using research-based cycle defaults.")
         print(f"Sleep onset delay: {delay} minutes")
         print(f"Cue interval: {cue_interval} seconds")
         print(f"Cues per window: {cues_per_window}")

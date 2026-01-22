@@ -1,13 +1,14 @@
 {
   "_comment": "Personalized TMR configuration based on Apple Watch sleep data analysis",
   "_analysis": {
-    "cycle_1_duration_min": 105,
-    "cycle_2_duration_min": 75,
+    "cycle_1_duration_min": 90,
+    "cycle_2_duration_min": 80,
     "cycle_3_duration_min": 75,
-    "cycle_4_duration_min": 70,
+    "cycle_4_duration_min": 75,
     "deep_sleep_percentage": "10-17%",
     "deep_sleep_concentration": "First 2-3 hours",
-    "note": "First cycle is longer with heavy deep sleep. Later cycles are 70-80 min."
+    "sleep_latency_minutes": "10-15",
+    "note": "First cycle is longer. Later cycles are ~75-85 min. Windows include cushion."
   },
   
   "cue_file": "tmr_cue.wav",
@@ -17,39 +18,39 @@
   "cue_interval_seconds": 60,
   "study_volume": 0.5,
   
-  "sleep_onset_delay_minutes": 0,
+  "sleep_onset_delay_minutes": 15,
   "sleep_cycles": [
     {
       "cycle": 1,
-      "start_minutes": 60,
-      "end_minutes": 90,
-      "duration_minutes": 105,
+      "duration_minutes": 90,
+      "window_start_offset_minutes": 50,
+      "window_end_offset_minutes": 85,
       "deep_sleep_probability": "high",
-      "description": "First cycle - peak deep sleep, longest cycle"
+      "description": "First cycle - peak deep sleep (cushioned window)"
     },
     {
       "cycle": 2,
-      "start_minutes": 120,
-      "end_minutes": 165,
-      "duration_minutes": 75,
+      "duration_minutes": 80,
+      "window_start_offset_minutes": 20,
+      "window_end_offset_minutes": 65,
       "deep_sleep_probability": "moderate",
-      "description": "Second cycle - some deep sleep remaining"
+      "description": "Second cycle - some deep sleep remaining (cushioned window)"
     },
     {
       "cycle": 3,
-      "start_minutes": 195,
-      "end_minutes": 235,
       "duration_minutes": 75,
+      "window_start_offset_minutes": 20,
+      "window_end_offset_minutes": 60,
       "deep_sleep_probability": "low",
-      "description": "Third cycle - light sleep, mostly Core/REM"
+      "description": "Third cycle - light sleep, mostly Core/REM (cushioned window)"
     },
     {
       "cycle": 4,
-      "start_minutes": 265,
-      "end_minutes": 300,
-      "duration_minutes": 70,
+      "duration_minutes": 75,
+      "window_start_offset_minutes": 15,
+      "window_end_offset_minutes": 55,
       "deep_sleep_probability": "minimal",
-      "description": "Fourth cycle - very light, fragmented"
+      "description": "Fourth cycle - very light, fragmented (cushioned window)"
     }
   ],
   

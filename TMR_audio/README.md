@@ -10,7 +10,8 @@ This system implements research-backed TMR protocols:
 
 ## Research Basis
 
-- **Optimal Timing**: Deep sleep (NREM Stage N3) occurs 60-90 minutes after sleep onset
+- **Optimal Timing**: Deep sleep (NREM Stage N3) occurs ~60-90 minutes after sleep onset
+- **Sleep Latency**: Typical time to fall asleep is ~10-15 minutes
 - **Sound Characteristics**: Short (1-2s), unique, neutral sounds at low volume
 - **Cue Frequency**: 10-second intervals during deep sleep windows
 - **Pink Noise**: Optional background noise that enhances slow-wave activity
@@ -76,7 +77,7 @@ Edit `config.json` to customize:
   - `study_volume`: Volume for study cues (0.0-1.0, default: 0.5)
 
 - **Sleep Settings:**
-  - `sleep_onset_delay_minutes`: Wait time before reactivation (default: 90)
+  - `sleep_onset_delay_minutes`: Wait time before reactivation (default: 15, matches 10-15 min sleep latency)
   - `sleep_cue_interval_seconds`: Interval between sleep cues (default: 10s)
   - `sleep_volume`: Volume for sleep cues (default: 0.2 - low to prevent arousal)
   - `use_pink_noise`: Enable pink noise background (default: false)
@@ -90,12 +91,12 @@ Edit `config.json` to customize:
 - Logs session data for tracking
 
 ### Sleep Phase
-- Waits for optimal deep sleep timing (90 minutes after sleep onset)
-- Plays cues during multiple sleep cycle windows:
-  - Cycle 1: 60-120 minutes after sleep onset
-  - Cycle 2: 150-210 minutes
-  - Cycle 3: 240-300 minutes
-  - Cycle 4: 330-390 minutes
+- Waits for sleep onset latency (~10-15 min) before timing cues
+- Plays cues during multiple personalized sleep cycle windows (with cushion):
+  - Cycle 1 (90 min): 50-85 minutes after sleep onset
+  - Cycle 2 (80 min): 110-155 minutes
+  - Cycle 3 (75 min): 190-230 minutes
+  - Cycle 4 (75 min): 260-300 minutes
 - Uses low-volume cues to avoid waking you up
 
 ## Best Practices
@@ -124,7 +125,7 @@ Edit `config.json` to customize:
 - Check system volume settings
 
 **Sleep script timing issues:**
-- Adjust `sleep_onset_delay_minutes` in config.json
+- Adjust `sleep_onset_delay_minutes` in config.json (set 10-15 minutes if you fall asleep slowly)
 - Use `--manual` flag for testing
 - Consider your typical sleep latency
 

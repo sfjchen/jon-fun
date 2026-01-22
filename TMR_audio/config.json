@@ -6,7 +6,37 @@
   "cue_interval_seconds": 60,
   "study_volume": 0.5,
   
-  "sleep_onset_delay_minutes": 0,
+  "sleep_onset_delay_minutes": 15,
+  "sleep_cycles": [
+    {
+      "cycle": 1,
+      "duration_minutes": 90,
+      "window_start_offset_minutes": 50,
+      "window_end_offset_minutes": 85,
+      "description": "Peak deep sleep - first cycle (cushioned window)"
+    },
+    {
+      "cycle": 2,
+      "duration_minutes": 80,
+      "window_start_offset_minutes": 20,
+      "window_end_offset_minutes": 65,
+      "description": "Moderate deep sleep - second cycle (cushioned window)"
+    },
+    {
+      "cycle": 3,
+      "duration_minutes": 75,
+      "window_start_offset_minutes": 20,
+      "window_end_offset_minutes": 60,
+      "description": "Light sleep - third cycle (cushioned window)"
+    },
+    {
+      "cycle": 4,
+      "duration_minutes": 75,
+      "window_start_offset_minutes": 15,
+      "window_end_offset_minutes": 55,
+      "description": "Very light sleep - fourth cycle (cushioned window)"
+    }
+  ],
   "sleep_cue_interval_seconds": 10,
   "cues_per_window": 30,
   "sleep_volume": 0.2,

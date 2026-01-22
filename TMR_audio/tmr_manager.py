@@ -57,8 +57,9 @@ class TMRManager:
             return
         
         try:
-            delay_input = input("Minutes until sleep onset (default: 0): ").strip()
-            delay = int(delay_input) if delay_input else 0
+            default_delay = self.config.get("sleep_onset_delay_minutes", 0)
+            delay_input = input(f"Minutes until sleep onset (default: {default_delay}): ").strip()
+            delay = int(delay_input) if delay_input else default_delay
             
             reactivation = SleepReactivation(self.config_path)
             reactivation.run_reactivation(sleep_onset_delay_minutes=delay)

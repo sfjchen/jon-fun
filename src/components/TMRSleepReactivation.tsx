@@ -27,10 +27,11 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
   const cueBufferRef = useRef<AudioBuffer | null>(null)
   const pinkNoiseBufferRef = useRef<AudioBuffer | null>(null)
   const pinkNoiseSourceRef = useRef<AudioBufferSourceNode | null>(null)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const startTimeRef = useRef<number | null>(null)
   const windowsRef = useRef<ReturnType<typeof calculateSleepWindows>>([])
+  const timeoutRefs = useRef<NodeJS.Timeout[]>([])
+  const cueIntervalRefs = useRef<NodeJS.Timeout[]>([])
 
   // Initialize audio context and generate sounds
   useEffect(() => {
@@ -48,8 +49,11 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
     initAudio()
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
       if (timerRef.current) clearTimeout(timerRef.current)
+      timeoutRefs.current.forEach(clearTimeout)
+      cueIntervalRefs.current.forEach(clearInterval)
+      timeoutRefs.current = []
+      cueIntervalRefs.current = []
       if (pinkNoiseSourceRef.current) {
         pinkNoiseSourceRef.current.stop()
       }
@@ -97,6 +101,11 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
     setCurrentCycle(0)
     startTimeRef.current = Date.now()
 
+    timeoutRefs.current.forEach(clearTimeout)
+    cueIntervalRefs.current.forEach(clearInterval)
+    timeoutRefs.current = []
+    cueIntervalRefs.current = []
+
     // Calculate windows
     windowsRef.current = calculateSleepWindows(delay)
 
@@ -123,7 +132,13 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
           const remaining = delay - elapsedMinutes
           setStatus(`Waiting for deep sleep... ${remaining} min remaining`)
         } else {
-          setStatus('Session complete')
+          const nextWindow = windowsRef.current.find((w) => elapsedMinutes < w.startMinutes)
+          if (nextWindow) {
+            const remaining = nextWindow.startMinutes - elapsedMinutes
+            setStatus(`Waiting for cycle ${nextWindow.cycle}... ${remaining} min remaining`)
+          } else {
+            setStatus('Session complete')
+          }
         }
       }
     }, 60000) // Update every minute
@@ -134,7 +149,7 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
         const windowStartMs = window.startMinutes * 60 * 1000
         const windowEndMs = window.endMinutes * 60 * 1000
 
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
           if (!startTimeRef.current) return
 
           setCurrentCycle(window.cycle)
@@ -160,7 +175,9 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
             playCue()
             cuesInWindow++
           }, config.sleepCueIntervalSeconds * 1000)
+          cueIntervalRefs.current.push(cueInterval)
         }, windowStartMs)
+        timeoutRefs.current.push(timeoutId)
       })
     }
 
@@ -170,14 +187,14 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
   const stopReactivation = useCallback(() => {
     setIsRunning(false)
     stopPinkNoise()
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current)
-      intervalRef.current = null
-    }
     if (timerRef.current) {
       clearInterval(timerRef.current)
       timerRef.current = null
     }
+    timeoutRefs.current.forEach(clearTimeout)
+    cueIntervalRefs.current.forEach(clearInterval)
+    timeoutRefs.current = []
+    cueIntervalRefs.current = []
 
     // Save session log
     if (sessionStart && startTimeRef.current) {
@@ -189,7 +206,7 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
         end: sessionEnd.toISOString(),
         durationMinutes,
         totalCues: cuesPlayed,
-        cycles: currentCycle,
+        cycles: windowsRef.current.length,
       }
 
       saveSleepSession(session)
@@ -220,8 +237,8 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
         <div className="bg-blue-500/20 backdrop-blur-sm rounded-2xl p-6 border border-blue-500/40 mb-6">
           <h3 className="text-xl font-bold text-white mb-2 text-center">🎯 Personalized for Your Sleep</h3>
           <p className="text-blue-200 text-center text-sm">
-            Based on your Apple Watch data: First cycle is longer (105 min), later cycles are 70-80 min.
-            Deep sleep is concentrated in the first 2-3 hours.
+            Based on your Apple Watch data: First cycle is longer (~90 min), later cycles are ~75-85 min.
+            Deep sleep is concentrated in the first 2-3 hours. Windows include cushion; latency ~10-15 min.
           </p>
         </div>
 
@@ -236,7 +253,7 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
                   Sleep Onset Delay: {delay} minutes
                 </label>
                 <p className="text-gray-400 text-sm mb-2">
-                  Start immediately (0) or add delay. Based on your data, start when you get into bed.
+                  Typical sleep latency is 10-15 minutes. Start when you get into bed.
                 </p>
                 <input
                   type="range"
@@ -350,24 +367,25 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
           <h3 className="text-xl font-bold text-white mb-3">Your Personalized Sleep Schedule</h3>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between text-gray-300">
-              <span>🌙 Cycle 1 (60-90 min):</span>
+              <span>🌙 Cycle 1 (50-85 min):</span>
               <span className="text-blue-300 font-semibold">Peak deep sleep</span>
             </div>
             <div className="flex justify-between text-gray-300">
-              <span>🌙 Cycle 2 (120-165 min):</span>
+              <span>🌙 Cycle 2 (110-155 min):</span>
               <span className="text-blue-300">Moderate deep sleep</span>
             </div>
             <div className="flex justify-between text-gray-300">
-              <span>🌙 Cycle 3 (195-235 min):</span>
+              <span>🌙 Cycle 3 (190-230 min):</span>
               <span className="text-gray-400">Light sleep</span>
             </div>
             <div className="flex justify-between text-gray-300">
-              <span>🌙 Cycle 4 (265-300 min):</span>
+              <span>🌙 Cycle 4 (260-300 min):</span>
               <span className="text-gray-400">Very light sleep</span>
             </div>
           </div>
           <p className="text-gray-400 text-xs mt-4">
-            Based on your Apple Watch data: First cycle is longer (105 min), later cycles are 70-80 min each.
+            Based on your Apple Watch data: First cycle is longer (~90 min), later cycles are ~75-85 min.
+            Sleep latency is typically 10-15 minutes. Windows include cushion for drift.
           </p>
         </div>
       </div>

@@ -7,16 +7,16 @@ Based on your Apple Watch Sleep Data (Jan 6-21, 2026)
 ### Your Actual Sleep Architecture
 
 **Cycle Duration Pattern:**
-- **Cycle 1**: 90-120 minutes (avg: ~105 min) - LONGEST CYCLE
-- **Cycle 2**: 70-85 minutes (avg: ~75 min)
+- **Cycle 1**: 85-95 minutes (avg: ~90 min) - LONGEST CYCLE
+- **Cycle 2**: 75-85 minutes (avg: ~80 min)
 - **Cycle 3**: 70-80 minutes (avg: ~75 min)
-- **Cycle 4+**: 65-75 minutes (avg: ~70 min)
+- **Cycle 4+**: 70-80 minutes (avg: ~75 min)
 
 ### Key Findings
 
-1. **First Cycle is Significantly Longer**
-   - Your first sleep cycle consistently lasts 90-120 minutes
-   - This is 20-40 minutes longer than your later cycles
+1. **First Cycle is Longer**
+   - Your first sleep cycle consistently lasts ~85-95 minutes
+   - This is 10-20 minutes longer than your later cycles
    - Matches scientific literature showing first cycle is typically longest
 
 2. **Later Cycles Match Your Estimate**
@@ -40,31 +40,31 @@ Based on your Apple Watch Sleep Data (Jan 6-21, 2026)
 
 ### Window Timing
 
-**Cycle 1: 60-90 minutes after sleep onset**
+**Cycle 1: 50-85 minutes after sleep onset**
 - Target: Peak deep sleep period
-- Duration: 30-minute window
-- Cycle length: ~105 minutes
+- Duration: 35-minute window (cushioned)
+- Cycle length: ~90 minutes
 - Deep sleep probability: **HIGH**
 - Priority: **CRITICAL** - Most effective window
 
-**Cycle 2: 120-165 minutes**
+**Cycle 2: 110-155 minutes**
 - Target: Moderate deep sleep period
-- Duration: 45-minute window
-- Cycle length: ~75 minutes
+- Duration: 45-minute window (cushioned)
+- Cycle length: ~80 minutes
 - Deep sleep probability: **MODERATE**
 - Priority: **HIGH** - Still beneficial
 
-**Cycle 3: 195-235 minutes**
+**Cycle 3: 190-230 minutes**
 - Target: Light sleep period
-- Duration: 40-minute window
+- Duration: 40-minute window (cushioned)
 - Cycle length: ~75 minutes
 - Deep sleep probability: **LOW**
 - Priority: **MEDIUM** - Maintenance reinforcement
 
-**Cycle 4: 265-300 minutes**
+**Cycle 4: 260-300 minutes**
 - Target: Very light sleep period
-- Duration: 35-minute window
-- Cycle length: ~70 minutes
+- Duration: 40-minute window (cushioned)
+- Cycle length: ~75 minutes
 - Deep sleep probability: **MINIMAL**
 - Priority: **LOW** - Optional reinforcement
 
@@ -73,9 +73,9 @@ Based on your Apple Watch Sleep Data (Jan 6-21, 2026)
 ### Timing Strategy
 
 1. **Start Script When Getting Into Bed**
-   - No need to wait 90 minutes
-   - System will automatically target your sleep cycles
-   - First cues play 60-90 minutes after you start
+   - Typical sleep latency is ~10-15 minutes
+   - System automatically targets your sleep cycles
+   - First cues play ~50-85 minutes after sleep onset
 
 2. **Priority Windows**
    - If limited time: Focus on Cycles 1 & 2 (first 3 hours)
@@ -100,19 +100,18 @@ Based on your data patterns:
 
 ### Python Scripts (`TMR_audio/`)
 - Updated `sleep_reactivation.py` with personalized cycle timing
-- Changed default sleep onset delay from 90 min → 0 min (start immediately)
-- Updated window calculations to match your actual cycles
+- Set default sleep onset delay to 15 min (matches 10-15 min latency)
+- Updated window calculations to match your cycles
 - Added cycle descriptions based on your data
 
 ### Web App (`sfjc.dev/games/tmr`)
 - Updated `src/lib/tmr.ts` with personalized calculateSleepWindows()
 - Modified sleep reactivation UI to show your specific cycles
-- Changed default delay slider range (0-30 min instead of 60-120 min)
-- Added personalized information display
+- Added sleep latency note (10-15 min)
 
 ### Configuration Files
-- Created `personalized_config.json` with your cycle data
-- Updated default `config.json` to use immediate start (0 min delay)
+- Updated `personalized_config.json` with your cycle data
+- Updated default `config.json` to use 15 min sleep onset delay
 
 ## Usage Instructions
 

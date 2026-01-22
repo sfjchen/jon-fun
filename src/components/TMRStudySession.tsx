@@ -231,7 +231,7 @@ export default function TMRStudySession({ onBack }: { onBack: () => void }) {
           <h3 className="text-xl font-bold text-white mb-3">How TMR Works</h3>
           <ul className="text-gray-300 space-y-2 text-sm">
             <li>• TMR cues play periodically during your study session</li>
-            <li>• These sounds tag the material you're learning</li>
+            <li>• These sounds tag the material you are learning</li>
             <li>• Later, replay these cues during sleep to reinforce memories</li>
             <li>• Focus intensely on your material when you hear each cue</li>
           </ul>
