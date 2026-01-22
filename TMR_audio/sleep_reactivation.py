@@ -39,40 +39,53 @@ class SleepReactivation:
                 return json.load(f)
         return {}
     
-    def calculate_sleep_windows(self, sleep_onset_delay_minutes=90):
+    def calculate_sleep_windows(self, sleep_onset_delay_minutes=0):
         """
-        Calculate optimal TMR reactivation windows based on sleep cycles.
+        Calculate optimal TMR reactivation windows based on PERSONALIZED sleep cycles.
         
-        Sleep cycles are ~90 minutes. Deep sleep (N3) occurs:
-        - First cycle: 60-90 min after sleep onset
-        - Subsequent cycles: Every ~90 minutes
+        Based on Apple Watch data analysis:
+        - Cycle 1 (105 min): Heavy deep sleep, 60-90 min window
+        - Cycle 2 (75 min): Moderate deep sleep, 120-165 min window  
+        - Cycle 3 (75 min): Light sleep, 195-235 min window
+        - Cycle 4 (70 min): Very light, 265-300 min window
         
         Args:
-            sleep_onset_delay_minutes: Minutes to wait before first reactivation
+            sleep_onset_delay_minutes: Minutes to wait before starting (default: 0, start immediately)
         """
         windows = []
         
-        # First deep sleep window (60-90 min after sleep onset)
-        first_window_start = sleep_onset_delay_minutes - 30  # Start at 60 min
-        first_window_end = sleep_onset_delay_minutes + 30    # End at 120 min
-        
+        # Personalized sleep cycle windows based on your Apple Watch data
+        # Cycle 1: 0-105 min, target 60-90 min (peak deep sleep)
         windows.append({
-            "start_minutes": first_window_start,
-            "end_minutes": first_window_end,
-            "cycle": 1
+            "start_minutes": sleep_onset_delay_minutes + 60,
+            "end_minutes": sleep_onset_delay_minutes + 90,
+            "cycle": 1,
+            "description": "Peak deep sleep - first cycle (105 min)"
         })
         
-        # Subsequent cycles (every 90 minutes)
-        cycle_duration = 90
-        for cycle in range(2, 5):  # Up to 4 cycles (~6 hours)
-            window_start = first_window_start + (cycle - 1) * cycle_duration
-            window_end = window_start + 60  # 60-minute window per cycle
-            
-            windows.append({
-                "start_minutes": window_start,
-                "end_minutes": window_end,
-                "cycle": cycle
-            })
+        # Cycle 2: 105-180 min, target 120-165 min (some deep sleep)
+        windows.append({
+            "start_minutes": sleep_onset_delay_minutes + 120,
+            "end_minutes": sleep_onset_delay_minutes + 165,
+            "cycle": 2,
+            "description": "Moderate deep sleep - second cycle (75 min)"
+        })
+        
+        # Cycle 3: 180-255 min, target 195-235 min (light sleep)
+        windows.append({
+            "start_minutes": sleep_onset_delay_minutes + 195,
+            "end_minutes": sleep_onset_delay_minutes + 235,
+            "cycle": 3,
+            "description": "Light sleep - third cycle (75 min)"
+        })
+        
+        # Cycle 4: 255-325 min, target 265-300 min (very light)
+        windows.append({
+            "start_minutes": sleep_onset_delay_minutes + 265,
+            "end_minutes": sleep_onset_delay_minutes + 300,
+            "cycle": 4,
+            "description": "Very light sleep - fourth cycle (70 min)"
+        })
         
         return windows
     
@@ -84,7 +97,7 @@ class SleepReactivation:
             sleep_onset_delay_minutes: Minutes to wait before starting (defaults to config)
             manual_mode: If True, start immediately (for testing)
         """
-        delay = sleep_onset_delay_minutes or self.config.get("sleep_onset_delay_minutes", 90)
+        delay = sleep_onset_delay_minutes or self.config.get("sleep_onset_delay_minutes", 0)
         cue_interval = self.config.get("sleep_cue_interval_seconds", 10)
         cues_per_window = self.config.get("cues_per_window", 30)
         
@@ -93,15 +106,20 @@ class SleepReactivation:
             print("MANUAL MODE: Starting immediately (for testing)")
         
         print(f"\n{'='*60}")
-        print(f"TMR Sleep Reactivation Armed")
-        print(f"Sleep onset delay: {delay} minutes ({delay//60}h {delay%60}m)")
+        print(f"TMR Sleep Reactivation Armed (PERSONALIZED)")
+        print(f"Based on your Apple Watch sleep data analysis:")
+        print(f"  - Cycle 1 (105 min): 60-90 min - Peak deep sleep")
+        print(f"  - Cycle 2 (75 min): 120-165 min - Moderate deep sleep")
+        print(f"  - Cycle 3 (75 min): 195-235 min - Light sleep")
+        print(f"  - Cycle 4 (70 min): 265-300 min - Very light sleep")
+        print(f"Sleep onset delay: {delay} minutes")
         print(f"Cue interval: {cue_interval} seconds")
         print(f"Cues per window: {cues_per_window}")
         print(f"{'='*60}\n")
         
         if delay > 0:
-            print(f"Waiting {delay} minutes for sleep onset and deep sleep entry...")
-            print("(This script should be started right before you go to sleep)")
+            print(f"Waiting {delay} minutes before starting...")
+            print("(This script should be started right as you get into bed)")
             print(f"Sleep reactivation will begin at: {(datetime.now() + timedelta(minutes=delay)).strftime('%H:%M:%S')}\n")
             
             # Countdown

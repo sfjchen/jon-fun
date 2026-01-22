@@ -38,7 +38,7 @@ export const DEFAULT_CONFIG: TMRConfig = {
   studyDurationMinutes: 25,
   cueIntervalSeconds: 60,
   studyVolume: 0.5,
-  sleepOnsetDelayMinutes: 90,
+  sleepOnsetDelayMinutes: 0, // Start immediately when you get into bed
   sleepCueIntervalSeconds: 10,
   cuesPerWindow: 30,
   sleepVolume: 0.2,
@@ -143,33 +143,49 @@ export function playAudioBuffer(
 }
 
 /**
- * Calculate sleep reactivation windows
+ * Calculate sleep reactivation windows based on PERSONALIZED sleep cycle data
+ * 
+ * Based on Apple Watch data analysis:
+ * - Cycle 1 (105 min): Heavy deep sleep, 60-90 min window
+ * - Cycle 2 (75 min): Moderate deep sleep, 120-165 min window
+ * - Cycle 3 (75 min): Light sleep, 195-235 min window
+ * - Cycle 4 (70 min): Very light, 265-300 min window
  */
-export function calculateSleepWindows(sleepOnsetDelayMinutes: number = 90) {
+export function calculateSleepWindows(sleepOnsetDelayMinutes: number = 0) {
   const windows = []
 
-  // First deep sleep window (60-120 min after sleep onset)
-  const firstWindowStart = sleepOnsetDelayMinutes - 30
-  const firstWindowEnd = sleepOnsetDelayMinutes + 30
-
+  // Personalized sleep cycle windows based on Apple Watch data
+  // Cycle 1: 0-105 min, target 60-90 min (peak deep sleep)
   windows.push({
-    startMinutes: firstWindowStart,
-    endMinutes: firstWindowEnd,
+    startMinutes: sleepOnsetDelayMinutes + 60,
+    endMinutes: sleepOnsetDelayMinutes + 90,
     cycle: 1,
+    description: 'Peak deep sleep - first cycle (105 min)',
   })
 
-  // Subsequent cycles (every 90 minutes)
-  const cycleDuration = 90
-  for (let cycle = 2; cycle <= 4; cycle++) {
-    const windowStart = firstWindowStart + (cycle - 1) * cycleDuration
-    const windowEnd = windowStart + 60
+  // Cycle 2: 105-180 min, target 120-165 min (some deep sleep)
+  windows.push({
+    startMinutes: sleepOnsetDelayMinutes + 120,
+    endMinutes: sleepOnsetDelayMinutes + 165,
+    cycle: 2,
+    description: 'Moderate deep sleep - second cycle (75 min)',
+  })
 
-    windows.push({
-      startMinutes: windowStart,
-      endMinutes: windowEnd,
-      cycle,
-    })
-  }
+  // Cycle 3: 180-255 min, target 195-235 min (light sleep)
+  windows.push({
+    startMinutes: sleepOnsetDelayMinutes + 195,
+    endMinutes: sleepOnsetDelayMinutes + 235,
+    cycle: 3,
+    description: 'Light sleep - third cycle (75 min)',
+  })
+
+  // Cycle 4: 255-325 min, target 265-300 min (very light)
+  windows.push({
+    startMinutes: sleepOnsetDelayMinutes + 265,
+    endMinutes: sleepOnsetDelayMinutes + 300,
+    cycle: 4,
+    description: 'Very light sleep - fourth cycle (70 min)',
+  })
 
   return windows
 }

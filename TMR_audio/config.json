@@ -6,7 +6,7 @@
   "cue_interval_seconds": 60,
   "study_volume": 0.5,
   
-  "sleep_onset_delay_minutes": 90,
+  "sleep_onset_delay_minutes": 0,
   "sleep_cue_interval_seconds": 10,
   "cues_per_window": 30,
   "sleep_volume": 0.2,
