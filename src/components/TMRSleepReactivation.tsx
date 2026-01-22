@@ -216,10 +216,12 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
           <div className="w-16" /> {/* Spacer */}
         </div>
 
-        {/* Warning */}
-        <div className="bg-yellow-500/20 backdrop-blur-sm rounded-2xl p-6 border border-yellow-500/40 mb-6">
-          <p className="text-yellow-200 text-center">
-            ⚠️ Start this right before you go to sleep. The system will wait for optimal deep sleep timing.
+        {/* Info - Personalized */}
+        <div className="bg-blue-500/20 backdrop-blur-sm rounded-2xl p-6 border border-blue-500/40 mb-6">
+          <h3 className="text-xl font-bold text-white mb-2 text-center">🎯 Personalized for Your Sleep</h3>
+          <p className="text-blue-200 text-center text-sm">
+            Based on your Apple Watch data: First cycle is longer (105 min), later cycles are 70-80 min.
+            Deep sleep is concentrated in the first 2-3 hours.
           </p>
         </div>
 
@@ -234,13 +236,13 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
                   Sleep Onset Delay: {delay} minutes
                 </label>
                 <p className="text-gray-400 text-sm mb-2">
-                  Time to wait before starting reactivation (default: 90 min for deep sleep)
+                  Start immediately (0) or add delay. Based on your data, start when you get into bed.
                 </p>
                 <input
                   type="range"
-                  min="60"
-                  max="120"
-                  step="10"
+                  min="0"
+                  max="30"
+                  step="5"
                   value={delay}
                   onChange={(e) => {
                     const newDelay = parseInt(e.target.value)
@@ -345,14 +347,28 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
 
         {/* Info */}
         <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-          <h3 className="text-xl font-bold text-white mb-3">How Sleep Reactivation Works</h3>
-          <ul className="text-gray-300 space-y-2 text-sm">
-            <li>• System waits 60-90 minutes for you to enter deep sleep (NREM Stage N3)</li>
-            <li>• TMR cues play during optimal sleep windows</li>
-            <li>• Low-volume cues won't wake you up</li>
-            <li>• Multiple sleep cycles are targeted for maximum reinforcement</li>
-            <li>• Pink noise (optional) enhances slow-wave activity</li>
-          </ul>
+          <h3 className="text-xl font-bold text-white mb-3">Your Personalized Sleep Schedule</h3>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between text-gray-300">
+              <span>🌙 Cycle 1 (60-90 min):</span>
+              <span className="text-blue-300 font-semibold">Peak deep sleep</span>
+            </div>
+            <div className="flex justify-between text-gray-300">
+              <span>🌙 Cycle 2 (120-165 min):</span>
+              <span className="text-blue-300">Moderate deep sleep</span>
+            </div>
+            <div className="flex justify-between text-gray-300">
+              <span>🌙 Cycle 3 (195-235 min):</span>
+              <span className="text-gray-400">Light sleep</span>
+            </div>
+            <div className="flex justify-between text-gray-300">
+              <span>🌙 Cycle 4 (265-300 min):</span>
+              <span className="text-gray-400">Very light sleep</span>
+            </div>
+          </div>
+          <p className="text-gray-400 text-xs mt-4">
+            Based on your Apple Watch data: First cycle is longer (105 min), later cycles are 70-80 min each.
+          </p>
         </div>
       </div>
     </div>
