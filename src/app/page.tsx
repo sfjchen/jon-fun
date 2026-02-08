@@ -51,6 +51,15 @@ const games = [
     available: true,
   },
   {
+    id: 'daily-log',
+    title: 'Daily Learn Log',
+    description: 'Log one sentence (or more) per day about what you learned; view history, calendar, and export',
+    icon: '📝',
+    href: '/games/daily-log',
+    tags: ['Journal', 'Habit'],
+    available: true,
+  },
+  {
     id: 'coming-soon',
     title: 'Coming Soon',
     description: 'More brain games are in development',

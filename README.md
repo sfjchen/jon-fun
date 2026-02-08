@@ -8,6 +8,8 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **Jeopardy with Friends** (`/games/jeopardy`): Create and play custom Jeopardy boards locally
 - **Texas Hold'em** (`/games/poker`): Poker chip tracker with real-time multiplayer lobbies
 - **Chwazi Finger Chooser** (`/games/chwazi`): Place fingers on screen to randomly select a winner
+- **TMR System** (`/games/tmr`): Targeted Memory Reactivation for learning and sleep
+- **Daily Learn Log** (`/games/daily-log`): One sentence per day, history, calendar, export (localStorage)
 
 ## 🚀 Quick Start
 
@@ -39,7 +41,9 @@ src/
 │   │   ├── 24/
 │   │   ├── jeopardy/
 │   │   ├── poker/
-│   │   └── chwazi/
+│   │   ├── chwazi/
+│   │   ├── tmr/
+│   │   └── daily-log/
 │   ├── leaderboards/       # Leaderboards page
 │   ├── globals.css         # Global styles
 │   ├── layout.tsx          # Root layout
@@ -53,11 +57,15 @@ src/
 │   ├── PokerLobby.tsx
 │   ├── PokerPlayer.tsx
 │   ├── PokerChips.tsx
-│   └── PokerJoinForm.tsx
+│   ├── PokerJoinForm.tsx
+│   ├── TMRManager.tsx
+│   └── DailyLearnManager.tsx
 └── lib/                    # Utility libraries
     ├── supabase.ts         # Supabase client
     ├── poker.ts            # Poker types & utilities
     ├── jeopardy.ts         # Jeopardy types & utilities
+    ├── tmr.ts              # TMR config & session storage
+    ├── dailyLearn.ts       # Daily Learn Log (localStorage)
     └── solver24.ts         # 24 Game solver algorithm
 ```
 
