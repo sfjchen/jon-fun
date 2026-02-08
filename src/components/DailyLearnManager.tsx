@@ -45,6 +45,18 @@ export default function DailyLearnManager() {
     setTimeout(() => setSaved(false), 2000)
   }, [todayText, refresh])
 
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(exportAsText())
+  }, [])
+  const handleDownload = useCallback(() => {
+    const blob = new Blob([exportAsJson()], { type: 'application/json' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = 'daily-learn-entries.json'
+    a.click()
+    URL.revokeObjectURL(a.href)
+  }, [])
+
   const counts = getCounts()
   const calendarDates = getCalendarData()
   const today = getTodayDate()
@@ -218,19 +230,6 @@ export default function DailyLearnManager() {
       </>
     )
   }
-
-  // export
-  const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(exportAsText())
-  }, [])
-  const handleDownload = useCallback(() => {
-    const blob = new Blob([exportAsJson()], { type: 'application/json' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = 'daily-learn-entries.json'
-    a.click()
-    URL.revokeObjectURL(a.href)
-  }, [])
 
   return layout(
     'Export',
