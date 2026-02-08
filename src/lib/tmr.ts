@@ -188,6 +188,66 @@ export function calculateSleepWindows(sleepOnsetDelayMinutes: number = 0) {
   return windows
 }
 
+const TMR_USER_ID_KEY = 'tmr_user_id'
+
+function genTmrUuid(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
+
+export function getOrCreateTmrUserId(): string {
+  if (typeof window === 'undefined') return ''
+  let id = localStorage.getItem(TMR_USER_ID_KEY)
+  if (!id) {
+    id = genTmrUuid()
+    localStorage.setItem(TMR_USER_ID_KEY, id)
+  }
+  return id
+}
+
+export async function syncStudySessionToServer(session: StudySession): Promise<void> {
+  if (typeof window === 'undefined') return
+  const userId = getOrCreateTmrUserId()
+  await fetch('/api/tmr/study', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userId,
+      session: {
+        start: session.start,
+        end: session.end,
+        durationMinutes: session.durationMinutes,
+        cuesPlayed: session.cuesPlayed,
+        cueIntervalSeconds: session.cueIntervalSeconds,
+        interrupted: session.interrupted,
+      },
+    }),
+  })
+}
+
+export async function syncSleepSessionToServer(session: SleepSession): Promise<void> {
+  if (typeof window === 'undefined') return
+  const userId = getOrCreateTmrUserId()
+  await fetch('/api/tmr/sleep', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userId,
+      session: {
+        start: session.start,
+        end: session.end,
+        durationMinutes: session.durationMinutes,
+        totalCues: session.totalCues,
+        cycles: session.cycles,
+      },
+    }),
+  })
+}
+
 /**
  * Load config from localStorage
  */

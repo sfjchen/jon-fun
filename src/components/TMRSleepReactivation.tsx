@@ -5,6 +5,7 @@ import {
   loadConfig,
   saveConfig,
   saveSleepSession,
+  syncSleepSessionToServer,
   generateTMRCue,
   generatePinkNoise,
   playAudioBuffer,
@@ -210,6 +211,7 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
       }
 
       saveSleepSession(session)
+      void syncSleepSessionToServer(session)
     }
 
     setSessionStart(null)

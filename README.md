@@ -162,8 +162,19 @@ src/
 - `score_awarded` (integer)
 - `submitted_at` (timestamptz)
 
+**`tmr_study_sessions`**
+
+- `id` (uuid, primary key)
+- `user_id` (text), `start`, `end` (timestamptz), `duration_minutes` (numeric), `cues_played`, `cue_interval_seconds` (integer), `interrupted` (boolean), `created_at` (timestamptz)
+
+**`tmr_sleep_sessions`**
+
+- `id` (uuid, primary key)
+- `user_id` (text), `start`, `end` (timestamptz), `duration_minutes` (numeric), `total_cues`, `cycles` (integer), `created_at` (timestamptz)
+
 ### Indexes
 
+- `idx_tmr_study_sessions_created_at`, `idx_tmr_sleep_sessions_created_at`
 - `idx_poker_rooms_last_activity` on `poker_rooms(last_activity)` for cleanup queries
 - `idx_game24_rooms_last_activity` on `game24_rooms(last_activity)`
 - `game24_rounds_room_pin_round_number_key`
@@ -214,6 +225,12 @@ src/
 **`POST /api/game24/submit`**: Submit expression; validates with round numbers; scores 1000→0 over 15s (one correct per player/round)
 
 **`POST /api/game24/next-round`**: Advance state (active → intermission (5s) → next round up to 8, then finished)
+
+**`POST /api/tmr/study`**: Sync TMR study session to DB – Body: `{ userId, session }`
+
+**`POST /api/tmr/sleep`**: Sync TMR sleep session to DB – Body: `{ userId, session }`
+
+**`GET /api/tmr/admin/entries`**: Admin only; query `?key=TMR_ADMIN_SECRET`. Returns all study and sleep sessions.
 
 ## 💻 Coding Conventions & Patterns
 
@@ -270,6 +287,7 @@ src/
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `TMR_ADMIN_SECRET` (optional): secret for `/admin/tmr` and `GET /api/tmr/admin/entries`
 
 **Production (Vercel):**
 

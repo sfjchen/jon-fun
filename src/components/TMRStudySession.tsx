@@ -5,6 +5,7 @@ import {
   loadConfig,
   saveConfig,
   saveStudySession,
+  syncStudySessionToServer,
   generateTMRCue,
   playAudioBuffer,
   type TMRConfig,
@@ -110,6 +111,7 @@ export default function TMRStudySession({ onBack }: { onBack: () => void }) {
       }
 
       saveStudySession(session)
+      void syncStudySessionToServer(session)
     }
 
     setSessionStart(null)
