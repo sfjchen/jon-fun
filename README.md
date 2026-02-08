@@ -305,6 +305,7 @@ src/
 
 - Changes not live? Check Vercel build logs and confirm changes are on `main`.
 - Supabase issues? Verify `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local` and Vercel.
+- Two Supabase projects (personal vs class)? See [docs/SUPABASE_TWO_PROJECTS.md](docs/SUPABASE_TWO_PROJECTS.md).
 - Still stale? Hard refresh cache (Cmd+Shift+R).
 
 ## 🛠️ Available Scripts
