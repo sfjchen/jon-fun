@@ -35,9 +35,9 @@ export interface SleepSession {
 }
 
 export const DEFAULT_CONFIG: TMRConfig = {
-  studyDurationMinutes: 25,
+  studyDurationMinutes: 60,
   cueIntervalSeconds: 60,
-  studyVolume: 0.5,
+  studyVolume: 0.7,
   sleepOnsetDelayMinutes: 15, // Typical 10-15 min sleep latency
   sleepCueIntervalSeconds: 10,
   cuesPerWindow: 30,

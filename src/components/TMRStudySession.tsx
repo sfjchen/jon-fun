@@ -154,7 +154,7 @@ export default function TMRStudySession({ onBack }: { onBack: () => void }) {
                 <input
                   type="number"
                   value={duration}
-                  onChange={(e) => setDuration(Math.max(1, parseInt(e.target.value) || 25))}
+                  onChange={(e) => setDuration(Math.max(1, parseInt(e.target.value) || 60))}
                   min="1"
                   max="120"
                   className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
