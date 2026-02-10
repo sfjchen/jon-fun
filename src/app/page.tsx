@@ -200,7 +200,7 @@ function GameCard({ game, onComingSoonClick }: GameCardProps) {
         )}
       </div>
       <h2 className="text-2xl font-bold text-white mb-2">{game.title}</h2>
-      <p className="text-gray-300 mb-4">{game.description}</p>
+      <p className="text-gray-300 mb-4 line-clamp-2">{game.description}</p>
       <div className="flex justify-center space-x-2 mb-4">
         {game.tags.map((tag) => (
           <span
