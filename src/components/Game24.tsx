@@ -194,6 +194,7 @@ export default function Game24() {
         { event: '*', schema: 'public', table: 'game24_rooms', filter: `pin=eq.${pinInput}` },
         () => loadRoomData(pinInput)
       )
+      .on('broadcast', { event: 'game_started' }, () => loadRoomData(pinInput))
       .subscribe()
 
     const playersChannel = supabase
@@ -231,10 +232,10 @@ export default function Game24() {
     }
   }, [pinInput, loadRoomData])
 
-  // Poll when waiting so non-host players see game start without needing to interact
+  // Fallback: poll every 500ms when waiting (broadcast should sync within ~100ms)
   useEffect(() => {
     if (!pinInput || !room || room.status !== 'waiting') return
-    const interval = setInterval(() => loadRoomData(pinInput), 2000)
+    const interval = setInterval(() => loadRoomData(pinInput), 500)
     return () => clearInterval(interval)
   }, [pinInput, room?.status, loadRoomData])
 
@@ -520,6 +521,8 @@ export default function Game24() {
       return
     }
     await loadRoomData(pinInput)
+    // Broadcast so other players get instant sync (~50–100ms) without polling
+    supabase.channel(`game24:room:${pinInput}`).send({ type: 'broadcast', event: 'game_started', payload: {} })
   }
 
   const playAgain = async () => {
