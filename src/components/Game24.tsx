@@ -82,6 +82,7 @@ export default function Game24() {
   const [players, setPlayers] = useState<Player[]>([])
   const [round, setRound] = useState<RoundData | null>(null)
   const [roundScores, setRoundScores] = useState<Record<string, number>>({})
+  const [playerCorrectCounts, setPlayerCorrectCounts] = useState<Record<string, number>>({})
   const [playerId, setPlayerId] = useState<string | null>(null)
   const [hostId, setHostId] = useState<string | null>(null)
   const [offlineScore, setOfflineScore] = useState(0)
@@ -124,8 +125,8 @@ export default function Game24() {
     []
   )
 
-  const loadRoomData = useCallback(async (pin: string) => {
-    setLoadingRoom(true)
+  const loadRoomData = useCallback(async (pin: string, silent = false) => {
+    if (!silent) setLoadingRoom(true)
     setError(null)
     try {
       const response = await fetch(`/api/game24/rooms/${pin}`)
@@ -135,15 +136,16 @@ export default function Game24() {
       }
 
       setRoom(data.room)
-        setPlayers(data.players || [])
-        setRound(data.round || null)
-        setRoundScores(data.roundScores || {})
+      setPlayers(data.players || [])
+      setRound(data.round || null)
+      setRoundScores(data.roundScores || {})
+      setPlayerCorrectCounts(data.playerCorrectCounts || {})
       setHostId(data.room.host_id ?? null)
       setPhase(data.room.status ?? 'waiting')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load room')
     } finally {
-      setLoadingRoom(false)
+      if (!silent) setLoadingRoom(false)
     }
   }, [])
 
@@ -195,6 +197,8 @@ export default function Game24() {
         () => loadRoomData(pinInput)
       )
       .on('broadcast', { event: 'game_started' }, () => loadRoomData(pinInput))
+      .on('broadcast', { event: 'player_solved' }, () => loadRoomData(pinInput, true))
+      .on('broadcast', { event: 'round_finished' }, () => loadRoomData(pinInput, true))
       .subscribe()
 
     const playersChannel = supabase
@@ -232,10 +236,10 @@ export default function Game24() {
     }
   }, [pinInput, loadRoomData])
 
-  // Fallback: poll every 500ms when waiting (broadcast should sync within ~100ms)
+  // Fallback: poll when waiting (silent to avoid Start Game button blinking)
   useEffect(() => {
     if (!pinInput || !room || room.status !== 'waiting') return
-    const interval = setInterval(() => loadRoomData(pinInput), 500)
+    const interval = setInterval(() => loadRoomData(pinInput, true), 500)
     return () => clearInterval(interval)
   }, [pinInput, room?.status, loadRoomData])
 
@@ -301,6 +305,10 @@ export default function Game24() {
     }
   }, [room?.status, room?.round_number, room?.current_round_started_at])
 
+  const clearSelections = useCallback(() => {
+    setGameState((prev) => ({ ...prev, selectedCard: null, pendingOperation: null }))
+  }, [])
+
   const resetSelections = useCallback(() => {
     if (phase === 'active' && (round?.numbers?.length ?? 0) > 0) {
       setGameState({
@@ -352,8 +360,10 @@ export default function Game24() {
         return
       }
       showTemporaryMessage(`Submitted! +${data.scoreAwarded ?? 0} pts`, 1500)
+      supabase.channel(`game24:room:${pinInput}`).send({ type: 'broadcast', event: 'player_solved', payload: {} })
       if (data.roundFinished) {
-        await loadRoomData(pinInput)
+        supabase.channel(`game24:room:${pinInput}`).send({ type: 'broadcast', event: 'round_finished', payload: {} })
+        await loadRoomData(pinInput, true)
       }
     },
     [room, playerId, pinInput, hasSubmitted, phase, showTemporaryMessage, loadRoomData]
@@ -971,18 +981,23 @@ export default function Game24() {
               <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-20">
                 <div className="text-3xl font-bold">Final Rankings</div>
                 <div className="w-full max-w-md space-y-2">
-                  {sortedPlayers.map((p, idx) => (
-                    <div
-                      key={p.player_id}
-                      className="flex items-center justify-between bg-white/10 px-3 py-2 rounded border border-white/10"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-300 w-6 text-right">{idx + 1}.</span>
-                        <span className="font-semibold">{p.name}</span>
+                  {sortedPlayers.map((p, idx) => {
+                    const correct = playerCorrectCounts[p.player_id] ?? 0
+                    const total = room?.round_number ?? GAME24_MAX_ROUNDS
+                    return (
+                      <div
+                        key={p.player_id}
+                        className="flex items-center justify-between bg-white/10 px-3 py-2 rounded border border-white/10"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-300 w-6 text-right">{idx + 1}.</span>
+                          <span className="font-semibold">{p.name}</span>
+                          <span className="text-sm text-gray-400">({correct}/{total})</span>
+                        </div>
+                        <span className="font-mono text-sm">{p.score ?? 0}</span>
                       </div>
-                      <span className="font-mono text-sm">{p.score ?? 0}</span>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
         <button 
                   onClick={playAgain}
@@ -994,7 +1009,17 @@ export default function Game24() {
             )}
 
             <div className="max-w-xl mx-auto p-4 space-y-8">
-              <div>
+              <div
+                onClick={(e) => {
+                  const t = e.target as HTMLElement
+                  if (t.closest('.game-card') || t.closest('.operator-btn') || t.closest('button') || t.closest('a')) return
+                  if (phase === 'active') clearSelections()
+                  else if (practiceSelected !== null || practicePendingOp !== null) {
+                    setPracticeSelected(null)
+                    setPracticePendingOp(null)
+                  }
+                }}
+              >
                 {phase === 'active' ? (
                   <>
                     <div className="game-board mb-4">

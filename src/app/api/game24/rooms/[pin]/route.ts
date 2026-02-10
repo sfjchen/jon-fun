@@ -77,11 +77,30 @@ export async function GET(
       }
     }
 
+    let playerCorrectCounts: Record<string, number> = {}
+    if (room.status === 'finished' || (room.round_number ?? 0) > 0) {
+      const { data: allCorrect } = await supabase
+        .from('game24_submissions')
+        .select('player_id, round_number')
+        .eq('room_pin', pin)
+        .eq('is_correct', true)
+      const byPlayer: Record<string, Set<number>> = {}
+      allCorrect?.forEach((row) => {
+        if (!row.player_id || row.round_number == null) return
+        if (!byPlayer[row.player_id]) byPlayer[row.player_id] = new Set()
+        byPlayer[row.player_id]!.add(row.round_number)
+      })
+      playerCorrectCounts = Object.fromEntries(
+        Object.entries(byPlayer).map(([pid, rounds]) => [pid, rounds.size])
+      )
+    }
+
     return NextResponse.json({
       room,
       players: players || [],
       round,
       roundScores,
+      playerCorrectCounts,
     })
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
