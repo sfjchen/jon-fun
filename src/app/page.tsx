@@ -6,6 +6,24 @@ import { useState } from 'react'
 
 const games = [
   {
+    id: 'tmr',
+    title: 'TMR System',
+    description: 'Targeted Memory Reactivation for enhanced learning and memory consolidation',
+    icon: '🧠',
+    href: '/games/tmr',
+    tags: ['Learning', 'Memory', 'Science'],
+    available: true,
+  },
+  {
+    id: 'daily-log',
+    title: 'Daily Learn Log',
+    description: 'Log one sentence (or more) per day about what you learned; view history, calendar, and export',
+    icon: '📝',
+    href: '/games/daily-log',
+    tags: ['Journal', 'Habit'],
+    available: true,
+  },
+  {
     id: '24',
     title: '24 Game',
     description: 'Use 4 numbers and basic arithmetic to make 24',
@@ -39,24 +57,6 @@ const games = [
     icon: '👆',
     href: '/games/chwazi',
     tags: ['Utility', 'Party', 'Mobile'],
-    available: true,
-  },
-  {
-    id: 'tmr',
-    title: 'TMR System',
-    description: 'Targeted Memory Reactivation for enhanced learning and memory consolidation',
-    icon: '🧠',
-    href: '/games/tmr',
-    tags: ['Learning', 'Memory', 'Science'],
-    available: true,
-  },
-  {
-    id: 'daily-log',
-    title: 'Daily Learn Log',
-    description: 'Log one sentence (or more) per day about what you learned; view history, calendar, and export',
-    icon: '📝',
-    href: '/games/daily-log',
-    tags: ['Journal', 'Habit'],
     available: true,
   },
   {

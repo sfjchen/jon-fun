@@ -231,6 +231,13 @@ export default function Game24() {
     }
   }, [pinInput, loadRoomData])
 
+  // Poll when waiting so non-host players see game start without needing to interact
+  useEffect(() => {
+    if (!pinInput || !room || room.status !== 'waiting') return
+    const interval = setInterval(() => loadRoomData(pinInput), 2000)
+    return () => clearInterval(interval)
+  }, [pinInput, room?.status, loadRoomData])
+
   const advanceRound = useCallback(async () => {
     if (!pinInput) return
     try {
