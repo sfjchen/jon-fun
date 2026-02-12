@@ -9,7 +9,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **Texas Hold'em** (`/games/poker`): Poker chip tracker with real-time multiplayer lobbies
 - **Chwazi Finger Chooser** (`/games/chwazi`): Place fingers on screen to randomly select a winner
 - **TMR System** (`/games/tmr`): Targeted Memory Reactivation for learning and sleep
-- **Daily Learn Log** (`/games/daily-log`): One sentence per day, history, calendar, export (localStorage)
+- **1 sentence everyday** (`/games/daily-log`): One sentence per day, history, calendar, export (localStorage)
 
 ## 🚀 Quick Start
 

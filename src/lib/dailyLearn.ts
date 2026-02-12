@@ -1,5 +1,5 @@
 /**
- * Daily Learn Log – localStorage utilities
+ * 1 sentence everyday – localStorage utilities
  * One entry per calendar day (upsert by date)
  */
 
@@ -23,6 +23,12 @@ function toLocalYYYYMMDD(d: Date): string {
   const m = String(d.getMonth() + 1).padStart(2, '0')
   const day = String(d.getDate()).padStart(2, '0')
   return `${y}-${m}-${day}`
+}
+
+/** Parse YYYY-MM-DD as local date (avoids UTC midnight shifting date behind) */
+export function parseLocalDate(dateStr: string): Date {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  return new Date(y ?? 0, (m ?? 1) - 1, d ?? 1)
 }
 
 function genUuid(): string {
@@ -97,7 +103,7 @@ export function getCounts(): DailyLearnCounts {
   let thisWeek = 0
   let thisMonth = 0
   for (const e of entries) {
-    const ed = new Date(e.date)
+    const ed = parseLocalDate(e.date)
     if (ed >= weekStart) thisWeek++
     if (ed >= monthStart) thisMonth++
   }
