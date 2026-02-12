@@ -16,7 +16,7 @@ import {
   type DailyLearnEntry,
 } from '@/lib/dailyLearn'
 
-type View = 'log' | 'history' | 'calendar' | 'analytics' | 'export'
+type View = 'log' | 'analytics' | 'export'
 
 export default function DailyLearnManager() {
   const [view, setView] = useState<View>('log')
@@ -93,6 +93,39 @@ export default function DailyLearnManager() {
     </div>
   )
 
+  const year = calYear
+  const month = calMonth
+  const first = new Date(year, month, 1)
+  const last = new Date(year, month + 1, 0)
+  const startPad = first.getDay()
+  const daysInMonth = last.getDate()
+  const calendarCells: (number | null)[] = []
+  for (let i = 0; i < startPad; i++) calendarCells.push(null)
+  for (let d = 1; d <= daysInMonth; d++) calendarCells.push(d)
+  const dateStr = (d: number) => `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+
+  const editModal = editingDate && (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 max-w-lg w-full">
+        <h3 className="text-xl font-bold text-white mb-2">Edit {parseLocalDate(editingDate).toLocaleDateString()}</h3>
+        <textarea
+          value={editingText}
+          onChange={(e) => setEditingText(e.target.value)}
+          className="w-full min-h-[100px] px-4 py-3 rounded-lg bg-white/5 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          autoFocus
+        />
+        <div className="mt-4 flex gap-2">
+          <button onClick={handleSaveEdit} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+            Save
+          </button>
+          <button onClick={() => { setEditingDate(null); setEditingText('') }} className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg border border-white/20">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+
   if (view === 'log') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
@@ -105,8 +138,67 @@ export default function DailyLearnManager() {
             <div className="w-16" />
           </div>
 
+          {/* Calendar */}
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-6">
-            <p className="text-gray-300 mb-4">Today: {parseLocalDate(today).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            <div className="flex items-center justify-between mb-4">
+              <button
+                type="button"
+                onClick={() => {
+                  if (month === 0) { setCalMonth(11); setCalYear((y) => y - 1) }
+                  else setCalMonth((m) => m - 1)
+                }}
+                className="text-white hover:text-gray-300 px-2 py-1"
+              >
+                ←
+              </button>
+              <h2 className="text-2xl font-bold text-white">
+                {new Date(year, month).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+              </h2>
+              <button
+                type="button"
+                onClick={() => {
+                  if (month === 11) { setCalMonth(0); setCalYear((y) => y + 1) }
+                  else setCalMonth((m) => m + 1)
+                }}
+                className="text-white hover:text-gray-300 px-2 py-1"
+              >
+                →
+              </button>
+            </div>
+            <div className="grid grid-cols-7 gap-1 text-center">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
+                <div key={d} className="text-gray-400 text-sm font-medium py-1">
+                  {d}
+                </div>
+              ))}
+              {calendarCells.map((d, i) => {
+                if (d === null) return <div key={`e-${i}`} />;
+                const ds = dateStr(d)
+                const hasEntry = calendarDates.has(ds)
+                const entry = getEntryByDate(ds)
+                return (
+                  <button
+                    key={ds}
+                    type="button"
+                    onClick={() => {
+                      setEditingDate(ds)
+                      setEditingText(entry?.text ?? '')
+                    }}
+                    className={`py-2 rounded cursor-pointer hover:ring-2 hover:ring-blue-400 ${hasEntry ? 'bg-blue-500/50 text-white' : 'text-gray-400'}`}
+                    title={hasEntry ? `${ds}: ${entry?.text ?? ''}` : `Add entry for ${ds}`}
+                  >
+                    {d}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Today's prompt */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-6">
+            <p className="text-gray-300 mb-4">
+              Today: {parseLocalDate(today).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} (Resets 3am)
+            </p>
             <textarea
               value={todayText}
               onChange={(e) => setTodayText(e.target.value)}
@@ -125,8 +217,38 @@ export default function DailyLearnManager() {
             </div>
           </div>
 
+          {/* History */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-6">
+            <h2 className="text-2xl font-bold text-white mb-4">History</h2>
+            {entries.length === 0 ? (
+              <p className="text-gray-300">No entries yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {entries.map((e) => (
+                  <div key={e.date} className="bg-white/5 rounded-lg p-4 border border-white/10">
+                    <div className="flex items-center justify-between">
+                      <div className="text-white font-semibold">{parseLocalDate(e.date).toLocaleDateString()}</div>
+                      <button
+                        onClick={() => {
+                          setEditingDate(e.date)
+                          setEditingText(e.text)
+                        }}
+                        className="text-blue-400 hover:text-blue-300 text-sm"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                    <div className="text-gray-300 mt-1 whitespace-pre-wrap">{e.text}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {editModal}
+
           <nav className="flex flex-wrap gap-2">
-            {(['history', 'calendar', 'analytics', 'export'] as const).map((v) => (
+            {(['analytics', 'export'] as const).map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
@@ -138,161 +260,6 @@ export default function DailyLearnManager() {
           </nav>
         </div>
       </div>
-    )
-  }
-
-  if (view === 'history') {
-    return layout(
-      'History',
-      <>
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-6">
-          <h2 className="text-2xl font-bold text-white mb-4">Entries</h2>
-          {entries.length === 0 ? (
-            <p className="text-gray-300">No entries yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {entries.map((e) => (
-                <div key={e.date} className="bg-white/5 rounded-lg p-4 border border-white/10">
-                  <div className="flex items-center justify-between">
-                    <div className="text-white font-semibold">{parseLocalDate(e.date).toLocaleDateString()}</div>
-                    <button
-                      onClick={() => {
-                        setEditingDate(e.date)
-                        setEditingText(e.text)
-                      }}
-                      className="text-blue-400 hover:text-blue-300 text-sm"
-                    >
-                      Edit
-                    </button>
-                  </div>
-                  <div className="text-gray-300 mt-1 whitespace-pre-wrap">{e.text}</div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        {editingDate && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 max-w-lg w-full">
-              <h3 className="text-xl font-bold text-white mb-2">Edit {parseLocalDate(editingDate).toLocaleDateString()}</h3>
-              <textarea
-                value={editingText}
-                onChange={(e) => setEditingText(e.target.value)}
-                className="w-full min-h-[100px] px-4 py-3 rounded-lg bg-white/5 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                autoFocus
-              />
-              <div className="mt-4 flex gap-2">
-                <button onClick={handleSaveEdit} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
-                  Save
-                </button>
-                <button onClick={() => { setEditingDate(null); setEditingText('') }} className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg border border-white/20">
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        <button onClick={() => setView('log')} className="px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white hover:bg-white/20">
-          ← Log
-        </button>
-      </>
-    )
-  }
-
-  if (view === 'calendar') {
-    const year = calYear
-    const month = calMonth
-    const first = new Date(year, month, 1)
-    const last = new Date(year, month + 1, 0)
-    const startPad = first.getDay()
-    const daysInMonth = last.getDate()
-    const cells: (number | null)[] = []
-    for (let i = 0; i < startPad; i++) cells.push(null)
-    for (let d = 1; d <= daysInMonth; d++) cells.push(d)
-    const dateStr = (d: number) => `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-
-    return layout(
-      'Calendar',
-      <>
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <button
-              type="button"
-              onClick={() => {
-                if (month === 0) { setCalMonth(11); setCalYear((y) => y - 1) }
-                else setCalMonth((m) => m - 1)
-              }}
-              className="text-white hover:text-gray-300 px-2 py-1"
-            >
-              ←
-            </button>
-            <h2 className="text-2xl font-bold text-white">
-              {new Date(year, month).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
-            </h2>
-            <button
-              type="button"
-              onClick={() => {
-                if (month === 11) { setCalMonth(0); setCalYear((y) => y + 1) }
-                else setCalMonth((m) => m + 1)
-              }}
-              className="text-white hover:text-gray-300 px-2 py-1"
-            >
-              →
-            </button>
-          </div>
-          <div className="grid grid-cols-7 gap-1 text-center">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-              <div key={d} className="text-gray-400 text-sm font-medium py-1">
-                {d}
-              </div>
-            ))}
-            {cells.map((d, i) => {
-              if (d === null) return <div key={`e-${i}`} />;
-              const ds = dateStr(d)
-              const hasEntry = calendarDates.has(ds)
-              const entry = getEntryByDate(ds)
-              return (
-                <button
-                  key={ds}
-                  type="button"
-                  onClick={() => {
-                    setEditingDate(ds)
-                    setEditingText(entry?.text ?? '')
-                  }}
-                  className={`py-2 rounded cursor-pointer hover:ring-2 hover:ring-blue-400 ${hasEntry ? 'bg-blue-500/50 text-white' : 'text-gray-400'}`}
-                  title={hasEntry ? `${ds}: ${entry?.text ?? ''}` : `Add entry for ${ds}`}
-                >
-                  {d}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-        {editingDate && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 max-w-lg w-full">
-              <h3 className="text-xl font-bold text-white mb-2">Edit {parseLocalDate(editingDate).toLocaleDateString()}</h3>
-              <textarea
-                value={editingText}
-                onChange={(e) => setEditingText(e.target.value)}
-                className="w-full min-h-[100px] px-4 py-3 rounded-lg bg-white/5 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                autoFocus
-              />
-              <div className="mt-4 flex gap-2">
-                <button onClick={handleSaveEdit} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
-                  Save
-                </button>
-                <button onClick={() => { setEditingDate(null); setEditingText('') }} className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg border border-white/20">
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        <button onClick={() => setView('log')} className="px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white hover:bg-white/20">
-          ← Log
-        </button>
-      </>
     )
   }
 
