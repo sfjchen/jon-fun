@@ -101,7 +101,7 @@ export default function DailyLearnManager() {
             <Link href="/" className="text-white hover:text-gray-300 text-2xl font-bold" aria-label="Back to hub">
               ← Back
             </Link>
-            <h1 className="text-4xl font-bold text-white">1 sentence everyday</h1>
+            <h1 className="text-4xl font-bold text-white">1 Sentence Everyday</h1>
             <div className="w-16" />
           </div>
 

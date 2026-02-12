@@ -9,7 +9,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **Texas Hold'em** (`/games/poker`): Poker chip tracker with real-time multiplayer lobbies
 - **Chwazi Finger Chooser** (`/games/chwazi`): Place fingers on screen to randomly select a winner
 - **TMR System** (`/games/tmr`): Targeted Memory Reactivation for learning and sleep
-- **1 sentence everyday** (`/games/daily-log`): One sentence per day, history, calendar, export (localStorage)
+- **1 Sentence Everyday** (`/games/daily-log`): One sentence per day, history, calendar, export (localStorage)
 
 ## 🚀 Quick Start
 
@@ -65,7 +65,7 @@ src/
     ├── poker.ts            # Poker types & utilities
     ├── jeopardy.ts         # Jeopardy types & utilities
     ├── tmr.ts              # TMR config & session storage
-    ├── dailyLearn.ts       # Daily Learn Log (localStorage)
+    ├── dailyLearn.ts       # 1 Sentence Everyday (localStorage)
     └── solver24.ts         # 24 Game solver algorithm
 ```
 

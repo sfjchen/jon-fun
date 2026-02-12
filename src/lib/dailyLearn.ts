@@ -1,5 +1,5 @@
 /**
- * 1 sentence everyday – localStorage utilities
+ * 1 Sentence Everyday – localStorage utilities
  * One entry per calendar day (upsert by date)
  */
 
@@ -40,8 +40,15 @@ function genUuid(): string {
   })
 }
 
+/** Day resets at 3 AM local (not midnight) */
 export function getTodayDate(): string {
-  return toLocalYYYYMMDD(new Date())
+  const now = new Date()
+  if (now.getHours() < 3) {
+    const prev = new Date(now)
+    prev.setDate(prev.getDate() - 1)
+    return toLocalYYYYMMDD(prev)
+  }
+  return toLocalYYYYMMDD(now)
 }
 
 export function getOrCreateUserId(): string {

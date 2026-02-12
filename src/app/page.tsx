@@ -16,7 +16,7 @@ const games = [
   },
   {
     id: 'daily-log',
-    title: '1 sentence everyday',
+    title: '1 Sentence Everyday',
     description: 'Log one sentence (or more) per day about what you learned; view history, calendar, and export',
     icon: '📝',
     href: '/games/daily-log',
