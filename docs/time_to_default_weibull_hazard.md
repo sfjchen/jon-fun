@@ -1,29 +1,72 @@
-# Time-to-default: Weibull hazard and comparison to exponential
+# Time-to-Default: Weibull Hazard Rate (with steps)
 
-## Weibull (default assumption)
+## 1 Setup
 
-- **Survival:** \( S(t) = \exp\bigl(-(t/\lambda)^k\bigr),\quad t\ge 0 \), with scale \(\lambda>0\), shape \(k>0\).
-- **PDF:** \( f(t) = \frac{k}{\lambda}\bigl(\frac{t}{\lambda}\bigr)^{k-1} \exp\bigl(-(t/\lambda)^k\bigr) \).
-- **Hazard rate (as function of time):**
-  \[
-  h(t) = \frac{f(t)}{S(t)} = \frac{k}{\lambda}\left(\frac{t}{\lambda}\right)^{k-1} = \frac{k}{\lambda^k}\, t^{k-1}.
-  \]
-- **Behavior:**  
-  - \(k>1\): \(h(t)\) increases with \(t\) (aging / increasing default risk).  
-  - \(k<1\): \(h(t)\) decreases with \(t\) (burn-in / decreasing risk).  
-  - \(k=1\): Weibull = Exponential; \(h(t)=1/\lambda\) constant.
+Time to default \(T\) follows a **Weibull** distribution with scale \(\lambda>0\) and shape \(k>0\).
 
-## Exponential
+| Function | Definition |
+|----------|-----------|
+| CDF | \(F(t) = 1 - \exp\!\bigl(-(t/\lambda)^k\bigr)\) |
+| Survival | \(S(t) = 1 - F(t) = \exp\!\bigl(-(t/\lambda)^k\bigr)\) |
+| PDF | \(f(t) = F'(t) = \frac{k}{\lambda}\left(\frac{t}{\lambda}\right)^{k-1}\exp\!\bigl(-(t/\lambda)^k\bigr)\) |
 
-- **Hazard rate:** \( h(t) = \lambda \) (constant in \(t\)).
-- **Survival:** \( S(t) = e^{-\lambda t} \), so “memoryless”: risk per unit time does not depend on how long the obligor has survived.
+---
 
-## Comparison
+## 2 Deriving the hazard rate (step-by-step)
 
-|                | Weibull \(h(t)\)     | Exponential \(h(t)\) |
-|----------------|----------------------|------------------------|
-| Formula        | \(\frac{k}{\lambda^k}t^{k-1}\) | \(\lambda\)            |
-| Depends on \(t\)? | Yes (unless \(k=1\)) | No                     |
-| Typical use    | Default risk that changes over time | Constant default intensity |
+The hazard (instantaneous default intensity) is defined as
 
-So: **Weibull** gives a time-varying hazard \(h(t) \propto t^{k-1}\); **exponential** is the special case \(k=1\) with constant hazard.
+\[
+h(t) \;=\; \frac{f(t)}{S(t)}.
+\]
+
+**Step 1 — write the ratio:**
+
+\[
+h(t) = \frac{\dfrac{k}{\lambda}\!\left(\dfrac{t}{\lambda}\right)^{k-1}\exp\!\bigl(-(t/\lambda)^k\bigr)}{\exp\!\bigl(-(t/\lambda)^k\bigr)}.
+\]
+
+**Step 2 — cancel the exponential terms:**
+
+\[
+h(t) = \frac{k}{\lambda}\left(\frac{t}{\lambda}\right)^{k-1}.
+\]
+
+**Step 3 — simplify the power of \(\lambda\):**
+
+\[
+\boxed{\;h(t) = \frac{k}{\lambda^k}\,t^{\,k-1}\;}
+\]
+
+---
+
+## 3 Hazard as \(f(\text{time})\), depending on parameters
+
+Since \(h(t) = \frac{k}{\lambda^k}\,t^{k-1}\), the shape is governed entirely by \(k\):
+
+| \(k\) | \(h(t)\) behavior | Interpretation |
+|-------|-------------------|----------------|
+| \(k > 1\) | **Increasing** in \(t\) (power-law growth) | Aging / deteriorating credit — default risk rises over time |
+| \(k = 1\) | **Constant** \(= 1/\lambda\) | Memoryless — reduces to exponential |
+| \(0 < k < 1\) | **Decreasing** in \(t\) | Burn-in / infant mortality — risk falls as obligor "survives" |
+
+The scale \(\lambda\) shifts the overall level: larger \(\lambda\) → lower hazard at every \(t\).
+
+---
+
+## 4 Comparison: Weibull vs Exponential hazard
+
+The **Exponential** distribution is Weibull with \(k=1\):
+
+- Hazard: \(h_{\text{exp}}(t) = 1/\lambda\) (constant).
+- Survival: \(S(t) = e^{-t/\lambda}\).
+
+|  | **Weibull** | **Exponential** |
+|--|-------------|-----------------|
+| Hazard formula | \(\dfrac{k}{\lambda^k}\,t^{k-1}\) | \(1/\lambda\) |
+| Depends on \(t\)? | Yes (unless \(k=1\)) | No |
+| Shape parameter | \(k\) controls increasing/decreasing/constant | Fixed \(k=1\) |
+| Key property | Time-varying default intensity | Memoryless (constant intensity) |
+| When to use | Default risk that evolves with age of exposure | Flat hazard assumption / simple models |
+
+**Bottom line:** Weibull generalises Exponential by letting hazard scale as \(t^{k-1}\). Setting \(k=1\) recovers the constant-hazard Exponential case.
