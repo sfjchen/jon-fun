@@ -4,6 +4,8 @@ alwaysApply: true
 ---
 
 - Always plan the code before writing it.
+- When suggesting packages, APIs, or frameworks: check official docs or web search for the latest versions before suggesting.
+- Consider the current date when recommending best practices, deprecations, or version-specific behavior.
 - After edits: update README (Changelog section for significant changes; Games/DB/API sections if those changed).
 - Think about how the new code will fit into the existing codebase.
 - Think about how the new code will interact with the other parts of the codebase.
