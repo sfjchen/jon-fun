@@ -62,7 +62,7 @@ export async function generateTMRCue(
   // Generate sine wave with fade in/out
   for (let i = 0; i < data.length; i++) {
     const t = i / sampleRate
-    const fadeSamples = 0.1 * sampleRate // 100ms fade
+    const fadeSamples = 0.2 * sampleRate // 200ms fade
     let envelope = 1
 
     if (i < fadeSamples) {
