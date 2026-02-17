@@ -50,7 +50,7 @@ export const DEFAULT_CONFIG: TMRConfig = {
  * Generate TMR cue sound using Web Audio API
  */
 export async function generateTMRCue(
-  duration: number = 1.5,
+  duration: number = 0.9,
   frequency: number = 440,
   sampleRate: number = 44100
 ): Promise<AudioBuffer> {
