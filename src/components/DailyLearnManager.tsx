@@ -16,6 +16,7 @@ import {
   setSyncKey,
   syncWithServer,
   parseLocalDate,
+  capitalizeFirst,
   type DailyLearnEntry,
 } from '@/lib/dailyLearn'
 
@@ -198,7 +199,7 @@ export default function DailyLearnManager() {
                       setEditingText(entry?.text ?? '')
                     }}
                     className={`py-2 rounded cursor-pointer hover:ring-2 hover:ring-blue-400 ${hasEntry ? 'bg-blue-500/50 text-white' : 'text-gray-400'}`}
-                    title={hasEntry ? `${ds}: ${entry?.text ?? ''}` : `Add entry for ${ds}`}
+                    title={hasEntry ? `${ds}: ${capitalizeFirst(entry?.text ?? '')}` : `Add entry for ${ds}`}
                   >
                     {d}
                   </button>
@@ -251,7 +252,7 @@ export default function DailyLearnManager() {
                         Edit
                       </button>
                     </div>
-                    <div className="text-gray-300 mt-1 whitespace-pre-wrap">{e.text}</div>
+                    <div className="text-gray-300 mt-1 whitespace-pre-wrap">{capitalizeFirst(e.text)}</div>
                   </div>
                 ))}
               </div>
