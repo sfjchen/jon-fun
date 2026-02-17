@@ -17,6 +17,7 @@ export interface DailyLearnCounts {
 
 const USER_ID_KEY = 'daily_learn_user_id'
 const ENTRIES_KEY = 'daily_learn_entries'
+const SYNC_KEY = 'daily_learn_sync_key'
 
 function toLocalYYYYMMDD(d: Date): string {
   const y = d.getFullYear()
@@ -40,10 +41,10 @@ function genUuid(): string {
   })
 }
 
-/** Day resets at 3 AM local (not midnight) */
+/** Day resets at 5 AM local (not midnight) */
 export function getTodayDate(): string {
   const now = new Date()
-  if (now.getHours() < 3) {
+  if (now.getHours() < 5) {
     const prev = new Date(now)
     prev.setDate(prev.getDate() - 1)
     return toLocalYYYYMMDD(prev)
@@ -59,6 +60,73 @@ export function getOrCreateUserId(): string {
     localStorage.setItem(USER_ID_KEY, id)
   }
   return id
+}
+
+/** Sync key links devices; when set, both use same user_id for Supabase. */
+export function getSyncKey(): string {
+  if (typeof window === 'undefined') return ''
+  return localStorage.getItem(SYNC_KEY) ?? ''
+}
+
+export function setSyncKey(key: string): void {
+  if (typeof window === 'undefined') return
+  if (key.trim()) localStorage.setItem(SYNC_KEY, key.trim())
+  else localStorage.removeItem(SYNC_KEY)
+}
+
+/** Effective user_id for API: sync key if set, else device user_id. */
+export function getEffectiveUserId(): string {
+  const sk = getSyncKey()
+  return sk ? sk : getOrCreateUserId()
+}
+
+/** Merge entries by date, keep latest updatedAt. */
+function mergeEntries(local: DailyLearnEntry[], remote: DailyLearnEntry[]): DailyLearnEntry[] {
+  const byDate = new Map<string, DailyLearnEntry>()
+  for (const e of [...local, ...remote]) {
+    const existing = byDate.get(e.date)
+    if (!existing || new Date(e.updatedAt) > new Date(existing.updatedAt)) {
+      byDate.set(e.date, e)
+    }
+  }
+  return [...byDate.values()].sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0))
+}
+
+/** Fetch entries from server for effective user_id. */
+export async function fetchEntriesFromServer(): Promise<DailyLearnEntry[]> {
+  const userId = getEffectiveUserId()
+  const res = await fetch(`/api/daily-learn/entries?userId=${encodeURIComponent(userId)}`)
+  if (!res.ok) return []
+  const data = (await res.json()) as { entries?: DailyLearnEntry[] }
+  return Array.isArray(data.entries) ? data.entries : []
+}
+
+/** Push entries to server. */
+export async function pushEntriesToServer(entries: DailyLearnEntry[]): Promise<boolean> {
+  const userId = getEffectiveUserId()
+  const res = await fetch('/api/daily-learn/entries', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userId,
+      entries: entries.map((e) => ({ date: e.date, text: e.text })),
+    }),
+  })
+  return res.ok
+}
+
+/** Sync: fetch from server, merge with local, save local, push merged. Returns merged entries. */
+export async function syncWithServer(): Promise<DailyLearnEntry[]> {
+  if (typeof window === 'undefined') return loadEntries()
+  const local = loadEntries()
+  const remote = await fetchEntriesFromServer()
+  const merged = mergeEntries(local, remote)
+  const mergedJson = JSON.stringify(merged)
+  if (localStorage.getItem(ENTRIES_KEY) !== mergedJson) {
+    localStorage.setItem(ENTRIES_KEY, mergedJson)
+  }
+  await pushEntriesToServer(merged)
+  return merged
 }
 
 export function loadEntries(): DailyLearnEntry[] {
@@ -87,6 +155,7 @@ export function saveEntry(entry: { date: string; text: string }): void {
   else entries.push(updated)
   entries.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0))
   localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
+  pushEntriesToServer(entries).catch(() => {})
 }
 
 export function getEntryByDate(date: string): DailyLearnEntry | undefined {

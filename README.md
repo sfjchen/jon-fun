@@ -9,7 +9,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **Texas Hold'em** (`/games/poker`): Poker chip tracker with real-time multiplayer lobbies
 - **Chwazi Finger Chooser** (`/games/chwazi`): Place fingers on screen to randomly select a winner
 - **TMR System** (`/games/tmr`): Targeted Memory Reactivation for learning and sleep
-- **1 Sentence Everyday** (`/games/daily-log`): One sentence per day, history, calendar, export (localStorage)
+- **1 Sentence Everyday** (`/games/daily-log`): One sentence per day, history, calendar, export, cross-device sync (localStorage + Supabase)
 
 ## 🚀 Quick Start
 
@@ -162,6 +162,12 @@ src/
 - `score_awarded` (integer)
 - `submitted_at` (timestamptz)
 
+**`daily_learn_entries`**
+
+- `id` (uuid, primary key)
+- `user_id` (text), `date` (date), `text` (text), `updated_at` (timestamptz)
+- Unique on `(user_id, date)` for cross-device sync
+
 **`tmr_study_sessions`**
 
 - `id` (uuid, primary key)
@@ -225,6 +231,10 @@ src/
 **`POST /api/game24/submit`**: Submit expression; validates with round numbers; scores 1000→0 over 15s (one correct per player/round)
 
 **`POST /api/game24/next-round`**: Advance state (active → intermission (5s) → next round up to 8, then finished)
+
+**`GET /api/daily-learn/entries?userId=`**: Fetch entries for sync key/user
+
+**`POST /api/daily-learn/entries`**: Upsert entries – Body: `{ userId, entries: [{ date, text }] }`
 
 **`POST /api/tmr/study`**: Sync TMR study session to DB – Body: `{ userId, session }`
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import Link from 'next/link'
 import JeopardyEditor from '@/components/JeopardyEditor'
 import JeopardyPlayer from '@/components/JeopardyPlayer'
 import type { JeopardyBoard } from '@/lib/jeopardy'
@@ -100,12 +101,12 @@ export default function JeopardyPage() {
             }} />
           </div>
           
-          <button
-            onClick={() => window.history.back()}
-            className="w-full bg-gray-600 hover:bg-gray-700 text-white py-4 px-6 rounded-lg text-xl font-semibold transition-colors"
+          <Link
+            href="/"
+            className="w-full bg-gray-600 hover:bg-gray-700 text-white py-4 px-6 rounded-lg text-xl font-semibold transition-colors block text-center"
           >
-            Back to Games
-          </button>
+            ← Home
+          </Link>
         </div>
       </div>
     </div>

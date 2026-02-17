@@ -13,8 +13,8 @@ export default function LeaderboardsPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <header className="text-center mb-12">
-          <Link href="/" className="inline-block mb-4">
-            <button className="header-icon" aria-label="Go home">🏠</button>
+          <Link href="/" className="inline-block mb-4 text-white hover:text-gray-300 text-2xl font-bold" aria-label="Back to home">
+            ← Home
           </Link>
           <h1 className="text-5xl font-bold text-white mb-4">🏆 Leaderboards</h1>
           <p className="text-xl text-gray-300">See the best players and compete for the top spot</p>

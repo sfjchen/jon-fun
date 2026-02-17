@@ -913,8 +913,8 @@ export default function Game24() {
 
           <main className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white relative overflow-hidden">
             <div className="flex items-center justify-between mb-6 text-white">
-        <Link href="/" className="header-icon" aria-label="Go home">
-          🏠
+        <Link href="/" className="text-white hover:text-gray-300 text-2xl font-bold" aria-label="Back to home">
+          ← Home
         </Link>
               <div className="text-center">
                 <div className="text-lg font-semibold">Your Score</div>

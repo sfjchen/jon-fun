@@ -29,7 +29,7 @@ export default function ChwaziPage() {
             href="/"
             className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
           >
-            Back to Home
+            ← Home
           </Link>
         </div>
       </div>

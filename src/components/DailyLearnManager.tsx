@@ -12,11 +12,14 @@ import {
   exportAsText,
   exportAsJson,
   getOrCreateUserId,
+  getSyncKey,
+  setSyncKey,
+  syncWithServer,
   parseLocalDate,
   type DailyLearnEntry,
 } from '@/lib/dailyLearn'
 
-type View = 'log' | 'analytics' | 'export'
+type View = 'log' | 'analytics' | 'export' | 'sync'
 
 export default function DailyLearnManager() {
   const [view, setView] = useState<View>('log')
@@ -27,6 +30,8 @@ export default function DailyLearnManager() {
   const [editingText, setEditingText] = useState('')
   const [calYear, setCalYear] = useState(() => new Date().getFullYear())
   const [calMonth, setCalMonth] = useState(() => new Date().getMonth())
+  const [syncKeyInput, setSyncKeyInput] = useState('')
+  const [syncing, setSyncing] = useState(false)
 
   const refresh = useCallback(() => {
     setEntries(loadEntries())
@@ -35,6 +40,14 @@ export default function DailyLearnManager() {
   useEffect(() => {
     getOrCreateUserId()
     refresh()
+  }, [refresh])
+
+  useEffect(() => {
+    if (!getSyncKey()) return
+    setSyncing(true)
+    syncWithServer()
+      .then(() => refresh())
+      .finally(() => setSyncing(false))
   }, [refresh])
 
   useEffect(() => {
@@ -81,9 +94,9 @@ export default function DailyLearnManager() {
           <Link
             href="/"
             className="text-white hover:text-gray-300 text-2xl font-bold"
-            aria-label="Back to hub"
+            aria-label="Back to home"
           >
-            ← Back
+            ← Home
           </Link>
           <h1 className="text-4xl font-bold text-white">{title}</h1>
           <div className="w-16" />
@@ -131,11 +144,11 @@ export default function DailyLearnManager() {
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-8">
-            <Link href="/" className="text-white hover:text-gray-300 text-2xl font-bold" aria-label="Back to hub">
-              ← Back
+            <Link href="/" className="text-white hover:text-gray-300 text-2xl font-bold" aria-label="Back to home">
+              ← Home
             </Link>
             <h1 className="text-4xl font-bold text-white">1 Sentence Everyday</h1>
-            <div className="w-16" />
+            {syncing ? <span className="text-gray-400 text-sm">Syncing…</span> : <div className="w-16" />}
           </div>
 
           {/* Calendar */}
@@ -197,7 +210,7 @@ export default function DailyLearnManager() {
           {/* Today's prompt */}
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-6">
             <p className="text-gray-300 mb-4">
-              Today: {parseLocalDate(today).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} (Resets 3am)
+              Today: {parseLocalDate(today).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} (Resets 5am)
             </p>
             <textarea
               value={todayText}
@@ -248,10 +261,13 @@ export default function DailyLearnManager() {
           {editModal}
 
           <nav className="flex flex-wrap gap-2">
-            {(['analytics', 'export'] as const).map((v) => (
+            {(['analytics', 'export', 'sync'] as const).map((v) => (
               <button
                 key={v}
-                onClick={() => setView(v)}
+                onClick={() => {
+                  setView(v)
+                  if (v === 'sync') setSyncKeyInput(getSyncKey())
+                }}
                 className="px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white hover:bg-white/20 capitalize"
               >
                 {v}
@@ -283,6 +299,48 @@ export default function DailyLearnManager() {
               <div className="text-gray-300">This month</div>
             </div>
           </div>
+        </div>
+        <button onClick={() => setView('log')} className="px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white hover:bg-white/20">
+          ← Log
+        </button>
+      </>
+    )
+  }
+
+  if (view === 'sync') {
+    return layout(
+      'Sync',
+      <>
+        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-6">
+          <h2 className="text-2xl font-bold text-white mb-4">Cross-Device Sync</h2>
+          <p className="text-gray-300 mb-4">
+            Set the same sync key on both devices to merge your history. Sync runs on page load and on every save.
+          </p>
+          <div className="flex gap-2 mb-4">
+            <input
+              type="text"
+              value={syncKeyInput}
+              onChange={(e) => setSyncKeyInput(e.target.value)}
+              placeholder="e.g. jon123"
+              className="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              onClick={async () => {
+                setSyncKey(syncKeyInput.trim())
+                setSyncing(true)
+                await syncWithServer()
+                refresh()
+                setSyncing(false)
+              }}
+              disabled={syncing}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg"
+            >
+              {syncing ? 'Syncing…' : 'Save & Sync'}
+            </button>
+          </div>
+          {getSyncKey() && (
+            <p className="text-green-400 text-sm">Synced. Use this key on your other device.</p>
+          )}
         </div>
         <button onClick={() => setView('log')} className="px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white hover:bg-white/20">
           ← Log
