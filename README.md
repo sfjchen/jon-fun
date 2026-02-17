@@ -225,7 +225,7 @@ src/
 **`POST /api/game24/rooms/[pin]`**:
 
 - `action: 'join'` `{ playerName }`
-- `action: 'start'` `{ hostId }` (host only; needs ≥2 players)
+- `action: 'start'` `{ playerId }` (any player; needs ≥1 player)
 - `action: 'play-again'` `{ playerId }` (resets lobby, caller becomes host)
 
 **`POST /api/game24/submit`**: Submit expression; validates with round numbers; scores 1000→0 over 15s (one correct per player/round)
@@ -338,13 +338,10 @@ src/
 
 ## 📋 README Maintenance Guidelines
 
-**For AI Agents**: When making changes to the project, update this README if:
+**For AI Agents**: When making changes to the project:
 
-- ✅ Adding a new game (update Games section)
-- ✅ Adding new database tables/columns (update Database Schema)
-- ✅ Adding new API routes (update API Routes)
-- ✅ Changing architectural patterns (update Key Architectural Decisions)
-- ✅ Adding new dependencies or tech stack changes (update Tech Stack)
+1. **Update this README** if: adding a game, DB tables/columns, API routes, architectural changes, or tech stack changes.
+2. **Update [CHANGELOG.md](CHANGELOG.md)** for significant changes (new features, fixes, renames). Add date + short description.
 
 **Keep it concise**:
 

@@ -1,7 +1,10 @@
 ---
+description: 
 alwaysApply: true
 ---
+
 - Always plan the code before writing it.
+- After edits: update [CHANGELOG.md](CHANGELOG.md) for significant changes; update [README.md](README.md) if games/DB/API/architecture changed.
 - Think about how the new code will fit into the existing codebase.
 - Think about how the new code will interact with the other parts of the codebase.
 - Think about how the new code will handle errors and edge cases.
