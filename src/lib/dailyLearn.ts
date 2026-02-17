@@ -26,6 +26,15 @@ function toLocalYYYYMMDD(d: Date): string {
   return `${y}-${m}-${day}`
 }
 
+/** Capitalize first letter of text (handles leading whitespace, empty string). */
+export function capitalizeFirst(text: string): string {
+  const t = text.trim()
+  if (!t) return text
+  const i = text.search(/\S/)
+  if (i === -1) return text
+  return text.slice(0, i) + text[i]!.toUpperCase() + text.slice(i + 1)
+}
+
 /** Parse YYYY-MM-DD as local date (avoids UTC midnight shifting date behind) */
 export function parseLocalDate(dateStr: string): Date {
   const [y, m, d] = dateStr.split('-').map(Number)
@@ -80,13 +89,14 @@ export function getEffectiveUserId(): string {
   return sk ? sk : getOrCreateUserId()
 }
 
-/** Merge entries by date, keep latest updatedAt. */
+/** Merge entries by date, keep latest updatedAt. Normalize text to capitalized first letter. */
 function mergeEntries(local: DailyLearnEntry[], remote: DailyLearnEntry[]): DailyLearnEntry[] {
   const byDate = new Map<string, DailyLearnEntry>()
   for (const e of [...local, ...remote]) {
+    const normalized = { ...e, text: capitalizeFirst(e.text) }
     const existing = byDate.get(e.date)
     if (!existing || new Date(e.updatedAt) > new Date(existing.updatedAt)) {
-      byDate.set(e.date, e)
+      byDate.set(e.date, normalized)
     }
   }
   return [...byDate.values()].sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0))
@@ -109,7 +119,7 @@ export async function pushEntriesToServer(entries: DailyLearnEntry[]): Promise<b
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       userId,
-      entries: entries.map((e) => ({ date: e.date, text: e.text })),
+      entries: entries.map((e) => ({ date: e.date, text: capitalizeFirst(e.text) })),
     }),
   })
   return res.ok
@@ -146,8 +156,10 @@ export function loadEntries(): DailyLearnEntry[] {
 export function saveEntry(entry: { date: string; text: string }): void {
   if (typeof window === 'undefined') return
   const entries = loadEntries()
+  const text = capitalizeFirst(entry.text.trim())
   const updated: DailyLearnEntry = {
     ...entry,
+    text,
     updatedAt: new Date().toISOString(),
   }
   const idx = entries.findIndex((e) => e.date === entry.date)
@@ -193,9 +205,10 @@ export function getCalendarData(): Set<string> {
 
 export function exportAsText(): string {
   const entries = loadEntries()
-  return entries.map((e) => `${e.date}: ${e.text}`).join('\n')
+  return entries.map((e) => `${e.date}: ${capitalizeFirst(e.text)}`).join('\n')
 }
 
 export function exportAsJson(): string {
-  return JSON.stringify(loadEntries(), null, 2)
+  const entries = loadEntries().map((e) => ({ ...e, text: capitalizeFirst(e.text) }))
+  return JSON.stringify(entries, null, 2)
 }
