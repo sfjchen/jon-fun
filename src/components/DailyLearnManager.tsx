@@ -8,7 +8,6 @@ import {
   getEntryByDate,
   getTodayDate,
   getCounts,
-  getCalendarData,
   exportAsText,
   exportAsJson,
   getOrCreateUserId,
@@ -85,7 +84,7 @@ export default function DailyLearnManager() {
   }, [])
 
   const counts = getCounts()
-  const calendarDates = getCalendarData()
+  const calendarDates = new Set(entries.map((e) => e.date))
   const today = getTodayDate()
 
   const layout = (title: string, children: React.ReactNode) => (
