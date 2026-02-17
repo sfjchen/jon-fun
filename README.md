@@ -336,12 +336,20 @@ src/
 6. **Type safety** - Strict TypeScript, no `any` types
 7. **Minimal documentation** - Personal project, code should be self-explanatory
 
+## 📜 Changelog
+
+Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
+
+**2025-02**
+
+- **1 Sentence Everyday**: Inline calendar + history on main page; "(Resets 3am)"; renamed; fixed date display; edit previous entries; month nav; Supabase sync
+- **Game24**: Broadcast on start/solve for instant sync; 500ms polling fallback; fix button blink; click-deselect; final rankings show correct/total
+- **Chwazi**: Touchscreen-only
+- **Home**: TMR + 1 Sentence top 2 cards; uniform card height; "← Home" standardized
+
 ## 📋 README Maintenance Guidelines
 
-**For AI Agents**: When making changes to the project:
-
-1. **Update this README** if: adding a game, DB tables/columns, API routes, architectural changes, or tech stack changes.
-2. **Update [CHANGELOG.md](CHANGELOG.md)** for significant changes (new features, fixes, renames). Add date + short description.
+**For AI Agents**: When making changes to the project, update this README if: adding a game, DB tables/columns, API routes, architectural changes, or tech stack changes. Add entries to the Changelog section above for significant changes.
 
 **Keep it concise**:
 
