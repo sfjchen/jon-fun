@@ -38,7 +38,8 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
   useEffect(() => {
     const initAudio = async () => {
       try {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)()
+        const Ctx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+        audioContextRef.current = new Ctx!()
         cueBufferRef.current = await generateTMRCue()
         if (config.usePinkNoise) {
           pinkNoiseBufferRef.current = await generatePinkNoise(300) // 5 minutes, will loop
@@ -217,7 +218,7 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
     setSessionStart(null)
     startTimeRef.current = null
     setStatus('Stopped')
-  }, [sessionStart, cuesPlayed, currentCycle, stopPinkNoise])
+  }, [sessionStart, cuesPlayed, stopPinkNoise])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">

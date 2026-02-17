@@ -4,82 +4,15 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
 
-const games = [
-  {
-    id: 'tmr',
-    title: 'TMR System',
-    description: 'Targeted Memory Reactivation for enhanced learning and memory consolidation',
-    icon: '🧠',
-    href: '/games/tmr',
-    tags: ['Learning', 'Memory', 'Science'],
-    available: true,
-  },
-  {
-    id: 'daily-log',
-    title: '1 Sentence Everyday',
-    description: 'Log one sentence (or more) per day about what you learned; view history, calendar, and export',
-    icon: '📝',
-    href: '/games/daily-log',
-    tags: ['Journal', 'Habit'],
-    available: true,
-  },
-  {
-    id: '24',
-    title: '24 Game',
-    description: 'Use 4 numbers and basic arithmetic to make 24',
-    icon: '🎯',
-    href: '/games/24',
-    tags: ['Math', 'Logic', 'Puzzle'],
-    available: true,
-  },
-  {
-    id: 'jeopardy',
-    title: 'Jeopardy with Friends',
-    description: 'Create and play custom Jeopardy boards locally',
-    icon: '❓',
-    href: '/games/jeopardy',
-    tags: ['Party', 'Trivia'],
-    available: true,
-  },
-  {
-    id: 'poker',
-    title: 'Texas Hold\'em',
-    description: 'Poker chip tracker with real-time multiplayer lobbies',
-    icon: '/poker-table.svg',
-    href: '/games/poker',
-    tags: ['Card', 'Multiplayer'],
-    available: true,
-  },
-  {
-    id: 'chwazi',
-    title: 'Chwazi Finger Chooser',
-    description: 'Place fingers on screen to randomly select a winner',
-    icon: '👆',
-    href: '/games/chwazi',
-    tags: ['Utility', 'Party', 'Mobile'],
-    available: true,
-  },
-  {
-    id: 'coming-soon',
-    title: 'Coming Soon',
-    description: 'More brain games are in development',
-    icon: '🚧',
-    href: '#',
-    tags: ['TBD'],
-    available: false,
-  },
-]
-
-const features = [
-  {
-    id: 'leaderboards',
-    title: 'Leaderboards',
-    description: 'See the best scores and compete with others',
-    icon: '🏆',
-    href: '/leaderboards',
-    tags: ['Global', 'Friends'],
-    available: true,
-  },
+const items = [
+  { id: 'tmr', title: 'TMR System', description: 'Targeted Memory Reactivation for enhanced learning and memory consolidation', icon: '🧠', href: '/games/tmr', available: true },
+  { id: 'daily-log', title: '1 Sentence Everyday', description: 'Log one sentence (or more) per day; view history, calendar, and export', icon: '📝', href: '/games/daily-log', available: true },
+  { id: '24', title: '24 Game', description: 'Use 4 numbers and basic arithmetic to make 24', icon: '🎯', href: '/games/24', available: true },
+  { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom Jeopardy boards locally', icon: '❓', href: '/games/jeopardy', available: true },
+  { id: 'poker', title: 'Texas Hold\'em', description: 'Poker chip tracker with real-time multiplayer lobbies', icon: '/poker-table.svg', href: '/games/poker', available: true },
+  { id: 'chwazi', title: 'Chwazi Finger Chooser', description: 'Place fingers on screen to randomly select a winner', icon: '👆', href: '/games/chwazi', available: true },
+  { id: 'leaderboards', title: 'Leaderboards', description: 'See the best scores and compete with others', icon: '🏆', href: '/leaderboards', available: true },
+  { id: 'coming-soon', title: 'Coming Soon', description: 'More brain games are in development', icon: '🚧', href: '#', available: false },
 ]
 
 const futureFeatures = [
@@ -107,20 +40,8 @@ export default function Home() {
 
         {/* Games Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {games.map((game) => (
-            <GameCard
-              key={game.id}
-              game={game}
-              onComingSoonClick={() => setShowComingSoon(true)}
-            />
-          ))}
-
-          {features.map((feature) => (
-            <GameCard
-              key={feature.id}
-              game={feature}
-              onComingSoonClick={() => setShowComingSoon(true)}
-            />
+          {items.map((item) => (
+            <GameCard key={item.id} game={item} onComingSoonClick={() => setShowComingSoon(true)} />
           ))}
         </div>
 
@@ -170,15 +91,7 @@ export default function Home() {
 }
 
 interface GameCardProps {
-  game: {
-    id: string
-    title: string
-    description: string
-    icon: string // Can be emoji or image path
-    href: string
-    tags: string[]
-    available: boolean
-  }
+  game: { id: string; title: string; description: string; icon: string; href: string; available: boolean }
   onComingSoonClick: () => void
 }
 
@@ -187,33 +100,13 @@ function GameCard({ game, onComingSoonClick }: GameCardProps) {
     <div className="text-center">
       <div className="mb-4 flex justify-center items-center h-16">
         {game.icon.startsWith('/') ? (
-          <Image
-            src={game.icon}
-            alt={game.title}
-            width={64}
-            height={64}
-            className="h-14 w-14 sm:h-16 sm:w-16 object-contain drop-shadow-lg"
-            priority
-          />
+          <Image src={game.icon} alt={game.title} width={64} height={64} className="h-14 w-14 sm:h-16 sm:w-16 object-contain drop-shadow-lg" priority />
         ) : (
           <span className="text-5xl leading-none">{game.icon}</span>
         )}
       </div>
       <h2 className="text-2xl font-bold text-white mb-2">{game.title}</h2>
       <p className="text-gray-300 mb-4 line-clamp-2">{game.description}</p>
-      <div className="flex justify-center space-x-2 mb-4">
-        {game.tags.map((tag) => (
-          <span
-            key={tag}
-            className={`px-2 py-1 rounded text-sm ${game.available
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-500 text-white'
-              }`}
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
       <div className="text-sm text-gray-500">
         {game.available ? 'Click to play →' : 'Click to see features →'}
       </div>

@@ -241,6 +241,7 @@ export default function Game24() {
     if (!pinInput || !room || room.status !== 'waiting') return
     const interval = setInterval(() => loadRoomData(pinInput, true), 500)
     return () => clearInterval(interval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- room intentionally omitted to avoid polling when room status changes
   }, [pinInput, room?.status, loadRoomData])
 
   const advanceRound = useCallback(async () => {

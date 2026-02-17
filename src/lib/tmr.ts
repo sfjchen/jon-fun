@@ -54,7 +54,8 @@ export async function generateTMRCue(
   frequency: number = 440,
   sampleRate: number = 44100
 ): Promise<AudioBuffer> {
-  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+  const Ctx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+  const audioContext = new Ctx!()
   const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate)
   const data = buffer.getChannelData(0)
 
@@ -83,7 +84,8 @@ export async function generatePinkNoise(
   duration: number = 300,
   sampleRate: number = 44100
 ): Promise<AudioBuffer> {
-  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+  const Ctx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+  const audioContext = new Ctx!()
   const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate)
   const data = buffer.getChannelData(0)
 
@@ -129,7 +131,8 @@ export function playAudioBuffer(
   volume: number = 1.0,
   audioContext?: AudioContext
 ): AudioBufferSourceNode {
-  const ctx = audioContext || new (window.AudioContext || (window as any).webkitAudioContext)()
+  const Ctx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+  const ctx = audioContext || new Ctx!()
   const source = ctx.createBufferSource()
   const gainNode = ctx.createGain()
 

@@ -30,7 +30,8 @@ export default function TMRStudySession({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     const initAudio = async () => {
       try {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)()
+        const Ctx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+        audioContextRef.current = new Ctx!()
         cueBufferRef.current = await generateTMRCue()
       } catch (error) {
         console.error('Failed to initialize audio:', error)
@@ -50,40 +51,6 @@ export default function TMRStudySession({ onBack }: { onBack: () => void }) {
       setCuesPlayed((prev) => prev + 1)
     }
   }, [config.studyVolume])
-
-  const startSession = useCallback(() => {
-    if (!audioContextRef.current || !cueBufferRef.current) {
-      alert('Audio not initialized. Please wait a moment and try again.')
-      return
-    }
-
-    setIsRunning(true)
-    setSessionStart(new Date())
-    setElapsed(0)
-    setCuesPlayed(0)
-    startTimeRef.current = Date.now()
-
-    // Play first cue immediately
-    playCue()
-
-    // Play cues at intervals
-    intervalRef.current = setInterval(() => {
-      playCue()
-    }, config.cueIntervalSeconds * 1000)
-
-    // Timer for elapsed time
-    timerRef.current = setInterval(() => {
-      if (startTimeRef.current) {
-        const elapsedSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000)
-        setElapsed(elapsedSeconds)
-
-        // Check if session is complete
-        if (elapsedSeconds >= duration * 60) {
-          stopSession(false)
-        }
-      }
-    }, 1000)
-  }, [duration, config.cueIntervalSeconds, playCue])
 
   const stopSession = useCallback((interrupted: boolean) => {
     setIsRunning(false)
@@ -117,6 +84,29 @@ export default function TMRStudySession({ onBack }: { onBack: () => void }) {
     setSessionStart(null)
     startTimeRef.current = null
   }, [sessionStart, cuesPlayed, config.cueIntervalSeconds])
+
+  const startSession = useCallback(() => {
+    if (!audioContextRef.current || !cueBufferRef.current) {
+      alert('Audio not initialized. Please wait a moment and try again.')
+      return
+    }
+
+    setIsRunning(true)
+    setSessionStart(new Date())
+    setElapsed(0)
+    setCuesPlayed(0)
+    startTimeRef.current = Date.now()
+
+    playCue()
+    intervalRef.current = setInterval(() => playCue(), config.cueIntervalSeconds * 1000)
+    timerRef.current = setInterval(() => {
+      if (startTimeRef.current) {
+        const elapsedSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000)
+        setElapsed(elapsedSeconds)
+        if (elapsedSeconds >= duration * 60) stopSession(false)
+      }
+    }, 1000)
+  }, [duration, config.cueIntervalSeconds, playCue, stopSession])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
