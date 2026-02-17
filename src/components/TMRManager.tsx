@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import TMRStudySession from './TMRStudySession'
 import TMRSleepReactivation from './TMRSleepReactivation'
 import {
@@ -121,6 +122,11 @@ export default function TMRManager() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
       <div className="max-w-4xl mx-auto">
+        <div className="mb-6">
+          <Link href="/" className="text-white hover:text-gray-300 text-2xl font-bold" aria-label="Back to home">
+            ← Home
+          </Link>
+        </div>
         {/* Header */}
         <header className="text-center mb-12">
           <h1 className="text-5xl font-bold text-white mb-4">🧠 TMR System</h1>

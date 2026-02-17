@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 
 type Status = 'idle' | 'primed' | 'selecting' | 'winner'
 
@@ -202,7 +203,16 @@ export default function ChwaziGame() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(64,196,255,0.08),transparent_35%),radial-gradient(circle_at_80%_30%,rgba(255,64,129,0.12),transparent_35%),radial-gradient(circle_at_50%_80%,rgba(29,233,182,0.12),transparent_35%)]" />
 
       <div className="relative h-full w-full">
-        <div className="absolute top-6 w-full flex justify-center">
+        <div className="absolute top-6 left-4 z-10">
+          <Link
+            href="/"
+            className="text-white/90 hover:text-white text-lg font-semibold"
+            aria-label="Back to home"
+          >
+            ← Home
+          </Link>
+        </div>
+        <div className="absolute top-6 w-full flex justify-center pointer-events-none">
           <div className="px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-sm font-medium tracking-wide text-gray-100">
             {status === 'selecting'
               ? 'Selecting…'
