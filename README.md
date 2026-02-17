@@ -342,6 +342,7 @@ Running log of project work. Update this section when making significant changes
 
 **2025-02**
 
+- **gh-git-github-workflow skill**: Cursor skill for git/gh CLI (repos, PRs, issues, comments, releases, gists, Actions, wiki, API)
 - **1 Sentence Everyday**: Inline calendar + history on main page; "(Resets 3am)"; renamed; fixed date display; edit previous entries; month nav; Supabase sync
 - **Game24**: Broadcast on start/solve for instant sync; 500ms polling fallback; fix button blink; click-deselect; final rankings show correct/total
 - **Chwazi**: Touchscreen-only

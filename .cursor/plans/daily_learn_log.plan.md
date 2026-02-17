@@ -1,3 +1,10 @@
+---
+name: ""
+overview: ""
+todos: []
+isProject: false
+---
+
 # Daily Learn Log – Implementation Plan (updated)
 
 ## Context
@@ -11,23 +18,27 @@
 
 ### localStorage (unchanged)
 
-| Key | Purpose |
-|-----|--------|
-| `daily_learn_user_id` | UUID string, created once per browser |
+
+| Key                   | Purpose                                   |
+| --------------------- | ----------------------------------------- |
+| `daily_learn_user_id` | UUID string, created once per browser     |
 | `daily_learn_entries` | JSON array of `{ date, text, updatedAt }` |
+
 
 - Submit: write to localStorage (upsert by date) **and** call API to sync to Supabase.
 - History/Calendar/Analytics/Export in the app can keep using localStorage only (fast, works offline) or optionally merge with API data later.
 
 ### Supabase table: `daily_learn_entries`
 
-| Column | Type | Notes |
-|--------|------|--------|
-| `id` | uuid | Primary key, default `gen_random_uuid()` |
-| `user_id` | text | UUID from browser localStorage (identifies device/browser) |
-| `date` | date | `YYYY-MM-DD`, one row per user per day |
-| `text` | text | Entry content |
-| `updated_at` | timestamptz | Set on insert/update |
+
+| Column       | Type        | Notes                                                      |
+| ------------ | ----------- | ---------------------------------------------------------- |
+| `id`         | uuid        | Primary key, default `gen_random_uuid()`                   |
+| `user_id`    | text        | UUID from browser localStorage (identifies device/browser) |
+| `date`       | date        | `YYYY-MM-DD`, one row per user per day                     |
+| `text`       | text        | Entry content                                              |
+| `updated_at` | timestamptz | Set on insert/update                                       |
+
 
 - **Unique constraint** on `(user_id, date)` so upsert is one row per user per day.
 - RLS: can disable or allow all for now (single user). If you want only server/admin to write: use service role in API; anon can insert for the sync endpoint or use a simple secret.
@@ -72,7 +83,7 @@ You want **both** (1) use the DB directly and (2) use a small admin-only page.
 
 ### API for admin (read-only)
 
-- **`GET /api/daily-learn/admin/entries`**
+- `**GET /api/daily-learn/admin/entries`**
   - Query param or header: `key=DAILY_LOG_ADMIN_SECRET` (from env). If invalid, return 401.
   - If valid: query Supabase for all `daily_learn_entries`, return JSON array. Admin page calls this and then shows data and runs export in the browser.
 
@@ -86,15 +97,15 @@ You want **both** (1) use the DB directly and (2) use a small admin-only page.
 
 ### App
 
-- **`src/app/api/daily-learn/entries/route.ts`**: POST handler, upsert `daily_learn_entries`.
-- **`src/app/api/daily-learn/admin/entries/route.ts`**: GET handler, check `DAILY_LOG_ADMIN_SECRET`, return all entries.
-- **`src/app/admin/daily-logs/page.tsx`**: Admin page (client or server): read secret from query/input; if valid, fetch from GET admin API, render table + export buttons (Download CSV/JSON, Copy text).
-- **`src/lib/dailyLearn.ts`**: Add `syncEntryToServer(entry)` that POSTs to `/api/daily-learn/entries`.
-- **`DailyLearnManager`**: On submit success (localStorage), call `syncEntryToServer({ date, text })` with `getOrCreateUserId()`.
+- `**src/app/api/daily-learn/entries/route.ts`**: POST handler, upsert `daily_learn_entries`.
+- `**src/app/api/daily-learn/admin/entries/route.ts**`: GET handler, check `DAILY_LOG_ADMIN_SECRET`, return all entries.
+- `**src/app/admin/daily-logs/page.tsx**`: Admin page (client or server): read secret from query/input; if valid, fetch from GET admin API, render table + export buttons (Download CSV/JSON, Copy text).
+- `**src/lib/dailyLearn.ts**`: Add `syncEntryToServer(entry)` that POSTs to `/api/daily-learn/entries`.
+- `**DailyLearnManager**`: On submit success (localStorage), call `syncEntryToServer({ date, text })` with `getOrCreateUserId()`.
 
 ### Env
 
-- **`DAILY_LOG_ADMIN_SECRET`** (optional): Used to protect the admin page and GET admin API. If unset, admin route can be open (not recommended if site is ever public).
+- `**DAILY_LOG_ADMIN_SECRET**` (optional): Used to protect the admin page and GET admin API. If unset, admin route can be open (not recommended if site is ever public).
 
 ### README
 
@@ -106,10 +117,12 @@ You want **both** (1) use the DB directly and (2) use a small admin-only page.
 
 ## Summary
 
-| Layer | Behavior |
-|-------|----------|
-| **localStorage** | Primary write on submit; app reads from here for History/Calendar/Analytics/Export. |
-| **Supabase** | Every submit also upserted to `daily_learn_entries` (by user_id + date). |
-| **You (owner)** | View/save all logs via (1) Supabase Dashboard or (2) Admin page at `/admin/daily-logs` (protected by secret) with export (CSV/JSON/copy). |
+
+| Layer            | Behavior                                                                                                                                  |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **localStorage** | Primary write on submit; app reads from here for History/Calendar/Analytics/Export.                                                       |
+| **Supabase**     | Every submit also upserted to `daily_learn_entries` (by user_id + date).                                                                  |
+| **You (owner)**  | View/save all logs via (1) Supabase Dashboard or (2) Admin page at `/admin/daily-logs` (protected by secret) with export (CSV/JSON/copy). |
+
 
 No privacy notice in the app (single user, your site).
