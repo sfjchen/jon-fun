@@ -59,6 +59,22 @@ const TASKS: Record<string, Task> = {
       },
     ],
   },
+  procreateSky: {
+    app: 'Procreate (PearPad)',
+    mock: 'procreate',
+    steps: [
+      { title: 'Open Brush Library', desc: 'Tap the brush icon to open the Brush Library.', hint: 'Brush Library shows your brush sets', highlight: { x: 280, y: 14, w: 80, h: 36 }, hotspotId: 'proc-brush' },
+      { title: 'Create new brush', desc: 'Tap + in the Brush Library to create a new brush.', highlight: { x: 24, y: 70, w: 60, h: 36 }, hotspotId: 'proc-new' },
+      { title: 'Adjust shape and grain', desc: 'In Brush Studio, tap Shape and Grain to customize the brush tip for texture.', highlight: { x: 520, y: 100, w: 80, h: 32 }, hotspotId: 'proc-shape' },
+      { title: 'Set dynamics', desc: 'Tap Dynamics. Adjust Size, Opacity, Flow for pressure response.', highlight: { x: 520, y: 160, w: 80, h: 32 }, hotspotId: 'proc-dynamics' },
+      { title: 'Save brush', desc: 'Tap Done to exit Brush Studio and save your brush.', highlight: { x: 300, y: 320, w: 100, h: 36 }, hotspotId: 'proc-done' },
+      { title: 'Pick sky color', desc: 'Tap the color disc to open the color picker. Choose a soft blue or orange for the sky.', highlight: { x: 260, y: 14, w: 48, h: 36 }, hotspotId: 'proc-color' },
+      { title: 'Add new layer', desc: 'Tap + in the Layers panel to add a new layer for the sky.', highlight: { x: 24, y: 120, w: 60, h: 36 }, hotspotId: 'proc-layer' },
+      { title: 'Paint the sky', desc: 'Tap the canvas to paint. Your textured brush creates a gradient sky.', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
+      { title: 'Set blend mode', desc: 'Select the layer and tap N to open blend modes. Try Multiply or Overlay for depth.', highlight: { x: 520, y: 60, w: 80, h: 28 }, hotspotId: 'proc-blend' },
+      { title: 'Export artwork', desc: 'Tap the wrench, then Share to export your textured sky.', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export' },
+    ],
+  },
   notionDb: {
     app: 'Notion (PearPad)',
     mock: 'notion',
@@ -141,6 +157,20 @@ const TASKS: Record<string, Task> = {
       },
     ],
   },
+  figmaMindmap: {
+    app: 'Figma (PearPad)',
+    mock: 'figma',
+    steps: [
+      { title: 'Create central frame', desc: 'Select the Frame tool and draw a frame for your central idea.', highlight: { x: 180, y: 100, w: 120, h: 60 }, hotspotId: 'fig-canvas' },
+      { title: 'Add text to frame', desc: 'Double-tap the frame and type your central topic (e.g. "Project").', highlight: { x: 200, y: 110, w: 80, h: 40 }, hotspotId: 'fig-text' },
+      { title: 'Create component', desc: 'Select the frame and tap Create component to make it reusable.', highlight: { x: 520, y: 60, w: 100, h: 36 }, hotspotId: 'fig-component-tab' },
+      { title: 'Add branch node', desc: 'Drag an instance from the component onto the canvas for a branch.', highlight: { x: 180, y: 180, w: 100, h: 50 }, hotspotId: 'fig-instance' },
+      { title: 'Add more branches', desc: 'Add more instances for additional ideas. Arrange them around the center.', highlight: { x: 80, y: 140, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add connectors', desc: 'Use the connector tool or hold Option and drag to link nodes.', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
+      { title: 'Auto layout', desc: 'Select a branch group and apply Auto layout for consistent spacing.', highlight: { x: 520, y: 180, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
+      { title: 'Style nodes', desc: 'Change fill color or add borders to differentiate branch levels.', highlight: { x: 520, y: 220, w: 80, h: 28 }, hotspotId: 'fig-style' },
+    ],
+  },
 }
 
 type MockProps = {
@@ -148,6 +178,7 @@ type MockProps = {
   onStepComplete: () => void
   showHighlight?: boolean | undefined
   stepIdx?: number | undefined
+  taskId?: string | undefined
 }
 
 function HotspotButton({
@@ -188,14 +219,96 @@ function HotspotButton({
 
 const TASK_LABELS: Record<string, string> = {
   procreateBrush: 'Create custom brush',
+  procreateSky: 'Paint a textured sky',
   notionDb: 'Create linked database view',
   figmaVariants: 'Create component variants',
+  figmaMindmap: 'Create a mindmap',
 }
 
-function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 0 }: MockProps) {
+function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 0, taskId }: MockProps) {
+  const isMindmap = taskId === 'figmaMindmap'
   const hasSelection = stepIdx >= 1
   const isComponent = stepIdx >= 2
   const hasVariants = stepIdx >= 4
+  const hasCentralFrame = isMindmap && stepIdx >= 1
+  const hasText = isMindmap && stepIdx >= 2
+  const hasComponent = isMindmap && stepIdx >= 3
+  const hasBranch1 = isMindmap && stepIdx >= 4
+  const hasBranch2 = isMindmap && stepIdx >= 5
+  const hasConnectors = isMindmap && stepIdx >= 6
+  const hasStyle = isMindmap && stepIdx >= 8
+  if (isMindmap) {
+    return (
+      <div className="absolute inset-0 flex flex-col text-xs">
+        <div className="h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-3 gap-4 shrink-0">
+          <span className="text-white/80">Frame</span>
+          <span className="text-white/80">Component</span>
+          <span className="text-white/80">Prototype</span>
+        </div>
+        <div className="flex flex-1 min-h-0">
+          <HotspotButton id="fig-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="flex-1 min-w-0 flex flex-col min-h-0">
+            <div className="flex-1 p-6 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center">
+              <div className="relative w-full max-w-md h-full max-h-64 border-2 border-dashed rounded-lg border-white/20 flex items-center justify-center">
+                {hasCentralFrame && (
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <HotspotButton id="fig-text" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
+                      <div className={`rounded-lg px-4 py-2 ${hasComponent ? 'border-2 border-[#8b5cf6] bg-[#8b5cf6]/20' : 'border border-white/30 bg-white/10'} ${hasStyle ? 'bg-[#34c759]/20' : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`}>
+                        {hasText && <span className="text-white text-sm">Project</span>}
+                        {!hasText && <span className="text-white/40 text-sm">Frame</span>}
+                      </div>
+                    </HotspotButton>
+                  </div>
+                )}
+                {hasBranch1 && (
+                  <div className={`absolute rounded px-3 py-1.5 text-[10px] ${hasStyle ? 'bg-[#60a5fa]/30 border border-[#60a5fa]/50' : 'bg-white/10 border border-white/20'}`} style={{ bottom: '20%', left: '15%' }}>
+                    Idea A
+                  </div>
+                )}
+                {hasBranch2 && (
+                  <>
+                    <div className={`absolute rounded px-3 py-1.5 text-[10px] ${hasStyle ? 'bg-[#f472b6]/30 border border-[#f472b6]/50' : 'bg-white/10 border border-white/20'}`} style={{ bottom: '25%', right: '20%' }}>
+                      Idea B
+                    </div>
+                    <div className={`absolute rounded px-3 py-1.5 text-[10px] ${hasStyle ? 'bg-[#a78bfa]/30 border border-[#a78bfa]/50' : 'bg-white/10 border border-white/20'}`} style={{ top: '30%', right: '10%' }}>
+                      Idea C
+                    </div>
+                  </>
+                )}
+                {hasConnectors && (
+                  <>
+                    <div className="absolute w-16 h-0.5 bg-white/30 rotate-[-30deg]" style={{ bottom: '35%', left: '35%' }} />
+                    <div className="absolute w-12 h-0.5 bg-white/30 rotate-[20deg]" style={{ bottom: '38%', right: '35%' }} />
+                    <div className="absolute w-10 h-0.5 bg-white/30 rotate-[-15deg]" style={{ top: '45%', right: '25%' }} />
+                  </>
+                )}
+                {!hasCentralFrame && <span className="text-white/40 text-sm">Canvas</span>}
+              </div>
+            </div>
+          </HotspotButton>
+          <div className="w-36 bg-[#383838] border-l border-white/15 p-3 shrink-0 flex flex-col gap-2">
+            <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
+              <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-component-tab' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Create component</div>
+            </HotspotButton>
+            <HotspotButton id="fig-instance" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
+              <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-instance' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Instance</div>
+            </HotspotButton>
+            <HotspotButton id="fig-instance2" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
+              <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-instance2' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Instance</div>
+            </HotspotButton>
+            <HotspotButton id="fig-connector" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
+              <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-connector' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-white/5 text-white/70'}`}>Connector</div>
+            </HotspotButton>
+            <HotspotButton id="fig-autolayout" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
+              <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-autolayout' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-white/5 text-white/70'}`}>Auto layout</div>
+            </HotspotButton>
+            <HotspotButton id="fig-style" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
+              <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-style' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-white/5 text-white/70'}`}>Fill</div>
+            </HotspotButton>
+          </div>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="absolute inset-0 flex flex-col text-xs">
       <div className="h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-3 gap-4 shrink-0">
@@ -254,16 +367,31 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
   )
 }
 
-function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 0 }: MockProps) {
+function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 0, taskId }: MockProps) {
+  const isSky = taskId === 'procreateSky'
   const brushActive = stepIdx >= 1
   const hasNewBrush = stepIdx >= 2
   const inBrushStudio = stepIdx >= 2
   const shapeDone = stepIdx >= 3
   const dynamicsDone = stepIdx >= 4
   const brushSaved = stepIdx >= 5
+  const hasColor = isSky && stepIdx >= 6
+  const hasLayer = isSky && stepIdx >= 7
+  const hasStroke = isSky && stepIdx >= 8
+  const hasBlend = isSky && stepIdx >= 9
   return (
     <div className="absolute inset-0 flex flex-col text-xs">
-      <div className="h-10 bg-[#2e2e2e] border-b border-white/15 flex items-center justify-center gap-8 px-4 shrink-0">
+      <div className="h-10 bg-[#2e2e2e] border-b border-white/15 flex items-center justify-center gap-6 px-4 shrink-0">
+        {isSky && (
+          <HotspotButton id="proc-export" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
+            <span className={`px-2 py-1 rounded ${currentHotspotId === 'proc-export' ? 'ring-2 ring-[#34c759]/50' : ''} text-white/80`}>⚙</span>
+          </HotspotButton>
+        )}
+        {isSky && (
+          <HotspotButton id="proc-color" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
+            <div className={`w-8 h-8 rounded-full border-2 ${hasColor ? 'border-[#34c759] bg-[#60a5fa]/80' : 'border-white/40 bg-[#60a5fa]/50'} ${currentHotspotId === 'proc-color' ? 'ring-2 ring-[#34c759]/50' : ''}`} />
+          </HotspotButton>
+        )}
         <span className="text-white/80">Actions</span>
         <HotspotButton id="proc-brush" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
           <span className={`px-2 py-1 rounded ${currentHotspotId === 'proc-brush' ? 'ring-2 ring-[#34c759]/50' : ''} ${brushActive ? 'text-[#34c759] font-medium' : 'text-white/80'}`}>Brush</span>
@@ -293,15 +421,34 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
           )}
           <div className={`w-full h-10 rounded flex items-center justify-center text-[8px] ${hasNewBrush ? 'bg-white/15 text-[#34c759]/80' : 'bg-white/10 text-white/40'}`}>{hasNewBrush ? '✓ Custom' : 'Brush 1'}</div>
           <div className="w-full h-10 bg-white/10 rounded flex items-center justify-center text-[8px] text-white/40">Brush 2</div>
+          {isSky && (
+            <>
+              <div className="text-white/50 mt-2 text-[9px]">Layers</div>
+              <HotspotButton id="proc-layer" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="w-full">
+                <div className={`w-full min-h-[44px] h-10 rounded text-[9px] flex items-center justify-center ${currentHotspotId === 'proc-layer' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Layer</div>
+              </HotspotButton>
+              {hasLayer && <div className="w-full h-12 rounded bg-white/10 flex items-center px-2 gap-1"><div className="w-8 h-8 rounded bg-[#60a5fa]/40" /><span className="text-[8px] text-white/70">Sky</span></div>}
+              {hasLayer && <div className="w-full h-10 rounded bg-white/5 flex items-center px-2 text-[8px] text-white/40">Background</div>}
+            </>
+          )}
         </div>
         <div className={`flex-1 p-4 min-w-0 transition-all ${brushActive ? 'bg-[#404040]' : 'bg-[#404040]'}`}>
-          <div className={`w-full h-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 text-sm transition-all relative ${brushActive ? 'border-white/30' : 'border-white/20'}`}>
-            {brushActive && <div className="absolute top-4 right-4 w-6 h-6 rounded-full border-2 border-[#34c759] bg-[#34c759]/30" title="Brush cursor" />}
-            {hasNewBrush && <div className="w-12 h-12 rounded-full bg-[#34c759]/40 border-2 border-[#34c759]/60" />}
-            {inBrushStudio && <span className="text-white/50 text-[10px]">Brush Studio</span>}
-            {brushSaved && <span className="text-[#34c759] text-xs">✓ Saved</span>}
-            {!hasNewBrush && !brushSaved && <span className="text-white/40">Canvas</span>}
-          </div>
+          <HotspotButton id="proc-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className={`w-full h-full ${!isSky ? 'pointer-events-none' : ''}`}>
+            <div className={`w-full h-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 text-sm transition-all relative overflow-hidden ${brushActive ? 'border-white/30' : 'border-white/20'} ${isSky && hasStroke ? 'border-none' : ''}`}>
+              {isSky && hasStroke && (
+                <div className="absolute inset-0 bg-gradient-to-b from-[#93c5fd] via-[#60a5fa] to-[#fbbf24]/80" />
+              )}
+              {isSky && hasStroke && (
+                <div className="absolute inset-0 opacity-40 bg-[length:40px_40px]" style={{ backgroundImage: 'radial-gradient(circle, #34c759 1px, transparent 1px)' }} />
+              )}
+              {brushActive && !hasStroke && <div className="absolute top-4 right-4 w-6 h-6 rounded-full border-2 border-[#34c759] bg-[#34c759]/30" title="Brush cursor" />}
+              {hasNewBrush && !hasStroke && <div className="w-12 h-12 rounded-full bg-[#34c759]/40 border-2 border-[#34c759]/60" />}
+              {inBrushStudio && !hasStroke && <span className="text-white/50 text-[10px]">Brush Studio</span>}
+              {brushSaved && !hasStroke && <span className="text-[#34c759] text-xs">✓ Saved</span>}
+              {!hasNewBrush && !brushSaved && !hasStroke && <span className="text-white/40">Canvas</span>}
+              {isSky && hasStroke && <span className="relative text-white/90 text-xs drop-shadow">Textured sky</span>}
+            </div>
+          </HotspotButton>
         </div>
         <div className="w-28 bg-[#383838] border-l border-white/15 p-2 shrink-0 flex flex-col gap-3">
           <div className="text-white/50">Brush Studio</div>
@@ -328,6 +475,19 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
           <HotspotButton id="proc-done" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="w-full">
             <div className={`w-full min-h-[44px] h-11 rounded flex items-center justify-center text-[9px] ${currentHotspotId === 'proc-done' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Done</div>
           </HotspotButton>
+          {isSky && (
+            <>
+              <div className="text-white/50 mt-2 text-[9px]">Blend</div>
+              <HotspotButton id="proc-blend" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="w-full">
+                <div className={`w-full min-h-[44px] h-10 rounded flex items-center justify-between px-2 text-[9px] ${currentHotspotId === 'proc-blend' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${hasBlend ? 'border border-[#34c759]/40' : ''}`}>Normal {hasBlend && '✓'} ▼</div>
+              </HotspotButton>
+              {currentHotspotId === 'proc-blend' && (
+                <div className="p-2 rounded bg-[#454545] border border-white/10 space-y-1">
+                  <div className="text-[8px] text-white/50">Multiply · Overlay · Screen</div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -562,7 +722,7 @@ export default function PearNavigator() {
         {/* Mock app preview - fills remaining space */}
         <div className="flex-1 min-w-0 min-h-0 flex flex-col">
           <div className="flex-1 min-h-0 relative bg-[#3a3a3a] rounded-xl border border-white/15 overflow-hidden">
-            {MockComponent && <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={handleNext} showHighlight={phase === 'steps' && showHighlight} {...(phase === 'steps' ? { stepIdx } : {})} />}
+            {MockComponent && <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={handleNext} showHighlight={phase === 'steps' && showHighlight} {...(phase === 'steps' ? { stepIdx } : {})} {...(taskId ? { taskId } : {})} />}
           </div>
         </div>
       </div>

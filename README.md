@@ -351,8 +351,9 @@ Running log of project work. Update this section when making significant changes
 - **Chwazi**: Touchscreen-only
 - **Home**: TMR + 1 Sentence top 2 cards; uniform card height; "← Home" standardized
 - **TMR**: Brain emoji → speaker (🔊) on page title and game chip; removed Run on Web info box
-- **Pear Navigator**: PearPad-only; 3 tasks (Procreate brush, Notion DB, Figma variants); removed Photoshop/Lightroom; robust overlay + 44px touch targets for demo video (MS&E 165)
-- **Pear Navigator**: Drill-down options when buttons pressed (Brush Library, Shape/Grain, Dynamics sliders; Notion props/linked/filter; Figma property/variants/swap); active ring + checkmarks; stronger press feedback
+- **Pear Navigator**: PearPad-only; 5 tasks (Procreate brush, Paint textured sky, Notion DB, Figma variants, Create mindmap); removed Photoshop/Lightroom; robust overlay + 44px touch targets for demo video (MS&E 165)
+- **Pear Navigator**: Drill-down options when buttons pressed; active ring + checkmarks; stronger press feedback
+- **Pear Navigator**: Paint textured sky (10 steps)—color picker, layers, canvas stroke, blend mode, export; Create mindmap (8 steps)—central frame, branches, connectors, auto layout, style
 
 ## 📋 README Maintenance Guidelines
 
