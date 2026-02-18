@@ -1,14 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback } from 'react'
 
 type Step = {
   title: string
   desc: string
   hint?: string
-  hintMac?: string
-  hintWin?: string
   highlight: { x: number; y: number; w: number; h: number }
 }
 
@@ -18,19 +16,6 @@ type Task = {
   mock: 'photoshop' | 'lightroom' | 'figma' | 'procreate' | 'notion'
 }
 
-function isMac(): boolean {
-  if (typeof window === 'undefined') return true
-  return /Mac|iPhone|iPad|iPod/.test(navigator.platform) || navigator.userAgent.includes('Mac')
-}
-
-function shortcut(text: string, isMacOS: boolean): string {
-  return text
-    .replace(/\bCmd\b/g, isMacOS ? '⌘' : 'Ctrl')
-    .replace(/\bCtrl\b/g, isMacOS ? '⌘' : 'Ctrl')
-    .replace(/\bAlt\b/g, isMacOS ? '⌥' : 'Alt')
-    .replace(/\bOption\b/g, isMacOS ? '⌥' : 'Alt')
-}
-
 const TASKS: Record<string, Task> = {
   removeBg: {
     app: 'Photoshop',
@@ -38,8 +23,8 @@ const TASKS: Record<string, Task> = {
     steps: [
       {
         title: 'Select the subject',
-        desc: 'Use the Object Selection tool or Quick Selection (W) to select the main subject. Click and drag around the object.',
-        hint: 'Hold Alt and click to subtract from selection',
+        desc: 'Tap the Object Selection or Quick Selection tool. Tap and drag around the main subject.',
+        hint: 'Tap and hold another area to subtract from selection',
         highlight: { x: 24, y: 52, w: 100, h: 32 },
       },
       {
@@ -50,15 +35,14 @@ const TASKS: Record<string, Task> = {
       },
       {
         title: 'Create layer mask',
-        desc: 'With the selection active, click the Add Layer Mask icon at the bottom of the Layers panel.',
+        desc: 'With the selection active, tap the Add Layer Mask icon at the bottom of the Layers panel.',
         hint: 'The mask hides the background, revealing transparency',
         highlight: { x: 520, y: 220, w: 70, h: 40 },
       },
       {
         title: 'Verify and export',
-        desc: 'Toggle the background layer visibility to check the result. Use File > Export > Export As for PNG with transparency.',
-        hintMac: '⌘+E for quick export',
-        hintWin: 'Ctrl+E for quick export',
+        desc: 'Toggle the background layer visibility to check the result. Tap File > Export > Export As for PNG with transparency.',
+        hint: 'Tap the File menu, then Export',
         highlight: { x: 24, y: 14, w: 50, h: 28 },
       },
     ],
@@ -69,7 +53,7 @@ const TASKS: Record<string, Task> = {
     steps: [
       {
         title: 'Open the Develop module',
-        desc: 'Select your photo and switch to the Develop module (or press D).',
+        desc: 'Select your photo and tap the Develop tab at the top.',
         hint: 'Develop is where all editing happens',
         highlight: { x: 200, y: 14, w: 100, h: 28 },
       },
@@ -81,7 +65,7 @@ const TASKS: Record<string, Task> = {
       },
       {
         title: 'Apply a preset (optional)',
-        desc: 'In the left panel, browse Presets. Click one to preview—adjust Strength if needed.',
+        desc: 'In the left panel, browse Presets. Tap one to preview—adjust Strength if needed.',
         hint: 'Presets are a quick starting point',
         highlight: { x: 24, y: 70, w: 110, h: 36 },
       },
@@ -99,13 +83,13 @@ const TASKS: Record<string, Task> = {
     steps: [
       {
         title: 'Select the frame or layer',
-        desc: 'Click the frame, component, or layer you want to export in the canvas or Layers panel.',
+        desc: 'Tap the frame, component, or layer you want to export in the canvas or Layers panel.',
         hint: 'Frames export as whole images',
         highlight: { x: 180, y: 140, w: 200, h: 100 },
       },
       {
         title: 'Open export settings',
-        desc: 'In the right panel, scroll to the Export section. Click the + button to add an export format.',
+        desc: 'In the right panel, scroll to the Export section. Tap the + button to add an export format.',
         hint: 'You can add multiple export settings',
         highlight: { x: 520, y: 160, w: 70, h: 32 },
       },
@@ -117,9 +101,8 @@ const TASKS: Record<string, Task> = {
       },
       {
         title: 'Export',
-        desc: 'Click Export [name] or use the bulk Export button at the bottom. Choose save location.',
-        hintMac: '⌘+E for quick export',
-        hintWin: 'Ctrl+E for quick export',
+        desc: 'Tap Export [name] or the bulk Export button at the bottom. Choose save location.',
+        hint: 'Tap Export to download',
         highlight: { x: 510, y: 260, w: 80, h: 36 },
       },
     ],
@@ -148,7 +131,7 @@ const TASKS: Record<string, Task> = {
       },
       {
         title: 'Set dynamics',
-        desc: 'Open the Dynamics section. Adjust Size, Opacity, and Flow for pressure response.',
+        desc: 'Tap the Dynamics section. Adjust Size, Opacity, and Flow for pressure response.',
         hint: 'Apple Pencil pressure affects stroke',
         highlight: { x: 520, y: 160, w: 80, h: 32 },
       },
@@ -208,9 +191,8 @@ const TASKS: Record<string, Task> = {
       },
       {
         title: 'Create component',
-        desc: 'Tap the component icon in the toolbar or use the shortcut.',
-        hintMac: '⌘+Option+K to create component',
-        hintWin: 'Ctrl+Alt+K to create component',
+        desc: 'Tap the component icon in the toolbar.',
+        hint: 'The component icon turns the selection into a reusable component',
         highlight: { x: 260, y: 14, w: 100, h: 36 },
       },
       {
@@ -412,15 +394,9 @@ export default function PearNavigator() {
   const [stepIdx, setStepIdx] = useState(0)
   const [showHighlight, setShowHighlight] = useState(false)
 
-  const isMacOS = useMemo(isMac, [])
-
   const task = taskId ? TASKS[taskId] : null
   const step = task ? task.steps[stepIdx] : null
   const isLastStep = task && stepIdx === task.steps.length - 1
-
-  const stepHint = step
-    ? (isMacOS && step.hintMac ? step.hintMac : !isMacOS && step.hintWin ? step.hintWin : step.hint ?? '')
-    : ''
 
   const handleStart = useCallback(() => {
     if (!taskId) return
@@ -450,23 +426,20 @@ export default function PearNavigator() {
   const MockComponent = task ? MOCK_COMPONENTS[task.mock] : null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0d0d0d] via-[#1a1a1a] to-[#0d0d0d] p-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
+    <div className="h-screen w-screen overflow-hidden bg-gradient-to-br from-[#0d0d0d] via-[#1a1a1a] to-[#0d0d0d] flex flex-col">
+      <div className="flex-none flex items-center justify-between px-4 py-3">
           <Link href="/" className="text-white hover:text-gray-300 text-2xl font-bold">
             ← Home
           </Link>
           <span className="text-lg font-semibold text-white">
             Pear<span className="text-[#34c759]">Navigator</span>
           </span>
-          <span className="text-xs text-gray-500">
-            {isMacOS ? 'Mac' : 'Win'} shortcuts
-          </span>
-        </div>
+          <span className="text-xs text-gray-500">iPad / tablet</span>
+      </div>
 
-        <div className="flex flex-col xl:flex-row gap-6 items-start">
-          {/* Guide panel */}
-          <div className="flex-1 w-full max-w-md bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden shrink-0">
+      <div className="flex-1 flex flex-col lg:flex-row gap-4 px-4 pb-4 min-h-0 overflow-hidden">
+        {/* Guide panel */}
+        <div className="flex-none lg:w-96 xl:w-[420px] bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-y-auto shrink-0">
             <div className="p-6">
               {phase === 'task' && (
                 <>
@@ -509,9 +482,16 @@ export default function PearNavigator() {
                   </p>
                   <h2 className="text-xl font-semibold text-white mb-2">{step.title}</h2>
                   <p className="text-gray-400 text-sm mb-4">{step.desc}</p>
-                  <div className="mb-4 p-3 rounded-lg bg-[#34c759]/15 border border-[#34c759]/30 text-[#34c759] text-sm">
-                    {shortcut(stepHint, isMacOS)}
-                  </div>
+                  {step.hint && (
+                    <div className="mb-4 p-3 rounded-lg bg-[#34c759]/15 border border-[#34c759]/30 text-[#34c759] text-sm">
+                      {step.hint}
+                    </div>
+                  )}
+                  {showHighlight && (
+                    <p className="mb-3 text-sm text-gray-400">
+                      Tap the red circle in the app to complete this step
+                    </p>
+                  )}
                   <div className="flex gap-2">
                     <button
                       onClick={() => setShowHighlight((h) => !h)}
@@ -545,27 +525,29 @@ export default function PearNavigator() {
                 </div>
               )}
             </div>
-          </div>
+        </div>
 
-          {/* Mock app preview - larger, with labeled elements */}
-          <div className="flex-1 min-w-0 w-full xl:min-w-[600px]">
-            <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">
-              {phase === 'task' ? 'Your creative app' : task?.app ?? 'Your creative app'}
-            </p>
-            <div className="relative w-full aspect-[3/2] max-w-[640px] min-h-[320px] bg-[#2d2d2d] rounded-xl border border-white/10 overflow-hidden">
-              {MockComponent && <MockComponent />}
-              {phase === 'steps' && showHighlight && step && (
-                <div
-                  className="absolute pointer-events-none rounded-full border-[3px] border-red-500 z-10"
-                  style={{
-                    left: `${(step.highlight.x / 600) * 100}%`,
-                    top: `${(step.highlight.y / 400) * 100}%`,
-                    width: `${(step.highlight.w / 600) * 100}%`,
-                    height: `${(step.highlight.h / 400) * 100}%`,
-                  }}
-                />
-              )}
-            </div>
+        {/* Mock app preview - fills remaining space */}
+        <div className="flex-1 min-w-0 min-h-0 flex flex-col">
+          <p className="flex-none text-xs text-gray-500 uppercase tracking-wider mb-2">
+            {phase === 'task' ? 'Your creative app' : task?.app ?? 'Your creative app'}
+          </p>
+          <div className="flex-1 min-h-0 relative bg-[#2d2d2d] rounded-xl border border-white/10 overflow-hidden">
+            {MockComponent && <MockComponent />}
+            {phase === 'steps' && showHighlight && step && (
+              <button
+                type="button"
+                onClick={handleNext}
+                className="absolute rounded-full border-[3px] border-red-500 z-10 cursor-pointer hover:border-red-400 hover:bg-red-500/10 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                style={{
+                  left: `${(step.highlight.x / 600) * 100}%`,
+                  top: `${(step.highlight.y / 400) * 100}%`,
+                  width: `${(step.highlight.w / 600) * 100}%`,
+                  height: `${(step.highlight.h / 400) * 100}%`,
+                }}
+                aria-label={`Tap to complete: ${step.title}`}
+              />
+            )}
           </div>
         </div>
       </div>
