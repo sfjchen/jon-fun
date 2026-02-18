@@ -242,9 +242,9 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
   const hasText = isMindmap && stepIdx >= 2
   const hasComponent = isMindmap && stepIdx >= 3
   const instanceCount = isMindmap && stepIdx >= 4 ? Math.min(stepIdx - 3, 9) : 0
-  const hasConnectors = isMindmap && stepIdx >= 13
+  const hasConnectors = isMindmap && stepIdx >= 14
   const hasAutoLayout = isMindmap && stepIdx >= 14
-  const hasStyle = isMindmap && stepIdx >= 15
+  const hasStyle = isMindmap && stepIdx >= 16
   // Radial positions for 9 nodes (40° intervals from top); Auto layout uses tighter radius
   const RADIAL_POS = hasAutoLayout
     ? [
@@ -272,8 +272,15 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
           <HotspotButton id="fig-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="flex-1 min-w-0 flex flex-col min-h-0">
             <div className="flex-1 p-6 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center overflow-auto">
               <div className="relative w-full h-full min-h-[200px] border-2 border-dashed rounded-lg border-white/20 flex items-center justify-center">
+                {hasConnectors && !hasStyle && instanceCount > 0 && (
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    {RADIAL_SVG.slice(0, instanceCount).map(([x2, y2], i) => (
+                      <line key={i} x1="50" y1="50" x2={x2} y2={y2} stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
+                    ))}
+                  </svg>
+                )}
                 {hasCentralFrame && !hasStyle && (
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
                     <HotspotButton id="fig-text" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
                       <div className={`rounded-full px-6 py-3 ${hasStyle ? 'px-16 py-8 text-xl' : 'px-6 py-3 text-base'} ${hasComponent ? 'border-2 border-[#8b5cf6] bg-[#8b5cf6]/20' : 'border border-white/30 bg-white/10'} ${hasStyle ? 'bg-[#34c759]/20 border-2 border-[#34c759]/60' : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`}>
                         {hasText && <span className="text-white font-medium">{hasStyle ? 'Product Mgmt' : 'Project'}</span>}
@@ -287,18 +294,11 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
                   return (
                     <>
                       {Array.from({ length: instanceCount }).map((_, i) => (
-                        <div key={i} className="absolute rounded-full px-5 py-2.5 text-sm bg-white/10 border border-white/20 whitespace-nowrap -translate-x-1/2 -translate-y-1/2" style={{ left: RADIAL_POS[i]!.left, top: RADIAL_POS[i]!.top }}>{labels[i]}</div>
+                        <div key={i} className="absolute rounded-full px-5 py-2.5 text-sm bg-white/10 border border-white/20 whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10" style={{ left: RADIAL_POS[i]!.left, top: RADIAL_POS[i]!.top }}>{labels[i]}</div>
                       ))}
                     </>
                   )
                 })()}
-                {hasConnectors && !hasStyle && instanceCount > 0 && (
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    {RADIAL_SVG.slice(0, instanceCount).map(([x2, y2], i) => (
-                      <line key={i} x1="50" y1="50" x2={x2} y2={y2} stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
-                    ))}
-                  </svg>
-                )}
                 {hasStyle && (() => {
                   const pmLabels = ['OKR', 'KPI', 'MVP', 'ROI', 'PRD', 'GTM', 'Agile', 'Roadmap', 'Jira']
                   const pmStyles = [
@@ -314,6 +314,11 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
                   ]
                   return (
                     <>
+                      <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        {RADIAL_SVG.map(([x2, y2], i) => (
+                          <line key={i} x1="50" y1="50" x2={x2} y2={y2} stroke="rgba(255,255,255,0.35)" strokeWidth="0.5" />
+                        ))}
+                      </svg>
                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
                         <div className="rounded-full px-8 py-4 bg-[#34c759]/25 border-2 border-[#34c759]/60 text-white font-bold text-xl">Product Mgmt</div>
                       </div>
@@ -322,11 +327,6 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
                           <span className="rounded-full px-4 py-2" style={{ backgroundColor: pmStyles[i]!.bg, border: `2px solid ${pmStyles[i]!.border}` }}>{t}</span>
                         </div>
                       ))}
-                      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-                        {RADIAL_SVG.map(([x2, y2], i) => (
-                          <line key={i} x1="50" y1="50" x2={x2} y2={y2} stroke="rgba(255,255,255,0.35)" strokeWidth="0.5" />
-                        ))}
-                      </svg>
                     </>
                   )
                 })()}
