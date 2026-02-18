@@ -282,7 +282,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
                 {hasCentralFrame && !hasStyle && (
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
                     <HotspotButton id="fig-text" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-                      <div className={`rounded-full px-6 py-3 ${hasStyle ? 'px-16 py-8 text-xl' : 'px-6 py-3 text-base'} ${hasComponent ? 'border-2 border-[#8b5cf6] bg-[#8b5cf6]/20' : 'border border-white/30 bg-white/10'} ${hasStyle ? 'bg-[#34c759]/20 border-2 border-[#34c759]/60' : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`}>
+                      <div className={`rounded-full px-6 py-3 ${hasStyle ? 'px-16 py-8 text-xl' : 'px-6 py-3 text-base'} ${hasComponent ? 'border-2 border-[#8b5cf6] bg-[#4c1d95]' : 'border border-white/30 bg-[#4a4a4a]'} ${hasStyle ? 'bg-[#1a5c2e] border-2 border-[#34c759]/60' : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`}>
                         {hasText && <span className="text-white font-medium">{hasStyle ? 'Product Mgmt' : 'Project'}</span>}
                         {!hasText && <span className="text-white/40">Frame</span>}
                       </div>
@@ -294,7 +294,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
                   return (
                     <>
                       {Array.from({ length: instanceCount }).map((_, i) => (
-                        <div key={i} className="absolute rounded-full px-5 py-2.5 text-sm bg-white/10 border border-white/20 whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10" style={{ left: RADIAL_POS[i]!.left, top: RADIAL_POS[i]!.top }}>{labels[i]}</div>
+                        <div key={i} className="absolute rounded-full px-5 py-2.5 text-sm bg-[#4a4a4a] border border-white/25 whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10" style={{ left: RADIAL_POS[i]!.left, top: RADIAL_POS[i]!.top }}>{labels[i]}</div>
                       ))}
                     </>
                   )
@@ -302,15 +302,15 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
                 {hasStyle && (() => {
                   const pmLabels = ['OKR', 'KPI', 'MVP', 'ROI', 'PRD', 'GTM', 'Agile', 'Roadmap', 'Jira']
                   const pmStyles = [
-                    { bg: 'rgba(96,165,250,0.25)', border: 'rgba(96,165,250,0.6)' },
-                    { bg: 'rgba(96,165,250,0.25)', border: 'rgba(96,165,250,0.6)' },
-                    { bg: 'rgba(96,165,250,0.25)', border: 'rgba(96,165,250,0.6)' },
-                    { bg: 'rgba(96,165,250,0.25)', border: 'rgba(96,165,250,0.6)' },
-                    { bg: 'rgba(96,165,250,0.25)', border: 'rgba(96,165,250,0.6)' },
-                    { bg: 'rgba(96,165,250,0.25)', border: 'rgba(96,165,250,0.6)' },
-                    { bg: 'rgba(244,114,182,0.25)', border: 'rgba(244,114,182,0.6)' },
-                    { bg: 'rgba(52,211,153,0.25)', border: 'rgba(52,211,153,0.6)' },
-                    { bg: 'rgba(251,191,36,0.25)', border: 'rgba(251,191,36,0.6)' },
+                    { bg: 'rgba(59,130,246,0.95)', border: 'rgba(96,165,250,0.8)' },
+                    { bg: 'rgba(59,130,246,0.95)', border: 'rgba(96,165,250,0.8)' },
+                    { bg: 'rgba(59,130,246,0.95)', border: 'rgba(96,165,250,0.8)' },
+                    { bg: 'rgba(59,130,246,0.95)', border: 'rgba(96,165,250,0.8)' },
+                    { bg: 'rgba(59,130,246,0.95)', border: 'rgba(96,165,250,0.8)' },
+                    { bg: 'rgba(59,130,246,0.95)', border: 'rgba(96,165,250,0.8)' },
+                    { bg: 'rgba(219,39,119,0.95)', border: 'rgba(244,114,182,0.8)' },
+                    { bg: 'rgba(20,184,166,0.95)', border: 'rgba(52,211,153,0.8)' },
+                    { bg: 'rgba(217,119,6,0.95)', border: 'rgba(251,191,36,0.8)' },
                   ]
                   return (
                     <>
@@ -320,7 +320,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
                         ))}
                       </svg>
                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-                        <div className="rounded-full px-8 py-4 bg-[#34c759]/25 border-2 border-[#34c759]/60 text-white font-bold text-xl">Product Mgmt</div>
+                        <div className="rounded-full px-8 py-4 bg-[#1a5c2e] border-2 border-[#34c759]/60 text-white font-bold text-xl">Product Mgmt</div>
                       </div>
                       {pmLabels.map((t, i) => (
                         <div key={t} className="absolute rounded-full px-5 py-2.5 text-sm font-medium text-white whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10" style={{ left: RADIAL_POS[i]!.left, top: RADIAL_POS[i]!.top }}>
