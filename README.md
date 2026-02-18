@@ -352,6 +352,7 @@ Running log of project work. Update this section when making significant changes
 - **Home**: TMR + 1 Sentence top 2 cards; uniform card height; "← Home" standardized
 - **TMR**: Brain emoji → speaker (🔊) on page title and game chip; removed Run on Web info box
 - **Pear Navigator**: PearPad-only; 3 tasks (Procreate brush, Notion DB, Figma variants); removed Photoshop/Lightroom; robust overlay + 44px touch targets for demo video (MS&E 165)
+- **Pear Navigator**: Drill-down options when buttons pressed (Brush Library, Shape/Grain, Dynamics sliders; Notion props/linked/filter; Figma property/variants/swap); active ring + checkmarks; stronger press feedback
 
 ## 📋 README Maintenance Guidelines
 

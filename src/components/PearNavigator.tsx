@@ -171,7 +171,7 @@ function HotspotButton({
     <button
       type="button"
       onClick={() => isTarget && onStepComplete()}
-      className={`relative cursor-pointer touch-manipulation active:scale-95 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#252525] ${className ?? ''}`}
+      className={`relative cursor-pointer touch-manipulation active:scale-[0.97] active:brightness-110 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#252525] ${className ?? ''}`}
       aria-pressed={isTarget}
     >
       {children}
@@ -215,18 +215,39 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
         </HotspotButton>
         <div className="w-36 bg-[#383838] border-l border-white/15 p-3 shrink-0 flex flex-col gap-2">
           <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-component-tab' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Create component</div>
+            <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-component-tab' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Create component</div>
           </HotspotButton>
+          {currentHotspotId === 'fig-component-tab' && (
+            <div className="p-2 rounded bg-[#454545] border border-white/10 text-[9px] text-white/70">Creates main component</div>
+          )}
           <div className="text-white/50 mb-1 mt-2">Component</div>
           <HotspotButton id="fig-component-add" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-component-add' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Property</div>
+            <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-component-add' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Property</div>
           </HotspotButton>
+          {currentHotspotId === 'fig-component-add' && (
+            <div className="p-2 rounded bg-[#454545] border border-white/10 space-y-1">
+              <div className="text-white/70 text-[9px]">Add property:</div>
+              <div className="flex gap-1"><div className="px-2 py-1 rounded bg-[#34c759]/20 text-[#34c759] text-[8px]">State</div><div className="px-2 py-1 rounded bg-white/10 text-white/50 text-[8px]">Size</div></div>
+            </div>
+          )}
           <HotspotButton id="fig-variants" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-variants' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Variants</div>
+            <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-variants' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Variants</div>
           </HotspotButton>
+          {currentHotspotId === 'fig-variants' && (
+            <div className="p-2 rounded bg-[#454545] border border-white/10 space-y-1">
+              <div className="text-white/70 text-[9px]">Values:</div>
+              <div className="flex flex-wrap gap-1"><span className="px-2 py-0.5 rounded bg-[#34c759]/20 text-[#34c759] text-[8px]">Default</span><span className="px-2 py-0.5 rounded bg-white/10 text-[8px]">Hover</span><span className="px-2 py-0.5 rounded bg-white/10 text-[8px]">Pressed</span></div>
+            </div>
+          )}
           <HotspotButton id="fig-swap" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-10 rounded mt-2 flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-swap' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-white/5 text-white/70'}`}>Swap</div>
+            <div className={`min-h-[44px] h-10 rounded mt-2 flex items-center justify-between px-2 text-[10px] ${currentHotspotId === 'fig-swap' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-white/5 text-white/70'}`}>Swap <span className="text-[8px]">▼</span></div>
           </HotspotButton>
+          {currentHotspotId === 'fig-swap' && (
+            <div className="p-2 rounded bg-[#454545] border border-white/10">
+              <div className="text-[9px] text-white/70">State: Default ▼</div>
+              <div className="mt-1 text-[8px] text-white/50">Hover · Pressed</div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -237,24 +258,41 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
   const brushActive = stepIdx >= 1
   const hasNewBrush = stepIdx >= 2
   const inBrushStudio = stepIdx >= 2
+  const shapeDone = stepIdx >= 3
+  const dynamicsDone = stepIdx >= 4
   const brushSaved = stepIdx >= 5
   return (
     <div className="absolute inset-0 flex flex-col text-xs">
       <div className="h-10 bg-[#2e2e2e] border-b border-white/15 flex items-center justify-center gap-8 px-4 shrink-0">
         <span className="text-white/80">Actions</span>
         <HotspotButton id="proc-brush" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-          <span className={`${brushActive ? 'text-[#34c759] font-medium' : 'text-white/80'}`}>Brush</span>
+          <span className={`px-2 py-1 rounded ${currentHotspotId === 'proc-brush' ? 'ring-2 ring-[#34c759]/50' : ''} ${brushActive ? 'text-[#34c759] font-medium' : 'text-white/80'}`}>Brush</span>
         </HotspotButton>
         <span className="text-white/80">Eraser</span>
         <span className="text-white/80">Layers</span>
       </div>
+      {currentHotspotId === 'proc-brush' && (
+        <div className="bg-[#454545] border-b border-white/10 px-3 py-2 flex gap-2 shrink-0">
+          <span className="text-white/60 text-[9px]">Brush Library:</span>
+          <div className="flex gap-1 rounded bg-white/10 p-1">
+            <div className="w-8 h-8 rounded-full bg-[#34c759]/40 border border-[#34c759]/60" />
+            <div className="w-8 h-8 rounded-full bg-white/20" />
+            <div className="w-8 h-8 rounded-full bg-white/20" />
+          </div>
+        </div>
+      )}
       <div className="flex flex-1 min-h-0">
         <div className="w-24 bg-[#383838] border-r border-white/15 p-2 shrink-0">
           <HotspotButton id="proc-new" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-11 rounded mb-2 text-[9px] flex items-center justify-center ${currentHotspotId === 'proc-new' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ New</div>
+            <div className={`min-h-[44px] h-11 rounded mb-2 text-[9px] flex items-center justify-center ${currentHotspotId === 'proc-new' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ New</div>
           </HotspotButton>
-          <div className="h-10 bg-white/10 rounded mb-2" />
-          <div className="h-10 bg-white/10 rounded" />
+          {currentHotspotId === 'proc-new' && (
+            <div className="mb-2 p-2 rounded bg-[#454545] border border-white/10">
+              <div className="text-[#34c759] text-[9px]">✓ Create new brush</div>
+            </div>
+          )}
+          <div className={`h-10 rounded mb-2 flex items-center justify-center text-[8px] ${hasNewBrush ? 'bg-white/15 text-[#34c759]/80' : 'bg-white/10 text-white/40'}`}>{hasNewBrush ? '✓ Custom' : 'Brush 1'}</div>
+          <div className="h-10 bg-white/10 rounded flex items-center justify-center text-[8px] text-white/40">Brush 2</div>
         </div>
         <div className={`flex-1 p-4 min-w-0 transition-all ${brushActive ? 'bg-[#404040]' : 'bg-[#404040]'}`}>
           <div className={`w-full h-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 text-sm transition-all relative ${brushActive ? 'border-white/30' : 'border-white/20'}`}>
@@ -268,14 +306,27 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
         <div className="w-28 bg-[#383838] border-l border-white/15 p-2 shrink-0">
           <div className="text-white/50 mb-1">Brush Studio</div>
           <HotspotButton id="proc-shape" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-10 rounded mb-2 text-[9px] flex items-center px-2 ${currentHotspotId === 'proc-shape' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Shape</div>
+            <div className={`min-h-[44px] h-10 rounded mb-2 text-[9px] flex items-center justify-between px-2 ${currentHotspotId === 'proc-shape' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${shapeDone ? 'border border-[#34c759]/40' : ''}`}>Shape {shapeDone && '✓'}</div>
           </HotspotButton>
+          {currentHotspotId === 'proc-shape' && (
+            <div className="mb-2 p-2 rounded bg-[#454545] border border-white/10 space-y-1">
+              <div className="text-white/70 text-[8px]">Grain</div>
+              <div className="h-6 bg-white/10 rounded" />
+            </div>
+          )}
           <HotspotButton id="proc-dynamics" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-10 rounded mb-2 text-[9px] flex items-center px-2 ${currentHotspotId === 'proc-dynamics' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Dynamics</div>
+            <div className={`min-h-[44px] h-10 rounded mb-2 text-[9px] flex items-center justify-between px-2 ${currentHotspotId === 'proc-dynamics' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${dynamicsDone ? 'border border-[#34c759]/40' : ''}`}>Dynamics {dynamicsDone && '✓'}</div>
           </HotspotButton>
-          <div className="h-8 bg-white/5 rounded mb-4" />
+          {currentHotspotId === 'proc-dynamics' && (
+            <div className="mb-2 p-2 rounded bg-[#454545] border border-white/10 space-y-1">
+              <div className="flex justify-between text-[8px] text-white/40"><span>Size</span><span>80%</span></div>
+              <div className="h-1 bg-white/20 rounded-full" />
+              <div className="flex justify-between text-[8px] text-white/40"><span>Opacity</span><span>100%</span></div>
+              <div className="h-1 bg-white/20 rounded-full" />
+            </div>
+          )}
           <HotspotButton id="proc-done" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-11 rounded flex items-center justify-center text-[9px] ${currentHotspotId === 'proc-done' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Done</div>
+            <div className={`min-h-[44px] h-11 rounded flex items-center justify-center text-[9px] ${currentHotspotId === 'proc-done' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Done</div>
           </HotspotButton>
         </div>
       </div>
@@ -286,6 +337,9 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
 function NotionMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 0 }: MockProps) {
   const hasPage = stepIdx >= 1
   const hasDb = stepIdx >= 2
+  const hasProps = stepIdx >= 3
+  const hasLinked = stepIdx >= 4
+  const hasFilter = stepIdx >= 5
   return (
     <div className="absolute inset-0 flex flex-col text-xs">
       <div className="h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-3 shrink-0">
@@ -296,15 +350,29 @@ function NotionMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx =
       <div className="flex flex-1 min-h-0">
         <div className="w-28 bg-[#383838] border-r border-white/15 p-2 shrink-0">
           <HotspotButton id="notion-new" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-10 rounded mb-2 text-[9px] flex items-center px-2 ${currentHotspotId === 'notion-new' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Add</div>
+            <div className={`min-h-[44px] h-10 rounded mb-2 text-[9px] flex items-center px-2 ${currentHotspotId === 'notion-new' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Add</div>
           </HotspotButton>
+          {currentHotspotId === 'notion-new' && (
+            <div className="mb-2 p-2 rounded bg-[#454545] border border-white/10 space-y-1">
+              <div className="text-[#34c759] text-[9px]">New page</div>
+              <div className="text-white/50 text-[8px]">Page · Database</div>
+            </div>
+          )}
           <div className="h-8 bg-white/10 rounded mb-2" />
           <div className="h-8 bg-white/10 rounded" />
         </div>
         <div className="flex-1 p-4 bg-[#404040] min-w-0">
           <HotspotButton id="notion-db" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-10 rounded mb-2 w-36 ${currentHotspotId === 'notion-db' ? 'bg-[#34c759]/30' : 'bg-[#34c759]/20'}`} />
+            <div className={`min-h-[44px] h-10 rounded mb-2 w-36 flex items-center px-2 ${currentHotspotId === 'notion-db' ? 'bg-[#34c759]/30 ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20'}`}>
+              {hasDb ? <span className="text-[#34c759] text-[9px]">✓ Table</span> : <span className="text-white/40 text-[9px]">/table</span>}
+            </div>
           </HotspotButton>
+          {currentHotspotId === 'notion-db' && (
+            <div className="mb-2 p-2 rounded bg-[#454545] border border-white/10 space-y-1">
+              <div className="text-white/70 text-[9px]">Table – Inline</div>
+              <div className="text-white/50 text-[8px]">Linked database</div>
+            </div>
+          )}
           {hasDb && <div className="h-20 bg-white/10 rounded mb-2 flex gap-2 p-2"><div className="flex-1 h-4 bg-white/20 rounded" /><div className="flex-1 h-4 bg-white/20 rounded" /></div>}
           <div className="text-white/50 text-[10px]">/table or /database</div>
         </div>
@@ -312,17 +380,35 @@ function NotionMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx =
           <div>
             <div className="text-white/50 mb-2">Properties</div>
             <HotspotButton id="notion-props" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[44px] h-9 rounded flex items-center px-2 text-[9px] ${currentHotspotId === 'notion-props' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Add</div>
+              <div className={`min-h-[44px] h-9 rounded flex items-center justify-between px-2 text-[9px] ${currentHotspotId === 'notion-props' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${hasProps ? 'border border-[#34c759]/40' : ''}`}>+ Add {hasProps && '✓'}</div>
             </HotspotButton>
+            {currentHotspotId === 'notion-props' && (
+              <div className="mt-1 p-2 rounded bg-[#454545] border border-white/10 space-y-1">
+                <div className="text-white/70 text-[9px]">Property type:</div>
+                <div className="flex flex-wrap gap-1"><span className="px-2 py-0.5 rounded bg-[#34c759]/20 text-[#34c759] text-[8px]">Status</span><span className="px-2 py-0.5 rounded bg-white/10 text-[8px]">Date</span><span className="px-2 py-0.5 rounded bg-white/10 text-[8px]">Person</span></div>
+              </div>
+            )}
           </div>
           <div className="flex flex-col gap-2">
             <div className="text-white/50">View</div>
             <HotspotButton id="notion-linked" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[44px] h-9 rounded flex items-center px-2 text-[9px] ${currentHotspotId === 'notion-linked' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Linked</div>
+              <div className={`min-h-[44px] h-9 rounded flex items-center justify-between px-2 text-[9px] ${currentHotspotId === 'notion-linked' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${hasLinked ? 'border border-[#34c759]/40' : ''}`}>Linked {hasLinked && '✓'}</div>
             </HotspotButton>
+            {currentHotspotId === 'notion-linked' && (
+              <div className="p-2 rounded bg-[#454545] border border-white/10 space-y-1">
+                <div className="text-white/70 text-[9px]">View type:</div>
+                <div className="flex gap-1"><span className="px-2 py-0.5 rounded bg-[#34c759]/20 text-[#34c759] text-[8px]">Board</span><span className="px-2 py-0.5 rounded bg-white/10 text-[8px]">Calendar</span></div>
+              </div>
+            )}
             <HotspotButton id="notion-filter" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[44px] h-9 rounded flex items-center px-2 text-[9px] ${currentHotspotId === 'notion-filter' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Filter</div>
+              <div className={`min-h-[44px] h-9 rounded flex items-center justify-between px-2 text-[9px] ${currentHotspotId === 'notion-filter' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${hasFilter ? 'border border-[#34c759]/40' : ''}`}>Filter {hasFilter && '✓'}</div>
             </HotspotButton>
+            {currentHotspotId === 'notion-filter' && (
+              <div className="p-2 rounded bg-[#454545] border border-white/10 space-y-1">
+                <div className="text-white/70 text-[9px]">Add condition:</div>
+                <div className="text-[8px] text-white/50">Status = In progress</div>
+              </div>
+            )}
           </div>
         </div>
       </div>
