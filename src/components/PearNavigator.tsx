@@ -243,7 +243,23 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
   const hasComponent = isMindmap && stepIdx >= 3
   const instanceCount = isMindmap && stepIdx >= 4 ? Math.min(stepIdx - 3, 9) : 0
   const hasConnectors = isMindmap && stepIdx >= 13
+  const hasAutoLayout = isMindmap && stepIdx >= 14
   const hasStyle = isMindmap && stepIdx >= 15
+  // Radial positions for 9 nodes (40° intervals from top); Auto layout uses tighter radius
+  const RADIAL_POS = hasAutoLayout
+    ? [
+        { left: '50%', top: '18%' }, { left: '71%', top: '25%' }, { left: '83%', top: '45%' },
+        { left: '79%', top: '67%' }, { left: '61%', top: '81%' }, { left: '39%', top: '81%' },
+        { left: '21%', top: '67%' }, { left: '17%', top: '45%' }, { left: '29%', top: '25%' },
+      ]
+    : [
+        { left: '50%', top: '15%' }, { left: '72.5%', top: '23%' }, { left: '84.5%', top: '44%' },
+        { left: '80.5%', top: '67.5%' }, { left: '62%', top: '82.5%' }, { left: '38%', top: '82.5%' },
+        { left: '19.5%', top: '67.5%' }, { left: '15.5%', top: '44%' }, { left: '27.5%', top: '23%' },
+      ]
+  const RADIAL_SVG = hasAutoLayout
+    ? [[50, 18], [71, 25], [83, 45], [79, 67], [61, 81], [39, 81], [21, 67], [17, 45], [29, 25]]
+    : [[50, 15], [72.5, 23], [84.5, 44], [80.5, 67.5], [62, 82.5], [38, 82.5], [19.5, 67.5], [15.5, 44], [27.5, 23]]
   if (isMindmap) {
     return (
       <div className="absolute inset-0 flex flex-col text-sm">
@@ -256,7 +272,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
           <HotspotButton id="fig-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="flex-1 min-w-0 flex flex-col min-h-0">
             <div className="flex-1 p-6 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center overflow-auto">
               <div className="relative w-full h-full min-h-[200px] border-2 border-dashed rounded-lg border-white/20 flex items-center justify-center">
-                {hasCentralFrame && (
+                {hasCentralFrame && !hasStyle && (
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                     <HotspotButton id="fig-text" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
                       <div className={`rounded-full px-6 py-3 ${hasStyle ? 'px-16 py-8 text-xl' : 'px-6 py-3 text-base'} ${hasComponent ? 'border-2 border-[#8b5cf6] bg-[#8b5cf6]/20' : 'border border-white/30 bg-white/10'} ${hasStyle ? 'bg-[#34c759]/20 border-2 border-[#34c759]/60' : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`}>
@@ -268,83 +284,52 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
                 )}
                 {instanceCount > 0 && !hasStyle && (() => {
                   const labels = ['Idea A', 'Idea B', 'Idea C', 'Idea D', 'Idea E', 'Idea F', 'Idea G', 'Idea H', 'Idea I']
-                  const positions: React.CSSProperties[] = [
-                    { bottom: '25%', left: '12%' }, { bottom: '22%', right: '15%' }, { top: '28%', right: '8%' },
-                    { top: '35%', left: '5%' }, { top: '35%', right: '5%' }, { bottom: '35%', left: '8%' },
-                    { bottom: '32%', right: '12%' }, { top: '18%', left: '20%' }, { top: '18%', right: '20%' },
-                  ]
                   return (
                     <>
                       {Array.from({ length: instanceCount }).map((_, i) => (
-                        <div key={i} className="absolute rounded-full px-5 py-2.5 text-sm bg-white/10 border border-white/20 whitespace-nowrap" style={positions[i]}>{labels[i]}</div>
+                        <div key={i} className="absolute rounded-full px-5 py-2.5 text-sm bg-white/10 border border-white/20 whitespace-nowrap -translate-x-1/2 -translate-y-1/2" style={{ left: RADIAL_POS[i]!.left, top: RADIAL_POS[i]!.top }}>{labels[i]}</div>
                       ))}
                     </>
                   )
                 })()}
                 {hasConnectors && !hasStyle && instanceCount > 0 && (
                   <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    {[[22,78],[72,72],[78,28],[12,42],[88,42],[12,68],[72,68],[25,18],[75,18]].slice(0, instanceCount).map(([x2,y2], i) => (
+                    {RADIAL_SVG.slice(0, instanceCount).map(([x2, y2], i) => (
                       <line key={i} x1="50" y1="50" x2={x2} y2={y2} stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
                     ))}
                   </svg>
                 )}
-                {hasStyle && (
-                  <div className="absolute inset-2 flex items-center justify-center p-6 overflow-auto">
-                    <div className="relative w-full max-w-4xl min-h-[360px] grid grid-cols-2 gap-x-12 gap-y-8 items-start">
-                      <div className="col-span-2 flex justify-center mb-4">
-                        <div className="rounded-full px-20 py-8 bg-[#34c759]/25 border-2 border-[#34c759]/60 text-white font-bold text-2xl text-center">Product Mgmt</div>
+                {hasStyle && (() => {
+                  const pmLabels = ['OKR', 'KPI', 'MVP', 'ROI', 'PRD', 'GTM', 'Agile', 'Roadmap', 'Jira']
+                  const pmStyles = [
+                    { bg: 'rgba(96,165,250,0.25)', border: 'rgba(96,165,250,0.6)' },
+                    { bg: 'rgba(96,165,250,0.25)', border: 'rgba(96,165,250,0.6)' },
+                    { bg: 'rgba(96,165,250,0.25)', border: 'rgba(96,165,250,0.6)' },
+                    { bg: 'rgba(96,165,250,0.25)', border: 'rgba(96,165,250,0.6)' },
+                    { bg: 'rgba(96,165,250,0.25)', border: 'rgba(96,165,250,0.6)' },
+                    { bg: 'rgba(96,165,250,0.25)', border: 'rgba(96,165,250,0.6)' },
+                    { bg: 'rgba(244,114,182,0.25)', border: 'rgba(244,114,182,0.6)' },
+                    { bg: 'rgba(52,211,153,0.25)', border: 'rgba(52,211,153,0.6)' },
+                    { bg: 'rgba(251,191,36,0.25)', border: 'rgba(251,191,36,0.6)' },
+                  ]
+                  return (
+                    <>
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                        <div className="rounded-full px-8 py-4 bg-[#34c759]/25 border-2 border-[#34c759]/60 text-white font-bold text-xl">Product Mgmt</div>
                       </div>
-                      <div className="flex flex-col gap-3 min-w-0">
-                        <div className="rounded-full px-5 py-2.5 w-fit bg-[#60a5fa]/25 border-2 border-[#60a5fa]/50 text-white text-base font-semibold">Acronyms</div>
-                        <div className="flex flex-col gap-2">
-                          {['OKR', 'KPI', 'MVP', 'ROI', 'PRD', 'GTM', 'UX', 'B2B', 'SaaS'].map((t) => (
-                            <span key={t} className="rounded-full px-4 py-2 w-fit bg-[#60a5fa]/15 border border-[#60a5fa]/40 text-sm text-white/95">{t}</span>
-                          ))}
+                      {pmLabels.map((t, i) => (
+                        <div key={t} className="absolute rounded-full px-5 py-2.5 text-sm font-medium text-white whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10" style={{ left: RADIAL_POS[i]!.left, top: RADIAL_POS[i]!.top }}>
+                          <span className="rounded-full px-4 py-2" style={{ backgroundColor: pmStyles[i]!.bg, border: `2px solid ${pmStyles[i]!.border}` }}>{t}</span>
                         </div>
-                      </div>
-                      <div className="flex flex-col gap-3 min-w-0">
-                        <div className="rounded-full px-5 py-2.5 w-fit bg-[#f472b6]/25 border-2 border-[#f472b6]/50 text-white text-base font-semibold">Frameworks</div>
-                        <div className="flex flex-col gap-2">
-                          {['Agile', 'Scrum', 'Kanban', 'Lean', 'Design Sprint'].map((t) => (
-                            <span key={t} className="rounded-full px-4 py-2 w-fit bg-[#f472b6]/15 border border-[#f472b6]/40 text-sm text-white/95">{t}</span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-3 min-w-0">
-                        <div className="rounded-full px-5 py-2.5 w-fit bg-[#a78bfa]/25 border-2 border-[#a78bfa]/50 text-white text-base font-semibold">Skills</div>
-                        <div className="flex flex-col gap-2">
-                          {['Roadmapping', 'Prioritization', 'User Research', 'Stakeholder Mgmt', 'Data Analysis'].map((t) => (
-                            <span key={t} className="rounded-full px-4 py-2 w-fit bg-[#a78bfa]/15 border border-[#a78bfa]/40 text-sm text-white/95">{t}</span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-3 min-w-0">
-                        <div className="rounded-full px-5 py-2.5 w-fit bg-[#34d399]/25 border-2 border-[#34d399]/50 text-white text-base font-semibold">Deliverables</div>
-                        <div className="flex flex-col gap-2">
-                          {['Roadmap', 'PRD', 'User Stories', 'Backlog', 'Specs'].map((t) => (
-                            <span key={t} className="rounded-full px-4 py-2 w-fit bg-[#34d399]/15 border border-[#34d399]/40 text-sm text-white/95">{t}</span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-3 min-w-0">
-                        <div className="rounded-full px-5 py-2.5 w-fit bg-[#fbbf24]/25 border-2 border-[#fbbf24]/50 text-white text-base font-semibold">Tools</div>
-                        <div className="flex flex-col gap-2">
-                          {['Jira', 'Figma', 'Notion', 'Miro', 'Slack'].map((t) => (
-                            <span key={t} className="rounded-full px-4 py-2 w-fit bg-[#fbbf24]/15 border border-[#fbbf24]/40 text-sm text-white/95">{t}</span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-3 min-w-0">
-                        <div className="rounded-full px-5 py-2.5 w-fit bg-[#f87171]/25 border-2 border-[#f87171]/50 text-white text-base font-semibold">Metrics</div>
-                        <div className="flex flex-col gap-2">
-                          {['NPS', 'Retention', 'Conversion', 'LTV', 'CAC'].map((t) => (
-                            <span key={t} className="rounded-full px-4 py-2 w-fit bg-[#f87171]/15 border border-[#f87171]/40 text-sm text-white/95">{t}</span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                      ))}
+                      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        {RADIAL_SVG.map(([x2, y2], i) => (
+                          <line key={i} x1="50" y1="50" x2={x2} y2={y2} stroke="rgba(255,255,255,0.35)" strokeWidth="0.5" />
+                        ))}
+                      </svg>
+                    </>
+                  )
+                })()}
                 {!hasCentralFrame && !hasStyle && <span className="text-white/40 text-sm">Canvas</span>}
               </div>
             </div>

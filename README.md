@@ -354,6 +354,7 @@ Running log of project work. Update this section when making significant changes
 - **Pear Navigator**: PearPad-only; 5 tasks (Procreate brush, Paint textured sky, Notion DB, Figma variants, Create mindmap); removed Photoshop/Lightroom; robust overlay + 44px touch targets for demo video (MS&E 165)
 - **Pear Navigator**: Drill-down options when buttons pressed; active ring + checkmarks; stronger press feedback
 - **Pear Navigator**: Paint textured sky (10 steps)—color picker, layers, canvas stroke, blend mode, export; Create mindmap (15 steps)—central frame, text, component, 9 instances (Idea A–I), connectors, auto layout, Fill with PM example; fixed step thresholds, hints, larger Fill layout
+- **Pear Navigator mindmap**: Radial layout for Idea nodes (even spacing); Auto layout tightens radius only (no structure change); Fill keeps same 1-center+9-nodes format, replaces text with PM terms (OKR, KPI, Agile, etc.)
 
 ## 📋 README Maintenance Guidelines
 
