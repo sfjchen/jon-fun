@@ -135,15 +135,6 @@ export default function TMRManager() {
           </p>
         </header>
 
-        {/* Quick Start */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-8">
-          <h2 className="text-2xl font-bold text-white mb-2">Run on Web</h2>
-          <p className="text-gray-300 text-sm">
-            Use this page for both study and pre-sleep sessions. Start a study session now,
-            then return before bed to run sleep reactivation. Keep this tab open and allow audio.
-          </p>
-        </div>
-
         {/* Main Menu */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <button

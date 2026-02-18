@@ -347,7 +347,7 @@ Running log of project work. Update this section when making significant changes
 - **Game24**: Broadcast on start/solve for instant sync; 500ms polling fallback; fix button blink; click-deselect; final rankings show correct/total
 - **Chwazi**: Touchscreen-only
 - **Home**: TMR + 1 Sentence top 2 cards; uniform card height; "← Home" standardized
-- **TMR**: Brain emoji → speaker (🔊) on page title and game chip
+- **TMR**: Brain emoji → speaker (🔊) on page title and game chip; removed Run on Web info box
 
 ## 📋 README Maintenance Guidelines
 
