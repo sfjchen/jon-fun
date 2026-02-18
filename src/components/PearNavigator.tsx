@@ -168,7 +168,7 @@ const TASKS: Record<string, Task> = {
       { title: 'Add more branches', desc: 'Add more instances for additional ideas. Arrange them around the center.', highlight: { x: 80, y: 140, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
       { title: 'Add connectors', desc: 'Use the connector tool or hold Option and drag to link nodes.', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
       { title: 'Auto layout', desc: 'Select a branch group and apply Auto layout for consistent spacing.', highlight: { x: 520, y: 180, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
-      { title: 'Style nodes', desc: 'Change fill color or add borders to differentiate branch levels.', highlight: { x: 520, y: 220, w: 80, h: 28 }, hotspotId: 'fig-style' },
+      { title: 'Fill with example', desc: 'Tap Fill to populate the mindmap with a Product Management example: acronyms, skills, frameworks.', highlight: { x: 520, y: 220, w: 80, h: 28 }, hotspotId: 'fig-style' },
     ],
   },
 }
@@ -247,45 +247,92 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
         </div>
         <div className="flex flex-1 min-h-0">
           <HotspotButton id="fig-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="flex-1 min-w-0 flex flex-col min-h-0">
-            <div className="flex-1 p-6 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center">
-              <div className="relative w-full max-w-md h-full max-h-64 border-2 border-dashed rounded-lg border-white/20 flex items-center justify-center">
+            <div className="flex-1 p-4 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center overflow-auto">
+              <div className="relative w-full h-full min-h-[200px] border-2 border-dashed rounded-lg border-white/20 flex items-center justify-center">
                 {hasCentralFrame && (
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                     <HotspotButton id="fig-text" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
                       <div className={`rounded-lg px-4 py-2 ${hasComponent ? 'border-2 border-[#8b5cf6] bg-[#8b5cf6]/20' : 'border border-white/30 bg-white/10'} ${hasStyle ? 'bg-[#34c759]/20' : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`}>
-                        {hasText && <span className="text-white text-sm">Project</span>}
+                        {hasText && <span className="text-white text-sm font-medium">{hasStyle ? 'Product Mgmt' : 'Project'}</span>}
                         {!hasText && <span className="text-white/40 text-sm">Frame</span>}
                       </div>
                     </HotspotButton>
                   </div>
                 )}
-                {hasBranch1 && (
-                  <div className={`absolute rounded px-3 py-1.5 text-[10px] ${hasStyle ? 'bg-[#60a5fa]/30 border border-[#60a5fa]/50' : 'bg-white/10 border border-white/20'}`} style={{ bottom: '20%', left: '15%' }}>
+                {hasBranch1 && !hasStyle && (
+                  <div className="absolute rounded px-3 py-1.5 text-[10px] bg-white/10 border border-white/20" style={{ bottom: '20%', left: '15%' }}>
                     Idea A
                   </div>
                 )}
-                {hasBranch2 && (
+                {hasBranch2 && !hasStyle && (
                   <>
-                    <div className={`absolute rounded px-3 py-1.5 text-[10px] ${hasStyle ? 'bg-[#f472b6]/30 border border-[#f472b6]/50' : 'bg-white/10 border border-white/20'}`} style={{ bottom: '25%', right: '20%' }}>
+                    <div className="absolute rounded px-3 py-1.5 text-[10px] bg-white/10 border border-white/20" style={{ bottom: '25%', right: '20%' }}>
                       Idea B
                     </div>
-                    <div className={`absolute rounded px-3 py-1.5 text-[10px] ${hasStyle ? 'bg-[#a78bfa]/30 border border-[#a78bfa]/50' : 'bg-white/10 border border-white/20'}`} style={{ top: '30%', right: '10%' }}>
+                    <div className="absolute rounded px-3 py-1.5 text-[10px] bg-white/10 border border-white/20" style={{ top: '30%', right: '10%' }}>
                       Idea C
                     </div>
                   </>
                 )}
-                {hasConnectors && (
+                {hasConnectors && !hasStyle && (
                   <>
                     <div className="absolute w-16 h-0.5 bg-white/30 rotate-[-30deg]" style={{ bottom: '35%', left: '35%' }} />
                     <div className="absolute w-12 h-0.5 bg-white/30 rotate-[20deg]" style={{ bottom: '38%', right: '35%' }} />
                     <div className="absolute w-10 h-0.5 bg-white/30 rotate-[-15deg]" style={{ top: '45%', right: '25%' }} />
                   </>
                 )}
-                {!hasCentralFrame && <span className="text-white/40 text-sm">Canvas</span>}
+                {hasStyle && (
+                  <div className="absolute inset-2 flex items-center justify-center p-4 overflow-auto">
+                    <div className="relative w-full h-full min-h-[200px] max-w-3xl mx-auto">
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-xl px-5 py-2.5 bg-[#34c759]/25 border-2 border-[#34c759]/60 text-white font-semibold text-sm shadow-lg">
+                        Product Mgmt
+                      </div>
+                      <div className="absolute top-[15%] left-[20%] flex flex-col gap-1">
+                        <div className="rounded-lg px-3 py-1.5 bg-[#60a5fa]/25 border border-[#60a5fa]/50 text-white text-xs font-medium">Acronyms</div>
+                        <div className="flex flex-wrap gap-1 pl-2">
+                          {['OKR', 'KPI', 'MVP', 'ROI', 'PRD', 'GTM', 'UX'].map((t) => (
+                            <span key={t} className="rounded px-2 py-0.5 bg-[#60a5fa]/15 border border-[#60a5fa]/30 text-[10px] text-white/90">{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="absolute top-[15%] right-[20%] flex flex-col gap-1">
+                        <div className="rounded-lg px-3 py-1.5 bg-[#f472b6]/25 border border-[#f472b6]/50 text-white text-xs font-medium">Frameworks</div>
+                        <div className="flex flex-wrap gap-1 pl-2">
+                          {['Agile', 'Scrum', 'Kanban', 'Lean'].map((t) => (
+                            <span key={t} className="rounded px-2 py-0.5 bg-[#f472b6]/15 border border-[#f472b6]/30 text-[10px] text-white/90">{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="absolute bottom-[20%] left-[15%] flex flex-col gap-1">
+                        <div className="rounded-lg px-3 py-1.5 bg-[#a78bfa]/25 border border-[#a78bfa]/50 text-white text-xs font-medium">Skills</div>
+                        <div className="flex flex-wrap gap-1 pl-2">
+                          {['Roadmapping', 'Prioritization', 'User Research', 'Stakeholder Mgmt'].map((t) => (
+                            <span key={t} className="rounded px-2 py-0.5 bg-[#a78bfa]/15 border border-[#a78bfa]/30 text-[10px] text-white/90">{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="absolute bottom-[20%] right-[15%] flex flex-col gap-1">
+                        <div className="rounded-lg px-3 py-1.5 bg-[#34d399]/25 border border-[#34d399]/50 text-white text-xs font-medium">Deliverables</div>
+                        <div className="flex flex-wrap gap-1 pl-2">
+                          {['Roadmap', 'PRD', 'User Stories', 'Backlog'].map((t) => (
+                            <span key={t} className="rounded px-2 py-0.5 bg-[#34d399]/15 border border-[#34d399]/30 text-[10px] text-white/90">{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <svg className="absolute inset-0 w-full h-full min-h-[180px] pointer-events-none" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet">
+                        <line x1="200" y1="150" x2="120" y2="75" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+                        <line x1="200" y1="150" x2="280" y2="75" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+                        <line x1="200" y1="150" x2="100" y2="225" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+                        <line x1="200" y1="150" x2="300" y2="225" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+                {!hasCentralFrame && !hasStyle && <span className="text-white/40 text-sm">Canvas</span>}
               </div>
             </div>
           </HotspotButton>
-          <div className="w-36 bg-[#383838] border-l border-white/15 p-3 shrink-0 flex flex-col gap-2">
+          <div className="w-40 bg-[#383838] border-l border-white/15 p-3 shrink-0 flex flex-col gap-2 overflow-y-auto">
             <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
               <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-component-tab' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Create component</div>
             </HotspotButton>
@@ -631,9 +678,9 @@ export default function PearNavigator() {
           <span className="text-xs text-gray-500">PearPad</span>
       </div>
 
-      <div className="flex-1 flex flex-col lg:flex-row gap-4 px-4 pb-4 min-h-0 overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row gap-2 px-2 pb-2 min-h-0 overflow-hidden">
         {/* Guide panel */}
-        <div className="flex-none lg:w-96 xl:w-[420px] bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-y-auto shrink-0">
+        <div className="flex-none lg:w-72 xl:w-80 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-y-auto shrink-0">
             <div className="p-6">
               {phase === 'task' && (
                 <>
@@ -720,7 +767,7 @@ export default function PearNavigator() {
         </div>
 
         {/* Mock app preview - fills remaining space */}
-        <div className="flex-1 min-w-0 min-h-0 flex flex-col">
+        <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden">
           <div className="flex-1 min-h-0 relative bg-[#3a3a3a] rounded-xl border border-white/15 overflow-hidden">
             {MockComponent && <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={handleNext} showHighlight={phase === 'steps' && showHighlight} {...(phase === 'steps' ? { stepIdx } : {})} {...(taskId ? { taskId } : {})} />}
           </div>
