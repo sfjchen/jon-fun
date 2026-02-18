@@ -24,29 +24,29 @@ const TASKS: Record<string, Task> = {
     steps: [
       {
         title: 'Select the subject',
-        desc: 'Tap the Object Selection or Quick Selection tool. Tap and drag around the main subject.',
-        hint: 'Tap and hold another area to subtract from selection',
+        desc: 'In the left Tools panel, select Object Selection (W) or Quick Selection. Draw a rectangle or lasso around the subject—AI detects edges.',
+        hint: 'Long-press the selection tool to see Object Selection in the flyout',
         highlight: { x: 24, y: 52, w: 100, h: 32 },
         hotspotId: 'ps-tool-object',
       },
       {
         title: 'Refine the selection',
-        desc: 'Go to Select > Select and Mask. Use the Refine Edge Brush to clean up hair or fine edges.',
-        hint: 'Set Output to "New Layer with Layer Mask"',
+        desc: 'Go to Select > Select and Mask. Use the Refine Edge Brush on hair/fur. Set Output to "New layer with layer mask" in the right Properties panel.',
+        hint: 'Refine Edge Brush auto-corrects soft edges',
         highlight: { x: 180, y: 14, w: 130, h: 28 },
         hotspotId: 'ps-menu-select',
       },
       {
         title: 'Create layer mask',
-        desc: 'With the selection active, tap the Add Layer Mask icon at the bottom of the Layers panel.',
-        hint: 'The mask hides the background, revealing transparency',
+        desc: 'With the selection active, click the Add Layer Mask icon (rectangle with circle) at the bottom of the Layers panel on the right.',
+        hint: 'White = visible, black = hidden',
         highlight: { x: 520, y: 220, w: 70, h: 40 },
         hotspotId: 'ps-add-mask',
       },
       {
         title: 'Verify and export',
-        desc: 'Toggle the background layer visibility to check the result. Tap File > Export > Export As for PNG with transparency.',
-        hint: 'Tap the File menu, then Export',
+        desc: 'Toggle the background layer eye to check. File > Export > Export As, choose PNG with transparency.',
+        hint: 'Shift+Cmd+E (Mac) or Shift+Ctrl+E (Win) for bulk export',
         highlight: { x: 24, y: 14, w: 50, h: 28 },
         hotspotId: 'ps-menu-file',
       },
@@ -58,30 +58,30 @@ const TASKS: Record<string, Task> = {
     steps: [
       {
         title: 'Open the Develop module',
-        desc: 'Select your photo and tap the Develop tab at the top.',
+        desc: 'Select your photo in the Library, then click Develop in the top module bar.',
         hint: 'Develop is where all editing happens',
         highlight: { x: 200, y: 14, w: 100, h: 28 },
         hotspotId: 'lr-tab-develop',
       },
       {
-        title: 'Adjust basic sliders',
-        desc: 'Start with Exposure, Contrast, Highlights, and Shadows. Pull Highlights down and Shadows up for a balanced look.',
-        hint: 'Aim for detail in both bright and dark areas',
-        highlight: { x: 24, y: 120, w: 90, h: 140 },
-        hotspotId: 'lr-panel-basic',
-      },
-      {
         title: 'Apply a preset (optional)',
-        desc: 'In the left panel, browse Presets. Tap one to preview—adjust Strength if needed.',
-        hint: 'Presets are a quick starting point',
+        desc: 'In the left panel under Presets, click one to preview. Adjust Strength slider if needed.',
+        hint: 'Presets live in the left panel; Snapshots and History are below',
         highlight: { x: 24, y: 70, w: 110, h: 36 },
         hotspotId: 'lr-preset',
       },
       {
+        title: 'Adjust basic sliders',
+        desc: 'In the right panel, scroll to Basic. Adjust Exposure, Contrast, Highlights, and Shadows. Pull Highlights down and Shadows up for balance.',
+        hint: 'Basic panel is at the top of the right panel',
+        highlight: { x: 520, y: 100, w: 90, h: 140 },
+        hotspotId: 'lr-panel-basic',
+      },
+      {
         title: 'Fine-tune with HSL',
-        desc: 'Open the HSL/Color panel. Adjust Hue, Saturation, and Luminance per color channel to match your style.',
-        hint: 'Orange/red for skin tones, blue for skies',
-        highlight: { x: 24, y: 200, w: 90, h: 90 },
+        desc: 'In the right panel, open HSL/Color panel (below Basic). Adjust Hue, Saturation, Luminance per color—red/orange for skin, blue for skies.',
+        hint: 'Tap All to see all HSL sliders at once',
+        highlight: { x: 520, y: 260, w: 90, h: 90 },
         hotspotId: 'lr-panel-hsl',
       },
     ],
@@ -92,29 +92,29 @@ const TASKS: Record<string, Task> = {
     steps: [
       {
         title: 'Select the frame or layer',
-        desc: 'Tap the frame, component, or layer you want to export in the canvas or Layers panel.',
-        hint: 'Frames export as whole images',
+        desc: 'Click the frame, component, or layer you want to export on the canvas or in the Layers panel.',
+        hint: 'Frames export as whole images; use Slice tool for partial export',
         highlight: { x: 180, y: 140, w: 200, h: 100 },
         hotspotId: 'fig-canvas',
       },
       {
-        title: 'Open export settings',
-        desc: 'In the right panel, scroll to the Export section. Tap the + button to add an export format.',
-        hint: 'You can add multiple export settings',
+        title: 'Add export configuration',
+        desc: 'In the right sidebar, scroll to the Export section (toward bottom). Click the + to add an export format.',
+        hint: 'Export section is in the right panel; add multiple configs per selection',
         highlight: { x: 520, y: 160, w: 70, h: 32 },
         hotspotId: 'fig-export-add',
       },
       {
         title: 'Choose format and scale',
-        desc: 'Select PNG, JPG, SVG, or PDF. Set scale (1x, 2x, 3x) for resolution.',
-        hint: '2x or 3x for retina/high-DPI',
+        desc: 'Select PNG, JPG, SVG, or PDF. Set scale (1x, 2x, 3x) for retina/high-DPI.',
+        hint: 'PNG preserves transparency for web',
         highlight: { x: 500, y: 200, w: 100, h: 40 },
         hotspotId: 'fig-format',
       },
       {
         title: 'Export',
-        desc: 'Tap Export [name] or the bulk Export button at the bottom. Choose save location.',
-        hint: 'Tap Export to download',
+        desc: 'Click the Export button. Choose save location. For bulk: File > Export (Shift+Cmd+E).',
+        hint: 'Exported file goes to browser download folder',
         highlight: { x: 510, y: 260, w: 80, h: 36 },
         hotspotId: 'fig-export-btn',
       },
@@ -126,35 +126,35 @@ const TASKS: Record<string, Task> = {
     steps: [
       {
         title: 'Open Brush Library',
-        desc: 'Tap the brush icon in the top toolbar to open the Brush Library.',
+        desc: 'Tap the brush icon (Paint/Smudge/Erase) in the top toolbar to open the Brush Library.',
         hint: 'Swipe left on a brush to duplicate',
         highlight: { x: 280, y: 14, w: 80, h: 36 },
         hotspotId: 'proc-brush',
       },
       {
         title: 'Create new brush',
-        desc: 'Tap the + icon in the Brush Library to create a new brush.',
-        hint: 'Start from a base brush you like',
+        desc: 'Tap the + icon in the top right of the Brush Library. Select "Create new brush" to enter Brush Studio.',
+        hint: 'Duplicate an existing brush first for a baseline',
         highlight: { x: 24, y: 70, w: 60, h: 36 },
         hotspotId: 'proc-new',
       },
       {
         title: 'Adjust shape and grain',
-        desc: 'In Brush Studio, tap Shape and Grain to customize the brush tip.',
-        hint: 'Import custom grain images',
+        desc: 'In Brush Studio, tap Shape and Grain in the left Attributes menu to customize the brush tip.',
+        hint: 'Import custom grain images for texture',
         highlight: { x: 520, y: 100, w: 80, h: 32 },
         hotspotId: 'proc-shape',
       },
       {
         title: 'Set dynamics',
-        desc: 'Tap the Dynamics section. Adjust Size, Opacity, and Flow for pressure response.',
-        hint: 'Apple Pencil pressure affects stroke',
+        desc: 'Tap Dynamics in the Attributes menu. Adjust Size, Opacity, Flow for Apple Pencil pressure/speed response.',
+        hint: '14 attributes total; Dynamics controls stroke behavior',
         highlight: { x: 520, y: 160, w: 80, h: 32 },
         hotspotId: 'proc-dynamics',
       },
       {
         title: 'Save and name',
-        desc: 'Tap Done. Name your brush in the Brush Library.',
+        desc: 'Tap Done to exit Brush Studio. Name your brush in the Brush Library.',
         hint: 'Organize brushes into sets',
         highlight: { x: 300, y: 320, w: 100, h: 36 },
         hotspotId: 'proc-done',
@@ -167,35 +167,35 @@ const TASKS: Record<string, Task> = {
     steps: [
       {
         title: 'Create new page',
-        desc: 'Tap + in the sidebar or swipe to create a new page.',
+        desc: 'Tap + in the sidebar or use the + New page button to create a new page.',
         hint: 'Use templates for quick start',
         highlight: { x: 24, y: 60, w: 90, h: 36 },
         hotspotId: 'notion-new',
       },
       {
         title: 'Add database block',
-        desc: 'Type /table or /database and select Table – Inline.',
+        desc: 'Type /table or /database and select Table – Inline. Or type /linked database to link an existing one.',
         hint: 'Database can be full-page or inline',
         highlight: { x: 180, y: 120, w: 120, h: 32 },
         hotspotId: 'notion-db',
       },
       {
         title: 'Add properties',
-        desc: 'Tap + to add columns: Status, Date, Person, etc.',
+        desc: 'In the database header or right panel, tap + Add to add columns: Status, Date, Person, etc.',
         hint: 'Status is useful for PM workflows',
         highlight: { x: 480, y: 80, w: 100, h: 28 },
         hotspotId: 'notion-props',
       },
       {
         title: 'Create linked view',
-        desc: 'Open database menu (⋯), choose New linked view. Pick a board or calendar.',
+        desc: 'Open the view switcher (⋯) or "+ Add a View". Choose New linked view or New empty view. Pick board or calendar.',
         hint: 'Same data, different views',
         highlight: { x: 520, y: 140, w: 80, h: 32 },
         hotspotId: 'notion-linked',
       },
       {
         title: 'Add filters',
-        desc: 'Tap Filter, add conditions (e.g. Status = In progress).',
+        desc: 'Tap Filter in the view toolbar. Add conditions (e.g. Status = In progress).',
         hint: 'Filters apply to current view only',
         highlight: { x: 520, y: 200, w: 70, h: 28 },
         hotspotId: 'notion-filter',
@@ -207,36 +207,36 @@ const TASKS: Record<string, Task> = {
     mock: 'figma',
     steps: [
       {
-        title: 'Select component',
-        desc: 'Select the frame or group you want to turn into a component.',
-        hint: 'Components are reusable',
+        title: 'Select layers',
+        desc: 'Select the frame or group you want to turn into a component on the canvas.',
+        hint: 'Components are reusable; main components show a purple bounding box',
         highlight: { x: 180, y: 100, w: 180, h: 80 },
         hotspotId: 'fig-canvas',
       },
       {
         title: 'Create component',
-        desc: 'Tap the component icon in the toolbar.',
-        hint: 'The component icon turns the selection into a reusable component',
-        highlight: { x: 260, y: 14, w: 100, h: 36 },
+        desc: 'In the right sidebar, click "Create component" (or Cmd+Alt+K). The selection becomes a main component.',
+        hint: 'Component icon appears in the Layers panel',
+        highlight: { x: 520, y: 60, w: 100, h: 36 },
         hotspotId: 'fig-component-tab',
       },
       {
         title: 'Add property',
-        desc: 'In the right panel, under Component, tap + to add a property (e.g. State).',
+        desc: 'Under Component in the right panel, tap + to add a property. Name it (e.g. State) and set type to Variant.',
         hint: 'Variant = one property with multiple values',
         highlight: { x: 520, y: 100, w: 80, h: 32 },
         hotspotId: 'fig-component-add',
       },
       {
         title: 'Create variants',
-        desc: 'Add values (Default, Hover, Pressed). Figma creates a variant set.',
-        hint: 'Each value = one variant',
+        desc: 'Add values (Default, Hover, Pressed). Figma creates a variant set. Click Add variant.',
+        hint: 'Each value = one variant in the set',
         highlight: { x: 500, y: 160, w: 100, h: 40 },
         hotspotId: 'fig-variants',
       },
       {
         title: 'Swap instances',
-        desc: 'Select an instance. In the panel, use the dropdown to swap variants.',
+        desc: 'Select an instance. In the right panel, use the property dropdown to swap variants.',
         hint: 'Instances inherit component changes',
         highlight: { x: 510, y: 240, w: 90, h: 36 },
         hotspotId: 'fig-swap',
@@ -347,7 +347,16 @@ function LightroomMock({ currentHotspotId, onStepComplete }: MockProps) {
             <div className={`h-8 rounded mb-2 text-[10px] flex items-center px-2 ${currentHotspotId === 'lr-preset' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Preset 1</div>
           </HotspotButton>
           <div className="h-8 bg-white/5 rounded mb-2" />
-          <div className="mt-4 text-white/50">Basic</div>
+          <div className="text-white/50 mt-2">Snapshots</div>
+          <div className="h-6 bg-white/5 rounded mt-1" />
+        </div>
+        <div className="flex-1 p-4 bg-[#2a2a2a] min-w-0">
+          <div className="w-full h-full border border-dashed border-white/20 rounded flex items-center justify-center text-white/30 text-sm">
+            Photo
+          </div>
+        </div>
+        <div className="w-28 bg-[#252525] border-l border-white/10 p-2 shrink-0">
+          <div className="text-white/50 mb-1">Basic</div>
           <HotspotButton id="lr-panel-basic" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete}>
             <div className={`h-20 rounded mt-1 ${currentHotspotId === 'lr-panel-basic' ? 'bg-[#34c759]/30' : 'bg-white/5'}`} />
           </HotspotButton>
@@ -355,11 +364,6 @@ function LightroomMock({ currentHotspotId, onStepComplete }: MockProps) {
           <HotspotButton id="lr-panel-hsl" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete}>
             <div className={`h-16 rounded mt-1 ${currentHotspotId === 'lr-panel-hsl' ? 'bg-[#34c759]/30' : 'bg-[#34c759]/20'}`} />
           </HotspotButton>
-        </div>
-        <div className="flex-1 p-4 bg-[#2a2a2a] min-w-0">
-          <div className="w-full h-full border border-dashed border-white/20 rounded flex items-center justify-center text-white/30 text-sm">
-            Photo
-          </div>
         </div>
       </div>
     </div>
@@ -371,9 +375,7 @@ function FigmaMock({ currentHotspotId, onStepComplete }: MockProps) {
     <div className="absolute inset-0 flex flex-col text-xs">
       <div className="h-9 bg-[#1e1e1e] border-b border-white/10 flex items-center px-3 gap-4 shrink-0">
         <span className="text-white/80">Frame</span>
-        <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete}>
-          <span className={currentHotspotId === 'fig-component-tab' ? 'text-[#34c759] font-medium' : 'text-white/80'}>Component</span>
-        </HotspotButton>
+        <span className="text-white/80">Component</span>
         <span className="text-white/80">Prototype</span>
       </div>
       <div className="flex flex-1 min-h-0">
@@ -385,6 +387,9 @@ function FigmaMock({ currentHotspotId, onStepComplete }: MockProps) {
           </div>
         </HotspotButton>
         <div className="w-36 bg-[#252525] border-l border-white/10 p-2 shrink-0">
+          <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete}>
+            <div className={`h-8 rounded mb-2 text-[10px] flex items-center px-2 ${currentHotspotId === 'fig-component-tab' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Create component</div>
+          </HotspotButton>
           <div className="text-white/50 mb-1">Design</div>
           <div className="h-6 bg-white/5 rounded mb-2" />
           <div className="text-white/50 mb-1">Export</div>

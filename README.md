@@ -351,7 +351,7 @@ Running log of project work. Update this section when making significant changes
 - **Chwazi**: Touchscreen-only
 - **Home**: TMR + 1 Sentence top 2 cards; uniform card height; "← Home" standardized
 - **TMR**: Brain emoji → speaker (🔊) on page title and game chip; removed Run on Web info box
-- **Pear Navigator**: In-browser demo at `/games/pear-navigator`; interactive tablet simulator—tap UI elements to advance steps; Photoshop, Lightroom, Figma, Procreate, Notion mocks (MS&E 165)
+- **Pear Navigator**: In-browser demo at `/games/pear-navigator`; guides aligned to real app workflows (Photoshop tools/Layers, Lightroom left Presets + right Basic/HSL, Figma Export/Component in right sidebar, Procreate Brush Studio, Notion linked views) (MS&E 165)
 
 ## 📋 README Maintenance Guidelines
 
