@@ -645,9 +645,6 @@ export default function PearNavigator() {
 
         {/* Mock app preview - fills remaining space */}
         <div className="flex-1 min-w-0 min-h-0 flex flex-col">
-          <p className="flex-none text-xs text-gray-500 uppercase tracking-wider mb-2">
-            {phase === 'task' ? 'Your creative app' : task?.app ?? 'Your creative app'}
-          </p>
           <div className="flex-1 min-h-0 relative bg-[#2d2d2d] rounded-xl border border-white/10 overflow-hidden">
             {MockComponent && <MockComponent currentHotspotId={phase === 'steps' ? step?.hotspotId : undefined} onStepComplete={handleNext} />}
             {phase === 'steps' && showHighlight && step && (
