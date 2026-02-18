@@ -164,11 +164,16 @@ const TASKS: Record<string, Task> = {
       { title: 'Create central frame', desc: 'Select the Frame tool and draw a frame for your central idea.', highlight: { x: 180, y: 100, w: 120, h: 60 }, hotspotId: 'fig-canvas' },
       { title: 'Add text to frame', desc: 'Double-tap the frame and type your central topic (e.g. "Project").', highlight: { x: 200, y: 110, w: 80, h: 40 }, hotspotId: 'fig-text' },
       { title: 'Create component', desc: 'Select the frame and tap Create component to make it reusable.', highlight: { x: 520, y: 60, w: 100, h: 36 }, hotspotId: 'fig-component-tab' },
-      { title: 'Add branch node', desc: 'Drag an instance from the component onto the canvas for a branch.', highlight: { x: 180, y: 180, w: 100, h: 50 }, hotspotId: 'fig-instance' },
-      { title: 'Add more branches', desc: 'Add more instances for additional ideas. Arrange them around the center.', highlight: { x: 80, y: 140, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add connectors', desc: 'Use the connector tool or hold Option and drag to link nodes.', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
-      { title: 'Auto layout', desc: 'Select a branch group and apply Auto layout for consistent spacing.', highlight: { x: 520, y: 180, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
-      { title: 'Fill with example', desc: 'Tap Fill to populate the mindmap with a Product Management example: acronyms, skills, frameworks.', highlight: { x: 520, y: 220, w: 80, h: 28 }, hotspotId: 'fig-style' },
+      { title: 'Add first instance', desc: 'Tap Instance to add your first branch idea.', highlight: { x: 180, y: 180, w: 100, h: 50 }, hotspotId: 'fig-instance' },
+      { title: 'Add instance', desc: 'Tap + Instance to add another idea. Keep adding to build your mindmap.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance again for more ideas.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance to add another branch.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for more ideas.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance to expand your mindmap.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for another branch.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add connectors', desc: 'Use the connector tool to link nodes.', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
+      { title: 'Auto layout', desc: 'Apply Auto layout for consistent spacing.', highlight: { x: 520, y: 180, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
+      { title: 'Fill with example', desc: 'Tap Fill to populate with a Product Management example.', highlight: { x: 520, y: 220, w: 80, h: 28 }, hotspotId: 'fig-style' },
     ],
   },
 }
@@ -233,10 +238,9 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
   const hasCentralFrame = isMindmap && stepIdx >= 1
   const hasText = isMindmap && stepIdx >= 2
   const hasComponent = isMindmap && stepIdx >= 3
-  const hasBranch1 = isMindmap && stepIdx >= 4
-  const hasBranch2 = isMindmap && stepIdx >= 5
-  const hasConnectors = isMindmap && stepIdx >= 6
-  const hasStyle = isMindmap && stepIdx >= 8
+  const instanceCount = isMindmap && stepIdx >= 4 ? Math.min(stepIdx - 3, 9) : 0
+  const hasConnectors = isMindmap && stepIdx >= 11
+  const hasStyle = isMindmap && stepIdx >= 13
   if (isMindmap) {
     return (
       <div className="absolute inset-0 flex flex-col text-sm">
@@ -259,90 +263,82 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
                     </HotspotButton>
                   </div>
                 )}
-                {hasBranch1 && !hasStyle && (
-                  <div className="absolute rounded-full px-5 py-2.5 text-sm bg-white/10 border border-white/20" style={{ bottom: '20%', left: '15%' }}>
-                    Idea A
-                  </div>
-                )}
-                {hasBranch2 && !hasStyle && (
-                  <>
-                    <div className="absolute rounded-full px-5 py-2.5 text-sm bg-white/10 border border-white/20" style={{ bottom: '25%', right: '20%' }}>
-                      Idea B
-                    </div>
-                    <div className="absolute rounded-full px-5 py-2.5 text-sm bg-white/10 border border-white/20" style={{ top: '30%', right: '10%' }}>
-                      Idea C
-                    </div>
-                  </>
-                )}
-                {hasConnectors && !hasStyle && (
+                {instanceCount > 0 && !hasStyle && (() => {
+                  const labels = ['Idea A', 'Idea B', 'Idea C', 'Idea D', 'Idea E', 'Idea F', 'Idea G', 'Idea H', 'Idea I']
+                  const positions: React.CSSProperties[] = [
+                    { bottom: '25%', left: '12%' }, { bottom: '22%', right: '15%' }, { top: '28%', right: '8%' },
+                    { top: '35%', left: '5%' }, { top: '35%', right: '5%' }, { bottom: '35%', left: '8%' },
+                    { bottom: '32%', right: '12%' }, { top: '18%', left: '20%' }, { top: '18%', right: '20%' },
+                  ]
+                  return (
+                    <>
+                      {Array.from({ length: instanceCount }).map((_, i) => (
+                        <div key={i} className="absolute rounded-full px-5 py-2.5 text-sm bg-white/10 border border-white/20 whitespace-nowrap" style={positions[i]}>{labels[i]}</div>
+                      ))}
+                    </>
+                  )
+                })()}
+                {hasConnectors && !hasStyle && instanceCount > 0 && (
                   <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    <line x1="50" y1="50" x2="22" y2="78" stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
-                    <line x1="50" y1="50" x2="72" y2="72" stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
-                    <line x1="50" y1="50" x2="78" y2="28" stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
+                    {[[22,78],[72,72],[78,28],[12,42],[88,42],[12,68],[72,68],[25,18],[75,18]].slice(0, instanceCount).map(([x2,y2], i) => (
+                      <line key={i} x1="50" y1="50" x2={x2} y2={y2} stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
+                    ))}
                   </svg>
                 )}
                 {hasStyle && (
-                  <div className="absolute inset-2 flex items-center justify-center p-6 overflow-auto">
-                    <div className="relative w-full h-full min-h-[280px] max-w-4xl mx-auto" style={{ aspectRatio: '4/3' }}>
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full px-20 py-10 bg-[#34c759]/25 border-2 border-[#34c759]/60 text-white font-bold text-2xl shadow-lg text-center z-10">
-                        Product Mgmt
+                  <div className="absolute inset-2 flex items-center justify-center p-4 overflow-auto">
+                    <div className="relative w-full max-w-4xl min-h-[320px] grid grid-cols-2 gap-x-10 gap-y-6 items-start">
+                      <div className="col-span-2 flex justify-center mb-2">
+                        <div className="rounded-full px-16 py-6 bg-[#34c759]/25 border-2 border-[#34c759]/60 text-white font-bold text-xl text-center">Product Mgmt</div>
                       </div>
-                      <div className="absolute top-[8%] left-[12%] flex flex-col gap-2 z-10">
-                        <div className="rounded-full px-6 py-3 bg-[#60a5fa]/25 border-2 border-[#60a5fa]/50 text-white text-base font-semibold">Acronyms</div>
-                        <div className="flex flex-wrap gap-2 pl-8">
-                          {['OKR', 'KPI', 'MVP', 'ROI', 'PRD', 'GTM', 'UX', 'B2B', 'SaaS', 'API'].map((t) => (
-                            <span key={t} className="rounded-full px-4 py-2 bg-[#60a5fa]/15 border border-[#60a5fa]/40 text-sm text-white/95 font-medium">{t}</span>
+                      <div className="flex flex-col gap-2 min-w-0">
+                        <div className="rounded-full px-4 py-2 w-fit bg-[#60a5fa]/25 border-2 border-[#60a5fa]/50 text-white text-sm font-semibold">Acronyms</div>
+                        <div className="flex flex-col gap-1.5">
+                          {['OKR', 'KPI', 'MVP', 'ROI', 'PRD', 'GTM', 'UX', 'B2B', 'SaaS'].map((t) => (
+                            <span key={t} className="rounded-full px-3 py-1.5 w-fit bg-[#60a5fa]/15 border border-[#60a5fa]/40 text-xs text-white/95">{t}</span>
                           ))}
                         </div>
                       </div>
-                      <div className="absolute top-[8%] right-[12%] flex flex-col gap-2 z-10">
-                        <div className="rounded-full px-6 py-3 bg-[#f472b6]/25 border-2 border-[#f472b6]/50 text-white text-base font-semibold">Frameworks</div>
-                        <div className="flex flex-wrap gap-2 pl-8">
-                          {['Agile', 'Scrum', 'Kanban', 'Lean', 'Design Sprint', 'OKR'].map((t) => (
-                            <span key={t} className="rounded-full px-4 py-2 bg-[#f472b6]/15 border border-[#f472b6]/40 text-sm text-white/95 font-medium">{t}</span>
+                      <div className="flex flex-col gap-2 min-w-0">
+                        <div className="rounded-full px-4 py-2 w-fit bg-[#f472b6]/25 border-2 border-[#f472b6]/50 text-white text-sm font-semibold">Frameworks</div>
+                        <div className="flex flex-col gap-1.5">
+                          {['Agile', 'Scrum', 'Kanban', 'Lean', 'Design Sprint'].map((t) => (
+                            <span key={t} className="rounded-full px-3 py-1.5 w-fit bg-[#f472b6]/15 border border-[#f472b6]/40 text-xs text-white/95">{t}</span>
                           ))}
                         </div>
                       </div>
-                      <div className="absolute top-[42%] left-[5%] flex flex-col gap-2 z-10">
-                        <div className="rounded-full px-6 py-3 bg-[#a78bfa]/25 border-2 border-[#a78bfa]/50 text-white text-base font-semibold">Skills</div>
-                        <div className="flex flex-wrap gap-2 pl-8">
-                          {['Roadmapping', 'Prioritization', 'User Research', 'Stakeholder Mgmt', 'Data Analysis', 'Cross-functional'].map((t) => (
-                            <span key={t} className="rounded-full px-4 py-2 bg-[#a78bfa]/15 border border-[#a78bfa]/40 text-sm text-white/95 font-medium">{t}</span>
+                      <div className="flex flex-col gap-2 min-w-0">
+                        <div className="rounded-full px-4 py-2 w-fit bg-[#a78bfa]/25 border-2 border-[#a78bfa]/50 text-white text-sm font-semibold">Skills</div>
+                        <div className="flex flex-col gap-1.5">
+                          {['Roadmapping', 'Prioritization', 'User Research', 'Stakeholder Mgmt', 'Data Analysis'].map((t) => (
+                            <span key={t} className="rounded-full px-3 py-1.5 w-fit bg-[#a78bfa]/15 border border-[#a78bfa]/40 text-xs text-white/95">{t}</span>
                           ))}
                         </div>
                       </div>
-                      <div className="absolute top-[42%] right-[5%] flex flex-col gap-2 z-10">
-                        <div className="rounded-full px-6 py-3 bg-[#34d399]/25 border-2 border-[#34d399]/50 text-white text-base font-semibold">Deliverables</div>
-                        <div className="flex flex-wrap gap-2 pl-8">
-                          {['Roadmap', 'PRD', 'User Stories', 'Backlog', 'Specs', 'Sprint Plan'].map((t) => (
-                            <span key={t} className="rounded-full px-4 py-2 bg-[#34d399]/15 border border-[#34d399]/40 text-sm text-white/95 font-medium">{t}</span>
+                      <div className="flex flex-col gap-2 min-w-0">
+                        <div className="rounded-full px-4 py-2 w-fit bg-[#34d399]/25 border-2 border-[#34d399]/50 text-white text-sm font-semibold">Deliverables</div>
+                        <div className="flex flex-col gap-1.5">
+                          {['Roadmap', 'PRD', 'User Stories', 'Backlog', 'Specs'].map((t) => (
+                            <span key={t} className="rounded-full px-3 py-1.5 w-fit bg-[#34d399]/15 border border-[#34d399]/40 text-xs text-white/95">{t}</span>
                           ))}
                         </div>
                       </div>
-                      <div className="absolute bottom-[12%] left-[18%] flex flex-col gap-2 z-10">
-                        <div className="rounded-full px-6 py-3 bg-[#fbbf24]/25 border-2 border-[#fbbf24]/50 text-white text-base font-semibold">Tools</div>
-                        <div className="flex flex-wrap gap-2 pl-8">
+                      <div className="flex flex-col gap-2 min-w-0">
+                        <div className="rounded-full px-4 py-2 w-fit bg-[#fbbf24]/25 border-2 border-[#fbbf24]/50 text-white text-sm font-semibold">Tools</div>
+                        <div className="flex flex-col gap-1.5">
                           {['Jira', 'Figma', 'Notion', 'Miro', 'Slack'].map((t) => (
-                            <span key={t} className="rounded-full px-4 py-2 bg-[#fbbf24]/15 border border-[#fbbf24]/40 text-sm text-white/95 font-medium">{t}</span>
+                            <span key={t} className="rounded-full px-3 py-1.5 w-fit bg-[#fbbf24]/15 border border-[#fbbf24]/40 text-xs text-white/95">{t}</span>
                           ))}
                         </div>
                       </div>
-                      <div className="absolute bottom-[12%] right-[18%] flex flex-col gap-2 z-10">
-                        <div className="rounded-full px-6 py-3 bg-[#f87171]/25 border-2 border-[#f87171]/50 text-white text-base font-semibold">Metrics</div>
-                        <div className="flex flex-wrap gap-2 pl-8">
+                      <div className="flex flex-col gap-2 min-w-0">
+                        <div className="rounded-full px-4 py-2 w-fit bg-[#f87171]/25 border-2 border-[#f87171]/50 text-white text-sm font-semibold">Metrics</div>
+                        <div className="flex flex-col gap-1.5">
                           {['NPS', 'Retention', 'Conversion', 'LTV', 'CAC'].map((t) => (
-                            <span key={t} className="rounded-full px-4 py-2 bg-[#f87171]/15 border border-[#f87171]/40 text-sm text-white/95 font-medium">{t}</span>
+                            <span key={t} className="rounded-full px-3 py-1.5 w-fit bg-[#f87171]/15 border border-[#f87171]/40 text-xs text-white/95">{t}</span>
                           ))}
                         </div>
                       </div>
-                      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-                        <line x1="50" y1="50" x2="18" y2="12" stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
-                        <line x1="50" y1="50" x2="82" y2="12" stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
-                        <line x1="50" y1="50" x2="12" y2="50" stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
-                        <line x1="50" y1="50" x2="88" y2="50" stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
-                        <line x1="50" y1="50" x2="18" y2="82" stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
-                        <line x1="50" y1="50" x2="82" y2="82" stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
-                      </svg>
                     </div>
                   </div>
                 )}
