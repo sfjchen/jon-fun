@@ -239,37 +239,37 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
   const hasStyle = isMindmap && stepIdx >= 8
   if (isMindmap) {
     return (
-      <div className="absolute inset-0 flex flex-col text-xs">
-        <div className="h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-3 gap-4 shrink-0">
+      <div className="absolute inset-0 flex flex-col text-sm">
+        <div className="h-12 bg-[#2e2e2e] border-b border-white/15 flex items-center px-5 gap-6 shrink-0">
           <span className="text-white/80">Frame</span>
           <span className="text-white/80">Component</span>
           <span className="text-white/80">Prototype</span>
         </div>
         <div className="flex flex-1 min-h-0">
           <HotspotButton id="fig-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="flex-1 min-w-0 flex flex-col min-h-0">
-            <div className="flex-1 p-4 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center overflow-auto">
+            <div className="flex-1 p-5 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center overflow-auto">
               <div className="relative w-full h-full min-h-[200px] border-2 border-dashed rounded-lg border-white/20 flex items-center justify-center">
                 {hasCentralFrame && (
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                     <HotspotButton id="fig-text" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-                      <div className={`rounded-lg px-4 py-2 ${hasComponent ? 'border-2 border-[#8b5cf6] bg-[#8b5cf6]/20' : 'border border-white/30 bg-white/10'} ${hasStyle ? 'bg-[#34c759]/20' : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`}>
-                        {hasText && <span className="text-white text-sm font-medium">{hasStyle ? 'Product Mgmt' : 'Project'}</span>}
-                        {!hasText && <span className="text-white/40 text-sm">Frame</span>}
+                      <div className={`rounded-lg px-5 py-3 ${hasComponent ? 'border-2 border-[#8b5cf6] bg-[#8b5cf6]/20' : 'border border-white/30 bg-white/10'} ${hasStyle ? 'bg-[#34c759]/20' : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`}>
+                        {hasText && <span className="text-white text-base font-medium">{hasStyle ? 'Product Mgmt' : 'Project'}</span>}
+                        {!hasText && <span className="text-white/40 text-base">Frame</span>}
                       </div>
                     </HotspotButton>
                   </div>
                 )}
                 {hasBranch1 && !hasStyle && (
-                  <div className="absolute rounded px-3 py-1.5 text-[10px] bg-white/10 border border-white/20" style={{ bottom: '20%', left: '15%' }}>
+                  <div className="absolute rounded px-4 py-2 text-sm bg-white/10 border border-white/20" style={{ bottom: '20%', left: '15%' }}>
                     Idea A
                   </div>
                 )}
                 {hasBranch2 && !hasStyle && (
                   <>
-                    <div className="absolute rounded px-3 py-1.5 text-[10px] bg-white/10 border border-white/20" style={{ bottom: '25%', right: '20%' }}>
+                    <div className="absolute rounded px-4 py-2 text-sm bg-white/10 border border-white/20" style={{ bottom: '25%', right: '20%' }}>
                       Idea B
                     </div>
-                    <div className="absolute rounded px-3 py-1.5 text-[10px] bg-white/10 border border-white/20" style={{ top: '30%', right: '10%' }}>
+                    <div className="absolute rounded px-4 py-2 text-sm bg-white/10 border border-white/20" style={{ top: '30%', right: '10%' }}>
                       Idea C
                     </div>
                   </>
@@ -284,38 +284,38 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
                 {hasStyle && (
                   <div className="absolute inset-2 flex items-center justify-center p-4 overflow-auto">
                     <div className="relative w-full h-full min-h-[200px] max-w-3xl mx-auto">
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-xl px-5 py-2.5 bg-[#34c759]/25 border-2 border-[#34c759]/60 text-white font-semibold text-sm shadow-lg">
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-xl px-6 py-3 bg-[#34c759]/25 border-2 border-[#34c759]/60 text-white font-semibold text-base shadow-lg">
                         Product Mgmt
                       </div>
                       <div className="absolute top-[15%] left-[20%] flex flex-col gap-1">
-                        <div className="rounded-lg px-3 py-1.5 bg-[#60a5fa]/25 border border-[#60a5fa]/50 text-white text-xs font-medium">Acronyms</div>
-                        <div className="flex flex-wrap gap-1 pl-2">
+                        <div className="rounded-lg px-4 py-2 bg-[#60a5fa]/25 border border-[#60a5fa]/50 text-white text-sm font-medium">Acronyms</div>
+                        <div className="flex flex-wrap gap-2 pl-2">
                           {['OKR', 'KPI', 'MVP', 'ROI', 'PRD', 'GTM', 'UX'].map((t) => (
-                            <span key={t} className="rounded px-2 py-0.5 bg-[#60a5fa]/15 border border-[#60a5fa]/30 text-[10px] text-white/90">{t}</span>
+                            <span key={t} className="rounded px-2.5 py-1 bg-[#60a5fa]/15 border border-[#60a5fa]/30 text-xs text-white/90">{t}</span>
                           ))}
                         </div>
                       </div>
                       <div className="absolute top-[15%] right-[20%] flex flex-col gap-1">
-                        <div className="rounded-lg px-3 py-1.5 bg-[#f472b6]/25 border border-[#f472b6]/50 text-white text-xs font-medium">Frameworks</div>
-                        <div className="flex flex-wrap gap-1 pl-2">
+                        <div className="rounded-lg px-4 py-2 bg-[#f472b6]/25 border border-[#f472b6]/50 text-white text-sm font-medium">Frameworks</div>
+                        <div className="flex flex-wrap gap-2 pl-2">
                           {['Agile', 'Scrum', 'Kanban', 'Lean'].map((t) => (
-                            <span key={t} className="rounded px-2 py-0.5 bg-[#f472b6]/15 border border-[#f472b6]/30 text-[10px] text-white/90">{t}</span>
+                            <span key={t} className="rounded px-2.5 py-1 bg-[#f472b6]/15 border border-[#f472b6]/30 text-xs text-white/90">{t}</span>
                           ))}
                         </div>
                       </div>
                       <div className="absolute bottom-[20%] left-[15%] flex flex-col gap-1">
-                        <div className="rounded-lg px-3 py-1.5 bg-[#a78bfa]/25 border border-[#a78bfa]/50 text-white text-xs font-medium">Skills</div>
-                        <div className="flex flex-wrap gap-1 pl-2">
+                        <div className="rounded-lg px-4 py-2 bg-[#a78bfa]/25 border border-[#a78bfa]/50 text-white text-sm font-medium">Skills</div>
+                        <div className="flex flex-wrap gap-2 pl-2">
                           {['Roadmapping', 'Prioritization', 'User Research', 'Stakeholder Mgmt'].map((t) => (
-                            <span key={t} className="rounded px-2 py-0.5 bg-[#a78bfa]/15 border border-[#a78bfa]/30 text-[10px] text-white/90">{t}</span>
+                            <span key={t} className="rounded px-2.5 py-1 bg-[#a78bfa]/15 border border-[#a78bfa]/30 text-xs text-white/90">{t}</span>
                           ))}
                         </div>
                       </div>
                       <div className="absolute bottom-[20%] right-[15%] flex flex-col gap-1">
-                        <div className="rounded-lg px-3 py-1.5 bg-[#34d399]/25 border border-[#34d399]/50 text-white text-xs font-medium">Deliverables</div>
-                        <div className="flex flex-wrap gap-1 pl-2">
+                        <div className="rounded-lg px-4 py-2 bg-[#34d399]/25 border border-[#34d399]/50 text-white text-sm font-medium">Deliverables</div>
+                        <div className="flex flex-wrap gap-2 pl-2">
                           {['Roadmap', 'PRD', 'User Stories', 'Backlog'].map((t) => (
-                            <span key={t} className="rounded px-2 py-0.5 bg-[#34d399]/15 border border-[#34d399]/30 text-[10px] text-white/90">{t}</span>
+                            <span key={t} className="rounded px-2.5 py-1 bg-[#34d399]/15 border border-[#34d399]/30 text-xs text-white/90">{t}</span>
                           ))}
                         </div>
                       </div>
@@ -328,28 +328,28 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
                     </div>
                   </div>
                 )}
-                {!hasCentralFrame && !hasStyle && <span className="text-white/40 text-sm">Canvas</span>}
+                {!hasCentralFrame && !hasStyle && <span className="text-white/40 text-base">Canvas</span>}
               </div>
             </div>
           </HotspotButton>
-          <div className="w-40 bg-[#383838] border-l border-white/15 p-3 shrink-0 flex flex-col gap-2 overflow-y-auto">
+          <div className="w-44 bg-[#383838] border-l border-white/15 p-4 shrink-0 flex flex-col gap-3 overflow-y-auto">
             <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-component-tab' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Create component</div>
+              <div className={`min-h-[48px] h-12 rounded flex items-center px-3 text-sm ${currentHotspotId === 'fig-component-tab' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Create component</div>
             </HotspotButton>
             <HotspotButton id="fig-instance" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-instance' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Instance</div>
+              <div className={`min-h-[48px] h-12 rounded flex items-center px-3 text-sm ${currentHotspotId === 'fig-instance' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Instance</div>
             </HotspotButton>
             <HotspotButton id="fig-instance2" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-instance2' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Instance</div>
+              <div className={`min-h-[48px] h-12 rounded flex items-center px-3 text-sm ${currentHotspotId === 'fig-instance2' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Instance</div>
             </HotspotButton>
             <HotspotButton id="fig-connector" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-connector' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-white/5 text-white/70'}`}>Connector</div>
+              <div className={`min-h-[48px] h-12 rounded flex items-center px-3 text-sm ${currentHotspotId === 'fig-connector' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-white/5 text-white/70'}`}>Connector</div>
             </HotspotButton>
             <HotspotButton id="fig-autolayout" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-autolayout' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-white/5 text-white/70'}`}>Auto layout</div>
+              <div className={`min-h-[48px] h-12 rounded flex items-center px-3 text-sm ${currentHotspotId === 'fig-autolayout' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-white/5 text-white/70'}`}>Auto layout</div>
             </HotspotButton>
             <HotspotButton id="fig-style" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-style' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-white/5 text-white/70'}`}>Fill</div>
+              <div className={`min-h-[48px] h-12 rounded flex items-center px-3 text-sm ${currentHotspotId === 'fig-style' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-white/5 text-white/70'}`}>Fill</div>
             </HotspotButton>
           </div>
         </div>
@@ -357,55 +357,55 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
     )
   }
   return (
-    <div className="absolute inset-0 flex flex-col text-xs">
-      <div className="h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-3 gap-4 shrink-0">
+    <div className="absolute inset-0 flex flex-col text-sm">
+      <div className="h-12 bg-[#2e2e2e] border-b border-white/15 flex items-center px-5 gap-6 shrink-0">
         <span className="text-white/80">Frame</span>
         <span className="text-white/80">Component</span>
         <span className="text-white/80">Prototype</span>
       </div>
       <div className="flex flex-1 min-h-0">
         <HotspotButton id="fig-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="flex-1 min-w-0 flex flex-col min-h-0">
-          <div className="flex-1 p-4 bg-[#404040] min-w-0 min-h-0">
-            <div className={`w-full h-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 text-sm transition-colors ${hasSelection ? 'border-[#8b5cf6]/60 bg-[#8b5cf6]/5' : ''} ${currentHotspotId === 'fig-canvas' ? 'border-[#34c759]/60 text-[#34c759]' : 'border-white/25 text-white/40'}`}>
-              {hasSelection && <div className="w-24 h-16 rounded bg-white/20" />}
+          <div className="flex-1 p-5 bg-[#404040] min-w-0 min-h-0">
+            <div className={`w-full h-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-3 text-base transition-colors ${hasSelection ? 'border-[#8b5cf6]/60 bg-[#8b5cf6]/5' : ''} ${currentHotspotId === 'fig-canvas' ? 'border-[#34c759]/60 text-[#34c759]' : 'border-white/25 text-white/40'}`}>
+              {hasSelection && <div className="w-28 h-20 rounded bg-white/20" />}
               <span>{isComponent ? 'Component' : 'Canvas'}</span>
-              {hasVariants && <span className="text-[10px] text-[#34c759]/80">Default · Hover · Pressed</span>}
+              {hasVariants && <span className="text-sm text-[#34c759]/80">Default · Hover · Pressed</span>}
             </div>
           </div>
         </HotspotButton>
-        <div className="w-36 bg-[#383838] border-l border-white/15 p-3 shrink-0 flex flex-col gap-2">
+        <div className="w-44 bg-[#383838] border-l border-white/15 p-4 shrink-0 flex flex-col gap-3">
           <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-component-tab' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Create component</div>
+            <div className={`min-h-[48px] h-12 rounded flex items-center px-3 text-sm ${currentHotspotId === 'fig-component-tab' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Create component</div>
           </HotspotButton>
           {currentHotspotId === 'fig-component-tab' && (
-            <div className="p-2 rounded bg-[#454545] border border-white/10 text-[9px] text-white/70">Creates main component</div>
+            <div className="p-3 rounded bg-[#454545] border border-white/10 text-sm text-white/70">Creates main component</div>
           )}
-          <div className="text-white/50 mb-1 mt-2">Component</div>
+          <div className="text-white/50 mb-2 mt-3 text-sm">Component</div>
           <HotspotButton id="fig-component-add" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-component-add' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Property</div>
+            <div className={`min-h-[48px] h-12 rounded flex items-center px-3 text-sm ${currentHotspotId === 'fig-component-add' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Property</div>
           </HotspotButton>
           {currentHotspotId === 'fig-component-add' && (
-            <div className="p-2 rounded bg-[#454545] border border-white/10 space-y-1">
-              <div className="text-white/70 text-[9px]">Add property:</div>
-              <div className="flex gap-1"><div className="px-2 py-1 rounded bg-[#34c759]/20 text-[#34c759] text-[8px]">State</div><div className="px-2 py-1 rounded bg-white/10 text-white/50 text-[8px]">Size</div></div>
+            <div className="p-3 rounded bg-[#454545] border border-white/10 space-y-2">
+              <div className="text-white/70 text-sm">Add property:</div>
+              <div className="flex gap-2"><div className="px-2.5 py-1 rounded bg-[#34c759]/20 text-[#34c759] text-xs">State</div><div className="px-2.5 py-1 rounded bg-white/10 text-white/50 text-xs">Size</div></div>
             </div>
           )}
           <HotspotButton id="fig-variants" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-variants' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Variants</div>
+            <div className={`min-h-[48px] h-12 rounded flex items-center px-3 text-sm ${currentHotspotId === 'fig-variants' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Variants</div>
           </HotspotButton>
           {currentHotspotId === 'fig-variants' && (
-            <div className="p-2 rounded bg-[#454545] border border-white/10 space-y-1">
-              <div className="text-white/70 text-[9px]">Values:</div>
-              <div className="flex flex-wrap gap-1"><span className="px-2 py-0.5 rounded bg-[#34c759]/20 text-[#34c759] text-[8px]">Default</span><span className="px-2 py-0.5 rounded bg-white/10 text-[8px]">Hover</span><span className="px-2 py-0.5 rounded bg-white/10 text-[8px]">Pressed</span></div>
+            <div className="p-3 rounded bg-[#454545] border border-white/10 space-y-2">
+              <div className="text-white/70 text-sm">Values:</div>
+              <div className="flex flex-wrap gap-2"><span className="px-2.5 py-1 rounded bg-[#34c759]/20 text-[#34c759] text-xs">Default</span><span className="px-2.5 py-1 rounded bg-white/10 text-xs">Hover</span><span className="px-2.5 py-1 rounded bg-white/10 text-xs">Pressed</span></div>
             </div>
           )}
           <HotspotButton id="fig-swap" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-10 rounded mt-2 flex items-center justify-between px-2 text-[10px] ${currentHotspotId === 'fig-swap' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-white/5 text-white/70'}`}>Swap <span className="text-[8px]">▼</span></div>
+            <div className={`min-h-[48px] h-12 rounded mt-3 flex items-center justify-between px-3 text-sm ${currentHotspotId === 'fig-swap' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-white/5 text-white/70'}`}>Swap <span className="text-xs">▼</span></div>
           </HotspotButton>
           {currentHotspotId === 'fig-swap' && (
-            <div className="p-2 rounded bg-[#454545] border border-white/10">
-              <div className="text-[9px] text-white/70">State: Default ▼</div>
-              <div className="mt-1 text-[8px] text-white/50">Hover · Pressed</div>
+            <div className="p-3 rounded bg-[#454545] border border-white/10">
+              <div className="text-sm text-white/70">State: Default ▼</div>
+              <div className="mt-1 text-xs text-white/50">Hover · Pressed</div>
             </div>
           )}
         </div>
@@ -427,28 +427,28 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
   const hasStroke = isSky && stepIdx >= 8
   const hasBlend = isSky && stepIdx >= 9
   return (
-    <div className="absolute inset-0 flex flex-col text-xs">
-      <div className="h-10 bg-[#2e2e2e] border-b border-white/15 flex items-center justify-center gap-6 px-4 shrink-0">
+    <div className="absolute inset-0 flex flex-col text-sm">
+      <div className="h-12 bg-[#2e2e2e] border-b border-white/15 flex items-center justify-center gap-8 px-4 shrink-0">
         {isSky && (
           <HotspotButton id="proc-export" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <span className={`px-2 py-1 rounded ${currentHotspotId === 'proc-export' ? 'ring-2 ring-[#34c759]/50' : ''} text-white/80`}>⚙</span>
+            <span className={`px-2.5 py-1.5 rounded text-lg ${currentHotspotId === 'proc-export' ? 'ring-2 ring-[#34c759]/50' : ''} text-white/80`}>⚙</span>
           </HotspotButton>
         )}
         {isSky && (
           <HotspotButton id="proc-color" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`w-8 h-8 rounded-full border-2 ${hasColor ? 'border-[#34c759] bg-[#60a5fa]/80' : 'border-white/40 bg-[#60a5fa]/50'} ${currentHotspotId === 'proc-color' ? 'ring-2 ring-[#34c759]/50' : ''}`} />
+            <div className={`w-10 h-10 rounded-full border-2 ${hasColor ? 'border-[#34c759] bg-[#60a5fa]/80' : 'border-white/40 bg-[#60a5fa]/50'} ${currentHotspotId === 'proc-color' ? 'ring-2 ring-[#34c759]/50' : ''}`} />
           </HotspotButton>
         )}
         <span className="text-white/80">Actions</span>
         <HotspotButton id="proc-brush" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-          <span className={`px-2 py-1 rounded ${currentHotspotId === 'proc-brush' ? 'ring-2 ring-[#34c759]/50' : ''} ${brushActive ? 'text-[#34c759] font-medium' : 'text-white/80'}`}>Brush</span>
+          <span className={`px-3 py-1.5 rounded text-base ${currentHotspotId === 'proc-brush' ? 'ring-2 ring-[#34c759]/50' : ''} ${brushActive ? 'text-[#34c759] font-medium' : 'text-white/80'}`}>Brush</span>
         </HotspotButton>
-        <span className="text-white/80">Eraser</span>
-        <span className="text-white/80">Layers</span>
+        <span className="text-white/80 text-base">Eraser</span>
+        <span className="text-white/80 text-base">Layers</span>
       </div>
       {currentHotspotId === 'proc-brush' && (
-        <div className="bg-[#454545] border-b border-white/10 px-3 py-2 flex gap-2 shrink-0">
-          <span className="text-white/60 text-[9px]">Brush Library:</span>
+        <div className="bg-[#454545] border-b border-white/10 px-4 py-3 flex gap-3 shrink-0">
+          <span className="text-white/60 text-sm">Brush Library:</span>
           <div className="flex gap-1 rounded bg-white/10 p-1">
             <div className="w-8 h-8 rounded-full bg-[#34c759]/40 border border-[#34c759]/60" />
             <div className="w-8 h-8 rounded-full bg-white/20" />
@@ -457,80 +457,80 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
         </div>
       )}
       <div className="flex flex-1 min-h-0">
-        <div className="w-24 bg-[#383838] border-r border-white/15 p-2 shrink-0 flex flex-col gap-2">
+        <div className="w-28 bg-[#383838] border-r border-white/15 p-4 shrink-0 flex flex-col gap-3">
           <HotspotButton id="proc-new" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="w-full">
-            <div className={`w-full min-h-[44px] h-11 rounded text-[9px] flex items-center justify-center ${currentHotspotId === 'proc-new' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ New</div>
+            <div className={`w-full min-h-[48px] h-12 rounded text-sm flex items-center justify-center ${currentHotspotId === 'proc-new' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ New</div>
           </HotspotButton>
           {currentHotspotId === 'proc-new' && (
-            <div className="p-2 rounded bg-[#454545] border border-white/10">
-              <div className="text-[#34c759] text-[9px]">✓ Create new brush</div>
+            <div className="p-3 rounded bg-[#454545] border border-white/10">
+              <div className="text-[#34c759] text-sm">✓ Create new brush</div>
             </div>
           )}
-          <div className={`w-full h-10 rounded flex items-center justify-center text-[8px] ${hasNewBrush ? 'bg-white/15 text-[#34c759]/80' : 'bg-white/10 text-white/40'}`}>{hasNewBrush ? '✓ Custom' : 'Brush 1'}</div>
-          <div className="w-full h-10 bg-white/10 rounded flex items-center justify-center text-[8px] text-white/40">Brush 2</div>
+          <div className={`w-full h-12 rounded flex items-center justify-center text-sm ${hasNewBrush ? 'bg-white/15 text-[#34c759]/80' : 'bg-white/10 text-white/40'}`}>{hasNewBrush ? '✓ Custom' : 'Brush 1'}</div>
+          <div className="w-full h-12 bg-white/10 rounded flex items-center justify-center text-sm text-white/40">Brush 2</div>
           {isSky && (
             <>
-              <div className="text-white/50 mt-2 text-[9px]">Layers</div>
+              <div className="text-white/50 mt-3 text-sm">Layers</div>
               <HotspotButton id="proc-layer" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="w-full">
-                <div className={`w-full min-h-[44px] h-10 rounded text-[9px] flex items-center justify-center ${currentHotspotId === 'proc-layer' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Layer</div>
+                <div className={`w-full min-h-[48px] h-12 rounded text-sm flex items-center justify-center ${currentHotspotId === 'proc-layer' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Layer</div>
               </HotspotButton>
-              {hasLayer && <div className="w-full h-12 rounded bg-white/10 flex items-center px-2 gap-1"><div className="w-8 h-8 rounded bg-[#60a5fa]/40" /><span className="text-[8px] text-white/70">Sky</span></div>}
-              {hasLayer && <div className="w-full h-10 rounded bg-white/5 flex items-center px-2 text-[8px] text-white/40">Background</div>}
+              {hasLayer && <div className="w-full h-14 rounded bg-white/10 flex items-center px-3 gap-2"><div className="w-10 h-10 rounded bg-[#60a5fa]/40" /><span className="text-sm text-white/70">Sky</span></div>}
+              {hasLayer && <div className="w-full h-12 rounded bg-white/5 flex items-center px-3 text-sm text-white/40">Background</div>}
             </>
           )}
         </div>
-        <div className={`flex-1 p-4 min-w-0 transition-all ${brushActive ? 'bg-[#404040]' : 'bg-[#404040]'}`}>
+        <div className={`flex-1 p-5 min-w-0 transition-all ${brushActive ? 'bg-[#404040]' : 'bg-[#404040]'}`}>
           <HotspotButton id="proc-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className={`w-full h-full ${!isSky ? 'pointer-events-none' : ''}`}>
-            <div className={`w-full h-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 text-sm transition-all relative overflow-hidden ${brushActive ? 'border-white/30' : 'border-white/20'} ${isSky && hasStroke ? 'border-none' : ''}`}>
+            <div className={`w-full h-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-3 text-base transition-all relative overflow-hidden ${brushActive ? 'border-white/30' : 'border-white/20'} ${isSky && hasStroke ? 'border-none' : ''}`}>
               {isSky && hasStroke && (
                 <div className="absolute inset-0 bg-gradient-to-b from-[#93c5fd] via-[#60a5fa] to-[#fbbf24]/80" />
               )}
               {isSky && hasStroke && (
                 <div className="absolute inset-0 opacity-40 bg-[length:40px_40px]" style={{ backgroundImage: 'radial-gradient(circle, #34c759 1px, transparent 1px)' }} />
               )}
-              {brushActive && !hasStroke && <div className="absolute top-4 right-4 w-6 h-6 rounded-full border-2 border-[#34c759] bg-[#34c759]/30" title="Brush cursor" />}
-              {hasNewBrush && !hasStroke && <div className="w-12 h-12 rounded-full bg-[#34c759]/40 border-2 border-[#34c759]/60" />}
-              {inBrushStudio && !hasStroke && <span className="text-white/50 text-[10px]">Brush Studio</span>}
-              {brushSaved && !hasStroke && <span className="text-[#34c759] text-xs">✓ Saved</span>}
+              {brushActive && !hasStroke && <div className="absolute top-5 right-5 w-8 h-8 rounded-full border-2 border-[#34c759] bg-[#34c759]/30" title="Brush cursor" />}
+              {hasNewBrush && !hasStroke && <div className="w-14 h-14 rounded-full bg-[#34c759]/40 border-2 border-[#34c759]/60" />}
+              {inBrushStudio && !hasStroke && <span className="text-white/50 text-sm">Brush Studio</span>}
+              {brushSaved && !hasStroke && <span className="text-[#34c759] text-sm">✓ Saved</span>}
               {!hasNewBrush && !brushSaved && !hasStroke && <span className="text-white/40">Canvas</span>}
-              {isSky && hasStroke && <span className="relative text-white/90 text-xs drop-shadow">Textured sky</span>}
+              {isSky && hasStroke && <span className="relative text-white/90 text-base drop-shadow">Textured sky</span>}
             </div>
           </HotspotButton>
         </div>
-        <div className="w-28 bg-[#383838] border-l border-white/15 p-2 shrink-0 flex flex-col gap-3">
-          <div className="text-white/50">Brush Studio</div>
+        <div className="w-32 bg-[#383838] border-l border-white/15 p-4 shrink-0 flex flex-col gap-4">
+          <div className="text-white/50 text-sm">Brush Studio</div>
           <HotspotButton id="proc-shape" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="w-full">
-            <div className={`w-full min-h-[44px] h-10 rounded text-[9px] flex items-center justify-between px-2 ${currentHotspotId === 'proc-shape' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${shapeDone ? 'border border-[#34c759]/40' : ''}`}>Shape {shapeDone && '✓'}</div>
+            <div className={`w-full min-h-[48px] h-12 rounded text-sm flex items-center justify-between px-3 ${currentHotspotId === 'proc-shape' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${shapeDone ? 'border border-[#34c759]/40' : ''}`}>Shape {shapeDone && '✓'}</div>
           </HotspotButton>
           {currentHotspotId === 'proc-shape' && (
-            <div className="p-2 rounded bg-[#454545] border border-white/10 space-y-1">
-              <div className="text-white/70 text-[8px]">Grain</div>
-              <div className="h-6 bg-white/10 rounded" />
+            <div className="p-3 rounded bg-[#454545] border border-white/10 space-y-2">
+              <div className="text-white/70 text-sm">Grain</div>
+              <div className="h-8 bg-white/10 rounded" />
             </div>
           )}
           <HotspotButton id="proc-dynamics" className="w-full" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`w-full min-h-[44px] h-10 rounded text-[9px] flex items-center justify-between px-2 ${currentHotspotId === 'proc-dynamics' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${dynamicsDone ? 'border border-[#34c759]/40' : ''}`}>Dynamics {dynamicsDone && '✓'}</div>
+            <div className={`w-full min-h-[48px] h-12 rounded text-sm flex items-center justify-between px-3 ${currentHotspotId === 'proc-dynamics' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${dynamicsDone ? 'border border-[#34c759]/40' : ''}`}>Dynamics {dynamicsDone && '✓'}</div>
           </HotspotButton>
           {currentHotspotId === 'proc-dynamics' && (
-            <div className="p-2 rounded bg-[#454545] border border-white/10 space-y-1">
-              <div className="flex justify-between text-[8px] text-white/40"><span>Size</span><span>80%</span></div>
-              <div className="h-1 bg-white/20 rounded-full" />
-              <div className="flex justify-between text-[8px] text-white/40"><span>Opacity</span><span>100%</span></div>
+            <div className="p-3 rounded bg-[#454545] border border-white/10 space-y-2">
+              <div className="flex justify-between text-sm text-white/40"><span>Size</span><span>80%</span></div>
+              <div className="h-1.5 bg-white/20 rounded-full" />
+              <div className="flex justify-between text-sm text-white/40"><span>Opacity</span><span>100%</span></div>
               <div className="h-1 bg-white/20 rounded-full" />
             </div>
           )}
           <HotspotButton id="proc-done" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="w-full">
-            <div className={`w-full min-h-[44px] h-11 rounded flex items-center justify-center text-[9px] ${currentHotspotId === 'proc-done' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Done</div>
+            <div className={`w-full min-h-[48px] h-12 rounded flex items-center justify-center text-sm ${currentHotspotId === 'proc-done' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Done</div>
           </HotspotButton>
           {isSky && (
             <>
-              <div className="text-white/50 mt-2 text-[9px]">Blend</div>
+              <div className="text-white/50 mt-3 text-sm">Blend</div>
               <HotspotButton id="proc-blend" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="w-full">
-                <div className={`w-full min-h-[44px] h-10 rounded flex items-center justify-between px-2 text-[9px] ${currentHotspotId === 'proc-blend' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${hasBlend ? 'border border-[#34c759]/40' : ''}`}>Normal {hasBlend && '✓'} ▼</div>
+                <div className={`w-full min-h-[48px] h-12 rounded flex items-center justify-between px-3 text-sm ${currentHotspotId === 'proc-blend' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${hasBlend ? 'border border-[#34c759]/40' : ''}`}>Normal {hasBlend && '✓'} ▼</div>
               </HotspotButton>
               {currentHotspotId === 'proc-blend' && (
-                <div className="p-2 rounded bg-[#454545] border border-white/10 space-y-1">
-                  <div className="text-[8px] text-white/50">Multiply · Overlay · Screen</div>
+                <div className="p-3 rounded bg-[#454545] border border-white/10 space-y-2">
+                  <div className="text-sm text-white/50">Multiply · Overlay · Screen</div>
                 </div>
               )}
             </>
@@ -548,72 +548,72 @@ function NotionMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx =
   const hasLinked = stepIdx >= 4
   const hasFilter = stepIdx >= 5
   return (
-    <div className="absolute inset-0 flex flex-col text-xs">
-      <div className="h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-3 shrink-0">
+    <div className="absolute inset-0 flex flex-col text-sm">
+      <div className="h-12 bg-[#2e2e2e] border-b border-white/15 flex items-center px-5 shrink-0">
         <HotspotButton id="notion-new" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-          <span className={hasPage ? 'text-[#34c759] font-medium' : 'text-white/80'}>+ New page</span>
+          <span className={`${hasPage ? 'text-[#34c759] font-medium' : 'text-white/80'} text-base`}>+ New page</span>
         </HotspotButton>
       </div>
       <div className="flex flex-1 min-h-0">
-        <div className="w-28 bg-[#383838] border-r border-white/15 p-2 shrink-0">
+        <div className="w-32 bg-[#383838] border-r border-white/15 p-4 shrink-0">
           <HotspotButton id="notion-new" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-10 rounded mb-2 text-[9px] flex items-center px-2 ${currentHotspotId === 'notion-new' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Add</div>
+            <div className={`min-h-[48px] h-12 rounded mb-3 text-sm flex items-center px-3 ${currentHotspotId === 'notion-new' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Add</div>
           </HotspotButton>
           {currentHotspotId === 'notion-new' && (
-            <div className="mb-2 p-2 rounded bg-[#454545] border border-white/10 space-y-1">
-              <div className="text-[#34c759] text-[9px]">New page</div>
-              <div className="text-white/50 text-[8px]">Page · Database</div>
+            <div className="mb-3 p-3 rounded bg-[#454545] border border-white/10 space-y-2">
+              <div className="text-[#34c759] text-sm">New page</div>
+              <div className="text-white/50 text-xs">Page · Database</div>
             </div>
           )}
-          <div className="h-8 bg-white/10 rounded mb-2" />
-          <div className="h-8 bg-white/10 rounded" />
+          <div className="h-10 bg-white/10 rounded mb-3" />
+          <div className="h-10 bg-white/10 rounded" />
         </div>
-        <div className="flex-1 p-4 bg-[#404040] min-w-0">
+        <div className="flex-1 p-5 bg-[#404040] min-w-0">
           <HotspotButton id="notion-db" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-10 rounded mb-2 w-36 flex items-center px-2 ${currentHotspotId === 'notion-db' ? 'bg-[#34c759]/30 ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20'}`}>
-              {hasDb ? <span className="text-[#34c759] text-[9px]">✓ Table</span> : <span className="text-white/40 text-[9px]">/table</span>}
+            <div className={`min-h-[48px] h-12 rounded mb-3 w-40 flex items-center px-3 text-sm ${currentHotspotId === 'notion-db' ? 'bg-[#34c759]/30 ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20'}`}>
+              {hasDb ? <span className="text-[#34c759]">✓ Table</span> : <span className="text-white/40">/table</span>}
             </div>
           </HotspotButton>
           {currentHotspotId === 'notion-db' && (
-            <div className="mb-2 p-2 rounded bg-[#454545] border border-white/10 space-y-1">
-              <div className="text-white/70 text-[9px]">Table – Inline</div>
-              <div className="text-white/50 text-[8px]">Linked database</div>
+            <div className="mb-3 p-3 rounded bg-[#454545] border border-white/10 space-y-2">
+              <div className="text-white/70 text-sm">Table – Inline</div>
+              <div className="text-white/50 text-xs">Linked database</div>
             </div>
           )}
-          {hasDb && <div className="h-20 bg-white/10 rounded mb-2 flex gap-2 p-2"><div className="flex-1 h-4 bg-white/20 rounded" /><div className="flex-1 h-4 bg-white/20 rounded" /></div>}
-          <div className="text-white/50 text-[10px]">/table or /database</div>
+          {hasDb && <div className="h-24 bg-white/10 rounded mb-3 flex gap-3 p-3"><div className="flex-1 h-5 bg-white/20 rounded" /><div className="flex-1 h-5 bg-white/20 rounded" /></div>}
+          <div className="text-white/50 text-sm">/table or /database</div>
         </div>
-        <div className="w-36 bg-[#383838] border-l border-white/15 p-3 shrink-0 flex flex-col gap-3">
+        <div className="w-44 bg-[#383838] border-l border-white/15 p-4 shrink-0 flex flex-col gap-4">
           <div>
-            <div className="text-white/50 mb-2">Properties</div>
+            <div className="text-white/50 mb-3 text-sm">Properties</div>
             <HotspotButton id="notion-props" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[44px] h-9 rounded flex items-center justify-between px-2 text-[9px] ${currentHotspotId === 'notion-props' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${hasProps ? 'border border-[#34c759]/40' : ''}`}>+ Add {hasProps && '✓'}</div>
+              <div className={`min-h-[48px] h-11 rounded flex items-center justify-between px-3 text-sm ${currentHotspotId === 'notion-props' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${hasProps ? 'border border-[#34c759]/40' : ''}`}>+ Add {hasProps && '✓'}</div>
             </HotspotButton>
             {currentHotspotId === 'notion-props' && (
-              <div className="mt-1 p-2 rounded bg-[#454545] border border-white/10 space-y-1">
-                <div className="text-white/70 text-[9px]">Property type:</div>
-                <div className="flex flex-wrap gap-1"><span className="px-2 py-0.5 rounded bg-[#34c759]/20 text-[#34c759] text-[8px]">Status</span><span className="px-2 py-0.5 rounded bg-white/10 text-[8px]">Date</span><span className="px-2 py-0.5 rounded bg-white/10 text-[8px]">Person</span></div>
+              <div className="mt-2 p-3 rounded bg-[#454545] border border-white/10 space-y-2">
+                <div className="text-white/70 text-sm">Property type:</div>
+                <div className="flex flex-wrap gap-2"><span className="px-2.5 py-1 rounded bg-[#34c759]/20 text-[#34c759] text-xs">Status</span><span className="px-2.5 py-1 rounded bg-white/10 text-xs">Date</span><span className="px-2.5 py-1 rounded bg-white/10 text-xs">Person</span></div>
               </div>
             )}
           </div>
-          <div className="flex flex-col gap-2">
-            <div className="text-white/50">View</div>
+          <div className="flex flex-col gap-3">
+            <div className="text-white/50 text-sm">View</div>
             <HotspotButton id="notion-linked" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[44px] h-9 rounded flex items-center justify-between px-2 text-[9px] ${currentHotspotId === 'notion-linked' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${hasLinked ? 'border border-[#34c759]/40' : ''}`}>Linked {hasLinked && '✓'}</div>
+              <div className={`min-h-[48px] h-11 rounded flex items-center justify-between px-3 text-sm ${currentHotspotId === 'notion-linked' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${hasLinked ? 'border border-[#34c759]/40' : ''}`}>Linked {hasLinked && '✓'}</div>
             </HotspotButton>
             {currentHotspotId === 'notion-linked' && (
-              <div className="p-2 rounded bg-[#454545] border border-white/10 space-y-1">
-                <div className="text-white/70 text-[9px]">View type:</div>
-                <div className="flex gap-1"><span className="px-2 py-0.5 rounded bg-[#34c759]/20 text-[#34c759] text-[8px]">Board</span><span className="px-2 py-0.5 rounded bg-white/10 text-[8px]">Calendar</span></div>
+              <div className="p-3 rounded bg-[#454545] border border-white/10 space-y-2">
+                <div className="text-white/70 text-sm">View type:</div>
+                <div className="flex gap-2"><span className="px-2.5 py-1 rounded bg-[#34c759]/20 text-[#34c759] text-xs">Board</span><span className="px-2.5 py-1 rounded bg-white/10 text-xs">Calendar</span></div>
               </div>
             )}
             <HotspotButton id="notion-filter" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[44px] h-9 rounded flex items-center justify-between px-2 text-[9px] ${currentHotspotId === 'notion-filter' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${hasFilter ? 'border border-[#34c759]/40' : ''}`}>Filter {hasFilter && '✓'}</div>
+              <div className={`min-h-[48px] h-11 rounded flex items-center justify-between px-3 text-sm ${currentHotspotId === 'notion-filter' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${hasFilter ? 'border border-[#34c759]/40' : ''}`}>Filter {hasFilter && '✓'}</div>
             </HotspotButton>
             {currentHotspotId === 'notion-filter' && (
-              <div className="p-2 rounded bg-[#454545] border border-white/10 space-y-1">
-                <div className="text-white/70 text-[9px]">Add condition:</div>
-                <div className="text-[8px] text-white/50">Status = In progress</div>
+              <div className="p-3 rounded bg-[#454545] border border-white/10 space-y-2">
+                <div className="text-white/70 text-sm">Add condition:</div>
+                <div className="text-xs text-white/50">Status = In progress</div>
               </div>
             )}
           </div>
@@ -668,35 +668,35 @@ export default function PearNavigator() {
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-gradient-to-br from-[#0d0d0d] via-[#1a1a1a] to-[#0d0d0d] flex flex-col">
-      <div className="flex-none flex items-center justify-between px-4 py-3">
-          <Link href="/" className="text-white hover:text-gray-300 text-2xl font-bold">
+      <div className="flex-none flex items-center justify-between px-6 py-5">
+          <Link href="/" className="text-white hover:text-gray-300 text-2xl md:text-3xl font-bold">
             ← Home
           </Link>
-          <span className="text-lg font-semibold text-white">
+          <span className="text-xl md:text-2xl font-semibold text-white">
             Pear<span className="text-[#34c759]">Navigator</span>
           </span>
-          <span className="text-xs text-gray-500">PearPad</span>
+          <span className="text-sm text-gray-500">PearPad</span>
       </div>
 
-      <div className="flex-1 flex flex-col lg:flex-row gap-2 px-2 pb-2 min-h-0 overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row gap-4 px-4 pb-4 min-h-0 overflow-hidden">
         {/* Guide panel */}
-        <div className="flex-none lg:w-72 xl:w-80 flex flex-col min-h-0 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch">
-            <div className="flex flex-col flex-1 min-h-0 p-6">
+        <div className="flex-none lg:w-80 xl:w-96 flex flex-col min-h-0 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch">
+            <div className="flex flex-col flex-1 min-h-0 p-8">
               {phase === 'task' && (
                 <>
-                  <p className="text-xs font-semibold text-[#34c759] uppercase tracking-wider mb-2 shrink-0">
+                  <p className="text-sm font-semibold text-[#34c759] uppercase tracking-wider mb-3 shrink-0">
                     What do you want to do?
                   </p>
-                  <h2 className="text-xl font-semibold text-white mb-2 shrink-0">Tell Pear Navigator your goal</h2>
-                  <p className="text-gray-400 text-sm mb-4 shrink-0">
+                  <h2 className="text-2xl font-semibold text-white mb-3 shrink-0">Tell Pear Navigator your goal</h2>
+                  <p className="text-gray-400 text-base mb-5 shrink-0">
                     Pick a task. The guide will appear step by step with highlights.
                   </p>
-                  <div className="flex-1 min-h-0 overflow-y-auto space-y-2 mb-6">
+                  <div className="flex-1 min-h-0 overflow-y-auto space-y-3 mb-6">
                     {Object.entries(TASKS).map(([id, t]) => (
                       <button
                         key={id}
                         onClick={() => setTaskId(id)}
-                        className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${
+                        className={`w-full text-left px-5 py-4 rounded-xl border transition-all text-base ${
                           taskId === id
                             ? 'border-[#34c759] bg-[#34c759]/15 text-white'
                             : 'border-white/10 bg-white/5 text-gray-300 hover:border-[#34c759]/50'
@@ -709,7 +709,7 @@ export default function PearNavigator() {
                   <button
                     onClick={handleStart}
                     disabled={!taskId}
-                    className="w-full py-4 rounded-xl bg-[#34c759] text-black font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+                    className="w-full py-5 rounded-xl bg-[#34c759] text-black font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
                   >
                     Start guide
                   </button>
@@ -718,29 +718,29 @@ export default function PearNavigator() {
 
               {phase === 'steps' && task && step && (
                 <>
-                  <p className="text-xs font-semibold text-[#34c759] uppercase tracking-wider mb-2">
+                  <p className="text-sm font-semibold text-[#34c759] uppercase tracking-wider mb-3 shrink-0">
                     Step {stepIdx + 1} of {task.steps.length}
                   </p>
-                  <h2 className="text-xl font-semibold text-white mb-2">{step.title}</h2>
-                  <p className="text-gray-400 text-sm mb-4">{step.desc}</p>
+                  <h2 className="text-2xl font-semibold text-white mb-3 shrink-0">{step.title}</h2>
+                  <p className="text-gray-400 text-base mb-5 shrink-0">{step.desc}</p>
                   {step.hint && (
-                    <div className="mb-4 p-3 rounded-lg bg-[#34c759]/15 border border-[#34c759]/30 text-[#34c759] text-sm">
+                    <div className="mb-5 p-4 rounded-lg bg-[#34c759]/15 border border-[#34c759]/30 text-[#34c759] text-base">
                       {step.hint}
                     </div>
                   )}
-                  <p className="mb-3 text-sm text-gray-400">
+                  <p className="mb-4 text-base text-gray-400 shrink-0">
                     Tap the highlighted button in the simulator to complete this step
                   </p>
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     <button
                       onClick={() => setShowHighlight((h) => !h)}
-                      className="flex-1 py-3 rounded-xl border border-white/20 bg-white/5 text-white font-medium hover:bg-white/10 transition-colors"
+                      className="flex-1 py-4 rounded-xl border border-white/20 bg-white/5 text-white font-medium text-base hover:bg-white/10 transition-colors"
                     >
                       {showHighlight ? 'Hide highlight' : 'Show highlight'}
                     </button>
                     <button
                       onClick={handleNext}
-                      className="flex-1 py-3 rounded-xl bg-[#34c759] text-black font-semibold hover:opacity-90 transition-opacity"
+                      className="flex-1 py-4 rounded-xl bg-[#34c759] text-black font-semibold text-base hover:opacity-90 transition-opacity"
                     >
                       {isLastStep ? 'Done' : 'Next step'}
                     </button>
@@ -749,15 +749,15 @@ export default function PearNavigator() {
               )}
 
               {phase === 'done' && (
-                <div className="text-center py-8">
-                  <div className="text-5xl text-[#34c759] mb-4">✓</div>
-                  <h2 className="text-2xl font-bold text-white mb-2">Task complete</h2>
-                  <p className="text-gray-400 mb-6">
+                <div className="text-center py-10">
+                  <div className="text-6xl text-[#34c759] mb-6">✓</div>
+                  <h2 className="text-3xl font-bold text-white mb-4">Task complete</h2>
+                  <p className="text-gray-400 text-lg mb-8">
                     You&apos;ve finished the guide. Try another task or refine your result.
                   </p>
                   <button
                     onClick={handleReset}
-                    className="px-8 py-3 rounded-xl bg-[#34c759] text-black font-semibold hover:opacity-90 transition-opacity"
+                    className="px-10 py-4 rounded-xl bg-[#34c759] text-black font-semibold text-lg hover:opacity-90 transition-opacity"
                   >
                     Start over
                   </button>
