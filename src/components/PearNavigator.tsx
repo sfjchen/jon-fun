@@ -243,7 +243,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
   const hasComponent = isMindmap && stepIdx >= 3
   const instanceCount = isMindmap && stepIdx >= 4 ? Math.min(stepIdx - 3, 9) : 0
   const hasConnectors = isMindmap && stepIdx >= 14
-  const hasAutoLayout = isMindmap && stepIdx >= 14
+  const hasAutoLayout = isMindmap && stepIdx >= 15
   const hasStyle = isMindmap && stepIdx >= 16
   // Radial positions for 9 nodes (40° intervals from top); Auto layout uses tighter radius
   const RADIAL_POS = hasAutoLayout
@@ -282,7 +282,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
                 {hasCentralFrame && !hasStyle && (
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
                     <HotspotButton id="fig-text" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-                      <div className={`rounded-full px-6 py-3 ${hasStyle ? 'px-16 py-8 text-xl' : 'px-6 py-3 text-base'} ${hasComponent ? 'border-2 border-[#8b5cf6] bg-[#4c1d95]' : 'border border-white/30 bg-[#4a4a4a]'} ${hasStyle ? 'bg-[#1a5c2e] border-2 border-[#34c759]/60' : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`}>
+                      <div className={`rounded-full px-6 py-3 ${hasStyle ? 'px-16 py-8 text-xl' : 'px-6 py-3 text-base'} ${hasComponent ? `border-2 border-[#8b5cf6] ${hasAutoLayout ? 'bg-[#4c1d95]' : 'bg-[#8b5cf6]/20'}` : `border border-white/30 ${hasAutoLayout ? 'bg-[#4a4a4a]' : 'bg-white/10'}`} ${hasStyle ? 'bg-[#1a5c2e] border-2 border-[#34c759]/60' : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`}>
                         {hasText && <span className="text-white font-medium">{hasStyle ? 'Product Mgmt' : 'Project'}</span>}
                         {!hasText && <span className="text-white/40">Frame</span>}
                       </div>
@@ -291,10 +291,11 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
                 )}
                 {instanceCount > 0 && !hasStyle && (() => {
                   const labels = ['Idea A', 'Idea B', 'Idea C', 'Idea D', 'Idea E', 'Idea F', 'Idea G', 'Idea H', 'Idea I']
+                  const bubbleBg = hasAutoLayout ? 'bg-[#4a4a4a]' : 'bg-white/10'
                   return (
                     <>
                       {Array.from({ length: instanceCount }).map((_, i) => (
-                        <div key={i} className="absolute rounded-full px-5 py-2.5 text-sm bg-[#4a4a4a] border border-white/25 whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10" style={{ left: RADIAL_POS[i]!.left, top: RADIAL_POS[i]!.top }}>{labels[i]}</div>
+                        <div key={i} className={`absolute rounded-full px-5 py-2.5 text-sm ${bubbleBg} border border-white/25 whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10`} style={{ left: RADIAL_POS[i]!.left, top: RADIAL_POS[i]!.top }}>{labels[i]}</div>
                       ))}
                     </>
                   )
