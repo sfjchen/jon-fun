@@ -10,6 +10,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **Chwazi Finger Chooser** (`/games/chwazi`): Place fingers on screen to randomly select a winner
 - **TMR System** (`/games/tmr`): Targeted Memory Reactivation for learning and sleep
 - **1 Sentence Everyday** (`/games/daily-log`): One sentence per day, history, calendar, export, cross-device sync (localStorage + Supabase)
+- **Pear Navigator** (`/games/pear-navigator`): Step-by-step guide with scripted highlight overlay for creative apps (Photoshop, Lightroom, Figma); MS&E 165 demo
 
 ## 🚀 Quick Start
 
@@ -43,7 +44,8 @@ src/
 │   │   ├── poker/
 │   │   ├── chwazi/
 │   │   ├── tmr/
-│   │   └── daily-log/
+│   │   ├── daily-log/
+│   │   └── pear-navigator/
 │   ├── leaderboards/       # Leaderboards page
 │   ├── globals.css         # Global styles
 │   ├── layout.tsx          # Root layout
@@ -59,7 +61,8 @@ src/
 │   ├── PokerChips.tsx
 │   ├── PokerJoinForm.tsx
 │   ├── TMRManager.tsx
-│   └── DailyLearnManager.tsx
+│   ├── DailyLearnManager.tsx
+│   └── PearNavigator.tsx
 └── lib/                    # Utility libraries
     ├── supabase.ts         # Supabase client
     ├── poker.ts            # Poker types & utilities
@@ -348,6 +351,7 @@ Running log of project work. Update this section when making significant changes
 - **Chwazi**: Touchscreen-only
 - **Home**: TMR + 1 Sentence top 2 cards; uniform card height; "← Home" standardized
 - **TMR**: Brain emoji → speaker (🔊) on page title and game chip; removed Run on Web info box
+- **Pear Navigator**: In-browser demo at `/games/pear-navigator`; step-by-step guide with scripted highlight overlay for Photoshop, Lightroom, Figma (MS&E 165)
 
 ## 📋 README Maintenance Guidelines
 
