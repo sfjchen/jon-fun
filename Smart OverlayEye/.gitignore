@@ -1,0 +1,22 @@
+# Virtual env and Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# Runtime and artifacts
+artifacts/
+debug_agent.log
+*.log
+
+# Large model files (LLaVA, OWL-ViT ONNX)
+models/*.gguf
+models/*.mmproj
+models/*.onnx
+models/*.quant.onnx
+
+# OS
+.DS_Store
+Thumbs.db
