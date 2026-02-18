@@ -21,6 +21,8 @@ const eslintConfig = [
       "next-env.d.ts",
       "*.config.js",
       "*.config.mjs",
+      "Smart OverlayEye/**",
+      "TMR_audio/**",
     ],
   },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
