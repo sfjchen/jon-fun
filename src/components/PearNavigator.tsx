@@ -680,18 +680,18 @@ export default function PearNavigator() {
 
       <div className="flex-1 flex flex-col lg:flex-row gap-2 px-2 pb-2 min-h-0 overflow-hidden">
         {/* Guide panel */}
-        <div className="flex-none lg:w-72 xl:w-80 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-y-auto shrink-0">
-            <div className="p-6">
+        <div className="flex-none lg:w-72 xl:w-80 flex flex-col min-h-0 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch">
+            <div className="flex flex-col flex-1 min-h-0 p-6">
               {phase === 'task' && (
                 <>
-                  <p className="text-xs font-semibold text-[#34c759] uppercase tracking-wider mb-2">
+                  <p className="text-xs font-semibold text-[#34c759] uppercase tracking-wider mb-2 shrink-0">
                     What do you want to do?
                   </p>
-                  <h2 className="text-xl font-semibold text-white mb-2">Tell Pear Navigator your goal</h2>
-                  <p className="text-gray-400 text-sm mb-4">
+                  <h2 className="text-xl font-semibold text-white mb-2 shrink-0">Tell Pear Navigator your goal</h2>
+                  <p className="text-gray-400 text-sm mb-4 shrink-0">
                     Pick a task. The guide will appear step by step with highlights.
                   </p>
-                  <div className="space-y-2 mb-6 max-h-[320px] overflow-y-auto">
+                  <div className="flex-1 min-h-0 overflow-y-auto space-y-2 mb-6">
                     {Object.entries(TASKS).map(([id, t]) => (
                       <button
                         key={id}
