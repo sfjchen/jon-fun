@@ -129,7 +129,7 @@ export default function TMRManager() {
         </div>
         {/* Header */}
         <header className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-white mb-4">🧠 TMR System</h1>
+          <h1 className="text-5xl font-bold text-white mb-4">🔊 TMR System</h1>
           <p className="text-xl text-gray-300">
             Targeted Memory Reactivation for Enhanced Learning
           </p>

@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useState } from 'react'
 
 const items = [
-  { id: 'tmr', title: 'TMR System', description: 'Targeted Memory Reactivation for enhanced learning and memory consolidation', icon: '🧠', href: '/games/tmr', available: true },
+  { id: 'tmr', title: 'TMR System', description: 'Targeted Memory Reactivation for enhanced learning and memory consolidation', icon: '🔊', href: '/games/tmr', available: true },
   { id: 'daily-log', title: '1 Sentence Everyday', description: 'Log one sentence (or more) per day; view history, calendar, and export', icon: '📝', href: '/games/daily-log', available: true },
   { id: '24', title: '24 Game', description: 'Use 4 numbers and basic arithmetic to make 24', icon: '🎯', href: '/games/24', available: true },
   { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom Jeopardy boards locally', icon: '❓', href: '/games/jeopardy', available: true },
