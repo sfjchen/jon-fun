@@ -1,0 +1,8 @@
+# Exclude non-Next.js folders (reduces upload size)
+Smart OverlayEye
+TMR_audio
+sports-talent-research
+5_can_sorting_game
+node_modules
+.next
+.git

@@ -246,7 +246,7 @@ const TASKS: Record<string, Task> = {
 }
 
 type MockProps = {
-  currentHotspotId?: string
+  currentHotspotId?: string | undefined
   onStepComplete: () => void
 }
 
@@ -258,7 +258,7 @@ function HotspotButton({
   className,
 }: {
   id: string
-  currentHotspotId?: string
+  currentHotspotId?: string | undefined
   onStepComplete: () => void
   children: React.ReactNode
   className?: string
@@ -646,7 +646,7 @@ export default function PearNavigator() {
         {/* Mock app preview - fills remaining space */}
         <div className="flex-1 min-w-0 min-h-0 flex flex-col">
           <div className="flex-1 min-h-0 relative bg-[#2d2d2d] rounded-xl border border-white/10 overflow-hidden">
-            {MockComponent && <MockComponent currentHotspotId={phase === 'steps' ? step?.hotspotId : undefined} onStepComplete={handleNext} />}
+            {MockComponent && <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={handleNext} />}
             {phase === 'steps' && showHighlight && step && (
               <button
                 type="button"
