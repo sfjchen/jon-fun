@@ -161,19 +161,22 @@ const TASKS: Record<string, Task> = {
     app: 'Figma (PearPad)',
     mock: 'figma',
     steps: [
-      { title: 'Create central frame', desc: 'Select the Frame tool and draw a frame for your central idea.', highlight: { x: 180, y: 100, w: 120, h: 60 }, hotspotId: 'fig-canvas' },
-      { title: 'Add text to frame', desc: 'Double-tap the frame and type your central topic (e.g. "Project").', highlight: { x: 200, y: 110, w: 80, h: 40 }, hotspotId: 'fig-text' },
-      { title: 'Create component', desc: 'Select the frame and tap Create component to make it reusable.', highlight: { x: 520, y: 60, w: 100, h: 36 }, hotspotId: 'fig-component-tab' },
-      { title: 'Add first instance', desc: 'Tap Instance to add your first branch idea.', highlight: { x: 180, y: 180, w: 100, h: 50 }, hotspotId: 'fig-instance' },
-      { title: 'Add instance', desc: 'Tap + Instance to add another idea. Keep adding to build your mindmap.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instance', desc: 'Tap + Instance again for more ideas.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instance', desc: 'Tap + Instance to add another branch.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instance', desc: 'Tap + Instance for more ideas.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instance', desc: 'Tap + Instance to expand your mindmap.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instance', desc: 'Tap + Instance for another branch.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add connectors', desc: 'Use the connector tool to link nodes.', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
-      { title: 'Auto layout', desc: 'Apply Auto layout for consistent spacing.', highlight: { x: 520, y: 180, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
-      { title: 'Fill with example', desc: 'Tap Fill to populate with a Product Management example.', highlight: { x: 520, y: 220, w: 80, h: 28 }, hotspotId: 'fig-style' },
+      { title: 'Create central frame', desc: 'Select the Frame tool and draw a frame for your central idea.', hint: 'Tap the canvas area to place the frame', highlight: { x: 180, y: 100, w: 120, h: 60 }, hotspotId: 'fig-canvas' },
+      { title: 'Add text to frame', desc: 'Double-tap the frame and type your central topic (e.g. "Project").', hint: 'The frame becomes editable when selected', highlight: { x: 200, y: 110, w: 80, h: 40 }, hotspotId: 'fig-text' },
+      { title: 'Create component', desc: 'Select the frame and tap Create component to make it reusable.', hint: 'Components let you add instances for branches', highlight: { x: 520, y: 60, w: 100, h: 36 }, hotspotId: 'fig-component-tab' },
+      { title: 'Add first instance', desc: 'Tap Instance to add your first branch idea.', hint: 'Instances are copies linked to the main component', highlight: { x: 180, y: 180, w: 100, h: 50 }, hotspotId: 'fig-instance' },
+      { title: 'Add instance', desc: 'Tap + Instance to add another idea (Idea A).', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for Idea B.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for Idea C.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for Idea D.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for Idea E.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for Idea F.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for Idea G.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for Idea H.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for Idea I.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add connectors', desc: 'Tap Connector to draw lines linking the central node to each branch.', hint: 'Connectors show relationships between ideas', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
+      { title: 'Auto layout', desc: 'Tap Auto layout for consistent spacing between nodes.', hint: 'Keeps the mindmap tidy and readable', highlight: { x: 520, y: 180, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
+      { title: 'Fill with example', desc: 'Tap Fill to populate with a Product Management example.', hint: 'OKR, KPI, Agile, Roadmap, Jira, etc.', highlight: { x: 520, y: 220, w: 80, h: 28 }, hotspotId: 'fig-style' },
     ],
   },
 }
@@ -239,8 +242,8 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
   const hasText = isMindmap && stepIdx >= 2
   const hasComponent = isMindmap && stepIdx >= 3
   const instanceCount = isMindmap && stepIdx >= 4 ? Math.min(stepIdx - 3, 9) : 0
-  const hasConnectors = isMindmap && stepIdx >= 11
-  const hasStyle = isMindmap && stepIdx >= 13
+  const hasConnectors = isMindmap && stepIdx >= 13
+  const hasStyle = isMindmap && stepIdx >= 15
   if (isMindmap) {
     return (
       <div className="absolute inset-0 flex flex-col text-sm">
@@ -286,56 +289,56 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
                   </svg>
                 )}
                 {hasStyle && (
-                  <div className="absolute inset-2 flex items-center justify-center p-4 overflow-auto">
-                    <div className="relative w-full max-w-4xl min-h-[320px] grid grid-cols-2 gap-x-10 gap-y-6 items-start">
-                      <div className="col-span-2 flex justify-center mb-2">
-                        <div className="rounded-full px-16 py-6 bg-[#34c759]/25 border-2 border-[#34c759]/60 text-white font-bold text-xl text-center">Product Mgmt</div>
+                  <div className="absolute inset-2 flex items-center justify-center p-6 overflow-auto">
+                    <div className="relative w-full max-w-4xl min-h-[360px] grid grid-cols-2 gap-x-12 gap-y-8 items-start">
+                      <div className="col-span-2 flex justify-center mb-4">
+                        <div className="rounded-full px-20 py-8 bg-[#34c759]/25 border-2 border-[#34c759]/60 text-white font-bold text-2xl text-center">Product Mgmt</div>
                       </div>
-                      <div className="flex flex-col gap-2 min-w-0">
-                        <div className="rounded-full px-4 py-2 w-fit bg-[#60a5fa]/25 border-2 border-[#60a5fa]/50 text-white text-sm font-semibold">Acronyms</div>
-                        <div className="flex flex-col gap-1.5">
+                      <div className="flex flex-col gap-3 min-w-0">
+                        <div className="rounded-full px-5 py-2.5 w-fit bg-[#60a5fa]/25 border-2 border-[#60a5fa]/50 text-white text-base font-semibold">Acronyms</div>
+                        <div className="flex flex-col gap-2">
                           {['OKR', 'KPI', 'MVP', 'ROI', 'PRD', 'GTM', 'UX', 'B2B', 'SaaS'].map((t) => (
-                            <span key={t} className="rounded-full px-3 py-1.5 w-fit bg-[#60a5fa]/15 border border-[#60a5fa]/40 text-xs text-white/95">{t}</span>
+                            <span key={t} className="rounded-full px-4 py-2 w-fit bg-[#60a5fa]/15 border border-[#60a5fa]/40 text-sm text-white/95">{t}</span>
                           ))}
                         </div>
                       </div>
-                      <div className="flex flex-col gap-2 min-w-0">
-                        <div className="rounded-full px-4 py-2 w-fit bg-[#f472b6]/25 border-2 border-[#f472b6]/50 text-white text-sm font-semibold">Frameworks</div>
-                        <div className="flex flex-col gap-1.5">
+                      <div className="flex flex-col gap-3 min-w-0">
+                        <div className="rounded-full px-5 py-2.5 w-fit bg-[#f472b6]/25 border-2 border-[#f472b6]/50 text-white text-base font-semibold">Frameworks</div>
+                        <div className="flex flex-col gap-2">
                           {['Agile', 'Scrum', 'Kanban', 'Lean', 'Design Sprint'].map((t) => (
-                            <span key={t} className="rounded-full px-3 py-1.5 w-fit bg-[#f472b6]/15 border border-[#f472b6]/40 text-xs text-white/95">{t}</span>
+                            <span key={t} className="rounded-full px-4 py-2 w-fit bg-[#f472b6]/15 border border-[#f472b6]/40 text-sm text-white/95">{t}</span>
                           ))}
                         </div>
                       </div>
-                      <div className="flex flex-col gap-2 min-w-0">
-                        <div className="rounded-full px-4 py-2 w-fit bg-[#a78bfa]/25 border-2 border-[#a78bfa]/50 text-white text-sm font-semibold">Skills</div>
-                        <div className="flex flex-col gap-1.5">
+                      <div className="flex flex-col gap-3 min-w-0">
+                        <div className="rounded-full px-5 py-2.5 w-fit bg-[#a78bfa]/25 border-2 border-[#a78bfa]/50 text-white text-base font-semibold">Skills</div>
+                        <div className="flex flex-col gap-2">
                           {['Roadmapping', 'Prioritization', 'User Research', 'Stakeholder Mgmt', 'Data Analysis'].map((t) => (
-                            <span key={t} className="rounded-full px-3 py-1.5 w-fit bg-[#a78bfa]/15 border border-[#a78bfa]/40 text-xs text-white/95">{t}</span>
+                            <span key={t} className="rounded-full px-4 py-2 w-fit bg-[#a78bfa]/15 border border-[#a78bfa]/40 text-sm text-white/95">{t}</span>
                           ))}
                         </div>
                       </div>
-                      <div className="flex flex-col gap-2 min-w-0">
-                        <div className="rounded-full px-4 py-2 w-fit bg-[#34d399]/25 border-2 border-[#34d399]/50 text-white text-sm font-semibold">Deliverables</div>
-                        <div className="flex flex-col gap-1.5">
+                      <div className="flex flex-col gap-3 min-w-0">
+                        <div className="rounded-full px-5 py-2.5 w-fit bg-[#34d399]/25 border-2 border-[#34d399]/50 text-white text-base font-semibold">Deliverables</div>
+                        <div className="flex flex-col gap-2">
                           {['Roadmap', 'PRD', 'User Stories', 'Backlog', 'Specs'].map((t) => (
-                            <span key={t} className="rounded-full px-3 py-1.5 w-fit bg-[#34d399]/15 border border-[#34d399]/40 text-xs text-white/95">{t}</span>
+                            <span key={t} className="rounded-full px-4 py-2 w-fit bg-[#34d399]/15 border border-[#34d399]/40 text-sm text-white/95">{t}</span>
                           ))}
                         </div>
                       </div>
-                      <div className="flex flex-col gap-2 min-w-0">
-                        <div className="rounded-full px-4 py-2 w-fit bg-[#fbbf24]/25 border-2 border-[#fbbf24]/50 text-white text-sm font-semibold">Tools</div>
-                        <div className="flex flex-col gap-1.5">
+                      <div className="flex flex-col gap-3 min-w-0">
+                        <div className="rounded-full px-5 py-2.5 w-fit bg-[#fbbf24]/25 border-2 border-[#fbbf24]/50 text-white text-base font-semibold">Tools</div>
+                        <div className="flex flex-col gap-2">
                           {['Jira', 'Figma', 'Notion', 'Miro', 'Slack'].map((t) => (
-                            <span key={t} className="rounded-full px-3 py-1.5 w-fit bg-[#fbbf24]/15 border border-[#fbbf24]/40 text-xs text-white/95">{t}</span>
+                            <span key={t} className="rounded-full px-4 py-2 w-fit bg-[#fbbf24]/15 border border-[#fbbf24]/40 text-sm text-white/95">{t}</span>
                           ))}
                         </div>
                       </div>
-                      <div className="flex flex-col gap-2 min-w-0">
-                        <div className="rounded-full px-4 py-2 w-fit bg-[#f87171]/25 border-2 border-[#f87171]/50 text-white text-sm font-semibold">Metrics</div>
-                        <div className="flex flex-col gap-1.5">
+                      <div className="flex flex-col gap-3 min-w-0">
+                        <div className="rounded-full px-5 py-2.5 w-fit bg-[#f87171]/25 border-2 border-[#f87171]/50 text-white text-base font-semibold">Metrics</div>
+                        <div className="flex flex-col gap-2">
                           {['NPS', 'Retention', 'Conversion', 'LTV', 'CAC'].map((t) => (
-                            <span key={t} className="rounded-full px-3 py-1.5 w-fit bg-[#f87171]/15 border border-[#f87171]/40 text-xs text-white/95">{t}</span>
+                            <span key={t} className="rounded-full px-4 py-2 w-fit bg-[#f87171]/15 border border-[#f87171]/40 text-sm text-white/95">{t}</span>
                           ))}
                         </div>
                       </div>
