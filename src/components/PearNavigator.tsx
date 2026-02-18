@@ -282,17 +282,17 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
         </div>
       )}
       <div className="flex flex-1 min-h-0">
-        <div className="w-24 bg-[#383838] border-r border-white/15 p-2 shrink-0">
-          <HotspotButton id="proc-new" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-11 rounded mb-2 text-[9px] flex items-center justify-center ${currentHotspotId === 'proc-new' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ New</div>
+        <div className="w-24 bg-[#383838] border-r border-white/15 p-2 shrink-0 flex flex-col gap-2">
+          <HotspotButton id="proc-new" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="w-full">
+            <div className={`w-full min-h-[44px] h-11 rounded text-[9px] flex items-center justify-center ${currentHotspotId === 'proc-new' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ New</div>
           </HotspotButton>
           {currentHotspotId === 'proc-new' && (
-            <div className="mb-2 p-2 rounded bg-[#454545] border border-white/10">
+            <div className="p-2 rounded bg-[#454545] border border-white/10">
               <div className="text-[#34c759] text-[9px]">✓ Create new brush</div>
             </div>
           )}
-          <div className={`h-10 rounded mb-2 flex items-center justify-center text-[8px] ${hasNewBrush ? 'bg-white/15 text-[#34c759]/80' : 'bg-white/10 text-white/40'}`}>{hasNewBrush ? '✓ Custom' : 'Brush 1'}</div>
-          <div className="h-10 bg-white/10 rounded flex items-center justify-center text-[8px] text-white/40">Brush 2</div>
+          <div className={`w-full h-10 rounded flex items-center justify-center text-[8px] ${hasNewBrush ? 'bg-white/15 text-[#34c759]/80' : 'bg-white/10 text-white/40'}`}>{hasNewBrush ? '✓ Custom' : 'Brush 1'}</div>
+          <div className="w-full h-10 bg-white/10 rounded flex items-center justify-center text-[8px] text-white/40">Brush 2</div>
         </div>
         <div className={`flex-1 p-4 min-w-0 transition-all ${brushActive ? 'bg-[#404040]' : 'bg-[#404040]'}`}>
           <div className={`w-full h-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 text-sm transition-all relative ${brushActive ? 'border-white/30' : 'border-white/20'}`}>
@@ -303,30 +303,30 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
             {!hasNewBrush && !brushSaved && <span className="text-white/40">Canvas</span>}
           </div>
         </div>
-        <div className="w-28 bg-[#383838] border-l border-white/15 p-2 shrink-0">
-          <div className="text-white/50 mb-1">Brush Studio</div>
-          <HotspotButton id="proc-shape" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-10 rounded mb-2 text-[9px] flex items-center justify-between px-2 ${currentHotspotId === 'proc-shape' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${shapeDone ? 'border border-[#34c759]/40' : ''}`}>Shape {shapeDone && '✓'}</div>
+        <div className="w-28 bg-[#383838] border-l border-white/15 p-2 shrink-0 flex flex-col gap-3">
+          <div className="text-white/50">Brush Studio</div>
+          <HotspotButton id="proc-shape" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="w-full">
+            <div className={`w-full min-h-[44px] h-10 rounded text-[9px] flex items-center justify-between px-2 ${currentHotspotId === 'proc-shape' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${shapeDone ? 'border border-[#34c759]/40' : ''}`}>Shape {shapeDone && '✓'}</div>
           </HotspotButton>
           {currentHotspotId === 'proc-shape' && (
-            <div className="mb-2 p-2 rounded bg-[#454545] border border-white/10 space-y-1">
+            <div className="p-2 rounded bg-[#454545] border border-white/10 space-y-1">
               <div className="text-white/70 text-[8px]">Grain</div>
               <div className="h-6 bg-white/10 rounded" />
             </div>
           )}
-          <HotspotButton id="proc-dynamics" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-10 rounded mb-2 text-[9px] flex items-center justify-between px-2 ${currentHotspotId === 'proc-dynamics' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${dynamicsDone ? 'border border-[#34c759]/40' : ''}`}>Dynamics {dynamicsDone && '✓'}</div>
+          <HotspotButton id="proc-dynamics" className="w-full" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
+            <div className={`w-full min-h-[44px] h-10 rounded text-[9px] flex items-center justify-between px-2 ${currentHotspotId === 'proc-dynamics' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${dynamicsDone ? 'border border-[#34c759]/40' : ''}`}>Dynamics {dynamicsDone && '✓'}</div>
           </HotspotButton>
           {currentHotspotId === 'proc-dynamics' && (
-            <div className="mb-2 p-2 rounded bg-[#454545] border border-white/10 space-y-1">
+            <div className="p-2 rounded bg-[#454545] border border-white/10 space-y-1">
               <div className="flex justify-between text-[8px] text-white/40"><span>Size</span><span>80%</span></div>
               <div className="h-1 bg-white/20 rounded-full" />
               <div className="flex justify-between text-[8px] text-white/40"><span>Opacity</span><span>100%</span></div>
               <div className="h-1 bg-white/20 rounded-full" />
             </div>
           )}
-          <HotspotButton id="proc-done" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`min-h-[44px] h-11 rounded flex items-center justify-center text-[9px] ${currentHotspotId === 'proc-done' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Done</div>
+          <HotspotButton id="proc-done" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="w-full">
+            <div className={`w-full min-h-[44px] h-11 rounded flex items-center justify-center text-[9px] ${currentHotspotId === 'proc-done' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Done</div>
           </HotspotButton>
         </div>
       </div>
