@@ -14,114 +14,12 @@ type Step = {
 type Task = {
   app: string
   steps: Step[]
-  mock: 'photoshop' | 'lightroom' | 'figma' | 'procreate' | 'notion'
+  mock: 'figma' | 'procreate' | 'notion'
 }
 
 const TASKS: Record<string, Task> = {
-  removeBg: {
-    app: 'Photoshop',
-    mock: 'photoshop',
-    steps: [
-      {
-        title: 'Select the subject',
-        desc: 'In the left Tools panel, select Object Selection (W) or Quick Selection. Draw a rectangle or lasso around the subject—AI detects edges.',
-        hint: 'Long-press the selection tool to see Object Selection in the flyout',
-        highlight: { x: 24, y: 52, w: 100, h: 32 },
-        hotspotId: 'ps-tool-object',
-      },
-      {
-        title: 'Refine the selection',
-        desc: 'Go to Select > Select and Mask. Use the Refine Edge Brush on hair/fur. Set Output to "New layer with layer mask" in the right Properties panel.',
-        hint: 'Refine Edge Brush auto-corrects soft edges',
-        highlight: { x: 180, y: 14, w: 130, h: 28 },
-        hotspotId: 'ps-menu-select',
-      },
-      {
-        title: 'Create layer mask',
-        desc: 'With the selection active, click the Add Layer Mask icon (rectangle with circle) at the bottom of the Layers panel on the right.',
-        hint: 'White = visible, black = hidden',
-        highlight: { x: 520, y: 220, w: 70, h: 40 },
-        hotspotId: 'ps-add-mask',
-      },
-      {
-        title: 'Verify and export',
-        desc: 'Toggle the background layer eye to check. File > Export > Export As, choose PNG with transparency.',
-        hint: 'Shift+Cmd+E (Mac) or Shift+Ctrl+E (Win) for bulk export',
-        highlight: { x: 24, y: 14, w: 50, h: 28 },
-        hotspotId: 'ps-menu-file',
-      },
-    ],
-  },
-  colorGrade: {
-    app: 'Lightroom',
-    mock: 'lightroom',
-    steps: [
-      {
-        title: 'Open the Develop module',
-        desc: 'Select your photo in the Library, then click Develop in the top module bar.',
-        hint: 'Develop is where all editing happens',
-        highlight: { x: 200, y: 14, w: 100, h: 28 },
-        hotspotId: 'lr-tab-develop',
-      },
-      {
-        title: 'Apply a preset (optional)',
-        desc: 'In the left panel under Presets, click one to preview. Adjust Strength slider if needed.',
-        hint: 'Presets live in the left panel; Snapshots and History are below',
-        highlight: { x: 24, y: 70, w: 110, h: 36 },
-        hotspotId: 'lr-preset',
-      },
-      {
-        title: 'Adjust basic sliders',
-        desc: 'In the right panel, scroll to Basic. Adjust Exposure, Contrast, Highlights, and Shadows. Pull Highlights down and Shadows up for balance.',
-        hint: 'Basic panel is at the top of the right panel',
-        highlight: { x: 520, y: 100, w: 90, h: 140 },
-        hotspotId: 'lr-panel-basic',
-      },
-      {
-        title: 'Fine-tune with HSL',
-        desc: 'In the right panel, open HSL/Color panel (below Basic). Adjust Hue, Saturation, Luminance per color—red/orange for skin, blue for skies.',
-        hint: 'Tap All to see all HSL sliders at once',
-        highlight: { x: 520, y: 260, w: 90, h: 90 },
-        hotspotId: 'lr-panel-hsl',
-      },
-    ],
-  },
-  exportFigma: {
-    app: 'Figma',
-    mock: 'figma',
-    steps: [
-      {
-        title: 'Select the frame or layer',
-        desc: 'Click the frame, component, or layer you want to export on the canvas or in the Layers panel.',
-        hint: 'Frames export as whole images; use Slice tool for partial export',
-        highlight: { x: 180, y: 140, w: 200, h: 100 },
-        hotspotId: 'fig-canvas',
-      },
-      {
-        title: 'Add export configuration',
-        desc: 'In the right sidebar, scroll to the Export section (toward bottom). Click the + to add an export format.',
-        hint: 'Export section is in the right panel; add multiple configs per selection',
-        highlight: { x: 520, y: 160, w: 70, h: 32 },
-        hotspotId: 'fig-export-add',
-      },
-      {
-        title: 'Choose format and scale',
-        desc: 'Select PNG, JPG, SVG, or PDF. Set scale (1x, 2x, 3x) for retina/high-DPI.',
-        hint: 'PNG preserves transparency for web',
-        highlight: { x: 500, y: 200, w: 100, h: 40 },
-        hotspotId: 'fig-format',
-      },
-      {
-        title: 'Export',
-        desc: 'Click the Export button. Choose save location. For bulk: File > Export (Shift+Cmd+E).',
-        hint: 'Exported file goes to browser download folder',
-        highlight: { x: 510, y: 260, w: 80, h: 36 },
-        hotspotId: 'fig-export-btn',
-      },
-    ],
-  },
   procreateBrush: {
-    app: 'Procreate (iPad)',
+    app: 'Procreate (PearPad)',
     mock: 'procreate',
     steps: [
       {
@@ -162,7 +60,7 @@ const TASKS: Record<string, Task> = {
     ],
   },
   notionDb: {
-    app: 'Notion (tablet)',
+    app: 'Notion (PearPad)',
     mock: 'notion',
     steps: [
       {
@@ -203,7 +101,7 @@ const TASKS: Record<string, Task> = {
     ],
   },
   figmaVariants: {
-    app: 'Figma (tablet)',
+    app: 'Figma (PearPad)',
     mock: 'figma',
     steps: [
       {
@@ -272,7 +170,7 @@ function HotspotButton({
     <button
       type="button"
       onClick={() => isTarget && onStepComplete()}
-      className={`relative cursor-pointer touch-manipulation active:scale-95 transition-transform ${className ?? ''}`}
+      className={`relative cursor-pointer touch-manipulation active:scale-95 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#252525] ${className ?? ''}`}
       aria-pressed={isTarget}
     >
       {children}
@@ -280,7 +178,7 @@ function HotspotButton({
         <span
           role="img"
           aria-label={`Highlight: ${id}`}
-          className="absolute inset-0 rounded-lg border-[3px] border-red-500 bg-red-500/15 pointer-events-none z-10 ring-2 ring-red-500/30"
+          className="absolute inset-0 rounded-lg border-[4px] border-red-500 bg-red-500/20 pointer-events-none z-10 ring-4 ring-red-500/40 shadow-lg shadow-red-500/30"
         />
       )}
     </button>
@@ -288,97 +186,9 @@ function HotspotButton({
 }
 
 const TASK_LABELS: Record<string, string> = {
-  removeBg: 'Remove background',
-  colorGrade: 'Color grade photo',
-  exportFigma: 'Export for web',
   procreateBrush: 'Create custom brush',
   notionDb: 'Create linked database view',
   figmaVariants: 'Create component variants',
-}
-
-function PhotoshopMock({ currentHotspotId, onStepComplete, showHighlight }: MockProps) {
-  return (
-    <div className="absolute inset-0 flex flex-col text-xs">
-      <div className="h-9 bg-[#1e1e1e] border-b border-white/10 flex items-center px-3 gap-6 shrink-0">
-        <HotspotButton id="ps-menu-file" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-          <span className={currentHotspotId === 'ps-menu-file' ? 'text-[#34c759] font-medium' : 'text-white/80'}>File</span>
-        </HotspotButton>
-        <span className="text-white/80">Edit</span>
-        <HotspotButton id="ps-menu-select" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-          <span className={currentHotspotId === 'ps-menu-select' ? 'text-[#34c759] font-medium' : 'text-white/80'}>Select</span>
-        </HotspotButton>
-        <span className="text-white/80">Image</span>
-        <span className="text-white/80">Layer</span>
-        <span className="text-white/80">View</span>
-      </div>
-      <div className="flex flex-1 min-h-0">
-        <div className="w-24 bg-[#252525] border-r border-white/10 p-2 space-y-2 shrink-0">
-          <HotspotButton id="ps-tool-object" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-9 flex items-center justify-center rounded ${currentHotspotId === 'ps-tool-object' ? 'bg-[#34c759]/20 text-[#34c759]' : 'bg-white/10 text-white/70'}`}>Object</div>
-          </HotspotButton>
-          <div className="h-9 flex items-center justify-center bg-white/10 rounded text-white/70">Quick</div>
-          <div className="h-9 flex items-center justify-center bg-white/5 rounded text-white/40">Brush</div>
-          <div className="h-9 flex items-center justify-center bg-white/5 rounded text-white/40">Eraser</div>
-        </div>
-        <div className="flex-1 p-4 bg-[#2a2a2a] min-w-0">
-          <div className="w-full h-full border border-dashed border-white/20 rounded flex items-center justify-center text-white/30 text-sm">
-            Canvas
-          </div>
-        </div>
-        <div className="w-32 bg-[#252525] border-l border-white/10 p-2 shrink-0">
-          <div className="text-white/50 mb-1">Layers</div>
-          <div className="h-8 bg-white/5 rounded mb-2" />
-          <div className="h-8 bg-white/5 rounded mb-2" />
-          <HotspotButton id="ps-add-mask" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-9 flex items-center justify-center rounded text-[10px] ${currentHotspotId === 'ps-add-mask' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Add Mask</div>
-          </HotspotButton>
-          <div className="mt-4 text-white/50">Export</div>
-          <div className="h-8 bg-white/5 rounded mt-1" />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function LightroomMock({ currentHotspotId, onStepComplete, showHighlight }: MockProps) {
-  return (
-    <div className="absolute inset-0 flex flex-col text-xs">
-      <div className="h-9 bg-[#1e1e1e] border-b border-white/10 flex items-center px-3 gap-6 shrink-0">
-        <span className="text-white/80">Library</span>
-        <HotspotButton id="lr-tab-develop" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-          <span className={currentHotspotId === 'lr-tab-develop' ? 'text-[#34c759] font-medium' : 'text-white/80'}>Develop</span>
-        </HotspotButton>
-        <span className="text-white/80">Map</span>
-        <span className="text-white/80">Book</span>
-      </div>
-      <div className="flex flex-1 min-h-0">
-        <div className="w-28 bg-[#252525] border-r border-white/10 p-2 shrink-0">
-          <div className="text-white/50 mb-1">Presets</div>
-          <HotspotButton id="lr-preset" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-8 rounded mb-2 text-[10px] flex items-center px-2 ${currentHotspotId === 'lr-preset' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Preset 1</div>
-          </HotspotButton>
-          <div className="h-8 bg-white/5 rounded mb-2" />
-          <div className="text-white/50 mt-2">Snapshots</div>
-          <div className="h-6 bg-white/5 rounded mt-1" />
-        </div>
-        <div className="flex-1 p-4 bg-[#2a2a2a] min-w-0">
-          <div className="w-full h-full border border-dashed border-white/20 rounded flex items-center justify-center text-white/30 text-sm">
-            Photo
-          </div>
-        </div>
-        <div className="w-28 bg-[#252525] border-l border-white/10 p-2 shrink-0">
-          <div className="text-white/50 mb-1">Basic</div>
-          <HotspotButton id="lr-panel-basic" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-20 rounded mt-1 ${currentHotspotId === 'lr-panel-basic' ? 'bg-[#34c759]/30' : 'bg-white/5'}`} />
-          </HotspotButton>
-          <div className="mt-2 text-white/50">HSL</div>
-          <HotspotButton id="lr-panel-hsl" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-16 rounded mt-1 ${currentHotspotId === 'lr-panel-hsl' ? 'bg-[#34c759]/30' : 'bg-[#34c759]/20'}`} />
-          </HotspotButton>
-        </div>
-      </div>
-    </div>
-  )
 }
 
 function FigmaMock({ currentHotspotId, onStepComplete, showHighlight }: MockProps) {
@@ -397,31 +207,19 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight }: MockProp
             </div>
           </div>
         </HotspotButton>
-        <div className="w-36 bg-[#252525] border-l border-white/10 p-2 shrink-0">
+        <div className="w-36 bg-[#252525] border-l border-white/10 p-2 shrink-0 flex flex-col gap-1">
           <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-8 rounded mb-2 text-[10px] flex items-center px-2 ${currentHotspotId === 'fig-component-tab' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Create component</div>
+            <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-component-tab' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Create component</div>
           </HotspotButton>
-          <div className="text-white/50 mb-1">Design</div>
-          <div className="h-6 bg-white/5 rounded mb-2" />
-          <div className="text-white/50 mb-1">Export</div>
-          <HotspotButton id="fig-export-add" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-8 rounded mb-2 text-[10px] flex items-center px-2 ${currentHotspotId === 'fig-export-add' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Add</div>
-          </HotspotButton>
-          <HotspotButton id="fig-format" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-8 rounded mb-4 ${currentHotspotId === 'fig-format' ? 'bg-[#34c759]/30 text-[#34c759] text-[10px] flex items-center px-2' : 'bg-white/5'}`}>PNG 2x</div>
-          </HotspotButton>
-          <div className="text-white/50 mb-1">Component</div>
+          <div className="text-white/50 mb-1 mt-2">Component</div>
           <HotspotButton id="fig-component-add" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-8 rounded mb-2 text-[10px] flex items-center px-2 ${currentHotspotId === 'fig-component-add' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Property</div>
+            <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-component-add' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Property</div>
           </HotspotButton>
           <HotspotButton id="fig-variants" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-8 rounded text-[10px] flex items-center px-2 ${currentHotspotId === 'fig-variants' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Variants</div>
-          </HotspotButton>
-          <HotspotButton id="fig-export-btn" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-9 rounded mt-2 flex items-center justify-center text-[10px] ${currentHotspotId === 'fig-export-btn' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Export</div>
+            <div className={`min-h-[44px] h-10 rounded flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-variants' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Variants</div>
           </HotspotButton>
           <HotspotButton id="fig-swap" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-8 rounded mt-2 text-[10px] flex items-center px-2 ${currentHotspotId === 'fig-swap' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-white/5 text-white/70'}`}>Swap</div>
+            <div className={`min-h-[44px] h-10 rounded mt-2 flex items-center px-2 text-[10px] ${currentHotspotId === 'fig-swap' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-white/5 text-white/70'}`}>Swap</div>
           </HotspotButton>
         </div>
       </div>
@@ -441,9 +239,9 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight }: Mock
         <span className="text-white/80">Layers</span>
       </div>
       <div className="flex flex-1 min-h-0">
-        <div className="w-20 bg-[#252525] border-r border-white/10 p-2 shrink-0">
+        <div className="w-24 bg-[#252525] border-r border-white/10 p-2 shrink-0">
           <HotspotButton id="proc-new" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-10 rounded mb-2 text-[9px] flex items-center justify-center ${currentHotspotId === 'proc-new' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ New</div>
+            <div className={`min-h-[44px] h-11 rounded mb-2 text-[9px] flex items-center justify-center ${currentHotspotId === 'proc-new' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ New</div>
           </HotspotButton>
           <div className="h-10 bg-white/5 rounded mb-2" />
           <div className="h-10 bg-white/5 rounded" />
@@ -456,14 +254,14 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight }: Mock
         <div className="w-28 bg-[#252525] border-l border-white/10 p-2 shrink-0">
           <div className="text-white/50 mb-1">Brush Studio</div>
           <HotspotButton id="proc-shape" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-8 rounded mb-2 text-[9px] flex items-center px-1 ${currentHotspotId === 'proc-shape' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Shape</div>
+            <div className={`min-h-[44px] h-10 rounded mb-2 text-[9px] flex items-center px-2 ${currentHotspotId === 'proc-shape' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Shape</div>
           </HotspotButton>
           <HotspotButton id="proc-dynamics" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-8 rounded mb-2 text-[9px] flex items-center px-1 ${currentHotspotId === 'proc-dynamics' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Dynamics</div>
+            <div className={`min-h-[44px] h-10 rounded mb-2 text-[9px] flex items-center px-2 ${currentHotspotId === 'proc-dynamics' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Dynamics</div>
           </HotspotButton>
           <div className="h-8 bg-white/5 rounded mb-4" />
           <HotspotButton id="proc-done" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-10 rounded flex items-center justify-center text-[9px] ${currentHotspotId === 'proc-done' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Done</div>
+            <div className={`min-h-[44px] h-11 rounded flex items-center justify-center text-[9px] ${currentHotspotId === 'proc-done' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Done</div>
           </HotspotButton>
         </div>
       </div>
@@ -482,14 +280,14 @@ function NotionMock({ currentHotspotId, onStepComplete, showHighlight }: MockPro
       <div className="flex flex-1 min-h-0">
         <div className="w-28 bg-[#252525] border-r border-white/10 p-2 shrink-0">
           <HotspotButton id="notion-new" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-9 rounded mb-2 text-[9px] flex items-center px-2 ${currentHotspotId === 'notion-new' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Add</div>
+            <div className={`min-h-[44px] h-10 rounded mb-2 text-[9px] flex items-center px-2 ${currentHotspotId === 'notion-new' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Add</div>
           </HotspotButton>
           <div className="h-8 bg-white/5 rounded mb-2" />
           <div className="h-8 bg-white/5 rounded" />
         </div>
         <div className="flex-1 p-4 bg-[#2a2a2a] min-w-0">
           <HotspotButton id="notion-db" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-8 rounded mb-2 w-32 ${currentHotspotId === 'notion-db' ? 'bg-[#34c759]/30' : 'bg-[#34c759]/20'}`} />
+            <div className={`min-h-[44px] h-10 rounded mb-2 w-36 ${currentHotspotId === 'notion-db' ? 'bg-[#34c759]/30' : 'bg-[#34c759]/20'}`} />
           </HotspotButton>
           <div className="h-24 bg-white/5 rounded mb-2" />
           <div className="text-white/50 text-[10px]">/table or /database</div>
@@ -497,14 +295,14 @@ function NotionMock({ currentHotspotId, onStepComplete, showHighlight }: MockPro
         <div className="w-32 bg-[#252525] border-l border-white/10 p-2 shrink-0">
           <div className="text-white/50 mb-1">Properties</div>
           <HotspotButton id="notion-props" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-7 rounded mb-2 text-[9px] flex items-center px-2 ${currentHotspotId === 'notion-props' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Add</div>
+            <div className={`min-h-[44px] h-9 rounded mb-2 text-[9px] flex items-center px-2 ${currentHotspotId === 'notion-props' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Add</div>
           </HotspotButton>
           <div className="text-white/50 mb-1">View</div>
           <HotspotButton id="notion-linked" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-8 rounded mb-2 text-[9px] flex items-center px-2 ${currentHotspotId === 'notion-linked' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Linked</div>
+            <div className={`min-h-[44px] h-9 rounded mb-2 text-[9px] flex items-center px-2 ${currentHotspotId === 'notion-linked' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Linked</div>
           </HotspotButton>
           <HotspotButton id="notion-filter" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-            <div className={`h-7 rounded text-[9px] flex items-center px-2 ${currentHotspotId === 'notion-filter' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Filter</div>
+            <div className={`min-h-[44px] h-9 rounded text-[9px] flex items-center px-2 ${currentHotspotId === 'notion-filter' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Filter</div>
           </HotspotButton>
         </div>
       </div>
@@ -513,8 +311,6 @@ function NotionMock({ currentHotspotId, onStepComplete, showHighlight }: MockPro
 }
 
 const MOCK_COMPONENTS: Record<string, (props: MockProps) => React.ReactNode> = {
-  photoshop: PhotoshopMock,
-  lightroom: LightroomMock,
   figma: FigmaMock,
   procreate: ProcreateMock,
   notion: NotionMock,
@@ -566,7 +362,7 @@ export default function PearNavigator() {
           <span className="text-lg font-semibold text-white">
             Pear<span className="text-[#34c759]">Navigator</span>
           </span>
-          <span className="text-xs text-gray-500">iPad / tablet</span>
+          <span className="text-xs text-gray-500">PearPad</span>
       </div>
 
       <div className="flex-1 flex flex-col lg:flex-row gap-4 px-4 pb-4 min-h-0 overflow-hidden">

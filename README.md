@@ -10,7 +10,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **Chwazi Finger Chooser** (`/games/chwazi`): Place fingers on screen to randomly select a winner
 - **TMR System** (`/games/tmr`): Targeted Memory Reactivation for learning and sleep
 - **1 Sentence Everyday** (`/games/daily-log`): One sentence per day, history, calendar, export, cross-device sync (localStorage + Supabase)
-- **Pear Navigator** (`/games/pear-navigator`): Interactive tablet simulator with step-by-step guide for creative apps (Photoshop, Lightroom, Figma, Procreate, Notion); tap UI elements to advance; MS&E 165 demo
+- **Pear Navigator** (`/games/pear-navigator`): PearPad tablet simulator—Procreate, Notion, Figma guides; tap UI elements to advance; MS&E 165 demo
 
 ## 🚀 Quick Start
 
@@ -351,7 +351,7 @@ Running log of project work. Update this section when making significant changes
 - **Chwazi**: Touchscreen-only
 - **Home**: TMR + 1 Sentence top 2 cards; uniform card height; "← Home" standardized
 - **TMR**: Brain emoji → speaker (🔊) on page title and game chip; removed Run on Web info box
-- **Pear Navigator**: In-browser demo at `/games/pear-navigator`; guides aligned to real app workflows (Photoshop tools/Layers, Lightroom left Presets + right Basic/HSL, Figma Export/Component in right sidebar, Procreate Brush Studio, Notion linked views) (MS&E 165)
+- **Pear Navigator**: PearPad-only; 3 tasks (Procreate brush, Notion DB, Figma variants); removed Photoshop/Lightroom; robust overlay + 44px touch targets for demo video (MS&E 165)
 
 ## 📋 README Maintenance Guidelines
 
