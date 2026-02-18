@@ -252,78 +252,106 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
                 {hasCentralFrame && (
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                     <HotspotButton id="fig-text" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-                      <div className={`rounded-lg px-5 py-3 ${hasComponent ? 'border-2 border-[#8b5cf6] bg-[#8b5cf6]/20' : 'border border-white/30 bg-white/10'} ${hasStyle ? 'bg-[#34c759]/20' : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`}>
-                        {hasText && <span className="text-white text-base font-medium">{hasStyle ? 'Product Mgmt' : 'Project'}</span>}
-                        {!hasText && <span className="text-white/40 text-base">Frame</span>}
+                      <div className={`rounded-xl px-8 py-5 ${hasComponent ? 'border-2 border-[#8b5cf6] bg-[#8b5cf6]/20' : 'border-2 border-white/30 bg-white/10'} ${hasStyle ? 'bg-[#34c759]/20' : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`}>
+                        {hasText && <span className="text-white text-xl font-semibold">{hasStyle ? 'Product Mgmt' : 'Project'}</span>}
+                        {!hasText && <span className="text-white/40 text-xl">Frame</span>}
                       </div>
                     </HotspotButton>
                   </div>
                 )}
                 {hasBranch1 && !hasStyle && (
-                  <div className="absolute rounded px-4 py-2 text-sm bg-white/10 border border-white/20" style={{ bottom: '20%', left: '15%' }}>
+                  <div className="absolute rounded-xl px-6 py-4 text-lg font-medium bg-white/15 border-2 border-white/30" style={{ bottom: '18%', left: '8%' }}>
                     Idea A
                   </div>
                 )}
                 {hasBranch2 && !hasStyle && (
                   <>
-                    <div className="absolute rounded px-4 py-2 text-sm bg-white/10 border border-white/20" style={{ bottom: '25%', right: '20%' }}>
-                      Idea B
-                    </div>
-                    <div className="absolute rounded px-4 py-2 text-sm bg-white/10 border border-white/20" style={{ top: '30%', right: '10%' }}>
-                      Idea C
-                    </div>
+                    <div className="absolute rounded-xl px-6 py-4 text-lg font-medium bg-white/15 border-2 border-white/30" style={{ bottom: '22%', right: '12%' }}>Idea B</div>
+                    <div className="absolute rounded-xl px-6 py-4 text-lg font-medium bg-white/15 border-2 border-white/30" style={{ top: '18%', right: '8%' }}>Idea C</div>
+                    <div className="absolute rounded-xl px-6 py-4 text-lg font-medium bg-white/15 border-2 border-white/30" style={{ top: '12%', left: '25%' }}>Solution 1</div>
+                    <div className="absolute rounded-xl px-6 py-4 text-lg font-medium bg-white/15 border-2 border-white/30" style={{ top: '35%', left: '5%' }}>Research</div>
+                    <div className="absolute rounded-xl px-6 py-4 text-lg font-medium bg-white/15 border-2 border-white/30" style={{ top: '35%', right: '5%' }}>Design</div>
+                    <div className="absolute rounded-xl px-6 py-4 text-lg font-medium bg-white/15 border-2 border-white/30" style={{ bottom: '8%', left: '28%' }}>Launch</div>
+                    <div className="absolute rounded-xl px-6 py-4 text-lg font-medium bg-white/15 border-2 border-white/30" style={{ bottom: '8%', right: '28%' }}>Metrics</div>
+                    <div className="absolute rounded-xl px-6 py-4 text-lg font-medium bg-white/15 border-2 border-white/30" style={{ top: '8%', right: '28%' }}>Strategy</div>
+                    <div className="absolute rounded-xl px-6 py-4 text-lg font-medium bg-white/15 border-2 border-white/30" style={{ top: '8%', left: '8%' }}>Discovery</div>
                   </>
                 )}
                 {hasConnectors && !hasStyle && (
-                  <>
-                    <div className="absolute w-16 h-0.5 bg-white/30 rotate-[-30deg]" style={{ bottom: '35%', left: '35%' }} />
-                    <div className="absolute w-12 h-0.5 bg-white/30 rotate-[20deg]" style={{ bottom: '38%', right: '35%' }} />
-                    <div className="absolute w-10 h-0.5 bg-white/30 rotate-[-15deg]" style={{ top: '45%', right: '25%' }} />
-                  </>
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <line x1="50" y1="50" x2="18" y2="22" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="50" y1="50" x2="82" y2="22" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="50" y1="50" x2="12" y2="38" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="50" y1="50" x2="88" y2="38" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="50" y1="50" x2="15" y2="62" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="50" y1="50" x2="85" y2="62" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="50" y1="50" x2="22" y2="78" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="50" y1="50" x2="78" y2="78" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="50" y1="50" x2="35" y2="12" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="50" y1="50" x2="65" y2="12" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5" strokeLinecap="round" />
+                  </svg>
                 )}
                 {hasStyle && (
-                  <div className="absolute inset-2 flex items-center justify-center p-4 overflow-auto">
-                    <div className="relative w-full h-full min-h-[200px] max-w-3xl mx-auto">
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-xl px-6 py-3 bg-[#34c759]/25 border-2 border-[#34c759]/60 text-white font-semibold text-base shadow-lg">
+                  <div className="absolute inset-2 flex items-center justify-center p-6 overflow-auto">
+                    <div className="relative w-full h-full min-h-[280px] max-w-4xl mx-auto">
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl px-10 py-5 bg-[#34c759]/25 border-[3px] border-[#34c759]/60 text-white font-bold text-2xl shadow-lg z-10">
                         Product Mgmt
                       </div>
-                      <div className="absolute top-[15%] left-[20%] flex flex-col gap-1">
-                        <div className="rounded-lg px-4 py-2 bg-[#60a5fa]/25 border border-[#60a5fa]/50 text-white text-sm font-medium">Acronyms</div>
-                        <div className="flex flex-wrap gap-2 pl-2">
-                          {['OKR', 'KPI', 'MVP', 'ROI', 'PRD', 'GTM', 'UX'].map((t) => (
-                            <span key={t} className="rounded px-2.5 py-1 bg-[#60a5fa]/15 border border-[#60a5fa]/30 text-xs text-white/90">{t}</span>
+                      <div className="absolute top-[5%] left-[10%] flex flex-col gap-2">
+                        <div className="rounded-xl px-5 py-3 bg-[#60a5fa]/25 border-2 border-[#60a5fa]/50 text-white text-base font-semibold">Acronyms</div>
+                        <div className="flex flex-wrap gap-2 pl-1">
+                          {['OKR', 'KPI', 'MVP', 'ROI', 'PRD', 'GTM', 'UX', 'B2B', 'SaaS', 'API', 'DAU', 'LTV'].map((t) => (
+                            <span key={t} className="rounded-lg px-3 py-1.5 bg-[#60a5fa]/15 border border-[#60a5fa]/30 text-sm text-white/90 font-medium">{t}</span>
                           ))}
                         </div>
                       </div>
-                      <div className="absolute top-[15%] right-[20%] flex flex-col gap-1">
-                        <div className="rounded-lg px-4 py-2 bg-[#f472b6]/25 border border-[#f472b6]/50 text-white text-sm font-medium">Frameworks</div>
-                        <div className="flex flex-wrap gap-2 pl-2">
-                          {['Agile', 'Scrum', 'Kanban', 'Lean'].map((t) => (
-                            <span key={t} className="rounded px-2.5 py-1 bg-[#f472b6]/15 border border-[#f472b6]/30 text-xs text-white/90">{t}</span>
+                      <div className="absolute top-[5%] right-[10%] flex flex-col gap-2">
+                        <div className="rounded-xl px-5 py-3 bg-[#f472b6]/25 border-2 border-[#f472b6]/50 text-white text-base font-semibold">Frameworks</div>
+                        <div className="flex flex-wrap gap-2 pl-1">
+                          {['Agile', 'Scrum', 'Kanban', 'Lean', 'Waterfall', 'SAFe', 'Design Sprint'].map((t) => (
+                            <span key={t} className="rounded-lg px-3 py-1.5 bg-[#f472b6]/15 border border-[#f472b6]/30 text-sm text-white/90 font-medium">{t}</span>
                           ))}
                         </div>
                       </div>
-                      <div className="absolute bottom-[20%] left-[15%] flex flex-col gap-1">
-                        <div className="rounded-lg px-4 py-2 bg-[#a78bfa]/25 border border-[#a78bfa]/50 text-white text-sm font-medium">Skills</div>
-                        <div className="flex flex-wrap gap-2 pl-2">
-                          {['Roadmapping', 'Prioritization', 'User Research', 'Stakeholder Mgmt'].map((t) => (
-                            <span key={t} className="rounded px-2.5 py-1 bg-[#a78bfa]/15 border border-[#a78bfa]/30 text-xs text-white/90">{t}</span>
+                      <div className="absolute bottom-[15%] left-[8%] flex flex-col gap-2">
+                        <div className="rounded-xl px-5 py-3 bg-[#a78bfa]/25 border-2 border-[#a78bfa]/50 text-white text-base font-semibold">Skills</div>
+                        <div className="flex flex-wrap gap-2 pl-1">
+                          {['Roadmapping', 'Prioritization', 'User Research', 'Stakeholder Mgmt', 'Data Analysis', 'A/B Testing', 'Storytelling', 'Negotiation'].map((t) => (
+                            <span key={t} className="rounded-lg px-3 py-1.5 bg-[#a78bfa]/15 border border-[#a78bfa]/30 text-sm text-white/90 font-medium">{t}</span>
                           ))}
                         </div>
                       </div>
-                      <div className="absolute bottom-[20%] right-[15%] flex flex-col gap-1">
-                        <div className="rounded-lg px-4 py-2 bg-[#34d399]/25 border border-[#34d399]/50 text-white text-sm font-medium">Deliverables</div>
-                        <div className="flex flex-wrap gap-2 pl-2">
-                          {['Roadmap', 'PRD', 'User Stories', 'Backlog'].map((t) => (
-                            <span key={t} className="rounded px-2.5 py-1 bg-[#34d399]/15 border border-[#34d399]/30 text-xs text-white/90">{t}</span>
+                      <div className="absolute bottom-[15%] right-[8%] flex flex-col gap-2">
+                        <div className="rounded-xl px-5 py-3 bg-[#34d399]/25 border-2 border-[#34d399]/50 text-white text-base font-semibold">Deliverables</div>
+                        <div className="flex flex-wrap gap-2 pl-1">
+                          {['Roadmap', 'PRD', 'User Stories', 'Backlog', 'BRD', 'Changelog', 'Release Notes'].map((t) => (
+                            <span key={t} className="rounded-lg px-3 py-1.5 bg-[#34d399]/15 border border-[#34d399]/30 text-sm text-white/90 font-medium">{t}</span>
                           ))}
                         </div>
                       </div>
-                      <svg className="absolute inset-0 w-full h-full min-h-[180px] pointer-events-none" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet">
-                        <line x1="200" y1="150" x2="120" y2="75" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
-                        <line x1="200" y1="150" x2="280" y2="75" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
-                        <line x1="200" y1="150" x2="100" y2="225" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
-                        <line x1="200" y1="150" x2="300" y2="225" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+                      <div className="absolute top-[35%] left-[2%] flex flex-col gap-2">
+                        <div className="rounded-xl px-5 py-3 bg-[#fbbf24]/20 border-2 border-[#fbbf24]/50 text-white text-base font-semibold">Tools</div>
+                        <div className="flex flex-wrap gap-2 pl-1">
+                          {['Jira', 'Figma', 'Notion', 'Miro', 'Linear', 'Asana'].map((t) => (
+                            <span key={t} className="rounded-lg px-3 py-1.5 bg-[#fbbf24]/15 border border-[#fbbf24]/30 text-sm text-white/90 font-medium">{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="absolute top-[35%] right-[2%] flex flex-col gap-2">
+                        <div className="rounded-xl px-5 py-3 bg-[#f97316]/20 border-2 border-[#f97316]/50 text-white text-base font-semibold">Concepts</div>
+                        <div className="flex flex-wrap gap-2 pl-1">
+                          {['Product-Market Fit', 'North Star', 'Flywheel', 'MoSCoW', 'RICE', 'ICE'].map((t) => (
+                            <span key={t} className="rounded-lg px-3 py-1.5 bg-[#f97316]/15 border border-[#f97316]/30 text-sm text-white/90 font-medium">{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <svg className="absolute inset-0 w-full h-full min-h-[280px] pointer-events-none" viewBox="0 0 600 450" preserveAspectRatio="xMidYMid meet">
+                        <line x1="300" y1="225" x2="120" y2="60" stroke="rgba(255,255,255,0.4)" strokeWidth="4" strokeLinecap="round" />
+                        <line x1="300" y1="225" x2="480" y2="60" stroke="rgba(255,255,255,0.4)" strokeWidth="4" strokeLinecap="round" />
+                        <line x1="300" y1="225" x2="80" y2="350" stroke="rgba(255,255,255,0.4)" strokeWidth="4" strokeLinecap="round" />
+                        <line x1="300" y1="225" x2="520" y2="350" stroke="rgba(255,255,255,0.4)" strokeWidth="4" strokeLinecap="round" />
+                        <line x1="300" y1="225" x2="40" y2="200" stroke="rgba(255,255,255,0.35)" strokeWidth="3" strokeLinecap="round" />
+                        <line x1="300" y1="225" x2="560" y2="200" stroke="rgba(255,255,255,0.35)" strokeWidth="3" strokeLinecap="round" />
                       </svg>
                     </div>
                   </div>
