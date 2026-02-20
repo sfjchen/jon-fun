@@ -50,10 +50,10 @@ function genUuid(): string {
   })
 }
 
-/** Day resets at 3 AM local (not midnight) */
+/** Day resets at 5 AM local (not midnight) */
 export function getTodayDate(): string {
   const now = new Date()
-  if (now.getHours() < 3) {
+  if (now.getHours() < 5) {
     const prev = new Date(now)
     prev.setDate(prev.getDate() - 1)
     return toLocalYYYYMMDD(prev)
