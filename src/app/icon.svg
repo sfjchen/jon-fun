@@ -1,4 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <!-- Bold J only: cap, stem, curved hook -->
-  <path d="M8 6h10v2H12v10c0 2.2 1.8 4 4 4s4-1.8 4-4v-1h2v1c0 3.3-2.7 6-6 6s-6-2.7-6-6V8H8V6z" fill="#111"/>
+  <path
+    d="M6 10h10v14q0 4-4 4"
+    stroke="#000"
+    stroke-width="6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
 </svg>
