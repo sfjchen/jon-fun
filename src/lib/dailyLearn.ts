@@ -111,6 +111,16 @@ export async function fetchEntriesFromServer(): Promise<DailyLearnEntry[]> {
   return Array.isArray(data.entries) ? data.entries : []
 }
 
+/** Delete entry from server. */
+export async function deleteEntryFromServer(date: string): Promise<boolean> {
+  const userId = getEffectiveUserId()
+  const res = await fetch(
+    `/api/daily-learn/entries?userId=${encodeURIComponent(userId)}&date=${encodeURIComponent(date)}`,
+    { method: 'DELETE' }
+  )
+  return res.ok
+}
+
 /** Push entries to server. */
 export async function pushEntriesToServer(entries: DailyLearnEntry[]): Promise<boolean> {
   const userId = getEffectiveUserId()
@@ -156,10 +166,16 @@ export function loadEntries(): DailyLearnEntry[] {
 export function saveEntry(entry: { date: string; text: string }): void {
   if (typeof window === 'undefined') return
   const entries = loadEntries()
-  const text = capitalizeFirst(entry.text.trim())
+  const text = entry.text.trim()
+  if (!text) {
+    const filtered = entries.filter((e) => e.date !== entry.date)
+    localStorage.setItem(ENTRIES_KEY, JSON.stringify(filtered))
+    deleteEntryFromServer(entry.date).catch(() => {})
+    return
+  }
   const updated: DailyLearnEntry = {
     ...entry,
-    text,
+    text: capitalizeFirst(text),
     updatedAt: new Date().toISOString(),
   }
   const idx = entries.findIndex((e) => e.date === entry.date)
