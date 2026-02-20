@@ -125,6 +125,22 @@ export async function pushEntriesToServer(entries: DailyLearnEntry[]): Promise<b
   return res.ok
 }
 
+/** Restore from server by userId (sync key or device user_id). Replaces local storage. */
+export async function restoreFromServer(userId: string): Promise<{ restored: number; error?: string }> {
+  if (typeof window === 'undefined') return { restored: 0 }
+  const key = userId.trim()
+  if (!key) return { restored: 0, error: 'Enter sync key or user ID' }
+  const res = await fetch(`/api/daily-learn/entries?userId=${encodeURIComponent(key)}`)
+  if (!res.ok) return { restored: 0, error: 'Failed to fetch' }
+  const data = (await res.json()) as { entries?: DailyLearnEntry[] }
+  const entries = Array.isArray(data.entries) ? data.entries : []
+  if (entries.length > 0) {
+    setSyncKey(key)
+    localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
+  }
+  return { restored: entries.length }
+}
+
 /** Sync: fetch from server, merge with local, save local, push merged. Returns merged entries. */
 export async function syncWithServer(): Promise<DailyLearnEntry[]> {
   if (typeof window === 'undefined') return loadEntries()
