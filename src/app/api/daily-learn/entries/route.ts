@@ -53,3 +53,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { userId, date } = body as { userId?: string; date?: string }
+    if (!userId?.trim() || !date?.trim()) {
+      return NextResponse.json({ error: 'userId and date required' }, { status: 400 })
+    }
+    const { error } = await supabase
+      .from('daily_learn_entries')
+      .delete()
+      .eq('user_id', userId.trim())
+      .eq('date', date.trim())
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ ok: true })
+  } catch {
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+  }
+}

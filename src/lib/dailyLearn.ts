@@ -108,7 +108,19 @@ export async function fetchEntriesFromServer(): Promise<DailyLearnEntry[]> {
   const res = await fetch(`/api/daily-learn/entries?userId=${encodeURIComponent(userId)}`)
   if (!res.ok) return []
   const data = (await res.json()) as { entries?: DailyLearnEntry[] }
-  return Array.isArray(data.entries) ? data.entries : []
+  const arr = Array.isArray(data.entries) ? data.entries : []
+  return arr.filter((e) => (e.text ?? '').trim().length > 0)
+}
+
+/** Delete entry on server for given date. */
+async function deleteEntryOnServer(date: string): Promise<boolean> {
+  const userId = getEffectiveUserId()
+  const res = await fetch('/api/daily-learn/entries', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, date }),
+  })
+  return res.ok
 }
 
 /** Push entries to server. */
@@ -161,9 +173,11 @@ export function loadEntries(): DailyLearnEntry[] {
   if (!stored) return []
   try {
     const arr = JSON.parse(stored) as DailyLearnEntry[]
-    return Array.isArray(arr)
-      ? [...arr].sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0))
-      : []
+    const filtered = Array.isArray(arr) ? arr.filter((e) => (e.text ?? '').trim().length > 0) : []
+    if (filtered.length !== (arr?.length ?? 0)) {
+      localStorage.setItem(ENTRIES_KEY, JSON.stringify(filtered))
+    }
+    return filtered.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0))
   } catch {
     return []
   }
@@ -172,13 +186,21 @@ export function loadEntries(): DailyLearnEntry[] {
 export function saveEntry(entry: { date: string; text: string }): void {
   if (typeof window === 'undefined') return
   const entries = loadEntries()
-  const text = capitalizeFirst(entry.text.trim())
+  const text = entry.text.trim()
+  const idx = entries.findIndex((e) => e.date === entry.date)
+  if (!text) {
+    if (idx >= 0) {
+      entries.splice(idx, 1)
+      localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
+      deleteEntryOnServer(entry.date).catch(() => {})
+    }
+    return
+  }
   const updated: DailyLearnEntry = {
     ...entry,
-    text,
+    text: capitalizeFirst(text),
     updatedAt: new Date().toISOString(),
   }
-  const idx = entries.findIndex((e) => e.date === entry.date)
   if (idx >= 0) entries[idx] = updated
   else entries.push(updated)
   entries.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0))
