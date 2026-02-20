@@ -346,7 +346,7 @@ Running log of project work. Update this section when making significant changes
 **2025-02**
 
 - **gh-git-github-workflow skill**: Cursor skill for git/gh CLI (repos, PRs, issues, wiki clone/edit, full command ref); consolidated into single SKILL.md
-- **1 Sentence Everyday**: Inline calendar + history on main page; "(Resets 3am)"; renamed; fixed date display; edit previous entries; month nav; Supabase sync
+- **1 Sentence Everyday**: Inline calendar + history on main page; "(Resets 5am)"; renamed; fixed date display; edit previous entries; month nav; Supabase sync
 - **Game24**: Broadcast on start/solve for instant sync; 500ms polling fallback; fix button blink; click-deselect; final rankings show correct/total
 - **Chwazi**: Touchscreen-only
 - **Home**: TMR + 1 Sentence top 2 cards; uniform card height; "← Home" standardized
