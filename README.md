@@ -345,6 +345,7 @@ Running log of project work. Update this section when making significant changes
 
 **2025-02**
 
+- **ESLint**: Fix Next.js plugin detection (explicit @next/next plugin; adjust ignores); deps: Next 15.5.12, React 19.2.4, @supabase/ssr 0.8
 - **1 Sentence Everyday**: Restore from server (Sync tab) after clearing site data; 5am reset device local
 - **Favicon**: Calligraphic J (PNG, transparent background); restore prompt when no entries
 - **gh-git-github-workflow skill**: Cursor skill for git/gh CLI (repos, PRs, issues, wiki clone/edit, full command ref); consolidated into single SKILL.md
