@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   keywords: ['games', 'brain games', 'puzzles', 'math games'],
   authors: [{ name: 'Game Hub' }],
   robots: 'index, follow',
-  icons: { icon: '/icon.svg?v=3' },
+  icons: { icon: '/icon.png' },
 }
 
 export const viewport: Viewport = {
