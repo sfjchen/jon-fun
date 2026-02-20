@@ -158,6 +158,14 @@ export default function DailyLearnManager() {
             {syncing ? <span className="text-gray-400 text-sm">Syncing…</span> : <div className="w-16" />}
           </div>
 
+          {entries.length === 0 && (
+            <div className="bg-amber-500/20 border border-amber-500/50 rounded-2xl p-4 mb-6">
+              <p className="text-amber-200 font-medium">Restore your logs</p>
+              <p className="text-amber-200/90 text-sm mt-1">
+                Go to <button type="button" onClick={() => setView('sync')} className="underline">Sync</button> tab → enter <code className="bg-white/10 px-1 rounded">sfjc</code> → Restore. Do this on each device.
+              </p>
+            </div>
+          )}
           {/* Calendar */}
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-6">
             <div className="flex items-center justify-between mb-4">

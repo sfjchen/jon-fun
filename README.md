@@ -346,7 +346,7 @@ Running log of project work. Update this section when making significant changes
 **2025-02**
 
 - **1 Sentence Everyday**: Restore from server (Sync tab) after clearing site data; 5am reset device local
-- **Favicon**: Calligraphic "J" logo; metadata cache-bust (?v=2)
+- **Favicon**: Heavy-slant calligraphic J; restore prompt when no entries
 - **gh-git-github-workflow skill**: Cursor skill for git/gh CLI (repos, PRs, issues, wiki clone/edit, full command ref); consolidated into single SKILL.md
 - **1 Sentence Everyday**: Inline calendar + history on main page; "(Resets 5am)"; renamed; fixed date display; edit previous entries; month nav; Supabase sync
 - **Game24**: Broadcast on start/solve for instant sync; 500ms polling fallback; fix button blink; click-deselect; final rankings show correct/total
