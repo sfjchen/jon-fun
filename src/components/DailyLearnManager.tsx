@@ -14,6 +14,7 @@ import {
   getSyncKey,
   setSyncKey,
   syncWithServer,
+  restoreFromServer,
   parseLocalDate,
   capitalizeFirst,
   type DailyLearnEntry,
@@ -32,6 +33,9 @@ export default function DailyLearnManager() {
   const [calMonth, setCalMonth] = useState(() => new Date().getMonth())
   const [syncKeyInput, setSyncKeyInput] = useState('')
   const [syncing, setSyncing] = useState(false)
+  const [restoreKey, setRestoreKey] = useState('')
+  const [restoring, setRestoring] = useState(false)
+  const [restoreResult, setRestoreResult] = useState<string | null>(null)
 
   const refresh = useCallback(() => {
     setEntries(loadEntries())
@@ -314,6 +318,44 @@ export default function DailyLearnManager() {
     return layout(
       'Sync',
       <>
+        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-6">
+          <h2 className="text-2xl font-bold text-white mb-4">Restore from Server</h2>
+          <p className="text-gray-300 mb-4">
+            Lost data after clearing site? Enter your sync key or user ID and click Restore to pull entries from the server.
+          </p>
+          <div className="flex gap-2 mb-4">
+            <input
+              type="text"
+              value={restoreKey}
+              onChange={(e) => { setRestoreKey(e.target.value); setRestoreResult(null) }}
+              placeholder="Sync key or user ID"
+              className="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              onClick={async () => {
+                setRestoring(true)
+                setRestoreResult(null)
+                const { restored, error } = await restoreFromServer(restoreKey)
+                setRestoring(false)
+                if (error) setRestoreResult(error)
+                else if (restored > 0) {
+                  setRestoreResult(`Restored ${restored} entries`)
+                  setSyncKeyInput(restoreKey.trim())
+                  refresh()
+                } else setRestoreResult('No entries found for that key')
+              }}
+              disabled={restoring || !restoreKey.trim()}
+              className="bg-amber-600 hover:bg-amber-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg"
+            >
+              {restoring ? 'Restoring…' : 'Restore'}
+            </button>
+          </div>
+          {restoreResult && (
+            <p className={restoreResult.startsWith('Restored') ? 'text-green-400 text-sm' : 'text-amber-400 text-sm'}>
+              {restoreResult}
+            </p>
+          )}
+        </div>
         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-6">
           <h2 className="text-2xl font-bold text-white mb-4">Cross-Device Sync</h2>
           <p className="text-gray-300 mb-4">
