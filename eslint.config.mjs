@@ -5,9 +5,7 @@ import { FlatCompat } from "@eslint/eslintrc";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+const compat = new FlatCompat({ baseDirectory: __dirname });
 
 const eslintConfig = [
   {
@@ -34,7 +32,6 @@ const eslintConfig = [
       "no-var": "error",
       "@typescript-eslint/no-empty-object-type": "warn",
       "@typescript-eslint/triple-slash-reference": "warn",
-      "import/no-anonymous-default-export": "warn",
     },
   },
 ];
