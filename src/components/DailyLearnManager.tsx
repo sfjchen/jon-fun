@@ -51,8 +51,8 @@ export default function DailyLearnManager() {
   }, [refresh])
 
   useEffect(() => {
-    const existing = getEntryByDate(getTodayDate())
-    setTodayText(existing?.text ?? '')
+    const d = getTodayDate()
+    setTodayText(getEntryByDate(d)?.text ?? '')
   }, [view, entries])
 
   const handleSubmit = useCallback(() => {
@@ -85,7 +85,10 @@ export default function DailyLearnManager() {
 
   const counts = getCounts()
   const calendarDates = new Set(entries.map((e) => e.date))
-  const today = getTodayDate()
+  const [today, setToday] = useState<string | null>(null)
+  useEffect(() => {
+    setToday(getTodayDate())
+  }, [])
 
   const layout = (title: string, children: React.ReactNode) => (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
@@ -210,7 +213,7 @@ export default function DailyLearnManager() {
           {/* Today's prompt */}
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-6">
             <p className="text-gray-300 mb-4">
-              Today: {parseLocalDate(today).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} (Resets 5am)
+              Today: {today ? parseLocalDate(today).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '…'} (Resets 5am local)
             </p>
             <textarea
               value={todayText}

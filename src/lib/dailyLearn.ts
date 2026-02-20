@@ -50,7 +50,7 @@ function genUuid(): string {
   })
 }
 
-/** Day resets at 5 AM local (not midnight) */
+/** Day resets at 5 AM in the device's local timezone (not midnight). Call client-side only. */
 export function getTodayDate(): string {
   const now = new Date()
   if (now.getHours() < 5) {
