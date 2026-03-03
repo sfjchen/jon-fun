@@ -176,7 +176,7 @@ const TASKS: Record<string, Task> = {
       { title: 'Add instance', desc: 'Tap + Instance for Idea I.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
       { title: 'Add connectors', desc: 'Tap Connector to draw lines linking the central node to each branch.', hint: 'Connectors show relationships between ideas', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
       { title: 'Auto layout', desc: 'Tap Auto layout for consistent spacing between nodes.', hint: 'Keeps the mindmap tidy and readable', highlight: { x: 520, y: 180, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
-      { title: 'Fill with example', desc: 'Tap Fill to populate with a Product Management example.', hint: 'OKR, KPI, Agile, Roadmap, Jira, etc.', highlight: { x: 520, y: 220, w: 80, h: 28 }, hotspotId: 'fig-style' },
+      { title: 'Fill with example', desc: 'Tap Fill example to populate with a Product Management example.', hint: 'OKR, KPI, Agile, Roadmap, Jira, etc.', highlight: { x: 520, y: 220, w: 100, h: 36 }, hotspotId: 'fig-style' },
     ],
   },
 }
@@ -233,6 +233,11 @@ const TASK_LABELS: Record<string, string> = {
   figmaMindmap: 'Create a mindmap',
 }
 
+const CLUTTER_CLASS = 'px-2 py-1 rounded bg-white/5 text-white/45 text-xs pointer-events-none shrink-0'
+const HOTSPOT_BTN = 'min-h-[44px] rounded-lg flex items-center px-3 text-sm font-medium'
+const HOTSPOT_INACTIVE = 'bg-[#34c759]/20 text-[#34c759]'
+const HOTSPOT_ACTIVE = 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50'
+
 function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 0, taskId }: MockProps) {
   const isMindmap = taskId === 'figmaMindmap'
   const hasSelection = stepIdx >= 1
@@ -260,9 +265,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
   const RADIAL_SVG = hasAutoLayout
     ? [[50, 18], [71, 25], [83, 45], [79, 67], [61, 81], [39, 81], [21, 67], [17, 45], [29, 25]]
     : [[50, 15], [72.5, 23], [84.5, 44], [80.5, 67.5], [62, 82.5], [38, 82.5], [19.5, 67.5], [15.5, 44], [27.5, 23]]
-  const clutter = (label: string) => (
-    <div key={label} className="px-2 py-1 rounded bg-white/5 text-white/45 text-xs pointer-events-none shrink-0">{label}</div>
-  )
+  const clutter = (label: string) => <div key={label} className={CLUTTER_CLASS}>{label}</div>
   if (isMindmap) {
     return (
       <div className="absolute inset-0 flex flex-col text-sm">
@@ -277,7 +280,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
         <div className="flex flex-1 min-h-0">
           <div className="w-36 bg-[#323232] border-r border-white/10 p-3 shrink-0 flex flex-col gap-2 overflow-y-auto pointer-events-none">
             <div className="text-white/50 text-xs font-medium">Layers</div>
-            {['Page 1', 'Frame', 'Group', 'Rectangle', 'Text'].map((l) => <div key={l} className="h-7 px-2 rounded bg-white/5 text-white/45 text-xs flex items-center">{l}</div>)}
+            {['Page 1', 'Frame', 'Group', 'Rectangle', 'Text'].map((l) => <div key={l} className="h-7 px-2 rounded bg-white/5 text-white/45 text-xs flex items-center pointer-events-none">{l}</div>)}
             <div className="text-white/50 text-xs font-medium mt-2">Pages</div>
             {['Cover', 'Flow', 'Components'].map((p) => <div key={p} className="h-6 px-2 rounded bg-white/5 text-white/40 text-xs flex items-center">{p}</div>)}
             <div className="text-white/50 text-xs font-medium mt-2">Assets</div>
@@ -350,26 +353,26 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
             </div>
           </HotspotButton>
           <div className="w-52 bg-[#383838] border-l border-white/15 p-5 shrink-0 flex flex-col gap-3 overflow-y-auto">
-            <div className="text-white/50 text-xs">Design</div>
+            <div className="text-white/50 text-xs font-medium">Design</div>
             {['Layout', 'Fill', 'Stroke', 'Effects', 'Corner', 'Padding', 'Gap'].map(clutter)}
             <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[52px] h-14 rounded-full flex items-center px-4 text-sm font-medium ${currentHotspotId === 'fig-component-tab' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Create component</div>
+              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-component-tab' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Create component</div>
             </HotspotButton>
             {['Constraints', 'Resize', 'Opacity', 'Blend'].map(clutter)}
             <HotspotButton id="fig-instance" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[52px] h-14 rounded-full flex items-center px-4 text-sm font-medium ${currentHotspotId === 'fig-instance' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Instance</div>
+              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-instance' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Instance</div>
             </HotspotButton>
             <HotspotButton id="fig-instance2" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[52px] h-14 rounded-full flex items-center px-4 text-sm font-medium ${currentHotspotId === 'fig-instance2' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Instance</div>
+              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-instance2' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>+ Instance</div>
             </HotspotButton>
             <HotspotButton id="fig-connector" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[52px] h-14 rounded-full flex items-center px-4 text-sm font-medium ${currentHotspotId === 'fig-connector' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-white/5 text-white/70'}`}>Connector</div>
+              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-connector' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Connector</div>
             </HotspotButton>
             <HotspotButton id="fig-autolayout" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[52px] h-14 rounded-full flex items-center px-4 text-sm font-medium ${currentHotspotId === 'fig-autolayout' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-white/5 text-white/70'}`}>Auto layout</div>
+              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-autolayout' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Auto layout</div>
             </HotspotButton>
             <HotspotButton id="fig-style" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
-              <div className={`min-h-[52px] h-14 rounded-full flex items-center px-4 text-sm font-medium ${currentHotspotId === 'fig-style' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-white/5 text-white/70'}`}>Fill</div>
+              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-style' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Fill example</div>
             </HotspotButton>
           </div>
         </div>
@@ -389,7 +392,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
       <div className="flex flex-1 min-h-0">
         <div className="w-36 bg-[#323232] border-r border-white/10 p-3 shrink-0 flex flex-col gap-2 overflow-y-auto pointer-events-none">
           <div className="text-white/50 text-xs font-medium">Layers</div>
-          {['Frame', 'Group', 'Rectangle', 'Text', 'Component'].map((l) => <div key={l} className="h-7 px-2 rounded bg-white/5 text-white/45 text-xs flex items-center">{l}</div>)}
+          {['Frame', 'Group', 'Rectangle', 'Text', 'Component'].map((l) => <div key={l} className="h-7 px-2 rounded bg-white/5 text-white/45 text-xs flex items-center pointer-events-none">{l}</div>)}
           <div className="text-white/50 text-xs font-medium mt-2">Pages</div>
           {['Cover', 'Flow', 'Components'].map((p) => <div key={p} className="h-6 px-2 rounded bg-white/5 text-white/40 text-xs flex items-center">{p}</div>)}
           <div className="text-white/50 text-xs font-medium mt-2">Assets</div>
