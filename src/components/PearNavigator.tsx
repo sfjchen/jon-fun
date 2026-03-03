@@ -260,6 +260,9 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
   const RADIAL_SVG = hasAutoLayout
     ? [[50, 18], [71, 25], [83, 45], [79, 67], [61, 81], [39, 81], [21, 67], [17, 45], [29, 25]]
     : [[50, 15], [72.5, 23], [84.5, 44], [80.5, 67.5], [62, 82.5], [38, 82.5], [19.5, 67.5], [15.5, 44], [27.5, 23]]
+  const clutter = (label: string) => (
+    <div key={label} className="px-2 py-1 rounded bg-white/5 text-white/45 text-xs pointer-events-none shrink-0">{label}</div>
+  )
   if (isMindmap) {
     return (
       <div className="absolute inset-0 flex flex-col text-sm">
@@ -268,7 +271,18 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
           <span className="text-white/80">Component</span>
           <span className="text-white/80">Prototype</span>
         </div>
+        <div className="h-10 bg-[#252525] border-b border-white/10 flex items-center px-4 gap-2 shrink-0 flex-wrap overflow-hidden">
+          {['Move', 'Frame', 'Component', 'Pen', 'Text', 'Rectangle', 'Line', 'Hand', 'Comment', 'Zoom', 'Align L', 'Align C', 'Align R', 'Distribute', 'Constraints', 'Fill', 'Stroke', 'Effects', 'Mask', 'Boolean'].map(clutter)}
+        </div>
         <div className="flex flex-1 min-h-0">
+          <div className="w-36 bg-[#323232] border-r border-white/10 p-3 shrink-0 flex flex-col gap-2 overflow-y-auto pointer-events-none">
+            <div className="text-white/50 text-xs font-medium">Layers</div>
+            {['Page 1', 'Frame', 'Group', 'Rectangle', 'Text'].map((l) => <div key={l} className="h-7 px-2 rounded bg-white/5 text-white/45 text-xs flex items-center">{l}</div>)}
+            <div className="text-white/50 text-xs font-medium mt-2">Pages</div>
+            {['Cover', 'Flow', 'Components'].map((p) => <div key={p} className="h-6 px-2 rounded bg-white/5 text-white/40 text-xs flex items-center">{p}</div>)}
+            <div className="text-white/50 text-xs font-medium mt-2">Assets</div>
+            <div className="h-6 px-2 rounded bg-white/5 text-white/40 text-xs flex items-center">Search...</div>
+          </div>
           <HotspotButton id="fig-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="flex-1 min-w-0 flex flex-col min-h-0">
             <div className="flex-1 p-6 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center overflow-auto">
               <div className="relative w-full h-full min-h-[200px] border-2 border-dashed rounded-lg border-white/20 flex items-center justify-center">
@@ -335,10 +349,13 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
               </div>
             </div>
           </HotspotButton>
-          <div className="w-52 bg-[#383838] border-l border-white/15 p-5 shrink-0 flex flex-col gap-4 overflow-y-auto">
+          <div className="w-52 bg-[#383838] border-l border-white/15 p-5 shrink-0 flex flex-col gap-3 overflow-y-auto">
+            <div className="text-white/50 text-xs">Design</div>
+            {['Layout', 'Fill', 'Stroke', 'Effects', 'Corner', 'Padding', 'Gap'].map(clutter)}
             <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
               <div className={`min-h-[52px] h-14 rounded-full flex items-center px-4 text-sm font-medium ${currentHotspotId === 'fig-component-tab' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Create component</div>
             </HotspotButton>
+            {['Constraints', 'Resize', 'Opacity', 'Blend'].map(clutter)}
             <HotspotButton id="fig-instance" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
               <div className={`min-h-[52px] h-14 rounded-full flex items-center px-4 text-sm font-medium ${currentHotspotId === 'fig-instance' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Instance</div>
             </HotspotButton>
@@ -366,7 +383,18 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
         <span className="text-white/80">Component</span>
         <span className="text-white/80">Prototype</span>
       </div>
+      <div className="h-10 bg-[#252525] border-b border-white/10 flex items-center px-4 gap-2 shrink-0 flex-wrap overflow-hidden">
+        {['Move', 'Frame', 'Component', 'Pen', 'Text', 'Rectangle', 'Line', 'Hand', 'Comment', 'Zoom', 'Align L', 'Align C', 'Distribute', 'Constraints', 'Fill', 'Stroke', 'Effects', 'Mask'].map(clutter)}
+      </div>
       <div className="flex flex-1 min-h-0">
+        <div className="w-36 bg-[#323232] border-r border-white/10 p-3 shrink-0 flex flex-col gap-2 overflow-y-auto pointer-events-none">
+          <div className="text-white/50 text-xs font-medium">Layers</div>
+          {['Frame', 'Group', 'Rectangle', 'Text', 'Component'].map((l) => <div key={l} className="h-7 px-2 rounded bg-white/5 text-white/45 text-xs flex items-center">{l}</div>)}
+          <div className="text-white/50 text-xs font-medium mt-2">Pages</div>
+          {['Cover', 'Flow', 'Components'].map((p) => <div key={p} className="h-6 px-2 rounded bg-white/5 text-white/40 text-xs flex items-center">{p}</div>)}
+          <div className="text-white/50 text-xs font-medium mt-2">Assets</div>
+          <div className="h-6 px-2 rounded bg-white/5 text-white/40 text-xs flex items-center">Search...</div>
+        </div>
         <HotspotButton id="fig-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="flex-1 min-w-0 flex flex-col min-h-0">
           <div className="flex-1 p-6 bg-[#404040] min-w-0 min-h-0">
             <div className={`w-full h-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-3 text-base transition-colors ${hasSelection ? 'border-[#8b5cf6]/60 bg-[#8b5cf6]/5' : ''} ${currentHotspotId === 'fig-canvas' ? 'border-[#34c759]/60 text-[#34c759]' : 'border-white/25 text-white/40'}`}>
@@ -376,7 +404,9 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
             </div>
           </div>
         </HotspotButton>
-        <div className="w-44 bg-[#383838] border-l border-white/15 p-4 shrink-0 flex flex-col gap-3">
+        <div className="w-44 bg-[#383838] border-l border-white/15 p-4 shrink-0 flex flex-col gap-2 overflow-y-auto">
+          <div className="text-white/50 text-xs mb-1">Design</div>
+          {['Layout', 'Fill', 'Stroke', 'Effects', 'Corner', 'Padding', 'Gap', 'Constraints'].map(clutter)}
           <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
             <div className={`min-h-[48px] h-12 rounded flex items-center px-2 text-xs ${currentHotspotId === 'fig-component-tab' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Create component</div>
           </HotspotButton>
@@ -405,6 +435,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
           <HotspotButton id="fig-swap" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
             <div className={`min-h-[48px] h-12 rounded mt-2 flex items-center justify-between px-2 text-xs ${currentHotspotId === 'fig-swap' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-white/5 text-white/70'}`}>Swap <span className="text-xs">▼</span></div>
           </HotspotButton>
+          {['Resize', 'Opacity', 'Blend', 'Inspect'].map(clutter)}
           {currentHotspotId === 'fig-swap' && (
             <div className="p-3 rounded-lg bg-[#454545] border border-white/10">
               <div className="text-xs text-white/70">State: Default ▼</div>
@@ -429,14 +460,18 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
   const hasLayer = isSky && stepIdx >= 7
   const hasStroke = isSky && stepIdx >= 8
   const hasBlend = isSky && stepIdx >= 9
+  const procClutter = (label: string) => (
+    <div key={label} className="px-2 py-1 rounded bg-white/5 text-white/45 text-xs pointer-events-none shrink-0">{label}</div>
+  )
   return (
     <div className="absolute inset-0 flex flex-col text-sm">
-      <div className="h-12 bg-[#2e2e2e] border-b border-white/15 flex items-center justify-center gap-8 px-6 shrink-0">
+      <div className="h-12 bg-[#2e2e2e] border-b border-white/15 flex items-center justify-center gap-4 px-4 shrink-0 flex-wrap">
         {isSky && (
           <HotspotButton id="proc-export" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
             <span className={`px-3 py-1.5 rounded ${currentHotspotId === 'proc-export' ? 'ring-2 ring-[#34c759]/50' : ''} text-white/80`}>⚙</span>
           </HotspotButton>
         )}
+        {['Undo', 'Redo', 'Adjustments', 'Filters', 'Liquify', 'Selection', 'Crop', 'Transform'].map(procClutter)}
         {isSky && (
           <HotspotButton id="proc-color" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
             <div className={`w-10 h-10 rounded-full border-2 ${hasColor ? 'border-[#34c759] bg-[#60a5fa]/80' : 'border-white/40 bg-[#60a5fa]/50'} ${currentHotspotId === 'proc-color' ? 'ring-2 ring-[#34c759]/50' : ''}`} />
@@ -447,7 +482,9 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
           <span className={`px-3 py-1.5 rounded ${currentHotspotId === 'proc-brush' ? 'ring-2 ring-[#34c759]/50' : ''} ${brushActive ? 'text-[#34c759] font-medium' : 'text-white/80'}`}>Brush</span>
         </HotspotButton>
         <span className="text-white/80">Eraser</span>
+        <span className="text-white/80">Smudge</span>
         <span className="text-white/80">Layers</span>
+        {['Canvas', 'Share', 'Gallery'].map(procClutter)}
       </div>
       {currentHotspotId === 'proc-brush' && (
         <div className="bg-[#454545] border-b border-white/10 px-3 py-2 flex gap-4 shrink-0">
@@ -460,7 +497,10 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
         </div>
       )}
       <div className="flex flex-1 min-h-0">
-        <div className="w-32 bg-[#383838] border-r border-white/15 p-4 shrink-0 flex flex-col gap-3">
+        <div className="w-32 bg-[#383838] border-r border-white/15 p-4 shrink-0 flex flex-col gap-2 overflow-y-auto">
+          <div className="flex gap-1 mb-1 pointer-events-none">
+            {['Import', 'Organize', 'Search'].map(procClutter)}
+          </div>
           <HotspotButton id="proc-new" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="w-full">
             <div className={`w-full min-h-[48px] h-12 rounded text-xs flex items-center justify-center ${currentHotspotId === 'proc-new' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ New</div>
           </HotspotButton>
@@ -469,8 +509,10 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
               <div className="text-[#34c759] text-xs">✓ Create new brush</div>
             </div>
           )}
+          <div className="text-white/50 text-xs pointer-events-none">Brush sets</div>
           <div className={`w-full h-10 rounded flex items-center justify-center text-xs ${hasNewBrush ? 'bg-white/15 text-[#34c759]/80' : 'bg-white/10 text-white/40'}`}>{hasNewBrush ? '✓ Custom' : 'Brush 1'}</div>
           <div className="w-full h-10 bg-white/10 rounded flex items-center justify-center text-xs text-white/40">Brush 2</div>
+          {['Inking', 'Sketching', 'Painting', 'Textures', 'Charcoal'].map((s) => <div key={s} className="w-full h-8 bg-white/5 rounded flex items-center px-2 text-white/40 text-xs pointer-events-none">{s}</div>)}
           {isSky && (
             <>
               <div className="text-white/50 mt-2 text-xs">Layers</div>
@@ -500,8 +542,9 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
             </div>
           </HotspotButton>
         </div>
-        <div className="w-32 bg-[#383838] border-l border-white/15 p-4 shrink-0 flex flex-col gap-4">
-          <div className="text-white/50">Brush Studio</div>
+        <div className="w-32 bg-[#383838] border-l border-white/15 p-4 shrink-0 flex flex-col gap-2 overflow-y-auto">
+          <div className="text-white/50 text-xs">Brush Studio</div>
+          {['Stamping', 'Smudge', 'Stabilization', 'Wet Mix'].map(procClutter)}
           <HotspotButton id="proc-shape" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="w-full">
             <div className={`w-full min-h-[48px] h-12 rounded text-xs flex items-center justify-between px-2 ${currentHotspotId === 'proc-shape' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${shapeDone ? 'border border-[#34c759]/40' : ''}`}>Shape {shapeDone && '✓'}</div>
           </HotspotButton>
@@ -525,6 +568,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
           <HotspotButton id="proc-done" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="w-full">
             <div className={`w-full min-h-[48px] h-12 rounded flex items-center justify-center text-xs ${currentHotspotId === 'proc-done' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>Done</div>
           </HotspotButton>
+          {['Apple Pencil', 'Pressure', 'Tilt', 'Azimuth'].map(procClutter)}
           {isSky && (
             <>
               <div className="text-white/50 mt-2 text-xs">Blend</div>
@@ -550,15 +594,19 @@ function NotionMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx =
   const hasProps = stepIdx >= 3
   const hasLinked = stepIdx >= 4
   const hasFilter = stepIdx >= 5
+  const notionClutter = (label: string) => (
+    <div key={label} className="px-2 py-1 rounded bg-white/5 text-white/45 text-xs pointer-events-none shrink-0">{label}</div>
+  )
   return (
     <div className="absolute inset-0 flex flex-col text-sm">
-      <div className="h-12 bg-[#2e2e2e] border-b border-white/15 flex items-center px-3 shrink-0">
+      <div className="h-12 bg-[#2e2e2e] border-b border-white/15 flex items-center px-3 gap-3 shrink-0 flex-wrap">
         <HotspotButton id="notion-new" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
           <span className={hasPage ? 'text-[#34c759] font-medium' : 'text-white/80'}>+ New page</span>
         </HotspotButton>
+        {['Templates', 'Import', 'Search', 'Settings', 'Share', 'Updates', 'Favorites'].map(notionClutter)}
       </div>
       <div className="flex flex-1 min-h-0">
-        <div className="w-32 bg-[#383838] border-r border-white/15 p-4 shrink-0">
+        <div className="w-32 bg-[#383838] border-r border-white/15 p-4 shrink-0 flex flex-col gap-2 overflow-y-auto">
           <HotspotButton id="notion-new" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
             <div className={`min-h-[48px] h-12 rounded mb-2 text-xs flex items-center px-2 ${currentHotspotId === 'notion-new' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'}`}>+ Add</div>
           </HotspotButton>
@@ -568,7 +616,9 @@ function NotionMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx =
               <div className="text-white/50 text-xs">Page · Database</div>
             </div>
           )}
-          <div className="h-8 bg-white/10 rounded mb-2" />
+          <div className="text-white/50 text-xs pointer-events-none">Workspace</div>
+          {['Favorites', 'Private', 'Shared', 'Trash', 'Settings', 'Upgrade'].map((s) => <div key={s} className="h-8 px-2 rounded bg-white/5 text-white/40 text-xs flex items-center pointer-events-none">{s}</div>)}
+          <div className="h-8 bg-white/10 rounded" />
           <div className="h-8 bg-white/10 rounded" />
         </div>
         <div className="flex-1 p-6 bg-[#404040] min-w-0">
@@ -585,8 +635,13 @@ function NotionMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx =
           )}
           {hasDb && <div className="h-20 bg-white/10 rounded mb-2 flex gap-3 p-3"><div className="flex-1 h-4 bg-white/20 rounded" /><div className="flex-1 h-4 bg-white/20 rounded" /></div>}
           <div className="text-white/50 text-xs">/table or /database</div>
+          <div className="mt-4 flex flex-wrap gap-2 pointer-events-none">
+            {['/heading', '/todo', '/bulleted', '/numbered', '/toggle', '/quote', '/callout', '/code', '/divider'].map(notionClutter)}
+          </div>
         </div>
-        <div className="w-44 bg-[#383838] border-l border-white/15 p-4 shrink-0 flex flex-col gap-4">
+        <div className="w-44 bg-[#383838] border-l border-white/15 p-4 shrink-0 flex flex-col gap-3 overflow-y-auto">
+          <div className="text-white/50 text-xs pointer-events-none">Database</div>
+          {['Sort', 'Group', 'Search DB', 'Lock', 'Duplicate'].map(notionClutter)}
           <div>
             <div className="text-white/50 mb-2">Properties</div>
             <HotspotButton id="notion-props" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
@@ -613,6 +668,7 @@ function NotionMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx =
             <HotspotButton id="notion-filter" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight}>
               <div className={`min-h-[48px] h-11 rounded flex items-center justify-between px-2 text-xs ${currentHotspotId === 'notion-filter' ? 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50' : 'bg-[#34c759]/20 text-[#34c759]'} ${hasFilter ? 'border border-[#34c759]/40' : ''}`}>Filter {hasFilter && '✓'}</div>
             </HotspotButton>
+            {['Layout', 'Show', 'Hide', 'Export'].map(notionClutter)}
             {currentHotspotId === 'notion-filter' && (
               <div className="p-3 rounded-lg bg-[#454545] border border-white/10 space-y-1">
                 <div className="text-white/70 text-xs">Add condition:</div>
