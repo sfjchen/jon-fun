@@ -361,6 +361,7 @@ Running log of project work. Update this section when making significant changes
 - **Pear Navigator**: Cluttered mock UIs (Figma, Procreate, Notion) with extra labeled design-tool buttons to show how guidance cuts through typical UI noise; standardized hotspot/clutter styling and button labels (e.g. Fill example)
 - **docs/MVP-Feedback-Evolution.md**: PM-style feedback narrative (simulated user testing, A/B) mapping MVP to improvements; rubric structure for MS&E 165
 - **Pear Navigator Paint textured sky**: Interactive brush—blue and yellow brushes; paint on canvas; first stroke advances step
+- **Pear Navigator mindmap**: Fanned stack (offset nodes) before Auto layout; sky two-layer paint (blue/yellow) + Blend button applies overlay blend
 
 ## 📋 README Maintenance Guidelines
 
