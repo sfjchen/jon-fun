@@ -1,7 +1,119 @@
 'use client'
 
 import Link from 'next/link'
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef, useEffect } from 'react'
+
+const BRUSH_BLUE = '#60a5fa'
+const BRUSH_YELLOW = '#fbbf24'
+
+function SkyPaintCanvas({
+  enabled,
+  brushColor,
+  onFirstStroke,
+  className,
+}: {
+  enabled: boolean
+  brushColor: 'blue' | 'yellow'
+  onFirstStroke?: () => void
+  className?: string
+}) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const isDrawingRef = useRef(false)
+  const hasStrokedRef = useRef(false)
+
+  useEffect(() => {
+    if (!enabled || !containerRef.current || !canvasRef.current) return
+    const container = containerRef.current
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const resize = () => {
+      const rect = container.getBoundingClientRect()
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = rect.width * dpr
+      canvas.height = rect.height * dpr
+      canvas.style.width = `${rect.width}px`
+      canvas.style.height = `${rect.height}px`
+      ctx.scale(dpr, dpr)
+      ctx.lineCap = 'round'
+      ctx.lineJoin = 'round'
+      ctx.lineWidth = 24
+    }
+    resize()
+    const ro = new ResizeObserver(resize)
+    ro.observe(container)
+    return () => ro.disconnect()
+  }, [enabled])
+
+  const getPos = (e: React.PointerEvent | PointerEvent) => {
+    if (!containerRef.current) return null
+    const rect = containerRef.current.getBoundingClientRect()
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+  }
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (!enabled || !canvasRef.current || !containerRef.current) return
+      e.preventDefault()
+      e.stopPropagation()
+      const pos = getPos(e)
+      if (!pos) return
+      isDrawingRef.current = true
+      const ctx = canvasRef.current.getContext('2d')
+      if (!ctx) return
+      ctx.strokeStyle = brushColor === 'blue' ? BRUSH_BLUE : BRUSH_YELLOW
+      ctx.beginPath()
+      ctx.moveTo(pos.x, pos.y)
+    },
+    [enabled, brushColor]
+  )
+
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!enabled || !isDrawingRef.current || !canvasRef.current) return
+      e.preventDefault()
+      e.stopPropagation()
+      const pos = getPos(e)
+      if (!pos) return
+      const ctx = canvasRef.current.getContext('2d')
+      if (!ctx) return
+      ctx.lineTo(pos.x, pos.y)
+      ctx.stroke()
+    },
+    [enabled]
+  )
+
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      if (!enabled) return
+      e.preventDefault()
+      e.stopPropagation()
+      if (isDrawingRef.current && !hasStrokedRef.current) {
+        hasStrokedRef.current = true
+        onFirstStroke?.()
+      }
+      isDrawingRef.current = false
+    },
+    [enabled, onFirstStroke]
+  )
+
+  if (!enabled) return null
+  return (
+    <div ref={containerRef} className={`absolute inset-0 ${className ?? ''}`}>
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full touch-none cursor-crosshair"
+        style={{ pointerEvents: 'auto' }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+      />
+    </div>
+  )
+}
 
 type Step = {
   title: string
@@ -452,6 +564,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
 }
 
 function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 0, taskId }: MockProps) {
+  const [brushColor, setBrushColor] = useState<'blue' | 'yellow'>('blue')
   const isSky = taskId === 'procreateSky'
   const brushActive = stepIdx >= 1
   const hasNewBrush = stepIdx >= 2
@@ -463,6 +576,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
   const hasLayer = isSky && stepIdx >= 7
   const hasStroke = isSky && stepIdx >= 8
   const hasBlend = isSky && stepIdx >= 9
+  const canPaint = isSky && hasLayer && stepIdx >= 8
   const procClutter = (label: string) => <div key={label} className={CLUTTER_CLASS}>{label}</div>
   return (
     <div className="absolute inset-0 flex flex-col text-sm">
@@ -527,24 +641,38 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
         </div>
         <div className={`flex-1 p-4 min-w-0 transition-all ${brushActive ? 'bg-[#404040]' : 'bg-[#404040]'}`}>
           <HotspotButton id="proc-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className={`w-full h-full ${!isSky ? 'pointer-events-none' : ''}`}>
-            <div className={`w-full h-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-3 text-base transition-all relative overflow-hidden ${brushActive ? 'border-white/30' : 'border-white/20'} ${isSky && hasStroke ? 'border-none' : ''}`}>
-              {isSky && hasStroke && (
+            <div className={`w-full h-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-3 text-base transition-all relative overflow-hidden ${brushActive ? 'border-white/30' : 'border-white/20'} ${isSky && (hasStroke || hasLayer) ? 'border-none' : ''}`}>
+              {isSky && (hasStroke || hasLayer) && (
                 <div className="absolute inset-0 bg-gradient-to-b from-[#93c5fd] via-[#60a5fa] to-[#fbbf24]/80" />
               )}
-              {isSky && hasStroke && (
-                <div className="absolute inset-0 opacity-40 bg-[length:40px_40px]" style={{ backgroundImage: 'radial-gradient(circle, #34c759 1px, transparent 1px)' }} />
+              <SkyPaintCanvas
+                enabled={canPaint}
+                brushColor={brushColor}
+                {...(stepIdx === 8 && { onFirstStroke: onStepComplete })}
+                className="z-10"
+              />
+              {isSky && stepIdx >= 9 && (
+                <div className="absolute inset-0 opacity-40 bg-[length:40px_40px] pointer-events-none z-20" style={{ backgroundImage: 'radial-gradient(circle, #34c759 1px, transparent 1px)' }} />
               )}
-              {brushActive && !hasStroke && <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-[#34c759] bg-[#34c759]/30" title="Brush cursor" />}
-              {hasNewBrush && !hasStroke && <div className="w-12 h-12 rounded-full bg-[#34c759]/40 border-2 border-[#34c759]/60" />}
-              {inBrushStudio && !hasStroke && <span className="text-white/50 text-xs">Brush Studio</span>}
-              {brushSaved && !hasStroke && <span className="text-[#34c759] text-sm">✓ Saved</span>}
-              {!hasNewBrush && !brushSaved && !hasStroke && <span className="text-white/40">Canvas</span>}
-              {isSky && hasStroke && <span className="relative text-white/90 text-sm drop-shadow">Textured sky</span>}
+              {brushActive && !hasStroke && !canPaint && <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-[#34c759] bg-[#34c759]/30" title="Brush cursor" />}
+              {canPaint && <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-white/60 pointer-events-none z-30" style={{ backgroundColor: brushColor === 'blue' ? BRUSH_BLUE : BRUSH_YELLOW }} title="Brush" />}
+              {hasNewBrush && !hasStroke && !canPaint && <div className="w-12 h-12 rounded-full bg-[#34c759]/40 border-2 border-[#34c759]/60" />}
+              {inBrushStudio && !hasStroke && !canPaint && <span className="text-white/50 text-xs">Brush Studio</span>}
+              {brushSaved && !hasStroke && !canPaint && <span className="text-[#34c759] text-sm">✓ Saved</span>}
+              {!hasNewBrush && !brushSaved && !hasStroke && !canPaint && <span className="text-white/40">Canvas</span>}
+              {canPaint && stepIdx < 9 && <span className="relative text-white/90 text-sm drop-shadow z-30 pointer-events-none">Paint the sky</span>}
+              {isSky && stepIdx >= 9 && <span className="relative text-white/90 text-sm drop-shadow z-30 pointer-events-none">Textured sky</span>}
             </div>
           </HotspotButton>
         </div>
         <div className="w-32 bg-[#383838] border-l border-white/15 p-4 shrink-0 flex flex-col gap-2 overflow-y-auto">
           <div className="text-white/50 text-xs">Brush Studio</div>
+          {isSky && hasColor && (
+            <div className="flex gap-2 mb-1">
+              <button type="button" onClick={() => setBrushColor('blue')} className={`w-10 h-10 rounded-full border-2 flex-shrink-0 ${brushColor === 'blue' ? 'border-[#34c759] ring-2 ring-[#34c759]/50' : 'border-white/30'}`} style={{ backgroundColor: BRUSH_BLUE }} title="Blue brush" />
+              <button type="button" onClick={() => setBrushColor('yellow')} className={`w-10 h-10 rounded-full border-2 flex-shrink-0 ${brushColor === 'yellow' ? 'border-[#34c759] ring-2 ring-[#34c759]/50' : 'border-white/30'}`} style={{ backgroundColor: BRUSH_YELLOW }} title="Yellow brush" />
+            </div>
+          )}
           {['Stamping', 'Smudge', 'Stabilization', 'Wet Mix'].map(procClutter)}
           <HotspotButton id="proc-shape" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className="w-full">
             <div className={`w-full ${HOTSPOT_BTN} justify-between ${currentHotspotId === 'proc-shape' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE} ${shapeDone ? 'border border-[#34c759]/40' : ''}`}>Shape {shapeDone && '✓'}</div>

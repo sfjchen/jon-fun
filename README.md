@@ -360,6 +360,7 @@ Running log of project work. Update this section when making significant changes
 - **Pear Navigator mindmap**: Radial layout for Idea nodes (even spacing); Auto layout tightens radius only (no structure change); Fill keeps same 1-center+9-nodes format, replaces text with PM terms (OKR, KPI, Agile, etc.)
 - **Pear Navigator**: Cluttered mock UIs (Figma, Procreate, Notion) with extra labeled design-tool buttons to show how guidance cuts through typical UI noise; standardized hotspot/clutter styling and button labels (e.g. Fill example)
 - **docs/MVP-Feedback-Evolution.md**: PM-style feedback narrative (simulated user testing, A/B) mapping MVP to improvements; rubric structure for MS&E 165
+- **Pear Navigator Paint textured sky**: Interactive brush—blue and yellow brushes; paint on canvas; first stroke advances step
 
 ## 📋 README Maintenance Guidelines
 
