@@ -58,6 +58,7 @@ function SkyPaintCanvas({
       if (!enabled || !canvasRef.current || !containerRef.current) return
       e.preventDefault()
       e.stopPropagation()
+      canvasRef.current.setPointerCapture?.(e.pointerId)
       const pos = getPos(e)
       if (!pos) return
       isDrawingRef.current = true
@@ -90,6 +91,7 @@ function SkyPaintCanvas({
       if (!enabled) return
       e.preventDefault()
       e.stopPropagation()
+      canvasRef.current?.releasePointerCapture?.(e.pointerId)
       if (isDrawingRef.current && !hasStrokedRef.current) {
         hasStrokedRef.current = true
         onFirstStroke?.()
@@ -362,21 +364,22 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
   const hasConnectors = isMindmap && stepIdx >= 14
   const hasAutoLayout = isMindmap && stepIdx >= 15
   const hasStyle = isMindmap && stepIdx >= 16
-  // Stacked (before Auto layout): nodes overlap slightly; Radial (after Auto layout): spread out
+  // Stacked (before Auto layout): nodes overlap; Radial (after Auto layout): spread out
+  const STACKED_POS = [
+    { left: '50%', top: '50%' }, { left: '50%', top: '50%' }, { left: '50%', top: '50%' },
+    { left: '50%', top: '50%' }, { left: '50%', top: '50%' }, { left: '50%', top: '50%' },
+    { left: '50%', top: '50%' }, { left: '50%', top: '50%' }, { left: '50%', top: '50%' },
+  ]
   const RADIAL_POS = hasAutoLayout
     ? [
         { left: '50%', top: '18%' }, { left: '71%', top: '25%' }, { left: '83%', top: '45%' },
         { left: '79%', top: '67%' }, { left: '61%', top: '81%' }, { left: '39%', top: '81%' },
         { left: '21%', top: '67%' }, { left: '17%', top: '45%' }, { left: '29%', top: '25%' },
       ]
-    : [
-        { left: '50%', top: '47%' }, { left: '50%', top: '49%' }, { left: '50%', top: '51%' },
-        { left: '50%', top: '53%' }, { left: '50%', top: '55%' }, { left: '50%', top: '57%' },
-        { left: '50%', top: '59%' }, { left: '50%', top: '61%' }, { left: '50%', top: '63%' },
-      ]
+    : STACKED_POS
   const RADIAL_SVG = hasAutoLayout
     ? [[50, 18], [71, 25], [83, 45], [79, 67], [61, 81], [39, 81], [21, 67], [17, 45], [29, 25]]
-    : [[50, 47], [50, 49], [50, 51], [50, 53], [50, 55], [50, 57], [50, 59], [50, 61], [50, 63]]
+    : [[50, 50], [50, 50], [50, 50], [50, 50], [50, 50], [50, 50], [50, 50], [50, 50], [50, 50]]
   const clutter = (label: string) => <div key={label} className={CLUTTER_CLASS}>{label}</div>
   if (isMindmap) {
     return (
@@ -642,7 +645,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, showHighlight, stepId
         <div className={`flex-1 p-4 min-w-0 transition-all ${brushActive ? 'bg-[#404040]' : 'bg-[#404040]'}`}>
           <HotspotButton id="proc-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} showHighlight={showHighlight} className={`w-full h-full ${!isSky ? 'pointer-events-none' : ''}`}>
             <div className={`w-full h-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-3 text-base transition-all relative overflow-hidden ${brushActive ? 'border-white/30' : 'border-white/20'} ${isSky && (hasStroke || hasLayer) ? 'border-none' : ''}`}>
-              {isSky && (hasStroke || hasLayer) && (
+              {isSky && stepIdx >= 9 && (
                 <div className="absolute inset-0 bg-gradient-to-b from-[#93c5fd] via-[#60a5fa] to-[#fbbf24]/80" />
               )}
               <SkyPaintCanvas
