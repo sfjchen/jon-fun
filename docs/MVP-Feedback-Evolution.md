@@ -33,12 +33,12 @@ Product manager-style feedback narrative for Pear Navigator / Smart OverlayEye. 
 
 **Hypothetical evidence that justified the change:**
 
-| Metric | MVP (text-only) | With highlight | Delta |
-|--------|-----------------|----------------|-------|
-| Avg. time per step | 18.2 s | 10.8 s | **-41%** |
-| Steps where user asked "where?" | 62% | 8% | **-87%** |
-| Task completion rate (first try) | 71% | 94% | **+23 pts** |
-| SUS score (perceived ease) | 68 | 82 | **+14** |
+| Metric                           | MVP (text-only) | With highlight | Delta             |
+| -------------------------------- | --------------- | -------------- | ----------------- |
+| Avg. time per step               | 18.2 s          | 10.8 s         | **-41%**    |
+| Steps where user asked "where?"  | 62%             | 8%             | **-87%**    |
+| Task completion rate (first try) | 71%             | 94%            | **+23 pts** |
+| SUS score (perceived ease)       | 68              | 82             | **+14**     |
 
 **Synthesis:** Users spent ~7 s per step scanning. Highlight + label cut that to near-zero. Completion rate and SUS both improved; the change was a clear win.
 
@@ -50,12 +50,12 @@ Product manager-style feedback narrative for Pear Navigator / Smart OverlayEye. 
 
 **Hypothetical evidence that justified the change:**
 
-| Metric | Button advance | Tap-to-advance | Delta |
-|--------|----------------|----------------|-------|
-| Steps completed correctly (vs. skipped) | 78% | 97% | **+19 pts** |
-| Backtracking ("I think I missed something") | 34% of sessions | 9% | **-74%** |
-| Post-task: "I felt guided" (agree/strongly agree) | 58% | 89% | **+31 pts** |
-| Avg. confidence per step (1–5) | 3.2 | 4.1 | **+0.9** |
+| Metric                                            | Button advance  | Tap-to-advance | Delta             |
+| ------------------------------------------------- | --------------- | -------------- | ----------------- |
+| Steps completed correctly (vs. skipped)           | 78%             | 97%            | **+19 pts** |
+| Backtracking ("I think I missed something")       | 34% of sessions | 9%             | **-74%**    |
+| Post-task: "I felt guided" (agree/strongly agree) | 58%             | 89%            | **+31 pts** |
+| Avg. confidence per step (1–5)                   | 3.2             | 4.1            | **+0.9**    |
 
 **Synthesis:** Tap-to-advance forced engagement with the mock. Fewer skips, less backtracking, higher perceived guidance and confidence.
 
@@ -63,11 +63,11 @@ Product manager-style feedback narrative for Pear Navigator / Smart OverlayEye. 
 
 ### Other Improvements (brief)
 
-| Change | Hypothetical justification |
-|--------|----------------------------|
-| 3 → 5 tasks | "Procreate on iPad" and "Notion for PM" requests; 5 tasks preferred in preference test |
-| 4 → 10/15 steps for complex flows | "Four steps too short" feedback; granular steps reduced mid-task abandonment |
-| Hints + show/hide highlight | "Some steps cryptic"; hints improved clarity; toggle reduced visual overload |
+| Change                             | Hypothetical justification                                                             |
+| ---------------------------------- | -------------------------------------------------------------------------------------- |
+| 3 → 5 tasks                       | "Procreate on iPad" and "Notion for PM" requests; 5 tasks preferred in preference test |
+| 4 → 10/15 steps for complex flows | "Four steps too short" feedback; granular steps reduced mid-task abandonment           |
+| Hints + show/hide highlight        | "Some steps cryptic"; hints improved clarity; toggle reduced visual overload           |
 
 ---
 
@@ -75,14 +75,14 @@ Product manager-style feedback narrative for Pear Navigator / Smart OverlayEye. 
 
 Map your own quotes to these features when presenting:
 
-| Feature | Implementation |
-|---------|----------------|
-| **Label + highlight overlay** | Red ellipse + label on current step; mock UIs with hotspots | [PearNavigator.tsx](../src/components/PearNavigator.tsx) `HotspotButton`, `showHighlight` |
-| **Tap-to-advance** | Only correct hotspot advances; no "Next step" skip | `HotspotButton` fires `onStepComplete` when `currentHotspotId === id` |
-| **Interactive mock UIs** | ProcreateMock, NotionMock, FigmaMock with toolbars, panels, canvas | [PearNavigator.tsx](../src/components/PearNavigator.tsx) |
-| **5 tasks** | Procreate brush, Paint textured sky, Notion DB, Figma variants, Figma mindmap | [PearNavigator.tsx](../src/components/PearNavigator.tsx) `TASKS` |
-| **Granular steps** | 10 steps (sky), 15 steps (mindmap) | [PearNavigator.tsx](../src/components/PearNavigator.tsx) |
-| **Hints + show/hide** | Hint box in guide panel; toggle for highlight visibility | [PearNavigator.tsx](../src/components/PearNavigator.tsx) |
+| Feature                             | Implementation                                                                |
+| ----------------------------------- | ----------------------------------------------------------------------------- |
+| **Label + highlight overlay** | Red ellipse + label on current step; mock UIs with hotspots                   |
+| **Tap-to-advance**            | Only correct hotspot advances; no "Next step" skip                            |
+| **Interactive mock UIs**      | ProcreateMock, NotionMock, FigmaMock with toolbars, panels, canvas            |
+| **5 tasks**                   | Procreate brush, Paint textured sky, Notion DB, Figma variants, Figma mindmap |
+| **Granular steps**            | 10 steps (sky), 15 steps (mindmap)                                            |
+| **Hints + show/hide**         | Hint box in guide panel; toggle for highlight visibility                      |
 
 ---
 
@@ -124,9 +124,8 @@ flowchart LR
    - Current: 5 tasks, mock UIs with hotspots, tap-to-advance, red highlight, hints, show/hide toggle.
 3. **Feedback incorporated (evidence)**
 
-   - Lead with the two main improvements: label + highlight, tap-to-advance.
-   - Use the hypothetical stats tables to show why these changes were justified.
-   - Map your own quotes to features in the Feature Mapping table.
+   - Use the simulated quotes above (or adapt from real Wizard-of-Oz sessions).
+   - Map each feedback item to a concrete improvement (table above).
 4. **Value to target audience**
 
    - Creatives: faster task completion, less guessing, visual context.
@@ -138,15 +137,18 @@ flowchart LR
 ## Value Slide (for presentation)
 
 **For creatives:**
+
 - **Faster:** ~41% less time per step with highlight; no scanning.
 - **Clearer:** 94% first-try completion vs. 71% (text-only).
 - **Guided:** Tap-to-advance keeps you on track; 97% correct step completion vs. 78%.
 
 **For tablet / PM users:**
+
 - Procreate, Notion, Figma tasks; mindmap workflow (15 steps).
 - Works as companion: tablet shows guide, laptop runs real app.
 
 **For the product:**
+
 - Problem validated: step-by-step guidance is valued.
 - Feedback drove two main changes: highlight + tap-to-advance.
 - Metrics (hypothetical) support both: time, completion, confidence.
@@ -155,6 +157,6 @@ flowchart LR
 
 ## Suggested Next Steps
 
-1. Map your own quotes to the features in the table above.
-2. Add real metrics if you have Wizard-of-Oz data; otherwise use the hypothetical stats as-is.
-3. Include Smart OverlayEye in the evolution: MVP = one-shot overlay; future = step-by-step flow.
+1. **Add real quotes** if you have Wizard-of-Oz sessions; replace simulated ones with real ones.
+2. **Add metrics** if you have time (e.g. task completion time, step count).
+3. **Include Smart OverlayEye** in the evolution: MVP = one-shot overlay; future = step-by-step flow.
