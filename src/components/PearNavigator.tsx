@@ -362,7 +362,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
   const hasConnectors = isMindmap && stepIdx >= 14
   const hasAutoLayout = isMindmap && stepIdx >= 15
   const hasStyle = isMindmap && stepIdx >= 16
-  // Radial positions for 9 nodes (40° intervals from top); Auto layout uses tighter radius
+  // Stacked (before Auto layout): nodes overlap slightly; Radial (after Auto layout): spread out
   const RADIAL_POS = hasAutoLayout
     ? [
         { left: '50%', top: '18%' }, { left: '71%', top: '25%' }, { left: '83%', top: '45%' },
@@ -370,13 +370,13 @@ function FigmaMock({ currentHotspotId, onStepComplete, showHighlight, stepIdx = 
         { left: '21%', top: '67%' }, { left: '17%', top: '45%' }, { left: '29%', top: '25%' },
       ]
     : [
-        { left: '50%', top: '15%' }, { left: '72.5%', top: '23%' }, { left: '84.5%', top: '44%' },
-        { left: '80.5%', top: '67.5%' }, { left: '62%', top: '82.5%' }, { left: '38%', top: '82.5%' },
-        { left: '19.5%', top: '67.5%' }, { left: '15.5%', top: '44%' }, { left: '27.5%', top: '23%' },
+        { left: '50%', top: '47%' }, { left: '50%', top: '49%' }, { left: '50%', top: '51%' },
+        { left: '50%', top: '53%' }, { left: '50%', top: '55%' }, { left: '50%', top: '57%' },
+        { left: '50%', top: '59%' }, { left: '50%', top: '61%' }, { left: '50%', top: '63%' },
       ]
   const RADIAL_SVG = hasAutoLayout
     ? [[50, 18], [71, 25], [83, 45], [79, 67], [61, 81], [39, 81], [21, 67], [17, 45], [29, 25]]
-    : [[50, 15], [72.5, 23], [84.5, 44], [80.5, 67.5], [62, 82.5], [38, 82.5], [19.5, 67.5], [15.5, 44], [27.5, 23]]
+    : [[50, 47], [50, 49], [50, 51], [50, 53], [50, 55], [50, 57], [50, 59], [50, 61], [50, 63]]
   const clutter = (label: string) => <div key={label} className={CLUTTER_CLASS}>{label}</div>
   if (isMindmap) {
     return (
