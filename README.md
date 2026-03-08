@@ -343,6 +343,10 @@ src/
 
 Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
 
+**2025-03**
+
+- **docs/MS&E165-GTM-and-Resources-Slides.md**: Slide content for GTM Strategy and Required Resources (channels, metrics, post-launch impact; funding, tools, team, partnerships with how each supports launch) aligned to MS&E 165 rubric
+
 **2025-02**
 
 - **ESLint**: Fix Next.js plugin detection (explicit @next/next plugin; adjust ignores); deps: Next 15.5.12, React 19.2.4, @supabase/ssr 0.8
