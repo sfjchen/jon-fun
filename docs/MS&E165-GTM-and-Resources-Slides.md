@@ -23,34 +23,24 @@ Use this content in your **Go-To-Market Strategy** and **Required Resources** se
 
 ---
 
-### Slide: Target Metrics
+### Slide: Target & Impact Metrics
 
-**Title:** Target Metrics
+**Title:** Target & Impact Metrics
 
-| Phase | Metric | Target | Why it matters |
-|-------|--------|--------|----------------|
-| **Alpha** | Suggestion acceptance | >85% | Validates that guidance is relevant and actionable. |
-| **Beta** | 2-week retention | >60% | Confirms habit formation and ongoing value. |
-| **Launch** | 30-day adoption (eligible creatives) | >20% | Proves launch channel and positioning. |
-| **Post-launch** | Task completion with Navigator help | Track % sessions where user completes intended task with Navigator; goal: improve vs. baseline. |
-| **Post-launch** | Abandonment to external help | Reduce % of sessions where user leaves for Google/videos. |
+One set of metrics: we set **targets** by phase and use the same metrics to **measure impact** post-launch (leading indicators → outcomes → business).
+
+| Metric | Target (by phase) | How we use it for impact |
+|--------|-------------------|---------------------------|
+| **Suggestion acceptance** | >85% (Alpha) | Validates guidance relevance; drives model/UX iteration. |
+| **2-week retention** | >60% (Beta) | Confirms habit formation; signals product-market fit. |
+| **30-day adoption** (eligible creatives) | >20% (Launch) | Proves channel and positioning; we optimize in-product discovery from this. |
+| **Task completion with Navigator** | Improve vs. baseline (ongoing) | % sessions where user completes intended task; measures guidance quality and drives roadmap. |
+| **Abandonment to external help** | Reduce (ongoing) | % sessions where user leaves for Google/videos; proves we cut context-switching. |
+| **Business** (PearPad engagement, NPS, PearCreate+ conversion) | Track (ongoing) | Links product success to ecosystem and revenue. |
 
 ---
 
-### Slide: Measuring Impact Post-Launch
-
-**Title:** Measuring Impact Post-Launch
-
-**Strategy:** Use leading indicators (usage, acceptance) and outcome indicators (completion, retention, NPS) to iterate and report success.
-
-| Category | Metrics | How we use them |
-|----------|---------|------------------|
-| **Adoption** | % eligible creatives who try PearNavigator in first week; avg # help requests per user per week | Track reach and engagement; optimize in-product discovery. |
-| **Execution** | % sessions where user completes intended task with Navigator; % steps completed on first attempt | Measure guidance quality and UX; prioritize model and overlay improvements. |
-| **Outcomes** | % sessions where user abandons to external help; % users who later complete same task without Navigator | Prove reduction in context-switching and sustained learning. |
-| **Business** | PearPad creative engagement (time in supported apps); NPS (Navigator users); conversion to PearCreate+ | Link product success to ecosystem and revenue (per your Business Impact slide). |
-
-*Optional one-liner:* “We review these weekly post-launch and tie product roadmap and model retraining to the execution and outcome metrics.”
+*One-liner:* We review these weekly; targets define success by phase, and the same metrics feed iteration and impact reporting.
 
 ---
 
@@ -87,8 +77,7 @@ Use this content in your **Go-To-Market Strategy** and **Required Resources** se
 **GTM (9–10 pts):**  
 - [x] Clear, actionable launch plan  
 - [x] Well-defined channels (in-product, ecosystem, community, enterprise)  
-- [x] Target metrics (acceptance, retention, adoption, completion, abandonment)  
-- [x] Strategy for measuring impact post-launch (adoption, execution, outcomes, business)
+- [x] Target & impact metrics (one set: targets by phase + how we use same metrics for impact)
 
 **Required Resources (full points):**  
 - [x] Funding, Tools, Team roles, Partnerships identified  
