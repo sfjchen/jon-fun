@@ -86,7 +86,7 @@ Map your own quotes to these features when presenting:
 
 ---
 
-## Evolution Summary
+Evolution Summary
 
 ```mermaid
 flowchart LR
@@ -110,7 +110,7 @@ flowchart LR
 
 ---
 
-## Rubric Narrative Structure (17-20 points)
+* [ ] Rubric Narrative Structure (17-20 points)
 
 **Suggested structure for your presentation:**
 
