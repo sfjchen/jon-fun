@@ -310,13 +310,13 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const clutter = (label: string) => <div key={label} className={CLUTTER_CLASS}>{label}</div>
   if (isMindmap) {
     return (
-      <div className="absolute inset-0 flex flex-col text-sm">
+      <div className="absolute inset-0 flex flex-col text-sm min-h-0 overflow-hidden">
         <div className="h-12 bg-[#2e2e2e] border-b border-white/15 flex items-center px-6 gap-6 shrink-0">
           <span className="text-white/80">Frame</span>
           <span className="text-white/80">Component</span>
           <span className="text-white/80">Prototype</span>
         </div>
-        <div className="h-10 bg-[#252525] border-b border-white/10 flex items-center px-4 gap-2 shrink-0 flex-wrap overflow-hidden">
+        <div className="min-h-10 bg-[#252525] border-b border-white/10 flex items-center px-4 gap-2 shrink-0 flex-wrap py-1">
           {['Move', 'Frame', 'Component', 'Pen', 'Text', 'Rectangle', 'Line', 'Hand', 'Comment', 'Zoom', 'Align L', 'Align C', 'Align R', 'Distribute', 'Constraints', 'Fill', 'Stroke', 'Effects', 'Mask', 'Boolean'].map(clutter)}
         </div>
         <div className="flex flex-1 min-h-0">
@@ -428,13 +428,13 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
     )
   }
   return (
-    <div className="absolute inset-0 flex flex-col text-sm">
+    <div className="absolute inset-0 flex flex-col text-sm min-h-0 overflow-hidden">
       <div className="h-12 bg-[#2e2e2e] border-b border-white/15 flex items-center px-6 gap-6 shrink-0">
         <span className="text-white/80">Frame</span>
         <span className="text-white/80">Component</span>
         <span className="text-white/80">Prototype</span>
       </div>
-      <div className="h-10 bg-[#252525] border-b border-white/10 flex items-center px-4 gap-2 shrink-0 flex-wrap overflow-hidden">
+      <div className="min-h-10 bg-[#252525] border-b border-white/10 flex items-center px-4 gap-2 shrink-0 flex-wrap py-1">
         {['Move', 'Frame', 'Component', 'Pen', 'Text', 'Rectangle', 'Line', 'Hand', 'Comment', 'Zoom', 'Align L', 'Align C', 'Distribute', 'Constraints', 'Fill', 'Stroke', 'Effects', 'Mask'].map(clutter)}
       </div>
       <div className="flex flex-1 min-h-0">
@@ -530,8 +530,8 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
   const canPaint = hasLayer && stepIdx >= 8
   const procClutter = (label: string) => <div key={label} className={CLUTTER_CLASS}>{label}</div>
   return (
-    <div className="absolute inset-0 flex flex-col text-sm">
-      <div className="h-12 bg-[#2e2e2e] border-b border-white/15 flex items-center justify-center gap-3 px-4 shrink-0 flex-wrap">
+    <div className="absolute inset-0 flex flex-col text-sm min-h-0 overflow-hidden">
+      <div className="min-h-12 bg-[#2e2e2e] border-b border-white/15 flex items-center justify-center gap-3 px-4 shrink-0 flex-wrap py-2">
         <div className="relative shrink-0">
             <HotspotButton id="proc-export" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <span className={`px-3 py-1.5 rounded ${currentHotspotId === 'proc-export' ? 'ring-2 ring-[#34c759]/50' : ''} text-white/80`}>⚙</span>
@@ -844,10 +844,10 @@ export default function PearNavigator() {
           </div>
         )}
 
-        {/* Mock app preview - fills remaining space */}
+        {/* Mock app preview - fills remaining space, fits within viewport */}
         <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden">
-          <div className="flex-1 min-h-0 flex items-center justify-center p-4 md:p-6">
-            <div className="relative w-full h-full max-w-4xl rounded-[2rem] bg-[#1a1a1a] border-[10px] border-[#2a2a2a] shadow-[inset_0_0_30px_rgba(0,0,0,0.5),0_20px_50px_rgba(0,0,0,0.4)] overflow-hidden">
+          <div className="flex-1 min-h-0 flex items-center justify-center p-4 md:p-6 overflow-hidden">
+            <div className="relative w-full h-full max-w-4xl max-h-full rounded-4xl bg-[#1a1a1a] border-[10px] border-[#2a2a2a] shadow-[inset_0_0_30px_rgba(0,0,0,0.5),0_20px_50px_rgba(0,0,0,0.4)] overflow-hidden">
               <div className="absolute inset-4 md:inset-6 rounded-[1.25rem] bg-[#3a3a3a] overflow-hidden">
                 {MockComponent && <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={handleNext} {...(phase === 'steps' && { onWrongTap: handleWrongTap })} showHighlight={phase === 'steps' && showHighlight} stepIdx={phase === 'steps' ? stepIdx : (task?.steps.length ?? 0)} {...(taskId ? { taskId } : {})} />}
               </div>
