@@ -282,6 +282,12 @@
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
   }
+
+  @keyframes pearSuccess {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
   
   .card-glow {
     animation: cardGlow 2s ease-in-out infinite;
@@ -293,6 +299,10 @@
   
   .success-animation {
     animation: successPulse 0.5s ease-in-out;
+  }
+
+  .pear-success {
+    animation: pearSuccess 0.6s ease-out;
   }
   
   /* Responsive Design */
