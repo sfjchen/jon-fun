@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react'
+import React, { useState, useCallback, useRef, useEffect } from 'react'
 
 const BRUSH_BLUE = '#60a5fa'
 const BRUSH_YELLOW = '#fbbf24'
@@ -198,15 +198,15 @@ const TASKS: Record<string, Task> = {
     mock: 'procreate',
     steps: [
       { title: 'Open Brush Library', desc: 'Tap the brush icon to open the Brush Library.', hint: 'Brush Library shows your brush sets', highlight: { x: 280, y: 14, w: 80, h: 36 }, hotspotId: 'proc-brush' },
-      { title: 'Create new brush', desc: 'Tap + in the Brush Library to create a new brush.', highlight: { x: 24, y: 70, w: 60, h: 36 }, hotspotId: 'proc-new' },
-      { title: 'Adjust shape and grain', desc: 'In Brush Studio, tap Shape and Grain to customize the brush tip for texture.', highlight: { x: 520, y: 100, w: 80, h: 32 }, hotspotId: 'proc-shape' },
-      { title: 'Set dynamics', desc: 'Tap Dynamics. Adjust Size, Opacity, Flow for pressure response.', highlight: { x: 520, y: 160, w: 80, h: 32 }, hotspotId: 'proc-dynamics' },
-      { title: 'Save brush', desc: 'Tap Done to exit Brush Studio and save your brush.', highlight: { x: 300, y: 320, w: 100, h: 36 }, hotspotId: 'proc-done' },
-      { title: 'Pick sky color', desc: 'Tap the color disc to open the color picker. Choose a soft blue or orange for the sky.', highlight: { x: 260, y: 14, w: 48, h: 36 }, hotspotId: 'proc-color' },
-      { title: 'Add new layer', desc: 'Tap + in the Layers panel to add a new layer for the sky.', highlight: { x: 24, y: 120, w: 60, h: 36 }, hotspotId: 'proc-layer' },
-      { title: 'Paint the sky', desc: 'Tap the canvas to paint. Your textured brush creates a gradient sky.', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
-      { title: 'Set blend mode', desc: 'Select the layer and tap N to open blend modes. Try Multiply or Overlay for depth.', highlight: { x: 520, y: 60, w: 80, h: 28 }, hotspotId: 'proc-blend' },
-      { title: 'Export artwork', desc: 'Tap the wrench, then Share to export your textured sky.', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export' },
+      { title: 'Create new brush', desc: 'Tap + in the Brush Library to create a new brush.', hint: 'Creates a custom brush in Brush Studio', highlight: { x: 24, y: 70, w: 60, h: 36 }, hotspotId: 'proc-new' },
+      { title: 'Adjust shape and grain', desc: 'In Brush Studio, tap Shape and Grain to customize the brush tip for texture.', hint: 'Import custom grain images for texture', highlight: { x: 520, y: 100, w: 80, h: 32 }, hotspotId: 'proc-shape' },
+      { title: 'Set dynamics', desc: 'Tap Dynamics. Adjust Size, Opacity, Flow for pressure response.', hint: 'Apple Pencil pressure controls stroke variation', highlight: { x: 520, y: 160, w: 80, h: 32 }, hotspotId: 'proc-dynamics' },
+      { title: 'Save brush', desc: 'Tap Done to exit Brush Studio and save your brush.', hint: 'Organize brushes into sets', highlight: { x: 300, y: 320, w: 100, h: 36 }, hotspotId: 'proc-done' },
+      { title: 'Pick sky color', desc: 'Tap the color disc to open the color picker. Choose a soft blue or orange for the sky.', hint: 'HSV wheel or hex input', highlight: { x: 260, y: 14, w: 48, h: 36 }, hotspotId: 'proc-color' },
+      { title: 'Add new layer', desc: 'Tap + in the Layers panel to add a new layer for the sky.', hint: 'Layers stack; sky above background', highlight: { x: 24, y: 120, w: 60, h: 36 }, hotspotId: 'proc-layer' },
+      { title: 'Paint the sky', desc: 'Paint on the canvas. Use blue and yellow strokes; your textured brush creates a gradient sky.', hint: 'Paint blue first, then yellow for blend', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
+      { title: 'Set blend mode', desc: 'Select the layer and tap N to open blend modes. Try Multiply or Overlay for depth.', hint: 'Overlay adds contrast; Multiply darkens', highlight: { x: 520, y: 60, w: 80, h: 28 }, hotspotId: 'proc-blend' },
+      { title: 'Export artwork', desc: 'Tap the wrench, then Share to export your textured sky.', hint: 'PNG, PSD, or Procreate format', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export' },
     ],
   },
   notionDb: {
@@ -299,15 +299,15 @@ const TASKS: Record<string, Task> = {
       { title: 'Add text to frame', desc: 'Double-tap the frame and type your central topic (e.g. "Project").', hint: 'The frame becomes editable when selected', highlight: { x: 200, y: 110, w: 80, h: 40 }, hotspotId: 'fig-text' },
       { title: 'Create component', desc: 'Select the frame and tap Create component to make it reusable.', hint: 'Components let you add instances for branches', highlight: { x: 520, y: 60, w: 100, h: 36 }, hotspotId: 'fig-component-tab' },
       { title: 'Add first instance', desc: 'Tap Instance to add your first branch idea.', hint: 'Instances are copies linked to the main component', highlight: { x: 180, y: 180, w: 100, h: 50 }, hotspotId: 'fig-instance' },
-      { title: 'Add instance', desc: 'Tap + Instance to add another idea (Idea A).', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instance', desc: 'Tap + Instance for Idea B.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instance', desc: 'Tap + Instance for Idea C.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instance', desc: 'Tap + Instance for Idea D.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instance', desc: 'Tap + Instance for Idea E.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instance', desc: 'Tap + Instance for Idea F.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instance', desc: 'Tap + Instance for Idea G.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instance', desc: 'Tap + Instance for Idea H.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instance', desc: 'Tap + Instance for Idea I.', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance to add another idea (Idea A).', hint: 'Each instance is a branch node', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for Idea B.', hint: 'Build out your mindmap branches', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for Idea C.', hint: 'Keep adding until you have 9 nodes', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for Idea D.', hint: 'Instances link to the main component', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for Idea E.', hint: 'Edit one; all instances update', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for Idea F.', hint: 'Almost there—a few more nodes', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for Idea G.', hint: 'Two more to go', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for Idea H.', hint: 'One more node', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instance', desc: 'Tap + Instance for Idea I.', hint: 'Last branch—then connectors', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
       { title: 'Add connectors', desc: 'Tap Connector to draw lines linking the central node to each branch.', hint: 'Connectors show relationships between ideas', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
       { title: 'Auto layout', desc: 'Tap Auto layout for consistent spacing between nodes.', hint: 'Keeps the mindmap tidy and readable', highlight: { x: 520, y: 180, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
       { title: 'Fill with example', desc: 'Tap Fill example to populate with a Product Management example.', hint: 'OKR, KPI, Agile, Roadmap, Jira, etc.', highlight: { x: 520, y: 220, w: 100, h: 36 }, hotspotId: 'fig-style' },
@@ -845,15 +845,8 @@ export default function PearNavigator() {
   const [stepIdx, setStepIdx] = useState(0)
   const [showHighlight, setShowHighlight] = useState(false)
   const [wrongTapToast, setWrongTapToast] = useState(false)
-  const [quickDemo, setQuickDemo] = useState(false)
 
-  const rawTask = taskId ? TASKS[taskId] : null
-  const task = useMemo(
-    () => (rawTask && quickDemo && taskId === 'figmaMindmap'
-      ? { ...rawTask, steps: rawTask.steps.slice(0, 5) }
-      : rawTask),
-    [rawTask, quickDemo, taskId]
-  )
+  const task = taskId ? TASKS[taskId] : null
   const step = task ? task.steps[stepIdx] : null
   const isLastStep = task && stepIdx === task.steps.length - 1
   const isFirstStep = stepIdx === 0
@@ -896,9 +889,6 @@ export default function PearNavigator() {
   }, [])
 
   const MockComponent = task ? MOCK_COMPONENTS[task.mock] : null
-  const mockStepIdx = task && quickDemo && taskId === 'figmaMindmap' && stepIdx >= 3
-    ? stepIdx + 1
-    : (phase === 'steps' ? stepIdx : (task?.steps.length ?? 0))
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-gradient-to-br from-[#0d0d0d] via-[#1a1a1a] to-[#0d0d0d] flex flex-col">
@@ -925,10 +915,6 @@ export default function PearNavigator() {
                   <p className="text-gray-400 text-base mb-5 shrink-0">
                     Step-by-step guidance with highlights—tap the simulator to advance.
                   </p>
-                  <label className="flex items-center gap-2 mb-4 cursor-pointer">
-                    <input type="checkbox" checked={quickDemo} onChange={(e) => setQuickDemo(e.target.checked)} className="rounded border-white/30 bg-white/5" />
-                    <span className="text-sm text-white/70">Quick demo (shorter mindmap)</span>
-                  </label>
                   <div className="flex-1 min-h-0 overflow-y-auto space-y-3 mb-8">
                     {Object.entries(TASKS).map(([id, t]) => (
                       <button
@@ -1028,7 +1014,7 @@ export default function PearNavigator() {
           <div className="flex-1 min-h-0 flex items-center justify-center p-4 md:p-6">
             <div className="relative w-full h-full max-w-4xl rounded-[2rem] bg-[#1a1a1a] border-[10px] border-[#2a2a2a] shadow-[inset_0_0_30px_rgba(0,0,0,0.5),0_20px_50px_rgba(0,0,0,0.4)] overflow-hidden">
               <div className="absolute inset-4 md:inset-6 rounded-[1.25rem] bg-[#3a3a3a] overflow-hidden">
-                {MockComponent && <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={handleNext} {...(phase === 'steps' && { onWrongTap: handleWrongTap })} showHighlight={phase === 'steps' && showHighlight} stepIdx={phase === 'steps' ? mockStepIdx : (task?.steps.length ?? 0)} {...(taskId ? { taskId } : {})} />}
+                {MockComponent && <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={handleNext} {...(phase === 'steps' && { onWrongTap: handleWrongTap })} showHighlight={phase === 'steps' && showHighlight} stepIdx={phase === 'steps' ? stepIdx : (task?.steps.length ?? 0)} {...(taskId ? { taskId } : {})} />}
               </div>
             </div>
           </div>
