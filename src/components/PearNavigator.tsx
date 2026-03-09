@@ -23,8 +23,10 @@ function SkyPaintCanvas({
   const blueRef = useRef<HTMLCanvasElement>(null)
   const yellowRef = useRef<HTMLCanvasElement>(null)
   const isDrawingRef = useRef(false)
-  const hasStrokedRef = useRef(false)
+  const strokeCountRef = useRef(0)
+  const hasAdvancedRef = useRef(false)
   const strokeColorRef = useRef<'blue' | 'yellow'>('blue')
+  const STROKES_NEEDED = 3
 
   const setupCanvas = useCallback((canvas: HTMLCanvasElement | null) => {
     if (!enabled || !containerRef.current || !canvas) return
@@ -109,9 +111,12 @@ function SkyPaintCanvas({
       e.preventDefault()
       e.stopPropagation()
       yellowRef.current?.releasePointerCapture?.(e.pointerId)
-      if (isDrawingRef.current && !hasStrokedRef.current) {
-        hasStrokedRef.current = true
-        onFirstStroke?.()
+      if (isDrawingRef.current) {
+        strokeCountRef.current += 1
+        if (strokeCountRef.current >= STROKES_NEEDED && !hasAdvancedRef.current) {
+          hasAdvancedRef.current = true
+          onFirstStroke?.()
+        }
       }
       isDrawingRef.current = false
     },
@@ -211,7 +216,7 @@ const TASKS: Record<string, Task> = {
       { title: 'Save brush', desc: 'Tap Done to exit Brush Studio and save your brush.', hint: 'Organize brushes into sets', highlight: { x: 300, y: 320, w: 100, h: 36 }, hotspotId: 'proc-done' },
       { title: 'Pick sky color', desc: 'Tap the color disc to open the color picker. Choose a soft blue or orange for the sky.', hint: 'HSV wheel or hex input', highlight: { x: 260, y: 14, w: 48, h: 36 }, hotspotId: 'proc-color' },
       { title: 'Add new layer', desc: 'Tap + in the Layers panel to add a new layer for the sky.', hint: 'Layers stack; sky above background', highlight: { x: 24, y: 120, w: 60, h: 36 }, hotspotId: 'proc-layer' },
-      { title: 'Paint the sky', desc: 'Paint on the canvas. Use blue and yellow strokes; your textured brush creates a gradient sky.', hint: 'Paint blue first, then yellow for blend', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
+      { title: 'Paint the sky', desc: 'Paint on the canvas. Make 3+ strokes with blue and yellow; your textured brush creates a gradient sky.', hint: 'Paint blue first, then yellow—overlap for blend', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
       { title: 'Set blend mode', desc: 'Select the layer and tap N to open blend modes. Try Multiply or Overlay for depth.', hint: 'Overlay adds contrast; Multiply darkens', highlight: { x: 520, y: 60, w: 80, h: 28 }, hotspotId: 'proc-blend' },
       { title: 'Export artwork', desc: 'Tap the wrench, then Share to export your textured sky.', hint: 'PNG, PSD, or Procreate format', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export' },
     ],
@@ -386,6 +391,7 @@ const HOTSPOT_INACTIVE = 'bg-[#34c759]/20 text-[#34c759]'
 const HOTSPOT_ACTIVE = 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50'
 
 function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight, stepIdx = 0, taskId }: MockProps) {
+  const [swapVariant, setSwapVariant] = useState<'Default' | 'Hover' | 'Pressed'>('Default')
   const isMindmap = taskId === 'figmaMindmap'
   const hasSelection = stepIdx >= 1
   const isComponent = stepIdx >= 2
@@ -394,7 +400,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const hasText = isMindmap && stepIdx >= 2
   const hasComponent = isMindmap && stepIdx >= 3
   const instanceCount = isMindmap && stepIdx >= 4 ? Math.min(stepIdx - 3, 9) : 0
-  const hasConnectors = isMindmap && stepIdx >= 14
+  const hasConnectors = isMindmap && instanceCount > 0
   const hasAutoLayout = isMindmap && stepIdx >= 15
   const hasStyle = isMindmap && stepIdx >= 16
   // Stacked (before Auto layout): nodes offset like fanned deck; Radial (after): spread out
@@ -426,13 +432,19 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
           {['Move', 'Frame', 'Component', 'Pen', 'Text', 'Rectangle', 'Line', 'Hand', 'Comment', 'Zoom', 'Align L', 'Align C', 'Align R', 'Distribute', 'Constraints', 'Fill', 'Stroke', 'Effects', 'Mask', 'Boolean'].map(clutter)}
         </div>
         <div className="flex flex-1 min-h-0">
-          <div className="w-36 bg-[#323232] border-r border-white/10 p-3 shrink-0 flex flex-col gap-2 overflow-y-auto pointer-events-none">
+          <div className="w-36 bg-[#323232] border-r border-white/10 p-3 shrink-0 flex flex-col gap-2 overflow-y-auto">
             <div className="text-white/50 text-xs font-medium">Layers</div>
-            {['Page 1', 'Frame', 'Group', 'Rectangle', 'Text'].map((l) => <div key={l} className="h-7 px-2 rounded bg-white/5 text-white/45 text-xs flex items-center pointer-events-none">{l}</div>)}
+            {hasCentralFrame && (
+              <>
+                <div className="h-7 px-2 rounded bg-[#34c759]/15 text-[#34c759] text-xs flex items-center">Project</div>
+                {instanceCount > 0 && Array.from({ length: instanceCount }).map((_, i) => (
+                  <div key={i} className="h-6 pl-4 pr-2 rounded bg-white/5 text-white/50 text-xs flex items-center">Idea {String.fromCharCode(65 + i)}</div>
+                ))}
+              </>
+            )}
+            {!hasCentralFrame && ['Page 1', 'Frame', 'Group'].map((l) => <div key={l} className="h-7 px-2 rounded bg-white/5 text-white/45 text-xs flex items-center">{l}</div>)}
             <div className="text-white/50 text-xs font-medium mt-2">Pages</div>
             {['Cover', 'Flow', 'Components'].map((p) => <div key={p} className="h-6 px-2 rounded bg-white/5 text-white/40 text-xs flex items-center">{p}</div>)}
-            <div className="text-white/50 text-xs font-medium mt-2">Assets</div>
-            <div className="h-6 px-2 rounded bg-white/5 text-white/40 text-xs flex items-center">Search...</div>
           </div>
           <HotspotButton id="fig-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="flex-1 min-w-0 flex flex-col min-h-0">
             <div className="flex-1 p-6 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center overflow-auto">
@@ -552,14 +564,14 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
               {!hasSelection && <span className="text-white/40 text-sm">Tap to select frame</span>}
               {hasSelection && (
                 <>
-                  <div className={`w-32 h-20 rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${isComponent ? 'bg-[#8b5cf6]/30 border-2 border-[#8b5cf6] text-white' : 'bg-white/20 text-white/90'}`}>
+                  <div className={`w-32 h-20 rounded-lg flex items-center justify-center text-sm font-medium transition-all duration-200 ${isComponent ? 'border-2 border-[#8b5cf6] text-white' : 'bg-white/20 text-white/90'} ${hasVariants ? swapVariant === 'Hover' ? 'bg-[#8b5cf6]/50 scale-105' : swapVariant === 'Pressed' ? 'bg-[#6d28d9] scale-95' : 'bg-[#8b5cf6]/30' : 'bg-[#8b5cf6]/30'}`}>
                     Button
                   </div>
                   {isComponent && <span className="text-[#8b5cf6] text-xs font-medium">Main component</span>}
                   {hasVariants && (
                     <div className="flex gap-2 mt-1">
-                      {['Default', 'Hover', 'Pressed'].map((v) => (
-                        <span key={v} className="px-2.5 py-1 rounded bg-[#34c759]/20 text-[#34c759] text-xs">{v}</span>
+                      {(['Default', 'Hover', 'Pressed'] as const).map((v) => (
+                        <span key={v} className={`px-2.5 py-1 rounded text-xs ${swapVariant === v ? 'bg-[#34c759]/30 text-[#34c759] font-medium' : 'bg-[#34c759]/20 text-[#34c759]'}`}>{v}</span>
                       ))}
                     </div>
                   )}
@@ -596,7 +608,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
               <div className="flex flex-wrap gap-1"><span className="px-2.5 py-1 rounded bg-[#34c759]/20 text-[#34c759] text-xs">Default</span><span className="px-2.5 py-1 rounded bg-white/10 text-xs">Hover</span><span className="px-2.5 py-1 rounded bg-white/10 text-xs">Pressed</span></div>
             </div>
           )}
-          <HotspotButton id="fig-swap" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+          <HotspotButton id="fig-swap" currentHotspotId={currentHotspotId} onStepComplete={hasVariants ? () => { setSwapVariant((v) => (v === 'Default' ? 'Hover' : v === 'Hover' ? 'Pressed' : 'Default')); setTimeout(onStepComplete, 500); } : onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
             <div className={`${HOTSPOT_BTN} justify-between mt-1 ${currentHotspotId === 'fig-swap' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Swap variant <span className="text-xs">▼</span></div>
           </HotspotButton>
           {currentHotspotId === 'fig-swap' && hasVariants && (
@@ -617,6 +629,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
 
 function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight, stepIdx = 0, taskId }: MockProps) {
   const [brushColor, setBrushColor] = useState<'blue' | 'yellow'>('blue')
+  const [testStrokeShown, setTestStrokeShown] = useState(false)
   const isSky = taskId === 'procreateSky'
   const brushActive = stepIdx >= 1
   const hasNewBrush = stepIdx >= 2
@@ -635,9 +648,17 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
     <div className="absolute inset-0 flex flex-col text-sm">
       <div className="h-12 bg-[#2e2e2e] border-b border-white/15 flex items-center justify-center gap-4 px-4 shrink-0 flex-wrap">
         {isSky && (
-          <HotspotButton id="proc-export" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-            <span className={`px-3 py-1.5 rounded ${currentHotspotId === 'proc-export' ? 'ring-2 ring-[#34c759]/50' : ''} text-white/80`}>⚙</span>
-          </HotspotButton>
+          <div className="relative">
+            <HotspotButton id="proc-export" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+              <span className={`px-3 py-1.5 rounded ${currentHotspotId === 'proc-export' ? 'ring-2 ring-[#34c759]/50' : ''} text-white/80`}>⚙</span>
+            </HotspotButton>
+            {currentHotspotId === 'proc-export' && (
+              <div className="absolute top-full left-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-20 min-w-[120px]">
+                <div className="text-white/50 text-xs mb-1">Share</div>
+                <div className="text-[#34c759] text-xs">PNG · PSD · Procreate</div>
+              </div>
+            )}
+          </div>
         )}
         {['Undo', 'Redo', 'Adjustments', 'Filters', 'Liquify', 'Selection', 'Crop', 'Transform'].map(procClutter)}
         {isSky && (
@@ -687,14 +708,17 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
               <HotspotButton id="proc-layer" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full">
                 <div className={`w-full ${HOTSPOT_BTN} justify-center ${currentHotspotId === 'proc-layer' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>+ Layer</div>
               </HotspotButton>
-              {hasLayer && <div className="w-full h-12 rounded bg-white/10 flex items-center px-2 gap-1"><div className="w-10 h-10 rounded bg-[#60a5fa]/40" /><span className="text-xs text-white/70">Sky</span></div>}
+              {hasLayer && <div className="w-full h-12 rounded bg-white/10 flex items-center px-2 gap-1"><div className="w-10 h-10 rounded bg-[#60a5fa]/40 flex items-center justify-center text-[10px] text-white/60">{hasBlend ? 'N' : ''}</div><span className="text-xs text-white/70">Sky{hasBlend ? ' (Overlay)' : ''}</span></div>}
               {hasLayer && <div className="w-full h-10 rounded bg-white/5 flex items-center px-2 text-xs text-white/40">Background</div>}
             </>
           )}
         </div>
         <div className={`flex-1 p-4 min-w-0 transition-all ${brushActive ? 'bg-[#404040]' : 'bg-[#404040]'}`}>
-          <HotspotButton id="proc-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className={`w-full h-full ${!isSky && !canTestBrush ? 'pointer-events-none' : ''}`}>
+          <HotspotButton id="proc-canvas" currentHotspotId={currentHotspotId} onStepComplete={canTestBrush ? () => { setTestStrokeShown(true); setTimeout(() => onStepComplete(), 400); } : onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className={`w-full h-full ${!isSky && !canTestBrush ? 'pointer-events-none' : ''}`}>
             <div className={`w-full h-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-3 text-base transition-all relative overflow-hidden ${brushActive || canTestBrush ? 'border-white/30' : 'border-white/20'} ${isSky && (hasStroke || hasLayer) ? 'border-none' : ''}`}>
+              {isSky && hasLayer && !hasStroke && (
+                <div className="absolute inset-0 bg-gradient-to-b from-[#60a5fa]/30 via-[#93c5fd]/20 to-[#fbbf24]/25 pointer-events-none z-0" aria-hidden />
+              )}
               <SkyPaintCanvas
                 enabled={canPaint}
                 brushColor={brushColor}
@@ -708,14 +732,14 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
               {inBrushStudio && !hasStroke && !canPaint && !brushSaved && <span className="text-white/50 text-xs">Brush Studio</span>}
               {brushSaved && !hasStroke && !canPaint && (
                 <>
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-60" viewBox="0 0 200 120">
-                    <path d="M 20 60 Q 60 40 100 60 T 180 80" stroke="#34c759" strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 200 120">
+                    <path d="M 20 60 Q 60 40 100 60 T 180 80" stroke="#34c759" strokeWidth={testStrokeShown ? 6 : 4} fill="none" strokeLinecap="round" strokeLinejoin="round" opacity={testStrokeShown ? 0.9 : 0.6} className="transition-all duration-300" />
                   </svg>
-                  <span className="relative text-[#34c759] text-sm font-medium z-10">{canTestBrush ? 'Tap to test your brush' : '✓ Custom brush saved'}</span>
+                  <span className="relative text-[#34c759] text-sm font-medium z-10">{testStrokeShown ? '✓ Brush works!' : canTestBrush ? 'Tap to test your brush' : '✓ Custom brush saved'}</span>
                 </>
               )}
               {!hasNewBrush && !brushSaved && !hasStroke && !canPaint && <span className="text-white/40">Canvas</span>}
-              {canPaint && stepIdx < 9 && <span className="relative text-white/90 text-sm drop-shadow z-30 pointer-events-none">Paint blue, then yellow</span>}
+              {canPaint && stepIdx < 9 && <span className="relative text-white/90 text-sm drop-shadow z-30 pointer-events-none">Paint 3+ strokes (blue, then yellow)</span>}
               {isSky && stepIdx >= 9 && <span className="relative text-white/90 text-sm drop-shadow z-30 pointer-events-none">Blended sky</span>}
             </div>
           </HotspotButton>
@@ -784,6 +808,7 @@ function NotionMock({ currentHotspotId, onStepComplete, onWrongTap, showHighligh
     { name: 'Sprint planning', status: 'Done', date: 'Mar 1' },
     { name: 'User research', status: 'In progress', date: 'Mar 5' },
     { name: 'Design review', status: 'To do', date: 'Mar 8' },
+    { name: 'Ship v1', status: 'To do', date: 'Mar 15' },
   ]
   const filteredRows = hasFilter ? ROWS.filter((r) => r.status === 'In progress') : ROWS
   return (
