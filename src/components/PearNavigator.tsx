@@ -191,6 +191,13 @@ const TASKS: Record<string, Task> = {
         highlight: { x: 300, y: 320, w: 100, h: 36 },
         hotspotId: 'proc-done',
       },
+      {
+        title: 'Test your brush',
+        desc: 'Tap the canvas to draw a stroke and see your custom brush in action.',
+        hint: 'Pressure and tilt affect the stroke',
+        highlight: { x: 120, y: 80, w: 280, h: 200 },
+        hotspotId: 'proc-canvas',
+      },
     ],
   },
   procreateSky: {
@@ -540,11 +547,24 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
           <div className="h-6 px-2 rounded bg-white/5 text-white/40 text-xs flex items-center">Search...</div>
         </div>
         <HotspotButton id="fig-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="flex-1 min-w-0 flex flex-col min-h-0">
-          <div className="flex-1 p-6 bg-[#404040] min-w-0 min-h-0">
-            <div className={`w-full h-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-3 text-base transition-colors ${hasSelection ? 'border-[#8b5cf6]/60 bg-[#8b5cf6]/5' : ''} ${currentHotspotId === 'fig-canvas' ? 'border-[#34c759]/60 text-[#34c759]' : 'border-white/25 text-white/40'}`}>
-              {hasSelection && <div className="w-24 h-16 rounded bg-white/20" />}
-              <span>{isComponent ? 'Component' : 'Canvas'}</span>
-              {hasVariants && <span className="text-xs text-[#34c759]/80">Default · Hover · Pressed</span>}
+          <div className="flex-1 p-6 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center">
+            <div className={`relative w-full max-w-md aspect-video rounded-xl flex flex-col items-center justify-center gap-3 transition-all duration-200 ${hasSelection ? 'border-2 border-[#8b5cf6] bg-[#8b5cf6]/10' : 'border-2 border-dashed border-white/25'} ${currentHotspotId === 'fig-canvas' ? 'ring-2 ring-[#34c759]/50' : ''}`}>
+              {!hasSelection && <span className="text-white/40 text-sm">Tap to select frame</span>}
+              {hasSelection && (
+                <>
+                  <div className={`w-32 h-20 rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${isComponent ? 'bg-[#8b5cf6]/30 border-2 border-[#8b5cf6] text-white' : 'bg-white/20 text-white/90'}`}>
+                    Button
+                  </div>
+                  {isComponent && <span className="text-[#8b5cf6] text-xs font-medium">Main component</span>}
+                  {hasVariants && (
+                    <div className="flex gap-2 mt-1">
+                      {['Default', 'Hover', 'Pressed'].map((v) => (
+                        <span key={v} className="px-2.5 py-1 rounded bg-[#34c759]/20 text-[#34c759] text-xs">{v}</span>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </HotspotButton>
@@ -577,13 +597,16 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
             </div>
           )}
           <HotspotButton id="fig-swap" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-            <div className={`${HOTSPOT_BTN} justify-between mt-1 ${currentHotspotId === 'fig-swap' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Swap <span className="text-xs">▼</span></div>
+            <div className={`${HOTSPOT_BTN} justify-between mt-1 ${currentHotspotId === 'fig-swap' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Swap variant <span className="text-xs">▼</span></div>
           </HotspotButton>
-          {['Resize', 'Opacity', 'Blend', 'Inspect'].map(clutter)}
-          {currentHotspotId === 'fig-swap' && (
-            <div className="p-3 rounded-lg bg-[#454545] border border-white/10">
-              <div className="text-xs text-white/70">State: Default ▼</div>
-              <div className="mt-1 text-xs text-white/50">Hover · Pressed</div>
+          {currentHotspotId === 'fig-swap' && hasVariants && (
+            <div className="p-3 rounded-lg bg-[#454545] border border-white/10 space-y-1">
+              <div className="text-xs text-white/70">Instance: Button</div>
+              <div className="flex flex-col gap-1 mt-2">
+                {['Default', 'Hover', 'Pressed'].map((v) => (
+                  <div key={v} className="px-2 py-1.5 rounded bg-white/5 text-white/80 text-xs hover:bg-white/10 cursor-pointer">{v}</div>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -601,6 +624,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
   const shapeDone = stepIdx >= 3
   const dynamicsDone = stepIdx >= 4
   const brushSaved = stepIdx >= 5
+  const canTestBrush = !isSky && stepIdx >= 5
   const hasColor = isSky && stepIdx >= 6
   const hasLayer = isSky && stepIdx >= 7
   const hasStroke = isSky && stepIdx >= 8
@@ -669,8 +693,8 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
           )}
         </div>
         <div className={`flex-1 p-4 min-w-0 transition-all ${brushActive ? 'bg-[#404040]' : 'bg-[#404040]'}`}>
-          <HotspotButton id="proc-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className={`w-full h-full ${!isSky ? 'pointer-events-none' : ''}`}>
-            <div className={`w-full h-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-3 text-base transition-all relative overflow-hidden ${brushActive ? 'border-white/30' : 'border-white/20'} ${isSky && (hasStroke || hasLayer) ? 'border-none' : ''}`}>
+          <HotspotButton id="proc-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className={`w-full h-full ${!isSky && !canTestBrush ? 'pointer-events-none' : ''}`}>
+            <div className={`w-full h-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-3 text-base transition-all relative overflow-hidden ${brushActive || canTestBrush ? 'border-white/30' : 'border-white/20'} ${isSky && (hasStroke || hasLayer) ? 'border-none' : ''}`}>
               <SkyPaintCanvas
                 enabled={canPaint}
                 brushColor={brushColor}
@@ -680,9 +704,16 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
               />
               {brushActive && !hasStroke && !canPaint && <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-[#34c759] bg-[#34c759]/30" title="Brush cursor" />}
               {canPaint && <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-white/60 pointer-events-none z-30" style={{ backgroundColor: brushColor === 'blue' ? BRUSH_BLUE : BRUSH_YELLOW }} title="Brush" />}
-              {hasNewBrush && !hasStroke && !canPaint && <div className="w-12 h-12 rounded-full bg-[#34c759]/40 border-2 border-[#34c759]/60" />}
-              {inBrushStudio && !hasStroke && !canPaint && <span className="text-white/50 text-xs">Brush Studio</span>}
-              {brushSaved && !hasStroke && !canPaint && <span className="text-[#34c759] text-sm">✓ Saved</span>}
+              {hasNewBrush && !hasStroke && !canPaint && !brushSaved && <div className="w-12 h-12 rounded-full bg-[#34c759]/40 border-2 border-[#34c759]/60" />}
+              {inBrushStudio && !hasStroke && !canPaint && !brushSaved && <span className="text-white/50 text-xs">Brush Studio</span>}
+              {brushSaved && !hasStroke && !canPaint && (
+                <>
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-60" viewBox="0 0 200 120">
+                    <path d="M 20 60 Q 60 40 100 60 T 180 80" stroke="#34c759" strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span className="relative text-[#34c759] text-sm font-medium z-10">{canTestBrush ? 'Tap to test your brush' : '✓ Custom brush saved'}</span>
+                </>
+              )}
               {!hasNewBrush && !brushSaved && !hasStroke && !canPaint && <span className="text-white/40">Canvas</span>}
               {canPaint && stepIdx < 9 && <span className="relative text-white/90 text-sm drop-shadow z-30 pointer-events-none">Paint blue, then yellow</span>}
               {isSky && stepIdx >= 9 && <span className="relative text-white/90 text-sm drop-shadow z-30 pointer-events-none">Blended sky</span>}
@@ -747,83 +778,128 @@ function NotionMock({ currentHotspotId, onStepComplete, onWrongTap, showHighligh
   const hasProps = stepIdx >= 3
   const hasLinked = stepIdx >= 4
   const hasFilter = stepIdx >= 5
+  const isBoardView = hasLinked
   const notionClutter = (label: string) => <div key={label} className={CLUTTER_CLASS}>{label}</div>
+  const ROWS = [
+    { name: 'Sprint planning', status: 'Done', date: 'Mar 1' },
+    { name: 'User research', status: 'In progress', date: 'Mar 5' },
+    { name: 'Design review', status: 'To do', date: 'Mar 8' },
+  ]
+  const filteredRows = hasFilter ? ROWS.filter((r) => r.status === 'In progress') : ROWS
   return (
     <div className="absolute inset-0 flex flex-col text-sm">
       <div className="h-12 bg-[#2e2e2e] border-b border-white/15 flex items-center px-3 gap-3 shrink-0 flex-wrap">
         <HotspotButton id="notion-new" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-          <span className={hasPage ? 'text-[#34c759] font-medium' : 'text-white/80'}>+ New page</span>
+          <span className={`px-3 py-1.5 rounded transition-colors ${hasPage ? 'bg-[#34c759]/20 text-[#34c759] font-medium' : 'text-white/80'}`}>+ New page</span>
         </HotspotButton>
-        {['Templates', 'Import', 'Search', 'Settings', 'Share', 'Updates', 'Favorites'].map(notionClutter)}
+        {hasPage && <span className="text-white/60 text-sm">My Project</span>}
+        {['Templates', 'Import', 'Search', 'Settings', 'Share'].map(notionClutter)}
       </div>
       <div className="flex flex-1 min-h-0">
-        <div className="w-32 bg-[#383838] border-r border-white/15 p-4 shrink-0 flex flex-col gap-2 overflow-y-auto">
+        <div className="w-36 bg-[#383838] border-r border-white/15 p-4 shrink-0 flex flex-col gap-2 overflow-y-auto">
           <HotspotButton id="notion-new" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
             <div className={`${HOTSPOT_BTN} mb-2 ${currentHotspotId === 'notion-new' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>+ Add</div>
           </HotspotButton>
           {currentHotspotId === 'notion-new' && (
             <div className="mb-3 p-3 rounded-lg bg-[#454545] border border-white/10 space-y-1">
-              <div className="text-[#34c759] text-xs">New page</div>
+              <div className="text-[#34c759] text-xs font-medium">New page</div>
               <div className="text-white/50 text-xs">Page · Database</div>
             </div>
           )}
           <div className="text-white/50 text-xs pointer-events-none">Workspace</div>
-          {['Favorites', 'Private', 'Shared', 'Trash', 'Settings', 'Upgrade'].map((s) => <div key={s} className="h-8 px-2 rounded bg-white/5 text-white/40 text-xs flex items-center pointer-events-none">{s}</div>)}
-          <div className="h-8 bg-white/10 rounded" />
-          <div className="h-8 bg-white/10 rounded" />
+          {['Favorites', 'Private', 'Shared'].map((s) => <div key={s} className="h-8 px-2 rounded bg-white/5 text-white/40 text-xs flex items-center pointer-events-none">{s}</div>)}
+          {hasPage && <div className="h-8 px-2 rounded bg-[#34c759]/15 text-[#34c759] text-xs flex items-center font-medium">✓ My Project</div>}
         </div>
-        <div className="flex-1 p-6 bg-[#404040] min-w-0">
-          <HotspotButton id="notion-db" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-            <div className={`${HOTSPOT_BTN} mb-2 w-36 ${currentHotspotId === 'notion-db' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>
-              {hasDb ? <span className="text-[#34c759] text-xs">✓ Table</span> : <span className="text-white/40 text-xs">/table</span>}
-            </div>
-          </HotspotButton>
-          {currentHotspotId === 'notion-db' && (
-            <div className="mb-3 p-3 rounded-lg bg-[#454545] border border-white/10 space-y-1">
-              <div className="text-white/70 text-xs">Table – Inline</div>
-              <div className="text-white/50 text-xs">Linked database</div>
+        <div className="flex-1 p-6 bg-[#404040] min-w-0 overflow-auto">
+          {!hasDb ? (
+            <>
+              <HotspotButton id="notion-db" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+                <div className={`${HOTSPOT_BTN} mb-4 w-40 ${currentHotspotId === 'notion-db' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>
+                  <span className="text-white/40 text-sm">Type /table or /database</span>
+                </div>
+              </HotspotButton>
+              {currentHotspotId === 'notion-db' && (
+                <div className="mb-4 p-3 rounded-lg bg-[#454545] border border-white/10 space-y-1">
+                  <div className="text-white/70 text-xs">Table – Inline</div>
+                  <div className="text-white/50 text-xs">Linked database</div>
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2 pointer-events-none">
+                {['/heading', '/todo', '/bulleted', '/numbered', '/toggle', '/quote', '/callout', '/code'].map(notionClutter)}
+              </div>
+            </>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="text-white/80 font-medium">Tasks</span>
+                {hasLinked && <span className="px-2 py-0.5 rounded bg-[#34c759]/20 text-[#34c759] text-xs">Board view</span>}
+                {hasFilter && <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 text-xs">Filtered</span>}
+              </div>
+              {isBoardView ? (
+                <div className="grid grid-cols-3 gap-3">
+                  {['To do', 'In progress', 'Done'].map((col) => (
+                    <div key={col} className="rounded-lg bg-white/5 border border-white/10 p-3 min-h-[120px]">
+                      <div className="text-white/60 text-xs font-medium mb-2">{col}</div>
+                      {filteredRows.filter((r) => r.status === col).map((r) => (
+                        <div key={r.name} className="mb-2 p-2 rounded bg-white/10 text-white/90 text-sm">{r.name}</div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-lg border border-white/15 overflow-hidden">
+                  <div className="flex bg-white/10 border-b border-white/10">
+                    <div className="flex-1 px-3 py-2 text-white/60 text-xs font-medium">Name</div>
+                    {hasProps && <div className="w-24 px-3 py-2 text-white/60 text-xs font-medium border-l border-white/10">Status</div>}
+                    {hasProps && <div className="w-20 px-3 py-2 text-white/60 text-xs font-medium border-l border-white/10">Date</div>}
+                  </div>
+                  {filteredRows.map((r) => (
+                    <div key={r.name} className="flex border-b border-white/5 last:border-0">
+                      <div className="flex-1 px-3 py-2 text-white/90 text-sm">{r.name}</div>
+                      {hasProps && <div className="w-24 px-3 py-2 text-white/70 text-xs border-l border-white/10">{r.status}</div>}
+                      {hasProps && <div className="w-20 px-3 py-2 text-white/50 text-xs border-l border-white/10">{r.date}</div>}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
-          {hasDb && <div className="h-20 bg-white/10 rounded mb-2 flex gap-3 p-3"><div className="flex-1 h-4 bg-white/20 rounded" /><div className="flex-1 h-4 bg-white/20 rounded" /></div>}
-          <div className="text-white/50 text-xs">/table or /database</div>
-          <div className="mt-4 flex flex-wrap gap-2 pointer-events-none">
-            {['/heading', '/todo', '/bulleted', '/numbered', '/toggle', '/quote', '/callout', '/code', '/divider'].map(notionClutter)}
-          </div>
         </div>
-        <div className="w-44 bg-[#383838] border-l border-white/15 p-4 shrink-0 flex flex-col gap-3 overflow-y-auto">
+        <div className="w-48 bg-[#383838] border-l border-white/15 p-4 shrink-0 flex flex-col gap-3 overflow-y-auto">
           <div className="text-white/50 text-xs pointer-events-none">Database</div>
-          {['Sort', 'Group', 'Search DB', 'Lock', 'Duplicate'].map(notionClutter)}
+          {['Sort', 'Group', 'Search'].map(notionClutter)}
           <div>
-            <div className="text-white/50 mb-2">Properties</div>
+            <div className="text-white/50 mb-2 text-xs">Properties</div>
             <HotspotButton id="notion-props" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'notion-props' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE} ${hasProps ? 'border border-[#34c759]/40' : ''}`}>+ Add {hasProps && '✓'}</div>
             </HotspotButton>
             {currentHotspotId === 'notion-props' && (
               <div className="mt-2 p-3 rounded-lg bg-[#454545] border border-white/10 space-y-1">
-                <div className="text-white/70 text-xs">Property type:</div>
-                <div className="flex flex-wrap gap-1"><span className="px-2.5 py-1 rounded bg-[#34c759]/20 text-[#34c759] text-xs">Status</span><span className="px-2.5 py-1 rounded bg-white/10 text-xs">Date</span><span className="px-2.5 py-1 rounded bg-white/10 text-xs">Person</span></div>
+                <div className="text-white/70 text-xs">Status · Date · Person</div>
+              </div>
+            )}
+            {hasProps && (
+              <div className="mt-2 space-y-1">
+                {['Name', 'Status', 'Date'].map((p) => <div key={p} className="h-7 px-2 rounded bg-white/5 text-white/60 text-xs flex items-center">{p}</div>)}
               </div>
             )}
           </div>
           <div className="flex flex-col gap-2">
-            <div className="text-white/50">View</div>
+            <div className="text-white/50 text-xs">View</div>
             <HotspotButton id="notion-linked" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'notion-linked' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE} ${hasLinked ? 'border border-[#34c759]/40' : ''}`}>Linked {hasLinked && '✓'}</div>
             </HotspotButton>
             {currentHotspotId === 'notion-linked' && (
               <div className="p-3 rounded-lg bg-[#454545] border border-white/10 space-y-1">
-                <div className="text-white/70 text-xs">View type:</div>
-                <div className="flex gap-1"><span className="px-2.5 py-1 rounded bg-[#34c759]/20 text-[#34c759] text-xs">Board</span><span className="px-2.5 py-1 rounded bg-white/10 text-xs">Calendar</span></div>
+                <div className="text-white/70 text-xs">Board · Calendar · Table</div>
               </div>
             )}
             <HotspotButton id="notion-filter" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'notion-filter' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE} ${hasFilter ? 'border border-[#34c759]/40' : ''}`}>Filter {hasFilter && '✓'}</div>
             </HotspotButton>
-            {['Layout', 'Show', 'Hide', 'Export'].map(notionClutter)}
             {currentHotspotId === 'notion-filter' && (
               <div className="p-3 rounded-lg bg-[#454545] border border-white/10 space-y-1">
-                <div className="text-white/70 text-xs">Add condition:</div>
-                <div className="text-xs text-white/50">Status = In progress</div>
+                <div className="text-white/70 text-xs">Status = In progress</div>
               </div>
             )}
           </div>
