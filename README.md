@@ -345,6 +345,7 @@ Running log of project work. Update this section when making significant changes
 
 **2025-03**
 
+- **Pear Navigator demo polish**: Tap-to-advance primary (Skip step secondary); wrong-tap toast; Previous step; hero subtitle; step count badges; task-complete animation; PearPad tablet frame; stronger highlight; Quick demo (5-step mindmap); home page apps updated to Procreate/Notion/Figma
 - **docs/MS&E165-GTM-and-Resources-Slides.md**: Slide content for GTM Strategy and Required Resources (channels, metrics, post-launch impact; funding, tools, team, partnerships with how each supports launch) aligned to MS&E 165 rubric
 
 **2025-02**
