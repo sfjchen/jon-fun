@@ -345,6 +345,7 @@ Running log of project work. Update this section when making significant changes
 
 **2025-03**
 
+- **Pear Navigator workflows expanded**: Notion 10 steps (Status/Date props, add rows, linked view, Board, filter); Figma Variants 9 steps (Default/Hover/Pressed add + swap); Procreate Sky 13 steps (accent color, layer opacity, export format); Procreate Brush 9 steps (shape/grain, dynamics/size, name brush); Figma Mindmap 18 steps (style connectors, adjust spacing)
 - **Pear Navigator demo polish**: Tap-to-advance; wrong-tap toast; Previous step; PearPad frame; Notion table/board/filter; Figma Variants swap effect; Procreate Brush test step; Paint sky: 3-stroke min, gradient bg, layer blend indicator, export menu; Mindmap: connectors per instance, Layers panel
 - **docs/MS&E165-GTM-and-Resources-Slides.md**: Slide content for GTM Strategy and Required Resources (channels, metrics, post-launch impact; funding, tools, team, partnerships with how each supports launch) aligned to MS&E 165 rubric
 
