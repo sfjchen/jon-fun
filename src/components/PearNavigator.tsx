@@ -615,7 +615,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
                 enabled={canPaint}
                 brushColor={brushColor}
                 hasBlend={hasBlend}
-                paintPhase={paintPhase}
+                {...(paintPhase != null && { paintPhase })}
                 {...((stepIdx === 7 || stepIdx === 9) && { onFirstStroke: onStepComplete })}
                 className="z-10"
               />
