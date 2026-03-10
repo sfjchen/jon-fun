@@ -182,8 +182,10 @@ const TASKS: Record<string, Task> = {
     steps: [
       { title: 'Open Brush Library', desc: 'Tap the brush icon to open the Brush Library.', hint: 'Brush Library shows your brush sets', highlight: { x: 280, y: 14, w: 80, h: 36 }, hotspotId: 'proc-brush' },
       { title: 'Create new brush', desc: 'Tap + in the Brush Library to create a new brush.', hint: 'Creates a custom brush in Brush Studio', highlight: { x: 24, y: 70, w: 60, h: 36 }, hotspotId: 'proc-new' },
-      { title: 'Adjust shape and grain', desc: 'In Brush Studio, tap Shape and Grain to customize the brush tip for texture.', hint: 'Import custom grain images for texture', highlight: { x: 520, y: 100, w: 80, h: 32 }, hotspotId: 'proc-shape' },
-      { title: 'Set dynamics', desc: 'Tap Dynamics. Adjust Size, Opacity, Flow for pressure response.', hint: 'Apple Pencil pressure controls stroke variation', highlight: { x: 520, y: 160, w: 80, h: 32 }, hotspotId: 'proc-dynamics' },
+      { title: 'Open Shape menu', desc: 'Tap Shape in Brush Studio to open shape options.', hint: 'Shape controls brush tip', highlight: { x: 520, y: 100, w: 80, h: 32 }, hotspotId: 'proc-shape' },
+      { title: 'Select Grain', desc: 'Tap Grain in the dropdown to add texture to your brush.', hint: 'Import custom grain images for texture', highlight: { x: 520, y: 140, w: 80, h: 80 }, hotspotId: 'proc-shape-grain' },
+      { title: 'Open Dynamics menu', desc: 'Tap Dynamics to open pressure settings.', hint: 'Size, Opacity, Flow', highlight: { x: 520, y: 200, w: 80, h: 32 }, hotspotId: 'proc-dynamics' },
+      { title: 'Apply dynamics', desc: 'Tap Apply or adjust sliders, then confirm.', hint: 'Apple Pencil pressure controls stroke variation', highlight: { x: 520, y: 240, w: 80, h: 80 }, hotspotId: 'proc-dynamics-apply' },
       { title: 'Save brush', desc: 'Tap Done to exit Brush Studio and save your brush.', hint: 'Organize brushes into sets', highlight: { x: 300, y: 320, w: 100, h: 36 }, hotspotId: 'proc-done' },
       { title: 'Pick sky color', desc: 'Tap the color disc. Choose a soft blue for the base sky.', hint: 'HSV wheel or hex input', highlight: { x: 260, y: 14, w: 48, h: 36 }, hotspotId: 'proc-color' },
       { title: 'Add new layer', desc: 'Tap + in the Layers panel to add a new layer for the sky.', hint: 'Layers stack; sky above background', highlight: { x: 24, y: 120, w: 60, h: 36 }, hotspotId: 'proc-layer' },
@@ -539,16 +541,18 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
   const brushActive = stepIdx >= 1
   const hasNewBrush = stepIdx >= 2
   const inBrushStudio = stepIdx >= 2
-  const shapeDone = stepIdx >= 3
-  const dynamicsDone = stepIdx >= 4
-  const hasColor = stepIdx >= 5
-  const hasLayer = stepIdx >= 6
-  const hasStroke = stepIdx >= 9
-  const hasBlend = stepIdx >= 12
-  const blendMenuOpen = stepIdx >= 11
-  const canPaint = hasLayer && (stepIdx === 7 || stepIdx >= 9)
-  const paintPhase = stepIdx === 7 ? 'blue' as const : stepIdx === 9 ? 'yellow' as const : undefined
-  const canvasVisible = hasLayer && stepIdx >= 7
+  const shapeDone = stepIdx >= 4
+  const dynamicsDone = stepIdx >= 6
+  const hasColor = stepIdx >= 7
+  const hasLayer = stepIdx >= 8
+  const hasStroke = stepIdx >= 11
+  const hasBlend = stepIdx >= 14
+  const blendMenuOpen = stepIdx >= 13
+  const shapeMenuOpen = stepIdx >= 3
+  const dynamicsMenuOpen = stepIdx >= 5
+  const canPaint = hasLayer && (stepIdx === 9 || stepIdx >= 11)
+  const paintPhase = stepIdx === 9 ? 'blue' as const : stepIdx === 11 ? 'yellow' as const : undefined
+  const canvasVisible = hasLayer && stepIdx >= 9
   const procClutter = (label: string) => <div key={label} className={CLUTTER_CLASS}>{label}</div>
   return (
     <div className="absolute inset-0 flex flex-col text-xs min-h-0 overflow-hidden">
@@ -626,7 +630,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
                 brushColor={brushColor}
                 hasBlend={hasBlend}
                 {...(paintPhase != null && { paintPhase })}
-                {...((stepIdx === 7 || stepIdx === 9) && { onFirstStroke: onStepComplete })}
+                {...((stepIdx === 9 || stepIdx === 11) && { onFirstStroke: onStepComplete })}
                 className="z-10"
               />
               {brushActive && !hasStroke && !canPaint && <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-[#34c759] bg-[#34c759]/30" title="Brush cursor" />}
@@ -634,17 +638,17 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
               {hasNewBrush && !hasStroke && !canPaint && <div className="w-12 h-12 rounded-full bg-[#34c759]/40 border-2 border-[#34c759]/60" />}
               {inBrushStudio && !hasStroke && !canPaint && <span className="text-white/50 text-xs">Brush Studio</span>}
               {!hasNewBrush && !hasStroke && !canPaint && <span className="text-white/40">Canvas</span>}
-              {canPaint && stepIdx === 7 && (
+              {canPaint && stepIdx === 9 && (
                 <div className="relative z-30 pointer-events-none text-center">
                   <span className="block text-white font-semibold drop-shadow">Paint 2+ strokes with blue</span>
                 </div>
               )}
-              {canPaint && stepIdx === 9 && (
+              {canPaint && stepIdx === 11 && (
                 <div className="relative z-30 pointer-events-none text-center">
                   <span className="block text-[#fbbf24] font-semibold drop-shadow">Paint 1+ strokes with yellow</span>
                 </div>
               )}
-              {stepIdx >= 10 && <span className="relative text-white/90 text-sm drop-shadow z-30 pointer-events-none">Blended sky</span>}
+              {stepIdx >= 12 && <span className="relative text-white/90 text-sm drop-shadow z-30 pointer-events-none">Blended sky</span>}
             </div>
           </HotspotButton>
         </div>
@@ -653,7 +657,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
           {hasColor && (
             <div className="flex gap-1.5 mb-1 shrink-0">
               <button type="button" onClick={() => setBrushColor('blue')} className={`w-9 h-9 rounded-full border-2 shrink-0 ${brushColor === 'blue' ? 'border-[#34c759] ring-2 ring-[#34c759]/50' : 'border-white/30'}`} style={{ backgroundColor: BRUSH_BLUE }} title="Blue brush" />
-              {stepIdx === 8 ? (
+              {stepIdx === 10 ? (
                 <HotspotButton id="proc-yellow" currentHotspotId={currentHotspotId} onStepComplete={() => { setBrushColor('yellow'); onStepComplete(); }} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
                   <div className={`w-9 h-9 rounded-full border-2 shrink-0 ${brushColor === 'yellow' ? 'border-[#34c759] ring-2 ring-[#34c759]/50' : 'border-white/30'} ${currentHotspotId === 'proc-yellow' ? 'ring-2 ring-red-500' : ''}`} style={{ backgroundColor: BRUSH_YELLOW }} title="Yellow brush" />
                 </HotspotButton>
@@ -663,26 +667,33 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
             </div>
           )}
           {['Stamping', 'Smudge', 'Stabilization'].map(procClutter)}
-          <HotspotButton id="proc-shape" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full">
-            <div className={`w-full ${HOTSPOT_BTN} justify-between ${currentHotspotId === 'proc-shape' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE} ${shapeDone ? 'border border-[#34c759]/40' : ''}`}>Shape {shapeDone && '✓'}</div>
+          <HotspotButton id="proc-shape" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full relative">
+            <div className={`w-full ${HOTSPOT_BTN} justify-between ${(currentHotspotId === 'proc-shape' || currentHotspotId === 'proc-shape-grain') ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE} ${shapeDone ? 'border border-[#34c759]/40' : ''}`}>Shape {shapeDone && '✓'} ▼</div>
+            {shapeMenuOpen && (
+              <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
+                <HotspotButton id="proc-shape-grain" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
+                  <div className={`w-full px-3 py-2.5 rounded text-left text-sm ${currentHotspotId === 'proc-shape-grain' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-white/5 text-white/80 hover:bg-white/10'}`}>Grain</div>
+                </HotspotButton>
+                {['Circle', 'Texture'].map((o) => (
+                  <div key={o} className="px-3 py-2.5 rounded text-sm text-white/60 pointer-events-none">{o}</div>
+                ))}
+              </div>
+            )}
           </HotspotButton>
-          {currentHotspotId === 'proc-shape' && (
-            <div className="p-2 rounded bg-[#454545] border border-white/10 shrink-0">
-              <div className="text-white/70 text-[10px]">Grain</div>
-              <div className="h-4 bg-white/10 rounded" />
-            </div>
-          )}
-          <HotspotButton id="proc-dynamics" className="w-full" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-            <div className={`w-full ${HOTSPOT_BTN} justify-between ${currentHotspotId === 'proc-dynamics' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE} ${dynamicsDone ? 'border border-[#34c759]/40' : ''}`}>Dynamics {dynamicsDone && '✓'}</div>
+          <HotspotButton id="proc-dynamics" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full relative">
+            <div className={`w-full ${HOTSPOT_BTN} justify-between ${(currentHotspotId === 'proc-dynamics' || currentHotspotId === 'proc-dynamics-apply') ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE} ${dynamicsDone ? 'border border-[#34c759]/40' : ''}`}>Dynamics {dynamicsDone && '✓'} ▼</div>
+            {dynamicsMenuOpen && (
+              <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
+                <div className="flex justify-between text-[10px] text-white/40 px-2"><span>Size</span><span>80%</span></div>
+                <div className="h-0.5 bg-white/20 rounded-full mx-2" />
+                <div className="flex justify-between text-[10px] text-white/40 px-2"><span>Opacity</span><span>100%</span></div>
+                <div className="h-0.5 bg-white/20 rounded-full mx-2" />
+                <HotspotButton id="proc-dynamics-apply" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block mt-1">
+                  <div className={`w-full px-3 py-2.5 rounded text-center text-sm ${currentHotspotId === 'proc-dynamics-apply' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-white/5 text-white/80 hover:bg-white/10'}`}>Apply</div>
+                </HotspotButton>
+              </div>
+            )}
           </HotspotButton>
-          {currentHotspotId === 'proc-dynamics' && (
-            <div className="p-2 rounded bg-[#454545] border border-white/10 shrink-0 space-y-0.5">
-              <div className="flex justify-between text-[10px] text-white/40"><span>Size</span><span>80%</span></div>
-              <div className="h-0.5 bg-white/20 rounded-full" />
-              <div className="flex justify-between text-[10px] text-white/40"><span>Opacity</span><span>100%</span></div>
-              <div className="h-0.5 bg-white/20 rounded-full" />
-            </div>
-          )}
           <HotspotButton id="proc-done" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full">
             <div className={`w-full ${HOTSPOT_BTN} justify-center ${currentHotspotId === 'proc-done' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Done</div>
           </HotspotButton>
