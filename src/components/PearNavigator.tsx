@@ -331,7 +331,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const hasSelection = stepIdx >= 1
   const isComponent = stepIdx >= 2
   const hasVariants = stepIdx >= 4
-  const swapMenuOpen = stepIdx >= 6
+  const swapMenuOpen = stepIdx >= 6 && stepIdx <= 9
   const hasCentralFrame = isMindmap && stepIdx >= 1
   const hasText = isMindmap && stepIdx >= 2
   const hasComponent = isMindmap && stepIdx >= 3
@@ -592,9 +592,9 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
   const hasColor = stepIdx >= 7
   const hasLayer = stepIdx >= 8
   const hasStroke = stepIdx >= 11
-  const blendMenuOpen = stepIdx >= 13
-  const shapeMenuOpen = stepIdx >= 3
-  const dynamicsMenuOpen = stepIdx >= 5
+  const blendMenuOpen = stepIdx === 13
+  const shapeMenuOpen = stepIdx === 3
+  const dynamicsMenuOpen = stepIdx === 5
   const canPaint = hasLayer && (stepIdx === 9 || stepIdx >= 11)
   const paintPhase = stepIdx === 9 ? 'blue' as const : stepIdx === 11 ? 'yellow' as const : undefined
   const canvasVisible = hasLayer && stepIdx >= 9
