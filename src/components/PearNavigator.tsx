@@ -179,7 +179,6 @@ const TASKS: Record<string, Task> = {
       { title: 'Save brush', desc: 'Tap Done to exit Brush Studio and save your brush.', hint: 'Organize brushes into sets', highlight: { x: 300, y: 320, w: 100, h: 36 }, hotspotId: 'proc-done' },
       { title: 'Pick sky color', desc: 'Tap the color disc. Choose a soft blue for the base sky.', hint: 'HSV wheel or hex input', highlight: { x: 260, y: 14, w: 48, h: 36 }, hotspotId: 'proc-color' },
       { title: 'Add new layer', desc: 'Tap + in the Layers panel to add a new layer for the sky.', hint: 'Layers stack; sky above background', highlight: { x: 24, y: 120, w: 60, h: 36 }, hotspotId: 'proc-layer' },
-      { title: 'Pick accent color', desc: 'Tap the color disc again. Choose yellow or orange for accent strokes.', hint: 'Overlap blue and yellow for gradient blend', highlight: { x: 260, y: 14, w: 48, h: 36 }, hotspotId: 'proc-color' },
       { title: 'Paint with blue', desc: 'Paint 2+ strokes with blue on the canvas for the base sky.', hint: 'Use the blue brush first', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
       { title: 'Select yellow and paint', desc: 'Tap the yellow color swatch in Brush Studio, then paint 1+ strokes with yellow.', hint: 'Yellow overlaps blue for gradient blend', highlight: { x: 520, y: 100, w: 48, h: 48 }, hotspotId: 'proc-yellow' },
       { title: 'Paint with yellow', desc: 'Paint 1+ strokes with yellow on the canvas. Overlap with blue for blend.', hint: 'Yellow + blue = textured gradient', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
@@ -200,9 +199,9 @@ const TASKS: Record<string, Task> = {
       { title: 'Add Hover variant', desc: 'Tap Add variant again. Add Hover for mouse-over state.', hint: 'Hover = interactive feedback', highlight: { x: 500, y: 160, w: 100, h: 40 }, hotspotId: 'fig-variants' },
       { title: 'Add Pressed variant', desc: 'Tap Add variant again. Add Pressed for click state.', hint: 'Pressed = active/clicked', highlight: { x: 500, y: 160, w: 100, h: 40 }, hotspotId: 'fig-variants' },
       { title: 'Open swap dropdown', desc: 'Select an instance. Tap the Swap variant dropdown to open options.', hint: 'Instances inherit component changes', highlight: { x: 510, y: 240, w: 90, h: 36 }, hotspotId: 'fig-swap' },
-      { title: 'Select Default', desc: 'Tap Default in the dropdown to set the instance to default state.', hint: 'Default is the base appearance', highlight: { x: 510, y: 280, w: 90, h: 36 }, hotspotId: 'fig-swap-default' },
-      { title: 'Select Hover', desc: 'Tap Hover in the dropdown. See the visual change on canvas.', hint: 'Preview each variant', highlight: { x: 510, y: 320, w: 90, h: 36 }, hotspotId: 'fig-swap-hover' },
-      { title: 'Select Pressed', desc: 'Tap Pressed. You can now use all three variants in designs.', hint: 'Done—variants ready', highlight: { x: 510, y: 360, w: 90, h: 36 }, hotspotId: 'fig-swap-pressed' },
+      { title: 'Select Hover', desc: 'Tap Hover in the dropdown. See the button scale up on canvas.', hint: 'Preview each variant', highlight: { x: 510, y: 320, w: 90, h: 36 }, hotspotId: 'fig-swap-hover' },
+      { title: 'Select Pressed', desc: 'Tap Pressed. See the button scale down for click state.', hint: 'Pressed = active/clicked', highlight: { x: 510, y: 360, w: 90, h: 36 }, hotspotId: 'fig-swap-pressed' },
+      { title: 'Select Default', desc: 'Tap Default to return to base state. All three variants ready.', hint: 'Done—variants ready', highlight: { x: 510, y: 280, w: 90, h: 36 }, hotspotId: 'fig-swap-default' },
     ],
   },
   figmaMindmap: {
@@ -213,10 +212,10 @@ const TASKS: Record<string, Task> = {
       { title: 'Add text to frame', desc: 'Double-tap the frame and type your central topic (e.g. "Project").', hint: 'The frame becomes editable when selected', highlight: { x: 200, y: 110, w: 80, h: 40 }, hotspotId: 'fig-text' },
       { title: 'Create component', desc: 'Select the frame and tap Create component to make it reusable.', hint: 'Components let you add instances for branches', highlight: { x: 520, y: 60, w: 100, h: 36 }, hotspotId: 'fig-component-tab' },
       { title: 'Add first instance', desc: 'Tap Instance to add your first branch idea.', hint: 'Instances are copies linked to the main component', highlight: { x: 180, y: 180, w: 100, h: 50 }, hotspotId: 'fig-instance' },
-      { title: 'Add instances (A–B)', desc: 'Tap + Instance twice to add Ideas A and B.', hint: 'Each instance is a branch node', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instances (C–D)', desc: 'Tap + Instance for Ideas C and D.', hint: 'Build out your mindmap branches', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instances (E–F)', desc: 'Tap + Instance for Ideas E and F.', hint: 'Edit one; all instances update', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instances (G–I)', desc: 'Tap + Instance for Ideas G, H, and I.', hint: 'Last branches—then connectors', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instances (A–B)', desc: 'Tap + Instance to add Ideas A and B.', hint: 'One tap adds the batch', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instances (C–D)', desc: 'Tap + Instance to add Ideas C and D.', hint: 'Build out your mindmap branches', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instances (E–F)', desc: 'Tap + Instance to add Ideas E and F.', hint: 'Edit one; all instances update', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instances (G–I)', desc: 'Tap + Instance to add Ideas G, H, and I.', hint: 'Last branches—then connectors', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
       { title: 'Add connectors', desc: 'Tap Connector to draw lines linking the central node to each branch.', hint: 'Connectors show relationships between ideas', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
       { title: 'Auto layout', desc: 'Tap Auto layout for consistent spacing between nodes.', hint: 'Keeps the mindmap tidy and readable', highlight: { x: 520, y: 180, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
       { title: 'Fill with example', desc: 'Tap Fill example to populate with a Product Management example.', hint: 'OKR, KPI, Agile, Roadmap, Jira, etc.', highlight: { x: 520, y: 220, w: 100, h: 36 }, hotspotId: 'fig-style' },
@@ -490,6 +489,9 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
           <HotspotButton id="fig-component-add" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
             <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-component-add' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>+ Property</div>
           </HotspotButton>
+          {stepIdx >= 2 && (
+            <div className="px-3 py-1.5 rounded bg-[#34c759]/15 text-[#34c759] text-xs font-medium">State: Variant</div>
+          )}
           {currentHotspotId === 'fig-component-add' && (
             <div className="p-3 rounded-lg bg-[#454545] border border-white/10 space-y-1">
               <div className="text-white/70 text-xs">Add property:</div>
@@ -533,11 +535,11 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
   const dynamicsDone = stepIdx >= 4
   const hasColor = stepIdx >= 5
   const hasLayer = stepIdx >= 6
-  const hasStroke = stepIdx >= 10
-  const hasBlend = stepIdx >= 13
-  const blendMenuOpen = stepIdx >= 12
-  const canPaint = hasLayer && (stepIdx === 8 || stepIdx >= 10)
-  const paintPhase = stepIdx === 8 ? 'blue' as const : stepIdx === 10 ? 'yellow' as const : undefined
+  const hasStroke = stepIdx >= 9
+  const hasBlend = stepIdx >= 12
+  const blendMenuOpen = stepIdx >= 11
+  const canPaint = hasLayer && (stepIdx === 7 || stepIdx >= 9)
+  const paintPhase = stepIdx === 7 ? 'blue' as const : stepIdx === 9 ? 'yellow' as const : undefined
   const procClutter = (label: string) => <div key={label} className={CLUTTER_CLASS}>{label}</div>
   return (
     <div className="absolute inset-0 flex flex-col text-sm min-h-0 overflow-hidden">
@@ -614,7 +616,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
                 brushColor={brushColor}
                 hasBlend={hasBlend}
                 paintPhase={paintPhase}
-                {...((stepIdx === 8 || stepIdx === 10) && { onFirstStroke: onStepComplete })}
+                {...((stepIdx === 7 || stepIdx === 9) && { onFirstStroke: onStepComplete })}
                 className="z-10"
               />
               {brushActive && !hasStroke && !canPaint && <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-[#34c759] bg-[#34c759]/30" title="Brush cursor" />}
@@ -622,17 +624,17 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
               {hasNewBrush && !hasStroke && !canPaint && <div className="w-12 h-12 rounded-full bg-[#34c759]/40 border-2 border-[#34c759]/60" />}
               {inBrushStudio && !hasStroke && !canPaint && <span className="text-white/50 text-xs">Brush Studio</span>}
               {!hasNewBrush && !hasStroke && !canPaint && <span className="text-white/40">Canvas</span>}
-              {canPaint && stepIdx === 8 && (
+              {canPaint && stepIdx === 7 && (
                 <div className="relative z-30 pointer-events-none text-center">
                   <span className="block text-white font-semibold drop-shadow">Paint 2+ strokes with blue</span>
                 </div>
               )}
-              {canPaint && stepIdx === 10 && (
+              {canPaint && stepIdx === 9 && (
                 <div className="relative z-30 pointer-events-none text-center">
                   <span className="block text-[#fbbf24] font-semibold drop-shadow">Paint 1+ strokes with yellow</span>
                 </div>
               )}
-              {stepIdx >= 11 && <span className="relative text-white/90 text-sm drop-shadow z-30 pointer-events-none">Blended sky</span>}
+              {stepIdx >= 10 && <span className="relative text-white/90 text-sm drop-shadow z-30 pointer-events-none">Blended sky</span>}
             </div>
           </HotspotButton>
         </div>
@@ -641,7 +643,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
           {hasColor && (
             <div className="flex gap-2 mb-1">
               <button type="button" onClick={() => setBrushColor('blue')} className={`w-11 h-11 rounded-full border-2 shrink-0 ${brushColor === 'blue' ? 'border-[#34c759] ring-2 ring-[#34c759]/50' : 'border-white/30'}`} style={{ backgroundColor: BRUSH_BLUE }} title="Blue brush" />
-              {stepIdx === 9 ? (
+              {stepIdx === 8 ? (
                 <HotspotButton id="proc-yellow" currentHotspotId={currentHotspotId} onStepComplete={() => { setBrushColor('yellow'); onStepComplete(); }} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
                   <div className={`w-11 h-11 rounded-full border-2 shrink-0 ${brushColor === 'yellow' ? 'border-[#34c759] ring-2 ring-[#34c759]/50' : 'border-white/30'} ${currentHotspotId === 'proc-yellow' ? 'ring-2 ring-red-500' : ''}`} style={{ backgroundColor: BRUSH_YELLOW }} title="Yellow brush" />
                 </HotspotButton>
