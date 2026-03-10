@@ -162,7 +162,7 @@ export default function DailyLearnManager() {
             <div className="bg-amber-500/20 border border-amber-500/50 rounded-2xl p-4 mb-6">
               <p className="text-amber-200 font-medium">Restore your logs</p>
               <p className="text-amber-200/90 text-sm mt-1">
-                Go to <button type="button" onClick={() => setView('sync')} className="underline">Sync</button> tab → enter <code className="bg-white/10 px-1 rounded">sfjc</code> → Restore. Do this on each device.
+                Go to <button type="button" onClick={() => setView('sync')} className="underline">Sync</button> tab → enter your sync key → Restore. Do this on each device.
               </p>
             </div>
           )}
