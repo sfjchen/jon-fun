@@ -225,7 +225,7 @@ const TASKS: Record<string, Task> = {
       { title: 'Open blend menu', desc: 'Select the layer and tap the blend mode dropdown (Normal ▼).', hint: 'Blend modes affect how layers combine', highlight: { x: 520, y: 60, w: 80, h: 28 }, hotspotId: 'proc-blend' },
       { title: 'Select blend mode', desc: 'Tap Normal, Multiply, Overlay, or Screen.', hint: 'Overlay adds contrast; Multiply darkens', highlight: { x: 520, y: 100, w: 80, h: 120 }, hotspotId: 'proc-blend-overlay' },
       { title: 'Open export menu', desc: 'Tap the wrench icon to open Actions. Tap Share.', hint: 'Share exports your artwork', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export' },
-      { title: 'Save to computer', desc: 'Tap PNG to download your painted sky as an image.', hint: 'PNG saves to your computer', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export-format' },
+      { title: 'Save to computer', desc: 'Tap PNG, PSD, or Procreate to download your painted sky.', hint: 'Exports as PNG image', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export-format' },
     ],
   },
   figmaVariants: {
@@ -573,7 +573,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
   const [blendMode, setBlendMode] = useState<BlendMode>('normal')
   const canvasRef = useRef<SkyPaintCanvasHandle>(null)
 
-  const handleExportPng = useCallback(async () => {
+  const handleExport = useCallback(async () => {
     const blob = await canvasRef.current?.exportAsPng()
     if (blob) {
       const a = document.createElement('a')
@@ -607,13 +607,10 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
               <span className={`px-3 py-1.5 rounded ${currentHotspotId === 'proc-export' ? 'ring-2 ring-[#34c759]/50' : ''} text-white/80`}>⚙</span>
             </HotspotButton>
             {(currentHotspotId === 'proc-export' || currentHotspotId === 'proc-export-format') && (
-              <div className="absolute top-full left-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 min-w-[140px] space-y-1">
-                <div className="text-white/50 text-sm mb-2">Share</div>
-                <HotspotButton id="proc-export-format" currentHotspotId={currentHotspotId} onStepComplete={handleExportPng} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
-                  <div className={`w-full px-3 py-2 rounded text-sm ${currentHotspotId === 'proc-export-format' ? 'bg-[#34c759]/30 text-[#34c759]' : 'text-white/90 hover:bg-white/10'}`}>PNG — Save to computer</div>
-                </HotspotButton>
-                {['PSD', 'Procreate'].map((fmt) => (
-                  <HotspotButton key={fmt} id="proc-export-format" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
+              <div className="absolute top-full left-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 min-w-[160px] space-y-1">
+                <div className="text-white/50 text-sm mb-2">Share — Save to computer</div>
+                {(['PNG', 'PSD', 'Procreate'] as const).map((fmt) => (
+                  <HotspotButton key={fmt} id="proc-export-format" currentHotspotId={currentHotspotId} onStepComplete={handleExport} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
                     <div className={`w-full px-3 py-2 rounded text-sm ${currentHotspotId === 'proc-export-format' ? 'bg-[#34c759]/30 text-[#34c759]' : 'text-white/90 hover:bg-white/10'}`}>{fmt}</div>
                   </HotspotButton>
                 ))}
