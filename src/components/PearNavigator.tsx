@@ -232,20 +232,16 @@ const TASKS: Record<string, Task> = {
       { title: 'Save your painting', desc: 'Tap PNG, PSD, or Procreate to download your painting.', hint: 'Exports as PNG image', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export-format' },
     ],
   },
-  figmaVariants: {
+  figmaBusinessCard: {
     app: 'Figma (PearPad)',
     mock: 'figma',
     steps: [
-      { title: 'Select layers', desc: 'Select the frame or group you want to turn into a component.', hint: 'Components are reusable', highlight: { x: 180, y: 100, w: 180, h: 80 }, hotspotId: 'fig-canvas' },
-      { title: 'Create component', desc: 'Click "Create component" in the right sidebar (or Cmd+Alt+K).', hint: 'Component icon appears in Layers', highlight: { x: 520, y: 60, w: 100, h: 36 }, hotspotId: 'fig-component-tab' },
-      { title: 'Add property', desc: 'Under Component, tap + to add a property. Name it State, type Variant.', hint: 'Variant = one property, multiple values', highlight: { x: 520, y: 100, w: 80, h: 32 }, hotspotId: 'fig-component-add' },
-      { title: 'Add Default variant', desc: 'Tap Add variant. The first value is Default.', hint: 'Each value = one variant', highlight: { x: 500, y: 160, w: 100, h: 40 }, hotspotId: 'fig-variants' },
-      { title: 'Add Hover variant', desc: 'Tap Add variant again. Add Hover for mouse-over state.', hint: 'Hover = interactive feedback', highlight: { x: 500, y: 160, w: 100, h: 40 }, hotspotId: 'fig-variants' },
-      { title: 'Add Pressed variant', desc: 'Tap Add variant again. Add Pressed for click state.', hint: 'Pressed = active/clicked', highlight: { x: 500, y: 160, w: 100, h: 40 }, hotspotId: 'fig-variants' },
-      { title: 'Open swap dropdown', desc: 'Select an instance. Tap the Swap variant dropdown to open options.', hint: 'Instances inherit component changes', highlight: { x: 510, y: 240, w: 90, h: 36 }, hotspotId: 'fig-swap' },
-      { title: 'Select Hover', desc: 'Tap Hover in the dropdown. See the button scale up on canvas.', hint: 'Preview each variant', highlight: { x: 510, y: 320, w: 90, h: 36 }, hotspotId: 'fig-swap-hover' },
-      { title: 'Select Pressed', desc: 'Tap Pressed. See the button scale down for click state.', hint: 'Pressed = active/clicked', highlight: { x: 510, y: 360, w: 90, h: 36 }, hotspotId: 'fig-swap-pressed' },
-      { title: 'Select Default', desc: 'Tap Default to return to base state. All three variants ready.', hint: 'Done—variants ready', highlight: { x: 510, y: 280, w: 90, h: 36 }, hotspotId: 'fig-swap-default' },
+      { title: 'Create card frame', desc: 'Tap the canvas to place a frame for your business card.', hint: 'Frame = container for your design', highlight: { x: 180, y: 80, w: 200, h: 140 }, hotspotId: 'fig-canvas' },
+      { title: 'Set fill', desc: 'Tap Fill in the right panel. Pick a dark color for an elegant look.', hint: 'Fill = background color', highlight: { x: 520, y: 60, w: 80, h: 36 }, hotspotId: 'fig-fill' },
+      { title: 'Add name', desc: 'Tap Text to add a text layer. Type your name.', hint: 'Bold, prominent', highlight: { x: 520, y: 100, w: 80, h: 36 }, hotspotId: 'fig-text' },
+      { title: 'Add role', desc: 'Add another text layer for your title or role.', hint: 'Smaller, supporting', highlight: { x: 520, y: 140, w: 80, h: 36 }, hotspotId: 'fig-text' },
+      { title: 'Add email', desc: 'Add contact text—email or phone.', hint: 'Subtle, readable', highlight: { x: 520, y: 180, w: 80, h: 36 }, hotspotId: 'fig-text' },
+      { title: 'Add accent', desc: 'Tap Rectangle to add a thin line or shape for a polished accent.', hint: 'Gold or contrasting color', highlight: { x: 520, y: 220, w: 80, h: 36 }, hotspotId: 'fig-accent' },
     ],
   },
   figmaMindmap: {
@@ -317,10 +313,10 @@ function HotspotButton({
   )
 }
 
-const TASK_ORDER = ['figmaMindmap', 'figmaVariants', 'procreateSky'] as const
+const TASK_ORDER = ['figmaMindmap', 'figmaBusinessCard', 'procreateSky'] as const
 const TASK_LABELS: Record<string, string> = {
   procreateSky: 'Your first painting!',
-  figmaVariants: 'Create component variants',
+  figmaBusinessCard: 'Design a business card',
   figmaMindmap: 'Create a mindmap',
 }
 
@@ -330,12 +326,14 @@ const HOTSPOT_INACTIVE = 'bg-[#34c759]/20 text-[#34c759]'
 const HOTSPOT_ACTIVE = 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50'
 
 function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight, stepIdx = 0, taskId }: MockProps) {
-  const [swapVariant, setSwapVariant] = useState<'Default' | 'Hover' | 'Pressed'>('Default')
   const isMindmap = taskId === 'figmaMindmap'
-  const hasSelection = stepIdx >= 1
-  const isComponent = stepIdx >= 2
-  const hasVariants = stepIdx >= 4
-  const swapMenuOpen = stepIdx >= 6 && stepIdx <= 9
+  const isBusinessCard = taskId === 'figmaBusinessCard'
+  const hasCard = isBusinessCard && stepIdx >= 1
+  const hasFill = isBusinessCard && stepIdx >= 2
+  const hasName = isBusinessCard && stepIdx >= 3
+  const hasRole = isBusinessCard && stepIdx >= 4
+  const hasEmail = isBusinessCard && stepIdx >= 5
+  const hasAccent = isBusinessCard && stepIdx >= 6
   const hasCentralFrame = isMindmap && stepIdx >= 1
   const hasText = isMindmap && stepIdx >= 2
   const hasComponent = isMindmap && stepIdx >= 3
@@ -479,95 +477,84 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
       </div>
     )
   }
-  return (
-    <div className="absolute inset-0 flex flex-col text-xs min-h-0 overflow-hidden">
-      <div className="h-8 sm:h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-2 sm:px-4 gap-2 sm:gap-4 shrink-0">
-        <span className="text-white/80 text-xs sm:text-sm">Frame</span>
-        <span className="text-white/80 text-xs sm:text-sm">Component</span>
-        <span className="text-white/80 text-xs sm:text-sm">Prototype</span>
-      </div>
-      <div className="min-h-7 sm:min-h-8 bg-[#252525] border-b border-white/10 flex items-center px-2 sm:px-3 gap-1 shrink-0 flex-wrap">
-        {['Move', 'Frame', 'Component', 'Pen', 'Text', 'Rect', 'Line', 'Hand', 'Zoom', 'Fill'].map(clutter)}
-      </div>
-      <div className="flex flex-1 min-h-0">
-        <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#323232] border-r border-white/10 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-scroll pointer-events-none min-h-0">
-          <div className="text-white/50 text-xs font-medium">Layers</div>
-          {['Frame', 'Group', 'Rectangle', 'Text', 'Component'].map((l) => <div key={l} className="h-6 px-1.5 rounded bg-white/5 text-white/45 text-[10px] flex items-center pointer-events-none">{l}</div>)}
-          <div className="text-white/50 text-[10px] font-medium mt-1">Pages</div>
-          {['Cover', 'Flow', 'Components'].map((p) => <div key={p} className="h-5 px-1.5 rounded bg-white/5 text-white/40 text-[10px] flex items-center">{p}</div>)}
-          <div className="text-white/50 text-[10px] font-medium mt-1">Assets</div>
-          <div className="h-5 px-1.5 rounded bg-white/5 text-white/40 text-[10px] flex items-center">Search...</div>
+  if (isBusinessCard) {
+    return (
+      <div className="absolute inset-0 flex flex-col text-xs min-h-0 overflow-hidden">
+        <div className="h-8 sm:h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-2 sm:px-4 gap-2 sm:gap-4 shrink-0">
+          <span className="text-white/80 text-xs sm:text-sm">Frame</span>
+          <span className="text-white/80 text-xs sm:text-sm">Design</span>
+          <span className="text-white/80 text-xs sm:text-sm">Prototype</span>
         </div>
-        <HotspotButton id="fig-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="flex-1 min-w-0 flex flex-col min-h-0">
-          <div className="flex-1 p-4 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center">
-            <div className={`relative w-full max-w-md aspect-video rounded-xl flex flex-col items-center justify-center gap-3 transition-all duration-200 ${hasSelection ? 'border-2 border-[#8b5cf6] bg-[#8b5cf6]/10' : 'border-2 border-dashed border-white/25'} ${currentHotspotId === 'fig-canvas' ? 'ring-2 ring-[#34c759]/50' : ''}`}>
-              {!hasSelection && <span className="text-white/40 text-sm">Tap to select frame</span>}
-              {hasSelection && (
-                <>
-                  <div className={`w-32 h-20 rounded-lg flex items-center justify-center text-sm font-medium transition-all duration-200 ${isComponent ? 'border-2 border-[#8b5cf6] text-white' : 'bg-white/20 text-white/90'} ${hasVariants ? swapVariant === 'Hover' ? 'bg-[#8b5cf6]/50 scale-105' : swapVariant === 'Pressed' ? 'bg-[#6d28d9] scale-95' : 'bg-[#8b5cf6]/30' : 'bg-[#8b5cf6]/30'}`}>
-                    Button
-                  </div>
-                  {isComponent && <span className="text-[#8b5cf6] text-xs font-medium">Main component</span>}
-                  {hasVariants && (
-                    <div className="flex gap-2 mt-1">
-                      {(['Default', 'Hover', 'Pressed'] as const).map((v) => (
-                        <span key={v} className={`px-2.5 py-1 rounded text-xs ${swapVariant === v ? 'bg-[#34c759]/30 text-[#34c759] font-medium' : 'bg-[#34c759]/20 text-[#34c759]'}`}>{v}</span>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+        <div className="min-h-7 sm:min-h-8 bg-[#252525] border-b border-white/10 flex items-center px-2 sm:px-3 gap-1 shrink-0 flex-wrap">
+          {['Move', 'Frame', 'Pen', 'Text', 'Rect', 'Line', 'Hand', 'Zoom', 'Fill'].map(clutter)}
+        </div>
+        <div className="flex flex-1 min-h-0">
+          <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#323232] border-r border-white/10 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-scroll pointer-events-none min-h-0">
+            <div className="text-white/50 text-xs font-medium">Layers</div>
+            {hasCard && <div className="h-6 px-1.5 rounded bg-[#34c759]/15 text-[#34c759] text-[10px] flex items-center">Card</div>}
+            {hasName && <div className="h-5 pl-3 pr-1.5 rounded bg-white/5 text-white/50 text-[10px] flex items-center">Name</div>}
+            {hasRole && <div className="h-5 pl-3 pr-1.5 rounded bg-white/5 text-white/50 text-[10px] flex items-center">Role</div>}
+            {hasEmail && <div className="h-5 pl-3 pr-1.5 rounded bg-white/5 text-white/50 text-[10px] flex items-center">Email</div>}
+            {hasAccent && <div className="h-5 pl-3 pr-1.5 rounded bg-white/5 text-white/50 text-[10px] flex items-center">Accent</div>}
+            {!hasCard && ['Page 1', 'Frame'].map((l) => <div key={l} className="h-6 px-1.5 rounded bg-white/5 text-white/45 text-[10px] flex items-center">{l}</div>)}
+            <div className="text-white/50 text-[10px] font-medium mt-1">Pages</div>
+            {['Cover', 'Flow'].map((p) => <div key={p} className="h-5 px-1.5 rounded bg-white/5 text-white/40 text-[10px] flex items-center">{p}</div>)}
           </div>
-        </HotspotButton>
-        <div className="w-36 min-w-[7rem] sm:w-40 bg-[#383838] border-l border-white/15 p-2 sm:p-3 shrink-0 flex flex-col gap-1.5 sm:gap-2 overflow-y-scroll min-h-0">
-          <div className="text-white/50 text-xs font-medium shrink-0">Design</div>
-          {['Layout', 'Fill', 'Stroke', 'Effects', 'Corner', 'Padding', 'Gap'].map(clutter)}
-          <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-            <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-component-tab' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Create component</div>
-          </HotspotButton>
-          {currentHotspotId === 'fig-component-tab' && (
-            <div className="p-2 rounded bg-[#454545] border border-white/10 text-[10px] text-white/70 shrink-0">Creates main component</div>
-          )}
-          <div className="text-white/50 text-sm font-medium mt-1">Component</div>
-          <HotspotButton id="fig-component-add" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-            <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-component-add' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>+ Property</div>
-          </HotspotButton>
-          {stepIdx >= 2 && (
-            <div className="px-2 py-1 rounded bg-[#34c759]/15 text-[#34c759] text-[10px] font-medium shrink-0">State: Variant</div>
-          )}
-          {currentHotspotId === 'fig-component-add' && (
-            <div className="p-2 rounded bg-[#454545] border border-white/10 shrink-0">
-              <div className="text-white/70 text-[10px]">Add property:</div>
-              <div className="flex gap-1 mt-0.5"><div className="px-2 py-1 rounded bg-[#34c759]/20 text-[#34c759] text-[10px]">State</div><div className="px-2 py-1 rounded bg-white/10 text-white/50 text-[10px]">Size</div></div>
+          <HotspotButton id="fig-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="flex-1 min-w-0 flex flex-col min-h-0">
+            <div className="flex-1 p-4 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center">
+              <div className={`relative w-full max-w-sm aspect-[3.5/2] rounded-lg overflow-hidden transition-all duration-300 ${hasCard ? '' : 'border-2 border-dashed border-white/25'} ${currentHotspotId === 'fig-canvas' ? 'ring-2 ring-[#34c759]/50' : ''}`}
+                style={hasFill ? { background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)' } : hasCard ? { backgroundColor: '#334155' } : undefined}>
+                {!hasCard && <span className="absolute inset-0 flex items-center justify-center text-white/40 text-sm">Tap to create card</span>}
+                {hasCard && (
+                  <div className="absolute inset-0 p-5 sm:p-6 flex flex-col justify-between">
+                    {hasAccent && <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-amber-400 to-amber-600" />}
+                    <div className={hasAccent ? 'pl-4' : ''}>
+                      {hasName && <div className="text-white font-bold text-lg sm:text-xl tracking-tight">Alex Chen</div>}
+                      {hasRole && <div className="text-white/80 text-sm sm:text-base mt-0.5">Product Designer</div>}
+                      {hasEmail && <div className="text-white/60 text-xs sm:text-sm mt-2">alex@studio.co</div>}
+                    </div>
+                    {!hasName && !hasRole && !hasEmail && <span className="text-white/40 text-xs">Add text layers</span>}
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-          <HotspotButton id="fig-variants" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-            <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-variants' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Variants</div>
           </HotspotButton>
-          {currentHotspotId === 'fig-variants' && (
-            <div className="p-2 rounded bg-[#454545] border border-white/10 shrink-0">
-              <div className="text-white/70 text-[10px]">Values:</div>
-              <div className="flex flex-wrap gap-1 mt-0.5"><span className="px-2 py-0.5 rounded bg-[#34c759]/20 text-[#34c759] text-[10px]">Default</span><span className="px-2 py-0.5 rounded bg-white/10 text-[10px]">Hover</span><span className="px-2 py-0.5 rounded bg-white/10 text-[10px]">Pressed</span></div>
-            </div>
-          )}
-          <HotspotButton id="fig-swap" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full relative">
-            <div className={`${HOTSPOT_BTN} justify-between mt-1 ${currentHotspotId === 'fig-swap' || currentHotspotId?.startsWith('fig-swap-') ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Swap variant <span className="text-xs">▼</span></div>
-            {swapMenuOpen && hasVariants && (
-              <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
-                <div className="text-xs text-white/70 mb-2">Instance: Button</div>
-                {(['Default', 'Hover', 'Pressed'] as const).map((v) => (
-                  <HotspotButton key={v} id={`fig-swap-${v.toLowerCase()}`} currentHotspotId={currentHotspotId} onStepComplete={() => { setSwapVariant(v); setTimeout(onStepComplete, 300); }} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
-                    <div className={`w-full px-3 py-2.5 rounded text-left text-sm ${currentHotspotId === `fig-swap-${v.toLowerCase()}` ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-white/5 text-white/80 hover:bg-white/10'} ${swapVariant === v ? 'font-medium' : ''}`}>{v}</div>
-                  </HotspotButton>
-                ))}
+          <div className="w-36 min-w-[7rem] sm:w-40 bg-[#383838] border-l border-white/15 p-2 sm:p-3 shrink-0 flex flex-col gap-1.5 sm:gap-2 overflow-y-scroll min-h-0">
+            <div className="text-white/50 text-xs font-medium shrink-0">Design</div>
+            {['Layout', 'Stroke', 'Effects', 'Corner'].map(clutter)}
+            <HotspotButton id="fig-fill" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-fill' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Fill</div>
+            </HotspotButton>
+            {currentHotspotId === 'fig-fill' && (
+              <div className="p-2 rounded bg-[#454545] border border-white/10 shrink-0">
+                <div className="text-white/70 text-[10px]">Background</div>
+                <div className="flex gap-1 mt-1">
+                  <div className="w-6 h-6 rounded border border-white/20" style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)' }} />
+                  <div className="w-6 h-6 rounded bg-slate-600" />
+                  <div className="w-6 h-6 rounded bg-slate-500" />
+                </div>
               </div>
             )}
-          </HotspotButton>
+            <HotspotButton id="fig-text" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+              <div className={`${HOTSPOT_BTN} ${(currentHotspotId === 'fig-text') ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Text</div>
+            </HotspotButton>
+            {(stepIdx === 3 || stepIdx === 4 || stepIdx === 5) && currentHotspotId === 'fig-text' && (
+              <div className="p-2 rounded bg-[#454545] border border-white/10 shrink-0 text-[10px] text-white/70">
+                {stepIdx === 3 ? 'Add name' : stepIdx === 4 ? 'Add role' : 'Add email'}
+              </div>
+            )}
+            <HotspotButton id="fig-accent" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-accent' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Rectangle</div>
+            </HotspotButton>
+            {currentHotspotId === 'fig-accent' && (
+              <div className="p-2 rounded bg-[#454545] border border-white/10 shrink-0 text-[10px] text-white/70">Accent line</div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  )
+    )
+  }
+  return null
 }
 
 type BlendMode = 'normal' | 'multiply' | 'overlay' | 'screen'
