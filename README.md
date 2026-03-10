@@ -345,6 +345,7 @@ Running log of project work. Update this section when making significant changes
 
 **2025-03**
 
+- **1 Sentence Everyday**: Remove personal sync key from restore banner; generic "enter your sync key" for all users
 - **Pear Navigator painting demo**: Rename task to "Your first painting!"; remove sky references (Layer, Blended, pear-painting.png); 1 blue stroke; direction text emphasizes mix/overlap blue+yellow to see blending
 - **Pear Navigator UX overhaul**: Larger demo window (max-w-6xl), mindmap-first task order; bigger buttons/text; Paint sky: yellow step + red highlight, blue-then-yellow phases; real dropdowns for blend (Procreate), swap (Figma Variants), export format (PNG/PSD/Procreate); step audit: removed opacity + Pick accent steps, mindmap 9→5 instance steps, merged connector/spacing steps; workflow fixes: swap order Hover→Pressed→Default for visible change, mindmap hints (one tap = batch), State property visible after Add property
 - **Pear Navigator**: Keep 3 demos (Paint textured sky, Component variants, Mindmap); remove Brush and Notion; paint step: red highlight, explicit blue-then-yellow prompt, no faded example; mindmap instances offset from center for visible connectors
