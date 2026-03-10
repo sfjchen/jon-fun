@@ -281,7 +281,7 @@ function HotspotButton({
   )
 }
 
-const TASK_ORDER = ['figmaMindmap', 'procreateSky', 'figmaVariants'] as const
+const TASK_ORDER = ['figmaMindmap', 'figmaVariants', 'procreateSky'] as const
 const TASK_LABELS: Record<string, string> = {
   procreateSky: 'Paint a textured sky',
   figmaVariants: 'Create component variants',
