@@ -288,8 +288,8 @@ const TASK_LABELS: Record<string, string> = {
   figmaMindmap: 'Create a mindmap',
 }
 
-const CLUTTER_CLASS = 'px-2 py-1 rounded bg-white/5 text-white/45 text-xs pointer-events-none shrink-0'
-const HOTSPOT_BTN = 'min-h-[40px] rounded-lg flex items-center px-2.5 text-sm font-medium'
+const CLUTTER_CLASS = 'px-1.5 sm:px-2 py-0.5 sm:py-1 rounded bg-white/5 text-white/45 text-[10px] sm:text-xs pointer-events-none shrink-0'
+const HOTSPOT_BTN = 'min-h-[36px] sm:min-h-[40px] rounded-lg flex items-center px-2 sm:px-2.5 text-xs sm:text-sm font-medium'
 const HOTSPOT_INACTIVE = 'bg-[#34c759]/20 text-[#34c759]'
 const HOTSPOT_ACTIVE = 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50'
 
@@ -327,17 +327,17 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   if (isMindmap) {
     return (
       <div className="absolute inset-0 flex flex-col text-xs min-h-0 overflow-hidden">
-        <div className="h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-4 gap-4 shrink-0">
-          <span className="text-white/80">Frame</span>
-          <span className="text-white/80">Component</span>
-          <span className="text-white/80">Prototype</span>
+        <div className="h-8 sm:h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-2 sm:px-4 gap-2 sm:gap-4 shrink-0">
+          <span className="text-white/80 text-xs sm:text-sm">Frame</span>
+          <span className="text-white/80 text-xs sm:text-sm">Component</span>
+          <span className="text-white/80 text-xs sm:text-sm">Prototype</span>
         </div>
-        <div className="min-h-8 bg-[#252525] border-b border-white/10 flex items-center px-3 gap-1.5 shrink-0 flex-wrap">
+        <div className="min-h-7 sm:min-h-8 bg-[#252525] border-b border-white/10 flex items-center px-2 sm:px-3 gap-1 shrink-0 flex-wrap">
           {['Move', 'Frame', 'Component', 'Pen', 'Text', 'Rect', 'Line', 'Hand', 'Zoom', 'Fill'].map(clutter)}
         </div>
         <div className="flex flex-1 min-h-0">
-          <div className="w-28 bg-[#323232] border-r border-white/10 p-2 shrink-0 flex flex-col gap-1.5 overflow-hidden min-h-0">
-            <div className="text-white/50 text-xs font-medium">Layers</div>
+          <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#323232] border-r border-white/10 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-auto min-h-0">
+            <div className="text-white/50 text-xs font-medium shrink-0">Layers</div>
             {hasCentralFrame && (
               <>
                 <div className="h-6 px-1.5 rounded bg-[#34c759]/15 text-[#34c759] text-[10px] flex items-center">Project</div>
@@ -416,8 +416,8 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
               </div>
             </div>
           </HotspotButton>
-          <div className="w-40 bg-[#383838] border-l border-white/15 p-3 shrink-0 flex flex-col gap-2 overflow-hidden min-h-0">
-            <div className="text-white/50 text-xs font-medium">Design</div>
+          <div className="w-36 min-w-[7rem] sm:w-40 bg-[#383838] border-l border-white/15 p-2 sm:p-3 shrink-0 flex flex-col gap-1.5 sm:gap-2 overflow-y-auto min-h-0">
+            <div className="text-white/50 text-xs font-medium shrink-0">Design</div>
             {['Layout', 'Fill', 'Stroke', 'Effects', 'Corner', 'Padding', 'Gap'].map(clutter)}
             <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-component-tab' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Create component</div>
@@ -445,16 +445,16 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   }
   return (
     <div className="absolute inset-0 flex flex-col text-xs min-h-0 overflow-hidden">
-      <div className="h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-4 gap-4 shrink-0">
-        <span className="text-white/80">Frame</span>
-        <span className="text-white/80">Component</span>
-        <span className="text-white/80">Prototype</span>
+      <div className="h-8 sm:h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-2 sm:px-4 gap-2 sm:gap-4 shrink-0">
+        <span className="text-white/80 text-xs sm:text-sm">Frame</span>
+        <span className="text-white/80 text-xs sm:text-sm">Component</span>
+        <span className="text-white/80 text-xs sm:text-sm">Prototype</span>
       </div>
-      <div className="min-h-8 bg-[#252525] border-b border-white/10 flex items-center px-3 gap-1.5 shrink-0 flex-wrap">
+      <div className="min-h-7 sm:min-h-8 bg-[#252525] border-b border-white/10 flex items-center px-2 sm:px-3 gap-1 shrink-0 flex-wrap">
         {['Move', 'Frame', 'Component', 'Pen', 'Text', 'Rect', 'Line', 'Hand', 'Zoom', 'Fill'].map(clutter)}
       </div>
       <div className="flex flex-1 min-h-0">
-        <div className="w-28 bg-[#323232] border-r border-white/10 p-2 shrink-0 flex flex-col gap-1.5 overflow-hidden pointer-events-none">
+        <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#323232] border-r border-white/10 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-auto pointer-events-none min-h-0">
           <div className="text-white/50 text-xs font-medium">Layers</div>
           {['Frame', 'Group', 'Rectangle', 'Text', 'Component'].map((l) => <div key={l} className="h-6 px-1.5 rounded bg-white/5 text-white/45 text-[10px] flex items-center pointer-events-none">{l}</div>)}
           <div className="text-white/50 text-[10px] font-medium mt-1">Pages</div>
@@ -484,8 +484,8 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
             </div>
           </div>
         </HotspotButton>
-        <div className="w-40 bg-[#383838] border-l border-white/15 p-3 shrink-0 flex flex-col gap-2 overflow-hidden min-h-0">
-          <div className="text-white/50 text-xs font-medium">Design</div>
+        <div className="w-36 min-w-[7rem] sm:w-40 bg-[#383838] border-l border-white/15 p-2 sm:p-3 shrink-0 flex flex-col gap-1.5 sm:gap-2 overflow-y-auto min-h-0">
+          <div className="text-white/50 text-xs font-medium shrink-0">Design</div>
           {['Layout', 'Fill', 'Stroke', 'Effects', 'Corner', 'Padding', 'Gap'].map(clutter)}
           <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
             <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-component-tab' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Create component</div>
@@ -552,7 +552,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
   const procClutter = (label: string) => <div key={label} className={CLUTTER_CLASS}>{label}</div>
   return (
     <div className="absolute inset-0 flex flex-col text-xs min-h-0 overflow-hidden">
-      <div className="min-h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center justify-center gap-2 px-3 shrink-0 flex-wrap py-1.5">
+      <div className="min-h-8 sm:min-h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 shrink-0 flex-wrap py-1 sm:py-1.5">
         <div className="relative shrink-0 overflow-visible">
             <HotspotButton id="proc-export" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <span className={`px-3 py-1.5 rounded ${currentHotspotId === 'proc-export' ? 'ring-2 ring-[#34c759]/50' : ''} text-white/80`}>⚙</span>
@@ -592,7 +592,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
         </div>
       )}
       <div className="flex flex-1 min-h-0">
-        <div className="w-28 bg-[#383838] border-r border-white/15 p-2 shrink-0 flex flex-col gap-1.5 overflow-hidden min-h-0">
+        <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#383838] border-r border-white/15 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-auto min-h-0">
           <div className="flex gap-1 pointer-events-none shrink-0">
             {['Import', 'Organize', 'Search'].map(procClutter)}
           </div>
@@ -648,7 +648,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
             </div>
           </HotspotButton>
         </div>
-        <div className="w-28 bg-[#383838] border-l border-white/15 p-2 shrink-0 flex flex-col gap-1.5 overflow-hidden min-h-0">
+        <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#383838] border-l border-white/15 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-auto min-h-0">
           <div className="text-white/50 text-xs shrink-0">Brush Studio</div>
           {hasColor && (
             <div className="flex gap-1.5 mb-1 shrink-0">
@@ -767,20 +767,20 @@ export default function PearNavigator() {
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-gradient-to-br from-[#0d0d0d] via-[#1a1a1a] to-[#0d0d0d] flex flex-col">
-      <div className="flex-none flex items-center justify-between px-4 py-3">
-          <Link href="/" className="text-white hover:text-gray-300 text-3xl font-bold">
+      <div className="flex-none flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3">
+          <Link href="/" className="text-white hover:text-gray-300 text-xl sm:text-3xl font-bold">
             ← Home
           </Link>
-          <span className="text-xl font-semibold text-white">
+          <span className="text-lg sm:text-xl font-semibold text-white">
             Pear<span className="text-[#34c759]">Navigator</span>
           </span>
           <span className="text-sm text-gray-500">PearPad</span>
       </div>
 
-      <div className="flex-1 flex flex-col lg:flex-row gap-3 px-3 pb-3 min-h-0 overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row gap-2 sm:gap-3 px-2 sm:px-3 pb-2 sm:pb-3 min-h-0 overflow-hidden">
         {/* Guide panel */}
-        <div className="flex-none lg:w-64 xl:w-72 min-w-0 flex flex-col min-h-0 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch">
-            <div className="flex flex-col flex-1 min-h-0 p-5">
+        <div className="flex-none lg:w-64 xl:w-72 min-w-0 flex flex-col min-h-0 max-h-[45vh] lg:max-h-none bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch overflow-hidden">
+            <div className="flex flex-col flex-1 min-h-0 p-4 sm:p-5 overflow-y-auto">
               {phase === 'task' && (
                 <>
                   <p className="text-sm font-semibold text-[#34c759] uppercase tracking-wider mb-3 shrink-0">
@@ -887,9 +887,9 @@ export default function PearNavigator() {
           </div>
         )}
 
-        {/* Mock app preview - fills remaining space, no scroll */}
-        <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden">
-          <div className="flex-1 min-h-0 flex items-center justify-center p-1 md:p-2 overflow-hidden">
+        {/* Mock app preview - fills remaining space, scrollable on narrow screens */}
+        <div className="flex-1 min-w-0 min-h-[min(50vh,400px)] lg:min-h-0 flex flex-col overflow-auto">
+          <div className="flex-1 min-h-0 flex items-center justify-center p-1 sm:p-2 overflow-hidden">
             <div className="relative w-full h-full max-w-7xl max-h-full rounded-3xl bg-[#1a1a1a] border-8 border-[#2a2a2a] shadow-[inset_0_0_30px_rgba(0,0,0,0.5),0_20px_50px_rgba(0,0,0,0.4)] overflow-hidden">
               <div className="absolute inset-2 md:inset-3 rounded-2xl bg-[#3a3a3a] overflow-hidden">
                 {MockComponent && <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={handleNext} {...(phase === 'steps' && { onWrongTap: handleWrongTap })} showHighlight={phase === 'steps' && showHighlight} stepIdx={phase === 'steps' ? stepIdx : (task?.steps.length ?? 0)} {...(taskId ? { taskId } : {})} />}
