@@ -15,6 +15,7 @@ const SkyPaintCanvas = forwardRef<SkyPaintCanvasHandle, {
   blendMode?: 'normal' | 'multiply' | 'overlay' | 'screen'
   paintPhase?: 'blue' | 'yellow'
   onFirstStroke?: () => void
+  onStrokeCount?: (blue: number, yellow: number) => void
   className?: string
 }>(function SkyPaintCanvas({
   enabled,
@@ -23,6 +24,7 @@ const SkyPaintCanvas = forwardRef<SkyPaintCanvasHandle, {
   blendMode,
   paintPhase,
   onFirstStroke,
+  onStrokeCount,
   className,
 }: {
   enabled: boolean
@@ -31,6 +33,7 @@ const SkyPaintCanvas = forwardRef<SkyPaintCanvasHandle, {
   blendMode?: 'normal' | 'multiply' | 'overlay' | 'screen'
   paintPhase?: 'blue' | 'yellow'
   onFirstStroke?: () => void
+  onStrokeCount?: (blue: number, yellow: number) => void
   className?: string
 }, ref) {
   const show = canvasVisible ?? enabled
@@ -141,6 +144,7 @@ const SkyPaintCanvas = forwardRef<SkyPaintCanvasHandle, {
         const color = strokeColorRef.current
         if (color === 'blue') blueStrokeCountRef.current += 1
         else yellowStrokeCountRef.current += 1
+        onStrokeCount?.(blueStrokeCountRef.current, yellowStrokeCountRef.current)
         const blueOk = paintPhase === 'blue' && blueStrokeCountRef.current >= 2
         const yellowOk = paintPhase === 'yellow' && yellowStrokeCountRef.current >= 1
         if ((blueOk || yellowOk) && !hasAdvancedRef.current) {
@@ -149,7 +153,7 @@ const SkyPaintCanvas = forwardRef<SkyPaintCanvasHandle, {
         }
       }
     },
-    [enabled, onFirstStroke, paintPhase]
+    [enabled, onFirstStroke, onStrokeCount, paintPhase]
   )
 
   useImperativeHandle(ref, () => ({
@@ -217,15 +221,15 @@ const TASKS: Record<string, Task> = {
       { title: 'Open Dynamics menu', desc: 'Tap Dynamics to open pressure settings.', hint: 'Size, Opacity, Flow', highlight: { x: 520, y: 200, w: 80, h: 32 }, hotspotId: 'proc-dynamics' },
       { title: 'Apply dynamics', desc: 'Tap Apply or adjust sliders, then confirm.', hint: 'Apple Pencil pressure controls stroke variation', highlight: { x: 520, y: 240, w: 80, h: 80 }, hotspotId: 'proc-dynamics-apply' },
       { title: 'Save brush', desc: 'Tap Done to exit Brush Studio and save your brush.', hint: 'Organize brushes into sets', highlight: { x: 300, y: 320, w: 100, h: 36 }, hotspotId: 'proc-done' },
-      { title: 'Pick sky color', desc: 'Tap the color disc. Choose a soft blue for the base sky.', hint: 'HSV wheel or hex input', highlight: { x: 260, y: 14, w: 48, h: 36 }, hotspotId: 'proc-color' },
-      { title: 'Add new layer', desc: 'Tap + in the Layers panel to add a new layer for the sky.', hint: 'Layers stack; sky above background', highlight: { x: 24, y: 120, w: 60, h: 36 }, hotspotId: 'proc-layer' },
-      { title: 'Paint with blue', desc: 'Paint 2+ strokes with blue on the canvas for the base sky.', hint: 'Use the blue brush first', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
-      { title: 'Select yellow and paint', desc: 'Tap the yellow color swatch in Brush Studio, then paint 1+ strokes with yellow.', hint: 'Yellow overlaps blue for gradient blend', highlight: { x: 520, y: 100, w: 48, h: 48 }, hotspotId: 'proc-yellow' },
+      { title: 'Pick base color', desc: 'Tap the color disc. Choose a soft blue for your first strokes.', hint: 'HSV wheel or hex input', highlight: { x: 260, y: 14, w: 48, h: 36 }, hotspotId: 'proc-color' },
+      { title: 'Add new layer', desc: 'Tap + in the Layers panel to add a new layer.', hint: 'Layers stack; paint above background', highlight: { x: 24, y: 120, w: 60, h: 36 }, hotspotId: 'proc-layer' },
+      { title: 'Paint 2 strokes with blue', desc: 'Paint 2 strokes with blue on the canvas.', hint: 'Use the blue brush first', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
+      { title: 'Select yellow', desc: 'Tap the yellow color swatch in Brush Studio.', hint: 'Yellow overlaps blue for gradient blend', highlight: { x: 520, y: 100, w: 48, h: 48 }, hotspotId: 'proc-yellow' },
       { title: 'Paint with yellow', desc: 'Paint 1+ strokes with yellow on the canvas. Overlap with blue for blend.', hint: 'Yellow + blue = textured gradient', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
       { title: 'Open blend menu', desc: 'Select the layer and tap the blend mode dropdown (Normal ▼).', hint: 'Blend modes affect how layers combine', highlight: { x: 520, y: 60, w: 80, h: 28 }, hotspotId: 'proc-blend' },
       { title: 'Select blend mode', desc: 'Tap Normal, Multiply, Overlay, or Screen.', hint: 'Overlay adds contrast; Multiply darkens', highlight: { x: 520, y: 100, w: 80, h: 120 }, hotspotId: 'proc-blend-overlay' },
       { title: 'Open export menu', desc: 'Tap the wrench icon to open Actions. Tap Share.', hint: 'Share exports your artwork', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export' },
-      { title: 'Save to computer', desc: 'Tap PNG, PSD, or Procreate to download your painted sky.', hint: 'Exports as PNG image', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export-format' },
+      { title: 'Save your painting', desc: 'Tap PNG, PSD, or Procreate to download your painting.', hint: 'Exports as PNG image', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export-format' },
     ],
   },
   figmaVariants: {
@@ -315,7 +319,7 @@ function HotspotButton({
 
 const TASK_ORDER = ['figmaMindmap', 'figmaVariants', 'procreateSky'] as const
 const TASK_LABELS: Record<string, string> = {
-  procreateSky: 'Paint a textured sky',
+  procreateSky: 'Try your first painting',
   figmaVariants: 'Create component variants',
   figmaMindmap: 'Create a mindmap',
 }
@@ -571,6 +575,8 @@ type BlendMode = 'normal' | 'multiply' | 'overlay' | 'screen'
 function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight, stepIdx = 0 }: MockProps) {
   const [brushColor, setBrushColor] = useState<'blue' | 'yellow'>('blue')
   const [blendMode, setBlendMode] = useState<BlendMode>('normal')
+  const [blueStrokeCount, setBlueStrokeCount] = useState(0)
+  const [yellowStrokeCount, setYellowStrokeCount] = useState(0)
   const canvasRef = useRef<SkyPaintCanvasHandle>(null)
 
   const handleExport = useCallback(async () => {
@@ -677,6 +683,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
                 blendMode={blendMode}
                 {...(paintPhase != null && { paintPhase })}
                 {...((stepIdx === 9 || stepIdx === 11) && { onFirstStroke: onStepComplete })}
+                onStrokeCount={(b, y) => { setBlueStrokeCount(b); setYellowStrokeCount(y); }}
                 className="z-10"
               />
               {brushActive && !hasStroke && !canPaint && <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-[#34c759] bg-[#34c759]/30" title="Brush cursor" />}
@@ -686,7 +693,10 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
               {!hasNewBrush && !hasStroke && !canPaint && <span className="text-white/40">Canvas</span>}
               {canPaint && stepIdx === 9 && (
                 <div className="relative z-30 pointer-events-none text-center">
-                  <span className="block text-white font-semibold drop-shadow">Paint 2+ strokes with blue</span>
+                  <span className="block text-white font-semibold drop-shadow">Paint 2 strokes with blue</span>
+                  <span className="mt-1 inline-block text-white/90 text-sm drop-shadow bg-black/40 px-3 py-1.5 rounded-lg">
+                    {blueStrokeCount}/2 strokes
+                  </span>
                 </div>
               )}
               {canPaint && stepIdx === 11 && (
