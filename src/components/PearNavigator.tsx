@@ -1,16 +1,26 @@
 'use client'
 
 import Link from 'next/link'
-import React, { useState, useCallback, useRef, useEffect } from 'react'
+import React, { useState, useCallback, useRef, useEffect, useImperativeHandle, forwardRef } from 'react'
 
 const BRUSH_BLUE = '#60a5fa'
 const BRUSH_YELLOW = '#fbbf24'
 
-function SkyPaintCanvas({
+export type SkyPaintCanvasHandle = { exportAsPng: () => Promise<Blob | null> }
+
+const SkyPaintCanvas = forwardRef<SkyPaintCanvasHandle, {
+  enabled: boolean
+  canvasVisible?: boolean
+  brushColor: 'blue' | 'yellow'
+  blendMode?: 'normal' | 'multiply' | 'overlay' | 'screen'
+  paintPhase?: 'blue' | 'yellow'
+  onFirstStroke?: () => void
+  className?: string
+}>(function SkyPaintCanvas({
   enabled,
   canvasVisible,
   brushColor,
-  hasBlend,
+  blendMode,
   paintPhase,
   onFirstStroke,
   className,
@@ -18,11 +28,11 @@ function SkyPaintCanvas({
   enabled: boolean
   canvasVisible?: boolean
   brushColor: 'blue' | 'yellow'
-  hasBlend?: boolean
+  blendMode?: 'normal' | 'multiply' | 'overlay' | 'screen'
   paintPhase?: 'blue' | 'yellow'
   onFirstStroke?: () => void
   className?: string
-}) {
+}, ref) {
   const show = canvasVisible ?? enabled
   const containerRef = useRef<HTMLDivElement>(null)
   const blueRef = useRef<HTMLCanvasElement>(null)
@@ -142,11 +152,31 @@ function SkyPaintCanvas({
     [enabled, onFirstStroke, paintPhase]
   )
 
+  useImperativeHandle(ref, () => ({
+    exportAsPng: async () => {
+      const blue = blueRef.current
+      const yellow = yellowRef.current
+      if (!blue || !yellow || !containerRef.current) return null
+      const w = blue.width
+      const h = blue.height
+      const out = document.createElement('canvas')
+      out.width = w
+      out.height = h
+      const ctx = out.getContext('2d')
+      if (!ctx) return null
+      ctx.drawImage(blue, 0, 0)
+      if (blendMode && blendMode !== 'normal') ctx.globalCompositeOperation = blendMode
+      ctx.drawImage(yellow, 0, 0)
+      ctx.globalCompositeOperation = 'source-over'
+      return new Promise<Blob | null>((resolve) => out.toBlob((b) => resolve(b), 'image/png'))
+    },
+  }), [blendMode])
+
   if (!show) return null
   return (
     <div ref={containerRef} className={`absolute inset-0 ${className ?? ''}`}>
       <canvas ref={blueRef} className="absolute inset-0 w-full h-full pointer-events-none" />
-      <div className="absolute inset-0 w-full h-full" style={hasBlend ? { mixBlendMode: 'overlay' } : undefined}>
+      <div className="absolute inset-0 w-full h-full" style={blendMode && blendMode !== 'normal' ? { mixBlendMode: blendMode } : undefined}>
         <canvas
           ref={yellowRef}
           className="absolute inset-0 w-full h-full touch-none cursor-crosshair"
@@ -159,7 +189,7 @@ function SkyPaintCanvas({
       </div>
     </div>
   )
-}
+})
 
 type Step = {
   title: string
@@ -183,7 +213,7 @@ const TASKS: Record<string, Task> = {
       { title: 'Open Brush Library', desc: 'Tap the brush icon to open the Brush Library.', hint: 'Brush Library shows your brush sets', highlight: { x: 280, y: 14, w: 80, h: 36 }, hotspotId: 'proc-brush' },
       { title: 'Create new brush', desc: 'Tap + in the Brush Library to create a new brush.', hint: 'Creates a custom brush in Brush Studio', highlight: { x: 24, y: 70, w: 60, h: 36 }, hotspotId: 'proc-new' },
       { title: 'Open Shape menu', desc: 'Tap Shape in Brush Studio to open shape options.', hint: 'Shape controls brush tip', highlight: { x: 520, y: 100, w: 80, h: 32 }, hotspotId: 'proc-shape' },
-      { title: 'Select Grain', desc: 'Tap Grain in the dropdown to add texture to your brush.', hint: 'Import custom grain images for texture', highlight: { x: 520, y: 140, w: 80, h: 80 }, hotspotId: 'proc-shape-grain' },
+      { title: 'Select shape type', desc: 'Tap Circle, Grain, or Texture for brush tip.', hint: 'Grain adds texture', highlight: { x: 520, y: 140, w: 80, h: 100 }, hotspotId: 'proc-shape-grain' },
       { title: 'Open Dynamics menu', desc: 'Tap Dynamics to open pressure settings.', hint: 'Size, Opacity, Flow', highlight: { x: 520, y: 200, w: 80, h: 32 }, hotspotId: 'proc-dynamics' },
       { title: 'Apply dynamics', desc: 'Tap Apply or adjust sliders, then confirm.', hint: 'Apple Pencil pressure controls stroke variation', highlight: { x: 520, y: 240, w: 80, h: 80 }, hotspotId: 'proc-dynamics-apply' },
       { title: 'Save brush', desc: 'Tap Done to exit Brush Studio and save your brush.', hint: 'Organize brushes into sets', highlight: { x: 300, y: 320, w: 100, h: 36 }, hotspotId: 'proc-done' },
@@ -193,9 +223,9 @@ const TASKS: Record<string, Task> = {
       { title: 'Select yellow and paint', desc: 'Tap the yellow color swatch in Brush Studio, then paint 1+ strokes with yellow.', hint: 'Yellow overlaps blue for gradient blend', highlight: { x: 520, y: 100, w: 48, h: 48 }, hotspotId: 'proc-yellow' },
       { title: 'Paint with yellow', desc: 'Paint 1+ strokes with yellow on the canvas. Overlap with blue for blend.', hint: 'Yellow + blue = textured gradient', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
       { title: 'Open blend menu', desc: 'Select the layer and tap the blend mode dropdown (Normal ▼).', hint: 'Blend modes affect how layers combine', highlight: { x: 520, y: 60, w: 80, h: 28 }, hotspotId: 'proc-blend' },
-      { title: 'Select Overlay', desc: 'Tap Overlay in the dropdown for depth and contrast.', hint: 'Overlay adds contrast; Multiply darkens', highlight: { x: 520, y: 100, w: 80, h: 100 }, hotspotId: 'proc-blend-overlay' },
+      { title: 'Select blend mode', desc: 'Tap Normal, Multiply, Overlay, or Screen.', hint: 'Overlay adds contrast; Multiply darkens', highlight: { x: 520, y: 100, w: 80, h: 120 }, hotspotId: 'proc-blend-overlay' },
       { title: 'Open export menu', desc: 'Tap the wrench icon to open Actions. Tap Share.', hint: 'Share exports your artwork', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export' },
-      { title: 'Choose export format', desc: 'Tap PNG, PSD, or Procreate in the Share menu to save.', hint: 'PNG for web; PSD for editing', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export-format' },
+      { title: 'Save to computer', desc: 'Tap PNG to download your painted sky as an image.', hint: 'PNG saves to your computer', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export-format' },
     ],
   },
   figmaVariants: {
@@ -536,8 +566,24 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   )
 }
 
+type BlendMode = 'normal' | 'multiply' | 'overlay' | 'screen'
+
 function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight, stepIdx = 0 }: MockProps) {
   const [brushColor, setBrushColor] = useState<'blue' | 'yellow'>('blue')
+  const [blendMode, setBlendMode] = useState<BlendMode>('normal')
+  const canvasRef = useRef<SkyPaintCanvasHandle>(null)
+
+  const handleExportPng = useCallback(async () => {
+    const blob = await canvasRef.current?.exportAsPng()
+    if (blob) {
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = 'pear-sky.png'
+      a.click()
+      URL.revokeObjectURL(a.href)
+    }
+    onStepComplete()
+  }, [onStepComplete])
   const brushActive = stepIdx >= 1
   const hasNewBrush = stepIdx >= 2
   const inBrushStudio = stepIdx >= 2
@@ -546,7 +592,6 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
   const hasColor = stepIdx >= 7
   const hasLayer = stepIdx >= 8
   const hasStroke = stepIdx >= 11
-  const hasBlend = stepIdx >= 14
   const blendMenuOpen = stepIdx >= 13
   const shapeMenuOpen = stepIdx >= 3
   const dynamicsMenuOpen = stepIdx >= 5
@@ -564,7 +609,10 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
             {(currentHotspotId === 'proc-export' || currentHotspotId === 'proc-export-format') && (
               <div className="absolute top-full left-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 min-w-[140px] space-y-1">
                 <div className="text-white/50 text-sm mb-2">Share</div>
-                {['PNG', 'PSD', 'Procreate'].map((fmt) => (
+                <HotspotButton id="proc-export-format" currentHotspotId={currentHotspotId} onStepComplete={handleExportPng} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
+                  <div className={`w-full px-3 py-2 rounded text-sm ${currentHotspotId === 'proc-export-format' ? 'bg-[#34c759]/30 text-[#34c759]' : 'text-white/90 hover:bg-white/10'}`}>PNG — Save to computer</div>
+                </HotspotButton>
+                {['PSD', 'Procreate'].map((fmt) => (
                   <HotspotButton key={fmt} id="proc-export-format" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
                     <div className={`w-full px-3 py-2 rounded text-sm ${currentHotspotId === 'proc-export-format' ? 'bg-[#34c759]/30 text-[#34c759]' : 'text-white/90 hover:bg-white/10'}`}>{fmt}</div>
                   </HotspotButton>
@@ -617,7 +665,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
               <HotspotButton id="proc-layer" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full shrink-0">
                 <div className={`w-full ${HOTSPOT_BTN} justify-center ${currentHotspotId === 'proc-layer' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>+ Layer</div>
               </HotspotButton>
-              {hasLayer && <div className="w-full h-10 rounded bg-white/10 flex items-center px-1.5 gap-1 shrink-0"><div className="w-8 h-8 rounded bg-[#60a5fa]/40 flex items-center justify-center text-[9px] text-white/60">{hasBlend ? 'N' : ''}</div><span className="text-[10px] text-white/70">Sky{hasBlend ? ' (Overlay)' : ''}</span></div>}
+              {hasLayer && <div className="w-full h-10 rounded bg-white/10 flex items-center px-1.5 gap-1 shrink-0"><div className="w-8 h-8 rounded bg-[#60a5fa]/40 flex items-center justify-center text-[9px] text-white/60">{blendMode !== 'normal' ? blendMode.charAt(0).toUpperCase() : ''}</div><span className="text-[10px] text-white/70">Sky{blendMode !== 'normal' ? ` (${blendMode.charAt(0).toUpperCase() + blendMode.slice(1)})` : ''}</span></div>}
               {hasLayer && <div className="w-full h-8 rounded bg-white/5 flex items-center px-1.5 text-[10px] text-white/40 shrink-0">Background</div>}
           </>
         </div>
@@ -625,10 +673,11 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
           <HotspotButton id="proc-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full h-full">
             <div className={`w-full h-full border-2 rounded-lg flex flex-col items-center justify-center gap-3 text-base transition-all relative overflow-hidden ${(hasStroke || hasLayer) ? 'border-none' : 'border-dashed'} ${(currentHotspotId === 'proc-canvas' || currentHotspotId === 'proc-yellow') && showHighlight && canPaint ? '!border-red-500 ring-4 ring-red-500/60' : 'border-white/20'} ${!canPaint && brushActive ? 'border-white/30' : ''}`}>
               <SkyPaintCanvas
+                ref={canvasRef}
                 enabled={canPaint}
                 canvasVisible={canvasVisible}
                 brushColor={brushColor}
-                hasBlend={hasBlend}
+                blendMode={blendMode}
                 {...(paintPhase != null && { paintPhase })}
                 {...((stepIdx === 9 || stepIdx === 11) && { onFirstStroke: onStepComplete })}
                 className="z-10"
@@ -671,11 +720,10 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
             <div className={`w-full ${HOTSPOT_BTN} justify-between ${(currentHotspotId === 'proc-shape' || currentHotspotId === 'proc-shape-grain') ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE} ${shapeDone ? 'border border-[#34c759]/40' : ''}`}>Shape {shapeDone && '✓'} ▼</div>
             {shapeMenuOpen && (
               <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
-                <HotspotButton id="proc-shape-grain" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
-                  <div className={`w-full px-3 py-2.5 rounded text-left text-sm ${currentHotspotId === 'proc-shape-grain' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-white/5 text-white/80 hover:bg-white/10'}`}>Grain</div>
-                </HotspotButton>
-                {['Circle', 'Texture'].map((o) => (
-                  <div key={o} className="px-3 py-2.5 rounded text-sm text-white/60 pointer-events-none">{o}</div>
+                {['Circle', 'Grain', 'Texture'].map((o) => (
+                  <HotspotButton key={o} id="proc-shape-grain" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
+                    <div className={`w-full px-3 py-2.5 rounded text-left text-sm ${currentHotspotId === 'proc-shape-grain' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-white/5 text-white/80 hover:bg-white/10'}`}>{o}</div>
+                  </HotspotButton>
                 ))}
               </div>
             )}
@@ -701,14 +749,13 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
           <>
             <div className="text-white/50 mt-2 text-sm">Blend</div>
               <HotspotButton id="proc-blend" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full relative">
-                <div className={`w-full ${HOTSPOT_BTN} justify-between ${currentHotspotId === 'proc-blend' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE} ${hasBlend ? 'border border-[#34c759]/40' : ''}`}>{hasBlend ? 'Overlay' : 'Normal'} {hasBlend && '✓'} ▼</div>
+                <div className={`w-full ${HOTSPOT_BTN} justify-between ${(currentHotspotId === 'proc-blend' || currentHotspotId === 'proc-blend-overlay') ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE} ${stepIdx >= 14 ? 'border border-[#34c759]/40' : ''}`}>{blendMode.charAt(0).toUpperCase() + blendMode.slice(1)} {stepIdx >= 14 && '✓'} ▼</div>
                 {blendMenuOpen && (
                   <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
-                    <HotspotButton id="proc-blend-overlay" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
-                      <div className={`w-full px-3 py-2.5 rounded text-left text-sm ${currentHotspotId === 'proc-blend-overlay' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-white/5 text-white/80 hover:bg-white/10'}`}>Overlay</div>
-                    </HotspotButton>
-                    {['Normal', 'Multiply', 'Screen'].map((m) => (
-                      <div key={m} className="px-3 py-2.5 rounded text-sm text-white/60 pointer-events-none">{m}</div>
+                    {(['normal', 'multiply', 'overlay', 'screen'] as const).map((m) => (
+                      <HotspotButton key={m} id="proc-blend-overlay" currentHotspotId={currentHotspotId} onStepComplete={() => { setBlendMode(m); onStepComplete(); }} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
+                        <div className={`w-full px-3 py-2.5 rounded text-left text-sm capitalize ${currentHotspotId === 'proc-blend-overlay' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-white/5 text-white/80 hover:bg-white/10'}`}>{m}</div>
+                      </HotspotButton>
                     ))}
                   </div>
                 )}
