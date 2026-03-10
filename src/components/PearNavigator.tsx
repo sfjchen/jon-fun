@@ -576,7 +576,6 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
   const [brushColor, setBrushColor] = useState<'blue' | 'yellow'>('blue')
   const [blendMode, setBlendMode] = useState<BlendMode>('normal')
   const [blueStrokeCount, setBlueStrokeCount] = useState(0)
-  const [yellowStrokeCount, setYellowStrokeCount] = useState(0)
   const canvasRef = useRef<SkyPaintCanvasHandle>(null)
 
   const handleExport = useCallback(async () => {
@@ -683,7 +682,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
                 blendMode={blendMode}
                 {...(paintPhase != null && { paintPhase })}
                 {...((stepIdx === 9 || stepIdx === 11) && { onFirstStroke: onStepComplete })}
-                onStrokeCount={(b, y) => { setBlueStrokeCount(b); setYellowStrokeCount(y); }}
+                onStrokeCount={(b) => setBlueStrokeCount(b)}
                 className="z-10"
               />
               {brushActive && !hasStroke && !canPaint && <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-[#34c759] bg-[#34c759]/30" title="Brush cursor" />}
