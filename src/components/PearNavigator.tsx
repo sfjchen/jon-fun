@@ -280,8 +280,8 @@ const TASK_LABELS: Record<string, string> = {
   figmaMindmap: 'Create a mindmap',
 }
 
-const CLUTTER_CLASS = 'px-2.5 py-1.5 rounded bg-white/5 text-white/45 text-sm pointer-events-none shrink-0'
-const HOTSPOT_BTN = 'min-h-[52px] rounded-lg flex items-center px-3 text-base font-medium'
+const CLUTTER_CLASS = 'px-2 py-1 rounded bg-white/5 text-white/45 text-xs pointer-events-none shrink-0'
+const HOTSPOT_BTN = 'min-h-[40px] rounded-lg flex items-center px-2.5 text-sm font-medium'
 const HOTSPOT_INACTIVE = 'bg-[#34c759]/20 text-[#34c759]'
 const HOTSPOT_ACTIVE = 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50'
 
@@ -318,32 +318,32 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const clutter = (label: string) => <div key={label} className={CLUTTER_CLASS}>{label}</div>
   if (isMindmap) {
     return (
-      <div className="absolute inset-0 flex flex-col text-sm min-h-0 overflow-hidden">
-        <div className="h-12 bg-[#2e2e2e] border-b border-white/15 flex items-center px-6 gap-6 shrink-0">
+      <div className="absolute inset-0 flex flex-col text-xs min-h-0 overflow-hidden">
+        <div className="h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-4 gap-4 shrink-0">
           <span className="text-white/80">Frame</span>
           <span className="text-white/80">Component</span>
           <span className="text-white/80">Prototype</span>
         </div>
-        <div className="min-h-10 bg-[#252525] border-b border-white/10 flex items-center px-4 gap-2 shrink-0 flex-wrap py-1.5">
-          {['Move', 'Frame', 'Component', 'Pen', 'Text', 'Rectangle', 'Line', 'Hand', 'Zoom', 'Align L', 'Align C', 'Fill'].map(clutter)}
+        <div className="min-h-8 bg-[#252525] border-b border-white/10 flex items-center px-3 gap-1.5 shrink-0 flex-wrap">
+          {['Move', 'Frame', 'Component', 'Pen', 'Text', 'Rect', 'Line', 'Hand', 'Zoom', 'Fill'].map(clutter)}
         </div>
         <div className="flex flex-1 min-h-0">
-          <div className="w-36 bg-[#323232] border-r border-white/10 p-3 shrink-0 flex flex-col gap-2 overflow-y-auto">
+          <div className="w-28 bg-[#323232] border-r border-white/10 p-2 shrink-0 flex flex-col gap-1.5 overflow-hidden min-h-0">
             <div className="text-white/50 text-xs font-medium">Layers</div>
             {hasCentralFrame && (
               <>
-                <div className="h-7 px-2 rounded bg-[#34c759]/15 text-[#34c759] text-xs flex items-center">Project</div>
+                <div className="h-6 px-1.5 rounded bg-[#34c759]/15 text-[#34c759] text-[10px] flex items-center">Project</div>
                 {instanceCount > 0 && Array.from({ length: instanceCount }).map((_, i) => (
-                  <div key={i} className="h-6 pl-4 pr-2 rounded bg-white/5 text-white/50 text-xs flex items-center">Idea {String.fromCharCode(65 + i)}</div>
+                  <div key={i} className="h-5 pl-3 pr-1.5 rounded bg-white/5 text-white/50 text-[10px] flex items-center">Idea {String.fromCharCode(65 + i)}</div>
                 ))}
               </>
             )}
-            {!hasCentralFrame && ['Page 1', 'Frame', 'Group'].map((l) => <div key={l} className="h-7 px-2 rounded bg-white/5 text-white/45 text-xs flex items-center">{l}</div>)}
-            <div className="text-white/50 text-xs font-medium mt-2">Pages</div>
-            {['Cover', 'Flow', 'Components'].map((p) => <div key={p} className="h-6 px-2 rounded bg-white/5 text-white/40 text-xs flex items-center">{p}</div>)}
+            {!hasCentralFrame && ['Page 1', 'Frame', 'Group'].map((l) => <div key={l} className="h-6 px-1.5 rounded bg-white/5 text-white/45 text-[10px] flex items-center">{l}</div>)}
+            <div className="text-white/50 text-[10px] font-medium mt-1">Pages</div>
+            {['Cover', 'Flow', 'Components'].map((p) => <div key={p} className="h-5 px-1.5 rounded bg-white/5 text-white/40 text-[10px] flex items-center">{p}</div>)}
           </div>
           <HotspotButton id="fig-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="flex-1 min-w-0 flex flex-col min-h-0">
-            <div className="flex-1 p-6 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center overflow-auto">
+            <div className="flex-1 p-4 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center overflow-hidden">
               <div className="relative w-full h-full min-h-[200px] border-2 border-dashed rounded-lg border-white/20 flex items-center justify-center">
                 {hasConnectors && !hasStyle && instanceCount > 0 && (
                   <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -408,8 +408,8 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
               </div>
             </div>
           </HotspotButton>
-          <div className="w-52 bg-[#383838] border-l border-white/15 p-5 shrink-0 flex flex-col gap-3 overflow-y-auto">
-            <div className="text-white/50 text-sm font-medium">Design</div>
+          <div className="w-40 bg-[#383838] border-l border-white/15 p-3 shrink-0 flex flex-col gap-2 overflow-hidden min-h-0">
+            <div className="text-white/50 text-xs font-medium">Design</div>
             {['Layout', 'Fill', 'Stroke', 'Effects', 'Corner', 'Padding', 'Gap'].map(clutter)}
             <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-component-tab' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Create component</div>
@@ -436,26 +436,26 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
     )
   }
   return (
-    <div className="absolute inset-0 flex flex-col text-sm min-h-0 overflow-hidden">
-      <div className="h-12 bg-[#2e2e2e] border-b border-white/15 flex items-center px-6 gap-6 shrink-0">
+    <div className="absolute inset-0 flex flex-col text-xs min-h-0 overflow-hidden">
+      <div className="h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-4 gap-4 shrink-0">
         <span className="text-white/80">Frame</span>
         <span className="text-white/80">Component</span>
         <span className="text-white/80">Prototype</span>
       </div>
-      <div className="min-h-10 bg-[#252525] border-b border-white/10 flex items-center px-4 gap-2 shrink-0 flex-wrap py-1.5">
-        {['Move', 'Frame', 'Component', 'Pen', 'Text', 'Rectangle', 'Line', 'Hand', 'Zoom', 'Align L', 'Align C', 'Fill'].map(clutter)}
+      <div className="min-h-8 bg-[#252525] border-b border-white/10 flex items-center px-3 gap-1.5 shrink-0 flex-wrap">
+        {['Move', 'Frame', 'Component', 'Pen', 'Text', 'Rect', 'Line', 'Hand', 'Zoom', 'Fill'].map(clutter)}
       </div>
       <div className="flex flex-1 min-h-0">
-        <div className="w-36 bg-[#323232] border-r border-white/10 p-3 shrink-0 flex flex-col gap-2 overflow-y-auto pointer-events-none">
+        <div className="w-28 bg-[#323232] border-r border-white/10 p-2 shrink-0 flex flex-col gap-1.5 overflow-hidden pointer-events-none">
           <div className="text-white/50 text-xs font-medium">Layers</div>
-          {['Frame', 'Group', 'Rectangle', 'Text', 'Component'].map((l) => <div key={l} className="h-7 px-2 rounded bg-white/5 text-white/45 text-xs flex items-center pointer-events-none">{l}</div>)}
-          <div className="text-white/50 text-xs font-medium mt-2">Pages</div>
-          {['Cover', 'Flow', 'Components'].map((p) => <div key={p} className="h-6 px-2 rounded bg-white/5 text-white/40 text-xs flex items-center">{p}</div>)}
-          <div className="text-white/50 text-xs font-medium mt-2">Assets</div>
-          <div className="h-6 px-2 rounded bg-white/5 text-white/40 text-xs flex items-center">Search...</div>
+          {['Frame', 'Group', 'Rectangle', 'Text', 'Component'].map((l) => <div key={l} className="h-6 px-1.5 rounded bg-white/5 text-white/45 text-[10px] flex items-center pointer-events-none">{l}</div>)}
+          <div className="text-white/50 text-[10px] font-medium mt-1">Pages</div>
+          {['Cover', 'Flow', 'Components'].map((p) => <div key={p} className="h-5 px-1.5 rounded bg-white/5 text-white/40 text-[10px] flex items-center">{p}</div>)}
+          <div className="text-white/50 text-[10px] font-medium mt-1">Assets</div>
+          <div className="h-5 px-1.5 rounded bg-white/5 text-white/40 text-[10px] flex items-center">Search...</div>
         </div>
         <HotspotButton id="fig-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="flex-1 min-w-0 flex flex-col min-h-0">
-          <div className="flex-1 p-6 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center">
+          <div className="flex-1 p-4 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center">
             <div className={`relative w-full max-w-md aspect-video rounded-xl flex flex-col items-center justify-center gap-3 transition-all duration-200 ${hasSelection ? 'border-2 border-[#8b5cf6] bg-[#8b5cf6]/10' : 'border-2 border-dashed border-white/25'} ${currentHotspotId === 'fig-canvas' ? 'ring-2 ring-[#34c759]/50' : ''}`}>
               {!hasSelection && <span className="text-white/40 text-sm">Tap to select frame</span>}
               {hasSelection && (
@@ -476,35 +476,35 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
             </div>
           </div>
         </HotspotButton>
-        <div className="w-44 bg-[#383838] border-l border-white/15 p-4 shrink-0 flex flex-col gap-2 overflow-y-auto">
-          <div className="text-white/50 text-sm font-medium">Design</div>
-          {['Layout', 'Fill', 'Stroke', 'Effects', 'Corner', 'Padding', 'Gap', 'Constraints'].map(clutter)}
+        <div className="w-40 bg-[#383838] border-l border-white/15 p-3 shrink-0 flex flex-col gap-2 overflow-hidden min-h-0">
+          <div className="text-white/50 text-xs font-medium">Design</div>
+          {['Layout', 'Fill', 'Stroke', 'Effects', 'Corner', 'Padding', 'Gap'].map(clutter)}
           <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
             <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-component-tab' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Create component</div>
           </HotspotButton>
           {currentHotspotId === 'fig-component-tab' && (
-            <div className="p-3 rounded-lg bg-[#454545] border border-white/10 text-xs text-white/70">Creates main component</div>
+            <div className="p-2 rounded bg-[#454545] border border-white/10 text-[10px] text-white/70 shrink-0">Creates main component</div>
           )}
           <div className="text-white/50 text-sm font-medium mt-1">Component</div>
           <HotspotButton id="fig-component-add" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
             <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-component-add' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>+ Property</div>
           </HotspotButton>
           {stepIdx >= 2 && (
-            <div className="px-3 py-1.5 rounded bg-[#34c759]/15 text-[#34c759] text-xs font-medium">State: Variant</div>
+            <div className="px-2 py-1 rounded bg-[#34c759]/15 text-[#34c759] text-[10px] font-medium shrink-0">State: Variant</div>
           )}
           {currentHotspotId === 'fig-component-add' && (
-            <div className="p-3 rounded-lg bg-[#454545] border border-white/10 space-y-1">
-              <div className="text-white/70 text-xs">Add property:</div>
-              <div className="flex gap-1"><div className="px-3 py-1.5 rounded bg-[#34c759]/20 text-[#34c759] text-xs">State</div><div className="px-3 py-1.5 rounded bg-white/10 text-white/50 text-xs">Size</div></div>
+            <div className="p-2 rounded bg-[#454545] border border-white/10 shrink-0">
+              <div className="text-white/70 text-[10px]">Add property:</div>
+              <div className="flex gap-1 mt-0.5"><div className="px-2 py-1 rounded bg-[#34c759]/20 text-[#34c759] text-[10px]">State</div><div className="px-2 py-1 rounded bg-white/10 text-white/50 text-[10px]">Size</div></div>
             </div>
           )}
           <HotspotButton id="fig-variants" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
             <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-variants' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Variants</div>
           </HotspotButton>
           {currentHotspotId === 'fig-variants' && (
-            <div className="p-3 rounded-lg bg-[#454545] border border-white/10 space-y-1">
-              <div className="text-white/70 text-xs">Values:</div>
-              <div className="flex flex-wrap gap-1"><span className="px-2.5 py-1 rounded bg-[#34c759]/20 text-[#34c759] text-xs">Default</span><span className="px-2.5 py-1 rounded bg-white/10 text-xs">Hover</span><span className="px-2.5 py-1 rounded bg-white/10 text-xs">Pressed</span></div>
+            <div className="p-2 rounded bg-[#454545] border border-white/10 shrink-0">
+              <div className="text-white/70 text-[10px]">Values:</div>
+              <div className="flex flex-wrap gap-1 mt-0.5"><span className="px-2 py-0.5 rounded bg-[#34c759]/20 text-[#34c759] text-[10px]">Default</span><span className="px-2 py-0.5 rounded bg-white/10 text-[10px]">Hover</span><span className="px-2 py-0.5 rounded bg-white/10 text-[10px]">Pressed</span></div>
             </div>
           )}
           <HotspotButton id="fig-swap" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full relative">
@@ -542,8 +542,8 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
   const paintPhase = stepIdx === 7 ? 'blue' as const : stepIdx === 9 ? 'yellow' as const : undefined
   const procClutter = (label: string) => <div key={label} className={CLUTTER_CLASS}>{label}</div>
   return (
-    <div className="absolute inset-0 flex flex-col text-sm min-h-0 overflow-hidden">
-      <div className="min-h-12 bg-[#2e2e2e] border-b border-white/15 flex items-center justify-center gap-3 px-4 shrink-0 flex-wrap py-2">
+    <div className="absolute inset-0 flex flex-col text-xs min-h-0 overflow-hidden">
+      <div className="min-h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center justify-center gap-2 px-3 shrink-0 flex-wrap py-1.5">
         <div className="relative shrink-0 overflow-visible">
             <HotspotButton id="proc-export" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <span className={`px-3 py-1.5 rounded ${currentHotspotId === 'proc-export' ? 'ring-2 ring-[#34c759]/50' : ''} text-white/80`}>⚙</span>
@@ -561,7 +561,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
           </div>
         {['Undo', 'Redo', 'Adjustments', 'Filters', 'Selection', 'Transform'].map(procClutter)}
         <HotspotButton id="proc-color" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-            <div className={`w-11 h-11 rounded-full border-2 ${hasColor ? 'border-[#34c759] bg-[#60a5fa]/80' : 'border-white/40 bg-[#60a5fa]/50'} ${currentHotspotId === 'proc-color' ? 'ring-2 ring-[#34c759]/50' : ''}`} />
+            <div className={`w-9 h-9 rounded-full border-2 ${hasColor ? 'border-[#34c759] bg-[#60a5fa]/80' : 'border-white/40 bg-[#60a5fa]/50'} ${currentHotspotId === 'proc-color' ? 'ring-2 ring-[#34c759]/50' : ''}`} />
           </HotspotButton>
         <span className="text-white/80">Actions</span>
         <HotspotButton id="proc-brush" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
@@ -573,7 +573,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
         {['Canvas', 'Share', 'Gallery'].map(procClutter)}
       </div>
       {currentHotspotId === 'proc-brush' && (
-        <div className="bg-[#454545] border-b border-white/10 px-3 py-2 flex gap-4 shrink-0">
+        <div className="bg-[#454545] border-b border-white/10 px-2 py-1.5 flex gap-2 shrink-0">
           <span className="text-white/60 text-xs">Brush Library:</span>
           <div className="flex gap-1 rounded bg-white/10 p-1">
             <div className="w-10 h-10 rounded-full bg-[#34c759]/40 border border-[#34c759]/60" />
@@ -583,32 +583,32 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
         </div>
       )}
       <div className="flex flex-1 min-h-0">
-        <div className="w-32 bg-[#383838] border-r border-white/15 p-4 shrink-0 flex flex-col gap-2 overflow-y-auto">
-          <div className="flex gap-1 mb-1 pointer-events-none">
+        <div className="w-28 bg-[#383838] border-r border-white/15 p-2 shrink-0 flex flex-col gap-1.5 overflow-hidden min-h-0">
+          <div className="flex gap-1 pointer-events-none shrink-0">
             {['Import', 'Organize', 'Search'].map(procClutter)}
           </div>
           <HotspotButton id="proc-new" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full">
             <div className={`w-full ${HOTSPOT_BTN} justify-center ${currentHotspotId === 'proc-new' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>+ New</div>
           </HotspotButton>
           {currentHotspotId === 'proc-new' && (
-            <div className="p-3 rounded-lg bg-[#454545] border border-white/10">
-              <div className="text-[#34c759] text-xs">✓ Create new brush</div>
+            <div className="p-2 rounded bg-[#454545] border border-white/10 shrink-0">
+              <div className="text-[#34c759] text-[10px]">✓ Create new brush</div>
             </div>
           )}
-          <div className="text-white/50 text-xs pointer-events-none">Brush sets</div>
-          <div className={`w-full h-10 rounded flex items-center justify-center text-xs ${hasNewBrush ? 'bg-white/15 text-[#34c759]/80' : 'bg-white/10 text-white/40'}`}>{hasNewBrush ? '✓ Custom' : 'Brush 1'}</div>
-          <div className="w-full h-10 bg-white/10 rounded flex items-center justify-center text-xs text-white/40">Brush 2</div>
-          {['Inking', 'Sketching', 'Painting', 'Textures', 'Charcoal'].map((s) => <div key={s} className="w-full h-8 bg-white/5 rounded flex items-center px-2 text-white/40 text-xs pointer-events-none">{s}</div>)}
+          <div className="text-white/50 text-[10px] pointer-events-none shrink-0">Brush sets</div>
+          <div className={`w-full h-8 rounded flex items-center justify-center text-[10px] shrink-0 ${hasNewBrush ? 'bg-white/15 text-[#34c759]/80' : 'bg-white/10 text-white/40'}`}>{hasNewBrush ? '✓ Custom' : 'Brush 1'}</div>
+          <div className="w-full h-8 bg-white/10 rounded flex items-center justify-center text-[10px] text-white/40 shrink-0">Brush 2</div>
+          {['Inking', 'Sketching', 'Painting'].map((s) => <div key={s} className="w-full h-6 bg-white/5 rounded flex items-center px-1.5 text-white/40 text-[10px] pointer-events-none shrink-0">{s}</div>)}
           <>
-            <div className="text-white/50 mt-2 text-xs">Layers</div>
-              <HotspotButton id="proc-layer" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full">
+            <div className="text-white/50 mt-1 text-[10px] shrink-0">Layers</div>
+              <HotspotButton id="proc-layer" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full shrink-0">
                 <div className={`w-full ${HOTSPOT_BTN} justify-center ${currentHotspotId === 'proc-layer' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>+ Layer</div>
               </HotspotButton>
-              {hasLayer && <div className="w-full h-12 rounded bg-white/10 flex items-center px-2 gap-1"><div className="w-10 h-10 rounded bg-[#60a5fa]/40 flex items-center justify-center text-[10px] text-white/60">{hasBlend ? 'N' : ''}</div><span className="text-xs text-white/70">Sky{hasBlend ? ' (Overlay)' : ''}</span></div>}
-              {hasLayer && <div className="w-full h-10 rounded bg-white/5 flex items-center px-2 text-xs text-white/40">Background</div>}
+              {hasLayer && <div className="w-full h-10 rounded bg-white/10 flex items-center px-1.5 gap-1 shrink-0"><div className="w-8 h-8 rounded bg-[#60a5fa]/40 flex items-center justify-center text-[9px] text-white/60">{hasBlend ? 'N' : ''}</div><span className="text-[10px] text-white/70">Sky{hasBlend ? ' (Overlay)' : ''}</span></div>}
+              {hasLayer && <div className="w-full h-8 rounded bg-white/5 flex items-center px-1.5 text-[10px] text-white/40 shrink-0">Background</div>}
           </>
         </div>
-        <div className={`flex-1 p-4 min-w-0 transition-all ${brushActive ? 'bg-[#404040]' : 'bg-[#404040]'}`}>
+        <div className={`flex-1 p-2 min-w-0 transition-all ${brushActive ? 'bg-[#404040]' : 'bg-[#404040]'}`}>
           <HotspotButton id="proc-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full h-full">
             <div className={`w-full h-full border-2 rounded-lg flex flex-col items-center justify-center gap-3 text-base transition-all relative overflow-hidden ${(hasStroke || hasLayer) ? 'border-none' : 'border-dashed'} ${(currentHotspotId === 'proc-canvas' || currentHotspotId === 'proc-yellow') && showHighlight && canPaint ? '!border-red-500 ring-4 ring-red-500/60' : 'border-white/20'} ${!canPaint && brushActive ? 'border-white/30' : ''}`}>
               <SkyPaintCanvas
@@ -638,45 +638,45 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
             </div>
           </HotspotButton>
         </div>
-        <div className="w-32 bg-[#383838] border-l border-white/15 p-4 shrink-0 flex flex-col gap-2 overflow-y-auto">
-          <div className="text-white/50 text-sm">Brush Studio</div>
+        <div className="w-28 bg-[#383838] border-l border-white/15 p-2 shrink-0 flex flex-col gap-1.5 overflow-hidden min-h-0">
+          <div className="text-white/50 text-xs shrink-0">Brush Studio</div>
           {hasColor && (
-            <div className="flex gap-2 mb-1">
-              <button type="button" onClick={() => setBrushColor('blue')} className={`w-11 h-11 rounded-full border-2 shrink-0 ${brushColor === 'blue' ? 'border-[#34c759] ring-2 ring-[#34c759]/50' : 'border-white/30'}`} style={{ backgroundColor: BRUSH_BLUE }} title="Blue brush" />
+            <div className="flex gap-1.5 mb-1 shrink-0">
+              <button type="button" onClick={() => setBrushColor('blue')} className={`w-9 h-9 rounded-full border-2 shrink-0 ${brushColor === 'blue' ? 'border-[#34c759] ring-2 ring-[#34c759]/50' : 'border-white/30'}`} style={{ backgroundColor: BRUSH_BLUE }} title="Blue brush" />
               {stepIdx === 8 ? (
                 <HotspotButton id="proc-yellow" currentHotspotId={currentHotspotId} onStepComplete={() => { setBrushColor('yellow'); onStepComplete(); }} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-                  <div className={`w-11 h-11 rounded-full border-2 shrink-0 ${brushColor === 'yellow' ? 'border-[#34c759] ring-2 ring-[#34c759]/50' : 'border-white/30'} ${currentHotspotId === 'proc-yellow' ? 'ring-2 ring-red-500' : ''}`} style={{ backgroundColor: BRUSH_YELLOW }} title="Yellow brush" />
+                  <div className={`w-9 h-9 rounded-full border-2 shrink-0 ${brushColor === 'yellow' ? 'border-[#34c759] ring-2 ring-[#34c759]/50' : 'border-white/30'} ${currentHotspotId === 'proc-yellow' ? 'ring-2 ring-red-500' : ''}`} style={{ backgroundColor: BRUSH_YELLOW }} title="Yellow brush" />
                 </HotspotButton>
               ) : (
-                <button type="button" onClick={() => setBrushColor('yellow')} className={`w-11 h-11 rounded-full border-2 shrink-0 ${brushColor === 'yellow' ? 'border-[#34c759] ring-2 ring-[#34c759]/50' : 'border-white/30'}`} style={{ backgroundColor: BRUSH_YELLOW }} title="Yellow brush" />
+                <button type="button" onClick={() => setBrushColor('yellow')} className={`w-9 h-9 rounded-full border-2 shrink-0 ${brushColor === 'yellow' ? 'border-[#34c759] ring-2 ring-[#34c759]/50' : 'border-white/30'}`} style={{ backgroundColor: BRUSH_YELLOW }} title="Yellow brush" />
               )}
             </div>
           )}
-          {['Stamping', 'Smudge', 'Stabilization', 'Wet Mix'].map(procClutter)}
+          {['Stamping', 'Smudge', 'Stabilization'].map(procClutter)}
           <HotspotButton id="proc-shape" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full">
             <div className={`w-full ${HOTSPOT_BTN} justify-between ${currentHotspotId === 'proc-shape' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE} ${shapeDone ? 'border border-[#34c759]/40' : ''}`}>Shape {shapeDone && '✓'}</div>
           </HotspotButton>
           {currentHotspotId === 'proc-shape' && (
-            <div className="p-3 rounded-lg bg-[#454545] border border-white/10 space-y-1">
-              <div className="text-white/70 text-xs">Grain</div>
-              <div className="h-6 bg-white/10 rounded" />
+            <div className="p-2 rounded bg-[#454545] border border-white/10 shrink-0">
+              <div className="text-white/70 text-[10px]">Grain</div>
+              <div className="h-4 bg-white/10 rounded" />
             </div>
           )}
           <HotspotButton id="proc-dynamics" className="w-full" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
             <div className={`w-full ${HOTSPOT_BTN} justify-between ${currentHotspotId === 'proc-dynamics' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE} ${dynamicsDone ? 'border border-[#34c759]/40' : ''}`}>Dynamics {dynamicsDone && '✓'}</div>
           </HotspotButton>
           {currentHotspotId === 'proc-dynamics' && (
-            <div className="p-3 rounded-lg bg-[#454545] border border-white/10 space-y-1">
-              <div className="flex justify-between text-xs text-white/40"><span>Size</span><span>80%</span></div>
-              <div className="h-1 bg-white/20 rounded-full" />
-              <div className="flex justify-between text-xs text-white/40"><span>Opacity</span><span>100%</span></div>
-              <div className="h-1 bg-white/20 rounded-full" />
+            <div className="p-2 rounded bg-[#454545] border border-white/10 shrink-0 space-y-0.5">
+              <div className="flex justify-between text-[10px] text-white/40"><span>Size</span><span>80%</span></div>
+              <div className="h-0.5 bg-white/20 rounded-full" />
+              <div className="flex justify-between text-[10px] text-white/40"><span>Opacity</span><span>100%</span></div>
+              <div className="h-0.5 bg-white/20 rounded-full" />
             </div>
           )}
           <HotspotButton id="proc-done" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full">
             <div className={`w-full ${HOTSPOT_BTN} justify-center ${currentHotspotId === 'proc-done' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Done</div>
           </HotspotButton>
-          {['Apple Pencil', 'Pressure', 'Tilt', 'Azimuth'].map(procClutter)}
+          {['Pressure', 'Tilt'].map(procClutter)}
           <>
             <div className="text-white/50 mt-2 text-sm">Blend</div>
               <HotspotButton id="proc-blend" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full relative">
@@ -757,7 +757,7 @@ export default function PearNavigator() {
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-gradient-to-br from-[#0d0d0d] via-[#1a1a1a] to-[#0d0d0d] flex flex-col">
-      <div className="flex-none flex items-center justify-between px-6 py-5">
+      <div className="flex-none flex items-center justify-between px-4 py-3">
           <Link href="/" className="text-white hover:text-gray-300 text-3xl font-bold">
             ← Home
           </Link>
@@ -767,10 +767,10 @@ export default function PearNavigator() {
           <span className="text-sm text-gray-500">PearPad</span>
       </div>
 
-      <div className="flex-1 flex flex-col lg:flex-row gap-4 px-4 pb-4 min-h-0 overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row gap-3 px-3 pb-3 min-h-0 overflow-hidden">
         {/* Guide panel */}
-        <div className="flex-none lg:w-72 xl:w-80 min-w-0 flex flex-col min-h-0 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch">
-            <div className="flex flex-col flex-1 min-h-0 p-8">
+        <div className="flex-none lg:w-64 xl:w-72 min-w-0 flex flex-col min-h-0 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch">
+            <div className="flex flex-col flex-1 min-h-0 p-5">
               {phase === 'task' && (
                 <>
                   <p className="text-sm font-semibold text-[#34c759] uppercase tracking-wider mb-3 shrink-0">
@@ -877,11 +877,11 @@ export default function PearNavigator() {
           </div>
         )}
 
-        {/* Mock app preview - fills remaining space, fits within viewport */}
+        {/* Mock app preview - fills remaining space, no scroll */}
         <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden">
-          <div className="flex-1 min-h-0 flex items-center justify-center p-2 md:p-4 overflow-hidden">
-            <div className="relative w-full h-full max-w-6xl max-h-full rounded-4xl bg-[#1a1a1a] border-[10px] border-[#2a2a2a] shadow-[inset_0_0_30px_rgba(0,0,0,0.5),0_20px_50px_rgba(0,0,0,0.4)] overflow-hidden">
-              <div className="absolute inset-3 md:inset-4 rounded-[1.25rem] bg-[#3a3a3a] overflow-hidden">
+          <div className="flex-1 min-h-0 flex items-center justify-center p-1 md:p-2 overflow-hidden">
+            <div className="relative w-full h-full max-w-7xl max-h-full rounded-3xl bg-[#1a1a1a] border-8 border-[#2a2a2a] shadow-[inset_0_0_30px_rgba(0,0,0,0.5),0_20px_50px_rgba(0,0,0,0.4)] overflow-hidden">
+              <div className="absolute inset-2 md:inset-3 rounded-2xl bg-[#3a3a3a] overflow-hidden">
                 {MockComponent && <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={handleNext} {...(phase === 'steps' && { onWrongTap: handleWrongTap })} showHighlight={phase === 'steps' && showHighlight} stepIdx={phase === 'steps' ? stepIdx : (task?.steps.length ?? 0)} {...(taskId ? { taskId } : {})} />}
               </div>
             </div>
