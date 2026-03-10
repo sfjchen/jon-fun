@@ -336,7 +336,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
           {['Move', 'Frame', 'Component', 'Pen', 'Text', 'Rect', 'Line', 'Hand', 'Zoom', 'Fill'].map(clutter)}
         </div>
         <div className="flex flex-1 min-h-0">
-          <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#323232] border-r border-white/10 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-auto min-h-0">
+          <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#323232] border-r border-white/10 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-scroll min-h-0">
             <div className="text-white/50 text-xs font-medium shrink-0">Layers</div>
             {hasCentralFrame && (
               <>
@@ -416,7 +416,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
               </div>
             </div>
           </HotspotButton>
-          <div className="w-36 min-w-[7rem] sm:w-40 bg-[#383838] border-l border-white/15 p-2 sm:p-3 shrink-0 flex flex-col gap-1.5 sm:gap-2 overflow-y-auto min-h-0">
+          <div className="w-36 min-w-[7rem] sm:w-40 bg-[#383838] border-l border-white/15 p-2 sm:p-3 shrink-0 flex flex-col gap-1.5 sm:gap-2 overflow-y-scroll min-h-0">
             <div className="text-white/50 text-xs font-medium shrink-0">Design</div>
             {['Layout', 'Fill', 'Stroke', 'Effects', 'Corner', 'Padding', 'Gap'].map(clutter)}
             <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
@@ -454,7 +454,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
         {['Move', 'Frame', 'Component', 'Pen', 'Text', 'Rect', 'Line', 'Hand', 'Zoom', 'Fill'].map(clutter)}
       </div>
       <div className="flex flex-1 min-h-0">
-        <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#323232] border-r border-white/10 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-auto pointer-events-none min-h-0">
+        <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#323232] border-r border-white/10 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-scroll pointer-events-none min-h-0">
           <div className="text-white/50 text-xs font-medium">Layers</div>
           {['Frame', 'Group', 'Rectangle', 'Text', 'Component'].map((l) => <div key={l} className="h-6 px-1.5 rounded bg-white/5 text-white/45 text-[10px] flex items-center pointer-events-none">{l}</div>)}
           <div className="text-white/50 text-[10px] font-medium mt-1">Pages</div>
@@ -484,7 +484,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
             </div>
           </div>
         </HotspotButton>
-        <div className="w-36 min-w-[7rem] sm:w-40 bg-[#383838] border-l border-white/15 p-2 sm:p-3 shrink-0 flex flex-col gap-1.5 sm:gap-2 overflow-y-auto min-h-0">
+        <div className="w-36 min-w-[7rem] sm:w-40 bg-[#383838] border-l border-white/15 p-2 sm:p-3 shrink-0 flex flex-col gap-1.5 sm:gap-2 overflow-y-scroll min-h-0">
           <div className="text-white/50 text-xs font-medium shrink-0">Design</div>
           {['Layout', 'Fill', 'Stroke', 'Effects', 'Corner', 'Padding', 'Gap'].map(clutter)}
           <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
@@ -592,7 +592,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
         </div>
       )}
       <div className="flex flex-1 min-h-0">
-        <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#383838] border-r border-white/15 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-auto min-h-0">
+        <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#383838] border-r border-white/15 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-scroll min-h-0">
           <div className="flex gap-1 pointer-events-none shrink-0">
             {['Import', 'Organize', 'Search'].map(procClutter)}
           </div>
@@ -648,7 +648,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
             </div>
           </HotspotButton>
         </div>
-        <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#383838] border-l border-white/15 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-auto min-h-0">
+        <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#383838] border-l border-white/15 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-scroll min-h-0">
           <div className="text-white/50 text-xs shrink-0">Brush Studio</div>
           {hasColor && (
             <div className="flex gap-1.5 mb-1 shrink-0">
@@ -780,7 +780,7 @@ export default function PearNavigator() {
       <div className="flex-1 flex flex-col lg:flex-row gap-2 sm:gap-3 px-2 sm:px-3 pb-2 sm:pb-3 min-h-0 overflow-hidden">
         {/* Guide panel */}
         <div className="flex-none lg:w-64 xl:w-72 min-w-0 flex flex-col min-h-0 max-h-[45vh] lg:max-h-none bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch overflow-hidden">
-            <div className="flex flex-col flex-1 min-h-0 p-4 sm:p-5 overflow-y-auto">
+            <div className="flex flex-col flex-1 min-h-0 p-4 sm:p-5 overflow-y-scroll">
               {phase === 'task' && (
                 <>
                   <p className="text-sm font-semibold text-[#34c759] uppercase tracking-wider mb-3 shrink-0">
@@ -790,7 +790,7 @@ export default function PearNavigator() {
                   <p className="text-gray-400 text-base mb-5 shrink-0">
                     Step-by-step guidance with highlights—tap the simulator to advance.
                   </p>
-                  <div className="flex-1 min-h-0 overflow-y-auto space-y-3 mb-8">
+                  <div className="flex-1 min-h-0 overflow-y-scroll space-y-3 mb-8">
                     {TASK_ORDER.map((id) => {
                       const t = TASKS[id]
                       if (!t) return null
@@ -888,7 +888,7 @@ export default function PearNavigator() {
         )}
 
         {/* Mock app preview - fills remaining space, scrollable on narrow screens */}
-        <div className="flex-1 min-w-0 min-h-[min(50vh,400px)] lg:min-h-0 flex flex-col overflow-auto">
+        <div className="flex-1 min-w-0 min-h-[min(50vh,400px)] lg:min-h-0 flex flex-col overflow-scroll">
           <div className="flex-1 min-h-0 flex items-center justify-center p-1 sm:p-2 overflow-hidden">
             <div className="relative w-full h-full max-w-7xl max-h-full rounded-3xl bg-[#1a1a1a] border-8 border-[#2a2a2a] shadow-[inset_0_0_30px_rgba(0,0,0,0.5),0_20px_50px_rgba(0,0,0,0.4)] overflow-hidden">
               <div className="absolute inset-2 md:inset-3 rounded-2xl bg-[#3a3a3a] overflow-hidden">
