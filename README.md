@@ -345,6 +345,7 @@ Running log of project work. Update this section when making significant changes
 
 **2025-03**
 
+- **Pear Navigator UX overhaul**: Larger demo window (max-w-6xl), mindmap-first task order; bigger buttons/text; Paint sky: yellow step + red highlight, blue-then-yellow phases; real dropdowns for blend (Procreate), swap (Figma Variants), export format (PNG/PSD/Procreate); step audit: removed opacity step, mindmap 9→5 instance steps, merged connector/spacing steps
 - **Pear Navigator**: Keep 3 demos (Paint textured sky, Component variants, Mindmap); remove Brush and Notion; paint step: red highlight, explicit blue-then-yellow prompt, no faded example; mindmap instances offset from center for visible connectors
 - **Pear Navigator demo polish**: Tap-to-advance; wrong-tap toast; Previous step; PearPad frame; Notion table/board/filter; Figma Variants swap effect; Procreate Brush test step; Paint sky: 3-stroke min, gradient bg, layer blend indicator, export menu; Mindmap: connectors per instance, Layers panel
 - **docs/MS&E165-GTM-and-Resources-Slides.md**: Slide content for GTM Strategy and Required Resources (channels, metrics, post-launch impact; funding, tools, team, partnerships with how each supports launch) aligned to MS&E 165 rubric
