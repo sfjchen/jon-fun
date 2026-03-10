@@ -145,7 +145,7 @@ const SkyPaintCanvas = forwardRef<SkyPaintCanvasHandle, {
         if (color === 'blue') blueStrokeCountRef.current += 1
         else yellowStrokeCountRef.current += 1
         onStrokeCount?.(blueStrokeCountRef.current, yellowStrokeCountRef.current)
-        const blueOk = paintPhase === 'blue' && blueStrokeCountRef.current >= 2
+        const blueOk = paintPhase === 'blue' && blueStrokeCountRef.current >= 1
         const yellowOk = paintPhase === 'yellow' && yellowStrokeCountRef.current >= 1
         if ((blueOk || yellowOk) && !hasAdvancedRef.current) {
           hasAdvancedRef.current = true
@@ -223,9 +223,9 @@ const TASKS: Record<string, Task> = {
       { title: 'Save brush', desc: 'Tap Done to exit Brush Studio and save your brush.', hint: 'Organize brushes into sets', highlight: { x: 300, y: 320, w: 100, h: 36 }, hotspotId: 'proc-done' },
       { title: 'Pick base color', desc: 'Tap the color disc. Choose a soft blue for your first strokes.', hint: 'HSV wheel or hex input', highlight: { x: 260, y: 14, w: 48, h: 36 }, hotspotId: 'proc-color' },
       { title: 'Add new layer', desc: 'Tap + in the Layers panel to add a new layer.', hint: 'Layers stack; paint above background', highlight: { x: 24, y: 120, w: 60, h: 36 }, hotspotId: 'proc-layer' },
-      { title: 'Paint 2 strokes with blue', desc: 'Paint 2 strokes with blue on the canvas.', hint: 'Use the blue brush first', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
-      { title: 'Select yellow', desc: 'Tap the yellow color swatch in Brush Studio.', hint: 'Yellow overlaps blue for gradient blend', highlight: { x: 520, y: 100, w: 48, h: 48 }, hotspotId: 'proc-yellow' },
-      { title: 'Paint with yellow', desc: 'Paint 1+ strokes with yellow on the canvas. Overlap with blue for blend.', hint: 'Yellow + blue = textured gradient', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
+      { title: 'Paint 1 stroke with blue', desc: 'Paint 1 stroke with blue. You\'ll mix with yellow next to see blending.', hint: 'Use the blue brush first', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
+      { title: 'Select yellow', desc: 'Tap the yellow color swatch. Mix with blue to see blending.', hint: 'Overlap blue and yellow for blend effect', highlight: { x: 520, y: 100, w: 48, h: 48 }, hotspotId: 'proc-yellow' },
+      { title: 'Paint with yellow', desc: 'Paint 1+ strokes with yellow. Overlap with blue to mix and see the blending effect.', hint: 'Mix blue + yellow to see blend modes', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
       { title: 'Open blend menu', desc: 'Select the layer and tap the blend mode dropdown (Normal ▼).', hint: 'Blend modes affect how layers combine', highlight: { x: 520, y: 60, w: 80, h: 28 }, hotspotId: 'proc-blend' },
       { title: 'Select blend mode', desc: 'Tap Normal, Multiply, Overlay, or Screen.', hint: 'Overlay adds contrast; Multiply darkens', highlight: { x: 520, y: 100, w: 80, h: 120 }, hotspotId: 'proc-blend-overlay' },
       { title: 'Open export menu', desc: 'Tap the wrench icon to open Actions. Tap Share.', hint: 'Share exports your artwork', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export' },
@@ -319,7 +319,7 @@ function HotspotButton({
 
 const TASK_ORDER = ['figmaMindmap', 'figmaVariants', 'procreateSky'] as const
 const TASK_LABELS: Record<string, string> = {
-  procreateSky: 'Try your first painting',
+  procreateSky: 'Your first painting!',
   figmaVariants: 'Create component variants',
   figmaMindmap: 'Create a mindmap',
 }
@@ -575,7 +575,6 @@ type BlendMode = 'normal' | 'multiply' | 'overlay' | 'screen'
 function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight, stepIdx = 0 }: MockProps) {
   const [brushColor, setBrushColor] = useState<'blue' | 'yellow'>('blue')
   const [blendMode, setBlendMode] = useState<BlendMode>('normal')
-  const [blueStrokeCount, setBlueStrokeCount] = useState(0)
   const canvasRef = useRef<SkyPaintCanvasHandle>(null)
 
   const handleExport = useCallback(async () => {
@@ -583,7 +582,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
     if (blob) {
       const a = document.createElement('a')
       a.href = URL.createObjectURL(blob)
-      a.download = 'pear-sky.png'
+      a.download = 'pear-painting.png'
       a.click()
       URL.revokeObjectURL(a.href)
     }
@@ -667,7 +666,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
               <HotspotButton id="proc-layer" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full shrink-0">
                 <div className={`w-full ${HOTSPOT_BTN} justify-center ${currentHotspotId === 'proc-layer' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>+ Layer</div>
               </HotspotButton>
-              {hasLayer && <div className="w-full h-10 rounded bg-white/10 flex items-center px-1.5 gap-1 shrink-0"><div className="w-8 h-8 rounded bg-[#60a5fa]/40 flex items-center justify-center text-[9px] text-white/60">{blendMode !== 'normal' ? blendMode.charAt(0).toUpperCase() : ''}</div><span className="text-[10px] text-white/70">Sky{blendMode !== 'normal' ? ` (${blendMode.charAt(0).toUpperCase() + blendMode.slice(1)})` : ''}</span></div>}
+              {hasLayer && <div className="w-full h-10 rounded bg-white/10 flex items-center px-1.5 gap-1 shrink-0"><div className="w-8 h-8 rounded bg-[#60a5fa]/40 flex items-center justify-center text-[9px] text-white/60">{blendMode !== 'normal' ? blendMode.charAt(0).toUpperCase() : ''}</div><span className="text-[10px] text-white/70">Layer{blendMode !== 'normal' ? ` (${blendMode.charAt(0).toUpperCase() + blendMode.slice(1)})` : ''}</span></div>}
               {hasLayer && <div className="w-full h-8 rounded bg-white/5 flex items-center px-1.5 text-[10px] text-white/40 shrink-0">Background</div>}
           </>
         </div>
@@ -682,7 +681,6 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
                 blendMode={blendMode}
                 {...(paintPhase != null && { paintPhase })}
                 {...((stepIdx === 9 || stepIdx === 11) && { onFirstStroke: onStepComplete })}
-                onStrokeCount={(b) => setBlueStrokeCount(b)}
                 className="z-10"
               />
               {brushActive && !hasStroke && !canPaint && <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-[#34c759] bg-[#34c759]/30" title="Brush cursor" />}
@@ -692,18 +690,17 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
               {!hasNewBrush && !hasStroke && !canPaint && <span className="text-white/40">Canvas</span>}
               {canPaint && stepIdx === 9 && (
                 <div className="relative z-30 pointer-events-none text-center">
-                  <span className="block text-white font-semibold drop-shadow">Paint 2 strokes with blue</span>
-                  <span className="mt-1 inline-block text-white/90 text-sm drop-shadow bg-black/40 px-3 py-1.5 rounded-lg">
-                    {blueStrokeCount}/2 strokes
-                  </span>
+                  <span className="block text-white font-semibold drop-shadow">Paint 1 stroke with blue</span>
+                  <span className="block mt-1 text-white/80 text-xs drop-shadow">Mix with yellow next to see blending</span>
                 </div>
               )}
               {canPaint && stepIdx === 11 && (
                 <div className="relative z-30 pointer-events-none text-center">
                   <span className="block text-[#fbbf24] font-semibold drop-shadow">Paint 1+ strokes with yellow</span>
+                  <span className="block mt-1 text-white/80 text-xs drop-shadow">Overlap with blue to mix and see blending</span>
                 </div>
               )}
-              {stepIdx >= 12 && <span className="relative text-white/90 text-sm drop-shadow z-30 pointer-events-none">Blended sky</span>}
+              {stepIdx >= 12 && <span className="relative text-white/90 text-sm drop-shadow z-30 pointer-events-none">Blended</span>}
             </div>
           </HotspotButton>
         </div>
