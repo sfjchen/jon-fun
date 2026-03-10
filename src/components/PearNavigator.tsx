@@ -8,6 +8,7 @@ const BRUSH_YELLOW = '#fbbf24'
 
 function SkyPaintCanvas({
   enabled,
+  canvasVisible,
   brushColor,
   hasBlend,
   paintPhase,
@@ -15,12 +16,14 @@ function SkyPaintCanvas({
   className,
 }: {
   enabled: boolean
+  canvasVisible?: boolean
   brushColor: 'blue' | 'yellow'
   hasBlend?: boolean
   paintPhase?: 'blue' | 'yellow'
   onFirstStroke?: () => void
   className?: string
 }) {
+  const show = canvasVisible ?? enabled
   const containerRef = useRef<HTMLDivElement>(null)
   const blueRef = useRef<HTMLCanvasElement>(null)
   const yellowRef = useRef<HTMLCanvasElement>(null)
@@ -36,13 +39,16 @@ function SkyPaintCanvas({
   }
 
   const setupCanvas = useCallback((canvas: HTMLCanvasElement | null) => {
-    if (!enabled || !containerRef.current || !canvas) return
+    if (!show || !containerRef.current || !canvas) return
     const container = containerRef.current
-    const resize = () => {
-      const rect = container.getBoundingClientRect()
-      const dpr = window.devicePixelRatio || 1
-      canvas.width = rect.width * dpr
-      canvas.height = rect.height * dpr
+    const rect = container.getBoundingClientRect()
+    const dpr = window.devicePixelRatio || 1
+    const w = Math.floor(rect.width * dpr)
+    const h = Math.floor(rect.height * dpr)
+    const needsResize = canvas.width !== w || canvas.height !== h
+    if (needsResize) {
+      canvas.width = w
+      canvas.height = h
       canvas.style.width = `${rect.width}px`
       canvas.style.height = `${rect.height}px`
       const ctx = canvas.getContext('2d')
@@ -51,9 +57,11 @@ function SkyPaintCanvas({
       ctx.lineCap = 'round'
       ctx.lineJoin = 'round'
       ctx.lineWidth = 24
+    } else {
+      canvas.style.width = `${rect.width}px`
+      canvas.style.height = `${rect.height}px`
     }
-    resize()
-  }, [enabled])
+  }, [show])
 
   useEffect(() => {
     setupCanvas(blueRef.current)
@@ -65,7 +73,7 @@ function SkyPaintCanvas({
     })
     ro.observe(containerRef.current)
     return () => ro.disconnect()
-  }, [enabled, setupCanvas])
+  }, [show, setupCanvas])
 
   const getPos = (e: React.PointerEvent | PointerEvent) => {
     if (!containerRef.current) return null
@@ -119,6 +127,7 @@ function SkyPaintCanvas({
       e.stopPropagation()
       yellowRef.current?.releasePointerCapture?.(e.pointerId)
       if (isDrawingRef.current) {
+        isDrawingRef.current = false
         const color = strokeColorRef.current
         if (color === 'blue') blueStrokeCountRef.current += 1
         else yellowStrokeCountRef.current += 1
@@ -129,12 +138,11 @@ function SkyPaintCanvas({
           onFirstStroke?.()
         }
       }
-      isDrawingRef.current = false
     },
     [enabled, onFirstStroke, paintPhase]
   )
 
-  if (!enabled) return null
+  if (!show) return null
   return (
     <div ref={containerRef} className={`absolute inset-0 ${className ?? ''}`}>
       <canvas ref={blueRef} className="absolute inset-0 w-full h-full pointer-events-none" />
@@ -540,6 +548,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
   const blendMenuOpen = stepIdx >= 11
   const canPaint = hasLayer && (stepIdx === 7 || stepIdx >= 9)
   const paintPhase = stepIdx === 7 ? 'blue' as const : stepIdx === 9 ? 'yellow' as const : undefined
+  const canvasVisible = hasLayer && stepIdx >= 7
   const procClutter = (label: string) => <div key={label} className={CLUTTER_CLASS}>{label}</div>
   return (
     <div className="absolute inset-0 flex flex-col text-xs min-h-0 overflow-hidden">
@@ -613,6 +622,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
             <div className={`w-full h-full border-2 rounded-lg flex flex-col items-center justify-center gap-3 text-base transition-all relative overflow-hidden ${(hasStroke || hasLayer) ? 'border-none' : 'border-dashed'} ${(currentHotspotId === 'proc-canvas' || currentHotspotId === 'proc-yellow') && showHighlight && canPaint ? '!border-red-500 ring-4 ring-red-500/60' : 'border-white/20'} ${!canPaint && brushActive ? 'border-white/30' : ''}`}>
               <SkyPaintCanvas
                 enabled={canPaint}
+                canvasVisible={canvasVisible}
                 brushColor={brushColor}
                 hasBlend={hasBlend}
                 {...(paintPhase != null && { paintPhase })}
