@@ -1,6 +1,6 @@
 ---
 name: heavy-lift
-description: Use proactively for research, exploration, parallel analyses, critical perspectives, and multi-step context-heavy tasks. Offloads work to keep main context clean. One focused task per invocation. Prefer this subagent when a task would bloat the main conversation or benefit from isolated deep work.
+description: Delegate automatically when the task is complex, requires research, exploration, parallel analyses, or critical perspectives. Use proactively for multi-step context-heavy work. Prefer delegating over doing in main context—keeps conversation clean. One focused task per invocation.
 model: inherit
 ---
 
