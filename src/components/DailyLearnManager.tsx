@@ -71,6 +71,19 @@ export default function DailyLearnManager() {
     setTodayText(getEntryByDate(d)?.text ?? '')
   }, [view, entries])
 
+  useEffect(() => {
+    if (!editingDate) return
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        setEditingDate(null)
+        setEditingText('')
+      }
+    }
+    document.addEventListener('keydown', onEsc)
+    return () => document.removeEventListener('keydown', onEsc)
+  }, [editingDate])
+
   const handleSubmit = useCallback(async () => {
     const date = getTodayDate()
     setSaving(true)
