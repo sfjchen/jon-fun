@@ -5,15 +5,15 @@ import { GameCard } from '@/components/GameCard'
 import type { GameCardGame } from '@/components/GameCard'
 
 const items: GameCardGame[] = [
-  { id: 'tmr', title: 'TMR System', description: 'Targeted Memory Reactivation for enhanced learning and memory consolidation', icon: '🔊', href: '/games/tmr', available: true },
-  { id: 'daily-log', title: '1 Sentence Everyday', description: 'Log one sentence (or more) per day; view history, calendar, and export', icon: '📝', href: '/games/daily-log', available: true },
-  { id: 'pear-navigator', title: 'Pear Navigator', description: 'Step-by-step guide with AI-style highlight overlay for creative apps (Procreate, Figma)', icon: '🍐', href: '/games/pear-navigator', available: true },
-  { id: '24', title: '24 Game', description: 'Use 4 numbers and basic arithmetic to make 24', icon: '🎯', href: '/games/24', available: true },
-  { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom Jeopardy boards locally', icon: '❓', href: '/games/jeopardy', available: true },
+  { id: 'tmr', title: 'TMR System', description: 'Targeted Memory Reactivation for enhanced learning and memory consolidation', icon: '/doodles/tmr.svg', href: '/games/tmr', available: true },
+  { id: 'daily-log', title: '1 Sentence Everyday', description: 'Log one sentence (or more) per day; view history, calendar, and export', icon: '/doodles/daily.svg', href: '/games/daily-log', available: true },
+  { id: 'pear-navigator', title: 'Pear Navigator', description: 'Step-by-step guide with AI-style highlight overlay for creative apps (Procreate, Figma)', icon: '/doodles/pear.svg', href: '/games/pear-navigator', available: true },
+  { id: '24', title: '24 Game', description: 'Use 4 numbers and basic arithmetic to make 24', icon: '/doodles/game24.svg', href: '/games/24', available: true },
+  { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom Jeopardy boards locally', icon: '/doodles/jeopardy.svg', href: '/games/jeopardy', available: true },
   { id: 'poker', title: 'Texas Hold\'em', description: 'Poker chip tracker with real-time multiplayer lobbies', icon: '/poker-table.svg', href: '/games/poker', available: true },
-  { id: 'chwazi', title: 'Chwazi Finger Chooser', description: 'Place fingers on screen to randomly select a winner', icon: '👆', href: '/games/chwazi', available: true },
-  { id: 'leaderboards', title: 'Leaderboards', description: 'See the best scores and compete with others', icon: '🏆', href: '/leaderboards', available: true },
-  { id: 'coming-soon', title: 'Coming Soon', description: 'More brain games are in development', icon: '🚧', href: '#', available: false },
+  { id: 'chwazi', title: 'Chwazi Finger Chooser', description: 'Place fingers on screen to randomly select a winner', icon: '/doodles/chwazi.svg', href: '/games/chwazi', available: true },
+  { id: 'leaderboards', title: 'Leaderboards', description: 'See the best scores and compete with others', icon: '/doodles/leaderboards.svg', href: '/leaderboards', available: true },
+  { id: 'coming-soon', title: 'Coming Soon', description: 'More brain games are in development', icon: '/doodles/coming-soon.svg', href: '#', available: false },
 ]
 
 const futureFeatures = [
@@ -45,8 +45,9 @@ export default function Home() {
             style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
           >
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>
-                🚧 Coming Soon
+              <h2 className="font-lora text-2xl font-semibold flex items-center gap-2" style={{ color: 'var(--ink-text)' }}>
+                <img src="/doodles/coming-soon.svg" alt="" className="h-8 w-8" />
+                Coming Soon
               </h2>
               <button
                 onClick={() => setShowComingSoon(false)}

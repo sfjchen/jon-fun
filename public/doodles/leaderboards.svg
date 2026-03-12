@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Trophy cup -->
+  <path d="M18 20 L18 36 Q18 44 32 44 Q46 44 46 36 L46 20" />
+  <!-- Trophy base -->
+  <path d="M24 44 L24 48 L40 48 L40 44" />
+  <path d="M28 48 L28 52 L36 52 L36 48" />
+  <!-- Handles -->
+  <path d="M18 24 Q10 24 10 32 Q10 40 18 40" />
+  <path d="M46 24 Q54 24 54 32 Q54 40 46 40" />
+  <!-- Top rim -->
+  <path d="M20 20 L28 12 L36 12 L44 20" />
+</svg>
