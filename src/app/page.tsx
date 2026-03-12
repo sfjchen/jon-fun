@@ -11,7 +11,7 @@ const items: GameCardGame[] = [
   { id: 'pear-navigator', title: 'Pear Navigator', description: 'Step-by-step guide with AI-style highlight overlay for creative apps (Procreate, Figma)', icon: '/doodles/pear.svg', href: '/games/pear-navigator', available: true },
   { id: '24', title: '24 Game', description: 'Use 4 numbers and basic arithmetic to make 24', icon: '/doodles/game24.svg', href: '/games/24', available: true },
   { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom Jeopardy boards locally', icon: '/doodles/jeopardy.svg', href: '/games/jeopardy', available: true },
-  { id: 'poker', title: 'Texas Hold\'em', description: 'Poker chip tracker with real-time multiplayer lobbies', icon: '/poker-table.svg', href: '/games/poker', available: true },
+  { id: 'poker', title: 'Texas Hold\'em', description: 'Poker chip tracker with real-time multiplayer lobbies', icon: '/doodles/poker.svg', href: '/games/poker', available: true },
   { id: 'chwazi', title: 'Chwazi Finger Chooser', description: 'Place fingers on screen to randomly select a winner', icon: '/doodles/chwazi.svg', href: '/games/chwazi', available: true },
   { id: 'leaderboards', title: 'Leaderboards', description: 'See the best scores and compete with others', icon: '/doodles/leaderboards.svg', href: '/leaderboards', available: true },
   { id: 'coming-soon', title: 'Coming Soon', description: 'More brain games are in development', icon: '/doodles/coming-soon.svg', href: '#', available: false },
