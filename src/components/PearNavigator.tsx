@@ -216,20 +216,20 @@ const TASKS: Record<string, Task> = {
     app: 'Procreate (PearPad)',
     mock: 'procreate',
     steps: [
-      { title: 'Open Brush Library', desc: 'Tap the brush icon to open the Brush Library.', hint: 'Brush Library shows your brush sets', highlight: { x: 280, y: 14, w: 80, h: 36 }, hotspotId: 'proc-brush' },
-      { title: 'Create new brush', desc: 'Tap + in the Brush Library to create a new brush.', hint: 'Creates a custom brush in Brush Studio', highlight: { x: 24, y: 70, w: 60, h: 36 }, hotspotId: 'proc-new' },
-      { title: 'Open Shape menu', desc: 'Tap Shape in Brush Studio to open shape options.', hint: 'Shape controls brush tip', highlight: { x: 520, y: 100, w: 80, h: 32 }, hotspotId: 'proc-shape' },
-      { title: 'Select shape type', desc: 'Tap Circle, Grain, or Texture for brush tip.', hint: 'Grain adds texture', highlight: { x: 520, y: 140, w: 80, h: 100 }, hotspotId: 'proc-shape-grain' },
-      { title: 'Open Dynamics menu', desc: 'Tap Dynamics to open pressure settings.', hint: 'Size, Opacity, Flow', highlight: { x: 520, y: 200, w: 80, h: 32 }, hotspotId: 'proc-dynamics' },
-      { title: 'Apply dynamics', desc: 'Tap Apply or adjust sliders, then confirm.', hint: 'Apple Pencil pressure controls stroke variation', highlight: { x: 520, y: 240, w: 80, h: 80 }, hotspotId: 'proc-dynamics-apply' },
+      { title: 'Open brush menu', desc: 'Tap the brush icon to open your brush options.', hint: 'Shows your brush sets', highlight: { x: 280, y: 14, w: 80, h: 36 }, hotspotId: 'proc-brush' },
+      { title: 'Create new brush', desc: 'Tap + to create a new custom brush.', hint: 'Opens brush settings', highlight: { x: 24, y: 70, w: 60, h: 36 }, hotspotId: 'proc-new' },
+      { title: 'Open shape options', desc: 'Tap Shape to choose how the brush tip looks.', hint: 'Circle, Grain, or Texture', highlight: { x: 520, y: 100, w: 80, h: 32 }, hotspotId: 'proc-shape' },
+      { title: 'Pick brush tip', desc: 'Tap Grain for a textured brush (or Circle, Texture).', hint: 'Grain adds natural variation', highlight: { x: 520, y: 140, w: 80, h: 100 }, hotspotId: 'proc-shape-grain' },
+      { title: 'Open pressure settings', desc: 'Tap Dynamics to control how hard you press.', hint: 'Size, Opacity, Flow', highlight: { x: 520, y: 200, w: 80, h: 32 }, hotspotId: 'proc-dynamics' },
+      { title: 'Confirm pressure settings', desc: 'Tap Apply or adjust sliders, then confirm.', hint: 'Pressure changes stroke thickness', highlight: { x: 520, y: 240, w: 80, h: 80 }, hotspotId: 'proc-dynamics-apply' },
       { title: 'Save brush', desc: 'Tap Done to exit Brush Studio and save your brush.', hint: 'Organize brushes into sets', highlight: { x: 300, y: 320, w: 100, h: 36 }, hotspotId: 'proc-done' },
       { title: 'Pick base color', desc: 'Tap the color disc. Choose a soft blue for your first strokes.', hint: 'HSV wheel or hex input', highlight: { x: 260, y: 14, w: 48, h: 36 }, hotspotId: 'proc-color' },
       { title: 'Add new layer', desc: 'Tap + in the Layers panel to add a new layer.', hint: 'Layers stack; paint above background', highlight: { x: 24, y: 120, w: 60, h: 36 }, hotspotId: 'proc-layer' },
       { title: 'Paint 1 stroke with blue', desc: 'Paint 1 stroke with blue. You\'ll mix with yellow next to see blending.', hint: 'Use the blue brush first', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
       { title: 'Select yellow', desc: 'Tap the yellow color swatch. Mix with blue to see blending.', hint: 'Overlap blue and yellow for blend effect', highlight: { x: 520, y: 100, w: 48, h: 48 }, hotspotId: 'proc-yellow' },
       { title: 'Paint with yellow', desc: 'Paint 1+ strokes with yellow. Overlap with blue to mix and see the blending effect.', hint: 'Mix blue + yellow to see blend modes', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
-      { title: 'Open blend menu', desc: 'Select the layer and tap the blend mode dropdown.', hint: 'Blend modes affect how layers combine', highlight: { x: 520, y: 60, w: 80, h: 28 }, hotspotId: 'proc-blend' },
-      { title: 'Select blend mode', desc: 'Tap Multiply, Overlay, or Screen.', hint: 'Overlay adds contrast; Multiply darkens', highlight: { x: 520, y: 100, w: 80, h: 120 }, hotspotId: 'proc-blend-overlay' },
+      { title: 'Open blend options', desc: 'Select the layer and tap the blend dropdown.', hint: 'Controls how colors mix', highlight: { x: 520, y: 60, w: 80, h: 28 }, hotspotId: 'proc-blend' },
+      { title: 'Pick how colors mix', desc: 'Tap Multiply, Overlay, or Screen to blend layers.', hint: 'Overlay adds contrast; Multiply darkens', highlight: { x: 520, y: 100, w: 80, h: 120 }, hotspotId: 'proc-blend-overlay' },
       { title: 'Open export menu', desc: 'Tap the wrench icon to open Actions. Tap Share.', hint: 'Share exports your artwork', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export' },
       { title: 'Save your painting', desc: 'Tap PNG or JPG to download your painting.', hint: 'Both formats work', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export-format' },
     ],
@@ -239,32 +239,32 @@ const TASKS: Record<string, Task> = {
     mock: 'figma',
     steps: [
       { title: 'Choose template', desc: 'Tap the template dropdown to pick a layout.', hint: 'Minimal, Classic, or Modern', highlight: { x: 520, y: 60, w: 120, h: 40 }, hotspotId: 'fig-template' },
-      { title: 'Select background color', desc: 'Tap Fill and pick a background color.', hint: 'Dark tones work well', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill-bg' },
+      { title: 'Select background color', desc: 'Pick a background color for the card.', hint: 'Dark tones work well', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill-bg' },
       { title: 'Select accent color', desc: 'Pick an accent color for the accent bar.', hint: 'Contrasting color pops', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill-accent' },
       { title: 'Add your name', desc: 'Tap Text to add a textbox. Type your name, then tap Done.', hint: 'e.g. Alex Chen', highlight: { x: 520, y: 100, w: 80, h: 36 }, hotspotId: 'fig-text' },
       { title: 'Add your role', desc: 'Tap Text again. Type your title or role, then tap Done.', hint: 'e.g. Product Designer', highlight: { x: 520, y: 140, w: 80, h: 36 }, hotspotId: 'fig-text' },
       { title: 'Add your email', desc: 'Tap Text. Type your email or phone, then tap Done.', hint: 'e.g. alex@studio.co', highlight: { x: 520, y: 180, w: 80, h: 36 }, hotspotId: 'fig-text' },
-      { title: 'Add accent', desc: 'Tap Rectangle to add the accent bar.', hint: 'Finishing touch', highlight: { x: 520, y: 220, w: 80, h: 36 }, hotspotId: 'fig-accent' },
+      { title: 'Add accent bar', desc: 'Tap Rectangle to add the accent bar. (Skip for Minimal template.)', hint: 'Finishing touch', highlight: { x: 520, y: 220, w: 80, h: 36 }, hotspotId: 'fig-accent' },
     ],
   },
   figmaMindmap: {
     app: 'Figma (PearPad)',
     mock: 'figma',
     steps: [
-      { title: 'Create central frame', desc: 'Select the Frame tool and draw a frame for your central idea.', hint: 'Tap the canvas area', highlight: { x: 180, y: 100, w: 120, h: 60 }, hotspotId: 'fig-canvas' },
-      { title: 'Add text to frame', desc: 'Double-tap the frame and type your central topic (e.g. "Project").', hint: 'Frame becomes editable', highlight: { x: 200, y: 110, w: 80, h: 40 }, hotspotId: 'fig-text' },
-      { title: 'Create component', desc: 'Select the frame and tap Create component to make it reusable.', hint: 'Components for branches', highlight: { x: 520, y: 60, w: 100, h: 36 }, hotspotId: 'fig-component-tab' },
-      { title: 'Add first instance', desc: 'Tap Instance to add your first branch. It will overlap until layout.', hint: 'Instances stack initially', highlight: { x: 180, y: 180, w: 100, h: 50 }, hotspotId: 'fig-instance' },
+      { title: 'Create central node', desc: 'Tap the canvas to draw a frame for your central idea.', hint: 'Tap the canvas area', highlight: { x: 180, y: 100, w: 120, h: 60 }, hotspotId: 'fig-canvas' },
+      { title: 'Add topic text', desc: 'Double-tap the frame and type your central topic (e.g. "Design System").', hint: 'Frame becomes editable', highlight: { x: 200, y: 110, w: 80, h: 40 }, hotspotId: 'fig-text' },
+      { title: 'Make it reusable', desc: 'Select the frame and tap Create component.', hint: 'Reusable for branches', highlight: { x: 520, y: 60, w: 100, h: 36 }, hotspotId: 'fig-component-tab' },
+      { title: 'Add first branch', desc: 'Tap Instance to add your first branch. Branches stack until layout.', hint: 'Branches stack initially', highlight: { x: 180, y: 180, w: 100, h: 50 }, hotspotId: 'fig-instance' },
       { title: 'Add instances (A–B)', desc: 'Tap + Instance. Ideas A and B stack with the first.', hint: 'One tap adds batch', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
       { title: 'Add instances (C–D)', desc: 'Tap + Instance for C and D.', hint: 'Still stacked', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
       { title: 'Add instances (E–F)', desc: 'Tap + Instance for E and F.', hint: 'Build branches', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
       { title: 'Add instances (G–I)', desc: 'Tap + Instance for G, H, and I.', hint: 'All stacked; layout next', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Auto layout', desc: 'Tap Auto layout to spread all instances into the radial configuration.', hint: 'Nodes fan out', highlight: { x: 520, y: 140, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
-      { title: 'Add connectors', desc: 'Tap Connector once per branch to add lines. They overlap until auto layout.', hint: 'One tap per connector', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
-      { title: 'Auto layout', desc: 'Tap Auto layout to spread connectors to their respective cells.', hint: 'Lines connect correctly', highlight: { x: 520, y: 180, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
-      { title: 'Fill outer bubbles', desc: 'Tap Fill and pick a color for all outer branch nodes.', hint: 'Same color for all bubbles', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill-outer' },
-      { title: 'Fill inner circle', desc: 'Pick a color for the central node.', hint: 'Contrast or match', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill-inner' },
-      { title: 'See example', desc: 'Tap See example to fill in PM terms (OKR, KPI, Agile, etc.).', hint: 'Product Management mindmap', highlight: { x: 520, y: 220, w: 100, h: 36 }, hotspotId: 'fig-style' },
+      { title: 'Spread branches', desc: 'Tap Auto layout to spread all branches into a circle.', hint: 'Nodes fan out', highlight: { x: 520, y: 140, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
+      { title: 'Add connector lines', desc: 'Tap Connector 3 times to add lines from center to branches.', hint: '3 taps adds all lines', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
+      { title: 'Spread connector lines', desc: 'Tap Auto layout to connect lines to branches.', hint: 'Lines connect correctly', highlight: { x: 520, y: 180, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
+      { title: 'Color outer nodes', desc: 'Pick a color for all outer branch nodes.', hint: 'Same color for all bubbles', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill-outer' },
+      { title: 'Color center node', desc: 'Pick a color for the central node.', hint: 'Contrast or match', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill-inner' },
+      { title: 'See example', desc: 'Tap See example to fill in design terms (Brand, Components, etc.).', hint: 'Design system mindmap', highlight: { x: 520, y: 220, w: 100, h: 36 }, hotspotId: 'fig-style' },
     ],
   },
 }
@@ -319,7 +319,7 @@ function HotspotButton({
   )
 }
 
-const TASK_ORDER = ['procreateSky', 'figmaBusinessCard', 'figmaMindmap'] as const
+const TASK_ORDER = ['figmaBusinessCard', 'procreateSky', 'figmaMindmap'] as const
 const TASK_LABELS: Record<string, string> = {
   procreateSky: 'Your first painting!',
   figmaBusinessCard: 'Design a business card',
@@ -384,7 +384,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const hasComponent = isMindmap && stepIdx >= 3
   const instanceCount = isMindmap && stepIdx >= 3 ? (stepIdx === 3 ? 1 : stepIdx === 4 ? 3 : stepIdx === 5 ? 5 : stepIdx === 6 ? 7 : 9) : 0
   const hasInstanceLayout = isMindmap && stepIdx >= 8
-  const connectorCount = isMindmap && stepIdx >= 9 ? (stepIdx === 9 ? mmConnectorCount : 9) : 0
+  const connectorCount = isMindmap && stepIdx >= 9 ? (stepIdx === 9 ? Math.min(mmConnectorCount * 3, 9) : 9) : 0
   const hasConnectors = connectorCount > 0
   const hasAutoLayout = isMindmap && stepIdx >= 10
   const hasFillOuter = isMindmap && stepIdx >= 11
@@ -419,7 +419,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
             <div className="text-white/50 text-xs font-medium shrink-0">Layers</div>
             {hasCentralFrame && (
               <>
-                <div className="h-6 px-1.5 rounded bg-[#34c759]/15 text-[#34c759] text-[10px] flex items-center">Project</div>
+                <div className="h-6 px-1.5 rounded bg-[#34c759]/15 text-[#34c759] text-[10px] flex items-center">Design System</div>
                 {instanceCount > 0 && Array.from({ length: instanceCount }).map((_, i) => (
                   <div key={i} className="h-5 pl-3 pr-1.5 rounded bg-white/5 text-white/50 text-[10px] flex items-center">Idea {String.fromCharCode(65 + i)}</div>
                 ))}
@@ -443,7 +443,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
                     <HotspotButton id="fig-text" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
                       <div className={`rounded-full px-6 py-3 ${hasStyle ? 'px-16 py-8 text-xl' : 'px-6 py-3 text-base'} ${hasComponent && !hasFillInner ? `border-2 border-[#8b5cf6] ${hasAutoLayout ? 'bg-[#4c1d95]' : 'bg-[#8b5cf6]/20'}` : !hasFillInner ? `border border-white/30 ${hasAutoLayout ? 'bg-[#4a4a4a]' : 'bg-white/10'}` : ''} ${hasStyle ? 'bg-[#1a5c2e] border-2 border-[#34c759]/60' : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`} style={hasFillInner && mmFillInner ? { backgroundColor: MM_FILL_COLORS.find((c) => c.id === mmFillInner)?.bg ?? '#4c1d95', border: `2px solid ${MM_FILL_COLORS.find((c) => c.id === mmFillInner)?.border ?? '#7c3aed'}` } : undefined}>
-                        {hasText && <span className="text-white font-medium">{hasStyle ? 'Product Mgmt' : 'Project'}</span>}
+                        {hasText && <span className="text-white font-medium">{hasStyle ? 'Design System' : 'Design System'}</span>}
                         {!hasText && <span className="text-white/40">Frame</span>}
                       </div>
                     </HotspotButton>
@@ -465,7 +465,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                   )
                 })()}
                 {hasStyle && (() => {
-                  const pmLabels = ['OKR', 'KPI', 'MVP', 'ROI', 'PRD', 'GTM', 'Agile', 'Roadmap', 'Jira']
+                  const pmLabels = ['Brand', 'Components', 'Typography', 'Color', 'Spacing', 'Layout', 'Icons', 'Tokens', 'Grid']
                   const pmStyles = [
                     { bg: 'rgba(59,130,246,0.95)', border: 'rgba(96,165,250,0.8)' },
                     { bg: 'rgba(59,130,246,0.95)', border: 'rgba(96,165,250,0.8)' },
@@ -485,7 +485,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                         ))}
                       </svg>
                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-                        <div className="rounded-full px-8 py-4 bg-[#1a5c2e] border-2 border-[#34c759]/60 text-white font-bold text-xl">Product Mgmt</div>
+                        <div className="rounded-full px-8 py-4 bg-[#1a5c2e] border-2 border-[#34c759]/60 text-white font-bold text-xl">Design System</div>
                       </div>
                       {pmLabels.map((t, i) => (
                         <div key={t} className="absolute rounded-full px-5 py-2.5 text-sm font-medium text-white whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10" style={{ left: RADIAL_LAYOUT_POS[i]!.left, top: RADIAL_LAYOUT_POS[i]!.top }}>
@@ -515,8 +515,8 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
             <HotspotButton id="fig-autolayout" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-autolayout' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Auto layout</div>
             </HotspotButton>
-            <HotspotButton id="fig-connector" currentHotspotId={currentHotspotId} onStepComplete={stepIdx === 9 ? () => { if (mmConnectorCount < 8) setMmConnectorCount((c) => c + 1); else { setMmConnectorCount(9); onStepComplete(); } } : onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-connector' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Connector {stepIdx === 9 && mmConnectorCount > 0 ? `(${mmConnectorCount}/9)` : ''}</div>
+            <HotspotButton id="fig-connector" currentHotspotId={currentHotspotId} onStepComplete={stepIdx === 9 ? () => { if (mmConnectorCount < 2) setMmConnectorCount((c) => c + 1); else { setMmConnectorCount(3); onStepComplete(); } } : onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-connector' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Connector {stepIdx === 9 && mmConnectorCount > 0 ? `(${mmConnectorCount}/3)` : ''}</div>
             </HotspotButton>
             <HotspotButton id="fig-autolayout" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-autolayout' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Auto layout</div>
@@ -524,7 +524,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
             {stepIdx === 11 && (
               <div className="relative">
                 <HotspotButton id="fig-fill-outer" currentHotspotId={currentHotspotId} onStepComplete={() => setMmFillOuterOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
-                  <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-outer' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Fill outer <span className="text-xs">▼</span></div>
+                  <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-outer' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Color outer <span className="text-xs">▼</span></div>
                 </HotspotButton>
                 {mmFillOuterOpen && (
                   <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
@@ -541,7 +541,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
             {stepIdx === 12 && (
               <div className="relative">
                 <HotspotButton id="fig-fill-inner" currentHotspotId={currentHotspotId} onStepComplete={() => setMmFillInnerOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
-                  <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-inner' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Fill inner <span className="text-xs">▼</span></div>
+                  <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-inner' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Color center <span className="text-xs">▼</span></div>
                 </HotspotButton>
                 {mmFillInnerOpen && (
                   <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
