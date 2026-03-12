@@ -1,12 +1,13 @@
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
+import { PageShell } from '@/components/PageShell'
 import './globals.css'
 
 export const metadata: Metadata = {
   title: {
-    default: 'Game Hub',
-    template: '%s | Game Hub'
+    default: 'sfjc.dev',
+    template: '%s | sfjc.dev'
   },
   description: 'Collection of fun brain games built with Next.js',
   keywords: ['games', 'brain games', 'puzzles', 'math games'],
@@ -28,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        <PageShell>{children}</PageShell>
         <Analytics />
         <SpeedInsights />
       </body>
