@@ -1,8 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600&display=swap');
 @import "tailwindcss";
+
+/* Ink & Paper design tokens */
+:root {
+  --ink-bg: #faf8f5;
+  --ink-text: #1a1a1a;
+  --ink-muted: #6b6b6b;
+  --ink-accent: #2563eb;
+  --ink-border: #e5e2de;
+  --ink-paper: #f5f3ef;
+}
+
+@theme {
+  --color-ink-bg: #faf8f5;
+  --color-ink-text: #1a1a1a;
+  --color-ink-muted: #6b6b6b;
+  --color-ink-accent: #2563eb;
+  --color-ink-border: #e5e2de;
+  --color-ink-paper: #f5f3ef;
+  --font-lora: 'Lora', serif;
+  --font-charter: Charter, 'Bitstream Charter', Georgia, serif;
+}
 
 @layer base {
   body {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: Charter, 'Bitstream Charter', Georgia, serif;
     min-height: 100vh;
     margin: 0;
     padding: 0;
