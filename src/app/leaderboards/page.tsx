@@ -9,40 +9,38 @@ const features = [
 
 export default function LeaderboardsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <header className="text-center mb-12">
-          <Link href="/" className="inline-block mb-4 text-white hover:text-gray-300 text-2xl font-bold" aria-label="Back to home">
-            ← Home
-          </Link>
-          <h1 className="text-5xl font-bold text-white mb-4">🏆 Leaderboards</h1>
-          <p className="text-xl text-gray-300">See the best players and compete for the top spot</p>
-        </header>
+    <div className="max-w-2xl">
+      <h1 className="mb-6 font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>
+        🏆 Leaderboards
+      </h1>
 
-        {/* Coming Soon Message */}
-        <div className="max-w-2xl mx-auto text-center">
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-            <div className="text-6xl mb-6">🚧</div>
-            <h2 className="text-3xl font-bold text-white mb-4">Coming Soon!</h2>
-            <p className="text-gray-300 mb-6 text-lg">
-              Leaderboards are currently in development. Soon you&apos;ll be able to:
-            </p>
-            <ul className="text-left text-gray-300 space-y-2 mb-8">
-              {features.map((feature, index) => (
-                <li key={index} className="flex items-center">
-                  <span className="text-green-400 mr-2">✓</span>
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <Link href="/games/24">
-              <button className="action-btn primary">
-                <span>🎯 Play 24 Game</span>
-              </button>
-            </Link>
-          </div>
-        </div>
+      <div
+        className="rounded-lg border p-8"
+        style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+      >
+        <div className="mb-6 text-5xl">🚧</div>
+        <h2 className="mb-4 font-lora text-xl font-semibold" style={{ color: 'var(--ink-text)' }}>
+          Coming Soon!
+        </h2>
+        <p className="mb-6" style={{ color: 'var(--ink-muted)' }}>
+          Leaderboards are currently in development. Soon you&apos;ll be able to:
+        </p>
+        <ul className="mb-8 space-y-2" style={{ color: 'var(--ink-text)' }}>
+          {features.map((feature, index) => (
+            <li key={index} className="flex items-center">
+              <span className="mr-2" style={{ color: 'var(--ink-accent)' }}>✓</span>
+              {feature}
+            </li>
+          ))}
+        </ul>
+        <Link href="/games/24">
+          <button
+            className="rounded-lg px-6 py-2 text-white transition-colors hover:opacity-95"
+            style={{ backgroundColor: 'var(--ink-accent)' }}
+          >
+            🎯 Play 24 Game
+          </button>
+        </Link>
       </div>
     </div>
   )

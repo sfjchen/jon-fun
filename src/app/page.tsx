@@ -1,10 +1,10 @@
 'use client'
 
-import Link from 'next/link'
-import Image from 'next/image'
 import { useState } from 'react'
+import { GameCard } from '@/components/GameCard'
+import type { GameCardGame } from '@/components/GameCard'
 
-const items = [
+const items: GameCardGame[] = [
   { id: 'tmr', title: 'TMR System', description: 'Targeted Memory Reactivation for enhanced learning and memory consolidation', icon: '🔊', href: '/games/tmr', available: true },
   { id: 'daily-log', title: '1 Sentence Everyday', description: 'Log one sentence (or more) per day; view history, calendar, and export', icon: '📝', href: '/games/daily-log', available: true },
   { id: 'pear-navigator', title: 'Pear Navigator', description: 'Step-by-step guide with AI-style highlight overlay for creative apps (Procreate, Figma)', icon: '🍐', href: '/games/pear-navigator', available: true },
@@ -31,105 +31,62 @@ export default function Home() {
   const [showComingSoon, setShowComingSoon] = useState(false)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <header className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-white mb-4">Game Hub</h1>
-          <p className="text-xl text-gray-300">Collection of fun brain games</p>
-        </header>
+    <>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl">
+        {items.map((item) => (
+          <GameCard key={item.id} game={item} onComingSoonClick={() => setShowComingSoon(true)} />
+        ))}
+      </div>
 
-        {/* Games Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {items.map((item) => (
-            <GameCard key={item.id} game={item} onComingSoonClick={() => setShowComingSoon(true)} />
-          ))}
-        </div>
+      {showComingSoon && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div
+            className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg border p-8"
+            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+          >
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>
+                🚧 Coming Soon
+              </h2>
+              <button
+                onClick={() => setShowComingSoon(false)}
+                className="text-xl font-bold hover:opacity-70"
+                style={{ color: 'var(--ink-text)' }}
+                aria-label="Close modal"
+              >
+                ×
+              </button>
+            </div>
 
-        {/* Coming Soon Modal */}
-        {showComingSoon && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-3xl font-bold text-white">🚧 Coming Soon</h2>
-                <button
-                  onClick={() => setShowComingSoon(false)}
-                  className="text-white hover:text-gray-300 text-2xl font-bold"
-                  aria-label="Close modal"
+            <p className="mb-6" style={{ color: 'var(--ink-muted)' }}>
+              We&apos;re working hard to bring you these exciting new features:
+            </p>
+
+            <div className="mb-8 grid grid-cols-1 gap-3 md:grid-cols-2">
+              {futureFeatures.map((feature, index) => (
+                <div
+                  key={index}
+                  className="flex items-start rounded-lg border p-3"
+                  style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}
                 >
-                  ×
-                </button>
-              </div>
+                  <span className="mr-3 mt-1 text-lg" style={{ color: 'var(--ink-accent)' }}>•</span>
+                  <span className="text-sm" style={{ color: 'var(--ink-text)' }}>{feature}</span>
+                </div>
+              ))}
+            </div>
 
-              <p className="text-gray-300 mb-6 text-lg">
-                We&apos;re working hard to bring you these exciting new features:
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {futureFeatures.map((feature, index) => (
-                  <div key={index} className="flex items-start p-3 bg-white/5 rounded-lg border border-white/10">
-                    <span className="text-blue-400 mr-3 mt-1 text-lg">•</span>
-                    <span className="text-white text-sm">{feature}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-8 text-center">
-                <button
-                  onClick={() => setShowComingSoon(false)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
-                >
-                  Got it!
-                </button>
-              </div>
+            <div className="text-center">
+              <button
+                onClick={() => setShowComingSoon(false)}
+                className="rounded-lg px-6 py-2 text-white transition-colors hover:opacity-95"
+                style={{ backgroundColor: 'var(--ink-accent)' }}
+              >
+                Got it!
+              </button>
             </div>
           </div>
-        )}
-
-      </div>
-    </div>
-  )
-}
-
-interface GameCardProps {
-  game: { id: string; title: string; description: string; icon: string; href: string; available: boolean }
-  onComingSoonClick: () => void
-}
-
-function GameCard({ game, onComingSoonClick }: GameCardProps) {
-  const CardContent = () => (
-    <div className="text-center">
-      <div className="mb-4 flex justify-center items-center h-16">
-        {game.icon.startsWith('/') ? (
-          <Image src={game.icon} alt={game.title} width={64} height={64} className="h-14 w-14 sm:h-16 sm:w-16 object-contain drop-shadow-lg" priority />
-        ) : (
-          <span className="text-5xl leading-none">{game.icon}</span>
-        )}
-      </div>
-      <h2 className="text-2xl font-bold text-white mb-2">{game.title}</h2>
-      <p className="text-gray-300 mb-4 line-clamp-2">{game.description}</p>
-      <div className="text-sm text-gray-500">
-        {game.available ? 'Click to play →' : 'Click to see features →'}
-      </div>
-    </div>
-  )
-
-  if (!game.available) {
-    return (
-      <button
-        onClick={onComingSoonClick}
-        className="w-full bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300 transform hover:scale-105 text-left"
-      >
-        <CardContent />
-      </button>
-    )
-  }
-
-  return (
-    <Link href={game.href} className="group">
-      <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 transform hover:scale-105 border border-white/20">
-        <CardContent />
-      </div>
-    </Link>
+        </div>
+      )}
+    </>
   )
 }
