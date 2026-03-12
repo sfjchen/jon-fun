@@ -36,10 +36,6 @@ export default function DailyLearnManager() {
   const [restoreKey, setRestoreKey] = useState('')
   const [restoring, setRestoring] = useState(false)
   const [restoreResult, setRestoreResult] = useState<string | null>(null)
-  const [discoveredKeys, setDiscoveredKeys] = useState<string[] | null>(null)
-  const [discoverError, setDiscoverError] = useState<string | null>(null)
-  const [discovering, setDiscovering] = useState(false)
-  const [adminKey, setAdminKey] = useState('')
 
   const refresh = useCallback(() => {
     setEntries(loadEntries())
@@ -375,76 +371,6 @@ export default function DailyLearnManager() {
               {restoreResult}
             </p>
           )}
-          <div className="mt-4 pt-4 border-t border-white/10">
-            <p className="text-gray-400 text-sm mb-2">If you never set a sync key, data may be under a device ID. Admin key required.</p>
-            <div className="flex gap-2 items-center flex-wrap">
-              <input
-                type="password"
-                value={adminKey}
-                onChange={(e) => { setAdminKey(e.target.value); setDiscoveredKeys(null) }}
-                placeholder="Admin key"
-                className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-32"
-              />
-              <button
-                type="button"
-                onClick={async () => {
-                  setDiscovering(true)
-                  setDiscoveredKeys(null)
-                  setDiscoverError(null)
-                  try {
-                    const res = await fetch(`/api/daily-learn/admin/keys?key=${encodeURIComponent(adminKey)}`)
-                    const data = (await res.json()) as { userIds?: string[]; error?: string }
-                    if (res.status === 401) setDiscoverError('Invalid admin key')
-                    else if (data.userIds?.length) setDiscoveredKeys(data.userIds)
-                    else setDiscoveredKeys([])
-                  } catch {
-                    setDiscoverError('Request failed')
-                  } finally {
-                    setDiscovering(false)
-                  }
-                }}
-                disabled={discovering || !adminKey.trim()}
-                className="text-blue-400 hover:text-blue-300 text-sm underline disabled:opacity-50"
-              >
-                {discovering ? 'Listing…' : 'List keys'}
-              </button>
-            </div>
-            {discoverError && <p className="mt-2 text-amber-400 text-sm">{discoverError}</p>}
-            {discoveredKeys && (
-              <div className="mt-2 space-y-1">
-                {discoveredKeys.length === 0 && !discoverError ? (
-                  <p className="text-amber-400/90 text-sm">No entries in database. Data was never synced.</p>
-                ) : discoveredKeys.length > 0 ? (
-                  discoveredKeys.map((uid) => (
-                    <div key={uid} className="flex items-center gap-2">
-                      <code className="text-gray-300 text-sm bg-white/5 px-2 py-0.5 rounded">{uid}</code>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          setRestoreKey(uid)
-                          setRestoring(true)
-                          setRestoreResult(null)
-                          const { restored, error } = await restoreFromServer(uid)
-                          setRestoring(false)
-                          if (error) setRestoreResult(error)
-                          else if (restored > 0) {
-                            setRestoreResult(`Restored ${restored} entries`)
-                            setSyncKeyInput(uid)
-                            setDiscoveredKeys(null)
-                            refresh()
-                          } else setRestoreResult('No entries found for that key')
-                        }}
-                        disabled={restoring}
-                        className="text-blue-400 hover:text-blue-300 text-sm underline disabled:opacity-50"
-                      >
-                        Restore
-                      </button>
-                    </div>
-                  ))
-                ) : null}
-              </div>
-            )}
-          </div>
         </div>
         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-6">
           <h2 className="text-2xl font-bold text-white mb-4">Cross-Device Sync</h2>
