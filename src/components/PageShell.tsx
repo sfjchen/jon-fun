@@ -9,14 +9,23 @@ type PageShellProps = {
   showBack?: boolean
 }
 
+function isFullBleed(pathname: string): boolean {
+  return (
+    pathname === '/games/pear-navigator' ||
+    pathname.startsWith('/games/poker/lobby/') ||
+    pathname.startsWith('/games/poker/table/')
+  )
+}
+
 export function PageShell({ children, title, showBack }: PageShellProps) {
   const pathname = usePathname()
   const isHome = pathname === '/'
   const showBackLink = showBack ?? !isHome
+  const fullBleed = isFullBleed(pathname)
 
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen overflow-x-hidden"
       style={{ backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
     >
       <header className="border-b px-4 py-4 md:py-6" style={{ borderColor: 'var(--ink-border)' }}>
@@ -39,7 +48,13 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
           )}
         </div>
       </header>
-      <main className={`mx-auto max-w-6xl px-4 ${isHome ? 'py-8' : 'py-6'}`}>
+      <main
+        className={
+          fullBleed
+            ? 'w-full max-w-none px-0'
+            : `mx-auto max-w-6xl px-4 ${isHome ? 'py-8' : 'py-6'}`
+        }
+      >
         {title && !isHome && (
           <h1 className="mb-6 font-lora text-2xl font-semibold">
             {title}

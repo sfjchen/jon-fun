@@ -945,7 +945,7 @@ export default function PearNavigator() {
   const MockComponent = task ? MOCK_COMPONENTS[task.mock] : null
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-gradient-to-br from-[#0d0d0d] via-[#1a1a1a] to-[#0d0d0d] flex flex-col">
+    <div className="w-full min-h-[calc(100vh-5rem)] overflow-hidden bg-gradient-to-br from-[#0d0d0d] via-[#1a1a1a] to-[#0d0d0d] flex flex-col">
       <div className="flex-none flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3">
           <span className="w-20" />
           <span className="text-lg sm:text-xl font-semibold text-white">
