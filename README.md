@@ -345,6 +345,7 @@ Running log of project work. Update this section when making significant changes
 
 **2025-03**
 
+- **1 Sentence Everyday**: Cmd+Enter to submit; Esc to cancel/leave textarea (today box blurs; edit modal closes)
 - **Pear Navigator**: Mock tools kept complex/jargony (Brush Library, Dynamics, Instance, Auto layout, Fill) to show overlay value; Business card first; designer mindmap (Brand, Components); 3 connector taps
 - **heavy-lift subagent**: `.cursor/agents/heavy-lift.md` — Cursor subagent for research, exploration, parallel analyses, critiques; one task per invocation to keep main context clean
 - **Pear Navigator business card**: Template dropdown first (Minimal, Classic, Modern); separate fill dropdowns for background + accent; Text adds textbox per step—overlay prompts name/role/email with Done

@@ -131,6 +131,10 @@ export default function DailyLearnManager() {
         <textarea
           value={editingText}
           onChange={(e) => setEditingText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && e.metaKey) { e.preventDefault(); handleSaveEdit() }
+            if (e.key === 'Escape') { e.preventDefault(); setEditingDate(null); setEditingText('') }
+          }}
           className="w-full min-h-[100px] px-4 py-3 rounded-lg bg-white/5 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           autoFocus
         />
@@ -230,6 +234,10 @@ export default function DailyLearnManager() {
             <textarea
               value={todayText}
               onChange={(e) => setTodayText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.metaKey) { e.preventDefault(); handleSubmit() }
+                if (e.key === 'Escape') { e.preventDefault(); (e.target as HTMLTextAreaElement).blur() }
+              }}
               placeholder="One sentence (or more) about what you learned today"
               className="w-full min-h-[120px] px-4 py-3 rounded-lg bg-white/5 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-label="Today's entry"
