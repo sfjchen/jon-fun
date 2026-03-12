@@ -36,6 +36,8 @@ export default function DailyLearnManager() {
   const [restoreKey, setRestoreKey] = useState('')
   const [restoring, setRestoring] = useState(false)
   const [restoreResult, setRestoreResult] = useState<string | null>(null)
+  const [discoveredKeys, setDiscoveredKeys] = useState<string[] | null>(null)
+  const [discovering, setDiscovering] = useState(false)
 
   const refresh = useCallback(() => {
     setEntries(loadEntries())
@@ -371,6 +373,64 @@ export default function DailyLearnManager() {
               {restoreResult}
             </p>
           )}
+          <div className="mt-4 pt-4 border-t border-white/10">
+            <p className="text-gray-400 text-sm mb-2">If you never set a sync key, data may be under a device ID.</p>
+            <button
+              type="button"
+              onClick={async () => {
+                setDiscovering(true)
+                setDiscoveredKeys(null)
+                try {
+                  const res = await fetch('/api/daily-learn/admin/keys')
+                  const data = (await res.json()) as { userIds?: string[]; error?: string }
+                  if (data.userIds?.length) setDiscoveredKeys(data.userIds)
+                  else setDiscoveredKeys([])
+                } catch {
+                  setDiscoveredKeys([])
+                } finally {
+                  setDiscovering(false)
+                }
+              }}
+              disabled={discovering}
+              className="text-blue-400 hover:text-blue-300 text-sm underline disabled:opacity-50"
+            >
+              {discovering ? 'Listing…' : 'List all keys in database'}
+            </button>
+            {discoveredKeys && (
+              <div className="mt-2 space-y-1">
+                {discoveredKeys.length === 0 ? (
+                  <p className="text-amber-400/90 text-sm">No entries in database. Data was never synced.</p>
+                ) : (
+                  discoveredKeys.map((uid) => (
+                    <div key={uid} className="flex items-center gap-2">
+                      <code className="text-gray-300 text-sm bg-white/5 px-2 py-0.5 rounded">{uid}</code>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setRestoreKey(uid)
+                          setRestoring(true)
+                          setRestoreResult(null)
+                          const { restored, error } = await restoreFromServer(uid)
+                          setRestoring(false)
+                          if (error) setRestoreResult(error)
+                          else if (restored > 0) {
+                            setRestoreResult(`Restored ${restored} entries`)
+                            setSyncKeyInput(uid)
+                            setDiscoveredKeys(null)
+                            refresh()
+                          } else setRestoreResult('No entries found for that key')
+                        }}
+                        disabled={restoring}
+                        className="text-blue-400 hover:text-blue-300 text-sm underline disabled:opacity-50"
+                      >
+                        Restore
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
         </div>
         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-6">
           <h2 className="text-2xl font-bold text-white mb-4">Cross-Device Sync</h2>

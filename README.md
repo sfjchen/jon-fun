@@ -239,6 +239,8 @@ src/
 
 **`POST /api/daily-learn/entries`**: Upsert entries – Body: `{ userId, entries: [{ date, text }] }`
 
+**`GET /api/daily-learn/admin/keys`**: List distinct user_ids for recovery; optional `?key=DAILY_LEARN_ADMIN_SECRET`
+
 **`POST /api/tmr/study`**: Sync TMR study session to DB – Body: `{ userId, session }`
 
 **`POST /api/tmr/sleep`**: Sync TMR sleep session to DB – Body: `{ userId, session }`
@@ -301,6 +303,7 @@ src/
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `TMR_ADMIN_SECRET` (optional): secret for `/admin/tmr` and `GET /api/tmr/admin/entries`
+- `DAILY_LEARN_ADMIN_SECRET` (optional): secret for `GET /api/daily-learn/admin/keys`; if unset, endpoint is open
 
 **Production (Vercel):**
 
@@ -345,6 +348,7 @@ Running log of project work. Update this section when making significant changes
 
 **2025-03**
 
+- **1 Sentence Everyday**: Recovery flow—"List all keys in database" on Sync page when restore fails; admin keys API for lost sync key
 - **1 Sentence Everyday**: Cmd+Enter to submit; Esc to cancel/leave textarea (today box blurs; edit modal closes)
 - **Pear Navigator**: Mock tools kept complex/jargony (Brush Library, Dynamics, Instance, Auto layout, Fill) to show overlay value; Business card first; designer mindmap (Brand, Components); 3 connector taps
 - **heavy-lift subagent**: `.cursor/agents/heavy-lift.md` — Cursor subagent for research, exploration, parallel analyses, critiques; one task per invocation to keep main context clean
