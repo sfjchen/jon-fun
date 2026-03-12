@@ -253,7 +253,7 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
                       <button
                         onClick={handleUpdateTimer}
                         disabled={updatingTimer}
-                        className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white px-3 py-1 rounded text-sm"
+                        className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white min-h-11 py-2 px-4 rounded text-sm"
                       >
                         {updatingTimer ? '...' : 'Update'}
                       </button>

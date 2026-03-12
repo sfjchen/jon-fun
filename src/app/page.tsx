@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 import { GameCard } from '@/components/GameCard'
 import type { GameCardGame } from '@/components/GameCard'
@@ -46,7 +47,7 @@ export default function Home() {
           >
             <div className="mb-6 flex items-center justify-between">
               <h2 className="font-lora text-2xl font-semibold flex items-center gap-2" style={{ color: 'var(--ink-text)' }}>
-                <img src="/doodles/coming-soon.svg" alt="" className="h-8 w-8" />
+                <Image src="/doodles/coming-soon.svg" alt="" width={32} height={32} className="h-8 w-8" />
                 Coming Soon
               </h2>
               <button

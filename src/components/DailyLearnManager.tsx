@@ -163,7 +163,7 @@ export default function DailyLearnManager() {
                   if (month === 0) { setCalMonth(11); setCalYear((y) => y - 1) }
                   else setCalMonth((m) => m - 1)
                 }}
-                className="px-2 py-1 hover:opacity-80"
+                className="min-h-11 min-w-11 px-4 py-2 hover:opacity-80 flex items-center justify-center"
                 style={{ color: 'var(--ink-text)' }}
               >
                 ←
@@ -177,7 +177,7 @@ export default function DailyLearnManager() {
                   if (month === 11) { setCalMonth(0); setCalYear((y) => y + 1) }
                   else setCalMonth((m) => m + 1)
                 }}
-                className="px-2 py-1 hover:opacity-80"
+                className="min-h-11 min-w-11 px-4 py-2 hover:opacity-80 flex items-center justify-center"
                 style={{ color: 'var(--ink-text)' }}
               >
                 →
