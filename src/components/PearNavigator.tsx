@@ -6,7 +6,7 @@ import React, { useState, useCallback, useRef, useEffect, useImperativeHandle, f
 const BRUSH_BLUE = '#60a5fa'
 const BRUSH_YELLOW = '#fbbf24'
 
-export type SkyPaintCanvasHandle = { exportAsPng: () => Promise<Blob | null> }
+export type SkyPaintCanvasHandle = { exportAs: (format: 'png' | 'jpeg') => Promise<Blob | null> }
 
 const SkyPaintCanvas = forwardRef<SkyPaintCanvasHandle, {
   enabled: boolean
@@ -157,7 +157,7 @@ const SkyPaintCanvas = forwardRef<SkyPaintCanvasHandle, {
   )
 
   useImperativeHandle(ref, () => ({
-    exportAsPng: async () => {
+    exportAs: async (format: 'png' | 'jpeg') => {
       const blue = blueRef.current
       const yellow = yellowRef.current
       if (!blue || !yellow || !containerRef.current) return null
@@ -172,7 +172,9 @@ const SkyPaintCanvas = forwardRef<SkyPaintCanvasHandle, {
       if (blendMode && blendMode !== 'normal') ctx.globalCompositeOperation = blendMode
       ctx.drawImage(yellow, 0, 0)
       ctx.globalCompositeOperation = 'source-over'
-      return new Promise<Blob | null>((resolve) => out.toBlob((b) => resolve(b), 'image/png'))
+      const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png'
+      const quality = format === 'jpeg' ? 0.92 : undefined
+      return new Promise<Blob | null>((resolve) => out.toBlob((b) => resolve(b), mime, quality))
     },
   }), [blendMode])
 
@@ -226,10 +228,10 @@ const TASKS: Record<string, Task> = {
       { title: 'Paint 1 stroke with blue', desc: 'Paint 1 stroke with blue. You\'ll mix with yellow next to see blending.', hint: 'Use the blue brush first', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
       { title: 'Select yellow', desc: 'Tap the yellow color swatch. Mix with blue to see blending.', hint: 'Overlap blue and yellow for blend effect', highlight: { x: 520, y: 100, w: 48, h: 48 }, hotspotId: 'proc-yellow' },
       { title: 'Paint with yellow', desc: 'Paint 1+ strokes with yellow. Overlap with blue to mix and see the blending effect.', hint: 'Mix blue + yellow to see blend modes', highlight: { x: 120, y: 80, w: 280, h: 200 }, hotspotId: 'proc-canvas' },
-      { title: 'Open blend menu', desc: 'Select the layer and tap the blend mode dropdown (Normal ▼).', hint: 'Blend modes affect how layers combine', highlight: { x: 520, y: 60, w: 80, h: 28 }, hotspotId: 'proc-blend' },
-      { title: 'Select blend mode', desc: 'Tap Normal, Multiply, Overlay, or Screen.', hint: 'Overlay adds contrast; Multiply darkens', highlight: { x: 520, y: 100, w: 80, h: 120 }, hotspotId: 'proc-blend-overlay' },
+      { title: 'Open blend menu', desc: 'Select the layer and tap the blend mode dropdown.', hint: 'Blend modes affect how layers combine', highlight: { x: 520, y: 60, w: 80, h: 28 }, hotspotId: 'proc-blend' },
+      { title: 'Select blend mode', desc: 'Tap Multiply, Overlay, or Screen.', hint: 'Overlay adds contrast; Multiply darkens', highlight: { x: 520, y: 100, w: 80, h: 120 }, hotspotId: 'proc-blend-overlay' },
       { title: 'Open export menu', desc: 'Tap the wrench icon to open Actions. Tap Share.', hint: 'Share exports your artwork', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export' },
-      { title: 'Save your painting', desc: 'Tap PNG, PSD, or Procreate to download your painting.', hint: 'Exports as PNG image', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export-format' },
+      { title: 'Save your painting', desc: 'Tap PNG or JPG to download your painting.', hint: 'Both formats work', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'proc-export-format' },
     ],
   },
   figmaBusinessCard: {
@@ -257,8 +259,8 @@ const TASKS: Record<string, Task> = {
       { title: 'Add instances (C–D)', desc: 'Tap + Instance for C and D.', hint: 'Still stacked', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
       { title: 'Add instances (E–F)', desc: 'Tap + Instance for E and F.', hint: 'Build branches', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
       { title: 'Add instances (G–I)', desc: 'Tap + Instance for G, H, and I.', hint: 'All stacked; layout next', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Layout instances', desc: 'Tap Layout to spread all instances into the radial configuration.', hint: 'Nodes fan out', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-layout' },
-      { title: 'Add connectors', desc: 'Tap Connector to add lines. They overlap until auto layout.', hint: 'Links center to branches', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
+      { title: 'Auto layout', desc: 'Tap Auto layout to spread all instances into the radial configuration.', hint: 'Nodes fan out', highlight: { x: 520, y: 140, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
+      { title: 'Add connectors', desc: 'Tap Connector once per branch to add lines. They overlap until auto layout.', hint: 'One tap per connector', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
       { title: 'Auto layout', desc: 'Tap Auto layout to spread connectors to their respective cells.', hint: 'Lines connect correctly', highlight: { x: 520, y: 180, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
       { title: 'Fill outer bubbles', desc: 'Tap Fill and pick a color for all outer branch nodes.', hint: 'Same color for all bubbles', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill-outer' },
       { title: 'Fill inner circle', desc: 'Pick a color for the central node.', hint: 'Contrast or match', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill-inner' },
@@ -317,7 +319,7 @@ function HotspotButton({
   )
 }
 
-const TASK_ORDER = ['figmaMindmap', 'figmaBusinessCard', 'procreateSky'] as const
+const TASK_ORDER = ['procreateSky', 'figmaBusinessCard', 'figmaMindmap'] as const
 const TASK_LABELS: Record<string, string> = {
   procreateSky: 'Your first painting!',
   figmaBusinessCard: 'Design a business card',
@@ -365,8 +367,10 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const [mmFillInner, setMmFillInner] = useState<string>('teal')
   const [mmFillOuterOpen, setMmFillOuterOpen] = useState(false)
   const [mmFillInnerOpen, setMmFillInnerOpen] = useState(false)
+  const [mmConnectorCount, setMmConnectorCount] = useState(0)
   useEffect(() => {
     if (taskId === 'figmaBusinessCard' && stepIdx !== 3 && stepIdx !== 4 && stepIdx !== 5) setBcTextInput(null)
+    if (taskId === 'figmaMindmap' && stepIdx !== 9) setMmConnectorCount(0)
   }, [taskId, stepIdx])
   const isMindmap = taskId === 'figmaMindmap'
   const isBusinessCard = taskId === 'figmaBusinessCard'
@@ -374,18 +378,22 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const hasName = isBusinessCard && stepIdx >= 3
   const hasRole = isBusinessCard && stepIdx >= 4
   const hasEmail = isBusinessCard && stepIdx >= 5
-  const hasAccent = isBusinessCard && stepIdx >= 6
+  const hasAccent = isBusinessCard && stepIdx >= 2 && bcTemplate !== 'minimal'
   const hasCentralFrame = isMindmap && stepIdx >= 1
   const hasText = isMindmap && stepIdx >= 2
   const hasComponent = isMindmap && stepIdx >= 3
   const instanceCount = isMindmap && stepIdx >= 3 ? (stepIdx === 3 ? 1 : stepIdx === 4 ? 3 : stepIdx === 5 ? 5 : stepIdx === 6 ? 7 : 9) : 0
   const hasInstanceLayout = isMindmap && stepIdx >= 8
-  const hasConnectors = isMindmap && stepIdx >= 9
+  const connectorCount = isMindmap && stepIdx >= 9 ? (stepIdx === 9 ? mmConnectorCount : 9) : 0
+  const hasConnectors = connectorCount > 0
   const hasAutoLayout = isMindmap && stepIdx >= 10
   const hasFillOuter = isMindmap && stepIdx >= 11
   const hasFillInner = isMindmap && stepIdx >= 12
   const hasStyle = isMindmap && stepIdx >= 13
-  const OVERLAP_POS = { left: '75%', top: '50%' }
+  const OVERLAP_POSITIONS = Array.from({ length: 9 }, (_, i) => ({
+    left: `calc(75% + ${(i % 3 - 1) * 6}px)`,
+    top: `calc(50% + ${(Math.floor(i / 3) - 1) * 6}px)`,
+  }))
   const RADIAL_LAYOUT_POS = [
     { left: '50%', top: '18%' }, { left: '71%', top: '25%' }, { left: '83%', top: '45%' },
     { left: '79%', top: '67%' }, { left: '61%', top: '81%' }, { left: '39%', top: '81%' },
@@ -393,7 +401,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   ]
   const RADIAL_SVG = hasAutoLayout
     ? [[50, 18], [71, 25], [83, 45], [79, 67], [61, 81], [39, 81], [21, 67], [17, 45], [29, 25]]
-    : Array(9).fill([75, 50]) as [number, number][] // overlapping
+    : Array.from({ length: 9 }, (_, i) => [75 + (i % 3 - 1) * 2, 50 + (Math.floor(i / 3) - 1) * 2] as [number, number])
   const clutter = (label: string) => <div key={label} className={CLUTTER_CLASS}>{label}</div>
   if (isMindmap) {
     return (
@@ -424,9 +432,9 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
           <HotspotButton id="fig-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="flex-1 min-w-0 flex flex-col min-h-0">
             <div className="flex-1 p-4 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center overflow-hidden">
               <div className="relative w-full h-full min-h-[200px] border-2 border-dashed rounded-lg border-white/20 flex items-center justify-center">
-                {hasConnectors && !hasStyle && instanceCount > 0 && (
+                {hasConnectors && !hasStyle && connectorCount > 0 && (
                   <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    {RADIAL_SVG.slice(0, instanceCount).map(([x2, y2], i) => (
+                    {RADIAL_SVG.slice(0, connectorCount).map(([x2, y2], i) => (
                       <line key={i} x1="50" y1="50" x2={x2} y2={y2} stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" />
                     ))}
                   </svg>
@@ -447,7 +455,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                   return (
                     <>
                       {Array.from({ length: instanceCount }).map((_, i) => {
-                        const p = hasInstanceLayout ? RADIAL_LAYOUT_POS[i]! : OVERLAP_POS
+                        const p = hasInstanceLayout ? RADIAL_LAYOUT_POS[i]! : OVERLAP_POSITIONS[i]!
                         const bubbleBg = !outerFill ? (hasInstanceLayout ? 'bg-[#4a4a4a]' : 'bg-white/10') : ''
                         return (
                           <div key={i} className={`absolute rounded-full px-5 py-2.5 text-sm border border-white/25 whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10 ${bubbleBg}`} style={{ left: p.left, top: p.top, ...(outerFill ? { backgroundColor: outerFill.bg, border: `2px solid ${outerFill.border}` } : {}) }}>{labels[i]}</div>
@@ -504,11 +512,11 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
             <HotspotButton id="fig-instance2" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-instance2' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>+ Instance</div>
             </HotspotButton>
-            <HotspotButton id="fig-layout" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-layout' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Layout</div>
+            <HotspotButton id="fig-autolayout" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-autolayout' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Auto layout</div>
             </HotspotButton>
-            <HotspotButton id="fig-connector" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-connector' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Connector</div>
+            <HotspotButton id="fig-connector" currentHotspotId={currentHotspotId} onStepComplete={stepIdx === 9 ? () => { if (mmConnectorCount < 8) setMmConnectorCount((c) => c + 1); else { setMmConnectorCount(9); onStepComplete(); } } : onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-connector' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Connector {stepIdx === 9 && mmConnectorCount > 0 ? `(${mmConnectorCount}/9)` : ''}</div>
             </HotspotButton>
             <HotspotButton id="fig-autolayout" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-autolayout' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Auto layout</div>
@@ -727,12 +735,12 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
   const [blendMode, setBlendMode] = useState<BlendMode>('normal')
   const canvasRef = useRef<SkyPaintCanvasHandle>(null)
 
-  const handleExport = useCallback(async () => {
-    const blob = await canvasRef.current?.exportAsPng()
+  const handleExport = useCallback(async (format: 'png' | 'jpeg') => {
+    const blob = await canvasRef.current?.exportAs(format)
     if (blob) {
       const a = document.createElement('a')
       a.href = URL.createObjectURL(blob)
-      a.download = 'pear-painting.png'
+      a.download = `pear-painting.${format === 'jpeg' ? 'jpg' : 'png'}`
       a.click()
       URL.revokeObjectURL(a.href)
     }
@@ -763,9 +771,9 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
             {(currentHotspotId === 'proc-export' || currentHotspotId === 'proc-export-format') && (
               <div className="absolute top-full left-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 min-w-[160px] space-y-1">
                 <div className="text-white/50 text-sm mb-2">Share — Save to computer</div>
-                {(['PNG', 'PSD', 'Procreate'] as const).map((fmt) => (
-                  <HotspotButton key={fmt} id="proc-export-format" currentHotspotId={currentHotspotId} onStepComplete={handleExport} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
-                    <div className={`w-full px-3 py-2 rounded text-sm ${currentHotspotId === 'proc-export-format' ? 'bg-[#34c759]/30 text-[#34c759]' : 'text-white/90 hover:bg-white/10'}`}>{fmt}</div>
+                {(['png', 'jpeg'] as const).map((fmt) => (
+                  <HotspotButton key={fmt} id="proc-export-format" currentHotspotId={currentHotspotId} onStepComplete={() => handleExport(fmt)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
+                    <div className={`w-full px-3 py-2 rounded text-sm ${currentHotspotId === 'proc-export-format' ? 'bg-[#34c759]/30 text-[#34c759]' : 'text-white/90 hover:bg-white/10'}`}>{fmt.toUpperCase()}</div>
                   </HotspotButton>
                 ))}
               </div>
@@ -905,7 +913,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
                 <div className={`w-full ${HOTSPOT_BTN} justify-between ${(currentHotspotId === 'proc-blend' || currentHotspotId === 'proc-blend-overlay') ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE} ${stepIdx >= 14 ? 'border border-[#34c759]/40' : ''}`}>{blendMode.charAt(0).toUpperCase() + blendMode.slice(1)} {stepIdx >= 14 && '✓'} ▼</div>
                 {blendMenuOpen && (
                   <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
-                    {(['normal', 'multiply', 'overlay', 'screen'] as const).map((m) => (
+                    {(['multiply', 'overlay', 'screen'] as const).map((m) => (
                       <HotspotButton key={m} id="proc-blend-overlay" currentHotspotId={currentHotspotId} onStepComplete={() => { setBlendMode(m); onStepComplete(); }} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
                         <div className={`w-full px-3 py-2.5 rounded text-left text-sm capitalize ${currentHotspotId === 'proc-blend-overlay' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-white/5 text-white/80 hover:bg-white/10'}`}>{m}</div>
                       </HotspotButton>
