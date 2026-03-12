@@ -351,6 +351,7 @@ Running log of project work. Update this section when making significant changes
 **2025-03**
 
 - **Doodle icons**: Added `public/doodles/`—hand-drawn SVG icons (tmr, daily, pear, game24, jeopardy, chwazi, leaderboards, coming-soon). Replaced emojis in GameCard, TMR header, leaderboards, jeopardy, Coming Soon modal. Poker keeps `/poker-table.svg`.
+- **UX polish**: sfjc.dev bigger centered on homepage; all emojis replaced with doodle SVGs (tmr, daily, pear, game24, jeopardy, chwazi, leaderboards, coming-soon, study, sleep, history, info); touch targets ≥44px (Game24 reset, Poker Update, Daily-log month nav, Jeopardy overlay); removed duplicate Pear ← Home; img→Image for doodles
 - **UI Phase 4 (Ink & Paper)**: Focus-visible rings on PageShell links and GameCard for accessibility
 - **UI Phase 3 (Ink & Paper)**: All game pages converted to Ink & Paper—cream bg, ink tokens, paper cards. Daily-log, TMR, 24, Jeopardy, Chwazi gate, poker landing, admin/tmr. Game24: ink-style number cards and operators (muted tones). Poker lobby/table and Pear Navigator inner keep their themes (green felt, dark). Removed duplicate "← Home" where PageShell provides it.
 - **UI Phase 2 (Ink & Paper)**: GameCard extracted to components/GameCard.tsx (paper card, ink text, translateY hover); Home redesigned—flat grid, no gradient/duplicate header, minimal Coming Soon modal (bg-black/40 overlay); Leaderboards Ink & Paper

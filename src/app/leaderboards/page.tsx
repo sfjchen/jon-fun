@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 
 const features = [
@@ -11,7 +12,7 @@ export default function LeaderboardsPage() {
   return (
     <div className="max-w-2xl">
       <h1 className="mb-6 font-lora text-2xl font-semibold flex items-center gap-2" style={{ color: 'var(--ink-text)' }}>
-        <img src="/doodles/leaderboards.svg" alt="" className="h-8 w-8" />
+        <Image src="/doodles/leaderboards.svg" alt="" width={32} height={32} className="h-8 w-8" />
         Leaderboards
       </h1>
 
@@ -20,7 +21,7 @@ export default function LeaderboardsPage() {
         style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
       >
         <div className="mb-6">
-          <img src="/doodles/coming-soon.svg" alt="" className="h-16 w-16" />
+          <Image src="/doodles/coming-soon.svg" alt="" width={64} height={64} className="h-16 w-16" />
         </div>
         <h2 className="mb-4 font-lora text-xl font-semibold" style={{ color: 'var(--ink-text)' }}>
           Coming Soon!
@@ -41,7 +42,7 @@ export default function LeaderboardsPage() {
             className="rounded-lg px-6 py-2 text-white transition-colors hover:opacity-95 flex items-center gap-2 justify-center"
             style={{ backgroundColor: 'var(--ink-accent)' }}
           >
-            <img src="/doodles/game24.svg" alt="" className="h-5 w-5 invert" />
+            <Image src="/doodles/game24.svg" alt="" width={20} height={20} className="h-5 w-5 invert" />
             Play 24 Game
           </button>
         </Link>

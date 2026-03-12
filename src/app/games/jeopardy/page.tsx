@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useRef, useState } from 'react'
 import JeopardyEditor from '@/components/JeopardyEditor'
 import JeopardyPlayer from '@/components/JeopardyPlayer'
@@ -45,7 +46,7 @@ export default function JeopardyPage() {
       )}
       <div className="rounded-lg p-8 border max-w-md w-full shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
         <h1 className="text-4xl font-bold font-lora text-center mb-8 flex items-center justify-center gap-3" style={{ color: 'var(--ink-text)' }}>
-          <img src="/doodles/jeopardy.svg" alt="" className="h-10 w-10" />
+          <Image src="/doodles/jeopardy.svg" alt="" width={40} height={40} className="h-10 w-10" />
           Jeopardy with Friends
         </h1>
         

@@ -927,7 +927,7 @@ export default function Game24() {
                   {displayedScore}
                 </div>
               </div>
-              <button onClick={resetSelections} className="text-2xl w-10 h-10 rounded-lg flex items-center justify-center hover:opacity-80" style={{ backgroundColor: 'var(--ink-accent)', color: 'white' }} aria-label="Reset selection">
+              <button onClick={resetSelections} className="text-2xl min-w-11 min-h-11 rounded-lg flex items-center justify-center hover:opacity-80" style={{ backgroundColor: 'var(--ink-accent)', color: 'white' }} aria-label="Reset selection">
                 ↻
               </button>
             </div>

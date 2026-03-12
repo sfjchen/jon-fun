@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   loadConfig,
@@ -238,7 +239,10 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
 
       {/* Info - Personalized */}
       <div className="rounded-lg p-6 border mb-6" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-accent)' }}>
-        <h3 className="text-xl font-bold font-lora mb-2 text-center" style={{ color: 'var(--ink-text)' }}>🎯 Personalized for Your Sleep</h3>
+        <h3 className="text-xl font-bold font-lora mb-2 text-center flex items-center justify-center gap-2" style={{ color: 'var(--ink-text)' }}>
+            <Image src="/doodles/sleep.svg" alt="" width={24} height={24} className="h-6 w-6" />
+            Personalized for Your Sleep
+          </h3>
         <p className="text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
             Based on your Apple Watch data: First cycle is longer (~90 min), later cycles are ~75-85 min.
             Deep sleep is concentrated in the first 2-3 hours. Windows include cushion; latency ~10-15 min.
@@ -371,19 +375,19 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
         <h3 className="text-xl font-bold font-lora mb-3" style={{ color: 'var(--ink-text)' }}>Your Personalized Sleep Schedule</h3>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between" style={{ color: 'var(--ink-muted)' }}>
-            <span>🌙 Cycle 1 (50-85 min):</span>
+            <span>Cycle 1 (50-85 min):</span>
             <span className="font-semibold" style={{ color: 'var(--ink-accent)' }}>Peak deep sleep</span>
           </div>
           <div className="flex justify-between" style={{ color: 'var(--ink-muted)' }}>
-            <span>🌙 Cycle 2 (110-155 min):</span>
+            <span>Cycle 2 (110-155 min):</span>
             <span style={{ color: 'var(--ink-accent)' }}>Moderate deep sleep</span>
           </div>
           <div className="flex justify-between" style={{ color: 'var(--ink-muted)' }}>
-            <span>🌙 Cycle 3 (190-230 min):</span>
+            <span>Cycle 3 (190-230 min):</span>
             <span>Light sleep</span>
           </div>
           <div className="flex justify-between" style={{ color: 'var(--ink-muted)' }}>
-            <span>🌙 Cycle 4 (260-300 min):</span>
+            <span>Cycle 4 (260-300 min):</span>
             <span>Very light sleep</span>
           </div>
         </div>

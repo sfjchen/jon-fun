@@ -206,10 +206,10 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
       {open && (
         <div className="fixed inset-0 flex items-center justify-center p-4 sm:p-6 z-50 overflow-y-auto" style={{ backgroundColor: 'var(--ink-bg)' }}>
           <div className="absolute top-2 left-2">
-            <button onClick={closeTile} className="px-3 py-1 rounded-lg border" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>ESC</button>
+            <button onClick={closeTile} className="min-h-11 py-2 px-4 rounded-lg border" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>ESC</button>
           </div>
           <div className="absolute top-2 right-2">
-            <button onClick={() => setRevealed((r) => !r)} className="px-3 py-1 rounded-lg border" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Space: Reveal</button>
+            <button onClick={() => setRevealed((r) => !r)} className="min-h-11 py-2 px-4 rounded-lg border" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Space: Reveal</button>
           </div>
           <div className="max-w-5xl text-center max-h-[85vh] overflow-y-auto">
             <div className="text-sm sm:text-base md:text-lg mb-2 wrap-anywhere" style={{ color: 'var(--ink-muted)' }}>{board.categories[open.col]?.title} for ${getClueValue(board, open.row)}</div>

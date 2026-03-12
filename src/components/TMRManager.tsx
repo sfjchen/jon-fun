@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import TMRStudySession from './TMRStudySession'
 import TMRSleepReactivation from './TMRSleepReactivation'
@@ -124,7 +125,7 @@ export default function TMRManager() {
       {/* Header */}
       <header className="text-center mb-12">
         <h1 className="text-5xl font-bold font-lora mb-4 flex items-center justify-center gap-3" style={{ color: 'var(--ink-text)' }}>
-          <img src="/doodles/tmr.svg" alt="" className="h-12 w-12" />
+          <Image src="/doodles/tmr.svg" alt="" width={48} height={48} className="h-12 w-12" />
           TMR System
         </h1>
         <p className="text-xl" style={{ color: 'var(--ink-muted)' }}>
@@ -139,7 +140,7 @@ export default function TMRManager() {
           className="rounded-lg p-8 border shadow-sm hover:shadow-md transition-all duration-200 text-left"
           style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
         >
-          <div className="text-6xl mb-4">📚</div>
+          <Image src="/doodles/study.svg" alt="" width={56} height={56} className="h-14 w-14 mb-4" />
           <h2 className="text-2xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>Study Session</h2>
           <p style={{ color: 'var(--ink-muted)' }}>
               Start a focused study session with TMR cues to tag your memories
@@ -151,7 +152,7 @@ export default function TMRManager() {
           className="rounded-lg p-8 border shadow-sm hover:shadow-md transition-all duration-200 text-left"
           style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
         >
-          <div className="text-6xl mb-4">🌙</div>
+          <Image src="/doodles/sleep.svg" alt="" width={56} height={56} className="h-14 w-14 mb-4" />
           <h2 className="text-2xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>Sleep Reactivation</h2>
           <p style={{ color: 'var(--ink-muted)' }}>
               Schedule TMR cues during optimal sleep stages for memory consolidation
@@ -163,7 +164,7 @@ export default function TMRManager() {
           className="rounded-lg p-8 border shadow-sm hover:shadow-md transition-all duration-200 text-left"
           style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
         >
-          <div className="text-6xl mb-4">📊</div>
+          <Image src="/doodles/history.svg" alt="" width={56} height={56} className="h-14 w-14 mb-4" />
           <h2 className="text-2xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>Session History</h2>
           <p style={{ color: 'var(--ink-muted)' }}>
               View your study and sleep reactivation session logs
@@ -171,7 +172,7 @@ export default function TMRManager() {
           </button>
 
         <div className="rounded-lg p-8 border" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
-          <div className="text-6xl mb-4">ℹ️</div>
+          <Image src="/doodles/info.svg" alt="" width={56} height={56} className="h-14 w-14 mb-4" />
           <h2 className="text-2xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>About TMR</h2>
           <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
               Targeted Memory Reactivation uses sound cues during study and sleep to enhance
