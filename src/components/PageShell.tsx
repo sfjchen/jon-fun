@@ -22,7 +22,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <Link
             href="/"
-            className="font-lora font-semibold hover:opacity-80"
+            className="font-lora font-semibold hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded"
             style={{ color: 'var(--ink-text)' }}
           >
             sfjc.dev
@@ -30,7 +30,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
           {showBackLink && (
             <Link
               href="/"
-              className="text-sm hover:opacity-80"
+              className="text-sm hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded"
               style={{ color: 'var(--ink-accent)' }}
             >
               ← Home
