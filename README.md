@@ -345,6 +345,8 @@ Running log of project work. Update this section when making significant changes
 
 **2025-03**
 
+- **Sports-talent-research**: Evidence backup table mapping key claims (genetic testing, physical test validity, force plates) to peer-reviewed sources
+- **docs/MS&E165-Metrics-Sources.md**: Sources for Pear Navigator GTM metrics (retention, adoption, Copilot benchmarks)
 - **1 Sentence Everyday**: Remove personal sync key from restore banner; generic "enter your sync key" for all users
 - **Pear Navigator**: Replace Figma variants demo with "Design a business card"—6 steps (frame, fill, name, role, email, accent); elegant dark gradient card with amber accent
 - **Pear Navigator painting demo**: Rename task to "Your first painting!"; remove sky references (Layer, Blended, pear-painting.png); 1 blue stroke; direction text emphasizes mix/overlap blue+yellow to see blending
