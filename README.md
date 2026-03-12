@@ -352,7 +352,7 @@ Running log of project work. Update this section when making significant changes
 - **1 Sentence Everyday**: Admin keys API now requires DAILY_LEARN_ADMIN_SECRET; Sync page admin key input for List keys
 - **1 Sentence Everyday**: Cmd+Enter to submit; Esc to cancel/leave textarea (today box blurs; edit modal closes)
 - **Pear Navigator**: Mock tools kept complex/jargony (Brush Library, Dynamics, Instance, Auto layout, Fill) to show overlay value; Business card first; designer mindmap (Brand, Components); 3 connector taps
-- **heavy-lift subagent**: `.cursor/agents/heavy-lift.md` — Cursor subagent for research, exploration, parallel analyses, critiques; one task per invocation to keep main context clean
+- **think-hard subagent**: `.cursor/agents/think-hard.md` — Cursor subagent for research, exploration, parallel analyses, critiques; one task per invocation to keep main context clean
 - **Pear Navigator business card**: Template dropdown first (Minimal, Classic, Modern); separate fill dropdowns for background + accent; Text adds textbox per step—overlay prompts name/role/email with Done
 - **Pear Navigator mindmap**: Instances and connectors start overlapping; Layout step spreads instances; Auto layout spreads connectors; Fill outer/inner dropdowns (Blue, Teal, Rose, etc.); See example as final step populates PM terms (OKR, KPI, etc.)
 - **Sports-talent-research**: Evidence backup table mapping key claims (genetic testing, physical test validity, force plates) to peer-reviewed sources
