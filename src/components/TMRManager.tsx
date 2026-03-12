@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import TMRStudySession from './TMRStudySession'
 import TMRSleepReactivation from './TMRSleepReactivation'
 import {
@@ -38,40 +37,41 @@ export default function TMRManager() {
 
   if (view === 'history') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <button
-              onClick={() => setView('menu')}
-              className="text-white hover:text-gray-300 text-2xl font-bold"
-              aria-label="Back"
-            >
-              ← Back
-            </button>
-            <h1 className="text-4xl font-bold text-white">Session History</h1>
-            <div className="w-16" />
-          </div>
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <button
+            onClick={() => setView('menu')}
+            className="text-2xl font-bold hover:opacity-80"
+            style={{ color: 'var(--ink-accent)' }}
+            aria-label="Back"
+          >
+            ← Back
+          </button>
+          <h1 className="text-4xl font-bold font-lora" style={{ color: 'var(--ink-text)' }}>Session History</h1>
+          <div className="w-16" />
+        </div>
 
-          {/* Study Sessions */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-6">
-            <h2 className="text-2xl font-bold text-white mb-4">
+        {/* Study Sessions */}
+        <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+          <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>
               Study Sessions ({studySessions.length})
             </h2>
             {studySessions.length === 0 ? (
-              <p className="text-gray-300">No study sessions yet.</p>
+              <p style={{ color: 'var(--ink-muted)' }}>No study sessions yet.</p>
             ) : (
               <div className="space-y-3">
                 {studySessions.slice(-10).reverse().map((session, index) => (
                   <div
                     key={index}
-                    className="bg-white/5 rounded-lg p-4 border border-white/10"
+                    className="rounded-lg p-4 border"
+                    style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <div className="text-white font-semibold">
+                        <div className="font-semibold" style={{ color: 'var(--ink-text)' }}>
                           {formatDate(session.start)}
                         </div>
-                        <div className="text-gray-300 text-sm">
+                        <div className="text-sm" style={{ color: 'var(--ink-muted)' }}>
                           Duration: {session.durationMinutes.toFixed(1)} min |{' '}
                           {session.cuesPlayed} cues
                           {session.interrupted && ' (interrupted)'}
@@ -84,26 +84,27 @@ export default function TMRManager() {
             )}
           </div>
 
-          {/* Sleep Sessions */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-            <h2 className="text-2xl font-bold text-white mb-4">
+        {/* Sleep Sessions */}
+        <div className="rounded-lg p-6 border shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+          <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>
               Sleep Reactivation Sessions ({sleepSessions.length})
             </h2>
             {sleepSessions.length === 0 ? (
-              <p className="text-gray-300">No sleep reactivation sessions yet.</p>
+              <p style={{ color: 'var(--ink-muted)' }}>No sleep reactivation sessions yet.</p>
             ) : (
               <div className="space-y-3">
                 {sleepSessions.slice(-10).reverse().map((session, index) => (
                   <div
                     key={index}
-                    className="bg-white/5 rounded-lg p-4 border border-white/10"
+                    className="rounded-lg p-4 border"
+                    style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <div className="text-white font-semibold">
+                        <div className="font-semibold" style={{ color: 'var(--ink-text)' }}>
                           {formatDate(session.start)}
                         </div>
-                        <div className="text-gray-300 text-sm">
+                        <div className="text-sm" style={{ color: 'var(--ink-muted)' }}>
                           Duration: {session.durationMinutes.toFixed(1)} min |{' '}
                           {session.totalCues} cues | {session.cycles} cycles
                         </div>
@@ -115,83 +116,78 @@ export default function TMRManager() {
             )}
           </div>
         </div>
-      </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-6">
-          <Link href="/" className="text-white hover:text-gray-300 text-2xl font-bold" aria-label="Back to home">
-            ← Home
-          </Link>
-        </div>
-        {/* Header */}
-        <header className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-white mb-4">🔊 TMR System</h1>
-          <p className="text-xl text-gray-300">
+    <div className="max-w-4xl mx-auto">
+      {/* Header */}
+      <header className="text-center mb-12">
+        <h1 className="text-5xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>🔊 TMR System</h1>
+        <p className="text-xl" style={{ color: 'var(--ink-muted)' }}>
             Targeted Memory Reactivation for Enhanced Learning
           </p>
         </header>
 
-        {/* Main Menu */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <button
-            onClick={() => setView('study')}
-            className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-300 transform hover:scale-105"
-          >
-            <div className="text-6xl mb-4">📚</div>
-            <h2 className="text-2xl font-bold text-white mb-2">Study Session</h2>
-            <p className="text-gray-300">
+      {/* Main Menu */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <button
+          onClick={() => setView('study')}
+          className="rounded-lg p-8 border shadow-sm hover:shadow-md transition-all duration-200 text-left"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
+          <div className="text-6xl mb-4">📚</div>
+          <h2 className="text-2xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>Study Session</h2>
+          <p style={{ color: 'var(--ink-muted)' }}>
               Start a focused study session with TMR cues to tag your memories
             </p>
           </button>
 
-          <button
-            onClick={() => setView('sleep')}
-            className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-300 transform hover:scale-105"
-          >
-            <div className="text-6xl mb-4">🌙</div>
-            <h2 className="text-2xl font-bold text-white mb-2">Sleep Reactivation</h2>
-            <p className="text-gray-300">
+        <button
+          onClick={() => setView('sleep')}
+          className="rounded-lg p-8 border shadow-sm hover:shadow-md transition-all duration-200 text-left"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
+          <div className="text-6xl mb-4">🌙</div>
+          <h2 className="text-2xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>Sleep Reactivation</h2>
+          <p style={{ color: 'var(--ink-muted)' }}>
               Schedule TMR cues during optimal sleep stages for memory consolidation
             </p>
           </button>
 
-          <button
-            onClick={() => setView('history')}
-            className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-300 transform hover:scale-105"
-          >
-            <div className="text-6xl mb-4">📊</div>
-            <h2 className="text-2xl font-bold text-white mb-2">Session History</h2>
-            <p className="text-gray-300">
+        <button
+          onClick={() => setView('history')}
+          className="rounded-lg p-8 border shadow-sm hover:shadow-md transition-all duration-200 text-left"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
+          <div className="text-6xl mb-4">📊</div>
+          <h2 className="text-2xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>Session History</h2>
+          <p style={{ color: 'var(--ink-muted)' }}>
               View your study and sleep reactivation session logs
             </p>
           </button>
 
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
-            <div className="text-6xl mb-4">ℹ️</div>
-            <h2 className="text-2xl font-bold text-white mb-2">About TMR</h2>
-            <p className="text-gray-300 text-sm">
+        <div className="rounded-lg p-8 border" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
+          <div className="text-6xl mb-4">ℹ️</div>
+          <h2 className="text-2xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>About TMR</h2>
+          <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
               Targeted Memory Reactivation uses sound cues during study and sleep to enhance
               memory consolidation. Research shows it can improve learning by 10-20%.
             </p>
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-          <h3 className="text-xl font-bold text-white mb-4">Quick Stats</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <div className="text-3xl font-bold text-white">{studySessions.length}</div>
-              <div className="text-gray-300">Study Sessions</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white">{sleepSessions.length}</div>
-              <div className="text-gray-300">Sleep Sessions</div>
-            </div>
+      {/* Quick Stats */}
+      <div className="rounded-lg p-6 border shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+        <h3 className="text-xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>Quick Stats</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <div className="text-3xl font-bold" style={{ color: 'var(--ink-text)' }}>{studySessions.length}</div>
+            <div style={{ color: 'var(--ink-muted)' }}>Study Sessions</div>
+          </div>
+          <div>
+            <div className="text-3xl font-bold" style={{ color: 'var(--ink-text)' }}>{sleepSessions.length}</div>
+            <div style={{ color: 'var(--ink-muted)' }}>Sleep Sessions</div>
           </div>
         </div>
       </div>

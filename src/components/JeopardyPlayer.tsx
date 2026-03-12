@@ -106,13 +106,14 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
   }, [resetTiles])
 
   return (
-    <div className="min-h-screen bg-[#142c6d] text-white p-4 flex flex-col">
+    <div className="p-4 flex flex-col">
       <div className="flex items-center justify-between mb-4">
-        <button onClick={onBack} className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg border border-white/20">← Back</button>
+        <button onClick={onBack} className="px-4 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>← Back</button>
         <div className="flex items-center gap-2">
-          <label className="text-sm text-white/80">Teams</label>
+          <label className="text-sm" style={{ color: 'var(--ink-muted)' }}>Teams</label>
           <select
-            className="bg-white/10 border border-white/20 rounded-lg px-2 py-1"
+            className="rounded-lg px-2 py-1 border"
+            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
             value={teamCount}
             onChange={(e) => setTeamCount(Math.min(MAX_TEAMS, Math.max(1, Number(e.target.value))))}
           >
@@ -120,14 +121,14 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
               <option key={n} value={n}>{n}</option>
             ))}
           </select>
-          <button onClick={resetTiles} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg border border-white/20">Reset Tiles</button>
-          <button onClick={resetTilesAndScores} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg border border-white/20">Reset Tiles + Scores</button>
-          <button onClick={onEdit} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg border border-white/20">Edit</button>
+          <button onClick={resetTiles} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Reset Tiles</button>
+          <button onClick={resetTilesAndScores} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Reset Tiles + Scores</button>
+          <button onClick={onEdit} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Edit</button>
         </div>
       </div>
 
-      <h1 className="text-center text-4xl font-bold mb-2">{board.title}</h1>
-      <div className="text-center text-white/70 text-sm mb-4">Hotkeys: Space reveals • Esc goes back</div>
+      <h1 className="text-center text-4xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>{board.title}</h1>
+      <div className="text-center text-sm mb-4" style={{ color: 'var(--ink-muted)' }}>Hotkeys: Space reveals • Esc goes back</div>
 
       {/* Board */}
       <div className="max-w-6xl mx-auto w-full">
@@ -135,7 +136,7 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
           <div style={{ minWidth: `${board.categories.length * colMinWidthPx}px` }}>
             <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
               {board.categories.map((cat, colIndex) => (
-                <div key={colIndex} className="px-2 py-2 border border-black/60 bg-[#1f3aa8] text-center font-semibold uppercase tracking-wide text-xs sm:text-sm md:text-lg select-none rounded-t-lg wrap-anywhere">
+                <div key={colIndex} className="px-2 py-2 border text-center font-semibold uppercase tracking-wide text-xs sm:text-sm md:text-lg select-none rounded-t-lg wrap-anywhere" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}>
                   {cat.title}
                 </div>
               ))}
@@ -152,9 +153,10 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
                       <button
                         key={rowIndex}
                         onClick={() => { setFocused({ col: colIndex, row: rowIndex }); openTile(colIndex, rowIndex) }}
-                        className={`h-20 sm:h-24 md:h-28 lg:h-32 border border-black/60 text-2xl md:text-3xl font-extrabold rounded-b-lg ${disabled ? 'bg-[#0c1a5a]' : 'bg-[#10226d] hover:bg-[#13297f]'}`}
+                        className={`h-20 sm:h-24 md:h-28 lg:h-32 border text-2xl md:text-3xl font-extrabold rounded-b-lg transition-colors ${disabled ? '' : 'hover:opacity-90'}`}
+                        style={{ borderColor: 'var(--ink-border)', backgroundColor: disabled ? 'var(--ink-bg)' : 'var(--ink-paper)', color: disabled ? 'var(--ink-muted)' : 'var(--ink-accent)' }}
                       >
-                        <span className={`${disabled ? 'text-[#6c79c9] opacity-60' : 'text-[#ffcc00]'} transition-opacity`}>${value}</span>
+                        <span>${value}</span>
                       </button>
                     )
                   })}
@@ -172,26 +174,28 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
           style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${teamLayout.minCardWidth}px, 1fr))` }}
         >
           {teams.map((team, i) => (
-            <div key={i} className="bg-white/10 rounded-xl border border-white/20 min-w-0 p-3">
+            <div key={i} className="rounded-xl border min-w-0 p-3" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
             <input
               value={team.name}
               onChange={(e) => setTeams((prev) => prev.map((t, idx) => idx === i ? { ...t, name: e.target.value } : t))}
               className="w-full bg-transparent text-center font-semibold mb-2 outline-none"
+              style={{ color: 'var(--ink-text)' }}
             />
             <input
               value={team.score}
               onChange={(e) => setScore(i, Number(e.target.value) || 0)}
-              className="w-full bg-[#0e235b] text-center text-2xl font-bold rounded-md py-2 outline-none"
+              className="w-full text-center text-2xl font-bold rounded-md py-2 outline-none border"
+              style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
             />
             <div className="grid grid-cols-2 gap-2 mt-2">
               <button onClick={() => {
                 const src = open ?? lastAnswered
                 if (src) adjustScore(i, getClueValue(board, src.row))
-              }} className="bg-green-600 hover:bg-green-700 rounded-md py-1">+</button>
+              }} className="bg-green-600 hover:bg-green-700 text-white rounded-md py-1">+</button>
               <button onClick={() => {
                 const src = open ?? lastAnswered
                 if (src) adjustScore(i, -getClueValue(board, src.row))
-              }} className="bg-red-600 hover:bg-red-700 rounded-md py-1">-</button>
+              }} className="bg-red-600 hover:bg-red-700 text-white rounded-md py-1">-</button>
             </div>
             </div>
           ))}
@@ -200,22 +204,22 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
 
       {/* Overlay */}
       {open && (
-        <div className="fixed inset-0 bg-[#142c6d] text-white flex items-center justify-center p-4 sm:p-6 z-50 overflow-y-auto">
+        <div className="fixed inset-0 flex items-center justify-center p-4 sm:p-6 z-50 overflow-y-auto" style={{ backgroundColor: 'var(--ink-bg)' }}>
           <div className="absolute top-2 left-2">
-            <button onClick={closeTile} className="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg">ESC</button>
+            <button onClick={closeTile} className="px-3 py-1 rounded-lg border" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>ESC</button>
           </div>
           <div className="absolute top-2 right-2">
-            <button onClick={() => setRevealed((r) => !r)} className="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg">Space: Reveal</button>
+            <button onClick={() => setRevealed((r) => !r)} className="px-3 py-1 rounded-lg border" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Space: Reveal</button>
           </div>
           <div className="max-w-5xl text-center max-h-[85vh] overflow-y-auto">
-            <div className="text-white/80 text-sm sm:text-base md:text-lg mb-2 wrap-anywhere">{board.categories[open.col]?.title} for ${getClueValue(board, open.row)}</div>
-            <div className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-wide wrap-anywhere">
+            <div className="text-sm sm:text-base md:text-lg mb-2 wrap-anywhere" style={{ color: 'var(--ink-muted)' }}>{board.categories[open.col]?.title} for ${getClueValue(board, open.row)}</div>
+            <div className="text-3xl sm:text-4xl md:text-5xl font-bold font-lora tracking-wide wrap-anywhere" style={{ color: 'var(--ink-text)' }}>
               {!revealed ? (
                 <div>{board.categories[open.col]?.clues[open.row]?.question || '—'}</div>
               ) : (
                 <div>
-                  <div className="opacity-70 text-2xl sm:text-3xl md:text-4xl mb-6">{board.categories[open.col]?.clues[open.row]?.question || '—'}</div>
-                  <div className="text-[#ffda79]">{board.categories[open.col]?.clues[open.row]?.answer || '—'}</div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl mb-6" style={{ color: 'var(--ink-muted)' }}>{board.categories[open.col]?.clues[open.row]?.question || '—'}</div>
+                  <div style={{ color: 'var(--ink-accent)' }}>{board.categories[open.col]?.clues[open.row]?.answer || '—'}</div>
                 </div>
               )}
             </div>

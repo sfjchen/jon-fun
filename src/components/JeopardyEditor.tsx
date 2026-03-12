@@ -161,23 +161,23 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#142c6d] text-white p-4 flex flex-col">
+    <div className="p-4 flex flex-col">
       {error && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-lg z-50">
           {error}
         </div>
       )}
       <div className="flex items-center justify-between mb-4">
-        <button onClick={onBack} className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg border border-white/20">← Back</button>
+        <button onClick={onBack} className="px-4 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>← Back</button>
         <div className="flex gap-2 flex-wrap">
-          <button onClick={handleAddRow} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg border border-white/20">+ Add Row</button>
-          <button onClick={handleRemoveRow} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg border border-white/20">Remove Row</button>
-          <button onClick={handleAddColumn} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg border border-white/20">+ Add Column</button>
-          <button onClick={handleRemoveColumn} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg border border-white/20">Remove Column</button>
-          <button onClick={() => downloadBoard(board)} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg border border-white/20">Download JSON</button>
-          <button onClick={handleUploadClick} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg border border-white/20">Upload JSON</button>
+          <button onClick={handleAddRow} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>+ Add Row</button>
+          <button onClick={handleRemoveRow} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Remove Row</button>
+          <button onClick={handleAddColumn} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>+ Add Column</button>
+          <button onClick={handleRemoveColumn} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Remove Column</button>
+          <button onClick={() => downloadBoard(board)} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Download JSON</button>
+          <button onClick={handleUploadClick} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Upload JSON</button>
           <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleFileChange} />
-          <button onClick={() => onPlay(board)} className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg">Play ▶</button>
+          <button onClick={() => onPlay(board)} className="text-white px-4 py-2 rounded-lg hover:opacity-90" style={{ backgroundColor: 'rgb(22 101 52)' }}>Play ▶</button>
         </div>
       </div>
 
@@ -185,7 +185,8 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
         <input
           value={board.title}
           onChange={(e) => setBoard({ ...board, title: e.target.value, id: board.id || slugify(e.target.value) })}
-          className="w-full text-center text-2xl sm:text-3xl md:text-4xl font-bold bg-transparent outline-none border-b border-white/20 pb-2 mb-6 wrap-anywhere"
+          className="w-full text-center text-2xl sm:text-3xl md:text-4xl font-bold bg-transparent outline-none border-b pb-2 mb-6 wrap-anywhere"
+          style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
         />
 
         <div className="smooth-scroll-x">
@@ -194,7 +195,8 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
               {board.categories.map((cat, colIndex) => (
                 <div
                   key={colIndex}
-                  className="px-2 py-2 border border-black/30 bg-[#203a88] text-center font-semibold uppercase tracking-wide text-xs sm:text-sm md:text-lg select-none rounded-t-lg"
+                  className="px-2 py-2 border text-center font-semibold uppercase tracking-wide text-xs sm:text-sm md:text-lg select-none rounded-t-lg"
+                  style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
                   draggable
                   onDragStart={() => setDragCol(colIndex)}
                   onDragOver={(e) => e.preventDefault()}
@@ -206,7 +208,8 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
                   <input
                     value={cat.title}
                     onChange={(e) => updateCategoryTitle(colIndex, e.target.value)}
-                    className="w-full bg-transparent text-white text-center outline-none wrap-anywhere"
+                    className="w-full bg-transparent text-center outline-none wrap-anywhere"
+                    style={{ color: 'var(--ink-text)' }}
                   />
                 </div>
               ))}
@@ -224,7 +227,8 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
                       <button
                         key={rowIndex}
                         onClick={() => { setFocused({ colIndex, rowIndex }); setModal({ colIndex, rowIndex }) }}
-                        className={`h-20 sm:h-24 md:h-28 lg:h-32 border border-black/30 text-2xl md:text-3xl font-extrabold text-[#ffda79] flex items-center justify-center select-none rounded-b-lg ${isFocused ? 'bg-[#233a85]' : 'bg-[#1a2f73]'}`}
+                        className={`h-20 sm:h-24 md:h-28 lg:h-32 border text-2xl md:text-3xl font-extrabold flex items-center justify-center select-none rounded-b-lg ${isFocused ? '' : ''}`}
+                        style={{ borderColor: 'var(--ink-border)', backgroundColor: isFocused ? 'var(--ink-accent)' : 'var(--ink-paper)', color: isFocused ? 'white' : 'var(--ink-text)' }}
                       >
                         {clue?.question?.trim() || clue?.answer?.trim() ? (
                           <span className="text-xs sm:text-sm text-white/80 px-2">Edit</span>
@@ -240,7 +244,7 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
           </div>
         </div>
 
-        <div className="mt-6 text-center text-white/70 text-sm">
+        <div className="mt-6 text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
           Drag headers to reorder · Arrows navigate · Space/Return open · Tab ↓/wrap → · Esc close · Cmd/Ctrl+Enter save
         </div>
       </div>
@@ -301,25 +305,25 @@ function CellModal({ value, clue, onClose, onSave }: { value: number; clue: Jeop
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-      <div className="bg-[#0f2666] text-white w-full max-w-3xl rounded-2xl border border-white/20">
-        <div className="p-4 flex items-center justify-between border-b border-white/10">
-          <div className="font-semibold">Edit Clue • Value ${value}</div>
-          <button onClick={onClose} className="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg">ESC</button>
+      <div className="w-full max-w-3xl rounded-lg border shadow-lg" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+        <div className="p-4 flex items-center justify-between border-b" style={{ borderColor: 'var(--ink-border)' }}>
+          <div className="font-semibold" style={{ color: 'var(--ink-text)' }}>Edit Clue • Value ${value}</div>
+          <button onClick={onClose} className="px-3 py-1 rounded-lg hover:opacity-90" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>ESC</button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
           <div>
-            <label className="text-sm text-white/70">Question Prompt</label>
-            <textarea ref={qRef} value={q} onChange={(e) => setQ(e.target.value)} className="mt-1 w-full h-40 bg-[#152c70] border border-white/10 rounded-lg p-3 outline-none" />
+            <label className="text-sm" style={{ color: 'var(--ink-muted)' }}>Question Prompt</label>
+            <textarea ref={qRef} value={q} onChange={(e) => setQ(e.target.value)} className="mt-1 w-full h-40 rounded-lg p-3 outline-none border focus:ring-2 focus:ring-[var(--ink-accent)]" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }} />
           </div>
           <div>
-            <label className="text-sm text-white/70">Correct Response</label>
-            <textarea value={a} onChange={(e) => setA(e.target.value)} className="mt-1 w-full h-40 bg-[#152c70] border border-white/10 rounded-lg p-3 outline-none" />
+            <label className="text-sm" style={{ color: 'var(--ink-muted)' }}>Correct Response</label>
+            <textarea value={a} onChange={(e) => setA(e.target.value)} className="mt-1 w-full h-40 rounded-lg p-3 outline-none border focus:ring-2 focus:ring-[var(--ink-accent)]" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }} />
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 p-4 border-t border-white/10">
-          <button onClick={() => onSave({ question: q, answer: a })} className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg">Continue</button>
+        <div className="flex items-center justify-end gap-2 p-4 border-t" style={{ borderColor: 'var(--ink-border)' }}>
+          <button onClick={() => onSave({ question: q, answer: a })} className="text-white px-4 py-2 rounded-lg hover:opacity-90" style={{ backgroundColor: 'rgb(22 101 52)' }}>Continue</button>
         </div>
       </div>
     </div>

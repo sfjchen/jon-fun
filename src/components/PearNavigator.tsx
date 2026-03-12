@@ -948,7 +948,7 @@ export default function PearNavigator() {
   return (
     <div className="h-screen w-screen overflow-hidden bg-gradient-to-br from-[#0d0d0d] via-[#1a1a1a] to-[#0d0d0d] flex flex-col">
       <div className="flex-none flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3">
-          <Link href="/" className="text-white hover:text-gray-300 text-xl sm:text-3xl font-bold">
+          <Link href="/" className="text-xl sm:text-3xl font-bold hover:opacity-90" style={{ color: 'var(--ink-accent)' }}>
             ← Home
           </Link>
           <span className="text-lg sm:text-xl font-semibold text-white">
