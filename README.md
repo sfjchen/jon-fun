@@ -345,7 +345,7 @@ Running log of project work. Update this section when making significant changes
 
 **2025-03**
 
-- **Pear Navigator**: Aligned with MS&E 165 presentation—Business card first (Jordan persona), plain-language steps (vocabulary gap), designer mindmap (Brand, Components, Typography vs PM terms), 3 connector taps, Color outer/center, accent bar skip for Minimal
+- **Pear Navigator**: Mock tools kept complex/jargony (Brush Library, Dynamics, Instance, Auto layout, Fill) to show overlay value; Business card first; designer mindmap (Brand, Components); 3 connector taps
 - **heavy-lift subagent**: `.cursor/agents/heavy-lift.md` — Cursor subagent for research, exploration, parallel analyses, critiques; one task per invocation to keep main context clean
 - **Pear Navigator business card**: Template dropdown first (Minimal, Classic, Modern); separate fill dropdowns for background + accent; Text adds textbox per step—overlay prompts name/role/email with Done
 - **Pear Navigator mindmap**: Instances and connectors start overlapping; Layout step spreads instances; Auto layout spreads connectors; Fill outer/inner dropdowns (Blue, Teal, Rose, etc.); See example as final step populates PM terms (OKR, KPI, etc.)
