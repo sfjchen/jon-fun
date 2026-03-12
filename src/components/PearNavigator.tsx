@@ -260,11 +260,11 @@ const TASKS: Record<string, Task> = {
       { title: 'Add instances (E–F)', desc: 'Tap + Instance for E and F.', hint: 'Build branches', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
       { title: 'Add instances (G–I)', desc: 'Tap + Instance for G, H, and I.', hint: 'All stacked; layout next', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
       { title: 'Auto layout', desc: 'Tap Auto layout to spread all instances into the radial configuration.', hint: 'Nodes fan out', highlight: { x: 520, y: 140, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
-      { title: 'Add connectors', desc: 'Tap Connector 3 times to add lines from center to branches.', hint: '3 taps adds all lines', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
+      { title: 'Add connectors', desc: 'Tap Connector once per branch to add lines. They overlap until auto layout.', hint: 'One tap per connector', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
       { title: 'Auto layout', desc: 'Tap Auto layout to spread connectors to their respective cells.', hint: 'Lines connect correctly', highlight: { x: 520, y: 180, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
       { title: 'Fill outer bubbles', desc: 'Tap Fill and pick a color for all outer branch nodes.', hint: 'Same color for all bubbles', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill-outer' },
       { title: 'Fill inner circle', desc: 'Pick a color for the central node.', hint: 'Contrast or match', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill-inner' },
-      { title: 'See example', desc: 'Tap See example to fill in design terms (Brand, Components, etc.).', hint: 'Design system mindmap', highlight: { x: 520, y: 220, w: 100, h: 36 }, hotspotId: 'fig-style' },
+      { title: 'See example', desc: 'Tap See example to fill in PM terms (OKR, KPI, Agile, etc.).', hint: 'Product Management mindmap', highlight: { x: 520, y: 220, w: 100, h: 36 }, hotspotId: 'fig-style' },
     ],
   },
 }
@@ -319,7 +319,7 @@ function HotspotButton({
   )
 }
 
-const TASK_ORDER = ['figmaBusinessCard', 'procreateSky', 'figmaMindmap'] as const
+const TASK_ORDER = ['procreateSky', 'figmaBusinessCard', 'figmaMindmap'] as const
 const TASK_LABELS: Record<string, string> = {
   procreateSky: 'Your first painting!',
   figmaBusinessCard: 'Design a business card',
@@ -378,13 +378,13 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const hasName = isBusinessCard && stepIdx >= 3
   const hasRole = isBusinessCard && stepIdx >= 4
   const hasEmail = isBusinessCard && stepIdx >= 5
-  const hasAccent = isBusinessCard && stepIdx >= 2 && bcTemplate !== 'minimal'
+  const hasAccent = isBusinessCard && stepIdx >= 3 && bcTemplate !== 'minimal'
   const hasCentralFrame = isMindmap && stepIdx >= 1
   const hasText = isMindmap && stepIdx >= 2
   const hasComponent = isMindmap && stepIdx >= 3
   const instanceCount = isMindmap && stepIdx >= 3 ? (stepIdx === 3 ? 1 : stepIdx === 4 ? 3 : stepIdx === 5 ? 5 : stepIdx === 6 ? 7 : 9) : 0
   const hasInstanceLayout = isMindmap && stepIdx >= 8
-  const connectorCount = isMindmap && stepIdx >= 9 ? (stepIdx === 9 ? Math.min(mmConnectorCount * 3, 9) : 9) : 0
+  const connectorCount = isMindmap && stepIdx >= 9 ? (stepIdx === 9 ? mmConnectorCount : 9) : 0
   const hasConnectors = connectorCount > 0
   const hasAutoLayout = isMindmap && stepIdx >= 10
   const hasFillOuter = isMindmap && stepIdx >= 11
@@ -419,7 +419,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
             <div className="text-white/50 text-xs font-medium shrink-0">Layers</div>
             {hasCentralFrame && (
               <>
-                <div className="h-6 px-1.5 rounded bg-[#34c759]/15 text-[#34c759] text-[10px] flex items-center">Design System</div>
+                <div className="h-6 px-1.5 rounded bg-[#34c759]/15 text-[#34c759] text-[10px] flex items-center">Project</div>
                 {instanceCount > 0 && Array.from({ length: instanceCount }).map((_, i) => (
                   <div key={i} className="h-5 pl-3 pr-1.5 rounded bg-white/5 text-white/50 text-[10px] flex items-center">Idea {String.fromCharCode(65 + i)}</div>
                 ))}
@@ -443,7 +443,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
                     <HotspotButton id="fig-text" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
                       <div className={`rounded-full px-6 py-3 ${hasStyle ? 'px-16 py-8 text-xl' : 'px-6 py-3 text-base'} ${hasComponent && !hasFillInner ? `border-2 border-[#8b5cf6] ${hasAutoLayout ? 'bg-[#4c1d95]' : 'bg-[#8b5cf6]/20'}` : !hasFillInner ? `border border-white/30 ${hasAutoLayout ? 'bg-[#4a4a4a]' : 'bg-white/10'}` : ''} ${hasStyle ? 'bg-[#1a5c2e] border-2 border-[#34c759]/60' : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`} style={hasFillInner && mmFillInner ? { backgroundColor: MM_FILL_COLORS.find((c) => c.id === mmFillInner)?.bg ?? '#4c1d95', border: `2px solid ${MM_FILL_COLORS.find((c) => c.id === mmFillInner)?.border ?? '#7c3aed'}` } : undefined}>
-                        {hasText && <span className="text-white font-medium">{hasStyle ? 'Design System' : 'Design System'}</span>}
+                        {hasText && <span className="text-white font-medium">{hasStyle ? 'Product Mgmt' : 'Project'}</span>}
                         {!hasText && <span className="text-white/40">Frame</span>}
                       </div>
                     </HotspotButton>
@@ -465,7 +465,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                   )
                 })()}
                 {hasStyle && (() => {
-                  const pmLabels = ['Brand', 'Components', 'Typography', 'Color', 'Spacing', 'Layout', 'Icons', 'Tokens', 'Grid']
+                  const pmLabels = ['OKR', 'KPI', 'MVP', 'ROI', 'PRD', 'GTM', 'Agile', 'Roadmap', 'Jira']
                   const pmStyles = [
                     { bg: 'rgba(59,130,246,0.95)', border: 'rgba(96,165,250,0.8)' },
                     { bg: 'rgba(59,130,246,0.95)', border: 'rgba(96,165,250,0.8)' },
@@ -485,7 +485,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                         ))}
                       </svg>
                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-                        <div className="rounded-full px-8 py-4 bg-[#1a5c2e] border-2 border-[#34c759]/60 text-white font-bold text-xl">Design System</div>
+                        <div className="rounded-full px-8 py-4 bg-[#1a5c2e] border-2 border-[#34c759]/60 text-white font-bold text-xl">Product Mgmt</div>
                       </div>
                       {pmLabels.map((t, i) => (
                         <div key={t} className="absolute rounded-full px-5 py-2.5 text-sm font-medium text-white whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10" style={{ left: RADIAL_LAYOUT_POS[i]!.left, top: RADIAL_LAYOUT_POS[i]!.top }}>
@@ -515,8 +515,8 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
             <HotspotButton id="fig-autolayout" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-autolayout' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Auto layout</div>
             </HotspotButton>
-            <HotspotButton id="fig-connector" currentHotspotId={currentHotspotId} onStepComplete={stepIdx === 9 ? () => { if (mmConnectorCount < 2) setMmConnectorCount((c) => c + 1); else { setMmConnectorCount(3); onStepComplete(); } } : onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-connector' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Connector {stepIdx === 9 && mmConnectorCount > 0 ? `(${mmConnectorCount}/3)` : ''}</div>
+            <HotspotButton id="fig-connector" currentHotspotId={currentHotspotId} onStepComplete={stepIdx === 9 ? () => { if (mmConnectorCount < 8) setMmConnectorCount((c) => c + 1); else { setMmConnectorCount(9); onStepComplete(); } } : onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-connector' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Connector {stepIdx === 9 && mmConnectorCount > 0 ? `(${mmConnectorCount}/9)` : ''}</div>
             </HotspotButton>
             <HotspotButton id="fig-autolayout" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-autolayout' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Auto layout</div>
