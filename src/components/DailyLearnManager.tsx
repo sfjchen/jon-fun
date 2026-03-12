@@ -37,7 +37,9 @@ export default function DailyLearnManager() {
   const [restoring, setRestoring] = useState(false)
   const [restoreResult, setRestoreResult] = useState<string | null>(null)
   const [discoveredKeys, setDiscoveredKeys] = useState<string[] | null>(null)
+  const [discoverError, setDiscoverError] = useState<string | null>(null)
   const [discovering, setDiscovering] = useState(false)
+  const [adminKey, setAdminKey] = useState('')
 
   const refresh = useCallback(() => {
     setEntries(loadEntries())
@@ -374,33 +376,45 @@ export default function DailyLearnManager() {
             </p>
           )}
           <div className="mt-4 pt-4 border-t border-white/10">
-            <p className="text-gray-400 text-sm mb-2">If you never set a sync key, data may be under a device ID.</p>
-            <button
-              type="button"
-              onClick={async () => {
-                setDiscovering(true)
-                setDiscoveredKeys(null)
-                try {
-                  const res = await fetch('/api/daily-learn/admin/keys')
-                  const data = (await res.json()) as { userIds?: string[]; error?: string }
-                  if (data.userIds?.length) setDiscoveredKeys(data.userIds)
-                  else setDiscoveredKeys([])
-                } catch {
-                  setDiscoveredKeys([])
-                } finally {
-                  setDiscovering(false)
-                }
-              }}
-              disabled={discovering}
-              className="text-blue-400 hover:text-blue-300 text-sm underline disabled:opacity-50"
-            >
-              {discovering ? 'Listing…' : 'List all keys in database'}
-            </button>
+            <p className="text-gray-400 text-sm mb-2">If you never set a sync key, data may be under a device ID. Admin key required.</p>
+            <div className="flex gap-2 items-center flex-wrap">
+              <input
+                type="password"
+                value={adminKey}
+                onChange={(e) => { setAdminKey(e.target.value); setDiscoveredKeys(null) }}
+                placeholder="Admin key"
+                className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/20 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-32"
+              />
+              <button
+                type="button"
+                onClick={async () => {
+                  setDiscovering(true)
+                  setDiscoveredKeys(null)
+                  setDiscoverError(null)
+                  try {
+                    const res = await fetch(`/api/daily-learn/admin/keys?key=${encodeURIComponent(adminKey)}`)
+                    const data = (await res.json()) as { userIds?: string[]; error?: string }
+                    if (res.status === 401) setDiscoverError('Invalid admin key')
+                    else if (data.userIds?.length) setDiscoveredKeys(data.userIds)
+                    else setDiscoveredKeys([])
+                  } catch {
+                    setDiscoverError('Request failed')
+                  } finally {
+                    setDiscovering(false)
+                  }
+                }}
+                disabled={discovering || !adminKey.trim()}
+                className="text-blue-400 hover:text-blue-300 text-sm underline disabled:opacity-50"
+              >
+                {discovering ? 'Listing…' : 'List keys'}
+              </button>
+            </div>
+            {discoverError && <p className="mt-2 text-amber-400 text-sm">{discoverError}</p>}
             {discoveredKeys && (
               <div className="mt-2 space-y-1">
-                {discoveredKeys.length === 0 ? (
+                {discoveredKeys.length === 0 && !discoverError ? (
                   <p className="text-amber-400/90 text-sm">No entries in database. Data was never synced.</p>
-                ) : (
+                ) : discoveredKeys.length > 0 ? (
                   discoveredKeys.map((uid) => (
                     <div key={uid} className="flex items-center gap-2">
                       <code className="text-gray-300 text-sm bg-white/5 px-2 py-0.5 rounded">{uid}</code>
@@ -427,7 +441,7 @@ export default function DailyLearnManager() {
                       </button>
                     </div>
                   ))
-                )}
+                ) : null}
               </div>
             )}
           </div>

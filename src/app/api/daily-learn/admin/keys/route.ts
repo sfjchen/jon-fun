@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
-/** Returns distinct user_ids that have entries. For recovery when sync key is lost. */
+/** Returns distinct user_ids that have entries. Requires DAILY_LEARN_ADMIN_SECRET. */
 export async function GET(request: NextRequest) {
   const secret = process.env.DAILY_LEARN_ADMIN_SECRET
   const key = request.nextUrl.searchParams.get('key') ?? request.headers.get('x-admin-key') ?? ''
-  if (secret && key !== secret) {
+  if (!secret || key !== secret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
