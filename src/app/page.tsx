@@ -9,7 +9,7 @@ const items: GameCardGame[] = [
   { id: 'tmr', title: 'TMR System', description: 'Targeted Memory Reactivation for enhanced learning and memory consolidation', icon: '/doodles/tmr.svg', href: '/games/tmr', available: true },
   { id: 'daily-log', title: '1 Sentence Everyday', description: 'Log one sentence (or more) per day; view history, calendar, and export', icon: '/doodles/daily.svg', href: '/games/daily-log', available: true },
   { id: 'pear-navigator', title: 'Pear Navigator', description: 'Step-by-step guide with AI-style highlight overlay for creative apps (Procreate, Figma)', icon: '/doodles/pear.svg', href: '/games/pear-navigator', available: true },
-  { id: '24', title: '24 Game', description: 'Use 4 numbers and basic arithmetic to make 24', icon: '/doodles/game24.svg', href: '/games/24', available: true },
+  { id: '24', title: '24 (Jon\'s favorite)', description: 'Use 4 numbers and basic arithmetic to make 24', icon: '/doodles/game24.svg', href: '/games/24', available: true },
   { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom Jeopardy boards locally', icon: '/doodles/jeopardy.svg', href: '/games/jeopardy', available: true },
   { id: 'poker', title: 'Texas Hold\'em', description: 'Poker chip tracker with real-time multiplayer lobbies', icon: '/doodles/poker.svg', href: '/games/poker', available: true },
   { id: 'chwazi', title: 'Chwazi Finger Chooser', description: 'Place fingers on screen to randomly select a winner', icon: '/doodles/chwazi.svg', href: '/games/chwazi', available: true },

@@ -62,14 +62,14 @@ Themes aligned with logical, elegant, classy aesthetics—favicon-aligned, VC-st
 
 ---
 
-## Theme 3: **Ink & Paper**
+## Theme 3: **Ink & Paper** *(active)*
 
-**Concept:** Light, paper-like background with deep ink black. Warm cream instead of stark white. Single accent for links/CTAs.
+**Concept:** Light, paper-like background with deep ink black. Warm cream (Claude-style). Burgundy accent. Black text.
 
 | Element | Spec |
 |--------|------|
 | **Typography** | **Headings:** Lora (elegant serif). **Body:** Charter (readable, classic). |
-| **Colors** | `#faf8f5` bg, `#1a1a1a` text, `#6b6b6b` muted, `#2563eb` accent (blue). |
+| **Colors** | `#faf6f0` bg, `#1a1a1a` text, `#6b6359` muted, `#800020` accent (burgundy). |
 | **Layout** | Centered column, max-width ~65ch. Paragraph rules, minimal decoration. |
 | **Mood** | Classic, readable, refined. |
 
