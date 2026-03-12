@@ -249,17 +249,20 @@ const TASKS: Record<string, Task> = {
     app: 'Figma (PearPad)',
     mock: 'figma',
     steps: [
-      { title: 'Create central frame', desc: 'Select the Frame tool and draw a frame for your central idea.', hint: 'Tap the canvas area to place the frame', highlight: { x: 180, y: 100, w: 120, h: 60 }, hotspotId: 'fig-canvas' },
-      { title: 'Add text to frame', desc: 'Double-tap the frame and type your central topic (e.g. "Project").', hint: 'The frame becomes editable when selected', highlight: { x: 200, y: 110, w: 80, h: 40 }, hotspotId: 'fig-text' },
-      { title: 'Create component', desc: 'Select the frame and tap Create component to make it reusable.', hint: 'Components let you add instances for branches', highlight: { x: 520, y: 60, w: 100, h: 36 }, hotspotId: 'fig-component-tab' },
-      { title: 'Add first instance', desc: 'Tap Instance to add your first branch idea.', hint: 'Instances are copies linked to the main component', highlight: { x: 180, y: 180, w: 100, h: 50 }, hotspotId: 'fig-instance' },
-      { title: 'Add instances (A–B)', desc: 'Tap + Instance to add Ideas A and B.', hint: 'One tap adds the batch', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instances (C–D)', desc: 'Tap + Instance to add Ideas C and D.', hint: 'Build out your mindmap branches', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instances (E–F)', desc: 'Tap + Instance to add Ideas E and F.', hint: 'Edit one; all instances update', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instances (G–I)', desc: 'Tap + Instance to add Ideas G, H, and I.', hint: 'Last branches—then connectors', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add connectors', desc: 'Tap Connector to draw lines linking the central node to each branch.', hint: 'Connectors show relationships between ideas', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
-      { title: 'Auto layout', desc: 'Tap Auto layout for consistent spacing between nodes.', hint: 'Keeps the mindmap tidy and readable', highlight: { x: 520, y: 180, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
-      { title: 'Fill with example', desc: 'Tap Fill example to populate with a Product Management example.', hint: 'OKR, KPI, Agile, Roadmap, Jira, etc.', highlight: { x: 520, y: 220, w: 100, h: 36 }, hotspotId: 'fig-style' },
+      { title: 'Create central frame', desc: 'Select the Frame tool and draw a frame for your central idea.', hint: 'Tap the canvas area', highlight: { x: 180, y: 100, w: 120, h: 60 }, hotspotId: 'fig-canvas' },
+      { title: 'Add text to frame', desc: 'Double-tap the frame and type your central topic (e.g. "Project").', hint: 'Frame becomes editable', highlight: { x: 200, y: 110, w: 80, h: 40 }, hotspotId: 'fig-text' },
+      { title: 'Create component', desc: 'Select the frame and tap Create component to make it reusable.', hint: 'Components for branches', highlight: { x: 520, y: 60, w: 100, h: 36 }, hotspotId: 'fig-component-tab' },
+      { title: 'Add first instance', desc: 'Tap Instance to add your first branch. It will overlap until layout.', hint: 'Instances stack initially', highlight: { x: 180, y: 180, w: 100, h: 50 }, hotspotId: 'fig-instance' },
+      { title: 'Add instances (A–B)', desc: 'Tap + Instance. Ideas A and B stack with the first.', hint: 'One tap adds batch', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instances (C–D)', desc: 'Tap + Instance for C and D.', hint: 'Still stacked', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instances (E–F)', desc: 'Tap + Instance for E and F.', hint: 'Build branches', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add instances (G–I)', desc: 'Tap + Instance for G, H, and I.', hint: 'All stacked; layout next', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Layout instances', desc: 'Tap Layout to spread all instances into the radial configuration.', hint: 'Nodes fan out', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-layout' },
+      { title: 'Add connectors', desc: 'Tap Connector to add lines. They overlap until auto layout.', hint: 'Links center to branches', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
+      { title: 'Auto layout', desc: 'Tap Auto layout to spread connectors to their respective cells.', hint: 'Lines connect correctly', highlight: { x: 520, y: 180, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
+      { title: 'Fill outer bubbles', desc: 'Tap Fill and pick a color for all outer branch nodes.', hint: 'Same color for all bubbles', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill-outer' },
+      { title: 'Fill inner circle', desc: 'Pick a color for the central node.', hint: 'Contrast or match', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill-inner' },
+      { title: 'See example', desc: 'Tap See example to fill in PM terms (OKR, KPI, Agile, etc.).', hint: 'Product Management mindmap', highlight: { x: 520, y: 220, w: 100, h: 36 }, hotspotId: 'fig-style' },
     ],
   },
 }
@@ -339,6 +342,12 @@ const ACCENT_COLORS: { id: string; label: string; bg: string }[] = [
   { id: 'rose', label: 'Rose', bg: 'linear-gradient(180deg, #fb7185, #e11d48)' },
   { id: 'blue', label: 'Blue', bg: 'linear-gradient(180deg, #60a5fa, #2563eb)' },
 ]
+const MM_FILL_COLORS: { id: string; label: string; bg: string; border: string }[] = [
+  { id: 'blue', label: 'Blue', bg: 'rgba(59,130,246,0.95)', border: 'rgba(96,165,250,0.8)' },
+  { id: 'teal', label: 'Teal', bg: 'rgba(20,184,166,0.95)', border: 'rgba(52,211,153,0.8)' },
+  { id: 'rose', label: 'Rose', bg: 'rgba(219,39,119,0.95)', border: 'rgba(244,114,182,0.8)' },
+  { id: 'amber', label: 'Amber', bg: 'rgba(217,119,6,0.95)', border: 'rgba(251,191,36,0.8)' },
+]
 
 function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight, stepIdx = 0, taskId }: MockProps) {
   const [bcTemplate, setBcTemplate] = useState<string>('')
@@ -352,6 +361,10 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const [bcTemplateOpen, setBcTemplateOpen] = useState(false)
   const [bcFillBgOpen, setBcFillBgOpen] = useState(false)
   const [bcFillAccentOpen, setBcFillAccentOpen] = useState(false)
+  const [mmFillOuter, setMmFillOuter] = useState<string>('blue')
+  const [mmFillInner, setMmFillInner] = useState<string>('green')
+  const [mmFillOuterOpen, setMmFillOuterOpen] = useState(false)
+  const [mmFillInnerOpen, setMmFillInnerOpen] = useState(false)
   useEffect(() => {
     if (taskId === 'figmaBusinessCard' && stepIdx !== 3 && stepIdx !== 4 && stepIdx !== 5) setBcTextInput(null)
   }, [taskId, stepIdx])
@@ -365,26 +378,22 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const hasCentralFrame = isMindmap && stepIdx >= 1
   const hasText = isMindmap && stepIdx >= 2
   const hasComponent = isMindmap && stepIdx >= 3
-  const instanceCount = isMindmap && stepIdx >= 4 ? (stepIdx === 4 ? 1 : stepIdx === 5 ? 3 : stepIdx === 6 ? 5 : stepIdx === 7 ? 7 : 9) : 0
+  const instanceCount = isMindmap && stepIdx >= 3 ? (stepIdx === 3 ? 1 : stepIdx === 4 ? 3 : stepIdx === 5 ? 5 : stepIdx === 6 ? 7 : 9) : 0
+  const hasInstanceLayout = isMindmap && stepIdx >= 8
   const hasConnectors = isMindmap && stepIdx >= 9
   const hasAutoLayout = isMindmap && stepIdx >= 10
-  const hasStyle = isMindmap && stepIdx >= 11
-  // Offset (before Auto layout): ring around center so connectors are visible; Radial (after): spread out
-  const OFFSET_POS = [
-    { left: '75%', top: '50%' }, { left: '69%', top: '66%' }, { left: '54%', top: '75%' },
-    { left: '37%', top: '72%' }, { left: '26%', top: '58%' }, { left: '26%', top: '42%' },
-    { left: '37%', top: '28%' }, { left: '54%', top: '25%' }, { left: '69%', top: '34%' },
+  const hasFillOuter = isMindmap && stepIdx >= 11
+  const hasFillInner = isMindmap && stepIdx >= 12
+  const hasStyle = isMindmap && stepIdx >= 13
+  const OVERLAP_POS = { left: '75%', top: '50%' }
+  const RADIAL_LAYOUT_POS = [
+    { left: '50%', top: '18%' }, { left: '71%', top: '25%' }, { left: '83%', top: '45%' },
+    { left: '79%', top: '67%' }, { left: '61%', top: '81%' }, { left: '39%', top: '81%' },
+    { left: '21%', top: '67%' }, { left: '17%', top: '45%' }, { left: '29%', top: '25%' },
   ]
-  const RADIAL_POS = hasAutoLayout
-    ? [
-        { left: '50%', top: '18%' }, { left: '71%', top: '25%' }, { left: '83%', top: '45%' },
-        { left: '79%', top: '67%' }, { left: '61%', top: '81%' }, { left: '39%', top: '81%' },
-        { left: '21%', top: '67%' }, { left: '17%', top: '45%' }, { left: '29%', top: '25%' },
-      ]
-    : OFFSET_POS
   const RADIAL_SVG = hasAutoLayout
     ? [[50, 18], [71, 25], [83, 45], [79, 67], [61, 81], [39, 81], [21, 67], [17, 45], [29, 25]]
-    : [[75, 50], [69, 66], [54, 75], [37, 72], [26, 58], [26, 42], [37, 28], [54, 25], [69, 34]]
+    : Array(9).fill([75, 50]) as [number, number][] // overlapping
   const clutter = (label: string) => <div key={label} className={CLUTTER_CLASS}>{label}</div>
   if (isMindmap) {
     return (
@@ -425,7 +434,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                 {hasCentralFrame && !hasStyle && (
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
                     <HotspotButton id="fig-text" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-                      <div className={`rounded-full px-6 py-3 ${hasStyle ? 'px-16 py-8 text-xl' : 'px-6 py-3 text-base'} ${hasComponent ? `border-2 border-[#8b5cf6] ${hasAutoLayout ? 'bg-[#4c1d95]' : 'bg-[#8b5cf6]/20'}` : `border border-white/30 ${hasAutoLayout ? 'bg-[#4a4a4a]' : 'bg-white/10'}`} ${hasStyle ? 'bg-[#1a5c2e] border-2 border-[#34c759]/60' : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`}>
+                      <div className={`rounded-full px-6 py-3 ${hasStyle ? 'px-16 py-8 text-xl' : 'px-6 py-3 text-base'} ${hasComponent && !hasFillInner ? `border-2 border-[#8b5cf6] ${hasAutoLayout ? 'bg-[#4c1d95]' : 'bg-[#8b5cf6]/20'}` : !hasFillInner ? `border border-white/30 ${hasAutoLayout ? 'bg-[#4a4a4a]' : 'bg-white/10'}` : ''} ${hasStyle ? 'bg-[#1a5c2e] border-2 border-[#34c759]/60' : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`} style={hasFillInner && mmFillInner ? { backgroundColor: MM_FILL_COLORS.find((c) => c.id === mmFillInner)?.bg ?? '#4c1d95', border: `2px solid ${MM_FILL_COLORS.find((c) => c.id === mmFillInner)?.border ?? '#7c3aed'}` } : undefined}>
                         {hasText && <span className="text-white font-medium">{hasStyle ? 'Product Mgmt' : 'Project'}</span>}
                         {!hasText && <span className="text-white/40">Frame</span>}
                       </div>
@@ -434,12 +443,16 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                 )}
                 {instanceCount > 0 && !hasStyle && (() => {
                   const labels = ['Idea A', 'Idea B', 'Idea C', 'Idea D', 'Idea E', 'Idea F', 'Idea G', 'Idea H', 'Idea I']
-                  const bubbleBg = hasAutoLayout ? 'bg-[#4a4a4a]' : 'bg-white/10'
+                  const outerFill = hasFillOuter && mmFillOuter ? MM_FILL_COLORS.find((c) => c.id === mmFillOuter) : null
                   return (
                     <>
-                      {Array.from({ length: instanceCount }).map((_, i) => (
-                        <div key={i} className={`absolute rounded-full px-5 py-2.5 text-sm ${bubbleBg} border border-white/25 whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10`} style={{ left: RADIAL_POS[i]!.left, top: RADIAL_POS[i]!.top }}>{labels[i]}</div>
-                      ))}
+                      {Array.from({ length: instanceCount }).map((_, i) => {
+                        const p = hasInstanceLayout ? RADIAL_LAYOUT_POS[i]! : OVERLAP_POS
+                        const bubbleBg = !outerFill ? (hasInstanceLayout ? 'bg-[#4a4a4a]' : 'bg-white/10') : ''
+                        return (
+                          <div key={i} className={`absolute rounded-full px-5 py-2.5 text-sm border border-white/25 whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10 ${bubbleBg}`} style={{ left: p.left, top: p.top, ...(outerFill ? { backgroundColor: outerFill.bg, border: `2px solid ${outerFill.border}` } : {}) }}>{labels[i]}</div>
+                        )
+                      })}
                     </>
                   )
                 })()}
@@ -467,7 +480,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                         <div className="rounded-full px-8 py-4 bg-[#1a5c2e] border-2 border-[#34c759]/60 text-white font-bold text-xl">Product Mgmt</div>
                       </div>
                       {pmLabels.map((t, i) => (
-                        <div key={t} className="absolute rounded-full px-5 py-2.5 text-sm font-medium text-white whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10" style={{ left: RADIAL_POS[i]!.left, top: RADIAL_POS[i]!.top }}>
+                        <div key={t} className="absolute rounded-full px-5 py-2.5 text-sm font-medium text-white whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10" style={{ left: RADIAL_LAYOUT_POS[i]!.left, top: RADIAL_LAYOUT_POS[i]!.top }}>
                           <span className="rounded-full px-4 py-2" style={{ backgroundColor: pmStyles[i]!.bg, border: `2px solid ${pmStyles[i]!.border}` }}>{t}</span>
                         </div>
                       ))}
@@ -491,15 +504,54 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
             <HotspotButton id="fig-instance2" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-instance2' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>+ Instance</div>
             </HotspotButton>
+            <HotspotButton id="fig-layout" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-layout' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Layout</div>
+            </HotspotButton>
             <HotspotButton id="fig-connector" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-connector' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Connector</div>
             </HotspotButton>
             <HotspotButton id="fig-autolayout" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-autolayout' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Auto layout</div>
             </HotspotButton>
-            <HotspotButton id="fig-style" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-style' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Fill example</div>
-            </HotspotButton>
+            {stepIdx === 11 && (
+              <div className="relative">
+                <HotspotButton id="fig-fill-outer" currentHotspotId={currentHotspotId} onStepComplete={() => setMmFillOuterOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
+                  <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-outer' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Fill outer <span className="text-xs">▼</span></div>
+                </HotspotButton>
+                {mmFillOuterOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
+                    {MM_FILL_COLORS.map((c) => (
+                      <button key={c.id} type="button" onClick={() => { setMmFillOuter(c.id); setMmFillOuterOpen(false); onStepComplete(); }} className="w-full flex items-center gap-2 px-3 py-2 rounded text-left text-sm text-white/90 hover:bg-white/10">
+                        <div className="w-6 h-6 rounded border shrink-0" style={{ background: c.bg, borderColor: c.border }} />
+                        <span>{c.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {stepIdx === 12 && (
+              <div className="relative">
+                <HotspotButton id="fig-fill-inner" currentHotspotId={currentHotspotId} onStepComplete={() => setMmFillInnerOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
+                  <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-inner' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Fill inner <span className="text-xs">▼</span></div>
+                </HotspotButton>
+                {mmFillInnerOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
+                    {MM_FILL_COLORS.map((c) => (
+                      <button key={c.id} type="button" onClick={() => { setMmFillInner(c.id); setMmFillInnerOpen(false); onStepComplete(); }} className="w-full flex items-center gap-2 px-3 py-2 rounded text-left text-sm text-white/90 hover:bg-white/10">
+                        <div className="w-6 h-6 rounded border shrink-0" style={{ background: c.bg, borderColor: c.border }} />
+                        <span>{c.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {stepIdx === 13 && (
+              <HotspotButton id="fig-style" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+                <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-style' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>See example</div>
+              </HotspotButton>
+            )}
           </div>
         </div>
       </div>
