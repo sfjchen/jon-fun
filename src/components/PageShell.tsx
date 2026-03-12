@@ -28,7 +28,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
       className="min-h-screen overflow-x-hidden"
       style={{ backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
     >
-      <header className="border-b px-4 py-4 md:py-6" style={{ borderColor: 'var(--ink-border)' }}>
+      <header className={`px-4 py-4 md:py-6 ${!isHome ? 'border-b' : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
         <div className={`mx-auto max-w-6xl flex items-center ${isHome ? 'justify-center' : 'justify-between'}`}>
           <Link
             href="/"
