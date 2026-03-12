@@ -158,6 +158,44 @@ Themes aligned with logical, elegant, classy aesthetics—favicon-aligned, VC-st
 
 ---
 
+## Theme 7: **Developer Logical**
+
+**Concept:** Dark code-editor base, terminal/IDE aesthetic. Logical, technical, minimal. Suits dev portfolios, docs, tools.
+
+| Element | Spec |
+|--------|------|
+| **Typography** | **Headings:** JetBrains Mono or IBM Plex Mono (monospace). **Body:** IBM Plex Sans (readable, technical). |
+| **Colors** | `#0d1117` bg, `#e6edf3` text, `#8b949e` muted, `#0ea5e9` accent (cyan) or `#22c55e` (green). |
+| **Layout** | Clean sections, optional grid lines, code-block feel. Sharp corners, logical hierarchy. |
+| **Mood** | Technical, logical, professional. |
+
+**Why it works:** Monospace + dark bg reads as developer-native. Cyan/green accents are terminal-familiar. No gradients, no generic startup template.
+
+```css
+:root {
+  --dev-bg: #0d1117;
+  --dev-text: #e6edf3;
+  --dev-muted: #8b949e;
+  --dev-accent: #0ea5e9;
+}
+```
+
+---
+
+## Image Examples
+
+Visual mockups for each theme (hero sections, typography, color):
+
+| Theme | Image |
+|-------|------|
+| Monolith | ![Monolith](theme-examples/theme-monolith.png) |
+| Ink & Paper | ![Ink & Paper](theme-examples/theme-ink-paper.png) |
+| Charcoal Statement | ![Charcoal Statement](theme-examples/theme-charcoal-statement.png) |
+| Bone & Black | ![Bone & Black](theme-examples/theme-bone-black.png) |
+| Developer Logical | ![Developer Logical](theme-examples/theme-developer-logical.png) |
+
+---
+
 ## Quick Reference: Font Pairs
 
 | Theme | Heading | Body |
@@ -168,6 +206,7 @@ Themes aligned with logical, elegant, classy aesthetics—favicon-aligned, VC-st
 | Charcoal Statement | Playfair Display | DM Sans |
 | Navy Reserve | Crimson Pro | Nunito Sans |
 | Bone & Black | Libre Baskerville | Karla |
+| Developer Logical | JetBrains Mono | IBM Plex Sans |
 
 ---
 
