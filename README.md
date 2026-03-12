@@ -345,6 +345,7 @@ Running log of project work. Update this section when making significant changes
 
 **2025-03**
 
+- **Pear Navigator business card**: Template dropdown first (Minimal, Classic, Modern); separate fill dropdowns for background + accent; Text adds textbox per step—overlay prompts name/role/email with Done
 - **Sports-talent-research**: Evidence backup table mapping key claims (genetic testing, physical test validity, force plates) to peer-reviewed sources
 - **docs/MS&E165-Metrics-Sources.md**: Sources for Pear Navigator GTM metrics (retention, adoption, Copilot benchmarks)
 - **1 Sentence Everyday**: Remove personal sync key from restore banner; generic "enter your sync key" for all users
