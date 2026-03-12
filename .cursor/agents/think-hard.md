@@ -1,5 +1,5 @@
 ---
-name: heavy-lift
+name: think-hard
 description: Delegate automatically when the task is complex, requires research, exploration, parallel analyses, or critical perspectives. Use proactively for multi-step context-heavy work. Prefer delegating over doing in main context—keeps conversation clean. One focused task per invocation.
 model: inherit
 ---
