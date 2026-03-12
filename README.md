@@ -52,6 +52,7 @@ src/
 │   └── page.tsx            # Home page
 ├── components/             # React components
 │   ├── PageShell.tsx       # Shared layout (sfjc.dev header, back link)
+│   ├── GameCard.tsx        # Paper card for game grid (Ink & Paper)
 │   ├── Game24.tsx
 │   ├── JeopardyEditor.tsx
 │   ├── JeopardyPlayer.tsx
@@ -349,6 +350,7 @@ Running log of project work. Update this section when making significant changes
 
 **2025-03**
 
+- **UI Phase 2 (Ink & Paper)**: GameCard extracted to components/GameCard.tsx (paper card, ink text, translateY hover); Home redesigned—flat grid, no gradient/duplicate header, minimal Coming Soon modal (bg-black/40 overlay); Leaderboards Ink & Paper
 - **UI Phase 1 (Ink & Paper)**: Design system in globals.css (--ink-* vars, Lora + Charter); PageShell component (sfjc.dev header, back link on subpages); root layout wraps all pages; Tailwind @theme for ink colors/fonts
 - **docs/Website-Themes-Reference.md**: Added Theme 7 (Developer Logical), image examples for Monolith, Ink & Paper, Charcoal Statement, Bone & Black, Developer Logical in `docs/theme-examples/`
 - **1 Sentence Everyday**: Fix RLS on daily_learn_entries—add policies for anon SELECT/INSERT/UPDATE/DELETE (was blocking restore)

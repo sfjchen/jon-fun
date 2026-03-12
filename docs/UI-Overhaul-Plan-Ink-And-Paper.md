@@ -2,9 +2,9 @@
 
 ## Executive Summary
 
-**Goals:** Rebrand Jon-fun Game Hub (sfjc.dev) from the current purple-gradient, glassmorphism aesthetic to the Ink & Paper theme—cream background, ink typography, editorial clarity—with restrained handwritten/doodle character where it enhances without overwhelming.
+**Goals:** Rebrand sfjc.dev from purple-gradient, glassmorphism to Ink & Paper—cream, ink typography, editorial clarity. Concise, simple, direct, minimal. No clutter.
 
-**Constraints:** Preserve all functionality; game-specific UIs (Poker green felt, Pear Navigator dark tablet simulator) may retain thematic divergence where justified; avoid Inter, Roboto, purple gradients; maintain VC-style elegance.
+**Constraints:** Preserve all functionality; game-specific UIs (Poker green felt, Pear Navigator dark) retain thematic divergence; avoid Inter, Roboto, purple gradients; minimal doodle intensity; fewer pages/redirects.
 
 **Rollback strategy:** Create git branch `pre-ink-paper-overhaul` (or tag `pre-ink-paper-overhaul`) before any code changes. Document revert steps in Appendix.
 
@@ -76,7 +76,7 @@
 | Body | Charter | 1rem / 16px | 400 |
 | Small | Charter | 0.875rem / 14px | 400 |
 
-Import Lora (400, 600) and Charter (400) from Google Fonts. Line-height: 1.5 body, 1.2 headings.
+Import Lora (400, 600) and Charter (400) from Google Fonts. Fallback: `Charter, 'Bitstream Charter', Georgia, serif`. Revisit body font later—Source Serif 4 or similar if Charter feels off.
 
 ### Spacing Scale
 
@@ -90,17 +90,9 @@ Import Lora (400, 600) and Charter (400) from Google Fonts. Line-height: 1.5 bod
 - **Button secondary:** `border border-[var(--ink-border)]`, `text-[var(--ink-text)]`, hover `bg-[var(--ink-paper)]`.
 - **Link:** `text-[var(--ink-accent)]` with `underline` or `underline-offset-2`; hover slight darken.
 
-### Handwritten / Doodle Accents (Restraint Guidelines)
+### Handwritten / Doodle Accents
 
-| Element | Accent | Restraint |
-|---------|--------|-----------|
-| Section dividers | Hand-drawn rule (SVG path, ink bleed) | One style, reused; not every divider |
-| Game icons | Small hand-drawn icon or marginalia-style sketch | Replace emoji where it fits; keep poker-table.svg if thematic |
-| Underline on hover | Slight wobbly underline (CSS/SVG) | Only on primary nav links or featured game titles |
-| Paper texture | Optional `background-image: url(paper-texture.svg)` at low opacity | Single subtle layer; not on every surface |
-| Marginalia | Small doodle in corner of cards (e.g., tiny star, checkmark) | Max 1–2 per page; never on every card |
-
-**Rule:** If in doubt, omit. Character should feel like a thoughtful margin note, not a sticker pack.
+**Minimal intensity for now.** Defer most accents. If added later: one subtle divider or 1 marginalia max. No wobbly underlines, no paper texture initially. Keep poker-table.svg; emoji for other games is fine.
 
 ---
 
@@ -123,31 +115,21 @@ Import Lora (400, 600) and Charter (400) from Google Fonts. Line-height: 1.5 bod
 └── /admin/tmr (low prominence)
 ```
 
-### Primary Nav (Proposed)
+### Primary Nav
 
-- **Persistent header:** Logo/wordmark "Game Hub" (or "sfjc.dev") left; right: "Games" dropdown or link, "Leaderboards", "← Home" or breadcrumb on subpages.
-- **Alternative (simpler):** Logo left, "All Games" + "Leaderboards" as text links; no dropdown. "← Home" remains for deep pages.
+- **Site name:** sfjc.dev (header/logo).
+- **No dropdown, no "All Games" link.** Home shows flat game grid—all games equally. Minimal nav: logo left, optional "Leaderboards" link; back link (← Home) on subpages only.
 
 ### Secondary Nav
 
-- None for now. Games are discovered from home grid. Leaderboards is a top-level destination.
+- None. Games are the home content. No extra pages or redirects.
 
-### Home Structure (Editorial Hub)
+### Home Structure (Minimal)
 
-1. **Hero:** Short headline ("Games & tools for learning and play"), subline. No Features→Pricing→Testimonials.
-2. **Game discovery:** Grouped by type:
-   - **Personal:** 1 Sentence Everyday, TMR System
-   - **Play with others:** 24, Jeopardy, Poker, Chwazi
-   - **Demo:** Pear Navigator
-   - **Coming Soon:** Leaderboards, future games
-3. **Paragraph rules** between sections (hairline or hand-drawn rule).
-4. **Max-width ~65ch** for intro copy; grid can extend to ~72rem for cards.
-
-### Game Discovery Flow
-
-- User lands on home → sees grouped cards → clicks game → enters game.
-- No search/filter initially. Grouping provides enough structure.
-- "Coming Soon" card opens modal (retain behavior; restyle for Ink & Paper).
+1. **Header:** "sfjc.dev" only. No tagline unless one short line.
+2. **Game grid:** Flat list—all games shown equally, no grouping. Same card treatment for each.
+3. **Coming Soon:** Card opens modal (retain; restyle for Ink & Paper).
+4. **Max-width** ~72rem for grid; concise, no clutter.
 
 ---
 
@@ -155,14 +137,14 @@ Import Lora (400, 600) and Charter (400) from Google Fonts. Line-height: 1.5 bod
 
 ### Home
 
-- **Layout:** Centered column, max-width 72rem. Cream background.
-- **Content hierarchy:** H1 "Game Hub" (or site name) → tagline → grouped game grid.
-- **Key elements:** GameCard redesign (paper card, ink text, accent for "Play"); Coming Soon modal (paper-style, ink borders).
-- **Layout notes:** 2–3 columns grid on desktop; 1 col mobile. Generous padding.
+- **Layout:** Centered column, max-width 72rem. Cream background. Minimal.
+- **Content hierarchy:** "sfjc.dev" header → flat game grid (all equal, no grouping).
+- **Key elements:** GameCard (paper card, ink text); Coming Soon modal (paper-style).
+- **Layout notes:** 2–3 columns desktop; 1 col mobile. Concise, no clutter.
 
 ### Game Pages (Shared Shell)
 
-- **Layout:** Shared `GameLayout` or `PageShell` with: back link (← Games or ← Home), optional game title in header.
+- **Layout:** Shared `PageShell` with: back link (← Home), optional game title. Minimal.
 - **Per-game notes:**
   - **24:** Math puzzle; retain number/operator styling but adapt colors to ink/paper. `.game-card` (red) → redesign as ink-on-paper cards.
   - **Jeopardy:** Menu → Editor/Player. Adapt modal/card styling.
@@ -185,8 +167,8 @@ Import Lora (400, 600) and Charter (400) from Google Fonts. Line-height: 1.5 bod
 
 | Component | Changes |
 |-----------|---------|
-| `page.tsx` (Home) | Full redesign: Ink & Paper, grouped GameCards, new modal |
-| `GameCard` (inline) | Extract to `components/GameCard.tsx`; paper card, ink typography, optional doodle icon |
+| `page.tsx` (Home) | Full redesign: Ink & Paper, flat game grid, new modal |
+| `GameCard` (inline) | Extract to `components/GameCard.tsx`; paper card, ink typography |
 | `leaderboards/page.tsx` | Ink & Paper shell |
 | `DailyLearnManager` | Replace gradient with cream; paper cards; ink text |
 | `TMRManager` | Same |
@@ -202,11 +184,9 @@ Import Lora (400, 600) and Charter (400) from Google Fonts. Line-height: 1.5 bod
 
 | Component | Purpose |
 |----------|---------|
-| `PageShell` or `AppShell` | Shared layout: header with logo, nav, back link |
-| `GameCard` | Extracted, reusable |
-| `InkButton`, `InkCard` | Design-system primitives (or use Tailwind + CSS vars) |
-| `HandDrawnRule` | Optional SVG divider |
-| `PaperTexture` | Optional background wrapper |
+| `PageShell` | Shared layout: sfjc.dev logo, back link on subpages. Minimal. |
+| `GameCard` | Extracted, reusable paper card |
+| Design tokens | Tailwind + CSS vars; no InkButton/InkCard components unless needed |
 
 ### Removal
 
@@ -238,11 +218,10 @@ Import Lora (400, 600) and Charter (400) from Google Fonts. Line-height: 1.5 bod
 
 ### Phase 2: Home + Shared Components (Est. 1–2 days)
 
-1. Redesign Home: cream bg, grouped grid, new GameCard.
+1. Redesign Home: cream bg, flat game grid, new GameCard.
 2. Extract `GameCard`; implement paper card style.
 3. Redesign Coming Soon modal.
 4. Update Leaderboards page.
-5. Add optional `HandDrawnRule`, `PaperTexture` if time.
 
 ### Phase 3: Game Pages (Prioritized) (Est. 2–3 days)
 
@@ -255,24 +234,23 @@ Import Lora (400, 600) and Charter (400) from Google Fonts. Line-height: 1.5 bod
 5. Poker: landing only; lobby/table keep green.
 6. Pear Navigator: back link + minimal chrome tweaks.
 
-### Phase 4: Polish, Handwritten Accents, Testing (Est. 1 day)
+### Phase 4: Polish, Testing (Est. 1 day)
 
-1. Add 1–2 handwritten/doodle accents (e.g., divider, marginalia on one card).
-2. Paper texture pass (optional, low opacity).
-3. Responsive pass.
-4. Accessibility: focus states, contrast check.
-5. Cross-browser test.
+1. Minimal doodle (defer unless one accent adds value).
+2. Responsive pass.
+3. Accessibility: focus states, contrast check.
+4. Cross-browser test.
 
 ---
 
-## Open Questions for User
+## Resolved Decisions
 
-1. **Game grouping:** Confirm grouping (Personal / Play with others / Demo) or prefer flat list?
-2. **Site name:** "Game Hub" vs "sfjc.dev" vs other for header/logo?
-3. **Primary nav:** Dropdown for games vs simple "All Games" link?
-4. **Poker/ Pear:** Keep green felt and dark tablet theme, or unify everything to Ink & Paper?
-5. **Doodle intensity:** Minimal (1–2 accents total) vs moderate (per-section dividers, per-card marginalia)?
-6. **Charter availability:** Charter may need fallback (Bitstream Charter, system serif). Accept or prefer different body font (e.g., Source Serif 4)?
+- **Game grouping:** Flat list—all games equal.
+- **Site name:** sfjc.dev.
+- **Nav:** No dropdown, no "All Games" link. Flat game grid on home.
+- **Poker/Pear:** Keep game-specific themes (green felt, dark tablet).
+- **Doodle intensity:** Minimal for now.
+- **Body font:** Charter with fallback; revisit Source Serif 4 if needed.
 
 ---
 
