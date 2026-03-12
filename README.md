@@ -348,6 +348,7 @@ Running log of project work. Update this section when making significant changes
 
 **2025-03**
 
+- **1 Sentence Everyday**: Fix RLS on daily_learn_entries—add policies for anon SELECT/INSERT/UPDATE/DELETE (was blocking restore)
 - **1 Sentence Everyday**: Admin keys API now requires DAILY_LEARN_ADMIN_SECRET; Sync page admin key input for List keys
 - **1 Sentence Everyday**: Cmd+Enter to submit; Esc to cancel/leave textarea (today box blurs; edit modal closes)
 - **Pear Navigator**: Mock tools kept complex/jargony (Brush Library, Dynamics, Instance, Auto layout, Fill) to show overlay value; Business card first; designer mindmap (Brand, Components); 3 connector taps
