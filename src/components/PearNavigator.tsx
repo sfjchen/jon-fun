@@ -994,8 +994,8 @@ export default function PearNavigator() {
 
       <div className="flex-1 flex flex-col lg:flex-row gap-2 sm:gap-3 px-2 sm:px-3 pb-2 sm:pb-3 min-h-0 overflow-hidden">
         {/* Guide panel */}
-        <div className="flex-none lg:w-64 xl:w-72 min-w-0 flex flex-col min-h-0 max-h-[45vh] lg:max-h-none bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch overflow-hidden">
-            <div className="flex flex-col flex-1 min-h-0 p-4 sm:p-5 overflow-y-scroll">
+        <div className="flex-none w-full lg:w-80 xl:w-96 2xl:w-[28rem] lg:min-w-[20rem] min-w-0 flex flex-col min-h-0 max-h-[45vh] lg:max-h-none bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch overflow-hidden">
+            <div className="flex flex-col flex-1 min-h-0 p-4 sm:p-5 lg:p-6 overflow-y-scroll">
               {phase === 'task' && (
                 <>
                   <p className="text-sm font-semibold text-[#34c759] uppercase tracking-wider mb-3 shrink-0">
@@ -1019,7 +1019,7 @@ export default function PearNavigator() {
                             : 'border-white/10 bg-white/5 text-gray-300 hover:border-[#34c759]/50'
                         }`}
                       >
-                        <span className="min-w-0 truncate">{t.app}: {TASK_LABELS[id]}</span>
+                        <span className="min-w-0 truncate" title={`${t.app}: ${TASK_LABELS[id]}`}>{t.app}: {TASK_LABELS[id]}</span>
                         <span className="text-xs text-white/50 shrink-0">{t.steps.length} steps</span>
                       </button>
                     )})}
