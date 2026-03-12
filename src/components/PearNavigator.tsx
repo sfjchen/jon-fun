@@ -236,12 +236,13 @@ const TASKS: Record<string, Task> = {
     app: 'Figma (PearPad)',
     mock: 'figma',
     steps: [
-      { title: 'Create card frame', desc: 'Tap the canvas to place a frame for your business card.', hint: 'Frame = container for your design', highlight: { x: 180, y: 80, w: 200, h: 140 }, hotspotId: 'fig-canvas' },
-      { title: 'Set fill', desc: 'Tap Fill in the right panel. Pick a dark color for an elegant look.', hint: 'Fill = background color', highlight: { x: 520, y: 60, w: 80, h: 36 }, hotspotId: 'fig-fill' },
-      { title: 'Add name', desc: 'Tap Text to add a text layer. Type your name.', hint: 'Bold, prominent', highlight: { x: 520, y: 100, w: 80, h: 36 }, hotspotId: 'fig-text' },
-      { title: 'Add role', desc: 'Add another text layer for your title or role.', hint: 'Smaller, supporting', highlight: { x: 520, y: 140, w: 80, h: 36 }, hotspotId: 'fig-text' },
-      { title: 'Add email', desc: 'Add contact text—email or phone.', hint: 'Subtle, readable', highlight: { x: 520, y: 180, w: 80, h: 36 }, hotspotId: 'fig-text' },
-      { title: 'Add accent', desc: 'Tap Rectangle to add a thin line or shape for a polished accent.', hint: 'Gold or contrasting color', highlight: { x: 520, y: 220, w: 80, h: 36 }, hotspotId: 'fig-accent' },
+      { title: 'Choose template', desc: 'Tap the template dropdown to pick a layout.', hint: 'Minimal, Classic, or Modern', highlight: { x: 520, y: 60, w: 120, h: 40 }, hotspotId: 'fig-template' },
+      { title: 'Select background color', desc: 'Tap Fill and pick a background color.', hint: 'Dark tones work well', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill-bg' },
+      { title: 'Select accent color', desc: 'Pick an accent color for the accent bar.', hint: 'Contrasting color pops', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill-accent' },
+      { title: 'Add your name', desc: 'Tap Text to add a textbox. Type your name, then tap Done.', hint: 'e.g. Alex Chen', highlight: { x: 520, y: 100, w: 80, h: 36 }, hotspotId: 'fig-text' },
+      { title: 'Add your role', desc: 'Tap Text again. Type your title or role, then tap Done.', hint: 'e.g. Product Designer', highlight: { x: 520, y: 140, w: 80, h: 36 }, hotspotId: 'fig-text' },
+      { title: 'Add your email', desc: 'Tap Text. Type your email or phone, then tap Done.', hint: 'e.g. alex@studio.co', highlight: { x: 520, y: 180, w: 80, h: 36 }, hotspotId: 'fig-text' },
+      { title: 'Add accent', desc: 'Tap Rectangle to add the accent bar.', hint: 'Finishing touch', highlight: { x: 520, y: 220, w: 80, h: 36 }, hotspotId: 'fig-accent' },
     ],
   },
   figmaMindmap: {
@@ -325,11 +326,38 @@ const HOTSPOT_BTN = 'min-h-[36px] sm:min-h-[40px] rounded-lg flex items-center p
 const HOTSPOT_INACTIVE = 'bg-[#34c759]/20 text-[#34c759]'
 const HOTSPOT_ACTIVE = 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50'
 
+const CARD_TEMPLATES = [{ id: 'minimal', label: 'Minimal' }, { id: 'classic', label: 'Classic' }, { id: 'modern', label: 'Modern' }] as const
+const FILL_COLORS: { id: string; label: string; bg: string }[] = [
+  { id: 'slate', label: 'Slate', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' },
+  { id: 'navy', label: 'Navy', bg: 'linear-gradient(135deg, #0c1929 0%, #1e3a5f 100%)' },
+  { id: 'charcoal', label: 'Charcoal', bg: 'linear-gradient(135deg, #1c1917 0%, #292524 100%)' },
+  { id: 'forest', label: 'Forest', bg: 'linear-gradient(135deg, #052e16 0%, #14532d 100%)' },
+]
+const ACCENT_COLORS: { id: string; label: string; bg: string }[] = [
+  { id: 'amber', label: 'Amber', bg: 'linear-gradient(180deg, #fbbf24, #d97706)' },
+  { id: 'teal', label: 'Teal', bg: 'linear-gradient(180deg, #2dd4bf, #0d9488)' },
+  { id: 'rose', label: 'Rose', bg: 'linear-gradient(180deg, #fb7185, #e11d48)' },
+  { id: 'blue', label: 'Blue', bg: 'linear-gradient(180deg, #60a5fa, #2563eb)' },
+]
+
 function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight, stepIdx = 0, taskId }: MockProps) {
+  const [bcTemplate, setBcTemplate] = useState<string>('')
+  const [bcFillBg, setBcFillBg] = useState<string>('slate')
+  const [bcFillAccent, setBcFillAccent] = useState<string>('amber')
+  const [bcName, setBcName] = useState('')
+  const [bcRole, setBcRole] = useState('')
+  const [bcEmail, setBcEmail] = useState('')
+  const [bcTextInput, setBcTextInput] = useState<'name' | 'role' | 'email' | null>(null)
+  const [bcTextDraft, setBcTextDraft] = useState('')
+  const [bcTemplateOpen, setBcTemplateOpen] = useState(false)
+  const [bcFillBgOpen, setBcFillBgOpen] = useState(false)
+  const [bcFillAccentOpen, setBcFillAccentOpen] = useState(false)
+  useEffect(() => {
+    if (taskId === 'figmaBusinessCard' && stepIdx !== 3 && stepIdx !== 4 && stepIdx !== 5) setBcTextInput(null)
+  }, [taskId, stepIdx])
   const isMindmap = taskId === 'figmaMindmap'
   const isBusinessCard = taskId === 'figmaBusinessCard'
   const hasCard = isBusinessCard && stepIdx >= 1
-  const hasFill = isBusinessCard && stepIdx >= 2
   const hasName = isBusinessCard && stepIdx >= 3
   const hasRole = isBusinessCard && stepIdx >= 4
   const hasEmail = isBusinessCard && stepIdx >= 5
@@ -478,76 +506,159 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
     )
   }
   if (isBusinessCard) {
+    const bgStyle = FILL_COLORS.find((c) => c.id === bcFillBg)?.bg ?? 'linear-gradient(135deg, #0f172a, #1e293b)'
+    const accentStyle = ACCENT_COLORS.find((c) => c.id === bcFillAccent)?.bg ?? 'linear-gradient(180deg, #fbbf24, #d97706)'
+    const handleTemplatePick = (id: string) => { setBcTemplate(id); setBcTemplateOpen(false); onStepComplete() }
+    const handleFillBgPick = (id: string) => { setBcFillBg(id); setBcFillBgOpen(false); onStepComplete() }
+    const handleFillAccentPick = (id: string) => { setBcFillAccent(id); setBcFillAccentOpen(false); onStepComplete() }
+    const handleTextOpen = () => {
+      if (stepIdx === 3) setBcTextInput('name')
+      else if (stepIdx === 4) setBcTextInput('role')
+      else if (stepIdx === 5) setBcTextInput('email')
+    }
+    const handleTextDone = () => {
+      if (bcTextInput === 'name') setBcName(bcTextDraft)
+      else if (bcTextInput === 'role') setBcRole(bcTextDraft)
+      else setBcEmail(bcTextDraft)
+      setBcTextInput(null)
+      setBcTextDraft('')
+      onStepComplete()
+    }
     return (
       <div className="absolute inset-0 flex flex-col text-xs min-h-0 overflow-hidden">
-        <div className="h-8 sm:h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-2 sm:px-4 gap-2 sm:gap-4 shrink-0">
+        <div className="h-8 sm:h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-2 sm:px-4 gap-2 shrink-0">
           <span className="text-white/80 text-xs sm:text-sm">Frame</span>
           <span className="text-white/80 text-xs sm:text-sm">Design</span>
-          <span className="text-white/80 text-xs sm:text-sm">Prototype</span>
         </div>
-        <div className="min-h-7 sm:min-h-8 bg-[#252525] border-b border-white/10 flex items-center px-2 sm:px-3 gap-1 shrink-0 flex-wrap">
-          {['Move', 'Frame', 'Pen', 'Text', 'Rect', 'Line', 'Hand', 'Zoom', 'Fill'].map(clutter)}
+        <div className="min-h-7 sm:min-h-8 bg-[#252525] border-b border-white/10 flex items-center px-2 gap-1 shrink-0 flex-wrap">
+          {['Move', 'Frame', 'Pen', 'Text', 'Rect', 'Hand', 'Fill'].map(clutter)}
         </div>
         <div className="flex flex-1 min-h-0">
-          <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#323232] border-r border-white/10 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-scroll pointer-events-none min-h-0">
+          <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#323232] border-r border-white/10 p-1.5 shrink-0 flex flex-col gap-1 overflow-y-scroll min-h-0 pointer-events-none">
             <div className="text-white/50 text-xs font-medium">Layers</div>
             {hasCard && <div className="h-6 px-1.5 rounded bg-[#34c759]/15 text-[#34c759] text-[10px] flex items-center">Card</div>}
-            {hasName && <div className="h-5 pl-3 pr-1.5 rounded bg-white/5 text-white/50 text-[10px] flex items-center">Name</div>}
-            {hasRole && <div className="h-5 pl-3 pr-1.5 rounded bg-white/5 text-white/50 text-[10px] flex items-center">Role</div>}
-            {hasEmail && <div className="h-5 pl-3 pr-1.5 rounded bg-white/5 text-white/50 text-[10px] flex items-center">Email</div>}
-            {hasAccent && <div className="h-5 pl-3 pr-1.5 rounded bg-white/5 text-white/50 text-[10px] flex items-center">Accent</div>}
+            {hasName && <div className="h-5 pl-3 rounded bg-white/5 text-white/50 text-[10px] flex items-center">Name</div>}
+            {hasRole && <div className="h-5 pl-3 rounded bg-white/5 text-white/50 text-[10px] flex items-center">Role</div>}
+            {hasEmail && <div className="h-5 pl-3 rounded bg-white/5 text-white/50 text-[10px] flex items-center">Email</div>}
+            {hasAccent && <div className="h-5 pl-3 rounded bg-white/5 text-white/50 text-[10px] flex items-center">Accent</div>}
             {!hasCard && ['Page 1', 'Frame'].map((l) => <div key={l} className="h-6 px-1.5 rounded bg-white/5 text-white/45 text-[10px] flex items-center">{l}</div>)}
             <div className="text-white/50 text-[10px] font-medium mt-1">Pages</div>
             {['Cover', 'Flow'].map((p) => <div key={p} className="h-5 px-1.5 rounded bg-white/5 text-white/40 text-[10px] flex items-center">{p}</div>)}
           </div>
-          <HotspotButton id="fig-canvas" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="flex-1 min-w-0 flex flex-col min-h-0">
-            <div className="flex-1 p-4 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center">
-              <div className={`relative w-full max-w-sm aspect-[3.5/2] rounded-lg overflow-hidden transition-all duration-300 ${hasCard ? '' : 'border-2 border-dashed border-white/25'} ${currentHotspotId === 'fig-canvas' ? 'ring-2 ring-[#34c759]/50' : ''}`}
-                style={hasFill ? { background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)' } : hasCard ? { backgroundColor: '#334155' } : undefined}>
-                {!hasCard && <span className="absolute inset-0 flex items-center justify-center text-white/40 text-sm">Tap to create card</span>}
-                {hasCard && (
-                  <div className="absolute inset-0 p-5 sm:p-6 flex flex-col justify-between">
-                    {hasAccent && <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-amber-400 to-amber-600" />}
-                    <div className={hasAccent ? 'pl-4' : ''}>
-                      {hasName && <div className="text-white font-bold text-lg sm:text-xl tracking-tight">Alex Chen</div>}
-                      {hasRole && <div className="text-white/80 text-sm sm:text-base mt-0.5">Product Designer</div>}
-                      {hasEmail && <div className="text-white/60 text-xs sm:text-sm mt-2">alex@studio.co</div>}
-                    </div>
-                    {!hasName && !hasRole && !hasEmail && <span className="text-white/40 text-xs">Add text layers</span>}
+          <div className="flex-1 p-4 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center relative">
+            <div className={`relative w-full max-w-sm aspect-[3.5/2] rounded-lg overflow-hidden transition-all duration-300 ${hasCard ? '' : 'border-2 border-dashed border-white/25'}`}
+              style={hasCard ? { background: bgStyle } : undefined}>
+              {!hasCard && stepIdx === 0 && (
+                <span className="absolute inset-0 flex items-center justify-center text-white/40 text-sm">Choose a template to begin</span>
+              )}
+              {hasCard && (
+                <div className="absolute inset-0 p-5 sm:p-6 flex flex-col justify-between">
+                  {hasAccent && bcTemplate !== 'minimal' && (
+                    <div
+                      className={`absolute ${bcTemplate === 'modern' ? 'top-0 left-0 right-0 h-1' : 'top-0 left-0 w-1 h-full'}`}
+                      style={{ background: accentStyle }}
+                    />
+                  )}
+                  <div className={hasAccent ? 'pl-4' : ''}>
+                    {hasName && <div className="text-white font-bold text-lg sm:text-xl tracking-tight">{bcName || 'Your name'}</div>}
+                    {hasRole && <div className="text-white/80 text-sm sm:text-base mt-0.5">{bcRole || 'Your role'}</div>}
+                    {hasEmail && <div className="text-white/60 text-xs sm:text-sm mt-2">{bcEmail || 'you@example.com'}</div>}
                   </div>
-                )}
-              </div>
+                  {!hasName && !hasRole && !hasEmail && hasCard && <span className="text-white/40 text-xs">Tap Text to add fields</span>}
+                </div>
+              )}
             </div>
-          </HotspotButton>
-          <div className="w-36 min-w-[7rem] sm:w-40 bg-[#383838] border-l border-white/15 p-2 sm:p-3 shrink-0 flex flex-col gap-1.5 sm:gap-2 overflow-y-scroll min-h-0">
-            <div className="text-white/50 text-xs font-medium shrink-0">Design</div>
-            {['Layout', 'Stroke', 'Effects', 'Corner'].map(clutter)}
-            <HotspotButton id="fig-fill" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-fill' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Fill</div>
-            </HotspotButton>
-            {currentHotspotId === 'fig-fill' && (
-              <div className="p-2 rounded bg-[#454545] border border-white/10 shrink-0">
-                <div className="text-white/70 text-[10px]">Background</div>
-                <div className="flex gap-1 mt-1">
-                  <div className="w-6 h-6 rounded border border-white/20" style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)' }} />
-                  <div className="w-6 h-6 rounded bg-slate-600" />
-                  <div className="w-6 h-6 rounded bg-slate-500" />
+            {bcTextInput && (
+              <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-4 z-50" onClick={(e) => e.target === e.currentTarget && setBcTextInput(null)}>
+                <div className="bg-[#383838] rounded-xl p-4 w-full max-w-xs border border-white/20 shadow-xl" onClick={(e) => e.stopPropagation()}>
+                  <label className="block text-white/90 text-sm font-medium mb-2">
+                    {bcTextInput === 'name' && 'Type your name'}
+                    {bcTextInput === 'role' && 'Type your role or title'}
+                    {bcTextInput === 'email' && 'Type your email or phone'}
+                  </label>
+                  <input
+                    type="text"
+                    value={bcTextDraft}
+                    onChange={(e) => setBcTextDraft(e.target.value)}
+                    placeholder={bcTextInput === 'name' ? 'e.g. Alex Chen' : bcTextInput === 'role' ? 'e.g. Product Designer' : 'e.g. alex@studio.co'}
+                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#34c759]/50"
+                    autoFocus
+                  />
+                  <div className="flex gap-2 mt-3">
+                    <button type="button" onClick={() => { setBcTextInput(null); setBcTextDraft('') }} className="flex-1 py-2 rounded-lg bg-white/10 text-white/80 text-sm">Cancel</button>
+                    <button type="button" onClick={handleTextDone} className="flex-1 py-2 rounded-lg bg-[#34c759]/30 text-[#34c759] font-medium text-sm">Done</button>
+                  </div>
                 </div>
               </div>
             )}
-            <HotspotButton id="fig-text" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-              <div className={`${HOTSPOT_BTN} ${(currentHotspotId === 'fig-text') ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Text</div>
-            </HotspotButton>
-            {(stepIdx === 3 || stepIdx === 4 || stepIdx === 5) && currentHotspotId === 'fig-text' && (
+          </div>
+          <div className="w-36 min-w-[7rem] sm:w-40 bg-[#383838] border-l border-white/15 p-2 sm:p-3 shrink-0 flex flex-col gap-1.5 overflow-y-scroll min-h-0">
+            <div className="text-white/50 text-xs font-medium shrink-0">Design</div>
+            {['Layout', 'Stroke', 'Effects', 'Corner'].map(clutter)}
+            {stepIdx === 0 && (
+              <div className="relative">
+                <HotspotButton id="fig-template" currentHotspotId={currentHotspotId} onStepComplete={() => setBcTemplateOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
+                  <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-template' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Template <span className="text-xs">▼</span></div>
+                </HotspotButton>
+                {bcTemplateOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
+                    {CARD_TEMPLATES.map((t) => (
+                      <button key={t.id} type="button" onClick={() => handleTemplatePick(t.id)} className="w-full px-3 py-2.5 rounded text-left text-sm text-white/90 hover:bg-white/10 block">
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {stepIdx === 1 && (
+              <div className="relative">
+                <HotspotButton id="fig-fill-bg" currentHotspotId={currentHotspotId} onStepComplete={() => setBcFillBgOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
+                  <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-bg' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Background <span className="text-xs">▼</span></div>
+                </HotspotButton>
+                {bcFillBgOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
+                    {FILL_COLORS.map((c) => (
+                      <button key={c.id} type="button" onClick={() => handleFillBgPick(c.id)} className="w-full flex items-center gap-2 px-3 py-2 rounded text-left text-sm text-white/90 hover:bg-white/10">
+                        <div className="w-6 h-6 rounded border border-white/20 shrink-0" style={{ background: c.bg }} />
+                        <span>{c.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {stepIdx === 2 && (
+              <div className="relative">
+                <HotspotButton id="fig-fill-accent" currentHotspotId={currentHotspotId} onStepComplete={() => setBcFillAccentOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
+                  <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-accent' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Accent <span className="text-xs">▼</span></div>
+                </HotspotButton>
+                {bcFillAccentOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
+                    {ACCENT_COLORS.map((c) => (
+                      <button key={c.id} type="button" onClick={() => handleFillAccentPick(c.id)} className="w-full flex items-center gap-2 px-3 py-2 rounded text-left text-sm text-white/90 hover:bg-white/10">
+                        <div className="w-6 h-6 rounded border border-white/20 shrink-0" style={{ background: c.bg }} />
+                        <span>{c.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {(stepIdx === 3 || stepIdx === 4 || stepIdx === 5) && !bcTextInput && (
+              <HotspotButton id="fig-text" currentHotspotId={currentHotspotId} onStepComplete={handleTextOpen} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+                <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-text' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Text</div>
+              </HotspotButton>
+            )}
+            {(stepIdx === 3 || stepIdx === 4 || stepIdx === 5) && currentHotspotId === 'fig-text' && !bcTextInput && (
               <div className="p-2 rounded bg-[#454545] border border-white/10 shrink-0 text-[10px] text-white/70">
                 {stepIdx === 3 ? 'Add name' : stepIdx === 4 ? 'Add role' : 'Add email'}
               </div>
             )}
-            <HotspotButton id="fig-accent" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-accent' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Rectangle</div>
-            </HotspotButton>
-            {currentHotspotId === 'fig-accent' && (
-              <div className="p-2 rounded bg-[#454545] border border-white/10 shrink-0 text-[10px] text-white/70">Accent line</div>
+            {stepIdx === 6 && (
+              <HotspotButton id="fig-accent" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+                <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-accent' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Rectangle</div>
+              </HotspotButton>
             )}
           </div>
         </div>
