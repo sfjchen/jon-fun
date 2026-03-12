@@ -10,15 +10,18 @@ const features = [
 export default function LeaderboardsPage() {
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-6 font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>
-        🏆 Leaderboards
+      <h1 className="mb-6 font-lora text-2xl font-semibold flex items-center gap-2" style={{ color: 'var(--ink-text)' }}>
+        <img src="/doodles/leaderboards.svg" alt="" className="h-8 w-8" />
+        Leaderboards
       </h1>
 
       <div
         className="rounded-lg border p-8"
         style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
       >
-        <div className="mb-6 text-5xl">🚧</div>
+        <div className="mb-6">
+          <img src="/doodles/coming-soon.svg" alt="" className="h-16 w-16" />
+        </div>
         <h2 className="mb-4 font-lora text-xl font-semibold" style={{ color: 'var(--ink-text)' }}>
           Coming Soon!
         </h2>
@@ -35,10 +38,11 @@ export default function LeaderboardsPage() {
         </ul>
         <Link href="/games/24">
           <button
-            className="rounded-lg px-6 py-2 text-white transition-colors hover:opacity-95"
+            className="rounded-lg px-6 py-2 text-white transition-colors hover:opacity-95 flex items-center gap-2 justify-center"
             style={{ backgroundColor: 'var(--ink-accent)' }}
           >
-            🎯 Play 24 Game
+            <img src="/doodles/game24.svg" alt="" className="h-5 w-5 invert" />
+            Play 24 Game
           </button>
         </Link>
       </div>

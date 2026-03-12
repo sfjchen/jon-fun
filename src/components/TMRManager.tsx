@@ -123,7 +123,10 @@ export default function TMRManager() {
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <header className="text-center mb-12">
-        <h1 className="text-5xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>🔊 TMR System</h1>
+        <h1 className="text-5xl font-bold font-lora mb-4 flex items-center justify-center gap-3" style={{ color: 'var(--ink-text)' }}>
+          <img src="/doodles/tmr.svg" alt="" className="h-12 w-12" />
+          TMR System
+        </h1>
         <p className="text-xl" style={{ color: 'var(--ink-muted)' }}>
             Targeted Memory Reactivation for Enhanced Learning
           </p>
