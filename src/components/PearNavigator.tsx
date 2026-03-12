@@ -499,9 +499,6 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
             <HotspotButton id="fig-connector" currentHotspotId={currentHotspotId} onStepComplete={stepIdx === 6 ? () => { if (mmConnectorCount < 8) setMmConnectorCount((c) => c + 1); else { setMmConnectorCount(9); onStepComplete(); } } : onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-connector' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Connector {stepIdx === 6 && mmConnectorCount > 0 ? `(${mmConnectorCount}/9)` : ''}</div>
             </HotspotButton>
-            <HotspotButton id="fig-autolayout" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-autolayout' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Auto layout</div>
-            </HotspotButton>
             {stepIdx === 8 && (
               <div className="relative">
                 <HotspotButton id="fig-fill" currentHotspotId={currentHotspotId} onStepComplete={() => setMmFillOuterOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
