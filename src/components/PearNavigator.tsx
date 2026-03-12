@@ -259,9 +259,8 @@ const TASKS: Record<string, Task> = {
       { title: 'Auto layout', desc: 'Tap Auto layout to spread all instances into the radial configuration.', hint: 'Nodes fan out', highlight: { x: 520, y: 140, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
       { title: 'Add connectors', desc: 'Tap Connector once per branch to add lines. They overlap until auto layout.', hint: 'One tap per connector', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
       { title: 'Auto layout', desc: 'Tap Auto layout to spread connectors to their respective cells.', hint: 'Lines connect correctly', highlight: { x: 520, y: 180, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
-      { title: 'Fill outer bubbles', desc: 'Tap Fill and pick a color for all outer branch nodes.', hint: 'Same color for all bubbles', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill-outer' },
-      { title: 'Fill inner circle', desc: 'Pick a color for the central node.', hint: 'Contrast or match', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill-inner' },
-      { title: 'See example', desc: 'Tap See example to fill in PM terms (OKR, KPI, Agile, etc.).', hint: 'Product Management mindmap', highlight: { x: 520, y: 220, w: 100, h: 36 }, hotspotId: 'fig-style' },
+      { title: 'Fill', desc: 'Tap Fill and pick a color for all bubbles (center and branches).', hint: 'One color for all', highlight: { x: 520, y: 100, w: 100, h: 80 }, hotspotId: 'fig-fill' },
+      { title: 'See example', desc: 'Tap See example to replace labels with PM terms (OKR, KPI, Agile, etc.).', hint: 'Words only—colors and layout stay the same', highlight: { x: 520, y: 220, w: 100, h: 36 }, hotspotId: 'fig-style' },
     ],
   },
 }
@@ -361,9 +360,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const [bcFillBgOpen, setBcFillBgOpen] = useState(false)
   const [bcFillAccentOpen, setBcFillAccentOpen] = useState(false)
   const [mmFillOuter, setMmFillOuter] = useState<string>('blue')
-  const [mmFillInner, setMmFillInner] = useState<string>('teal')
   const [mmFillOuterOpen, setMmFillOuterOpen] = useState(false)
-  const [mmFillInnerOpen, setMmFillInnerOpen] = useState(false)
   const [mmConnectorCount, setMmConnectorCount] = useState(0)
   const [mmInstanceCount, setMmInstanceCount] = useState(0)
   useEffect(() => {
@@ -386,9 +383,8 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const connectorCount = isMindmap && stepIdx >= 6 ? (stepIdx === 6 ? mmConnectorCount : 9) : 0
   const hasConnectors = connectorCount > 0
   const hasAutoLayout = isMindmap && stepIdx >= 8
-  const hasFillOuter = isMindmap && stepIdx >= 8
-  const hasFillInner = isMindmap && stepIdx >= 9
-  const hasStyle = isMindmap && stepIdx >= 10
+  const hasFill = isMindmap && stepIdx >= 8
+  const hasStyle = isMindmap && stepIdx >= 9
   const OVERLAP_POSITIONS = Array.from({ length: 9 }, (_, i) => ({
     left: `calc(75% + ${(i % 3 - 1) * 6}px)`,
     top: `calc(50% + ${(Math.floor(i / 3) - 1) * 6}px)`,
@@ -441,7 +437,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                 {hasCentralFrame && !hasStyle && (
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
                     <HotspotButton id="fig-text" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-                      <div className={`rounded-full px-6 py-3 ${hasStyle ? 'px-16 py-8 text-xl' : 'px-6 py-3 text-base'} ${hasComponent && !hasFillInner ? `border-2 border-[#8b5cf6] ${hasAutoLayout ? 'bg-[#4c1d95]' : 'bg-[#8b5cf6]/20'}` : !hasFillInner ? `border border-white/30 ${hasAutoLayout ? 'bg-[#4a4a4a]' : 'bg-white/10'}` : ''} ${hasStyle ? 'bg-[#1a5c2e] border-2 border-[#34c759]/60' : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`} style={hasFillInner && mmFillInner ? { backgroundColor: MM_FILL_COLORS.find((c) => c.id === mmFillInner)?.bg ?? '#4c1d95', border: `2px solid ${MM_FILL_COLORS.find((c) => c.id === mmFillInner)?.border ?? '#7c3aed'}` } : undefined}>
+                      <div className={`rounded-full px-6 py-3 ${hasStyle ? 'px-16 py-8 text-xl' : 'px-6 py-3 text-base'} ${hasComponent && !hasFill ? `border-2 border-[#8b5cf6] ${hasAutoLayout ? 'bg-[#4c1d95]' : 'bg-[#8b5cf6]/20'}` : !hasFill ? `border border-white/30 ${hasAutoLayout ? 'bg-[#4a4a4a]' : 'bg-white/10'}` : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`} style={hasFill && mmFillOuter ? { backgroundColor: MM_FILL_COLORS.find((c) => c.id === mmFillOuter)?.bg ?? '#4c1d95', border: `2px solid ${MM_FILL_COLORS.find((c) => c.id === mmFillOuter)?.border ?? '#7c3aed'}` } : undefined}>
                         {hasText && <span className="text-white font-medium">{hasStyle ? 'Product Mgmt' : 'Project'}</span>}
                         {!hasText && <span className="text-white/40">Frame</span>}
                       </div>
@@ -450,14 +446,14 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                 )}
                 {instanceCount > 0 && !hasStyle && (() => {
                   const labels = ['Idea A', 'Idea B', 'Idea C', 'Idea D', 'Idea E', 'Idea F', 'Idea G', 'Idea H', 'Idea I']
-                  const outerFill = hasFillOuter && mmFillOuter ? MM_FILL_COLORS.find((c) => c.id === mmFillOuter) : null
+                  const fillColor = hasFill && mmFillOuter ? MM_FILL_COLORS.find((c) => c.id === mmFillOuter) : null
                   return (
                     <>
                       {Array.from({ length: instanceCount }).map((_, i) => {
                         const p = hasInstanceLayout ? RADIAL_LAYOUT_POS[i]! : OVERLAP_POSITIONS[i]!
-                        const bubbleBg = !outerFill ? (hasInstanceLayout ? 'bg-[#4a4a4a]' : 'bg-white/10') : ''
+                        const bubbleBg = !fillColor ? (hasInstanceLayout ? 'bg-[#4a4a4a]' : 'bg-white/10') : ''
                         return (
-                          <div key={i} className={`absolute rounded-full px-5 py-2.5 text-sm border border-white/25 whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10 ${bubbleBg}`} style={{ left: p.left, top: p.top, ...(outerFill ? { backgroundColor: outerFill.bg, border: `2px solid ${outerFill.border}` } : {}) }}>{labels[i]}</div>
+                          <div key={i} className={`absolute rounded-full px-5 py-2.5 text-sm border border-white/25 whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10 ${bubbleBg}`} style={{ left: p.left, top: p.top, ...(fillColor ? { backgroundColor: fillColor.bg, border: `2px solid ${fillColor.border}` } : {}) }}>{labels[i]}</div>
                         )
                       })}
                     </>
@@ -465,17 +461,8 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                 })()}
                 {hasStyle && (() => {
                   const pmLabels = ['OKR', 'KPI', 'MVP', 'ROI', 'PRD', 'GTM', 'Agile', 'Roadmap', 'Jira']
-                  const pmStyles = [
-                    { bg: 'rgba(59,130,246,0.95)', border: 'rgba(96,165,250,0.8)' },
-                    { bg: 'rgba(59,130,246,0.95)', border: 'rgba(96,165,250,0.8)' },
-                    { bg: 'rgba(59,130,246,0.95)', border: 'rgba(96,165,250,0.8)' },
-                    { bg: 'rgba(59,130,246,0.95)', border: 'rgba(96,165,250,0.8)' },
-                    { bg: 'rgba(59,130,246,0.95)', border: 'rgba(96,165,250,0.8)' },
-                    { bg: 'rgba(59,130,246,0.95)', border: 'rgba(96,165,250,0.8)' },
-                    { bg: 'rgba(219,39,119,0.95)', border: 'rgba(244,114,182,0.8)' },
-                    { bg: 'rgba(20,184,166,0.95)', border: 'rgba(52,211,153,0.8)' },
-                    { bg: 'rgba(217,119,6,0.95)', border: 'rgba(251,191,36,0.8)' },
-                  ]
+                  const fill = MM_FILL_COLORS.find((c) => c.id === mmFillOuter) ?? MM_FILL_COLORS[0]!
+                  const fillStyle = { backgroundColor: fill.bg, border: '2px solid ' + fill.border }
                   return (
                     <>
                       <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -484,12 +471,10 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                         ))}
                       </svg>
                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-                        <div className="rounded-full px-8 py-4 bg-[#1a5c2e] border-2 border-[#34c759]/60 text-white font-bold text-xl">Product Mgmt</div>
+                        <div className="rounded-full px-6 py-3 text-base text-white font-medium" style={fillStyle}>Product Mgmt</div>
                       </div>
                       {pmLabels.map((t, i) => (
-                        <div key={t} className="absolute rounded-full px-5 py-2.5 text-sm font-medium text-white whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10" style={{ left: RADIAL_LAYOUT_POS[i]!.left, top: RADIAL_LAYOUT_POS[i]!.top }}>
-                          <span className="rounded-full px-4 py-2" style={{ backgroundColor: pmStyles[i]!.bg, border: `2px solid ${pmStyles[i]!.border}` }}>{t}</span>
-                        </div>
+                        <div key={t} className="absolute rounded-full px-5 py-2.5 text-sm font-medium text-white whitespace-nowrap -translate-x-1/2 -translate-y-1/2 z-10" style={{ left: RADIAL_LAYOUT_POS[i]!.left, top: RADIAL_LAYOUT_POS[i]!.top, ...fillStyle }}>{t}</div>
                       ))}
                     </>
                   )
@@ -519,8 +504,8 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
             </HotspotButton>
             {stepIdx === 8 && (
               <div className="relative">
-                <HotspotButton id="fig-fill-outer" currentHotspotId={currentHotspotId} onStepComplete={() => setMmFillOuterOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
-                  <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-outer' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Fill outer <span className="text-xs">▼</span></div>
+                <HotspotButton id="fig-fill" currentHotspotId={currentHotspotId} onStepComplete={() => setMmFillOuterOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
+                  <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Fill <span className="text-xs">▼</span></div>
                 </HotspotButton>
                 {mmFillOuterOpen && (
                   <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
@@ -535,23 +520,6 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
               </div>
             )}
             {stepIdx === 9 && (
-              <div className="relative">
-                <HotspotButton id="fig-fill-inner" currentHotspotId={currentHotspotId} onStepComplete={() => setMmFillInnerOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
-                  <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-inner' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Fill inner <span className="text-xs">▼</span></div>
-                </HotspotButton>
-                {mmFillInnerOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
-                    {MM_FILL_COLORS.map((c) => (
-                      <button key={c.id} type="button" onClick={() => { setMmFillInner(c.id); setMmFillInnerOpen(false); onStepComplete(); }} className="w-full flex items-center gap-2 px-3 py-2 rounded text-left text-sm text-white/90 hover:bg-white/10">
-                        <div className="w-6 h-6 rounded border shrink-0" style={{ background: c.bg, borderColor: c.border }} />
-                        <span>{c.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            {stepIdx === 10 && (
               <HotspotButton id="fig-style" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
                 <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-style' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>See example</div>
               </HotspotButton>
