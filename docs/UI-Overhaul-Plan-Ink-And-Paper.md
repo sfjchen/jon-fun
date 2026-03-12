@@ -55,16 +55,16 @@
 
 ## Design System: Ink & Paper
 
-### Color Palette (hex)
+### Color Palette (hex) — see docs/DESIGN-SYSTEM.md for canonical
 
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `--ink-bg` | `#faf8f5` | Page background (cream) |
+| `--ink-bg` | `#faf6f0` | Page background (warm cream) |
 | `--ink-text` | `#1a1a1a` | Primary text |
-| `--ink-muted` | `#6b6b6b` | Secondary text, captions |
-| `--ink-accent` | `#2563eb` | Links, CTAs, highlights |
-| `--ink-border` | `#e5e2de` | Dividers, card borders |
-| `--ink-paper` | `#f5f3ef` | Slightly darker paper for cards/sections |
+| `--ink-muted` | `#6b6359` | Secondary text, captions (taupe) |
+| `--ink-accent` | `#800020` | Links, CTAs, highlights (burgundy) |
+| `--ink-border` | `#e8e2da` | Dividers, card borders |
+| `--ink-paper` | `#f5f1eb` | Cards, sections |
 
 ### Typography
 

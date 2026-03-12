@@ -77,10 +77,12 @@ Themes aligned with logical, elegant, classy aesthetics—favicon-aligned, VC-st
 
 ```css
 :root {
-  --ink-bg: #faf8f5;
+  --ink-bg: #faf6f0;
   --ink-text: #1a1a1a;
-  --ink-muted: #6b6b6b;
-  --ink-accent: #2563eb;
+  --ink-muted: #6b6359;
+  --ink-accent: #800020;
+  --ink-border: #e8e2da;
+  --ink-paper: #f5f1eb;
 }
 ```
 
