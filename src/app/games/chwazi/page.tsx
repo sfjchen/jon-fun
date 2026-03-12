@@ -19,15 +19,16 @@ export default function ChwaziPage() {
   if (touchOk === null) return null
   if (!touchOk) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex flex-col items-center justify-center p-6">
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 max-w-md text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Chwazi Finger Chooser</h1>
-          <p className="text-gray-300 mb-6">
+      <div className="flex flex-col items-center justify-center p-6">
+        <div className="rounded-lg p-8 border max-w-md text-center shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+          <h1 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>Chwazi Finger Chooser</h1>
+          <p className="mb-6" style={{ color: 'var(--ink-muted)' }}>
             This game is only available on touchscreen devices. Please use a phone, tablet, or other touch-enabled device.
           </p>
           <Link
             href="/"
-            className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+            className="inline-block text-white px-6 py-2 rounded-lg hover:opacity-90"
+            style={{ backgroundColor: 'var(--ink-accent)' }}
           >
             ← Home
           </Link>

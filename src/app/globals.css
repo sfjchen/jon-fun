@@ -20,6 +20,7 @@
   --color-ink-paper: #f5f3ef;
   --font-lora: 'Lora', serif;
   --font-charter: Charter, 'Bitstream Charter', Georgia, serif;
+  --font-family-lora: 'Lora', serif;
 }
 
 @layer base {
@@ -82,27 +83,27 @@
     aspect-ratio: 1;
   }
   
-  /* Game Cards */
+  /* Game Cards (Ink & Paper) */
   .game-card {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    color: white;
+    background-color: var(--ink-paper);
+    color: var(--ink-text);
     font-weight: 700;
     font-size: 1.875rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     transition: all 300ms ease;
     transform: scale(1);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid rgb(248 113 113);
+    border: 2px solid var(--ink-border);
     border-radius: 0;
   }
   
   .game-card:hover {
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transform: scale(1.05);
   }
   
@@ -124,23 +125,26 @@
   }
   
   .game-card.selected {
-    background-color: rgb(248 113 113);
-    border-color: rgb(252 165 165);
+    background-color: var(--ink-accent);
+    border-color: var(--ink-accent);
+    color: white;
     transform: scale(1.1);
-    box-shadow: 0 0 0 4px rgb(254 202 202);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
   }
   
   .game-card.pending {
-    background-color: rgb(249 115 22);
-    border-color: rgb(251 146 60);
+    background-color: rgb(217 119 6);
+    border-color: rgb(245 158 11);
+    color: white;
     transform: scale(1.1);
-    box-shadow: 0 0 0 4px rgb(254 215 170);
+    box-shadow: 0 0 0 4px rgba(245 158 11, 0.2);
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
   
   .game-card.result {
-    background-color: rgb(168 85 247);
-    border-color: rgb(196 181 253);
+    background-color: rgb(107 33 168);
+    border-color: rgb(147 51 234);
+    color: white;
   }
   
   .card-content {
@@ -162,20 +166,25 @@
   .card-expression {
     font-size: 0.5rem;
     line-height: 0.7rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--ink-muted);
     margin-top: 0.25rem;
     text-align: center;
   }
   
-  /* Operator Buttons */
+  .game-card.selected .card-expression,
+  .game-card.pending .card-expression,
+  .game-card.result .card-expression {
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  /* Operator Buttons (Ink & Paper - muted tones) */
   .operator-btn {
     width: 4rem;
     height: 4rem;
     border-radius: 9999px;
-    color: white;
     font-weight: 700;
     font-size: 1.5rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     transition: all 300ms ease;
     transform: scale(1);
     cursor: pointer;
@@ -186,7 +195,7 @@
   }
   
   .operator-btn:hover {
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transform: scale(1.05);
   }
   
@@ -195,44 +204,48 @@
   }
   
   .operator-btn.plus {
-    background-color: rgb(234 179 8);
-    border-color: rgb(250 204 21);
+    background-color: rgb(180 83 9);
+    border-color: rgb(217 119 6);
+    color: white;
   }
   
   .operator-btn.plus:hover {
-    background-color: rgb(250 204 21);
+    background-color: rgb(217 119 6);
   }
   
   .operator-btn.minus {
-    background-color: rgb(59 130 246);
-    border-color: rgb(96 165 250);
+    background-color: rgb(29 78 156);
+    border-color: rgb(37 99 235);
+    color: white;
   }
   
   .operator-btn.minus:hover {
-    background-color: rgb(96 165 250);
+    background-color: rgb(37 99 235);
   }
   
   .operator-btn.multiply {
-    background-color: rgb(249 115 22);
-    border-color: rgb(251 146 60);
+    background-color: rgb(194 65 12);
+    border-color: rgb(234 88 12);
+    color: white;
   }
   
   .operator-btn.multiply:hover {
-    background-color: rgb(251 146 60);
+    background-color: rgb(234 88 12);
   }
   
   .operator-btn.divide {
-    background-color: rgb(34 197 94);
-    border-color: rgb(74 222 128);
+    background-color: rgb(22 101 52);
+    border-color: rgb(34 197 94);
+    color: white;
   }
   
   .operator-btn.divide:hover {
-    background-color: rgb(74 222 128);
+    background-color: rgb(34 197 94);
   }
   
   .operator-btn.selected {
     transform: scale(1.1);
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.15);
   }
   
   /* Action Buttons */
@@ -260,12 +273,13 @@
   }
   
   .action-btn.primary {
-    background-color: rgb(59 130 246);
-    border-color: rgb(96 165 250);
+    background-color: var(--ink-accent);
+    border-color: var(--ink-accent);
+    color: white;
   }
   
   .action-btn.primary:hover {
-    background-color: rgb(96 165 250);
+    filter: brightness(0.95);
   }
   
   .action-btn.danger {

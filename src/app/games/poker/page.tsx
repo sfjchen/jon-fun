@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import PokerJoinForm from '@/components/PokerJoinForm'
 
@@ -99,38 +98,34 @@ export default function PokerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="mb-6">
-            <Link href="/" className="text-white hover:text-gray-300 text-2xl font-bold" aria-label="Back to home">
-              ← Home
-            </Link>
-          </div>
-          <header className="text-center mb-8">
-            <h1 className="text-5xl font-bold text-white mb-4">🃏 Texas Hold&apos;em</h1>
-            <p className="text-xl text-gray-300">Poker Chip Tracker</p>
-          </header>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto">
+        <header className="text-center mb-8">
+          <h1 className="text-5xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>🃏 Texas Hold&apos;em</h1>
+          <p className="text-xl" style={{ color: 'var(--ink-muted)' }}>Poker Chip Tracker</p>
+        </header>
 
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+        <div className="rounded-lg p-8 border shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
             <div className="flex gap-4 mb-6">
               <button
                 onClick={() => setMode('create')}
-                className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-colors ${
+                className={`flex-1 py-3 px-4 rounded-lg font-semibold ${
                   mode === 'create'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                    ? 'text-white'
+                    : ''
                 }`}
+                style={mode === 'create' ? { backgroundColor: 'rgb(22 101 52)' } : { backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)', border: '1px solid' }}
               >
                 Create Room
               </button>
               <button
                 onClick={() => setMode('join')}
-                className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-colors ${
+                className={`flex-1 py-3 px-4 rounded-lg font-semibold ${
                   mode === 'join'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                    ? 'text-white'
+                    : ''
                 }`}
+                style={mode === 'join' ? { backgroundColor: 'rgb(22 101 52)' } : { backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)', border: '1px solid' }}
               >
                 Join Room
               </button>
@@ -145,12 +140,13 @@ export default function PokerPage() {
             {mode === 'create' ? (
               <form onSubmit={handleCreateRoom} className="space-y-4">
                 <div>
-                  <label className="block text-white mb-2">Your Name</label>
+                  <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>Your Name</label>
                   <input
                     type="text"
                     value={hostName}
                     onChange={(e) => setHostName(e.target.value)}
-                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full rounded-lg px-4 py-2 border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
+                    style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
                     placeholder="Enter your name"
                     required
                     maxLength={20}
@@ -159,34 +155,37 @@ export default function PokerPage() {
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-white mb-2">Small Blind</label>
+                    <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>Small Blind</label>
                     <input
                       type="number"
                       value={smallBlind}
                       onChange={(e) => setSmallBlind(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full rounded-lg px-4 py-2 border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
+                      style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
                       min="1"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-white mb-2">Big Blind</label>
+                    <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>Big Blind</label>
                     <input
                       type="number"
                       value={bigBlind}
                       onChange={(e) => setBigBlind(Math.max(smallBlind * 2, parseInt(e.target.value) || smallBlind * 2))}
-                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full rounded-lg px-4 py-2 border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
+                      style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
                       min={smallBlind * 2}
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-white mb-2">Timer (seconds)</label>
+                    <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>Timer (seconds)</label>
                     <input
                       type="number"
                       value={timerPerTurn}
                       onChange={(e) => setTimerPerTurn(Math.max(5, Math.min(300, parseInt(e.target.value) || 40)))}
-                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full rounded-lg px-4 py-2 border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
+                      style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
                       min="5"
                       max="300"
                       required
@@ -197,7 +196,8 @@ export default function PokerPage() {
                 <button
                   type="submit"
                   disabled={loading || !hostName.trim()}
-                  className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                  className="w-full text-white font-semibold py-3 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: 'rgb(22 101 52)' }}
                 >
                   {loading ? 'Creating...' : 'Create Room'}
                 </button>
@@ -207,7 +207,8 @@ export default function PokerPage() {
                 <div className="mb-4">
                   <button
                     onClick={() => setShowPositionSelection(false)}
-                    className="text-white hover:text-gray-300 mb-2"
+                    className="mb-2 hover:opacity-80"
+                    style={{ color: 'var(--ink-accent)' }}
                   >
                     ← Back to PIN entry
                   </button>
@@ -223,12 +224,13 @@ export default function PokerPage() {
             ) : (
               <form onSubmit={handleJoinRoom} className="space-y-4">
                 <div>
-                  <label className="block text-white mb-2">Room PIN</label>
+                  <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>Room PIN</label>
                   <input
                     type="text"
                     value={joinPin}
                     onChange={(e) => setJoinPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 text-center text-2xl tracking-widest"
+                    className="w-full rounded-lg px-4 py-2 border text-center text-2xl tracking-widest focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
+                    style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
                     placeholder="0000"
                     maxLength={4}
                     required
@@ -238,7 +240,8 @@ export default function PokerPage() {
                 <button
                   type="submit"
                   disabled={!joinPin || joinPin.length !== 4}
-                  className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                  className="w-full text-white font-semibold py-3 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: 'rgb(22 101 52)' }}
                 >
                   Continue to Select Seat
                 </button>
@@ -246,10 +249,9 @@ export default function PokerPage() {
             )}
           </div>
 
-          <div className="mt-8 text-center text-gray-400 text-sm">
-            <p>Use physical cards, track chips digitally</p>
-            <p className="mt-2">Share the room PIN with friends to play together</p>
-          </div>
+        <div className="mt-8 text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
+          <p>Use physical cards, track chips digitally</p>
+          <p className="mt-2">Share the room PIN with friends to play together</p>
         </div>
       </div>
     </div>

@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import {
   GAME24_MAX_PLAYERS,
@@ -785,36 +784,39 @@ export default function Game24() {
       : offlineScore
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-start lg:items-center">
+    <div className="flex items-start lg:items-center">
       <div className="max-w-6xl mx-auto px-4 py-10 lg:py-14 flex flex-col gap-6 w-full">
         <div className="grid lg:grid-cols-[320px_1fr] gap-6 order-1">
-          <aside className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white">
+          <aside className="rounded-lg border p-4 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
             {!room && (
               <div className="space-y-4">
                 <div>
-                  <div className="text-sm text-gray-200 mb-1">Name</div>
+                  <div className="text-sm mb-1" style={{ color: 'var(--ink-muted)' }}>Name</div>
                   <input
                     value={nameInput}
                     onChange={(e) => setNameInput(e.target.value)}
-                    className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-white"
+                    className="w-full rounded px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
+                    style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
                     placeholder="Enter your name"
                   />
                 </div>
                 <div className="flex items-end gap-2">
                   <div className="flex-1">
-                    <div className="text-sm text-gray-200 mb-1">Room PIN</div>
+                    <div className="text-sm mb-1" style={{ color: 'var(--ink-muted)' }}>Room PIN</div>
                     <input
                       value={pinInput}
                       onChange={(e) => setPinInput(e.target.value)}
                       maxLength={4}
-                      className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-white"
+                      className="w-full rounded px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
+                      style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
                       placeholder="1234"
                     />
                   </div>
         <button 
                     onClick={joinRoom}
                     disabled={loadingRoom}
-                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-3 py-2 rounded"
+                    className="text-white px-3 py-2 rounded disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--ink-accent)' }}
         >
                     Join
         </button>
@@ -822,7 +824,8 @@ export default function Game24() {
                 <button
                   onClick={createRoom}
                   disabled={loadingRoom}
-                  className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white px-3 py-2 rounded"
+                  className="w-full text-white px-3 py-2 rounded disabled:opacity-50"
+                  style={{ backgroundColor: 'rgb(22 101 52)' }}
                 >
                   Create Room
                 </button>
@@ -833,13 +836,13 @@ export default function Game24() {
             {room && (
               <div className="space-y-4">
                 <div>
-                  <div className="text-sm text-gray-300">Room PIN</div>
+                  <div className="text-sm" style={{ color: 'var(--ink-muted)' }}>Room PIN</div>
                   <div className="text-3xl font-bold tracking-widest">{room.pin}</div>
-                  <div className="text-xs text-gray-300 mt-1">Share the PIN to let others join</div>
+                  <div className="text-xs mt-1" style={{ color: 'var(--ink-muted)' }}>Share the PIN to let others join</div>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-300">Status</div>
+                  <div className="text-sm" style={{ color: 'var(--ink-muted)' }}>Status</div>
                   <div className="text-sm font-semibold">
                     {room.status === 'waiting' && 'Waiting'}
                     {room.status === 'active' && `Round ${room.round_number}/${GAME24_MAX_ROUNDS}`}
@@ -860,22 +863,23 @@ export default function Game24() {
                       return (
                         <div
                           key={p.player_id}
-                          className={`bg-white/5 border rounded-lg px-3 py-2 flex items-center justify-between ${
-                            p.player_id === room.host_id ? 'border-green-400/60' : 'border-white/10'
+                          className={`rounded-lg px-3 py-2 flex items-center justify-between border ${
+                            p.player_id === room.host_id ? 'border-green-500/50' : ''
                           }`}
+                          style={{ backgroundColor: 'var(--ink-bg)', borderColor: p.player_id === room.host_id ? undefined : 'var(--ink-border)' }}
                         >
                           <div className="flex items-center gap-2">
-                            <div className="text-white font-semibold truncate">{p.name}</div>
-                            {p.player_id === room.host_id && <span className="text-xs bg-green-600 px-2 py-0.5 rounded">Host</span>}
+                            <div className="font-semibold truncate" style={{ color: 'var(--ink-text)' }}>{p.name}</div>
+                            {p.player_id === room.host_id && <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded">Host</span>}
                           </div>
-                          <div className="text-sm text-gray-200 font-mono flex items-center gap-1">
+                          <div className="text-sm font-mono flex items-center gap-1" style={{ color: 'var(--ink-muted)' }}>
                             <span>{p.score ?? 0}</span>
                             {showRoundScore && <span className="text-green-300 font-semibold">+{roundScore}</span>}
                           </div>
                         </div>
                       )
                     })}
-                    {players.length === 0 && <div className="text-gray-300 text-sm">No players yet</div>}
+                    {players.length === 0 && <div className="text-sm" style={{ color: 'var(--ink-muted)' }}>No players yet</div>}
                   </div>
                 </div>
 
@@ -883,7 +887,8 @@ export default function Game24() {
                   <button
                     onClick={startGame}
                     disabled={players.length < 1 || loadingRoom}
-                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white py-2 rounded font-semibold"
+                    className="w-full text-white py-2 rounded font-semibold disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--ink-accent)' }}
                   >
                     {players.length < 1 ? 'Need at least 1 player' : 'Start Game'}
                   </button>
@@ -892,7 +897,8 @@ export default function Game24() {
                 {room.status === 'finished' && (
                   <button
                     onClick={playAgain}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded font-semibold"
+                    className="w-full text-white py-2 rounded font-semibold"
+                    style={{ backgroundColor: 'var(--ink-accent)' }}
                   >
                     Play Again
                   </button>
@@ -901,7 +907,8 @@ export default function Game24() {
                 {room && (
                   <button
                     onClick={() => leaveRoom()}
-                    className="w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded font-semibold border border-white/20"
+                    className="w-full py-2 rounded font-semibold border"
+                    style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
                   >
                     Leave Room
                   </button>
@@ -912,18 +919,15 @@ export default function Game24() {
             )}
           </aside>
 
-          <main className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white relative overflow-hidden">
-            <div className="flex items-center justify-between mb-6 text-white">
-        <Link href="/" className="text-white hover:text-gray-300 text-2xl font-bold" aria-label="Back to home">
-          ← Home
-        </Link>
-              <div className="text-center">
+          <main className="rounded-lg border p-4 relative overflow-hidden shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
+            <div className="flex items-center justify-between mb-6">
+              <div className="text-center flex-1">
                 <div className="text-lg font-semibold">Your Score</div>
-                <div className="bg-white/10 rounded-lg px-4 py-2 mt-1 text-2xl font-bold">
+                <div className="rounded-lg px-4 py-2 mt-1 text-2xl font-bold" style={{ backgroundColor: 'var(--ink-bg)' }}>
                   {displayedScore}
                 </div>
               </div>
-              <button onClick={resetSelections} className="header-icon text-2xl" aria-label="Reset selection">
+              <button onClick={resetSelections} className="text-2xl w-10 h-10 rounded-lg flex items-center justify-center hover:opacity-80" style={{ backgroundColor: 'var(--ink-accent)', color: 'white' }} aria-label="Reset selection">
                 ↻
               </button>
             </div>
@@ -934,25 +938,25 @@ export default function Game24() {
                   <div className="text-lg font-semibold">
                     {room?.status === 'active' ? `Round ${room.round_number}/${GAME24_MAX_ROUNDS}` : 'Intermission'}
                   </div>
-                  <div className="text-sm text-gray-200">
+                  <div className="text-sm" style={{ color: 'var(--ink-muted)' }}>
                     {room?.status === 'intermission'
                       ? `Next round in ${formatSeconds(intermissionRemainingMs / 1000)}s`
                       : ''}
           </div>
         </div>
         
-                <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-4">
+                <div className="w-full h-2 rounded-full overflow-hidden mb-4" style={{ backgroundColor: 'var(--ink-border)' }}>
                   <div
-                    className="h-full bg-green-400 transition-all"
-                    style={{ width: `${roundProgressRatio * 100}%`, transition: 'width 0.18s linear' }}
+                    className="h-full transition-all"
+                    style={{ width: `${roundProgressRatio * 100}%`, transition: 'width 0.18s linear', backgroundColor: 'var(--ink-accent)' }}
                   />
                 </div>
               </>
             )}
 
                 {room?.status === 'intermission' && (
-              <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-10">
-                <div className="text-2xl font-bold">Scores</div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-10 rounded-lg" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
+                <div className="text-2xl font-bold text-white">Scores</div>
                 <div className="w-full max-w-md space-y-2">
                   {sortedPlayers.map((p, idx) => {
                     const roundScore = roundScores[p.player_id]
@@ -974,12 +978,12 @@ export default function Game24() {
                     )
                   })}
                 </div>
-                <div className="text-sm text-gray-200">Next round auto-starts</div>
+                <div className="text-sm text-white/80">Next round auto-starts</div>
               </div>
             )}
 
             {room?.status === 'finished' && (
-              <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-20">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-20 rounded-lg" style={{ backgroundColor: 'rgba(0,0,0,0.75)' }}>
                 <div className="text-3xl font-bold">Final Rankings</div>
                 <div className="w-full max-w-md space-y-2">
                   {sortedPlayers.map((p, idx) => {
@@ -988,12 +992,13 @@ export default function Game24() {
                     return (
                       <div
                         key={p.player_id}
-                        className="flex items-center justify-between bg-white/10 px-3 py-2 rounded border border-white/10"
+                        className="flex items-center justify-between px-3 py-2 rounded border"
+                        style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-300 w-6 text-right">{idx + 1}.</span>
-                          <span className="font-semibold">{p.name}</span>
-                          <span className="text-sm text-gray-400">({correct}/{total})</span>
+                          <span className="text-sm w-6 text-right text-white/80">{idx + 1}.</span>
+                          <span className="font-semibold text-white">{p.name}</span>
+                          <span className="text-sm text-white/70">({correct}/{total})</span>
                         </div>
                         <span className="font-mono text-sm">{p.score ?? 0}</span>
                       </div>
@@ -1002,7 +1007,8 @@ export default function Game24() {
                 </div>
         <button 
                   onClick={playAgain}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-semibold"
+                  className="text-white px-4 py-2 rounded font-semibold"
+                  style={{ backgroundColor: 'var(--ink-accent)' }}
         >
                   Play Again
         </button>
@@ -1074,7 +1080,7 @@ export default function Game24() {
                         💡 Solution
           </button>
                     </div>
-                    <div className="text-center text-gray-200 text-sm">
+                    <div className="text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
                       Free play while waiting/not in a room. Timer/solution disable only when a round is active.
                     </div>
                   </>
@@ -1086,7 +1092,7 @@ export default function Game24() {
       </div>
 
       {message && (
-        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-lg z-50 border border-white/20">
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-4 py-2 rounded-lg z-50 border shadow-lg" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
           {message}
         </div>
       )}

@@ -1,7 +1,6 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import Link from 'next/link'
 import JeopardyEditor from '@/components/JeopardyEditor'
 import JeopardyPlayer from '@/components/JeopardyPlayer'
 import type { JeopardyBoard } from '@/lib/jeopardy'
@@ -38,19 +37,20 @@ export default function JeopardyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center p-4">
+    <div className="flex items-center justify-center p-4">
       {error && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-lg z-50">
           {error}
         </div>
       )}
-      <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 max-w-md w-full">
-        <h1 className="text-4xl font-bold text-white text-center mb-8">❓ Jeopardy with Friends</h1>
+      <div className="rounded-lg p-8 border max-w-md w-full shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+        <h1 className="text-4xl font-bold font-lora text-center mb-8" style={{ color: 'var(--ink-text)' }}>❓ Jeopardy with Friends</h1>
         
         <div className="space-y-4">
           <button
             onClick={() => setMode('editor')}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 px-6 rounded-lg text-xl font-semibold transition-colors"
+            className="w-full text-white py-4 px-6 rounded-lg text-xl font-semibold hover:opacity-90"
+            style={{ backgroundColor: 'var(--ink-accent)' }}
           >
             Create New Game
           </button>
@@ -58,7 +58,8 @@ export default function JeopardyPage() {
           <div className="grid gap-3">
             <button
               onClick={() => editFileRef.current?.click()}
-              className="w-full bg-white/10 hover:bg-white/20 text-white py-3 px-6 rounded-lg border border-white/20"
+              className="w-full py-3 px-6 rounded-lg border hover:opacity-90"
+              style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
             >
               Upload JSON to Edit
             </button>
@@ -80,7 +81,8 @@ export default function JeopardyPage() {
 
             <button
               onClick={() => playFileRef.current?.click()}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg"
+              className="w-full text-white py-3 px-6 rounded-lg hover:opacity-90"
+              style={{ backgroundColor: 'rgb(22 101 52)' }}
             >
               Upload JSON to Play
             </button>
@@ -101,12 +103,6 @@ export default function JeopardyPage() {
             }} />
           </div>
           
-          <Link
-            href="/"
-            className="w-full bg-gray-600 hover:bg-gray-700 text-white py-4 px-6 rounded-lg text-xl font-semibold transition-colors block text-center"
-          >
-            ← Home
-          </Link>
         </div>
       </div>
     </div>
