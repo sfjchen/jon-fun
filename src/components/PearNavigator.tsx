@@ -254,11 +254,8 @@ const TASKS: Record<string, Task> = {
       { title: 'Create central frame', desc: 'Select the Frame tool and draw a frame for your central idea.', hint: 'Tap the canvas area', highlight: { x: 180, y: 100, w: 120, h: 60 }, hotspotId: 'fig-canvas' },
       { title: 'Add text to frame', desc: 'Double-tap the frame and type your central topic (e.g. "Project").', hint: 'Frame becomes editable', highlight: { x: 200, y: 110, w: 80, h: 40 }, hotspotId: 'fig-text' },
       { title: 'Create component', desc: 'Select the frame and tap Create component to make it reusable.', hint: 'Components for branches', highlight: { x: 520, y: 60, w: 100, h: 36 }, hotspotId: 'fig-component-tab' },
-      { title: 'Add first instance', desc: 'Tap Instance to add your first branch. It will overlap until layout.', hint: 'Instances stack initially', highlight: { x: 180, y: 180, w: 100, h: 50 }, hotspotId: 'fig-instance' },
-      { title: 'Add instances (A–B)', desc: 'Tap + Instance. Ideas A and B stack with the first.', hint: 'One tap adds batch', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instances (C–D)', desc: 'Tap + Instance for C and D.', hint: 'Still stacked', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instances (E–F)', desc: 'Tap + Instance for E and F.', hint: 'Build branches', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
-      { title: 'Add instances (G–I)', desc: 'Tap + Instance for G, H, and I.', hint: 'All stacked; layout next', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance2' },
+      { title: 'Add first instance', desc: 'Tap Instance to add your first branch. It will overlap until auto layout.', hint: 'One tap adds one', highlight: { x: 180, y: 180, w: 100, h: 50 }, hotspotId: 'fig-instance' },
+      { title: 'Add instances', desc: 'Tap Instance 8 more times to add branches A through I. They stack until auto layout.', hint: 'One tap per instance', highlight: { x: 520, y: 100, w: 90, h: 45 }, hotspotId: 'fig-instance' },
       { title: 'Auto layout', desc: 'Tap Auto layout to spread all instances into the radial configuration.', hint: 'Nodes fan out', highlight: { x: 520, y: 140, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
       { title: 'Add connectors', desc: 'Tap Connector once per branch to add lines. They overlap until auto layout.', hint: 'One tap per connector', highlight: { x: 520, y: 140, w: 80, h: 32 }, hotspotId: 'fig-connector' },
       { title: 'Auto layout', desc: 'Tap Auto layout to spread connectors to their respective cells.', hint: 'Lines connect correctly', highlight: { x: 520, y: 180, w: 90, h: 32 }, hotspotId: 'fig-autolayout' },
@@ -368,9 +365,11 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const [mmFillOuterOpen, setMmFillOuterOpen] = useState(false)
   const [mmFillInnerOpen, setMmFillInnerOpen] = useState(false)
   const [mmConnectorCount, setMmConnectorCount] = useState(0)
+  const [mmInstanceCount, setMmInstanceCount] = useState(0)
   useEffect(() => {
     if (taskId === 'figmaBusinessCard' && stepIdx !== 3 && stepIdx !== 4 && stepIdx !== 5) setBcTextInput(null)
-    if (taskId === 'figmaMindmap' && stepIdx !== 9) setMmConnectorCount(0)
+    if (taskId === 'figmaMindmap' && stepIdx !== 4) setMmInstanceCount(0)
+    if (taskId === 'figmaMindmap' && stepIdx !== 6) setMmConnectorCount(0)
   }, [taskId, stepIdx])
   const isMindmap = taskId === 'figmaMindmap'
   const isBusinessCard = taskId === 'figmaBusinessCard'
@@ -382,14 +381,14 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const hasCentralFrame = isMindmap && stepIdx >= 1
   const hasText = isMindmap && stepIdx >= 2
   const hasComponent = isMindmap && stepIdx >= 3
-  const instanceCount = isMindmap && stepIdx >= 3 ? (stepIdx === 3 ? 1 : stepIdx === 4 ? 3 : stepIdx === 5 ? 5 : stepIdx === 6 ? 7 : 9) : 0
-  const hasInstanceLayout = isMindmap && stepIdx >= 8
-  const connectorCount = isMindmap && stepIdx >= 9 ? (stepIdx === 9 ? mmConnectorCount : 9) : 0
+  const instanceCount = isMindmap && stepIdx >= 3 ? (stepIdx === 3 ? 1 : stepIdx === 4 ? 1 + mmInstanceCount : 9) : 0
+  const hasInstanceLayout = isMindmap && stepIdx >= 6
+  const connectorCount = isMindmap && stepIdx >= 6 ? (stepIdx === 6 ? mmConnectorCount : 9) : 0
   const hasConnectors = connectorCount > 0
-  const hasAutoLayout = isMindmap && stepIdx >= 10
-  const hasFillOuter = isMindmap && stepIdx >= 11
-  const hasFillInner = isMindmap && stepIdx >= 12
-  const hasStyle = isMindmap && stepIdx >= 13
+  const hasAutoLayout = isMindmap && stepIdx >= 8
+  const hasFillOuter = isMindmap && stepIdx >= 8
+  const hasFillInner = isMindmap && stepIdx >= 9
+  const hasStyle = isMindmap && stepIdx >= 10
   const OVERLAP_POSITIONS = Array.from({ length: 9 }, (_, i) => ({
     left: `calc(75% + ${(i % 3 - 1) * 6}px)`,
     top: `calc(50% + ${(Math.floor(i / 3) - 1) * 6}px)`,
@@ -501,27 +500,24 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
           </HotspotButton>
           <div className="w-28 min-w-20 sm:w-36 sm:min-w-[7rem] sm:w-40 bg-[#383838] border-l border-white/15 p-1.5 sm:p-2 sm:p-3 shrink-0 flex flex-col gap-1.5 sm:gap-2 overflow-y-scroll min-h-0">
             <div className="text-white/50 text-xs font-medium shrink-0">Design</div>
-            {['Layout', 'Fill', 'Stroke', 'Effects', 'Corner', 'Padding', 'Gap'].map(clutter)}
+            {['Fill', 'Stroke', 'Effects', 'Corner', 'Padding', 'Gap'].map(clutter)}
             <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-component-tab' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Create component</div>
             </HotspotButton>
             {['Constraints', 'Resize', 'Opacity', 'Blend'].map(clutter)}
-            <HotspotButton id="fig-instance" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-instance' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Instance</div>
-            </HotspotButton>
-            <HotspotButton id="fig-instance2" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-instance2' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>+ Instance</div>
+            <HotspotButton id="fig-instance" currentHotspotId={currentHotspotId} onStepComplete={stepIdx === 4 ? () => { if (mmInstanceCount < 8) setMmInstanceCount((c) => c + 1); else { setMmInstanceCount(9); onStepComplete(); } } : onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-instance' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Instance {stepIdx === 4 && mmInstanceCount > 0 ? `(${1 + mmInstanceCount}/9)` : ''}</div>
             </HotspotButton>
             <HotspotButton id="fig-autolayout" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-autolayout' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Auto layout</div>
             </HotspotButton>
-            <HotspotButton id="fig-connector" currentHotspotId={currentHotspotId} onStepComplete={stepIdx === 9 ? () => { if (mmConnectorCount < 8) setMmConnectorCount((c) => c + 1); else { setMmConnectorCount(9); onStepComplete(); } } : onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-connector' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Connector {stepIdx === 9 && mmConnectorCount > 0 ? `(${mmConnectorCount}/9)` : ''}</div>
+            <HotspotButton id="fig-connector" currentHotspotId={currentHotspotId} onStepComplete={stepIdx === 6 ? () => { if (mmConnectorCount < 8) setMmConnectorCount((c) => c + 1); else { setMmConnectorCount(9); onStepComplete(); } } : onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-connector' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Connector {stepIdx === 6 && mmConnectorCount > 0 ? `(${mmConnectorCount}/9)` : ''}</div>
             </HotspotButton>
             <HotspotButton id="fig-autolayout" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-autolayout' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Auto layout</div>
             </HotspotButton>
-            {stepIdx === 11 && (
+            {stepIdx === 8 && (
               <div className="relative">
                 <HotspotButton id="fig-fill-outer" currentHotspotId={currentHotspotId} onStepComplete={() => setMmFillOuterOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
                   <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-outer' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Fill outer <span className="text-xs">▼</span></div>
@@ -538,7 +534,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                 )}
               </div>
             )}
-            {stepIdx === 12 && (
+            {stepIdx === 9 && (
               <div className="relative">
                 <HotspotButton id="fig-fill-inner" currentHotspotId={currentHotspotId} onStepComplete={() => setMmFillInnerOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
                   <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-inner' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Fill inner <span className="text-xs">▼</span></div>
@@ -555,7 +551,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                 )}
               </div>
             )}
-            {stepIdx === 13 && (
+            {stepIdx === 10 && (
               <HotspotButton id="fig-style" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
                 <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-style' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>See example</div>
               </HotspotButton>
