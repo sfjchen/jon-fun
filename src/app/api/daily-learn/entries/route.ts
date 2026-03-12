@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     if (!userId?.trim()) {
       return NextResponse.json({ error: 'userId required' }, { status: 400 })
     }
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('daily_learn_entries')
       .select('date, text, updated_at')
       .eq('user_id', userId.trim())
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       text: e.text ?? '',
       updated_at: new Date().toISOString(),
     }))
-    const { error } = await supabase.from('daily_learn_entries').upsert(rows, {
+    const { error } = await supabaseAdmin.from('daily_learn_entries').upsert(rows, {
       onConflict: 'user_id,date',
       ignoreDuplicates: false,
     })
@@ -61,7 +61,7 @@ export async function DELETE(request: NextRequest) {
     if (!userId?.trim() || !date?.trim()) {
       return NextResponse.json({ error: 'userId and date required' }, { status: 400 })
     }
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('daily_learn_entries')
       .delete()
       .eq('user_id', userId.trim())

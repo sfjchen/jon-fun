@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase'
 
 /** Returns distinct user_ids that have entries. Requires DAILY_LEARN_ADMIN_SECRET. */
 export async function GET(request: NextRequest) {
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('daily_learn_entries')
       .select('user_id')
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
