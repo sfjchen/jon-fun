@@ -20,6 +20,12 @@ npm run dev
 # Visit http://localhost:3000
 ```
 
+## 🎨 Design System
+
+**Theme:** Ink & Paper (cream + burgundy). See **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)** for color palette, typography, and guidelines. Use `var(--ink-*)` tokens from `globals.css`. Game-specific themes: Poker (green felt), Pear Navigator (dark).
+
+---
+
 ## 📦 Tech Stack
 
 - **Framework**: Next.js 15 with App Router
@@ -352,6 +358,7 @@ Running log of project work. Update this section when making significant changes
 **2025-03**
 
 - **Doodle icons**: Added `public/doodles/`—hand-drawn SVG icons (tmr, daily, pear, game24, jeopardy, chwazi, leaderboards, coming-soon, poker). Replaced emojis in GameCard, TMR header, leaderboards, jeopardy, Coming Soon modal. Texas Hold'em uses doodle-style poker.svg (card + spade).
+- **docs/DESIGN-SYSTEM.md**: Canonical design system doc for agents—palette, typography, guidelines
 - **Palette & home**: Cream background (#faf6f0), burgundy accent (#800020), taupe muted; removed header border on home; 24 Game → 24 (Jon's favorite)
 - **Layout fix**: PearNavigator and Poker lobby/table use full-bleed (no max-w constraint) to prevent horizontal overflow and left whitespace; PearNavigator w-screen→w-full; overflow-x-hidden on html/body and PageShell
 - **UX polish**: sfjc.dev bigger centered on homepage; all emojis replaced with doodle SVGs (tmr, daily, pear, game24, jeopardy, chwazi, leaderboards, coming-soon, study, sleep, history, info); touch targets ≥44px (Game24 reset, Poker Update, Daily-log month nav, Jeopardy overlay); removed duplicate Pear ← Home; img→Image for doodles
@@ -401,7 +408,7 @@ Running log of project work. Update this section when making significant changes
 
 ## 📋 README Maintenance Guidelines
 
-**For AI Agents**: When making changes to the project, update this README if: adding a game, DB tables/columns, API routes, architectural changes, or tech stack changes. Add entries to the Changelog section above for significant changes.
+**For AI Agents**: When making changes to the project, update this README if: adding a game, DB tables/columns, API routes, architectural changes, or tech stack changes. Add entries to the Changelog section above for significant changes. **For UI/theme changes:** Consult [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md) and keep palette/guidelines in sync.
 
 **Keep it concise**:
 
