@@ -20,7 +20,8 @@ type GameCardProps = {
 const cardBase =
   'block w-full rounded-lg p-6 text-left transition-all duration-[175ms] ease-out ' +
   'bg-[var(--ink-paper)] border border-[var(--ink-border)] shadow-[0_1px_3px_rgba(0,0,0,0.06)] ' +
-  'hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]'
+  'hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] ' +
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2'
 
 export function GameCard({ game, onComingSoonClick }: GameCardProps) {
   const content = (
