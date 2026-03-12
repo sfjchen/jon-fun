@@ -348,6 +348,7 @@ Running log of project work. Update this section when making significant changes
 
 **2025-03**
 
+- **docs/Website-Themes-Reference.md**: Added Theme 7 (Developer Logical), image examples for Monolith, Ink & Paper, Charcoal Statement, Bone & Black, Developer Logical in `docs/theme-examples/`
 - **1 Sentence Everyday**: Fix RLS on daily_learn_entries—add policies for anon SELECT/INSERT/UPDATE/DELETE (was blocking restore)
 - **1 Sentence Everyday**: Remove admin key / List keys UI from Sync page
 - **1 Sentence Everyday**: Cmd+Enter to submit; Esc to cancel/leave textarea (today box blurs; edit modal closes)
