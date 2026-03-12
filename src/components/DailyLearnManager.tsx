@@ -35,6 +35,8 @@ export default function DailyLearnManager() {
   const [restoreKey, setRestoreKey] = useState('')
   const [restoring, setRestoring] = useState(false)
   const [restoreResult, setRestoreResult] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [syncFailed, setSyncFailed] = useState(false)
 
   const refresh = useCallback(() => {
     setEntries(loadEntries())
@@ -54,23 +56,43 @@ export default function DailyLearnManager() {
   }, [refresh])
 
   useEffect(() => {
+    if (view !== 'log') return
+    const id = setInterval(() => {
+      syncWithServer().then(() => {
+        refresh()
+        setSyncFailed(false)
+      })
+    }, 60_000)
+    return () => clearInterval(id)
+  }, [refresh, view])
+
+  useEffect(() => {
     const d = getTodayDate()
     setTodayText(getEntryByDate(d)?.text ?? '')
   }, [view, entries])
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     const date = getTodayDate()
-    saveEntry({ date, text: todayText.trim() })
-    setSaved(true)
+    setSaving(true)
+    setSyncFailed(false)
+    const ok = await saveEntry({ date, text: todayText.trim() })
+    setSaving(false)
+    setSaved(ok)
+    setSyncFailed(!ok)
     refresh()
-    setTimeout(() => setSaved(false), 2000)
+    if (ok) setTimeout(() => setSaved(false), 2000)
   }, [todayText, refresh])
 
-  const handleSaveEdit = useCallback(() => {
+  const handleSaveEdit = useCallback(async () => {
     if (!editingDate) return
-    saveEntry({ date: editingDate, text: editingText.trim() })
-    setEditingDate(null)
-    setEditingText('')
+    setSaving(true)
+    setSyncFailed(false)
+    const ok = await saveEntry({ date: editingDate, text: editingText.trim() })
+    setSaving(false)
+    if (ok) {
+      setEditingDate(null)
+      setEditingText('')
+    } else setSyncFailed(true)
     refresh()
   }, [editingDate, editingText, refresh])
 
@@ -127,8 +149,8 @@ export default function DailyLearnManager() {
           autoFocus
         />
         <div className="mt-4 flex gap-2">
-          <button onClick={handleSaveEdit} className="text-white px-4 py-2 rounded-lg hover:opacity-90" style={{ backgroundColor: 'var(--ink-accent)' }}>
-            Save
+          <button onClick={handleSaveEdit} disabled={saving} className="text-white px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-60" style={{ backgroundColor: 'var(--ink-accent)' }}>
+            {saving ? 'Saving…' : 'Save'}
           </button>
           <button onClick={() => { setEditingDate(null); setEditingText('') }} className="px-4 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
             Cancel
@@ -233,12 +255,14 @@ export default function DailyLearnManager() {
             <div className="mt-4 flex items-center gap-4">
               <button
                 onClick={handleSubmit}
-                className="text-white px-6 py-2 rounded-lg transition-colors hover:opacity-90"
+                disabled={saving}
+                className="text-white px-6 py-2 rounded-lg transition-colors hover:opacity-90 disabled:opacity-60"
                 style={{ backgroundColor: 'var(--ink-accent)' }}
               >
-                Submit
+                {saving ? 'Saving…' : 'Submit'}
               </button>
               {saved && <span className="text-green-600">Saved</span>}
+              {syncFailed && <span className="text-amber-600">Sync failed – saved locally, will retry</span>}
             </div>
           </div>
 

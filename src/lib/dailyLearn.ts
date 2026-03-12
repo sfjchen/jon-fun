@@ -112,6 +112,29 @@ export async function fetchEntriesFromServer(): Promise<DailyLearnEntry[]> {
   return arr.filter((e) => (e.text ?? '').trim().length > 0)
 }
 
+const PUSH_RETRIES = 3
+const RETRY_DELAY_MS = 500
+
+async function pushWithRetry(entries: DailyLearnEntry[]): Promise<boolean> {
+  const userId = getEffectiveUserId()
+  const body = JSON.stringify({
+    userId,
+    entries: entries.map((e) => ({ date: e.date, text: capitalizeFirst(e.text) })),
+  })
+  let lastOk = false
+  for (let i = 0; i < PUSH_RETRIES; i++) {
+    const res = await fetch('/api/daily-learn/entries', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+    })
+    lastOk = res.ok
+    if (res.ok) return true
+    if (i < PUSH_RETRIES - 1) await new Promise((r) => setTimeout(r, RETRY_DELAY_MS))
+  }
+  return lastOk
+}
+
 /** Delete entry on server for given date. */
 async function deleteEntryOnServer(date: string): Promise<boolean> {
   const userId = getEffectiveUserId()
@@ -163,7 +186,7 @@ export async function syncWithServer(): Promise<DailyLearnEntry[]> {
   if (localStorage.getItem(ENTRIES_KEY) !== mergedJson) {
     localStorage.setItem(ENTRIES_KEY, mergedJson)
   }
-  await pushEntriesToServer(merged)
+  await pushWithRetry(merged)
   return merged
 }
 
@@ -183,8 +206,9 @@ export function loadEntries(): DailyLearnEntry[] {
   }
 }
 
-export function saveEntry(entry: { date: string; text: string }): void {
-  if (typeof window === 'undefined') return
+/** Saves entry to localStorage and pushes to server (with retry). Returns false if push failed. */
+export async function saveEntry(entry: { date: string; text: string }): Promise<boolean> {
+  if (typeof window === 'undefined') return false
   const entries = loadEntries()
   const text = entry.text.trim()
   const idx = entries.findIndex((e) => e.date === entry.date)
@@ -192,9 +216,13 @@ export function saveEntry(entry: { date: string; text: string }): void {
     if (idx >= 0) {
       entries.splice(idx, 1)
       localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
-      deleteEntryOnServer(entry.date).catch(() => {})
+      for (let i = 0; i < PUSH_RETRIES; i++) {
+        if (await deleteEntryOnServer(entry.date)) return true
+        if (i < PUSH_RETRIES - 1) await new Promise((r) => setTimeout(r, RETRY_DELAY_MS))
+      }
+      return false
     }
-    return
+    return true
   }
   const updated: DailyLearnEntry = {
     ...entry,
@@ -205,7 +233,7 @@ export function saveEntry(entry: { date: string; text: string }): void {
   else entries.push(updated)
   entries.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0))
   localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
-  pushEntriesToServer(entries).catch(() => {})
+  return pushWithRetry(entries)
 }
 
 export function getEntryByDate(date: string): DailyLearnEntry | undefined {
