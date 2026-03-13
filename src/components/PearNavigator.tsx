@@ -693,7 +693,13 @@ type BlendMode = 'normal' | 'multiply' | 'overlay' | 'screen'
 function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight, stepIdx = 0 }: MockProps) {
   const [brushColor, setBrushColor] = useState<'blue' | 'yellow'>('blue')
   const [blendMode, setBlendMode] = useState<BlendMode>('normal')
+  const [exportMenuOpen, setExportMenuOpen] = useState(false)
   const canvasRef = useRef<SkyPaintCanvasHandle>(null)
+
+  const inExportStep = stepIdx === 14 || stepIdx === 15
+  useEffect(() => {
+    if (!inExportStep) setExportMenuOpen(false)
+  }, [inExportStep])
 
   const handleExport = useCallback(async (format: 'png' | 'jpeg') => {
     const blob = await canvasRef.current?.exportAs(format)
@@ -724,11 +730,11 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
   return (
     <div className="absolute inset-0 flex flex-col text-[10px] sm:text-xs min-h-0 overflow-hidden">
       <div className="min-h-8 sm:min-h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 shrink-0 flex-wrap py-1 sm:py-1.5">
-        <div className="relative shrink-0 overflow-visible">
+        <div className="relative shrink-0 overflow-visible" onClick={() => inExportStep && setExportMenuOpen(true)}>
             <HotspotButton id="proc-export" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <span className={`px-3 py-1.5 rounded ${currentHotspotId === 'proc-export' ? 'ring-2 ring-[#34c759]/50' : ''} text-white/80`}>⚙</span>
             </HotspotButton>
-            {(currentHotspotId === 'proc-export' || currentHotspotId === 'proc-export-format') && (
+            {exportMenuOpen && inExportStep && (
               <div className="absolute top-full left-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 min-w-[160px] space-y-1">
                 <div className="text-white/50 text-sm mb-2">Share — Save to computer</div>
                 {(['png', 'jpeg'] as const).map((fmt) => (
@@ -907,7 +913,9 @@ function MockScaleWrapper({ children }: { children: React.ReactNode }) {
       const w = parent.clientWidth
       const h = parent.clientHeight
       if (w <= 0 || h <= 0) return
-      setScale(Math.max(0.32, Math.min(1, w / MOCK_DESIGN_W, h / MOCK_DESIGN_H)))
+      // Scale to fill container (no empty space); min 0.32 to avoid cutout on narrow screens
+      const scaleFill = Math.max(w / MOCK_DESIGN_W, h / MOCK_DESIGN_H)
+      setScale(Math.max(0.32, scaleFill))
     }
     update()
     const ro = new ResizeObserver(update)
@@ -917,9 +925,9 @@ function MockScaleWrapper({ children }: { children: React.ReactNode }) {
   const w = Math.round(MOCK_DESIGN_W * scale)
   const h = Math.round(MOCK_DESIGN_H * scale)
   return (
-    <div ref={containerRef} className="absolute inset-0 flex items-center justify-center min-w-0 min-h-0">
+    <div ref={containerRef} className="absolute inset-0 flex items-center justify-center min-w-0 min-h-0 overflow-hidden">
       <div
-        className="relative origin-top-left flex flex-col shrink-0 overflow-hidden"
+        className="relative origin-center flex flex-col shrink-0 overflow-hidden"
         style={{
           width: w,
           height: h,
@@ -931,7 +939,7 @@ function MockScaleWrapper({ children }: { children: React.ReactNode }) {
             width: MOCK_DESIGN_W,
             height: MOCK_DESIGN_H,
             transform: `scale(${scale})`,
-            transformOrigin: 'top left',
+            transformOrigin: 'center center',
           }}
         >
           {children}
