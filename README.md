@@ -357,6 +357,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
+- **Pear Navigator dropdown + painting fixes**: Business card template/Background/Accent dropdowns open upward (bottom-full) to avoid overflow clipping; Design panel uses overflow-visible when dropdown open; stopPropagation + touch-manipulation on dropdown options; Brush Library bar stays visible for painting steps 0–1 so + New context is clear
 - **Theme swap**: Notebook is now default at `/`; Ink & Paper moved to `/theme2`. Brighter cream palette; lighter line paper (0.02); home grid `gap-y-[30px]` and `pt-[30px]` for line alignment with cards. Redirect `/notebook` → `/`.
 - **Pear Navigator A/B results page**: `/games/pear-navigator/results`—statistical tests (χ² completion, t-test time, χ² ratings); step-level tracking + dropouts; stratified by task; migrations `supabase-migration-pear-navigator-ab.sql` + `supabase-migration-pear-navigator-sessions.sql`; sessions API for progress/dropout
 - **Pear Navigator A/B testing**: On task select, random A or B. A: same flow, no skip button. B: fixed Next step button, must press to advance (mock taps no-op). Post-task: Meh/Good/Great feedback + total/avg time; logs to console

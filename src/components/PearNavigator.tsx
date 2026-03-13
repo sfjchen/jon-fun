@@ -659,31 +659,31 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
               </div>
             )}
           </div>
-          <div className="w-28 min-w-24 sm:w-40 bg-[#383838] border-l border-white/15 p-1.5 sm:p-3 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-auto min-h-0">
+          <div className={`w-28 min-w-24 sm:w-40 bg-[#383838] border-l border-white/15 p-1.5 sm:p-3 shrink-0 flex flex-col gap-1 sm:gap-1.5 min-h-0 ${bcTemplateOpen || bcFillBgOpen || bcFillAccentOpen ? 'overflow-visible' : 'overflow-y-auto'}`}>
             <div className="text-white/50 text-xs font-medium shrink-0">Design</div>
             {['Layout', 'Stroke', 'Effects', 'Corner'].map(clutter)}
-            <div className="relative">
+            <div className="relative overflow-visible">
               <HotspotButton id="fig-template" currentHotspotId={currentHotspotId} onStepComplete={() => setBcTemplateOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
                 <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-template' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Template <span className="text-xs">▼</span></div>
               </HotspotButton>
               {bcTemplateOpen && (
-                <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
+                <div className="absolute bottom-full left-0 right-0 mb-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
                   {CARD_TEMPLATES.map((t) => (
-                    <button key={t.id} type="button" onClick={() => handleTemplatePick(t.id)} className="w-full px-3 py-2.5 rounded text-left text-sm text-white/90 hover:bg-white/10 block">
+                    <button key={t.id} type="button" onClick={(e) => { e.stopPropagation(); handleTemplatePick(t.id); }} className="w-full px-3 py-2.5 rounded text-left text-sm text-white/90 hover:bg-white/10 block touch-manipulation">
                       {t.label}
                     </button>
                   ))}
                 </div>
               )}
             </div>
-            <div className="relative">
+            <div className="relative overflow-visible">
               <HotspotButton id="fig-fill-bg" currentHotspotId={currentHotspotId} onStepComplete={() => setBcFillBgOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
                 <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-bg' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Background <span className="text-xs">▼</span></div>
               </HotspotButton>
               {bcFillBgOpen && (
-                <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
+                <div className="absolute bottom-full left-0 right-0 mb-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
                   {FILL_COLORS.map((c) => (
-                    <button key={c.id} type="button" onClick={() => handleFillBgPick(c.id)} className="w-full flex items-center gap-2 px-3 py-2 rounded text-left text-sm text-white/90 hover:bg-white/10">
+                    <button key={c.id} type="button" onClick={(e) => { e.stopPropagation(); handleFillBgPick(c.id); }} className="w-full flex items-center gap-2 px-3 py-2 rounded text-left text-sm text-white/90 hover:bg-white/10 touch-manipulation">
                       <div className="w-6 h-6 rounded border border-white/20 shrink-0" style={{ background: c.bg }} />
                       <span>{c.label}</span>
                     </button>
@@ -691,14 +691,14 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                 </div>
               )}
             </div>
-            <div className="relative">
+            <div className="relative overflow-visible">
               <HotspotButton id="fig-fill-accent" currentHotspotId={currentHotspotId} onStepComplete={() => setBcFillAccentOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
                 <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-accent' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Accent <span className="text-xs">▼</span></div>
               </HotspotButton>
               {bcFillAccentOpen && (
-                <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
+                <div className="absolute bottom-full left-0 right-0 mb-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
                   {ACCENT_COLORS.map((c) => (
-                    <button key={c.id} type="button" onClick={() => handleFillAccentPick(c.id)} className="w-full flex items-center gap-2 px-3 py-2 rounded text-left text-sm text-white/90 hover:bg-white/10">
+                    <button key={c.id} type="button" onClick={(e) => { e.stopPropagation(); handleFillAccentPick(c.id); }} className="w-full flex items-center gap-2 px-3 py-2 rounded text-left text-sm text-white/90 hover:bg-white/10 touch-manipulation">
                       <div className="w-6 h-6 rounded border border-white/20 shrink-0" style={{ background: c.bg }} />
                       <span>{c.label}</span>
                     </button>
@@ -797,7 +797,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
         <span className="text-white/80">Layers</span>
         {['Canvas', 'Share', 'Gallery'].map(procClutter)}
       </div>
-      {currentHotspotId === 'proc-brush' && (
+      {(currentHotspotId === 'proc-brush' || currentHotspotId === 'proc-new') && (
         <div className="bg-[#454545] border-b border-white/10 px-2 py-1.5 flex gap-2 shrink-0">
           <span className="text-white/60 text-xs">Brush Library:</span>
           <div className="flex gap-1 rounded bg-white/10 p-1">
