@@ -44,7 +44,7 @@ export default function NotebookHome() {
       {showComingSoon && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div
-            className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg border p-8 notebook-line-paper"
+            className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg border p-8 bg-transparent"
             style={{ borderColor: 'var(--ink-border)' }}
           >
             <div className="mb-6 flex items-center justify-between">
@@ -70,7 +70,7 @@ export default function NotebookHome() {
               {futureFeatures.map((feature, index) => (
                 <div
                   key={index}
-                  className="flex items-start rounded-lg border p-3 notebook-line-paper"
+                  className="flex items-start rounded-lg border p-3 bg-transparent"
                   style={{ borderColor: 'var(--ink-border)' }}
                 >
                   <span className="mr-3 mt-1 text-lg" style={{ color: 'var(--ink-accent)' }}>•</span>

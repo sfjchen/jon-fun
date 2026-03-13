@@ -47,7 +47,7 @@ export default function JeopardyPage() {
           {error}
         </div>
       )}
-      <div className={`rounded-lg p-8 border max-w-md w-full shadow-sm ${linePaper ? 'notebook-line-paper' : ''}`} style={linePaper ? { borderColor: 'var(--ink-border)' } : { backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+      <div className={`rounded-lg p-8 border max-w-md w-full shadow-sm ${linePaper ? 'bg-transparent' : ''}`} style={linePaper ? { borderColor: 'var(--ink-border)' } : { backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
         <h1 className="text-4xl font-bold font-lora text-center mb-8 flex items-center justify-center gap-3" style={{ color: 'var(--ink-text)' }}>
           <Image src="/doodles/jeopardy.svg" alt="" width={40} height={40} className="h-10 w-10" />
           Jeopardy with Friends
