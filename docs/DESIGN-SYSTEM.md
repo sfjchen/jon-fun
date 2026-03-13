@@ -61,13 +61,17 @@ Same functionality as main site, different aesthetic. Applied when pathname star
 
 ### Typography
 
-- **Headings:** Caveat (handwritten, elegant). Applied via `[data-theme="notebook"] .font-lora { font-family: 'Caveat' }`.
-- **Body:** Charter (unchanged).
+- **All text:** Patrick Hand (readable handwritten). Applied via `[data-theme="notebook"]` with `font-size: 1.2rem`.
+- **Inputs, textarea, button:** Inherit Patrick Hand.
 
 ### Doodles
 
-- `public/doodles/notebook/` — Simplified, pen-drawn variants (tmr, daily, pear, game24, jeopardy, chwazi, leaderboards, coming-soon, poker).
+- `public/doodles/notebook/` — Doodly, handwritten-style variants (tmr, daily, pear, game24, jeopardy, chwazi, leaderboards, coming-soon, poker).
 - Notebook pages use these; main pages use `public/doodles/`.
+
+### 1 Sentence Everyday (Notebook)
+
+- When viewed at `/notebook/games/daily-log`, the page uses `.notebook-line-paper` — journal-style horizontal lines on cream background.
 
 ### Navigation
 

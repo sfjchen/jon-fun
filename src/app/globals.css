@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap');
 @import "tailwindcss";
 
 /* Ink & Paper design tokens — cream + burgundy palette */
@@ -32,8 +33,34 @@
   --ink-paper: var(--nb-paper);
 }
 
+/* Notebook: Patrick Hand (readable handwritten), larger text */
+[data-theme="notebook"] {
+  font-family: 'Patrick Hand', cursive;
+  font-size: 1.2rem;
+}
 [data-theme="notebook"] .font-lora {
-  font-family: 'Caveat', cursive;
+  font-family: 'Patrick Hand', cursive;
+}
+[data-theme="notebook"] input,
+[data-theme="notebook"] textarea,
+[data-theme="notebook"] button,
+[data-theme="notebook"] select {
+  font-family: inherit;
+}
+[data-theme="notebook"] .font-mono {
+  font-family: 'Patrick Hand', cursive;
+}
+
+/* Notebook line paper (journal style) for 1 Sentence Everyday */
+.notebook-line-paper {
+  background-color: var(--ink-paper);
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 30px,
+    rgba(26, 26, 26, 0.06) 30px,
+    rgba(26, 26, 26, 0.06) 31px
+  );
+  background-attachment: local;
 }
 
 @theme {
@@ -45,6 +72,7 @@
   --color-ink-paper: #f5f1eb;
   --font-lora: 'Lora', serif;
   --font-caveat: 'Caveat', cursive;
+  --font-patrick-hand: 'Patrick Hand', cursive;
   --font-charter: Charter, 'Bitstream Charter', Georgia, serif;
 }
 

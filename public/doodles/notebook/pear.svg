@@ -1,5 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M32 10 C22 10 16 24 16 38 C16 50 24 54 32 54 C40 54 48 50 48 38 C48 24 42 10 32 10 Z" />
-  <path d="M32 10 L32 4" />
-  <path d="M30 4 Q32 2 34 4" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- doodly pear - slightly wobbly -->
+  <path d="M32 8 Q22 8 16 24 Q12 38 18 50 Q24 56 32 54 Q40 56 46 50 Q52 38 48 24 Q42 8 32 8 Z" />
+  <path d="M32 8 L32 2" />
+  <path d="M30 2 Q32 0 34 2" />
 </svg>

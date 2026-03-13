@@ -357,7 +357,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
-- **Notebook theme** (`/notebook`): Alternate path with same content—creamier paper palette, Caveat headings, graphite accent, notebook-style doodles; Notebook/Main nav links; poker/pear paths use base-aware routing
+- **Notebook theme** (`/notebook`): Alternate path—Patrick Hand font (readable handwritten), 1.2rem base, creamier palette, graphite accent, doodly icons; 1 Sentence Everyday uses journal line paper; Notebook/Main nav links
 - **Pear Navigator simulator fill + export UX**: Mock scales to fill outer box (no empty space) on all resolutions; export dropdown only appears after user taps settings button first
 - **1 Sentence Everyday**: Sync on visibility (immediate when tab visible again); 60s interval when visible, 1hr when hidden
 - **Pear Navigator mobile viewport pass**: Reduced full-bleed header height on game pages, removed extra safe-area padding from PearNavigator chrome, tightened mobile guide panel max-height (11–16vh), reduced simulator bezel/insets on small screens, lowered scale floor (`0.32`) to prevent mock cutout on narrow/tall devices, and added `scrollbar-needed` utility for overflow-only scrollbar rendering with stable gutter.

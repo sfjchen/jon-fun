@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { usePathname } from 'next/navigation'
 import {
   loadEntries,
   saveEntry,
@@ -22,6 +23,8 @@ import {
 type View = 'log' | 'analytics' | 'export' | 'sync'
 
 export default function DailyLearnManager() {
+  const pathname = usePathname()
+  const isNotebook = pathname?.startsWith('/notebook')
   const [view, setView] = useState<View>('log')
   const [entries, setEntries] = useState<DailyLearnEntry[]>([])
   const [todayText, setTodayText] = useState('')
@@ -58,15 +61,33 @@ export default function DailyLearnManager() {
       .finally(() => setSyncing(false))
   }, [refresh])
 
-  // Periodic sync every 60s (all views) – retries failed pushes, clears sync-failed banner
+  // Periodic sync: 60s when tab visible, 1hr when hidden. Sync on visibility (user returns to tab)
   useEffect(() => {
-    const id = setInterval(() => {
+    const runSync = () => {
       syncWithServer().then((r) => {
         refresh()
         setSyncFailed(!r.pushOk)
       })
-    }, 60_000)
-    return () => clearInterval(id)
+    }
+    let id: ReturnType<typeof setInterval> | null = null
+    const schedule = () => {
+      if (id) clearInterval(id)
+      const ms = document.visibilityState === 'visible' ? 60_000 : 3_600_000
+      id = setInterval(() => {
+        runSync()
+        schedule()
+      }, ms)
+    }
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') runSync()
+      schedule()
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    schedule()
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      if (id) clearInterval(id)
+    }
   }, [refresh])
 
   useEffect(() => {
@@ -132,7 +153,7 @@ export default function DailyLearnManager() {
   }, [])
 
   const layout = (title: string, children: React.ReactNode) => (
-    <div className="max-w-4xl mx-auto">
+    <div className={`max-w-4xl mx-auto ${isNotebook ? 'notebook-line-paper rounded-lg p-6' : ''}`}>
       {syncFailedBanner}
       <h1 className="text-4xl font-bold font-lora mb-8" style={{ color: 'var(--ink-text)' }}>{title}</h1>
       {children}
@@ -185,7 +206,7 @@ export default function DailyLearnManager() {
 
   if (view === 'log') {
     return (
-      <div className="max-w-4xl mx-auto">
+      <div className={`max-w-4xl mx-auto ${isNotebook ? 'notebook-line-paper rounded-lg p-6' : ''}`}>
         {syncFailedBanner}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-bold font-lora" style={{ color: 'var(--ink-text)' }}>1 Sentence Everyday</h1>
