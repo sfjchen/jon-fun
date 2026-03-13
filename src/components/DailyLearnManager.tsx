@@ -153,11 +153,11 @@ export default function DailyLearnManager() {
     setToday(getTodayDate())
   }, [])
 
-  const linePaperClass = isDailyLog && !inNotebook ? 'notebook-line-paper rounded-lg p-6' : isDailyLog && inNotebook ? 'rounded-lg p-6 bg-transparent' : ''
+  const linePaperClass = isDailyLog && !inNotebook ? 'notebook-line-paper rounded-lg p-6' : isDailyLog && inNotebook ? 'rounded-lg p-[30px] bg-transparent' : ''
   const layout = (title: string, children: React.ReactNode) => (
     <div className={`max-w-4xl mx-auto ${linePaperClass}`}>
       {syncFailedBanner}
-      <h1 className="text-4xl font-bold font-lora mb-8" style={{ color: 'var(--ink-text)' }}>{title}</h1>
+      <h1 className={`text-4xl font-bold font-lora ${inNotebook ? 'mb-[30px]' : 'mb-8'}`} style={{ color: 'var(--ink-text)' }}>{title}</h1>
       {children}
     </div>
   )
@@ -216,7 +216,7 @@ export default function DailyLearnManager() {
         </div>
 
         {entries.length === 0 && (
-          <div className="rounded-lg p-4 mb-6 border" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+          <div className={`rounded-lg border ${inNotebook ? 'p-[30px] mb-[30px]' : 'p-4 mb-6'}`} style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
             <p className="font-medium" style={{ color: 'var(--ink-text)' }}>Restore your logs</p>
             <p className="text-sm mt-1" style={{ color: 'var(--ink-muted)' }}>
               Go to <button type="button" onClick={() => setView('sync')} className="underline" style={{ color: 'var(--ink-accent)' }}>Sync</button> tab → enter your sync key → Restore. Do this on each device.
@@ -224,8 +224,8 @@ export default function DailyLearnManager() {
           </div>
         )}
         {/* Calendar */}
-        <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-            <div className="flex items-center justify-between mb-4">
+        <div className={`rounded-lg border shadow-sm ${inNotebook ? 'p-[30px] mb-[30px]' : 'p-6 mb-6'}`} style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+            <div className={`flex items-center justify-between ${inNotebook ? 'mb-[30px]' : 'mb-4'}`}>
               <button
                 type="button"
                 onClick={() => {
@@ -283,8 +283,8 @@ export default function DailyLearnManager() {
           </div>
 
           {/* Today's prompt */}
-          <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-            <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>
+          <div className={`rounded-lg border shadow-sm ${inNotebook ? 'p-[30px] mb-[30px]' : 'p-6 mb-6'}`} style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+            <p className={inNotebook ? 'mb-[30px]' : 'mb-4'} style={{ color: 'var(--ink-muted)' }}>
               Today: {today ? parseLocalDate(today).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '…'} (Resets 5am local)
             </p>
             <textarea
@@ -299,7 +299,7 @@ export default function DailyLearnManager() {
               style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
               aria-label="Today's entry"
             />
-            <div className="mt-4 flex items-center gap-4">
+            <div className={`flex items-center gap-4 ${inNotebook ? 'mt-[30px]' : 'mt-4'}`}>
               <button
                 onClick={handleSubmit}
                 disabled={saving}
@@ -314,14 +314,14 @@ export default function DailyLearnManager() {
           </div>
 
           {/* History */}
-          <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-            <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>History</h2>
+          <div className={`rounded-lg border shadow-sm ${inNotebook ? 'p-[30px] mb-[30px]' : 'p-6 mb-6'}`} style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+            <h2 className={`text-2xl font-bold font-lora ${inNotebook ? 'mb-[30px]' : 'mb-4'}`} style={{ color: 'var(--ink-text)' }}>History</h2>
             {entries.length === 0 ? (
               <p style={{ color: 'var(--ink-muted)' }}>No entries yet.</p>
             ) : (
-              <div className="space-y-3">
+              <div className={inNotebook ? 'space-y-[30px]' : 'space-y-3'}>
                 {entries.map((e) => (
-                  <div key={e.date} className="rounded-lg p-4 border" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
+                  <div key={e.date} className={`rounded-lg border ${inNotebook ? 'p-[30px]' : 'p-4'}`} style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
                     <div className="flex items-center justify-between">
                       <div className="font-semibold" style={{ color: 'var(--ink-text)' }}>{parseLocalDate(e.date).toLocaleDateString()}</div>
                       <button
@@ -367,18 +367,18 @@ export default function DailyLearnManager() {
     return layout(
       'Analytics',
       <>
-        <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-          <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>Counts</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-lg p-4 border" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
+        <div className={`rounded-lg border shadow-sm ${inNotebook ? 'p-[30px] mb-[30px]' : 'p-6 mb-6'}`} style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+          <h2 className={`text-2xl font-bold font-lora ${inNotebook ? 'mb-[30px]' : 'mb-4'}`} style={{ color: 'var(--ink-text)' }}>Counts</h2>
+          <div className={`grid grid-cols-1 sm:grid-cols-3 ${inNotebook ? 'gap-[30px]' : 'gap-4'}`}>
+            <div className={`rounded-lg border ${inNotebook ? 'p-[30px]' : 'p-4'}`} style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
               <div className="text-3xl font-bold" style={{ color: 'var(--ink-text)' }}>{counts.total}</div>
               <div style={{ color: 'var(--ink-muted)' }}>Total entries</div>
             </div>
-            <div className="rounded-lg p-4 border" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
+            <div className={`rounded-lg border ${inNotebook ? 'p-[30px]' : 'p-4'}`} style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
               <div className="text-3xl font-bold" style={{ color: 'var(--ink-text)' }}>{counts.thisWeek}</div>
               <div style={{ color: 'var(--ink-muted)' }}>This week</div>
             </div>
-            <div className="rounded-lg p-4 border" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
+            <div className={`rounded-lg border ${inNotebook ? 'p-[30px]' : 'p-4'}`} style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
               <div className="text-3xl font-bold" style={{ color: 'var(--ink-text)' }}>{counts.thisMonth}</div>
               <div style={{ color: 'var(--ink-muted)' }}>This month</div>
             </div>
@@ -395,8 +395,8 @@ export default function DailyLearnManager() {
     return layout(
       'Sync',
       <>
-        <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-          <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>Restore from Server</h2>
+        <div className={`rounded-lg border shadow-sm ${inNotebook ? 'p-[30px] mb-[30px]' : 'p-6 mb-6'}`} style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+          <h2 className={`text-2xl font-bold font-lora ${inNotebook ? 'mb-[30px]' : 'mb-4'}`} style={{ color: 'var(--ink-text)' }}>Restore from Server</h2>
           <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>
             Lost data after clearing site? Enter your sync key or user ID and click Restore to pull entries from the server.
           </p>
@@ -435,8 +435,8 @@ export default function DailyLearnManager() {
             </p>
           )}
         </div>
-        <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-          <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>Cross-Device Sync</h2>
+        <div className={`rounded-lg border shadow-sm ${inNotebook ? 'p-[30px] mb-[30px]' : 'p-6 mb-6'}`} style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+          <h2 className={`text-2xl font-bold font-lora ${inNotebook ? 'mb-[30px]' : 'mb-4'}`} style={{ color: 'var(--ink-text)' }}>Cross-Device Sync</h2>
           <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>
             Set the same sync key on both devices to merge your history. Sync runs on page load and on every save.
           </p>
@@ -479,10 +479,10 @@ export default function DailyLearnManager() {
   return layout(
     'Export',
     <>
-      <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-        <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>Export</h2>
-        <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>Copy as text to paste into ChatGPT or other tools, or download JSON.</p>
-        <div className="flex flex-wrap gap-4">
+      <div className={`rounded-lg border shadow-sm ${inNotebook ? 'p-[30px] mb-[30px]' : 'p-6 mb-6'}`} style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+        <h2 className={`text-2xl font-bold font-lora ${inNotebook ? 'mb-[30px]' : 'mb-4'}`} style={{ color: 'var(--ink-text)' }}>Export</h2>
+        <p className={inNotebook ? 'mb-[30px]' : 'mb-4'} style={{ color: 'var(--ink-muted)' }}>Copy as text to paste into ChatGPT or other tools, or download JSON.</p>
+        <div className={`flex flex-wrap ${inNotebook ? 'gap-[30px]' : 'gap-4'}`}>
           <button
             onClick={handleCopy}
             className="text-white px-6 py-2 rounded-lg hover:opacity-90"

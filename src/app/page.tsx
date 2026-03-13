@@ -34,7 +34,7 @@ export default function Home() {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-x-6 gap-y-[30px] md:grid-cols-2 lg:grid-cols-3 max-w-6xl">
+      <div className="grid grid-cols-1 gap-x-6 gap-y-[30px] md:grid-cols-2 lg:grid-cols-3 max-w-6xl [grid-auto-rows:240px]">
         {items.map((item) => (
           <GameCard key={item.id} game={item} onComingSoonClick={() => setShowComingSoon(true)} linePaper />
         ))}
@@ -43,10 +43,10 @@ export default function Home() {
       {showComingSoon && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div
-            className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg border p-8 bg-transparent"
+            className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg border p-[30px] bg-transparent"
             style={{ borderColor: 'var(--ink-border)' }}
           >
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-[30px] flex items-center justify-between">
               <h2 className="font-lora text-2xl font-semibold flex items-center gap-2" style={{ color: 'var(--ink-text)' }}>
                 <Image src="/doodles/notebook/coming-soon.svg" alt="" width={32} height={32} className="h-8 w-8" />
                 Coming Soon
@@ -61,15 +61,15 @@ export default function Home() {
               </button>
             </div>
 
-            <p className="mb-6" style={{ color: 'var(--ink-muted)' }}>
+            <p className="mb-[30px]" style={{ color: 'var(--ink-muted)' }}>
               We&apos;re working hard to bring you these exciting new features:
             </p>
 
-            <div className="mb-8 grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div className="mb-[30px] grid grid-cols-1 gap-[30px] md:grid-cols-2">
               {futureFeatures.map((feature, index) => (
                 <div
                   key={index}
-                  className="flex items-start rounded-lg border p-3 bg-transparent"
+                  className="flex items-start rounded-lg border p-[30px] bg-transparent"
                   style={{ borderColor: 'var(--ink-border)' }}
                 >
                   <span className="mr-3 mt-1 text-lg" style={{ color: 'var(--ink-accent)' }}>•</span>

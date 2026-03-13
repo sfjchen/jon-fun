@@ -47,13 +47,13 @@ export default function JeopardyPage() {
           {error}
         </div>
       )}
-      <div className={`rounded-lg p-8 border max-w-md w-full shadow-sm ${linePaper ? 'bg-transparent' : ''}`} style={linePaper ? { borderColor: 'var(--ink-border)' } : { backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-        <h1 className="text-4xl font-bold font-lora text-center mb-8 flex items-center justify-center gap-3" style={{ color: 'var(--ink-text)' }}>
+      <div className={`rounded-lg border max-w-md w-full shadow-sm ${linePaper ? 'bg-transparent p-[30px]' : 'p-8'}`} style={linePaper ? { borderColor: 'var(--ink-border)' } : { backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+        <h1 className={`text-4xl font-bold font-lora text-center flex items-center justify-center gap-3 ${linePaper ? 'mb-[30px]' : 'mb-8'}`} style={{ color: 'var(--ink-text)' }}>
           <Image src={linePaper ? '/doodles/notebook/jeopardy.svg' : '/doodles/jeopardy.svg'} alt="" width={40} height={40} className="h-10 w-10" />
           Jeopardy with Friends
         </h1>
         
-        <div className="space-y-4">
+        <div className={linePaper ? 'space-y-[30px]' : 'space-y-4'}>
           <button
             onClick={() => setMode('editor')}
             className="w-full text-white py-4 px-6 rounded-lg text-xl font-semibold hover:opacity-90"

@@ -19,26 +19,26 @@ type GameCardProps = {
 }
 
 const cardBase =
-  'block w-full rounded-lg p-6 text-left transition-all duration-[175ms] ease-out ' +
+  'block w-full rounded-lg text-left transition-all duration-[175ms] ease-out ' +
   'bg-[var(--ink-paper)] border border-[var(--ink-border)] shadow-[0_1px_3px_rgba(0,0,0,0.06)] ' +
   'hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2'
 
 export function GameCard({ game, onComingSoonClick, linePaper }: GameCardProps) {
-  const cardClass = cardBase + (linePaper ? ' bg-transparent' : '')
+  const cardClass = cardBase + (linePaper ? ' bg-transparent h-full min-h-0 flex flex-col p-[30px]' : ' p-6')
   const content = (
     <>
-      <div className="mb-4 flex h-16 items-center justify-center">
+      <div className={`flex h-16 items-center justify-center shrink-0 ${linePaper ? 'mb-[30px]' : 'mb-4'}`}>
         {game.icon.startsWith('/') ? (
           <Image src={game.icon} alt={game.title} width={64} height={64} className="h-14 w-14 sm:h-16 sm:w-16 object-contain drop-shadow-lg" priority />
         ) : (
           <span className="text-5xl leading-none">{game.icon}</span>
         )}
       </div>
-      <h2 className="mb-2 font-lora text-xl font-semibold" style={{ color: 'var(--ink-text)' }}>
+      <h2 className={`font-lora text-xl font-semibold ${linePaper ? 'mb-[30px]' : 'mb-2'}`} style={{ color: 'var(--ink-text)' }}>
         {game.title}
       </h2>
-      <p className="mb-4 line-clamp-2 text-sm" style={{ color: 'var(--ink-muted)' }}>
+      <p className={`line-clamp-2 text-sm flex-1 min-h-0 ${linePaper ? 'mb-[30px]' : 'mb-4'}`} style={{ color: 'var(--ink-muted)' }}>
         {game.description}
       </p>
       <div className="text-sm" style={{ color: 'var(--ink-accent)' }}>
