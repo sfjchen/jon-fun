@@ -913,9 +913,9 @@ function MockScaleWrapper({ children }: { children: React.ReactNode }) {
       const w = parent.clientWidth
       const h = parent.clientHeight
       if (w <= 0 || h <= 0) return
-      // Scale to fill container (no empty space); min 0.32 to avoid cutout on narrow screens
-      const scaleFill = Math.max(w / MOCK_DESIGN_W, h / MOCK_DESIGN_H)
-      setScale(Math.max(0.32, scaleFill))
+      // Scale to fit (contain) so mock never cuts off; min 0.32 for narrow screens
+      const scaleFit = Math.min(w / MOCK_DESIGN_W, h / MOCK_DESIGN_H)
+      setScale(Math.max(0.32, scaleFit))
     }
     update()
     const ro = new ResizeObserver(update)
@@ -925,9 +925,9 @@ function MockScaleWrapper({ children }: { children: React.ReactNode }) {
   const w = Math.round(MOCK_DESIGN_W * scale)
   const h = Math.round(MOCK_DESIGN_H * scale)
   return (
-    <div ref={containerRef} className="absolute inset-0 flex items-center justify-center min-w-0 min-h-0 overflow-hidden">
+    <div ref={containerRef} className="absolute inset-0 flex items-center justify-center min-w-0 min-h-0">
       <div
-        className="relative origin-center flex flex-col shrink-0 overflow-hidden"
+        className="relative origin-top-left flex flex-col shrink-0 overflow-hidden"
         style={{
           width: w,
           height: h,
@@ -939,7 +939,7 @@ function MockScaleWrapper({ children }: { children: React.ReactNode }) {
             width: MOCK_DESIGN_W,
             height: MOCK_DESIGN_H,
             transform: `scale(${scale})`,
-            transformOrigin: 'center center',
+            transformOrigin: 'top left',
           }}
         >
           {children}
