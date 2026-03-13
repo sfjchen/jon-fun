@@ -19,19 +19,19 @@ export default function LeaderboardsPage() {
       </h1>
 
       <div
-        className="rounded-lg border p-8 bg-transparent"
+        className="rounded-lg border p-[30px] bg-transparent"
         style={{ borderColor: 'var(--ink-border)' }}
       >
-        <div className="mb-6">
+        <div className="mb-[30px]">
           <Image src="/doodles/notebook/coming-soon.svg" alt="" width={64} height={64} className="h-16 w-16" />
         </div>
-        <h2 className="mb-4 font-lora text-xl font-semibold" style={{ color: 'var(--ink-text)' }}>
+        <h2 className="mb-[30px] font-lora text-xl font-semibold" style={{ color: 'var(--ink-text)' }}>
           Coming Soon!
         </h2>
-        <p className="mb-6" style={{ color: 'var(--ink-muted)' }}>
+        <p className="mb-[30px]" style={{ color: 'var(--ink-muted)' }}>
           Leaderboards are currently in development. Soon you&apos;ll be able to:
         </p>
-        <ul className="mb-8 space-y-2" style={{ color: 'var(--ink-text)' }}>
+        <ul className="mb-[30px] space-y-[30px]" style={{ color: 'var(--ink-text)' }}>
           {features.map((feature, index) => (
             <li key={index} className="flex items-center">
               <span className="mr-2" style={{ color: 'var(--ink-accent)' }}>✓</span>
