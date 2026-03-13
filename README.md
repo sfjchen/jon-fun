@@ -355,6 +355,10 @@ src/
 
 Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
 
+**2026-03**
+
+- **Pear Navigator editor density**: Filled simulator space by increasing mock design size (`700x520`), compacting hotspot control heights, and switching forced `overflow-y-scroll` panels to `overflow-y-auto` so sidebars only scroll when truly needed and controls fit more naturally.
+
 **2025-03**
 
 - **1 Sentence Everyday**: Sync-failed alert – prominent banner on all views when saves to Supabase fail; initial + periodic sync set syncFailed; banner persists until retry succeeds
