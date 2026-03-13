@@ -954,6 +954,7 @@ export default function PearNavigator() {
   const [wrongTapToast, setWrongTapToast] = useState(false)
   const [variant, setVariant] = useState<ABVariant | null>(null)
   const [feedbackRating, setFeedbackRating] = useState<FeedbackRating | null>(null)
+  const [showFeedbackOverlay, setShowFeedbackOverlay] = useState(false)
   const taskStartTimeRef = useRef<number>(0)
   const stepStartTimeRef = useRef<number>(0)
   const sessionIdRef = useRef<string | null>(null)
@@ -970,6 +971,12 @@ export default function PearNavigator() {
     const t = setTimeout(() => setWrongTapToast(false), 2000)
     return () => clearTimeout(t)
   }, [wrongTapToast])
+
+  useEffect(() => {
+    if (phase !== 'done') return
+    const t = setTimeout(() => setShowFeedbackOverlay(true), 1000)
+    return () => clearTimeout(t)
+  }, [phase])
 
   const sendProgress = useCallback((opts: { completed?: boolean; rating?: FeedbackRating }) => {
     const sid = sessionIdRef.current
@@ -1051,6 +1058,7 @@ export default function PearNavigator() {
     setTaskId(null)
     setStepIdx(0)
     setShowHighlight(false)
+    setShowFeedbackOverlay(false)
     setVariant(null)
     setFeedbackRating(null)
   }, [])
@@ -1179,8 +1187,32 @@ export default function PearNavigator() {
               )}
 
               {phase === 'done' && (
-                <div className="text-center py-6 sm:py-10 text-white/60">
-                  Task complete
+                <div className="flex flex-col gap-2 sm:gap-3 py-4 sm:py-6">
+                  <div className="text-center">
+                    <div className="text-3xl sm:text-4xl text-[#34c759] mb-2">✓</div>
+                    <p className="text-white font-medium text-sm sm:text-base">
+                      {feedbackRating != null ? `Thanks! You rated it "${feedbackRating}"` : 'Task complete'}
+                    </p>
+                    <p className="text-white/50 text-[10px] sm:text-xs mt-1">
+                      View your work in the simulator →
+                    </p>
+                  </div>
+                  {feedbackRating != null && (
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <button
+                        onClick={handleReset}
+                        className="flex-1 min-h-[40px] py-2 rounded-lg bg-[#34c759] text-black font-semibold text-sm hover:opacity-90 transition-opacity touch-manipulation"
+                      >
+                        Start over
+                      </button>
+                      <Link
+                        href="/"
+                        className="flex-1 min-h-[40px] py-2 rounded-lg border border-white/20 bg-white/5 text-white font-medium text-sm hover:bg-white/10 transition-colors touch-manipulation text-center flex items-center justify-center"
+                      >
+                        Go home
+                      </Link>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1193,47 +1225,29 @@ export default function PearNavigator() {
           </div>
         )}
 
-        {/* Feedback overlay — full screen when task done */}
-        {phase === 'done' && (
+        {/* Feedback overlay — shows 1s after task done, closes when user answers */}
+        {phase === 'done' && showFeedbackOverlay && feedbackRating == null && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
             <div className="text-center max-w-md w-full">
-              {feedbackRating == null ? (
-                <>
-                  <div className="text-5xl sm:text-6xl text-[#34c759] mb-4 sm:mb-6 pear-success">✓</div>
-                  <h2 className="text-xl sm:text-3xl font-bold text-white mb-2 sm:mb-4">Task complete</h2>
-                  <p className="text-gray-300 text-sm sm:text-lg mb-4 sm:mb-6">
-                    How useful was the guide?
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center mb-4 sm:mb-6">
-                    {(['meh', 'good', 'great'] as const).map((r) => (
-                      <button
-                        key={r}
-                        onClick={() => handleFeedback(r)}
-                        className="min-h-[44px] sm:min-h-[48px] px-4 sm:px-6 py-2 sm:py-3 rounded-lg border border-white/20 bg-white/10 text-white font-medium text-sm sm:text-base hover:bg-white/20 transition-colors touch-manipulation capitalize"
-                      >
-                        {r}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-[10px] sm:text-xs text-white/50">
-                    Total: {Math.round((Date.now() - taskStartTimeRef.current) / 1000)}s · Avg: {task ? Math.round((Date.now() - taskStartTimeRef.current) / 1000 / task.steps.length) : 0}s/step
-                  </p>
-                </>
-              ) : (
-                <>
-                  <div className="text-5xl sm:text-6xl text-[#34c759] mb-4 sm:mb-6 pear-success">✓</div>
-                  <h2 className="text-xl sm:text-3xl font-bold text-white mb-2 sm:mb-4">Thanks!</h2>
-                  <p className="text-gray-300 text-sm sm:text-lg mb-6 sm:mb-8">
-                    You rated it &quot;{feedbackRating}&quot;. Try another task or refine your result.
-                  </p>
+              <div className="text-5xl sm:text-6xl text-[#34c759] mb-4 sm:mb-6 pear-success">✓</div>
+              <h2 className="text-xl sm:text-3xl font-bold text-white mb-2 sm:mb-4">Task complete</h2>
+              <p className="text-gray-300 text-sm sm:text-lg mb-4 sm:mb-6">
+                How useful was the guide?
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center mb-4 sm:mb-6">
+                {(['meh', 'good', 'great'] as const).map((r) => (
                   <button
-                    onClick={handleReset}
-                    className="min-h-[44px] sm:min-h-[48px] px-6 sm:px-10 py-3 sm:py-4 rounded-xl bg-[#34c759] text-black font-semibold text-base sm:text-lg hover:opacity-90 transition-opacity touch-manipulation"
+                    key={r}
+                    onClick={() => handleFeedback(r)}
+                    className="min-h-[44px] sm:min-h-[48px] px-4 sm:px-6 py-2 sm:py-3 rounded-lg border border-white/20 bg-white/10 text-white font-medium text-sm sm:text-base hover:bg-white/20 transition-colors touch-manipulation capitalize"
                   >
-                    Start over
+                    {r}
                   </button>
-                </>
-              )}
+                ))}
+              </div>
+              <p className="text-[10px] sm:text-xs text-white/50">
+                Total: {Math.round((Date.now() - taskStartTimeRef.current) / 1000)}s · Avg: {task ? Math.round((Date.now() - taskStartTimeRef.current) / 1000 / task.steps.length) : 0}s/step
+              </p>
             </div>
           </div>
         )}
@@ -1245,7 +1259,7 @@ export default function PearNavigator() {
               <div className="absolute inset-0 sm:inset-1 md:inset-2 lg:inset-3 rounded-[0.45rem] sm:rounded-xl md:rounded-2xl bg-[#3a3a3a] overflow-auto scrollbar-needed">
                 {MockComponent ? (
                   <MockFillWrapper>
-                    <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={isVariantB ? () => {} : handleNext} {...(phase === 'steps' && !isVariantB && { onWrongTap: handleWrongTap })} showHighlight={phase === 'steps' && showHighlight} stepIdx={phase === 'steps' ? stepIdx : (task?.steps.length ?? 0)} {...(taskId ? { taskId } : {})} />
+                    <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={isVariantB ? () => {} : handleNext} {...(phase === 'steps' && !isVariantB && { onWrongTap: handleWrongTap })} showHighlight={phase === 'steps' && showHighlight} stepIdx={phase === 'steps' ? stepIdx : (task ? task.steps.length - 1 : 0)} {...(taskId ? { taskId } : {})} />
                   </MockFillWrapper>
                 ) : null}
               </div>

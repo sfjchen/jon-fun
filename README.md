@@ -357,6 +357,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
+- **Pear Navigator feedback flow**: 1s delay before feedback popup; popup closes on answer so user sees final product; guide panel shows Start over / Go home after rating
 - **Pear Navigator variant B UX**: Red ring highlight on Next step button so users know to tap it; guide text "Do the action in the mock, then tap Next step ↓"; wrong-tap toast variant-aware
 - **Theme swap**: Notebook is now default at `/`; Ink & Paper moved to `/theme2`. Brighter cream palette; lighter line paper (0.02); home grid `gap-y-[30px]` and `pt-[30px]` for line alignment with cards. Redirect `/notebook` → `/`.
 - **Pear Navigator A/B results page**: `/games/pear-navigator/results`—statistical tests (χ² completion, t-test time, χ² ratings); step-level tracking + dropouts; stratified by task; migrations `supabase-migration-pear-navigator-ab.sql` + `supabase-migration-pear-navigator-sessions.sql`; sessions API for progress/dropout
