@@ -358,6 +358,7 @@ Running log of project work. Update this section when making significant changes
 **2026-03**
 
 - **Notebook theme** (`/notebook`): Alternate path—Patrick Hand font (readable handwritten), 1.2rem base, creamier palette, graphite accent, doodly icons; 1 Sentence Everyday uses journal line paper; Notebook/Main nav links
+- **Pear Navigator mobile touch fix**: stopPropagation + onTouchEnd preventDefault on HotspotButton to fix dropdown taps bubbling to parent (wrong-tap toast); 44px min touch targets for dropdown options
 - **Pear Navigator guide panel compact**: Smaller text, padding, and buttons on narrow/tall screens; taller panel (16–24vh) so more fits with minimal/no scroll
 - **Pear Navigator responsive fill**: Mock now fills container via flex (no fixed scaling); no whitespace, no cutoff; export dropdown only after settings tap
 - **1 Sentence Everyday**: Sync on visibility (immediate when tab visible again); 60s interval when visible, 1hr when hidden
