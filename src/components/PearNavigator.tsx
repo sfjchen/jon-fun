@@ -322,7 +322,7 @@ const TASK_LABELS: Record<string, string> = {
 }
 
 const CLUTTER_CLASS = 'px-1 sm:px-2 py-0.5 rounded bg-white/5 text-white/45 text-[9px] sm:text-[10px] md:text-xs pointer-events-none shrink-0'
-const HOTSPOT_BTN = 'min-h-9 sm:min-h-10 md:min-h-11 rounded flex items-center px-1.5 sm:px-2.5 text-[10px] sm:text-xs md:text-sm font-medium touch-manipulation'
+const HOTSPOT_BTN = 'min-h-7 sm:min-h-8 md:min-h-9 rounded flex items-center px-1.5 sm:px-2 text-[10px] sm:text-xs md:text-sm font-medium touch-manipulation'
 const HOTSPOT_INACTIVE = 'bg-[#34c759]/20 text-[#34c759]'
 const HOTSPOT_ACTIVE = 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50'
 
@@ -409,7 +409,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
           {['Move', 'Frame', 'Component', 'Pen', 'Text', 'Rect', 'Line', 'Hand', 'Zoom', 'Fill'].map(clutter)}
         </div>
         <div className="flex flex-1 min-h-0">
-          <div className="w-16 min-w-14 sm:w-28 sm:min-w-[5.5rem] bg-[#323232] border-r border-white/10 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-scroll scrollbar-visible min-h-0">
+          <div className="w-16 min-w-14 sm:w-28 sm:min-w-[5.5rem] bg-[#323232] border-r border-white/10 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-auto min-h-0">
             <div className="text-white/50 text-xs font-medium shrink-0">Layers</div>
             {hasCentralFrame && (
               <>
@@ -482,7 +482,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
               </div>
             </div>
           </HotspotButton>
-          <div className="w-28 min-w-20 sm:w-36 sm:min-w-[7rem] sm:w-40 bg-[#383838] border-l border-white/15 p-1.5 sm:p-2 sm:p-3 shrink-0 flex flex-col gap-1.5 sm:gap-2 overflow-y-scroll scrollbar-visible min-h-0">
+          <div className="w-28 min-w-20 sm:w-40 sm:min-w-[7rem] bg-[#383838] border-l border-white/15 p-1.5 sm:p-3 shrink-0 flex flex-col gap-1.5 sm:gap-2 overflow-y-auto min-h-0">
             <div className="text-white/50 text-xs font-medium shrink-0">Design</div>
             {['Fill', 'Stroke', 'Effects', 'Corner', 'Padding', 'Gap'].map(clutter)}
             <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
@@ -554,7 +554,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
           {['Move', 'Frame', 'Pen', 'Text', 'Rect', 'Hand', 'Fill'].map(clutter)}
         </div>
         <div className="flex flex-1 min-h-0">
-          <div className="w-20 min-w-16 sm:w-28 bg-[#323232] border-r border-white/10 p-1 sm:p-1.5 shrink-0 flex flex-col gap-1 overflow-y-scroll scrollbar-visible min-h-0 pointer-events-none">
+          <div className="w-20 min-w-16 sm:w-28 bg-[#323232] border-r border-white/10 p-1 sm:p-1.5 shrink-0 flex flex-col gap-1 overflow-y-auto min-h-0 pointer-events-none">
             <div className="text-white/50 text-xs font-medium">Layers</div>
             {hasCard && <div className="h-6 px-1.5 rounded bg-[#34c759]/15 text-[#34c759] text-[10px] flex items-center">Card</div>}
             {hasName && <div className="h-5 pl-3 rounded bg-white/5 text-white/50 text-[10px] flex items-center">Name</div>}
@@ -612,7 +612,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
               </div>
             )}
           </div>
-          <div className="w-28 min-w-24 sm:w-40 bg-[#383838] border-l border-white/15 p-1.5 sm:p-3 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-scroll scrollbar-visible min-h-0">
+          <div className="w-28 min-w-24 sm:w-40 bg-[#383838] border-l border-white/15 p-1.5 sm:p-3 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-auto min-h-0">
             <div className="text-white/50 text-xs font-medium shrink-0">Design</div>
             {['Layout', 'Stroke', 'Effects', 'Corner'].map(clutter)}
             {stepIdx === 0 && (
@@ -763,7 +763,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
         </div>
       )}
       <div className="flex flex-1 min-h-0">
-        <div className="w-20 min-w-16 sm:w-28 bg-[#383838] border-r border-white/15 p-1 sm:p-2 shrink-0 flex flex-col gap-0.5 sm:gap-1.5 overflow-y-scroll scrollbar-visible min-h-0">
+        <div className="w-20 min-w-16 sm:w-28 bg-[#383838] border-r border-white/15 p-1 sm:p-2 shrink-0 flex flex-col gap-0.5 sm:gap-1 overflow-y-auto min-h-0">
           <div className="flex gap-0.5 sm:gap-1 pointer-events-none shrink-0">
             {['Import', 'Organize', 'Search'].map(procClutter)}
           </div>
@@ -822,7 +822,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
             </div>
           </HotspotButton>
         </div>
-        <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#383838] border-l border-white/15 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-scroll scrollbar-visible min-h-0">
+        <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#383838] border-l border-white/15 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1 overflow-y-auto min-h-0">
           <div className="text-white/50 text-xs shrink-0">Brush Studio</div>
           {hasColor && (
             <div className="flex gap-1.5 mb-1 shrink-0">
@@ -893,8 +893,8 @@ const MOCK_COMPONENTS: Record<string, (props: MockProps) => React.ReactNode> = {
   procreate: ProcreateMock,
 }
 
-const MOCK_DESIGN_W = 520
-const MOCK_DESIGN_H = 420
+const MOCK_DESIGN_W = 700
+const MOCK_DESIGN_H = 520
 
 function MockScaleWrapper({ children }: { children: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -1005,7 +1005,7 @@ export default function PearNavigator() {
       <div className="flex-1 flex flex-col lg:flex-row gap-2 sm:gap-3 px-2 sm:px-3 pb-2 sm:pb-3 pb-safe min-h-0 overflow-hidden">
         {/* Guide panel — mobile: minimal (16vh) so simulator dominates; lg+: side panel full height */}
         <div className="flex-none w-full lg:w-80 xl:w-96 2xl:w-[28rem] lg:min-w-[20rem] min-w-0 flex flex-col min-h-0 max-h-[16vh] sm:max-h-[20vh] md:max-h-[24vh] lg:max-h-none bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch overflow-hidden">
-            <div className="flex flex-col flex-1 min-h-0 p-1.5 sm:p-3 lg:p-6 overflow-y-scroll scrollbar-visible">
+            <div className="flex flex-col flex-1 min-h-0 p-1.5 sm:p-3 lg:p-6 overflow-y-auto">
               {phase === 'task' && (
                 <>
                   <p className="text-[10px] sm:text-xs font-semibold text-[#34c759] uppercase tracking-wider mb-0.5 sm:mb-1 shrink-0">
@@ -1015,7 +1015,7 @@ export default function PearNavigator() {
                   <p className="text-gray-400 text-[10px] sm:text-xs mb-1 sm:mb-2 shrink-0">
                     Step-by-step guidance—tap the simulator to advance.
                   </p>
-                  <div className="flex-1 min-h-0 overflow-y-scroll scrollbar-visible space-y-1 sm:space-y-1.5 mb-1 sm:mb-3">
+                  <div className="flex-1 min-h-0 overflow-y-auto space-y-1 sm:space-y-1.5 mb-1 sm:mb-3">
                     {TASK_ORDER.map((id) => {
                       const t = TASKS[id]
                       if (!t) return null
@@ -1113,10 +1113,10 @@ export default function PearNavigator() {
         )}
 
         {/* Mock app preview — mobile: simulator dominates; lg+: flex fills; scrollbar visible when overflow */}
-        <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-auto overscroll-contain scrollbar-visible">
+        <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-auto overscroll-contain">
           <div className="flex-1 min-h-0 flex items-center justify-center p-0.5 sm:p-2 overflow-hidden">
             <div className="relative w-full h-full max-w-7xl max-h-full rounded-xl sm:rounded-2xl md:rounded-3xl bg-[#1a1a1a] border-2 sm:border-4 md:border-6 lg:border-8 border-[#2a2a2a] shadow-[inset_0_0_30px_rgba(0,0,0,0.5)] overflow-hidden">
-              <div className="absolute inset-0.5 sm:inset-1.5 md:inset-2 lg:inset-3 rounded-lg sm:rounded-xl md:rounded-2xl bg-[#3a3a3a] overflow-auto scrollbar-visible">
+              <div className="absolute inset-0.5 sm:inset-1.5 md:inset-2 lg:inset-3 rounded-lg sm:rounded-xl md:rounded-2xl bg-[#3a3a3a] overflow-auto">
                 {MockComponent ? (
                   <MockScaleWrapper>
                     <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={handleNext} {...(phase === 'steps' && { onWrongTap: handleWrongTap })} showHighlight={phase === 'steps' && showHighlight} stepIdx={phase === 'steps' ? stepIdx : (task?.steps.length ?? 0)} {...(taskId ? { taskId } : {})} />
