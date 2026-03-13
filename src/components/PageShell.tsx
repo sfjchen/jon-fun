@@ -46,11 +46,12 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
     }
   }, [fullBleed])
 
+  const outerLinePaper = isNotebook && !pearNav
   return (
     <div
       data-theme={isNotebook ? 'notebook' : undefined}
-      className={`overflow-x-hidden ${fullBleed ? 'h-dynamic flex flex-col overflow-y-hidden' : 'min-h-screen'}`}
-      style={{ backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
+      className={`overflow-x-hidden ${fullBleed ? 'h-dynamic flex flex-col overflow-y-hidden' : 'min-h-screen'} ${outerLinePaper ? 'notebook-line-paper' : ''}`}
+      style={outerLinePaper ? { color: 'var(--ink-text)' } : { backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
     >
       <header className={`flex-none ${fullBleed && !useBigLogo ? 'px-3 py-2' : 'px-4 py-4 md:py-6'} ${!isHome ? 'border-b' : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
         <div className="mx-auto max-w-6xl flex w-full items-center justify-between">
