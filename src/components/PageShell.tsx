@@ -51,7 +51,19 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
           <div className="flex-1" />
           <Link
             href={homeHref}
-            className={`font-lora font-semibold hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded shrink-0 ${isHome ? 'text-4xl md:text-5xl lg:text-6xl' : fullBleed ? 'text-2xl sm:text-3xl' : ''}`}
+            className={`font-lora font-semibold hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded shrink-0 ${
+              isHome
+                ? isNotebook
+                  ? 'text-5xl md:text-6xl lg:text-7xl'
+                  : 'text-4xl md:text-5xl lg:text-6xl'
+                : fullBleed
+                  ? isNotebook
+                    ? 'text-3xl sm:text-4xl'
+                    : 'text-2xl sm:text-3xl'
+                  : isNotebook
+                    ? 'text-3xl sm:text-4xl'
+                    : ''
+            }`}
             style={{ color: 'var(--ink-text)' }}
           >
             sfjc.dev
