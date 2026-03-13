@@ -18,7 +18,7 @@
   --nb-bg: #f9f5ed;
   --nb-text: #1a1a1a;
   --nb-muted: #6b6359;
-  --nb-accent: #9e4a4a;
+  --nb-accent: #8c3838;
   --nb-border: #e8e2d8;
   --nb-paper: #f5f0e6;
 }
@@ -51,16 +51,16 @@
   font-family: 'Patrick Hand', cursive;
 }
 
-/* Notebook line paper (journal style) for 1 Sentence Everyday */
+/* Notebook line paper — single global source, fixed to viewport so lines align everywhere */
 .notebook-line-paper {
   background-color: var(--ink-paper);
   background-image: repeating-linear-gradient(
     transparent,
     transparent 30px,
-    rgba(26, 26, 26, 0.06) 30px,
-    rgba(26, 26, 26, 0.06) 31px
+    rgba(26, 26, 26, 0.04) 30px,
+    rgba(26, 26, 26, 0.04) 31px
   );
-  background-attachment: local;
+  background-attachment: fixed;
 }
 
 @theme {

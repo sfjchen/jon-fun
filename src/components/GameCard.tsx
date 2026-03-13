@@ -25,7 +25,7 @@ const cardBase =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2'
 
 export function GameCard({ game, onComingSoonClick, linePaper }: GameCardProps) {
-  const cardClass = cardBase + (linePaper ? ' notebook-line-paper' : '')
+  const cardClass = cardBase + (linePaper ? ' bg-transparent' : '')
   const content = (
     <>
       <div className="mb-4 flex h-16 items-center justify-center">

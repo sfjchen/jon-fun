@@ -19,7 +19,7 @@ export default function NotebookLeaderboardsPage() {
       </h1>
 
       <div
-        className="rounded-lg border p-8 notebook-line-paper"
+        className="rounded-lg border p-8 bg-transparent"
         style={{ borderColor: 'var(--ink-border)' }}
       >
         <div className="mb-6">
