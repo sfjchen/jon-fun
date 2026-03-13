@@ -51,20 +51,23 @@ export default function DailyLearnManager() {
   useEffect(() => {
     setSyncing(true)
     syncWithServer()
-      .then(() => refresh())
+      .then((r) => {
+        refresh()
+        setSyncFailed(!r.pushOk)
+      })
       .finally(() => setSyncing(false))
   }, [refresh])
 
+  // Periodic sync every 60s (all views) – retries failed pushes, clears sync-failed banner
   useEffect(() => {
-    if (view !== 'log') return
     const id = setInterval(() => {
-      syncWithServer().then(() => {
+      syncWithServer().then((r) => {
         refresh()
-        setSyncFailed(false)
+        setSyncFailed(!r.pushOk)
       })
     }, 60_000)
     return () => clearInterval(id)
-  }, [refresh, view])
+  }, [refresh])
 
   useEffect(() => {
     const d = getTodayDate()
@@ -130,6 +133,7 @@ export default function DailyLearnManager() {
 
   const layout = (title: string, children: React.ReactNode) => (
     <div className="max-w-4xl mx-auto">
+      {syncFailedBanner}
       <h1 className="text-4xl font-bold font-lora mb-8" style={{ color: 'var(--ink-text)' }}>{title}</h1>
       {children}
     </div>
@@ -173,9 +177,16 @@ export default function DailyLearnManager() {
     </div>
   )
 
+  const syncFailedBanner = syncFailed && (
+    <div className="rounded-lg p-4 mb-6 border-2 border-amber-500 bg-amber-50 text-amber-800 font-medium" role="alert">
+      Sync failed – saved locally. Will retry automatically. Check your connection.
+    </div>
+  )
+
   if (view === 'log') {
     return (
       <div className="max-w-4xl mx-auto">
+        {syncFailedBanner}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-bold font-lora" style={{ color: 'var(--ink-text)' }}>1 Sentence Everyday</h1>
           {syncing && <span className="text-sm" style={{ color: 'var(--ink-muted)' }}>Syncing…</span>}
@@ -419,8 +430,9 @@ export default function DailyLearnManager() {
               onClick={async () => {
                 setSyncKey(syncKeyInput.trim())
                 setSyncing(true)
-                await syncWithServer()
+                const r = await syncWithServer()
                 refresh()
+                setSyncFailed(!r.pushOk)
                 setSyncing(false)
               }}
               disabled={syncing}
