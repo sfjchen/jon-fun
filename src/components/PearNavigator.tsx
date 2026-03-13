@@ -1023,9 +1023,13 @@ export default function PearNavigator() {
     <div className="w-full flex-1 min-h-0 flex flex-col overflow-hidden bg-gradient-to-br from-[#0d0d0d] via-[#1a1a1a] to-[#0d0d0d]">
       <div className="flex-none flex items-center justify-between px-2.5 sm:px-4 py-1 sm:py-2">
           <span className="w-20" />
-          <span className="text-base sm:text-xl font-semibold text-white">
+          <button
+            type="button"
+            onClick={handleReset}
+            className="text-base sm:text-xl font-semibold text-white hover:opacity-90 transition-opacity cursor-pointer"
+          >
             Pear<span className="text-[#34c759]">Navigator</span>
-          </span>
+          </button>
           <Link href="/games/pear-navigator/results" className="text-xs sm:text-sm text-gray-500 hover:text-white/80 transition-colors">Results</Link>
       </div>
 
