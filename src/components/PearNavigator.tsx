@@ -212,7 +212,7 @@ type Task = {
 
 const TASKS: Record<string, Task> = {
   procreateSky: {
-    app: 'Procreate (PearPad)',
+    app: 'PearCreate (PearPad)',
     mock: 'procreate',
     steps: [
       { title: 'Open Brush Library', desc: 'Tap the brush icon to open the Brush Library.', hint: 'Brush Library shows your brush sets', highlight: { x: 280, y: 14, w: 80, h: 36 }, hotspotId: 'proc-brush' },
@@ -234,7 +234,7 @@ const TASKS: Record<string, Task> = {
     ],
   },
   figmaBusinessCard: {
-    app: 'Figma (PearPad)',
+    app: 'Pigma (PearPad)',
     mock: 'figma',
     steps: [
       { title: 'Choose template', desc: 'Tap the template dropdown to pick a layout.', hint: 'Minimal, Classic, or Modern', highlight: { x: 520, y: 60, w: 120, h: 40 }, hotspotId: 'fig-template' },
@@ -247,7 +247,7 @@ const TASKS: Record<string, Task> = {
     ],
   },
   figmaMindmap: {
-    app: 'Figma (PearPad)',
+    app: 'Pigma (PearPad)',
     mock: 'figma',
     steps: [
       { title: 'Create central frame', desc: 'Select the Frame tool and draw a frame for your central idea.', hint: 'Tap the canvas area', highlight: { x: 180, y: 100, w: 120, h: 60 }, hotspotId: 'fig-canvas' },
