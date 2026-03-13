@@ -275,6 +275,7 @@ type MockProps = {
   showHighlight?: boolean | undefined
   stepIdx?: number | undefined
   taskId?: string | undefined
+  isVariantB?: boolean | undefined
 }
 
 function HotspotButton({
@@ -359,7 +360,7 @@ const MM_FILL_COLORS: { id: string; label: string; bg: string; border: string }[
   { id: 'amber', label: 'Amber', bg: 'rgba(217,119,6,0.95)', border: 'rgba(251,191,36,0.8)' },
 ]
 
-function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight, stepIdx = 0, taskId }: MockProps) {
+function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight, stepIdx = 0, taskId, isVariantB }: MockProps) {
   const [bcTemplate, setBcTemplate] = useState<string>('')
   const [bcFillBg, setBcFillBg] = useState<string>('slate')
   const [bcFillAccent, setBcFillAccent] = useState<string>('amber')
@@ -627,9 +628,9 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                     />
                   )}
                   <div className={hasAccent ? 'pl-4' : ''}>
-                    {hasName && <div className="text-white font-bold text-lg sm:text-xl tracking-tight">{bcName || 'Your name'}</div>}
-                    {hasRole && <div className="text-white/80 text-sm sm:text-base mt-0.5">{bcRole || 'Your role'}</div>}
-                    {hasEmail && <div className="text-white/60 text-xs sm:text-sm mt-2">{bcEmail || 'you@example.com'}</div>}
+                    {hasName && <div className="text-white font-bold text-lg sm:text-xl tracking-tight">{bcName || (isVariantB ? 'Alex Chen' : 'Your name')}</div>}
+                    {hasRole && <div className="text-white/80 text-sm sm:text-base mt-0.5">{bcRole || (isVariantB ? 'Product Designer' : 'Your role')}</div>}
+                    {hasEmail && <div className="text-white/60 text-xs sm:text-sm mt-2">{bcEmail || (isVariantB ? 'alex@studio.co' : 'you@example.com')}</div>}
                   </div>
                   {!hasName && !hasRole && !hasEmail && hasCard && <span className="text-white/40 text-xs">Tap Text to add fields</span>}
                 </div>
@@ -729,7 +730,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
 
 type BlendMode = 'normal' | 'multiply' | 'overlay' | 'screen'
 
-function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight, stepIdx = 0 }: MockProps) {
+function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight, stepIdx = 0, isVariantB }: MockProps) {
   const [brushColor, setBrushColor] = useState<'blue' | 'yellow'>('blue')
   const [blendMode, setBlendMode] = useState<BlendMode>('normal')
   const [exportMenuOpen, setExportMenuOpen] = useState(false)
@@ -846,6 +847,18 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
                 {...((stepIdx === 9 || stepIdx === 11) && { onFirstStroke: onStepComplete })}
                 className="z-10"
               />
+              {isVariantB && canPaint && (
+                <svg className="absolute inset-0 w-full h-full pointer-events-none z-20" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <path d="M 15 60 Q 35 45 55 55 T 95 50" stroke={BRUSH_BLUE} strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
+                  <path d="M 20 75 Q 45 65 70 80 T 85 70" stroke={BRUSH_BLUE} strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.85" />
+                  {stepIdx >= 11 && (
+                    <>
+                      <path d="M 25 40 Q 50 55 75 35 T 90 45" stroke={BRUSH_YELLOW} strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
+                      <path d="M 30 65 Q 55 50 80 70" stroke={BRUSH_YELLOW} strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.85" />
+                    </>
+                  )}
+                </svg>
+              )}
               {brushActive && !hasStroke && !canPaint && <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-[#34c759] bg-[#34c759]/30" title="Brush cursor" />}
               {canPaint && <div className="absolute top-4 right-4 w-10 h-10 rounded-full border-2 border-white/60 pointer-events-none z-30" style={{ backgroundColor: brushColor === 'blue' ? BRUSH_BLUE : BRUSH_YELLOW }} title="Brush" />}
               {hasNewBrush && !hasStroke && !canPaint && <div className="w-12 h-12 rounded-full bg-[#34c759]/40 border-2 border-[#34c759]/60" />}
@@ -1265,7 +1278,7 @@ export default function PearNavigator() {
               <div className="absolute inset-0 sm:inset-1 md:inset-2 lg:inset-3 rounded-[0.45rem] sm:rounded-xl md:rounded-2xl bg-[#3a3a3a] overflow-auto scrollbar-needed">
                 {MockComponent ? (
                   <MockFillWrapper>
-                    <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={isVariantB ? () => {} : handleNext} {...(phase === 'steps' && !isVariantB && { onWrongTap: handleWrongTap })} showHighlight={phase === 'steps' && showHighlight} stepIdx={phase === 'steps' ? stepIdx : (task ? task.steps.length - 1 : 0)} {...(taskId ? { taskId } : {})} />
+                    <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={isVariantB ? () => {} : handleNext} {...(phase === 'steps' && !isVariantB && { onWrongTap: handleWrongTap })} showHighlight={phase === 'steps' && showHighlight} stepIdx={phase === 'steps' ? stepIdx : (task ? task.steps.length - 1 : 0)} {...(taskId ? { taskId } : {})} isVariantB={isVariantB} />
                   </MockFillWrapper>
                 ) : null}
               </div>
