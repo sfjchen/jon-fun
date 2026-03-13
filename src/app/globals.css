@@ -13,14 +13,14 @@
   --ink-paper: #f5f1eb;
 }
 
-/* Notebook theme tokens — creamier paper, Stanford-ish red accent */
+/* Notebook theme tokens — lighter cream, Stanford-ish red accent */
 :root {
-  --nb-bg: #f9f5ed;
+  --nb-bg: #faf7f1;
   --nb-text: #1a1a1a;
   --nb-muted: #6b6359;
   --nb-accent: #8c3838;
-  --nb-border: #e8e2d8;
-  --nb-paper: #f5f0e6;
+  --nb-border: #ebe6dd;
+  --nb-paper: #f7f3ea;
 }
 
 /* Notebook theme: map ink vars to nb vars */
