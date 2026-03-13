@@ -899,54 +899,9 @@ const MOCK_COMPONENTS: Record<string, (props: MockProps) => React.ReactNode> = {
   procreate: ProcreateMock,
 }
 
-const MOCK_DESIGN_W = 700
-const MOCK_DESIGN_H = 520
-
-function MockScaleWrapper({ children }: { children: React.ReactNode }) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [scale, setScale] = useState(1)
-  useEffect(() => {
-    const el = containerRef.current
-    const parent = el?.parentElement
-    if (!el || !parent) return
-    const update = () => {
-      const w = parent.clientWidth
-      const h = parent.clientHeight
-      if (w <= 0 || h <= 0) return
-      // Scale to fit (contain) so mock never cuts off; min 0.32 for narrow screens
-      const scaleFit = Math.min(w / MOCK_DESIGN_W, h / MOCK_DESIGN_H)
-      setScale(Math.max(0.32, scaleFit))
-    }
-    update()
-    const ro = new ResizeObserver(update)
-    ro.observe(parent)
-    return () => ro.disconnect()
-  }, [])
-  const w = Math.round(MOCK_DESIGN_W * scale)
-  const h = Math.round(MOCK_DESIGN_H * scale)
-  return (
-    <div ref={containerRef} className="absolute inset-0 flex items-center justify-center min-w-0 min-h-0">
-      <div
-        className="relative origin-top-left flex flex-col shrink-0 overflow-hidden"
-        style={{
-          width: w,
-          height: h,
-        }}
-      >
-        <div
-          className="absolute inset-0"
-          style={{
-            width: MOCK_DESIGN_W,
-            height: MOCK_DESIGN_H,
-            transform: `scale(${scale})`,
-            transformOrigin: 'top left',
-          }}
-        >
-          {children}
-        </div>
-      </div>
-    </div>
-  )
+/** Wrapper that lets the mock fill the container; mock uses flex so it adapts to any size */
+function MockFillWrapper({ children }: { children: React.ReactNode }) {
+  return <div className="absolute inset-0 min-w-0 min-h-0 flex flex-col overflow-hidden">{children}</div>
 }
 
 export default function PearNavigator() {
@@ -1127,9 +1082,9 @@ export default function PearNavigator() {
             <div className="relative w-full h-full max-w-7xl max-h-full rounded-lg sm:rounded-2xl md:rounded-3xl bg-[#1a1a1a] border sm:border-4 md:border-6 lg:border-8 border-[#2a2a2a] shadow-[inset_0_0_30px_rgba(0,0,0,0.5)] overflow-hidden">
               <div className="absolute inset-0 sm:inset-1 md:inset-2 lg:inset-3 rounded-[0.45rem] sm:rounded-xl md:rounded-2xl bg-[#3a3a3a] overflow-auto scrollbar-needed">
                 {MockComponent ? (
-                  <MockScaleWrapper>
+                  <MockFillWrapper>
                     <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={handleNext} {...(phase === 'steps' && { onWrongTap: handleWrongTap })} showHighlight={phase === 'steps' && showHighlight} stepIdx={phase === 'steps' ? stepIdx : (task?.steps.length ?? 0)} {...(taskId ? { taskId } : {})} />
-                  </MockScaleWrapper>
+                  </MockFillWrapper>
                 ) : null}
               </div>
             </div>
