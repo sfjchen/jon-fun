@@ -357,6 +357,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
+- **Pear Navigator variant B demo content**: When variant B (Next step flow), auto-show example text on business card (Alex Chen, Product Designer, alex@studio.co) and example paint strokes (blue + yellow) on canvas to demonstrate capability
 - **Pear Navigator A/B variant tracking**: variantRef ensures variant is always available for sendProgress/visibility beacon; assignment at Start; validated in sessions/results APIs
 - **Pear Navigator feedback flow**: 1s delay before feedback popup; popup closes on answer so user sees final product; guide panel shows Start over / Go home after rating
 - **Pear Navigator variant B UX**: Red ring highlight on Next step button so users know to tap it; guide text "Do the action in the mock, then tap Next step ↓"; wrong-tap toast variant-aware
