@@ -23,7 +23,7 @@ export default function NotebookLeaderboardsPage() {
         style={{ borderColor: 'var(--ink-border)' }}
       >
         <div className="mb-6">
-          <Image src="/doodles/coming-soon.svg" alt="" width={64} height={64} className="h-16 w-16" />
+          <Image src="/doodles/notebook/coming-soon.svg" alt="" width={64} height={64} className="h-16 w-16" />
         </div>
         <h2 className="mb-4 font-lora text-xl font-semibold" style={{ color: 'var(--ink-text)' }}>
           Coming Soon!

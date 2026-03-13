@@ -216,7 +216,7 @@ export default function DailyLearnManager() {
         </div>
 
         {entries.length === 0 && (
-          <div className="rounded-lg p-4 mb-6 border" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+          <div className="rounded-lg p-4 mb-6 border" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
             <p className="font-medium" style={{ color: 'var(--ink-text)' }}>Restore your logs</p>
             <p className="text-sm mt-1" style={{ color: 'var(--ink-muted)' }}>
               Go to <button type="button" onClick={() => setView('sync')} className="underline" style={{ color: 'var(--ink-accent)' }}>Sync</button> tab → enter your sync key → Restore. Do this on each device.
@@ -224,7 +224,7 @@ export default function DailyLearnManager() {
           </div>
         )}
         {/* Calendar */}
-        <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+        <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
             <div className="flex items-center justify-between mb-4">
               <button
                 type="button"
@@ -283,7 +283,7 @@ export default function DailyLearnManager() {
           </div>
 
           {/* Today's prompt */}
-          <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+          <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
             <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>
               Today: {today ? parseLocalDate(today).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '…'} (Resets 5am local)
             </p>
@@ -314,7 +314,7 @@ export default function DailyLearnManager() {
           </div>
 
           {/* History */}
-          <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+          <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
             <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>History</h2>
             {entries.length === 0 ? (
               <p style={{ color: 'var(--ink-muted)' }}>No entries yet.</p>
@@ -367,7 +367,7 @@ export default function DailyLearnManager() {
     return layout(
       'Analytics',
       <>
-        <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+        <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
           <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>Counts</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="rounded-lg p-4 border" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
@@ -395,7 +395,7 @@ export default function DailyLearnManager() {
     return layout(
       'Sync',
       <>
-        <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+        <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
           <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>Restore from Server</h2>
           <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>
             Lost data after clearing site? Enter your sync key or user ID and click Restore to pull entries from the server.
@@ -435,7 +435,7 @@ export default function DailyLearnManager() {
             </p>
           )}
         </div>
-        <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+        <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
           <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>Cross-Device Sync</h2>
           <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>
             Set the same sync key on both devices to merge your history. Sync runs on page load and on every save.
@@ -479,7 +479,7 @@ export default function DailyLearnManager() {
   return layout(
     'Export',
     <>
-      <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+      <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
         <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>Export</h2>
         <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>Copy as text to paste into ChatGPT or other tools, or download JSON.</p>
         <div className="flex flex-wrap gap-4">

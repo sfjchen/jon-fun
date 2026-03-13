@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import TMRStudySession from './TMRStudySession'
 import TMRSleepReactivation from './TMRSleepReactivation'
 import {
@@ -14,6 +15,8 @@ import {
 type View = 'menu' | 'study' | 'sleep' | 'history'
 
 export default function TMRManager() {
+  const pathname = usePathname()
+  const inNotebook = pathname?.startsWith('/notebook')
   const [view, setView] = useState<View>('menu')
   const [studySessions, setStudySessions] = useState<StudySession[]>([])
   const [sleepSessions, setSleepSessions] = useState<SleepSession[]>([])
@@ -53,7 +56,7 @@ export default function TMRManager() {
         </div>
 
         {/* Study Sessions */}
-        <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+        <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
           <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>
               Study Sessions ({studySessions.length})
             </h2>
@@ -86,7 +89,7 @@ export default function TMRManager() {
           </div>
 
         {/* Sleep Sessions */}
-        <div className="rounded-lg p-6 border shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+        <div className="rounded-lg p-6 border shadow-sm" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
           <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>
               Sleep Reactivation Sessions ({sleepSessions.length})
             </h2>
@@ -125,7 +128,7 @@ export default function TMRManager() {
       {/* Header */}
       <header className="text-center mb-12">
         <h1 className="text-5xl font-bold font-lora mb-4 flex items-center justify-center gap-3" style={{ color: 'var(--ink-text)' }}>
-          <Image src="/doodles/tmr.svg" alt="" width={48} height={48} className="h-12 w-12" />
+          <Image src={inNotebook ? '/doodles/notebook/tmr.svg' : '/doodles/tmr.svg'} alt="" width={48} height={48} className="h-12 w-12" />
           TMR System
         </h1>
         <p className="text-xl" style={{ color: 'var(--ink-muted)' }}>
@@ -138,7 +141,7 @@ export default function TMRManager() {
         <button
           onClick={() => setView('study')}
           className="rounded-lg p-8 border shadow-sm hover:shadow-md transition-all duration-200 text-left"
-          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+          style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
         >
           <Image src="/doodles/study.svg" alt="" width={56} height={56} className="h-14 w-14 mb-4" />
           <h2 className="text-2xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>Study Session</h2>
@@ -150,7 +153,7 @@ export default function TMRManager() {
         <button
           onClick={() => setView('sleep')}
           className="rounded-lg p-8 border shadow-sm hover:shadow-md transition-all duration-200 text-left"
-          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+          style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
         >
           <Image src="/doodles/sleep.svg" alt="" width={56} height={56} className="h-14 w-14 mb-4" />
           <h2 className="text-2xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>Sleep Reactivation</h2>
@@ -162,7 +165,7 @@ export default function TMRManager() {
         <button
           onClick={() => setView('history')}
           className="rounded-lg p-8 border shadow-sm hover:shadow-md transition-all duration-200 text-left"
-          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+          style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
         >
           <Image src="/doodles/history.svg" alt="" width={56} height={56} className="h-14 w-14 mb-4" />
           <h2 className="text-2xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>Session History</h2>
@@ -171,7 +174,7 @@ export default function TMRManager() {
             </p>
           </button>
 
-        <div className="rounded-lg p-8 border" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
+        <div className="rounded-lg p-8 border" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
           <Image src="/doodles/info.svg" alt="" width={56} height={56} className="h-14 w-14 mb-4" />
           <h2 className="text-2xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>About TMR</h2>
           <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
@@ -182,7 +185,7 @@ export default function TMRManager() {
         </div>
 
       {/* Quick Stats */}
-      <div className="rounded-lg p-6 border shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+      <div className="rounded-lg p-6 border shadow-sm" style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
         <h3 className="text-xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>Quick Stats</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>

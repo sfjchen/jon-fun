@@ -133,7 +133,7 @@ export default function NotebookTMRAdminPage() {
   if (!authorized && !loading) {
     return (
       <div className="p-4 flex items-center justify-center">
-        <div className="rounded-lg p-6 border max-w-md w-full shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+        <div className="rounded-lg p-6 border max-w-md w-full shadow-sm bg-transparent" style={{ borderColor: 'var(--ink-border)' }}>
           <h1 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>TMR Admin</h1>
           <form onSubmit={handleSubmit}>
             <input
@@ -200,7 +200,7 @@ export default function NotebookTMRAdminPage() {
           </button>
         </div>
 
-        <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+        <div className="rounded-lg p-6 border mb-6 shadow-sm bg-transparent" style={{ borderColor: 'var(--ink-border)' }}>
           <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>Study sessions ({studySessions.length})</h2>
           {studySessions.length === 0 ? (
             <p style={{ color: 'var(--ink-muted)' }}>No study sessions.</p>
@@ -234,7 +234,7 @@ export default function NotebookTMRAdminPage() {
           )}
         </div>
 
-        <div className="rounded-lg p-6 border shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+        <div className="rounded-lg p-6 border shadow-sm bg-transparent" style={{ borderColor: 'var(--ink-border)' }}>
           <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>Sleep sessions ({sleepSessions.length})</h2>
           {sleepSessions.length === 0 ? (
             <p style={{ color: 'var(--ink-muted)' }}>No sleep sessions.</p>
