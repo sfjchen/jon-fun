@@ -55,7 +55,7 @@ Same functionality as main site, different aesthetic. Applied when pathname star
 | `--nb-bg` | `#f9f5ed` | Page background (creamier) |
 | `--nb-text` | `#1a1a1a` | Primary text |
 | `--nb-muted` | `#6b6359` | Secondary |
-| `--nb-accent` | `#5c4a3d` | Links, CTAs (graphite/sepia) |
+| `--nb-accent` | `#9e4a4a` | Links, CTAs (faded red) |
 | `--nb-border` | `#e8e2d8` | Dividers |
 | `--nb-paper` | `#f5f0e6` | Cards |
 
