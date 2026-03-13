@@ -292,13 +292,22 @@ function HotspotButton({
 }) {
   const isTarget = currentHotspotId === id
   const showOverlay = showHighlight && isTarget
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (isTarget) onStepComplete()
+    else if (showHighlight && currentHotspotId) onWrongTap?.()
+  }
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    if (isTarget) onStepComplete()
+    else if (showHighlight && currentHotspotId) onWrongTap?.()
+  }
   return (
     <button
       type="button"
-      onClick={() => {
-        if (isTarget) onStepComplete()
-        else if (showHighlight && currentHotspotId) onWrongTap?.()
-      }}
+      onClick={handleClick}
+      onTouchEnd={handleTouchEnd}
       className={`relative cursor-pointer touch-manipulation active:scale-[0.97] active:brightness-110 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#252525] ${className ?? ''}`}
       aria-pressed={isTarget}
     >
@@ -738,8 +747,8 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
               <div className="absolute top-full left-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 min-w-[160px] space-y-1">
                 <div className="text-white/50 text-sm mb-2">Share — Save to computer</div>
                 {(['png', 'jpeg'] as const).map((fmt) => (
-                  <HotspotButton key={fmt} id="proc-export-format" currentHotspotId={currentHotspotId} onStepComplete={() => handleExport(fmt)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
-                    <div className={`w-full px-3 py-2 rounded text-sm ${currentHotspotId === 'proc-export-format' ? 'bg-[#34c759]/30 text-[#34c759]' : 'text-white/90 hover:bg-white/10'}`}>{fmt.toUpperCase()}</div>
+                  <HotspotButton key={fmt} id="proc-export-format" currentHotspotId={currentHotspotId} onStepComplete={() => handleExport(fmt)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block min-h-[44px]">
+                    <div className={`w-full px-3 py-2 min-h-[44px] flex items-center rounded text-sm ${currentHotspotId === 'proc-export-format' ? 'bg-[#34c759]/30 text-[#34c759]' : 'text-white/90 hover:bg-white/10'}`}>{fmt.toUpperCase()}</div>
                   </HotspotButton>
                 ))}
               </div>
@@ -848,8 +857,8 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
             {shapeMenuOpen && (
               <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
                 {['Circle', 'Grain', 'Texture'].map((o) => (
-                  <HotspotButton key={o} id="proc-shape-grain" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
-                    <div className={`w-full px-3 py-2.5 rounded text-left text-sm ${currentHotspotId === 'proc-shape-grain' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-white/5 text-white/80 hover:bg-white/10'}`}>{o}</div>
+                  <HotspotButton key={o} id="proc-shape-grain" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block min-h-[44px]">
+                    <div className={`w-full px-3 py-2.5 min-h-[44px] flex items-center rounded text-left text-sm ${currentHotspotId === 'proc-shape-grain' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-white/5 text-white/80 hover:bg-white/10'}`}>{o}</div>
                   </HotspotButton>
                 ))}
               </div>
@@ -863,8 +872,8 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
                 <div className="h-0.5 bg-white/20 rounded-full mx-2" />
                 <div className="flex justify-between text-[10px] text-white/40 px-2"><span>Opacity</span><span>100%</span></div>
                 <div className="h-0.5 bg-white/20 rounded-full mx-2" />
-                <HotspotButton id="proc-dynamics-apply" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block mt-1">
-                  <div className={`w-full px-3 py-2.5 rounded text-center text-sm ${currentHotspotId === 'proc-dynamics-apply' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-white/5 text-white/80 hover:bg-white/10'}`}>Apply</div>
+                <HotspotButton id="proc-dynamics-apply" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block mt-1 min-h-[44px]">
+                  <div className={`w-full px-3 py-2.5 min-h-[44px] flex items-center justify-center rounded text-center text-sm ${currentHotspotId === 'proc-dynamics-apply' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-white/5 text-white/80 hover:bg-white/10'}`}>Apply</div>
                 </HotspotButton>
               </div>
             )}
@@ -880,8 +889,8 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
                 {blendMenuOpen && (
                   <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
                     {(['multiply', 'overlay', 'screen'] as const).map((m) => (
-                      <HotspotButton key={m} id="proc-blend-overlay" currentHotspotId={currentHotspotId} onStepComplete={() => { setBlendMode(m); onStepComplete(); }} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
-                        <div className={`w-full px-3 py-2.5 rounded text-left text-sm capitalize ${currentHotspotId === 'proc-blend-overlay' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-white/5 text-white/80 hover:bg-white/10'}`}>{m}</div>
+                      <HotspotButton key={m} id="proc-blend-overlay" currentHotspotId={currentHotspotId} onStepComplete={() => { setBlendMode(m); onStepComplete(); }} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block min-h-[44px]">
+                        <div className={`w-full px-3 py-2.5 min-h-[44px] flex items-center rounded text-left text-sm capitalize ${currentHotspotId === 'proc-blend-overlay' ? 'bg-[#34c759]/30 text-[#34c759]' : 'bg-white/5 text-white/80 hover:bg-white/10'}`}>{m}</div>
                       </HotspotButton>
                     ))}
                   </div>
