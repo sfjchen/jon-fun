@@ -57,8 +57,8 @@
   background-image: repeating-linear-gradient(
     transparent,
     transparent 30px,
-    rgba(26, 26, 26, 0.04) 30px,
-    rgba(26, 26, 26, 0.04) 31px
+    rgba(26, 26, 26, 0.03) 30px,
+    rgba(26, 26, 26, 0.03) 31px
   );
   background-attachment: fixed;
 }
