@@ -357,6 +357,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
+- **Pear Navigator mindmap fill vs See example**: Fill step now only applies color—keeps "Idea A/B/C" labels; PM terms (OKR, KPI, etc.) appear only after pressing "See example"
 - **Pear Navigator business card export**: Export-as-image (PNG/JPG) for business card—same flow as painting: settings gear opens dropdown, choose format to download; html2canvas for DOM capture; 2 new steps (Open export menu, Save your card)
 - **Notebook consistency pass**: Notebook doodles everywhere (leaderboards, jeopardy, chwazi, TMR); inner boxes use `bg-transparent` so fixed line paper aligns; TMRManager, DailyLearnManager, Admin TMR notebook-aware; Stanford-ish red accent (#8c3838)
 - **Notebook theme** (`/notebook`): Alternate path—Patrick Hand font (readable handwritten), 1.2rem base, creamier palette, Stanford-ish red accent, doodly icons; single fixed line paper; Notebook/Main nav links
