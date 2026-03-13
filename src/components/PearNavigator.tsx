@@ -945,8 +945,8 @@ export default function PearNavigator() {
   const MockComponent = task ? MOCK_COMPONENTS[task.mock] : null
 
   return (
-    <div className="w-full min-h-[calc(100vh-5rem)] overflow-hidden bg-gradient-to-br from-[#0d0d0d] via-[#1a1a1a] to-[#0d0d0d] flex flex-col">
-      <div className="flex-none flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3">
+    <div className="w-full min-h-dynamic overflow-y-auto overflow-x-hidden bg-gradient-to-br from-[#0d0d0d] via-[#1a1a1a] to-[#0d0d0d] flex flex-col">
+      <div className="flex-none flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 pb-safe">
           <span className="w-20" />
           <span className="text-lg sm:text-xl font-semibold text-white">
             Pear<span className="text-[#34c759]">Navigator</span>
@@ -954,9 +954,9 @@ export default function PearNavigator() {
           <span className="text-sm text-gray-500">PearPad</span>
       </div>
 
-      <div className="flex-1 flex flex-col lg:flex-row gap-2 sm:gap-3 px-2 sm:px-3 pb-2 sm:pb-3 min-h-0 overflow-hidden">
-        {/* Guide panel */}
-        <div className="flex-none w-full lg:w-80 xl:w-96 2xl:w-[28rem] lg:min-w-[20rem] min-w-0 flex flex-col min-h-0 max-h-[45vh] lg:max-h-none bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row gap-2 sm:gap-3 px-2 sm:px-3 pb-2 sm:pb-3 pb-safe min-h-0 overflow-hidden">
+        {/* Guide panel — mobile: max 42vh so demo gets room; lg+: side panel full height */}
+        <div className="flex-none w-full lg:w-80 xl:w-96 2xl:w-[28rem] lg:min-w-[20rem] min-w-0 flex flex-col min-h-0 max-h-[42vh] sm:max-h-[45vh] lg:max-h-none bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch overflow-hidden">
             <div className="flex flex-col flex-1 min-h-0 p-4 sm:p-5 lg:p-6 overflow-y-scroll">
               {phase === 'task' && (
                 <>
@@ -975,7 +975,7 @@ export default function PearNavigator() {
                       <button
                         key={id}
                         onClick={() => setTaskId(id)}
-                        className={`w-full text-left px-5 py-4 rounded-xl border transition-all text-base flex items-center justify-between gap-3 ${
+                        className={`w-full text-left px-4 sm:px-5 py-3.5 sm:py-4 min-h-[44px] rounded-xl border transition-all text-base flex items-center justify-between gap-3 touch-manipulation ${
                           taskId === id
                             ? 'border-[#34c759] bg-[#34c759]/15 text-white'
                             : 'border-white/10 bg-white/5 text-gray-300 hover:border-[#34c759]/50'
@@ -989,7 +989,7 @@ export default function PearNavigator() {
                   <button
                     onClick={handleStart}
                     disabled={!taskId}
-                    className="w-full py-5 rounded-xl bg-[#34c759] text-black font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+                    className="w-full py-4 sm:py-5 min-h-[48px] rounded-xl bg-[#34c759] text-black font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity touch-manipulation"
                   >
                     Start guide
                   </button>
@@ -1011,17 +1011,17 @@ export default function PearNavigator() {
                   <p className="mb-4 text-base text-[#34c759]/90 font-medium">
                     Tap the highlighted element in the simulator to continue
                   </p>
-                  <div className="flex gap-3">
+                  <div className="flex gap-2 sm:gap-3 flex-wrap">
                     <button
                       onClick={() => setShowHighlight((h) => !h)}
-                      className="flex-1 py-4 rounded-xl border border-white/20 bg-white/5 text-white font-medium text-base hover:bg-white/10 transition-colors"
+                      className="flex-1 min-w-[120px] min-h-[44px] py-3 sm:py-4 rounded-xl border border-white/20 bg-white/5 text-white font-medium text-sm sm:text-base hover:bg-white/10 transition-colors touch-manipulation"
                     >
                       {showHighlight ? 'Hide highlight' : 'Show highlight'}
                     </button>
                     {!isFirstStep && (
                       <button
                         onClick={handlePrev}
-                        className="py-4 px-6 rounded-xl border border-white/20 bg-white/5 text-white font-medium text-base hover:bg-white/10 transition-colors"
+                        className="min-h-[44px] py-3 sm:py-4 px-4 sm:px-6 rounded-xl border border-white/20 bg-white/5 text-white font-medium text-sm sm:text-base hover:bg-white/10 transition-colors touch-manipulation"
                         aria-label="Previous step"
                       >
                         ← Previous
@@ -1048,7 +1048,7 @@ export default function PearNavigator() {
                   </p>
                   <button
                     onClick={handleReset}
-                    className="px-10 py-4 rounded-xl bg-[#34c759] text-black font-semibold text-lg hover:opacity-90 transition-opacity"
+                    className="min-h-[48px] px-8 sm:px-10 py-4 rounded-xl bg-[#34c759] text-black font-semibold text-lg hover:opacity-90 transition-opacity touch-manipulation"
                   >
                     Start over
                   </button>
@@ -1057,15 +1057,15 @@ export default function PearNavigator() {
             </div>
         </div>
 
-        {/* Wrong-tap toast */}
+        {/* Wrong-tap toast — safe-area aware for iPhone home indicator */}
         {wrongTapToast && (
-          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl bg-red-500/90 text-white font-medium text-sm shadow-lg transition-opacity duration-300">
+          <div className="fixed bottom-safe left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl bg-red-500/90 text-white font-medium text-sm shadow-lg transition-opacity duration-300 max-w-[calc(100vw-2rem)] mx-auto">
             Tap the highlighted element to advance
           </div>
         )}
 
-        {/* Mock app preview - fills remaining space, scrollable on narrow screens */}
-        <div className="flex-1 min-w-0 min-h-[min(50vh,400px)] lg:min-h-0 flex flex-col overflow-scroll">
+        {/* Mock app preview — mobile: min 35vh so it fits; lg+: flex fills */}
+        <div className="flex-1 min-w-0 min-h-[min(35vh,280px)] sm:min-h-[min(40vh,320px)] lg:min-h-0 flex flex-col overflow-auto overscroll-contain">
           <div className="flex-1 min-h-0 flex items-center justify-center p-1 sm:p-2 overflow-hidden">
             <div className="relative w-full h-full max-w-7xl max-h-full rounded-2xl sm:rounded-3xl bg-[#1a1a1a] border-4 sm:border-6 md:border-8 border-[#2a2a2a] shadow-[inset_0_0_30px_rgba(0,0,0,0.5),0_20px_50px_rgba(0,0,0,0.4)] overflow-hidden">
               <div className="absolute inset-1.5 sm:inset-2 md:inset-3 rounded-xl sm:rounded-2xl bg-[#3a3a3a] overflow-hidden">

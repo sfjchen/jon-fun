@@ -46,6 +46,21 @@
     -webkit-overflow-scrolling: touch;
   }
 
+  /* Responsive: dynamic viewport for mobile Safari (100vh breaks with address bar) */
+  .min-h-dynamic {
+    min-height: calc(100vh - 5rem);
+    min-height: calc(100dvh - 5rem);
+  }
+
+  /* Safe area insets for fixed elements (iPhone notch, home indicator); needs viewport-fit=cover */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .bottom-safe {
+    bottom: calc(2rem + env(safe-area-inset-bottom, 0));
+  }
+
   /* Header Section */
   .header-section {
     background-color: rgb(30 58 138);
