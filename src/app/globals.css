@@ -13,12 +13,12 @@
   --ink-paper: #f5f1eb;
 }
 
-/* Notebook theme tokens — creamier paper, graphite accent */
+/* Notebook theme tokens — creamier paper, faded red accent */
 :root {
   --nb-bg: #f9f5ed;
   --nb-text: #1a1a1a;
   --nb-muted: #6b6359;
-  --nb-accent: #5c4a3d;
+  --nb-accent: #9e4a4a;
   --nb-border: #e8e2d8;
   --nb-paper: #f5f0e6;
 }
