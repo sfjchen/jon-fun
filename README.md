@@ -357,6 +357,7 @@ Running log of project work. Update this section when making significant changes
 
 **2025-03**
 
+- **Subagents**: Removed heavy-lift; kept think-hard as sole context-heavy subagent
 - **Doodle icons**: Added `public/doodles/`—hand-drawn SVG icons (tmr, daily, pear, game24, jeopardy, chwazi, leaderboards, coming-soon, poker). Replaced emojis in GameCard, TMR header, leaderboards, jeopardy, Coming Soon modal. Texas Hold'em uses doodle-style poker.svg (card + spade).
 - **docs/DESIGN-SYSTEM.md**: Canonical design system doc for agents—palette, typography, guidelines
 - **Palette & home**: Cream background (#faf6f0), burgundy accent (#800020), taupe muted; removed header border on home; 24 Game → 24 (Jon's favorite)
