@@ -906,24 +906,36 @@ function MockScaleWrapper({ children }: { children: React.ReactNode }) {
     const update = () => {
       const w = parent.clientWidth
       const h = parent.clientHeight
-      setScale(Math.min(1, w / MOCK_DESIGN_W, h / MOCK_DESIGN_H))
+      if (w <= 0 || h <= 0) return
+      setScale(Math.max(0.5, Math.min(1, w / MOCK_DESIGN_W, h / MOCK_DESIGN_H)))
     }
     update()
     const ro = new ResizeObserver(update)
     ro.observe(parent)
     return () => ro.disconnect()
   }, [])
+  const w = Math.round(MOCK_DESIGN_W * scale)
+  const h = Math.round(MOCK_DESIGN_H * scale)
   return (
-    <div ref={containerRef} className="absolute inset-0 flex items-center justify-center overflow-visible">
+    <div ref={containerRef} className="absolute inset-0 flex items-center justify-center min-w-0 min-h-0">
       <div
-        className="relative origin-top flex flex-col shrink-0"
+        className="relative origin-top-left flex flex-col shrink-0 overflow-hidden"
         style={{
-          width: MOCK_DESIGN_W,
-          height: MOCK_DESIGN_H,
-          transform: `scale(${scale})`,
+          width: w,
+          height: h,
         }}
       >
-        {children}
+        <div
+          className="absolute inset-0"
+          style={{
+            width: MOCK_DESIGN_W,
+            height: MOCK_DESIGN_H,
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+          }}
+        >
+          {children}
+        </div>
       </div>
     </div>
   )
@@ -991,8 +1003,8 @@ export default function PearNavigator() {
       </div>
 
       <div className="flex-1 flex flex-col lg:flex-row gap-2 sm:gap-3 px-2 sm:px-3 pb-2 sm:pb-3 pb-safe min-h-0 overflow-hidden">
-        {/* Guide panel — mobile: very compact (18vh) so simulator dominates; lg+: side panel full height */}
-        <div className="flex-none w-full lg:w-80 xl:w-96 2xl:w-[28rem] lg:min-w-[20rem] min-w-0 flex flex-col min-h-0 max-h-[18vh] sm:max-h-[22vh] md:max-h-[26vh] lg:max-h-none bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch overflow-hidden">
+        {/* Guide panel — mobile: minimal (16vh) so simulator dominates; lg+: side panel full height */}
+        <div className="flex-none w-full lg:w-80 xl:w-96 2xl:w-[28rem] lg:min-w-[20rem] min-w-0 flex flex-col min-h-0 max-h-[16vh] sm:max-h-[20vh] md:max-h-[24vh] lg:max-h-none bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch overflow-hidden">
             <div className="flex flex-col flex-1 min-h-0 p-1.5 sm:p-3 lg:p-6 overflow-y-scroll scrollbar-visible">
               {phase === 'task' && (
                 <>
