@@ -358,6 +358,7 @@ Running log of project work. Update this section when making significant changes
 **2026-03**
 
 - **Theme swap**: Notebook is now default at `/`; Ink & Paper moved to `/theme2`. Brighter cream palette; lighter line paper (0.02); home grid `gap-y-[30px]` and `pt-[30px]` for line alignment with cards. Redirect `/notebook` → `/`.
+- **Pear Navigator A/B testing**: On task select, random A or B. A: same flow, no skip button. B: fixed Next step button, must press to advance (mock taps no-op). Post-task: Meh/Good/Great feedback + total/avg time; logs to console
 - **Pear Navigator mindmap PM terms + buttons**: PM terms (OKR, KPI, etc.) only after pressing See example—use mmHasSeenExample state instead of stepIdx; Fill and See example buttons always visible; all business card buttons (Template, Background, Accent, Text, Rectangle) always visible; handlers advance only when at correct step
 - **Pear Navigator mindmap fill vs See example**: Fill step now only applies color—keeps "Idea A/B/C" labels; PM terms (OKR, KPI, etc.) appear only after pressing "See example"
 - **Pear Navigator business card export**: Export-as-image (PNG/JPG) for business card—same flow as painting: settings gear opens dropdown, choose format to download; html2canvas for DOM capture; 2 new steps (Open export menu, Save your card)
