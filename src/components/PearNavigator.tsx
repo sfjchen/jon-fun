@@ -739,8 +739,8 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
   return (
     <div className="absolute inset-0 flex flex-col text-[10px] sm:text-xs min-h-0 overflow-hidden">
       <div className="min-h-8 sm:min-h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 shrink-0 flex-wrap py-1 sm:py-1.5">
-        <div className="relative shrink-0 overflow-visible" onClick={() => inExportStep && setExportMenuOpen(true)}>
-            <HotspotButton id="proc-export" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+        <div className="relative shrink-0 overflow-visible">
+            <HotspotButton id="proc-export" currentHotspotId={currentHotspotId} onStepComplete={() => { setExportMenuOpen(true); onStepComplete(); }} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <span className={`px-3 py-1.5 rounded ${currentHotspotId === 'proc-export' ? 'ring-2 ring-[#34c759]/50' : ''} text-white/80`}>⚙</span>
             </HotspotButton>
             {exportMenuOpen && inExportStep && (
