@@ -10,7 +10,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **Chwazi Finger Chooser** (`/games/chwazi`): Place fingers on screen to randomly select a winner
 - **TMR System** (`/games/tmr`): Targeted Memory Reactivation for learning and sleep
 - **1 Sentence Everyday** (`/games/daily-log`): One sentence per day, history, calendar, export, cross-device sync (localStorage + Supabase)
-- **Pear Navigator** (`/games/pear-navigator`): PearPad tablet simulator—Procreate, Notion, Figma guides; tap UI elements to advance; MS&E 165 demo
+- **Pear Navigator** (`/games/pear-navigator`): PearPad tablet simulator—Procreate, Notion, Figma guides; tap UI elements to advance; MS&E 165 demo; A/B test results at `/games/pear-navigator/results`
 
 ## 🚀 Quick Start
 
@@ -358,6 +358,7 @@ Running log of project work. Update this section when making significant changes
 **2026-03**
 
 - **Theme swap**: Notebook is now default at `/`; Ink & Paper moved to `/theme2`. Brighter cream palette; lighter line paper (0.02); home grid `gap-y-[30px]` and `pt-[30px]` for line alignment with cards. Redirect `/notebook` → `/`.
+- **Pear Navigator A/B results page**: `/games/pear-navigator/results`—public page showing compiled A/B test data (by variant, task, ratings, times); migration `supabase-migration-pear-navigator-ab.sql`; API POST/GET at `/api/pear-navigator/results`
 - **Pear Navigator A/B testing**: On task select, random A or B. A: same flow, no skip button. B: fixed Next step button, must press to advance (mock taps no-op). Post-task: Meh/Good/Great feedback + total/avg time; logs to console
 - **Pear Navigator mindmap PM terms + buttons**: PM terms (OKR, KPI, etc.) only after pressing See example—use mmHasSeenExample state instead of stepIdx; Fill and See example buttons always visible; all business card buttons (Template, Background, Accent, Text, Rectangle) always visible; handlers advance only when at correct step
 - **Pear Navigator mindmap fill vs See example**: Fill step now only applies color—keeps "Idea A/B/C" labels; PM terms (OKR, KPI, etc.) appear only after pressing "See example"
