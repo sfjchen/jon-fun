@@ -176,9 +176,9 @@ export async function restoreFromServer(userId: string): Promise<{ restored: num
   return { restored: entries.length }
 }
 
-/** Sync: fetch from server, merge with local, save local, push merged. Returns merged entries. */
-export async function syncWithServer(): Promise<DailyLearnEntry[]> {
-  if (typeof window === 'undefined') return loadEntries()
+/** Sync: fetch from server, merge with local, save local, push merged. Returns entries and whether push succeeded. */
+export async function syncWithServer(): Promise<{ entries: DailyLearnEntry[]; pushOk: boolean }> {
+  if (typeof window === 'undefined') return { entries: loadEntries(), pushOk: true }
   const local = loadEntries()
   const remote = await fetchEntriesFromServer()
   const merged = mergeEntries(local, remote)
@@ -186,8 +186,8 @@ export async function syncWithServer(): Promise<DailyLearnEntry[]> {
   if (localStorage.getItem(ENTRIES_KEY) !== mergedJson) {
     localStorage.setItem(ENTRIES_KEY, mergedJson)
   }
-  await pushWithRetry(merged)
-  return merged
+  const pushOk = await pushWithRetry(merged)
+  return { entries: merged, pushOk }
 }
 
 export function loadEntries(): DailyLearnEntry[] {

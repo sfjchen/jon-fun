@@ -357,6 +357,7 @@ Running log of project work. Update this section when making significant changes
 
 **2025-03**
 
+- **1 Sentence Everyday**: Sync-failed alert – prominent banner on all views when saves to Supabase fail; initial + periodic sync set syncFailed; banner persists until retry succeeds
 - **Pear Navigator responsive**: Mobile/iPhone, narrow & wide laptop—min-h-dynamic (100dvh), safe-area toast, 44px touch targets, guide max-h so demo fits; docs/RESPONSIVE-BEST-PRACTICES.md
 - **1 Sentence Everyday**: Supabase sync on every load (push local to server); migration `supabase-migration-daily-learn.sql` for `daily_learn_entries` table
 - **Subagents**: Removed heavy-lift; kept think-hard as sole context-heavy subagent
