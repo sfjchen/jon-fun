@@ -13,14 +13,14 @@
   --ink-paper: #f5f1eb;
 }
 
-/* Notebook theme tokens — lighter cream, Stanford-ish red accent */
+/* Notebook theme tokens — brighter cream, Stanford-ish red accent */
 :root {
-  --nb-bg: #faf7f1;
+  --nb-bg: #fcf9f4;
   --nb-text: #1a1a1a;
   --nb-muted: #6b6359;
   --nb-accent: #8c3838;
-  --nb-border: #ebe6dd;
-  --nb-paper: #f7f3ea;
+  --nb-border: #eee9e2;
+  --nb-paper: #faf6f0;
 }
 
 /* Notebook theme: map ink vars to nb vars */
@@ -57,8 +57,8 @@
   background-image: repeating-linear-gradient(
     transparent,
     transparent 30px,
-    rgba(26, 26, 26, 0.03) 30px,
-    rgba(26, 26, 26, 0.03) 31px
+    rgba(26, 26, 26, 0.02) 30px,
+    rgba(26, 26, 26, 0.02) 31px
   );
   background-attachment: fixed;
 }

@@ -16,7 +16,7 @@ type View = 'menu' | 'study' | 'sleep' | 'history'
 
 export default function TMRManager() {
   const pathname = usePathname()
-  const inNotebook = pathname?.startsWith('/notebook')
+  const inNotebook = !pathname?.startsWith('/theme2')
   const [view, setView] = useState<View>('menu')
   const [studySessions, setStudySessions] = useState<StudySession[]>([])
   const [sleepSessions, setSleepSessions] = useState<SleepSession[]>([])

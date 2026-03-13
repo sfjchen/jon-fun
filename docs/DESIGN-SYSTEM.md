@@ -44,20 +44,20 @@
 
 ---
 
-## Alternate Theme: Notebook (at `/notebook`)
+## Default Theme: Notebook (at `/`)
 
-Same functionality as main site, different aesthetic. Applied when pathname starts with `/notebook` via `data-theme="notebook"`.
+Main site aesthetic. Applied when pathname does NOT start with `/theme2` via `data-theme="notebook"`.
 
-### Color Palette
+### Color Palette (notebook)
 
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `--nb-bg` | `#faf7f1` | Page background (lighter cream) |
+| `--nb-bg` | `#fcf9f4` | Page background (brighter cream) |
 | `--nb-text` | `#1a1a1a` | Primary text |
 | `--nb-muted` | `#6b6359` | Secondary |
 | `--nb-accent` | `#8c3838` | Links, CTAs (Stanford-ish red) |
-| `--nb-border` | `#ebe6dd` | Dividers |
-| `--nb-paper` | `#f7f3ea` | Cards |
+| `--nb-border` | `#eee9e2` | Dividers |
+| `--nb-paper` | `#faf6f0` | Cards |
 
 ### Typography
 
@@ -66,19 +66,25 @@ Same functionality as main site, different aesthetic. Applied when pathname star
 
 ### Doodles
 
-- `public/doodles/notebook/` — Doodly, handwritten-style variants (tmr, daily, pear, game24, jeopardy, chwazi, leaderboards, coming-soon, poker).
-- Notebook pages use these; main pages use `public/doodles/`.
+- `public/doodles/notebook/` — Doodly, handwritten-style variants. Default theme uses these; Theme 2 uses `public/doodles/`.
 
 ### Line Paper
 
 - **Single source:** `.notebook-line-paper` on outer shell only; `background-attachment: fixed` so lines align everywhere.
 - **Inner boxes** (GameCards, modals, cards): `bg-transparent` so fixed lines show through.
-- **1 Sentence Everyday** (main): inner uses `.notebook-line-paper`; (notebook): inner uses `bg-transparent`.
+- **Home grid:** `gap-y-[30px]` and `pt-[30px]` on main for line alignment with card edges.
 
 ### Navigation
 
-- Main site: "Notebook" link → `/notebook`.
-- Notebook site: "Main" link → `/`, "← Home" → `/notebook`.
+- Main site (notebook): "Theme 2" link → `/theme2`.
+- Theme 2 site: "Main" link → `/`, "← Home" → `/theme2`.
+- Redirect: `/notebook` and `/notebook/*` → `/` and `/*` (permanent).
+
+---
+
+## Alternate Theme: Ink & Paper (at `/theme2`)
+
+Same functionality, different aesthetic. Applied when pathname starts with `/theme2`. Uses root `--ink-*` palette (cream + burgundy).
 
 ---
 

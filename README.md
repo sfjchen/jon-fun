@@ -22,7 +22,7 @@ npm run dev
 
 ## 🎨 Design System
 
-**Theme:** Ink & Paper (cream + burgundy). See **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)** for color palette, typography, and guidelines. Use `var(--ink-*)` tokens from `globals.css`. Game-specific themes: Poker (green felt), Pear Navigator (dark). **Notebook theme** at `/notebook`—creamier palette, Patrick Hand typography, pen-drawn doodles.
+**Theme:** Ink & Paper (cream + burgundy). See **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)** for color palette, typography, and guidelines. Use `var(--ink-*)` tokens from `globals.css`. Game-specific themes: Poker (green felt), Pear Navigator (dark). **Default theme** (notebook) at `/`—brighter cream, Patrick Hand, line paper. **Theme 2** (Ink & Paper) at `/theme2`—burgundy accent, Lora/Charter.
 
 ---
 
@@ -357,6 +357,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
+- **Theme swap**: Notebook is now default at `/`; Ink & Paper moved to `/theme2`. Brighter cream palette; lighter line paper (0.02); home grid `gap-y-[30px]` and `pt-[30px]` for line alignment with cards. Redirect `/notebook` → `/`.
 - **Pear Navigator mindmap fill vs See example**: Fill step now only applies color—keeps "Idea A/B/C" labels; PM terms (OKR, KPI, etc.) appear only after pressing "See example"
 - **Pear Navigator business card export**: Export-as-image (PNG/JPG) for business card—same flow as painting: settings gear opens dropdown, choose format to download; html2canvas for DOM capture; 2 new steps (Open export menu, Save your card)
 - **Notebook consistency pass**: Notebook doodles everywhere (leaderboards, jeopardy, chwazi, TMR); inner boxes use `bg-transparent` so fixed line paper aligns; TMRManager, DailyLearnManager, Admin TMR notebook-aware; Stanford-ish red accent (#8c3838)

@@ -7,7 +7,7 @@ import PokerLobby from '@/components/PokerLobby'
 export default function PokerLobbyPage({ params }: { params: Promise<{ pin: string }> }) {
   const router = useRouter()
   const pathname = usePathname()
-  const base = pathname?.startsWith('/notebook') ? '/notebook' : ''
+  const base = pathname?.startsWith('/theme2') ? '/theme2' : ''
   const [pin, setPin] = useState<string>('')
 
   useEffect(() => {
