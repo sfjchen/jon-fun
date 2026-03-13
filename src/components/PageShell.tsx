@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect } from 'react'
 
 type PageShellProps = {
   children: React.ReactNode
@@ -23,9 +24,20 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
   const showBackLink = showBack ?? !isHome
   const fullBleed = isFullBleed(pathname)
 
+  useEffect(() => {
+    if (!fullBleed) return
+    const prev = { html: document.documentElement.style.overflow, body: document.body.style.overflow }
+    document.documentElement.style.overflow = 'hidden'
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.documentElement.style.overflow = prev.html
+      document.body.style.overflow = prev.body
+    }
+  }, [fullBleed])
+
   return (
     <div
-      className={`overflow-x-hidden ${fullBleed ? 'h-dynamic flex flex-col' : 'min-h-screen'}`}
+      className={`overflow-x-hidden ${fullBleed ? 'h-dynamic flex flex-col overflow-y-hidden' : 'min-h-screen'}`}
       style={{ backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
     >
       <header className={`flex-none px-4 py-4 md:py-6 ${!isHome ? 'border-b' : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
