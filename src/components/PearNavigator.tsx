@@ -379,6 +379,23 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const isMindmap = taskId === 'figmaMindmap'
   const isBusinessCard = taskId === 'figmaBusinessCard'
   const bcInExportStep = isBusinessCard && (stepIdx === 7 || stepIdx === 8)
+  const handleBcExport = useCallback(async (format: 'png' | 'jpeg') => {
+    const el = bcCardRef.current
+    if (!el) return
+    const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: null })
+    const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png'
+    const quality = format === 'jpeg' ? 0.92 : undefined
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        a.download = `pear-business-card.${format === 'jpeg' ? 'jpg' : 'png'}`
+        a.click()
+        URL.revokeObjectURL(a.href)
+      }
+      onStepComplete()
+    }, mime, quality)
+  }, [onStepComplete])
   useEffect(() => {
     if (taskId === 'figmaBusinessCard' && stepIdx !== 3 && stepIdx !== 4 && stepIdx !== 5) setBcTextInput(null)
     if (taskId === 'figmaMindmap' && stepIdx !== 4) setMmInstanceCount(0)
@@ -560,23 +577,6 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
       setBcTextDraft('')
       onStepComplete()
     }
-    const handleBcExport = useCallback(async (format: 'png' | 'jpeg') => {
-      const el = bcCardRef.current
-      if (!el) return
-      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: null })
-      const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png'
-      const quality = format === 'jpeg' ? 0.92 : undefined
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const a = document.createElement('a')
-          a.href = URL.createObjectURL(blob)
-          a.download = `pear-business-card.${format === 'jpeg' ? 'jpg' : 'png'}`
-          a.click()
-          URL.revokeObjectURL(a.href)
-        }
-        onStepComplete()
-      }, mime, quality)
-    }, [onStepComplete])
     return (
       <div className="absolute inset-0 flex flex-col text-[10px] sm:text-xs min-h-0 overflow-hidden">
         <div className="h-8 sm:h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-2 sm:px-4 gap-2 shrink-0">
