@@ -7,7 +7,7 @@ import PokerJoinForm from '@/components/PokerJoinForm'
 export default function PokerPage() {
   const router = useRouter()
   const pathname = usePathname()
-  const base = pathname?.startsWith('/notebook') ? '/notebook' : ''
+  const base = pathname?.startsWith('/theme2') ? '/theme2' : ''
   const [mode, setMode] = useState<'create' | 'join'>('create')
   const [hostName, setHostName] = useState('')
   const [joinPin, setJoinPin] = useState('')

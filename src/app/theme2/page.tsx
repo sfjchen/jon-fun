@@ -5,18 +5,16 @@ import { useState } from 'react'
 import { GameCard } from '@/components/GameCard'
 import type { GameCardGame } from '@/components/GameCard'
 
-const base = '/notebook'
-const nb = '/doodles/notebook'
 const items: GameCardGame[] = [
-  { id: 'tmr', title: 'TMR System', description: 'Targeted Memory Reactivation for enhanced learning and memory consolidation', icon: `${nb}/tmr.svg`, href: `${base}/games/tmr`, available: true },
-  { id: 'daily-log', title: '1 Sentence Everyday', description: 'Log one sentence (or more) per day; view history, calendar, and export', icon: `${nb}/daily.svg`, href: `${base}/games/daily-log`, available: true },
-  { id: 'pear-navigator', title: 'Pear Navigator', description: 'Step-by-step guide with AI-style highlight overlay for creative apps (Procreate, Figma)', icon: `${nb}/pear.svg`, href: `${base}/games/pear-navigator`, available: true },
-  { id: '24', title: '24 (Jon\'s favorite)', description: 'Use 4 numbers and basic arithmetic to make 24', icon: `${nb}/game24.svg`, href: `${base}/games/24`, available: true },
-  { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom Jeopardy boards locally', icon: `${nb}/jeopardy.svg`, href: `${base}/games/jeopardy`, available: true },
-  { id: 'poker', title: 'Texas Hold\'em', description: 'Poker chip tracker with real-time multiplayer lobbies', icon: `${nb}/poker.svg`, href: `${base}/games/poker`, available: true },
-  { id: 'chwazi', title: 'Chwazi Finger Chooser', description: 'Place fingers on screen to randomly select a winner', icon: `${nb}/chwazi.svg`, href: `${base}/games/chwazi`, available: true },
-  { id: 'leaderboards', title: 'Leaderboards', description: 'See the best scores and compete with others', icon: `${nb}/leaderboards.svg`, href: `${base}/leaderboards`, available: true },
-  { id: 'coming-soon', title: 'Coming Soon', description: 'More brain games are in development', icon: `${nb}/coming-soon.svg`, href: '#', available: false },
+  { id: 'tmr', title: 'TMR System', description: 'Targeted Memory Reactivation for enhanced learning and memory consolidation', icon: '/doodles/tmr.svg', href: '/theme2/games/tmr', available: true },
+  { id: 'daily-log', title: '1 Sentence Everyday', description: 'Log one sentence (or more) per day; view history, calendar, and export', icon: '/doodles/daily.svg', href: '/theme2/games/daily-log', available: true },
+  { id: 'pear-navigator', title: 'Pear Navigator', description: 'Step-by-step guide with AI-style highlight overlay for creative apps (Procreate, Figma)', icon: '/doodles/pear.svg', href: '/theme2/games/pear-navigator', available: true },
+  { id: '24', title: '24 (Jon\'s favorite)', description: 'Use 4 numbers and basic arithmetic to make 24', icon: '/doodles/game24.svg', href: '/theme2/games/24', available: true },
+  { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom Jeopardy boards locally', icon: '/doodles/jeopardy.svg', href: '/theme2/games/jeopardy', available: true },
+  { id: 'poker', title: 'Texas Hold\'em', description: 'Poker chip tracker with real-time multiplayer lobbies', icon: '/doodles/poker.svg', href: '/theme2/games/poker', available: true },
+  { id: 'chwazi', title: 'Chwazi Finger Chooser', description: 'Place fingers on screen to randomly select a winner', icon: '/doodles/chwazi.svg', href: '/theme2/games/chwazi', available: true },
+  { id: 'leaderboards', title: 'Leaderboards', description: 'See the best scores and compete with others', icon: '/doodles/leaderboards.svg', href: '/theme2/leaderboards', available: true },
+  { id: 'coming-soon', title: 'Coming Soon', description: 'More brain games are in development', icon: '/doodles/coming-soon.svg', href: '#', available: false },
 ]
 
 const futureFeatures = [
@@ -30,26 +28,26 @@ const futureFeatures = [
   'Personal game history and statistics',
 ]
 
-export default function NotebookHome() {
+export default function Theme2Home() {
   const [showComingSoon, setShowComingSoon] = useState(false)
 
   return (
     <>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl">
         {items.map((item) => (
-          <GameCard key={item.id} game={item} onComingSoonClick={() => setShowComingSoon(true)} linePaper />
+          <GameCard key={item.id} game={item} onComingSoonClick={() => setShowComingSoon(true)} />
         ))}
       </div>
 
       {showComingSoon && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div
-            className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg border p-8 bg-transparent"
-            style={{ borderColor: 'var(--ink-border)' }}
+            className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg border p-8"
+            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
           >
             <div className="mb-6 flex items-center justify-between">
               <h2 className="font-lora text-2xl font-semibold flex items-center gap-2" style={{ color: 'var(--ink-text)' }}>
-                <Image src="/doodles/notebook/coming-soon.svg" alt="" width={32} height={32} className="h-8 w-8" />
+                <Image src="/doodles/coming-soon.svg" alt="" width={32} height={32} className="h-8 w-8" />
                 Coming Soon
               </h2>
               <button
@@ -70,8 +68,8 @@ export default function NotebookHome() {
               {futureFeatures.map((feature, index) => (
                 <div
                   key={index}
-                  className="flex items-start rounded-lg border p-3 bg-transparent"
-                  style={{ borderColor: 'var(--ink-border)' }}
+                  className="flex items-start rounded-lg border p-3"
+                  style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}
                 >
                   <span className="mr-3 mt-1 text-lg" style={{ color: 'var(--ink-accent)' }}>•</span>
                   <span className="text-sm" style={{ color: 'var(--ink-text)' }}>{feature}</span>

@@ -1,5 +1,5 @@
 import DailyLearnManager from '@/components/DailyLearnManager'
 
-export default function NotebookDailyLogPage() {
+export default function Theme2DailyLogPage() {
   return <DailyLearnManager />
 }

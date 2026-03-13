@@ -12,7 +12,7 @@ function isTouchDevice(): boolean {
 
 export default function ChwaziPage() {
   const pathname = usePathname()
-  const linePaper = pathname?.startsWith('/notebook')
+  const linePaper = !pathname?.startsWith('/theme2')
   const [touchOk, setTouchOk] = useState<boolean | null>(null)
 
   useEffect(() => {

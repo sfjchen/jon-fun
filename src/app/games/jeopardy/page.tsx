@@ -10,7 +10,7 @@ import { readBoardFromFile, createDefaultBoard } from '@/lib/jeopardy'
 
 export default function JeopardyPage() {
   const pathname = usePathname()
-  const linePaper = pathname?.startsWith('/notebook')
+  const linePaper = !pathname?.startsWith('/theme2')
   const [mode, setMode] = useState<'menu' | 'editor' | 'player'>('menu')
   const [currentBoard, setCurrentBoard] = useState<JeopardyBoard | null>(null)
   const [error, setError] = useState<string | null>(null)

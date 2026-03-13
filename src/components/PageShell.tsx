@@ -15,9 +15,9 @@ function isFullBleed(pathname: string): boolean {
     pathname === '/games/pear-navigator' ||
     pathname.startsWith('/games/poker/lobby/') ||
     pathname.startsWith('/games/poker/table/') ||
-    pathname === '/notebook/games/pear-navigator' ||
-    pathname.startsWith('/notebook/games/poker/lobby/') ||
-    pathname.startsWith('/notebook/games/poker/table/')
+    pathname === '/theme2/games/pear-navigator' ||
+    pathname.startsWith('/theme2/games/poker/lobby/') ||
+    pathname.startsWith('/theme2/games/poker/table/')
   )
 }
 
@@ -27,12 +27,13 @@ function isPearNavigator(pathname: string): boolean {
 
 export function PageShell({ children, title, showBack }: PageShellProps) {
   const pathname = usePathname()
-  const isNotebook = pathname.startsWith('/notebook')
-  const isHome = pathname === '/' || pathname === '/notebook'
+  const isTheme2 = pathname.startsWith('/theme2')
+  const isNotebook = !isTheme2
+  const isHome = pathname === '/' || pathname === '/theme2'
   const showBackLink = showBack ?? !isHome
   const fullBleed = isFullBleed(pathname)
   const pearNav = isPearNavigator(pathname ?? '')
-  const homeHref = isNotebook ? '/notebook' : '/'
+  const homeHref = isTheme2 ? '/theme2' : '/'
   const useBigLogo = isNotebook && !pearNav
 
   useEffect(() => {
@@ -82,12 +83,12 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
               </Link>
             )}
             {isNotebook ? (
-              <Link href="/" className="text-sm hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded" style={{ color: 'var(--ink-accent)' }}>
-                Main
+              <Link href="/theme2" className="text-sm hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded" style={{ color: 'var(--ink-accent)' }}>
+                Theme 2
               </Link>
             ) : (
-              <Link href="/notebook" className="text-sm hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded" style={{ color: 'var(--ink-accent)' }}>
-                Notebook
+              <Link href="/" className="text-sm hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded" style={{ color: 'var(--ink-accent)' }}>
+                Main
               </Link>
             )}
           </div>
@@ -97,7 +98,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
         className={
           fullBleed
             ? 'flex-1 min-h-0 w-full max-w-none px-0 flex flex-col'
-            : `mx-auto max-w-6xl px-4 ${isHome ? 'py-8' : 'py-6'} ${isNotebook ? 'min-h-[calc(100vh-6rem)]' : ''}`
+            : `mx-auto max-w-6xl px-4 ${isHome && outerLinePaper ? 'pt-[30px] pb-8' : isHome ? 'py-8' : 'py-6'} ${isNotebook ? 'min-h-[calc(100vh-6rem)]' : ''}`
         }
       >
         {title && !isHome && (

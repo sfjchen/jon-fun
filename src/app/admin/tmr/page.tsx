@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useEffect, useCallback } from 'react'
+import { usePathname } from 'next/navigation'
 
 const TMR_ADMIN_KEY = 'tmr_admin_ok'
 
@@ -28,6 +29,8 @@ type SleepRow = {
 }
 
 export default function TMRAdminPage() {
+  const pathname = usePathname()
+  const hubHref = pathname?.startsWith('/theme2') ? '/theme2' : '/'
   const [key, setKey] = useState('')
   const [authorized, setAuthorized] = useState(false)
   const [studySessions, setStudySessions] = useState<StudyRow[]>([])
@@ -148,7 +151,7 @@ export default function TMRAdminPage() {
             </button>
           </form>
           {error && <p className="text-red-600 mt-2 text-sm">{error}</p>}
-          <Link href="/" className="block mt-4 text-sm hover:opacity-80" style={{ color: 'var(--ink-accent)' }}>
+          <Link href={hubHref} className="block mt-4 text-sm hover:opacity-80" style={{ color: 'var(--ink-accent)' }}>
             ← Back to hub
           </Link>
         </div>
@@ -167,7 +170,7 @@ export default function TMRAdminPage() {
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-8">
-        <Link href="/" className="text-2xl font-bold hover:opacity-80" style={{ color: 'var(--ink-accent)' }}>
+        <Link href={hubHref} className="text-2xl font-bold hover:opacity-80" style={{ color: 'var(--ink-accent)' }}>
           ← Back
         </Link>
         <h1 className="text-4xl font-bold font-lora" style={{ color: 'var(--ink-text)' }}>TMR Admin – All sessions</h1>
