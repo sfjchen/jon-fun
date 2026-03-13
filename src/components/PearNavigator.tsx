@@ -966,19 +966,19 @@ export default function PearNavigator() {
       </div>
 
       <div className="flex-1 flex flex-col lg:flex-row gap-1.5 sm:gap-3 px-1.5 sm:px-3 pb-1.5 sm:pb-3 min-h-0 overflow-hidden">
-        {/* Guide panel — mobile: minimal (16vh) so simulator dominates; lg+: side panel full height */}
-        <div className="flex-none w-full lg:w-80 xl:w-96 2xl:w-[28rem] lg:min-w-[20rem] min-w-0 flex flex-col min-h-[92px] h-[14vh] sm:h-[18vh] md:h-[22vh] lg:h-auto lg:max-h-none bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch overflow-hidden">
-            <div className="flex flex-col flex-1 min-h-0 p-1 sm:p-3 lg:p-6 overflow-y-auto scrollbar-needed">
+        {/* Guide panel — mobile: compact so simulator dominates; lg+: side panel full height */}
+        <div className="flex-none w-full lg:w-80 xl:w-96 2xl:w-[28rem] lg:min-w-[20rem] min-w-0 flex flex-col min-h-[80px] h-[16vh] sm:h-[20vh] md:h-[24vh] lg:h-auto lg:max-h-none bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch overflow-hidden">
+            <div className="flex flex-col flex-1 min-h-0 p-1 sm:p-2 lg:p-6 overflow-y-auto scrollbar-needed">
               {phase === 'task' && (
                 <>
-                  <p className="text-[10px] sm:text-xs font-semibold text-[#34c759] uppercase tracking-wider mb-0.5 sm:mb-1 shrink-0">
+                  <p className="text-[9px] sm:text-[10px] lg:text-xs font-semibold text-[#34c759] uppercase tracking-wider mb-0.5 shrink-0">
                     What do you want to do?
                   </p>
-                  <h2 className="text-xs sm:text-base lg:text-xl font-semibold text-white mb-0.5 sm:mb-1 shrink-0">Tell Pear Navigator your goal</h2>
-                  <p className="text-gray-400 text-[9px] sm:text-xs mb-1 sm:mb-2 shrink-0">
+                  <h2 className="text-[10px] sm:text-xs lg:text-xl font-semibold text-white mb-0.5 shrink-0">Tell Pear Navigator your goal</h2>
+                  <p className="text-gray-400 text-[9px] sm:text-[10px] mb-0.5 sm:mb-1 shrink-0">
                     Step-by-step guidance—tap the simulator to advance.
                   </p>
-                  <div className="flex-1 min-h-0 overflow-y-auto scrollbar-needed space-y-1 sm:space-y-1.5 mb-1 sm:mb-3">
+                  <div className="flex-1 min-h-0 overflow-y-auto scrollbar-needed space-y-0.5 sm:space-y-1 mb-0.5 sm:mb-2">
                     {TASK_ORDER.map((id) => {
                       const t = TASKS[id]
                       if (!t) return null
@@ -987,21 +987,21 @@ export default function PearNavigator() {
                         key={id}
                         type="button"
                         onClick={() => setTaskId(id)}
-                        className={`w-full text-left px-2 sm:px-4 py-1.5 sm:py-3 min-h-[32px] sm:min-h-[44px] rounded-lg border transition-all text-[11px] sm:text-base flex items-center justify-between gap-1 touch-manipulation ${
+                        className={`w-full text-left px-1.5 sm:px-3 py-1 sm:py-2 min-h-[28px] sm:min-h-[36px] rounded-md lg:rounded-lg border transition-all text-[10px] sm:text-xs lg:text-base flex items-center justify-between gap-0.5 touch-manipulation ${
                           taskId === id
                             ? 'border-[#34c759] bg-[#34c759]/15 text-white'
                             : 'border-white/10 bg-white/5 text-gray-300 hover:border-[#34c759]/50'
                         }`}
                       >
                         <span className="min-w-0 truncate" title={`${t.app}: ${TASK_LABELS[id]}`}>{t.app}: {TASK_LABELS[id]}</span>
-                        <span className="text-xs text-white/50 shrink-0">{t.steps.length} steps</span>
+                        <span className="text-[9px] sm:text-xs text-white/50 shrink-0">{t.steps.length} steps</span>
                       </button>
                     )})}
                   </div>
                   <button
                     onClick={handleStart}
                     disabled={!taskId}
-                    className="w-full py-1.5 sm:py-3 min-h-[32px] sm:min-h-[48px] rounded-lg bg-[#34c759] text-black font-semibold text-[11px] sm:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity touch-manipulation"
+                    className="w-full py-1 sm:py-2 lg:py-3 min-h-[28px] sm:min-h-[36px] lg:min-h-[48px] rounded-md lg:rounded-lg bg-[#34c759] text-black font-semibold text-[10px] sm:text-xs lg:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity touch-manipulation"
                   >
                     Start guide
                   </button>
@@ -1010,40 +1010,40 @@ export default function PearNavigator() {
 
               {phase === 'steps' && task && step && (
                 <>
-                  <p className="text-[10px] sm:text-xs font-semibold text-[#34c759] uppercase tracking-wider mb-0.5 sm:mb-1">
+                  <p className="text-[9px] sm:text-[10px] font-semibold text-[#34c759] uppercase tracking-wider mb-0.5 shrink-0">
                     Step {stepIdx + 1} of {task.steps.length}
                   </p>
-                  <h2 className="text-sm sm:text-base lg:text-xl font-semibold text-white mb-0.5 sm:mb-1">{step.title}</h2>
-                  <p className="text-gray-400 text-[10px] sm:text-xs mb-1 sm:mb-2">{step.desc}</p>
+                  <h2 className="text-[10px] sm:text-xs lg:text-xl font-semibold text-white mb-0.5 shrink-0 leading-tight">{step.title}</h2>
+                  <p className="text-gray-400 text-[9px] sm:text-[10px] mb-0.5 sm:mb-1">{step.desc}</p>
                   {step.hint && (
-                    <div className="mb-1 sm:mb-2 p-1.5 sm:p-2 rounded bg-[#34c759]/15 border border-[#34c759]/30 text-[#34c759] text-[10px] sm:text-xs">
+                    <div className="mb-0.5 sm:mb-1 p-1 sm:p-1.5 rounded bg-[#34c759]/15 border border-[#34c759]/30 text-[#34c759] text-[9px] sm:text-[10px]">
                       {step.hint}
                     </div>
                   )}
-                  <p className="mb-1 sm:mb-2 text-[10px] sm:text-xs text-[#34c759]/90 font-medium">
+                  <p className="mb-0.5 sm:mb-1 text-[9px] sm:text-[10px] text-[#34c759]/90 font-medium shrink-0">
                     Tap the highlighted element to continue
                   </p>
-                  <div className="flex gap-1 sm:gap-1.5 flex-wrap">
+                  <div className="flex gap-0.5 sm:gap-1 flex-wrap">
                     <button
                       onClick={() => setShowHighlight((h) => !h)}
-                      className="flex-1 min-w-[70px] min-h-[32px] sm:min-h-[40px] py-1.5 sm:py-2 rounded border border-white/20 bg-white/5 text-white font-medium text-[10px] sm:text-sm hover:bg-white/10 transition-colors touch-manipulation"
+                      className="flex-1 min-w-[60px] min-h-[26px] sm:min-h-[32px] py-1 sm:py-1.5 rounded border border-white/20 bg-white/5 text-white font-medium text-[9px] sm:text-[10px] hover:bg-white/10 transition-colors touch-manipulation"
                     >
                       {showHighlight ? 'Hide' : 'Show'} highlight
                     </button>
                     {!isFirstStep && (
                       <button
                         onClick={handlePrev}
-                        className="min-h-[32px] sm:min-h-[40px] py-1.5 sm:py-2 px-2 sm:px-4 rounded border border-white/20 bg-white/5 text-white font-medium text-[10px] sm:text-sm hover:bg-white/10 transition-colors touch-manipulation"
+                        className="min-h-[26px] sm:min-h-[32px] py-1 sm:py-1.5 px-1.5 sm:px-3 rounded border border-white/20 bg-white/5 text-white font-medium text-[9px] sm:text-[10px] hover:bg-white/10 transition-colors touch-manipulation"
                         aria-label="Previous step"
                       >
-                        ← Previous
+                        ← Prev
                       </button>
                     )}
                   </div>
-                  <div className="mt-1 sm:mt-2 flex items-center justify-between">
+                  <div className="mt-0.5 sm:mt-1 flex items-center justify-between">
                     <button
                       onClick={handleNext}
-                      className="text-sm text-white/50 hover:text-white/70 underline underline-offset-2"
+                      className="text-[9px] sm:text-[10px] text-white/50 hover:text-white/70 underline underline-offset-1"
                     >
                       {isLastStep ? 'Skip to done' : 'Skip step'}
                     </button>
