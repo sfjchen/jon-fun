@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useCallback, useRef, useEffect, useImperativeHandle, forwardRef } from 'react'
+import html2canvas from 'html2canvas'
 
 const BRUSH_BLUE = '#60a5fa'
 const BRUSH_YELLOW = '#fbbf24'
@@ -244,6 +245,8 @@ const TASKS: Record<string, Task> = {
       { title: 'Add your role', desc: 'Tap Text again. Type your title or role, then tap Done.', hint: 'e.g. Product Designer', highlight: { x: 520, y: 140, w: 80, h: 36 }, hotspotId: 'fig-text' },
       { title: 'Add your email', desc: 'Tap Text. Type your email or phone, then tap Done.', hint: 'e.g. alex@studio.co', highlight: { x: 520, y: 180, w: 80, h: 36 }, hotspotId: 'fig-text' },
       { title: 'Add accent', desc: 'Tap Rectangle to add the accent bar.', hint: 'Finishing touch', highlight: { x: 520, y: 220, w: 80, h: 36 }, hotspotId: 'fig-accent' },
+      { title: 'Open export menu', desc: 'Tap the wrench icon to open Actions. Tap Share.', hint: 'Share exports your card', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'fig-bc-export' },
+      { title: 'Save your card', desc: 'Tap PNG or JPG to download your business card.', hint: 'Both formats work', highlight: { x: 24, y: 14, w: 48, h: 36 }, hotspotId: 'fig-bc-export-format' },
     ],
   },
   figmaMindmap: {
@@ -371,13 +374,17 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const [mmFillOuterOpen, setMmFillOuterOpen] = useState(false)
   const [mmConnectorCount, setMmConnectorCount] = useState(0)
   const [mmInstanceCount, setMmInstanceCount] = useState(0)
+  const [bcExportMenuOpen, setBcExportMenuOpen] = useState(false)
+  const bcCardRef = useRef<HTMLDivElement>(null)
+  const isMindmap = taskId === 'figmaMindmap'
+  const isBusinessCard = taskId === 'figmaBusinessCard'
+  const bcInExportStep = isBusinessCard && (stepIdx === 7 || stepIdx === 8)
   useEffect(() => {
     if (taskId === 'figmaBusinessCard' && stepIdx !== 3 && stepIdx !== 4 && stepIdx !== 5) setBcTextInput(null)
     if (taskId === 'figmaMindmap' && stepIdx !== 4) setMmInstanceCount(0)
     if (taskId === 'figmaMindmap' && stepIdx !== 6) setMmConnectorCount(0)
-  }, [taskId, stepIdx])
-  const isMindmap = taskId === 'figmaMindmap'
-  const isBusinessCard = taskId === 'figmaBusinessCard'
+    if (!bcInExportStep) setBcExportMenuOpen(false)
+  }, [taskId, stepIdx, bcInExportStep])
   const hasCard = isBusinessCard && stepIdx >= 1
   const hasName = isBusinessCard && stepIdx >= 3
   const hasRole = isBusinessCard && stepIdx >= 4
@@ -554,9 +561,41 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
       setBcTextDraft('')
       onStepComplete()
     }
+    const handleBcExport = useCallback(async (format: 'png' | 'jpeg') => {
+      const el = bcCardRef.current
+      if (!el) return
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: null })
+      const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png'
+      const quality = format === 'jpeg' ? 0.92 : undefined
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const a = document.createElement('a')
+          a.href = URL.createObjectURL(blob)
+          a.download = `pear-business-card.${format === 'jpeg' ? 'jpg' : 'png'}`
+          a.click()
+          URL.revokeObjectURL(a.href)
+        }
+        onStepComplete()
+      }, mime, quality)
+    }, [onStepComplete])
     return (
       <div className="absolute inset-0 flex flex-col text-[10px] sm:text-xs min-h-0 overflow-hidden">
         <div className="h-8 sm:h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-2 sm:px-4 gap-2 shrink-0">
+          <div className="relative shrink-0 overflow-visible">
+            <HotspotButton id="fig-bc-export" currentHotspotId={currentHotspotId} onStepComplete={() => { setBcExportMenuOpen(true); onStepComplete(); }} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+              <span className={`px-3 py-1.5 rounded ${currentHotspotId === 'fig-bc-export' ? 'ring-2 ring-[#34c759]/50' : ''} text-white/80`}>⚙</span>
+            </HotspotButton>
+            {bcExportMenuOpen && bcInExportStep && (
+              <div className="absolute top-full left-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 min-w-[160px] space-y-1">
+                <div className="text-white/50 text-sm mb-2">Share — Save to computer</div>
+                {(['png', 'jpeg'] as const).map((fmt) => (
+                  <HotspotButton key={fmt} id="fig-bc-export-format" currentHotspotId={currentHotspotId} onStepComplete={() => handleBcExport(fmt)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block min-h-[44px]">
+                    <div className={`w-full px-3 py-2 min-h-[44px] flex items-center rounded text-sm ${currentHotspotId === 'fig-bc-export-format' ? 'bg-[#34c759]/30 text-[#34c759]' : 'text-white/90 hover:bg-white/10'}`}>{fmt.toUpperCase()}</div>
+                  </HotspotButton>
+                ))}
+              </div>
+            )}
+          </div>
           <span className="text-white/80 text-xs sm:text-sm">Frame</span>
           <span className="text-white/80 text-xs sm:text-sm">Design</span>
         </div>
@@ -576,7 +615,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
             {['Cover', 'Flow'].map((p) => <div key={p} className="h-5 px-1.5 rounded bg-white/5 text-white/40 text-[10px] flex items-center">{p}</div>)}
           </div>
           <div className="flex-1 p-4 bg-[#404040] min-w-0 min-h-0 flex items-center justify-center relative">
-            <div className={`relative w-full max-w-sm aspect-[3.5/2] rounded-lg overflow-hidden transition-all duration-300 ${hasCard ? '' : 'border-2 border-dashed border-white/25'}`}
+            <div ref={bcCardRef} className={`relative w-full max-w-sm aspect-[3.5/2] rounded-lg overflow-hidden transition-all duration-300 ${hasCard ? '' : 'border-2 border-dashed border-white/25'}`}
               style={hasCard ? { background: bgStyle } : undefined}>
               {!hasCard && stepIdx === 0 && (
                 <span className="absolute inset-0 flex items-center justify-center text-white/40 text-sm">Choose a template to begin</span>
