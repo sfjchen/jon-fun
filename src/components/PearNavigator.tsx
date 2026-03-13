@@ -321,8 +321,8 @@ const TASK_LABELS: Record<string, string> = {
   figmaMindmap: 'Create a mindmap',
 }
 
-const CLUTTER_CLASS = 'px-1.5 sm:px-2 py-0.5 sm:py-1 rounded bg-white/5 text-white/45 text-[10px] sm:text-xs pointer-events-none shrink-0'
-const HOTSPOT_BTN = 'min-h-11 rounded-lg flex items-center px-2 sm:px-2.5 text-xs sm:text-sm font-medium touch-manipulation'
+const CLUTTER_CLASS = 'px-1 sm:px-2 py-0.5 rounded bg-white/5 text-white/45 text-[9px] sm:text-[10px] md:text-xs pointer-events-none shrink-0'
+const HOTSPOT_BTN = 'min-h-9 sm:min-h-10 md:min-h-11 rounded flex items-center px-1.5 sm:px-2.5 text-[10px] sm:text-xs md:text-sm font-medium touch-manipulation'
 const HOTSPOT_INACTIVE = 'bg-[#34c759]/20 text-[#34c759]'
 const HOTSPOT_ACTIVE = 'bg-[#34c759]/30 text-[#34c759] ring-2 ring-[#34c759]/50'
 
@@ -399,17 +399,17 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const clutter = (label: string) => <div key={label} className={CLUTTER_CLASS}>{label}</div>
   if (isMindmap) {
     return (
-      <div className="absolute inset-0 flex flex-col text-xs min-h-0 overflow-hidden">
-        <div className="h-8 sm:h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-2 sm:px-4 gap-2 sm:gap-4 shrink-0">
+      <div className="absolute inset-0 flex flex-col text-[10px] sm:text-xs min-h-0 overflow-hidden">
+        <div className="h-6 sm:h-8 md:h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-1 sm:px-2 md:px-4 gap-1 sm:gap-2 md:gap-4 shrink-0">
           <span className="text-white/80 text-xs sm:text-sm">Frame</span>
           <span className="text-white/80 text-xs sm:text-sm">Component</span>
           <span className="text-white/80 text-xs sm:text-sm">Prototype</span>
         </div>
-        <div className="min-h-7 sm:min-h-8 bg-[#252525] border-b border-white/10 flex items-center px-2 sm:px-3 gap-1 shrink-0 flex-wrap">
+        <div className="min-h-6 sm:min-h-7 md:min-h-8 bg-[#252525] border-b border-white/10 flex items-center px-1 sm:px-2 md:px-3 gap-0.5 sm:gap-1 shrink-0 flex-wrap">
           {['Move', 'Frame', 'Component', 'Pen', 'Text', 'Rect', 'Line', 'Hand', 'Zoom', 'Fill'].map(clutter)}
         </div>
         <div className="flex flex-1 min-h-0">
-          <div className="w-16 min-w-14 sm:w-28 sm:min-w-[5.5rem] bg-[#323232] border-r border-white/10 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-scroll min-h-0">
+          <div className="w-16 min-w-14 sm:w-28 sm:min-w-[5.5rem] bg-[#323232] border-r border-white/10 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-scroll scrollbar-visible min-h-0">
             <div className="text-white/50 text-xs font-medium shrink-0">Layers</div>
             {hasCentralFrame && (
               <>
@@ -482,7 +482,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
               </div>
             </div>
           </HotspotButton>
-          <div className="w-28 min-w-20 sm:w-36 sm:min-w-[7rem] sm:w-40 bg-[#383838] border-l border-white/15 p-1.5 sm:p-2 sm:p-3 shrink-0 flex flex-col gap-1.5 sm:gap-2 overflow-y-scroll min-h-0">
+          <div className="w-28 min-w-20 sm:w-36 sm:min-w-[7rem] sm:w-40 bg-[#383838] border-l border-white/15 p-1.5 sm:p-2 sm:p-3 shrink-0 flex flex-col gap-1.5 sm:gap-2 overflow-y-scroll scrollbar-visible min-h-0">
             <div className="text-white/50 text-xs font-medium shrink-0">Design</div>
             {['Fill', 'Stroke', 'Effects', 'Corner', 'Padding', 'Gap'].map(clutter)}
             <HotspotButton id="fig-component-tab" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
@@ -545,7 +545,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
       onStepComplete()
     }
     return (
-      <div className="absolute inset-0 flex flex-col text-xs min-h-0 overflow-hidden">
+      <div className="absolute inset-0 flex flex-col text-[10px] sm:text-xs min-h-0 overflow-hidden">
         <div className="h-8 sm:h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center px-2 sm:px-4 gap-2 shrink-0">
           <span className="text-white/80 text-xs sm:text-sm">Frame</span>
           <span className="text-white/80 text-xs sm:text-sm">Design</span>
@@ -554,7 +554,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
           {['Move', 'Frame', 'Pen', 'Text', 'Rect', 'Hand', 'Fill'].map(clutter)}
         </div>
         <div className="flex flex-1 min-h-0">
-          <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#323232] border-r border-white/10 p-1.5 shrink-0 flex flex-col gap-1 overflow-y-scroll min-h-0 pointer-events-none">
+          <div className="w-20 min-w-16 sm:w-28 bg-[#323232] border-r border-white/10 p-1 sm:p-1.5 shrink-0 flex flex-col gap-1 overflow-y-scroll scrollbar-visible min-h-0 pointer-events-none">
             <div className="text-white/50 text-xs font-medium">Layers</div>
             {hasCard && <div className="h-6 px-1.5 rounded bg-[#34c759]/15 text-[#34c759] text-[10px] flex items-center">Card</div>}
             {hasName && <div className="h-5 pl-3 rounded bg-white/5 text-white/50 text-[10px] flex items-center">Name</div>}
@@ -612,7 +612,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
               </div>
             )}
           </div>
-          <div className="w-36 min-w-[7rem] sm:w-40 bg-[#383838] border-l border-white/15 p-2 sm:p-3 shrink-0 flex flex-col gap-1.5 overflow-y-scroll min-h-0">
+          <div className="w-28 min-w-24 sm:w-40 bg-[#383838] border-l border-white/15 p-1.5 sm:p-3 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-scroll scrollbar-visible min-h-0">
             <div className="text-white/50 text-xs font-medium shrink-0">Design</div>
             {['Layout', 'Stroke', 'Effects', 'Corner'].map(clutter)}
             {stepIdx === 0 && (
@@ -722,7 +722,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
   const canvasVisible = hasLayer && stepIdx >= 9
   const procClutter = (label: string) => <div key={label} className={CLUTTER_CLASS}>{label}</div>
   return (
-    <div className="absolute inset-0 flex flex-col text-xs min-h-0 overflow-hidden">
+    <div className="absolute inset-0 flex flex-col text-[10px] sm:text-xs min-h-0 overflow-hidden">
       <div className="min-h-8 sm:min-h-9 bg-[#2e2e2e] border-b border-white/15 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 shrink-0 flex-wrap py-1 sm:py-1.5">
         <div className="relative shrink-0 overflow-visible">
             <HotspotButton id="proc-export" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
@@ -763,8 +763,8 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
         </div>
       )}
       <div className="flex flex-1 min-h-0">
-        <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#383838] border-r border-white/15 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-scroll min-h-0">
-          <div className="flex gap-1 pointer-events-none shrink-0">
+        <div className="w-20 min-w-16 sm:w-28 bg-[#383838] border-r border-white/15 p-1 sm:p-2 shrink-0 flex flex-col gap-0.5 sm:gap-1.5 overflow-y-scroll scrollbar-visible min-h-0">
+          <div className="flex gap-0.5 sm:gap-1 pointer-events-none shrink-0">
             {['Import', 'Organize', 'Search'].map(procClutter)}
           </div>
           <HotspotButton id="proc-new" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full">
@@ -822,7 +822,7 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
             </div>
           </HotspotButton>
         </div>
-        <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#383838] border-l border-white/15 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-scroll min-h-0">
+        <div className="w-24 min-w-[5.5rem] sm:w-28 bg-[#383838] border-l border-white/15 p-1.5 sm:p-2 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-scroll scrollbar-visible min-h-0">
           <div className="text-white/50 text-xs shrink-0">Brush Studio</div>
           {hasColor && (
             <div className="flex gap-1.5 mb-1 shrink-0">
@@ -893,6 +893,42 @@ const MOCK_COMPONENTS: Record<string, (props: MockProps) => React.ReactNode> = {
   procreate: ProcreateMock,
 }
 
+const MOCK_DESIGN_W = 520
+const MOCK_DESIGN_H = 420
+
+function MockScaleWrapper({ children }: { children: React.ReactNode }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(1)
+  useEffect(() => {
+    const el = containerRef.current
+    const parent = el?.parentElement
+    if (!el || !parent) return
+    const update = () => {
+      const w = parent.clientWidth
+      const h = parent.clientHeight
+      setScale(Math.min(1, w / MOCK_DESIGN_W, h / MOCK_DESIGN_H))
+    }
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(parent)
+    return () => ro.disconnect()
+  }, [])
+  return (
+    <div ref={containerRef} className="absolute inset-0 flex items-center justify-center overflow-visible">
+      <div
+        className="relative origin-top flex flex-col shrink-0"
+        style={{
+          width: MOCK_DESIGN_W,
+          height: MOCK_DESIGN_H,
+          transform: `scale(${scale})`,
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  )
+}
+
 export default function PearNavigator() {
   const [phase, setPhase] = useState<'task' | 'steps' | 'done'>('task')
   const [taskId, setTaskId] = useState<string | null>(null)
@@ -955,19 +991,19 @@ export default function PearNavigator() {
       </div>
 
       <div className="flex-1 flex flex-col lg:flex-row gap-2 sm:gap-3 px-2 sm:px-3 pb-2 sm:pb-3 pb-safe min-h-0 overflow-hidden">
-        {/* Guide panel — mobile: max 42vh so demo gets room; lg+: side panel full height */}
-        <div className="flex-none w-full lg:w-80 xl:w-96 2xl:w-[28rem] lg:min-w-[20rem] min-w-0 flex flex-col min-h-0 max-h-[42vh] sm:max-h-[45vh] lg:max-h-none bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch overflow-hidden">
-            <div className="flex flex-col flex-1 min-h-0 p-4 sm:p-5 lg:p-6 overflow-y-scroll">
+        {/* Guide panel — mobile: very compact (18vh) so simulator dominates; lg+: side panel full height */}
+        <div className="flex-none w-full lg:w-80 xl:w-96 2xl:w-[28rem] lg:min-w-[20rem] min-w-0 flex flex-col min-h-0 max-h-[18vh] sm:max-h-[22vh] md:max-h-[26vh] lg:max-h-none bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shrink-0 self-stretch overflow-hidden">
+            <div className="flex flex-col flex-1 min-h-0 p-1.5 sm:p-3 lg:p-6 overflow-y-scroll scrollbar-visible">
               {phase === 'task' && (
                 <>
-                  <p className="text-sm font-semibold text-[#34c759] uppercase tracking-wider mb-3 shrink-0">
+                  <p className="text-[10px] sm:text-xs font-semibold text-[#34c759] uppercase tracking-wider mb-0.5 sm:mb-1 shrink-0">
                     What do you want to do?
                   </p>
-                  <h2 className="text-2xl font-semibold text-white mb-3 shrink-0">Tell Pear Navigator your goal</h2>
-                  <p className="text-gray-400 text-base mb-5 shrink-0">
-                    Step-by-step guidance with highlights—tap the simulator to advance.
+                  <h2 className="text-sm sm:text-base lg:text-xl font-semibold text-white mb-0.5 sm:mb-1 shrink-0">Tell Pear Navigator your goal</h2>
+                  <p className="text-gray-400 text-[10px] sm:text-xs mb-1 sm:mb-2 shrink-0">
+                    Step-by-step guidance—tap the simulator to advance.
                   </p>
-                  <div className="flex-1 min-h-0 overflow-y-scroll space-y-3 mb-8">
+                  <div className="flex-1 min-h-0 overflow-y-scroll scrollbar-visible space-y-1 sm:space-y-1.5 mb-1 sm:mb-3">
                     {TASK_ORDER.map((id) => {
                       const t = TASKS[id]
                       if (!t) return null
@@ -975,7 +1011,7 @@ export default function PearNavigator() {
                       <button
                         key={id}
                         onClick={() => setTaskId(id)}
-                        className={`w-full text-left px-4 sm:px-5 py-3.5 sm:py-4 min-h-[44px] rounded-xl border transition-all text-base flex items-center justify-between gap-3 touch-manipulation ${
+                        className={`w-full text-left px-2 sm:px-4 py-2 sm:py-3 min-h-[36px] sm:min-h-[44px] rounded-lg border transition-all text-xs sm:text-base flex items-center justify-between gap-1 touch-manipulation ${
                           taskId === id
                             ? 'border-[#34c759] bg-[#34c759]/15 text-white'
                             : 'border-white/10 bg-white/5 text-gray-300 hover:border-[#34c759]/50'
@@ -989,7 +1025,7 @@ export default function PearNavigator() {
                   <button
                     onClick={handleStart}
                     disabled={!taskId}
-                    className="w-full py-4 sm:py-5 min-h-[48px] rounded-xl bg-[#34c759] text-black font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity touch-manipulation"
+                    className="w-full py-2 sm:py-3 min-h-[36px] sm:min-h-[48px] rounded-lg bg-[#34c759] text-black font-semibold text-xs sm:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity touch-manipulation"
                   >
                     Start guide
                   </button>
@@ -998,37 +1034,37 @@ export default function PearNavigator() {
 
               {phase === 'steps' && task && step && (
                 <>
-                  <p className="text-sm font-semibold text-[#34c759] uppercase tracking-wider mb-3">
+                  <p className="text-[10px] sm:text-xs font-semibold text-[#34c759] uppercase tracking-wider mb-0.5 sm:mb-1">
                     Step {stepIdx + 1} of {task.steps.length}
                   </p>
-                  <h2 className="text-2xl font-semibold text-white mb-3">{step.title}</h2>
-                  <p className="text-gray-400 text-base mb-5">{step.desc}</p>
+                  <h2 className="text-sm sm:text-base lg:text-xl font-semibold text-white mb-0.5 sm:mb-1">{step.title}</h2>
+                  <p className="text-gray-400 text-[10px] sm:text-xs mb-1 sm:mb-2">{step.desc}</p>
                   {step.hint && (
-                    <div className="mb-5 p-4 rounded-lg bg-[#34c759]/15 border border-[#34c759]/30 text-[#34c759] text-base">
+                    <div className="mb-1 sm:mb-2 p-1.5 sm:p-2 rounded bg-[#34c759]/15 border border-[#34c759]/30 text-[#34c759] text-[10px] sm:text-xs">
                       {step.hint}
                     </div>
                   )}
-                  <p className="mb-4 text-base text-[#34c759]/90 font-medium">
-                    Tap the highlighted element in the simulator to continue
+                  <p className="mb-1 sm:mb-2 text-[10px] sm:text-xs text-[#34c759]/90 font-medium">
+                    Tap the highlighted element to continue
                   </p>
-                  <div className="flex gap-2 sm:gap-3 flex-wrap">
+                  <div className="flex gap-1 sm:gap-1.5 flex-wrap">
                     <button
                       onClick={() => setShowHighlight((h) => !h)}
-                      className="flex-1 min-w-[120px] min-h-[44px] py-3 sm:py-4 rounded-xl border border-white/20 bg-white/5 text-white font-medium text-sm sm:text-base hover:bg-white/10 transition-colors touch-manipulation"
+                      className="flex-1 min-w-[70px] min-h-[32px] sm:min-h-[40px] py-1.5 sm:py-2 rounded border border-white/20 bg-white/5 text-white font-medium text-[10px] sm:text-sm hover:bg-white/10 transition-colors touch-manipulation"
                     >
-                      {showHighlight ? 'Hide highlight' : 'Show highlight'}
+                      {showHighlight ? 'Hide' : 'Show'} highlight
                     </button>
                     {!isFirstStep && (
                       <button
                         onClick={handlePrev}
-                        className="min-h-[44px] py-3 sm:py-4 px-4 sm:px-6 rounded-xl border border-white/20 bg-white/5 text-white font-medium text-sm sm:text-base hover:bg-white/10 transition-colors touch-manipulation"
+                        className="min-h-[32px] sm:min-h-[40px] py-1.5 sm:py-2 px-2 sm:px-4 rounded border border-white/20 bg-white/5 text-white font-medium text-[10px] sm:text-sm hover:bg-white/10 transition-colors touch-manipulation"
                         aria-label="Previous step"
                       >
                         ← Previous
                       </button>
                     )}
                   </div>
-                  <div className="mt-3 flex items-center justify-between">
+                  <div className="mt-1 sm:mt-2 flex items-center justify-between">
                     <button
                       onClick={handleNext}
                       className="text-sm text-white/50 hover:text-white/70 underline underline-offset-2"
@@ -1064,12 +1100,16 @@ export default function PearNavigator() {
           </div>
         )}
 
-        {/* Mock app preview — mobile: min 35vh so it fits; lg+: flex fills */}
-        <div className="flex-1 min-w-0 min-h-[min(35vh,280px)] sm:min-h-[min(40vh,320px)] lg:min-h-0 flex flex-col overflow-auto overscroll-contain">
-          <div className="flex-1 min-h-0 flex items-center justify-center p-1 sm:p-2 overflow-hidden">
-            <div className="relative w-full h-full max-w-7xl max-h-full rounded-2xl sm:rounded-3xl bg-[#1a1a1a] border-4 sm:border-6 md:border-8 border-[#2a2a2a] shadow-[inset_0_0_30px_rgba(0,0,0,0.5),0_20px_50px_rgba(0,0,0,0.4)] overflow-hidden">
-              <div className="absolute inset-1.5 sm:inset-2 md:inset-3 rounded-xl sm:rounded-2xl bg-[#3a3a3a] overflow-hidden">
-                {MockComponent && <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={handleNext} {...(phase === 'steps' && { onWrongTap: handleWrongTap })} showHighlight={phase === 'steps' && showHighlight} stepIdx={phase === 'steps' ? stepIdx : (task?.steps.length ?? 0)} {...(taskId ? { taskId } : {})} />}
+        {/* Mock app preview — mobile: simulator dominates; lg+: flex fills; scrollbar visible when overflow */}
+        <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-auto overscroll-contain scrollbar-visible">
+          <div className="flex-1 min-h-0 flex items-center justify-center p-0.5 sm:p-2 overflow-hidden">
+            <div className="relative w-full h-full max-w-7xl max-h-full rounded-xl sm:rounded-2xl md:rounded-3xl bg-[#1a1a1a] border-2 sm:border-4 md:border-6 lg:border-8 border-[#2a2a2a] shadow-[inset_0_0_30px_rgba(0,0,0,0.5)] overflow-hidden">
+              <div className="absolute inset-0.5 sm:inset-1.5 md:inset-2 lg:inset-3 rounded-lg sm:rounded-xl md:rounded-2xl bg-[#3a3a3a] overflow-auto scrollbar-visible">
+                {MockComponent ? (
+                  <MockScaleWrapper>
+                    <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={handleNext} {...(phase === 'steps' && { onWrongTap: handleWrongTap })} showHighlight={phase === 'steps' && showHighlight} stepIdx={phase === 'steps' ? stepIdx : (task?.steps.length ?? 0)} {...(taskId ? { taskId } : {})} />
+                  </MockScaleWrapper>
+                ) : null}
               </div>
             </div>
           </div>
