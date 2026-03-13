@@ -37,15 +37,15 @@ export default function NotebookHome() {
     <>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl">
         {items.map((item) => (
-          <GameCard key={item.id} game={item} onComingSoonClick={() => setShowComingSoon(true)} />
+          <GameCard key={item.id} game={item} onComingSoonClick={() => setShowComingSoon(true)} linePaper />
         ))}
       </div>
 
       {showComingSoon && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div
-            className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg border p-8"
-            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+            className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg border p-8 notebook-line-paper"
+            style={{ borderColor: 'var(--ink-border)' }}
           >
             <div className="mb-6 flex items-center justify-between">
               <h2 className="font-lora text-2xl font-semibold flex items-center gap-2" style={{ color: 'var(--ink-text)' }}>
@@ -70,8 +70,8 @@ export default function NotebookHome() {
               {futureFeatures.map((feature, index) => (
                 <div
                   key={index}
-                  className="flex items-start rounded-lg border p-3"
-                  style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}
+                  className="flex items-start rounded-lg border p-3 notebook-line-paper"
+                  style={{ borderColor: 'var(--ink-border)' }}
                 >
                   <span className="mr-3 mt-1 text-lg" style={{ color: 'var(--ink-accent)' }}>•</span>
                   <span className="text-sm" style={{ color: 'var(--ink-text)' }}>{feature}</span>

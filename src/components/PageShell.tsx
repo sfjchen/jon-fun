@@ -21,13 +21,19 @@ function isFullBleed(pathname: string): boolean {
   )
 }
 
+function isPearNavigator(pathname: string): boolean {
+  return pathname.includes('pear-navigator')
+}
+
 export function PageShell({ children, title, showBack }: PageShellProps) {
   const pathname = usePathname()
   const isNotebook = pathname.startsWith('/notebook')
   const isHome = pathname === '/' || pathname === '/notebook'
   const showBackLink = showBack ?? !isHome
   const fullBleed = isFullBleed(pathname)
+  const pearNav = isPearNavigator(pathname ?? '')
   const homeHref = isNotebook ? '/notebook' : '/'
+  const useBigLogo = isNotebook && !pearNav
 
   useEffect(() => {
     if (!fullBleed) return
@@ -46,22 +52,18 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
       className={`overflow-x-hidden ${fullBleed ? 'h-dynamic flex flex-col overflow-y-hidden' : 'min-h-screen'}`}
       style={{ backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
     >
-      <header className={`flex-none ${fullBleed ? 'px-3 py-2' : 'px-4 py-4 md:py-6'} ${!isHome ? 'border-b' : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
+      <header className={`flex-none ${fullBleed && !useBigLogo ? 'px-3 py-2' : 'px-4 py-4 md:py-6'} ${!isHome ? 'border-b' : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
         <div className="mx-auto max-w-6xl flex w-full items-center justify-between">
           <div className="flex-1" />
           <Link
             href={homeHref}
             className={`font-lora font-semibold hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded shrink-0 ${
-              isHome
-                ? isNotebook
-                  ? 'text-5xl md:text-6xl lg:text-7xl'
-                  : 'text-4xl md:text-5xl lg:text-6xl'
-                : fullBleed
-                  ? isNotebook
-                    ? 'text-3xl sm:text-4xl'
-                    : 'text-2xl sm:text-3xl'
-                  : isNotebook
-                    ? 'text-3xl sm:text-4xl'
+              useBigLogo
+                ? 'text-5xl md:text-6xl lg:text-7xl'
+                : isHome
+                  ? 'text-4xl md:text-5xl lg:text-6xl'
+                  : fullBleed
+                    ? 'text-2xl sm:text-3xl'
                     : ''
             }`}
             style={{ color: 'var(--ink-text)' }}
@@ -94,7 +96,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
         className={
           fullBleed
             ? 'flex-1 min-h-0 w-full max-w-none px-0 flex flex-col'
-            : `mx-auto max-w-6xl px-4 ${isHome ? 'py-8' : 'py-6'}`
+            : `mx-auto max-w-6xl px-4 ${isHome ? 'py-8' : 'py-6'} ${isNotebook ? 'notebook-line-paper min-h-[calc(100vh-6rem)]' : ''}`
         }
       >
         {title && !isHome && (

@@ -19,8 +19,8 @@ export default function NotebookLeaderboardsPage() {
       </h1>
 
       <div
-        className="rounded-lg border p-8"
-        style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        className="rounded-lg border p-8 notebook-line-paper"
+        style={{ borderColor: 'var(--ink-border)' }}
       >
         <div className="mb-6">
           <Image src="/doodles/coming-soon.svg" alt="" width={64} height={64} className="h-16 w-16" />

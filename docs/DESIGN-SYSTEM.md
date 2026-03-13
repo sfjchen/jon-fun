@@ -69,9 +69,11 @@ Same functionality as main site, different aesthetic. Applied when pathname star
 - `public/doodles/notebook/` — Doodly, handwritten-style variants (tmr, daily, pear, game24, jeopardy, chwazi, leaderboards, coming-soon, poker).
 - Notebook pages use these; main pages use `public/doodles/`.
 
-### 1 Sentence Everyday (Notebook)
+### Line Paper
 
-- When viewed at `/notebook/games/daily-log`, the page uses `.notebook-line-paper` — journal-style horizontal lines on cream background.
+- **All notebook pages** (except Pear Navigator, Poker lobby/table): main content area uses `.notebook-line-paper`.
+- **1 Sentence Everyday** (main and notebook): full page uses line paper.
+- **GameCards, modals, cards, tabs**: line paper when in notebook.
 
 ### Navigation
 

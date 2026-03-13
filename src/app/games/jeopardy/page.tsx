@@ -2,12 +2,15 @@
 
 import Image from 'next/image'
 import { useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import JeopardyEditor from '@/components/JeopardyEditor'
 import JeopardyPlayer from '@/components/JeopardyPlayer'
 import type { JeopardyBoard } from '@/lib/jeopardy'
 import { readBoardFromFile, createDefaultBoard } from '@/lib/jeopardy'
 
 export default function JeopardyPage() {
+  const pathname = usePathname()
+  const linePaper = pathname?.startsWith('/notebook')
   const [mode, setMode] = useState<'menu' | 'editor' | 'player'>('menu')
   const [currentBoard, setCurrentBoard] = useState<JeopardyBoard | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -44,7 +47,7 @@ export default function JeopardyPage() {
           {error}
         </div>
       )}
-      <div className="rounded-lg p-8 border max-w-md w-full shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+      <div className={`rounded-lg p-8 border max-w-md w-full shadow-sm ${linePaper ? 'notebook-line-paper' : ''}`} style={linePaper ? { borderColor: 'var(--ink-border)' } : { backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
         <h1 className="text-4xl font-bold font-lora text-center mb-8 flex items-center justify-center gap-3" style={{ color: 'var(--ink-text)' }}>
           <Image src="/doodles/jeopardy.svg" alt="" width={40} height={40} className="h-10 w-10" />
           Jeopardy with Friends
