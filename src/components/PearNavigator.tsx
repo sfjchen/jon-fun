@@ -372,6 +372,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const [bcFillAccentOpen, setBcFillAccentOpen] = useState(false)
   const [mmFillOuter, setMmFillOuter] = useState<string>('blue')
   const [mmFillOuterOpen, setMmFillOuterOpen] = useState(false)
+  const [mmHasSeenExample, setMmHasSeenExample] = useState(false)
   const [mmConnectorCount, setMmConnectorCount] = useState(0)
   const [mmInstanceCount, setMmInstanceCount] = useState(0)
   const [bcExportMenuOpen, setBcExportMenuOpen] = useState(false)
@@ -400,6 +401,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
     if (taskId === 'figmaBusinessCard' && stepIdx !== 3 && stepIdx !== 4 && stepIdx !== 5) setBcTextInput(null)
     if (taskId === 'figmaMindmap' && stepIdx !== 4) setMmInstanceCount(0)
     if (taskId === 'figmaMindmap' && stepIdx !== 6) setMmConnectorCount(0)
+    if (taskId !== 'figmaMindmap' || stepIdx < 9) setMmHasSeenExample(false)
     if (!bcInExportStep) setBcExportMenuOpen(false)
   }, [taskId, stepIdx, bcInExportStep])
   const hasCard = isBusinessCard && stepIdx >= 1
@@ -416,7 +418,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   const hasConnectors = connectorCount > 0
   const hasAutoLayout = isMindmap && stepIdx >= 8
   const hasFill = isMindmap && stepIdx >= 8
-  const hasStyle = isMindmap && stepIdx >= 9
+  const hasStyle = isMindmap && mmHasSeenExample
   const OVERLAP_POSITIONS = Array.from({ length: 9 }, (_, i) => ({
     left: `calc(75% + ${(i % 3 - 1) * 6}px)`,
     top: `calc(50% + ${(Math.floor(i / 3) - 1) * 6}px)`,
@@ -531,28 +533,24 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
             <HotspotButton id="fig-connector" currentHotspotId={currentHotspotId} onStepComplete={stepIdx === 6 ? () => { if (mmConnectorCount < 8) setMmConnectorCount((c) => c + 1); else { setMmConnectorCount(9); onStepComplete(); } } : onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
               <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-connector' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Connector {stepIdx === 6 && mmConnectorCount > 0 ? `(${mmConnectorCount}/9)` : ''}</div>
             </HotspotButton>
-            {stepIdx === 8 && (
-              <div className="relative">
-                <HotspotButton id="fig-fill" currentHotspotId={currentHotspotId} onStepComplete={() => setMmFillOuterOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
-                  <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Fill <span className="text-xs">▼</span></div>
-                </HotspotButton>
-                {mmFillOuterOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
-                    {MM_FILL_COLORS.map((c) => (
-                      <button key={c.id} type="button" onClick={() => { setMmFillOuter(c.id); setMmFillOuterOpen(false); onStepComplete(); }} className="w-full flex items-center gap-2 px-3 py-2 rounded text-left text-sm text-white/90 hover:bg-white/10">
-                        <div className="w-6 h-6 rounded border shrink-0" style={{ background: c.bg, borderColor: c.border }} />
-                        <span>{c.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            {stepIdx === 9 && (
-              <HotspotButton id="fig-style" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-                <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-style' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>See example</div>
+            <div className="relative">
+              <HotspotButton id="fig-fill" currentHotspotId={currentHotspotId} onStepComplete={() => setMmFillOuterOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
+                <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Fill <span className="text-xs">▼</span></div>
               </HotspotButton>
-            )}
+              {mmFillOuterOpen && (
+                <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
+                  {MM_FILL_COLORS.map((c) => (
+                    <button key={c.id} type="button" onClick={() => { setMmFillOuter(c.id); setMmFillOuterOpen(false); if (stepIdx === 8) onStepComplete(); }} className="w-full flex items-center gap-2 px-3 py-2 rounded text-left text-sm text-white/90 hover:bg-white/10">
+                      <div className="w-6 h-6 rounded border shrink-0" style={{ background: c.bg, borderColor: c.border }} />
+                      <span>{c.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <HotspotButton id="fig-style" currentHotspotId={currentHotspotId} onStepComplete={() => { setMmHasSeenExample(true); onStepComplete(); }} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-style' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>See example</div>
+            </HotspotButton>
           </div>
         </div>
       </div>
@@ -561,9 +559,9 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
   if (isBusinessCard) {
     const bgStyle = FILL_COLORS.find((c) => c.id === bcFillBg)?.bg ?? 'linear-gradient(135deg, #0f172a, #1e293b)'
     const accentStyle = ACCENT_COLORS.find((c) => c.id === bcFillAccent)?.bg ?? 'linear-gradient(180deg, #fbbf24, #d97706)'
-    const handleTemplatePick = (id: string) => { setBcTemplate(id); setBcTemplateOpen(false); onStepComplete() }
-    const handleFillBgPick = (id: string) => { setBcFillBg(id); setBcFillBgOpen(false); onStepComplete() }
-    const handleFillAccentPick = (id: string) => { setBcFillAccent(id); setBcFillAccentOpen(false); onStepComplete() }
+    const handleTemplatePick = (id: string) => { setBcTemplate(id); setBcTemplateOpen(false); if (stepIdx === 0) onStepComplete() }
+    const handleFillBgPick = (id: string) => { setBcFillBg(id); setBcFillBgOpen(false); if (stepIdx === 1) onStepComplete() }
+    const handleFillAccentPick = (id: string) => { setBcFillAccent(id); setBcFillAccentOpen(false); if (stepIdx === 2) onStepComplete() }
     const handleTextOpen = () => {
       if (stepIdx === 3) setBcTextInput('name')
       else if (stepIdx === 4) setBcTextInput('role')
@@ -575,7 +573,7 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
       else setBcEmail(bcTextDraft)
       setBcTextInput(null)
       setBcTextDraft('')
-      onStepComplete()
+      if (stepIdx === 3 || stepIdx === 4 || stepIdx === 5) onStepComplete()
     }
     return (
       <div className="absolute inset-0 flex flex-col text-[10px] sm:text-xs min-h-0 overflow-hidden">
@@ -663,71 +661,63 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
           <div className="w-28 min-w-24 sm:w-40 bg-[#383838] border-l border-white/15 p-1.5 sm:p-3 shrink-0 flex flex-col gap-1 sm:gap-1.5 overflow-y-auto min-h-0">
             <div className="text-white/50 text-xs font-medium shrink-0">Design</div>
             {['Layout', 'Stroke', 'Effects', 'Corner'].map(clutter)}
-            {stepIdx === 0 && (
-              <div className="relative">
-                <HotspotButton id="fig-template" currentHotspotId={currentHotspotId} onStepComplete={() => setBcTemplateOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
-                  <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-template' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Template <span className="text-xs">▼</span></div>
-                </HotspotButton>
-                {bcTemplateOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
-                    {CARD_TEMPLATES.map((t) => (
-                      <button key={t.id} type="button" onClick={() => handleTemplatePick(t.id)} className="w-full px-3 py-2.5 rounded text-left text-sm text-white/90 hover:bg-white/10 block">
-                        {t.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            {stepIdx === 1 && (
-              <div className="relative">
-                <HotspotButton id="fig-fill-bg" currentHotspotId={currentHotspotId} onStepComplete={() => setBcFillBgOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
-                  <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-bg' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Background <span className="text-xs">▼</span></div>
-                </HotspotButton>
-                {bcFillBgOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
-                    {FILL_COLORS.map((c) => (
-                      <button key={c.id} type="button" onClick={() => handleFillBgPick(c.id)} className="w-full flex items-center gap-2 px-3 py-2 rounded text-left text-sm text-white/90 hover:bg-white/10">
-                        <div className="w-6 h-6 rounded border border-white/20 shrink-0" style={{ background: c.bg }} />
-                        <span>{c.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            {stepIdx === 2 && (
-              <div className="relative">
-                <HotspotButton id="fig-fill-accent" currentHotspotId={currentHotspotId} onStepComplete={() => setBcFillAccentOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
-                  <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-accent' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Accent <span className="text-xs">▼</span></div>
-                </HotspotButton>
-                {bcFillAccentOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
-                    {ACCENT_COLORS.map((c) => (
-                      <button key={c.id} type="button" onClick={() => handleFillAccentPick(c.id)} className="w-full flex items-center gap-2 px-3 py-2 rounded text-left text-sm text-white/90 hover:bg-white/10">
-                        <div className="w-6 h-6 rounded border border-white/20 shrink-0" style={{ background: c.bg }} />
-                        <span>{c.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            {(stepIdx === 3 || stepIdx === 4 || stepIdx === 5) && !bcTextInput && (
+            <div className="relative">
+              <HotspotButton id="fig-template" currentHotspotId={currentHotspotId} onStepComplete={() => setBcTemplateOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
+                <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-template' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Template <span className="text-xs">▼</span></div>
+              </HotspotButton>
+              {bcTemplateOpen && (
+                <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
+                  {CARD_TEMPLATES.map((t) => (
+                    <button key={t.id} type="button" onClick={() => handleTemplatePick(t.id)} className="w-full px-3 py-2.5 rounded text-left text-sm text-white/90 hover:bg-white/10 block">
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="relative">
+              <HotspotButton id="fig-fill-bg" currentHotspotId={currentHotspotId} onStepComplete={() => setBcFillBgOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
+                <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-bg' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Background <span className="text-xs">▼</span></div>
+              </HotspotButton>
+              {bcFillBgOpen && (
+                <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
+                  {FILL_COLORS.map((c) => (
+                    <button key={c.id} type="button" onClick={() => handleFillBgPick(c.id)} className="w-full flex items-center gap-2 px-3 py-2 rounded text-left text-sm text-white/90 hover:bg-white/10">
+                      <div className="w-6 h-6 rounded border border-white/20 shrink-0" style={{ background: c.bg }} />
+                      <span>{c.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="relative">
+              <HotspotButton id="fig-fill-accent" currentHotspotId={currentHotspotId} onStepComplete={() => setBcFillAccentOpen(true)} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight} className="w-full block">
+                <div className={`${HOTSPOT_BTN} justify-between ${currentHotspotId === 'fig-fill-accent' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Accent <span className="text-xs">▼</span></div>
+              </HotspotButton>
+              {bcFillAccentOpen && (
+                <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-[#454545] border border-white/10 shadow-lg z-30 space-y-1">
+                  {ACCENT_COLORS.map((c) => (
+                    <button key={c.id} type="button" onClick={() => handleFillAccentPick(c.id)} className="w-full flex items-center gap-2 px-3 py-2 rounded text-left text-sm text-white/90 hover:bg-white/10">
+                      <div className="w-6 h-6 rounded border border-white/20 shrink-0" style={{ background: c.bg }} />
+                      <span>{c.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {!bcTextInput && (
               <HotspotButton id="fig-text" currentHotspotId={currentHotspotId} onStepComplete={handleTextOpen} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
                 <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-text' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Text</div>
               </HotspotButton>
             )}
-            {(stepIdx === 3 || stepIdx === 4 || stepIdx === 5) && currentHotspotId === 'fig-text' && !bcTextInput && (
+            {currentHotspotId === 'fig-text' && !bcTextInput && (stepIdx === 3 || stepIdx === 4 || stepIdx === 5) && (
               <div className="p-2 rounded bg-[#454545] border border-white/10 shrink-0 text-[10px] text-white/70">
                 {stepIdx === 3 ? 'Add name' : stepIdx === 4 ? 'Add role' : 'Add email'}
               </div>
             )}
-            {stepIdx === 6 && (
-              <HotspotButton id="fig-accent" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
-                <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-accent' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Rectangle</div>
-              </HotspotButton>
-            )}
+            <HotspotButton id="fig-accent" currentHotspotId={currentHotspotId} onStepComplete={() => { if (stepIdx === 6) onStepComplete(); }} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
+              <div className={`${HOTSPOT_BTN} ${currentHotspotId === 'fig-accent' ? HOTSPOT_ACTIVE : HOTSPOT_INACTIVE}`}>Rectangle</div>
+            </HotspotButton>
           </div>
         </div>
       </div>
