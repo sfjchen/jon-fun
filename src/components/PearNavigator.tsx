@@ -1116,44 +1116,8 @@ export default function PearNavigator() {
               )}
 
               {phase === 'done' && (
-                <div className="text-center py-6 sm:py-10">
-                  {feedbackRating == null ? (
-                    <>
-                      <div className="text-5xl sm:text-6xl text-[#34c759] mb-4 sm:mb-6 pear-success">✓</div>
-                      <h2 className="text-xl sm:text-3xl font-bold text-white mb-2 sm:mb-4">Task complete</h2>
-                      <p className="text-gray-400 text-sm sm:text-lg mb-4 sm:mb-6">
-                        How useful was the guide?
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center mb-4 sm:mb-6">
-                        {(['meh', 'good', 'great'] as const).map((r) => (
-                          <button
-                            key={r}
-                            onClick={() => handleFeedback(r)}
-                            className="min-h-[40px] sm:min-h-[48px] px-4 sm:px-6 py-2 sm:py-3 rounded-lg border border-white/20 bg-white/5 text-white font-medium text-sm sm:text-base hover:bg-white/10 transition-colors touch-manipulation capitalize"
-                          >
-                            {r}
-                          </button>
-                        ))}
-                      </div>
-                      <p className="text-[10px] sm:text-xs text-white/40">
-                        Total: {Math.round((Date.now() - taskStartTimeRef.current) / 1000)}s · Avg: {task ? Math.round((Date.now() - taskStartTimeRef.current) / 1000 / task.steps.length) : 0}s/step
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-5xl sm:text-6xl text-[#34c759] mb-4 sm:mb-6 pear-success">✓</div>
-                      <h2 className="text-xl sm:text-3xl font-bold text-white mb-2 sm:mb-4">Thanks!</h2>
-                      <p className="text-gray-400 text-sm sm:text-lg mb-6 sm:mb-8">
-                        You rated it &quot;{feedbackRating}&quot;. Try another task or refine your result.
-                      </p>
-                      <button
-                        onClick={handleReset}
-                        className="min-h-[40px] sm:min-h-[48px] px-6 sm:px-10 py-3 sm:py-4 rounded-xl bg-[#34c759] text-black font-semibold text-base sm:text-lg hover:opacity-90 transition-opacity touch-manipulation"
-                      >
-                        Start over
-                      </button>
-                    </>
-                  )}
+                <div className="text-center py-6 sm:py-10 text-white/60">
+                  Task complete
                 </div>
               )}
             </div>
@@ -1163,6 +1127,51 @@ export default function PearNavigator() {
         {wrongTapToast && (
           <div className="fixed bottom-safe left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl bg-red-500/90 text-white font-medium text-sm shadow-lg transition-opacity duration-300 max-w-[calc(100vw-2rem)] mx-auto">
             Tap the highlighted element to advance
+          </div>
+        )}
+
+        {/* Feedback overlay — full screen when task done */}
+        {phase === 'done' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <div className="text-center max-w-md w-full">
+              {feedbackRating == null ? (
+                <>
+                  <div className="text-5xl sm:text-6xl text-[#34c759] mb-4 sm:mb-6 pear-success">✓</div>
+                  <h2 className="text-xl sm:text-3xl font-bold text-white mb-2 sm:mb-4">Task complete</h2>
+                  <p className="text-gray-300 text-sm sm:text-lg mb-4 sm:mb-6">
+                    How useful was the guide?
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center mb-4 sm:mb-6">
+                    {(['meh', 'good', 'great'] as const).map((r) => (
+                      <button
+                        key={r}
+                        onClick={() => handleFeedback(r)}
+                        className="min-h-[44px] sm:min-h-[48px] px-4 sm:px-6 py-2 sm:py-3 rounded-lg border border-white/20 bg-white/10 text-white font-medium text-sm sm:text-base hover:bg-white/20 transition-colors touch-manipulation capitalize"
+                      >
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] sm:text-xs text-white/50">
+                    Total: {Math.round((Date.now() - taskStartTimeRef.current) / 1000)}s · Avg: {task ? Math.round((Date.now() - taskStartTimeRef.current) / 1000 / task.steps.length) : 0}s/step
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="text-5xl sm:text-6xl text-[#34c759] mb-4 sm:mb-6 pear-success">✓</div>
+                  <h2 className="text-xl sm:text-3xl font-bold text-white mb-2 sm:mb-4">Thanks!</h2>
+                  <p className="text-gray-300 text-sm sm:text-lg mb-6 sm:mb-8">
+                    You rated it &quot;{feedbackRating}&quot;. Try another task or refine your result.
+                  </p>
+                  <button
+                    onClick={handleReset}
+                    className="min-h-[44px] sm:min-h-[48px] px-6 sm:px-10 py-3 sm:py-4 rounded-xl bg-[#34c759] text-black font-semibold text-base sm:text-lg hover:opacity-90 transition-opacity touch-manipulation"
+                  >
+                    Start over
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         )}
 
