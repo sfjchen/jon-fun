@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useCallback, useRef, useEffect, useImperativeHandle, forwardRef } from 'react'
+import Link from 'next/link'
 import html2canvas from 'html2canvas'
 
 const BRUSH_BLUE = '#60a5fa'
@@ -998,8 +999,14 @@ export default function PearNavigator() {
     const totalSec = Math.round(totalMs / 1000)
     const avgSec = task ? Math.round(totalMs / 1000 / task.steps.length) : 0
     setFeedbackRating(rating)
-    console.log('[PearNavigator A/B]', { variant, taskId, rating, totalSec, avgSec, steps: task?.steps.length })
-  }, [variant, taskId, task?.steps.length])
+    if (variant && taskId) {
+      fetch('/api/pear-navigator/results', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ variant, taskId, rating, totalSec, avgSecPerStep: avgSec, stepsCount: task?.steps.length ?? 0 }),
+      }).catch(() => {})
+    }
+  }, [variant, taskId, task])
 
   const handleReset = useCallback(() => {
     setPhase('task')
@@ -1019,7 +1026,7 @@ export default function PearNavigator() {
           <span className="text-base sm:text-xl font-semibold text-white">
             Pear<span className="text-[#34c759]">Navigator</span>
           </span>
-          <span className="text-xs sm:text-sm text-gray-500">PearPad</span>
+          <Link href="/games/pear-navigator/results" className="text-xs sm:text-sm text-gray-500 hover:text-white/80 transition-colors">Results</Link>
       </div>
 
       <div className="flex-1 flex flex-col lg:flex-row gap-1.5 sm:gap-3 px-1.5 sm:px-3 pb-1.5 sm:pb-3 min-h-0 overflow-hidden">
