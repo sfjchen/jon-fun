@@ -362,6 +362,7 @@ Running log of project work. Update this section when making significant changes
 - **Pear Navigator mobile fix**: PageShell fullBleed uses h-dynamic + flex so main gets viewport height; PearNavigator flex-1 fills; simulator no longer collapses to black empty space on iPhone
 - **Pear Navigator mobile polish**: overflow-y-hidden prevents scroll past content; step box 28–38vh so simulator dominates; compact step UI, scrollbar-visible on guide/mock; narrower mock panels, smaller frame border on mobile
 - **Pear Navigator mobile v2**: body overflow hidden on fullBleed (fixes bottom whitespace); scrollbar-visible uses overflow-y:scroll so scrollbars stay visible; guide 18–26vh (simulator much taller); MockScaleWrapper scales mock to fit; compact step UI
+- **Pear Navigator audit fix**: MockScaleWrapper uses layout size w×h (scaled) so mock fits without cutout; guide 16–24vh; scale min 0.5 guard
 - **1 Sentence Everyday**: Supabase sync on every load (push local to server); migration `supabase-migration-daily-learn.sql` for `daily_learn_entries` table
 - **Subagents**: Removed heavy-lift; kept think-hard as sole context-heavy subagent
 - **Doodle icons**: Added `public/doodles/`—hand-drawn SVG icons (tmr, daily, pear, game24, jeopardy, chwazi, leaderboards, coming-soon, poker). Replaced emojis in GameCard, TMR header, leaderboards, jeopardy, Coming Soon modal. Texas Hold'em uses doodle-style poker.svg (card + spade).
