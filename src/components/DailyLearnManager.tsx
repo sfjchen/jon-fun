@@ -47,8 +47,8 @@ export default function DailyLearnManager() {
     refresh()
   }, [refresh])
 
+  // Initial sync on load: push localStorage to Supabase, merge with server. Runs for all users so local-only data is backed up.
   useEffect(() => {
-    if (!getSyncKey()) return
     setSyncing(true)
     syncWithServer()
       .then(() => refresh())
