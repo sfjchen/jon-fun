@@ -628,9 +628,9 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                     />
                   )}
                   <div className={hasAccent ? 'pl-4' : ''}>
-                    {hasName && <div className="text-white font-bold text-lg sm:text-xl tracking-tight">{bcName || (isVariantB ? 'Alex Chen' : 'Your name')}</div>}
-                    {hasRole && <div className="text-white/80 text-sm sm:text-base mt-0.5">{bcRole || (isVariantB ? 'Product Designer' : 'Your role')}</div>}
-                    {hasEmail && <div className="text-white/60 text-xs sm:text-sm mt-2">{bcEmail || (isVariantB ? 'alex@studio.co' : 'you@example.com')}</div>}
+                    {hasName && <div className="text-white font-bold text-lg sm:text-xl tracking-tight">{bcName || (isVariantB ? 'Dr. Theresa Johnson (She/Her)' : 'Your name')}</div>}
+                    {hasRole && <div className="text-white/80 text-sm sm:text-base mt-0.5">{bcRole || (isVariantB ? 'Global Head of Product, Roblox' : 'Your role')}</div>}
+                    {hasEmail && <div className="text-white/60 text-xs sm:text-sm mt-2">{bcEmail || (isVariantB ? 'theresa.johnson@stanford.edu' : 'you@example.com')}</div>}
                   </div>
                   {!hasName && !hasRole && !hasEmail && hasCard && <span className="text-white/40 text-xs">Tap Text to add fields</span>}
                 </div>
