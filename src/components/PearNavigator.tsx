@@ -942,17 +942,24 @@ function MockFillWrapper({ children }: { children: React.ReactNode }) {
   return <div className="absolute inset-0 min-w-0 min-h-0 flex flex-col overflow-hidden">{children}</div>
 }
 
+type ABVariant = 'a' | 'b'
+type FeedbackRating = 'meh' | 'good' | 'great'
+
 export default function PearNavigator() {
   const [phase, setPhase] = useState<'task' | 'steps' | 'done'>('task')
   const [taskId, setTaskId] = useState<string | null>(null)
   const [stepIdx, setStepIdx] = useState(0)
   const [showHighlight, setShowHighlight] = useState(false)
   const [wrongTapToast, setWrongTapToast] = useState(false)
+  const [variant, setVariant] = useState<ABVariant | null>(null)
+  const [feedbackRating, setFeedbackRating] = useState<FeedbackRating | null>(null)
+  const taskStartTimeRef = useRef<number>(0)
 
   const task = taskId ? TASKS[taskId] : null
   const step = task ? task.steps[stepIdx] : null
   const isLastStep = task && stepIdx === task.steps.length - 1
   const isFirstStep = stepIdx === 0
+  const isVariantB = variant === 'b'
 
   useEffect(() => {
     if (!wrongTapToast) return
@@ -962,10 +969,12 @@ export default function PearNavigator() {
 
   const handleStart = useCallback(() => {
     if (!taskId) return
+    if (variant == null) setVariant(Math.random() < 0.5 ? 'a' : 'b')
     setPhase('steps')
     setStepIdx(0)
     setShowHighlight(true)
-  }, [taskId])
+    taskStartTimeRef.current = Date.now()
+  }, [taskId, variant])
 
   const handleNext = useCallback(() => {
     if (!task) return
@@ -984,11 +993,21 @@ export default function PearNavigator() {
 
   const handleWrongTap = useCallback(() => setWrongTapToast(true), [])
 
+  const handleFeedback = useCallback((rating: FeedbackRating) => {
+    const totalMs = Date.now() - taskStartTimeRef.current
+    const totalSec = Math.round(totalMs / 1000)
+    const avgSec = task ? Math.round(totalMs / 1000 / task.steps.length) : 0
+    setFeedbackRating(rating)
+    console.log('[PearNavigator A/B]', { variant, taskId, rating, totalSec, avgSec, steps: task?.steps.length })
+  }, [variant, taskId, task?.steps.length])
+
   const handleReset = useCallback(() => {
     setPhase('task')
     setTaskId(null)
     setStepIdx(0)
     setShowHighlight(false)
+    setVariant(null)
+    setFeedbackRating(null)
   }, [])
 
   const MockComponent = task ? MOCK_COMPONENTS[task.mock] : null
@@ -1024,7 +1043,7 @@ export default function PearNavigator() {
                       <button
                         key={id}
                         type="button"
-                        onClick={() => setTaskId(id)}
+                        onClick={() => { setTaskId(id); setVariant(Math.random() < 0.5 ? 'a' : 'b'); }}
                         className={`w-full text-left px-1.5 sm:px-3 py-1 sm:py-2 min-h-[28px] sm:min-h-[36px] rounded-md lg:rounded-lg border transition-all text-[10px] sm:text-xs lg:text-base flex items-center justify-between gap-0.5 touch-manipulation ${
                           taskId === id
                             ? 'border-[#34c759] bg-[#34c759]/15 text-white'
@@ -1078,30 +1097,56 @@ export default function PearNavigator() {
                       </button>
                     )}
                   </div>
-                  <div className="mt-0.5 sm:mt-1 flex items-center justify-between">
+                  {isVariantB && (
                     <button
                       onClick={handleNext}
-                      className="text-[9px] sm:text-[10px] text-white/50 hover:text-white/70 underline underline-offset-1"
+                      className="w-full mt-1 sm:mt-2 py-2 sm:py-3 min-h-[40px] sm:min-h-[48px] rounded-lg bg-[#34c759] text-black font-semibold text-sm sm:text-base hover:opacity-90 transition-opacity touch-manipulation"
                     >
-                      {isLastStep ? 'Skip to done' : 'Skip step'}
+                      {isLastStep ? 'Finish' : 'Next step'}
                     </button>
-                  </div>
+                  )}
                 </>
               )}
 
               {phase === 'done' && (
-                <div className="text-center py-10">
-                  <div className="text-6xl text-[#34c759] mb-6 pear-success">✓</div>
-                  <h2 className="text-3xl font-bold text-white mb-4">Task complete</h2>
-                  <p className="text-gray-400 text-lg mb-8">
-                    You&apos;ve finished the guide. Try another task or refine your result.
-                  </p>
-                  <button
-                    onClick={handleReset}
-                    className="min-h-[48px] px-8 sm:px-10 py-4 rounded-xl bg-[#34c759] text-black font-semibold text-lg hover:opacity-90 transition-opacity touch-manipulation"
-                  >
-                    Start over
-                  </button>
+                <div className="text-center py-6 sm:py-10">
+                  {feedbackRating == null ? (
+                    <>
+                      <div className="text-5xl sm:text-6xl text-[#34c759] mb-4 sm:mb-6 pear-success">✓</div>
+                      <h2 className="text-xl sm:text-3xl font-bold text-white mb-2 sm:mb-4">Task complete</h2>
+                      <p className="text-gray-400 text-sm sm:text-lg mb-4 sm:mb-6">
+                        How useful was the guide?
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center mb-4 sm:mb-6">
+                        {(['meh', 'good', 'great'] as const).map((r) => (
+                          <button
+                            key={r}
+                            onClick={() => handleFeedback(r)}
+                            className="min-h-[40px] sm:min-h-[48px] px-4 sm:px-6 py-2 sm:py-3 rounded-lg border border-white/20 bg-white/5 text-white font-medium text-sm sm:text-base hover:bg-white/10 transition-colors touch-manipulation capitalize"
+                          >
+                            {r}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-[10px] sm:text-xs text-white/40">
+                        Total: {Math.round((Date.now() - taskStartTimeRef.current) / 1000)}s · Avg: {task ? Math.round((Date.now() - taskStartTimeRef.current) / 1000 / task.steps.length) : 0}s/step
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-5xl sm:text-6xl text-[#34c759] mb-4 sm:mb-6 pear-success">✓</div>
+                      <h2 className="text-xl sm:text-3xl font-bold text-white mb-2 sm:mb-4">Thanks!</h2>
+                      <p className="text-gray-400 text-sm sm:text-lg mb-6 sm:mb-8">
+                        You rated it &quot;{feedbackRating}&quot;. Try another task or refine your result.
+                      </p>
+                      <button
+                        onClick={handleReset}
+                        className="min-h-[40px] sm:min-h-[48px] px-6 sm:px-10 py-3 sm:py-4 rounded-xl bg-[#34c759] text-black font-semibold text-base sm:text-lg hover:opacity-90 transition-opacity touch-manipulation"
+                      >
+                        Start over
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -1121,7 +1166,7 @@ export default function PearNavigator() {
               <div className="absolute inset-0 sm:inset-1 md:inset-2 lg:inset-3 rounded-[0.45rem] sm:rounded-xl md:rounded-2xl bg-[#3a3a3a] overflow-auto scrollbar-needed">
                 {MockComponent ? (
                   <MockFillWrapper>
-                    <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={handleNext} {...(phase === 'steps' && { onWrongTap: handleWrongTap })} showHighlight={phase === 'steps' && showHighlight} stepIdx={phase === 'steps' ? stepIdx : (task?.steps.length ?? 0)} {...(taskId ? { taskId } : {})} />
+                    <MockComponent {...(phase === 'steps' && step?.hotspotId ? { currentHotspotId: step.hotspotId } : {})} onStepComplete={isVariantB ? () => {} : handleNext} {...(phase === 'steps' && !isVariantB && { onWrongTap: handleWrongTap })} showHighlight={phase === 'steps' && showHighlight} stepIdx={phase === 'steps' ? stepIdx : (task?.steps.length ?? 0)} {...(taskId ? { taskId } : {})} />
                   </MockFillWrapper>
                 ) : null}
               </div>
