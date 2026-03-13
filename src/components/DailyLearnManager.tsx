@@ -24,7 +24,7 @@ type View = 'log' | 'analytics' | 'export' | 'sync'
 
 export default function DailyLearnManager() {
   const pathname = usePathname()
-  const isNotebook = pathname?.startsWith('/notebook')
+  const isDailyLog = pathname?.includes('daily-log')
   const [view, setView] = useState<View>('log')
   const [entries, setEntries] = useState<DailyLearnEntry[]>([])
   const [todayText, setTodayText] = useState('')
@@ -153,7 +153,7 @@ export default function DailyLearnManager() {
   }, [])
 
   const layout = (title: string, children: React.ReactNode) => (
-    <div className={`max-w-4xl mx-auto ${isNotebook ? 'notebook-line-paper rounded-lg p-6' : ''}`}>
+    <div className={`max-w-4xl mx-auto ${isDailyLog ? 'notebook-line-paper rounded-lg p-6' : ''}`}>
       {syncFailedBanner}
       <h1 className="text-4xl font-bold font-lora mb-8" style={{ color: 'var(--ink-text)' }}>{title}</h1>
       {children}
@@ -206,7 +206,7 @@ export default function DailyLearnManager() {
 
   if (view === 'log') {
     return (
-      <div className={`max-w-4xl mx-auto ${isNotebook ? 'notebook-line-paper rounded-lg p-6' : ''}`}>
+      <div className={`max-w-4xl mx-auto ${isDailyLog ? 'notebook-line-paper rounded-lg p-6' : ''}`}>
         {syncFailedBanner}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-bold font-lora" style={{ color: 'var(--ink-text)' }}>1 Sentence Everyday</h1>

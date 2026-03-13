@@ -15,6 +15,7 @@ export type GameCardGame = {
 type GameCardProps = {
   game: GameCardGame
   onComingSoonClick: () => void
+  linePaper?: boolean
 }
 
 const cardBase =
@@ -23,7 +24,8 @@ const cardBase =
   'hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2'
 
-export function GameCard({ game, onComingSoonClick }: GameCardProps) {
+export function GameCard({ game, onComingSoonClick, linePaper }: GameCardProps) {
+  const cardClass = cardBase + (linePaper ? ' notebook-line-paper' : '')
   const content = (
     <>
       <div className="mb-4 flex h-16 items-center justify-center">
@@ -47,14 +49,14 @@ export function GameCard({ game, onComingSoonClick }: GameCardProps) {
 
   if (!game.available) {
     return (
-      <button onClick={onComingSoonClick} className={cardBase}>
+      <button onClick={onComingSoonClick} className={cardClass}>
         {content}
       </button>
     )
   }
 
   return (
-    <Link href={game.href} className={cardBase}>
+    <Link href={game.href} className={cardClass}>
       {content}
     </Link>
   )
