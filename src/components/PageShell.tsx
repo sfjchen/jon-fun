@@ -53,7 +53,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
       className={`overflow-x-hidden ${fullBleed ? 'h-dynamic flex flex-col overflow-y-hidden' : 'min-h-screen'} ${outerLinePaper ? 'notebook-line-paper' : ''}`}
       style={outerLinePaper ? { color: 'var(--ink-text)' } : { backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
     >
-      <header className={`flex-none ${fullBleed && !useBigLogo ? 'px-3 py-2' : 'px-4 py-4 md:py-6'} ${!isHome ? 'border-b' : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
+      <header className={`flex-none ${fullBleed && !useBigLogo ? 'px-3 py-2' : 'px-4 py-4 md:py-6'} ${!isHome ? 'border-b' : ''} ${outerLinePaper ? 'bg-[var(--ink-paper)]' : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
         <div className="mx-auto max-w-6xl flex w-full items-center justify-between">
           <div className="flex-1" />
           <Link
@@ -97,7 +97,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
         className={
           fullBleed
             ? 'flex-1 min-h-0 w-full max-w-none px-0 flex flex-col'
-            : `mx-auto max-w-6xl px-4 ${isHome ? 'py-8' : 'py-6'} ${isNotebook ? 'notebook-line-paper min-h-[calc(100vh-6rem)]' : ''}`
+            : `mx-auto max-w-6xl px-4 ${isHome ? 'py-8' : 'py-6'} ${isNotebook ? 'min-h-[calc(100vh-6rem)]' : ''}`
         }
       >
         {title && !isHome && (
