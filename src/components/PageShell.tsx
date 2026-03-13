@@ -25,10 +25,10 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
 
   return (
     <div
-      className="min-h-screen overflow-x-hidden"
+      className={`overflow-x-hidden ${fullBleed ? 'h-dynamic flex flex-col' : 'min-h-screen'}`}
       style={{ backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
     >
-      <header className={`px-4 py-4 md:py-6 ${!isHome ? 'border-b' : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
+      <header className={`flex-none px-4 py-4 md:py-6 ${!isHome ? 'border-b' : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
         <div className={`mx-auto max-w-6xl flex items-center ${isHome ? 'justify-center' : 'justify-between'}`}>
           <Link
             href="/"
@@ -51,7 +51,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
       <main
         className={
           fullBleed
-            ? 'w-full max-w-none px-0'
+            ? 'flex-1 min-h-0 w-full max-w-none px-0 flex flex-col'
             : `mx-auto max-w-6xl px-4 ${isHome ? 'py-8' : 'py-6'}`
         }
       >
