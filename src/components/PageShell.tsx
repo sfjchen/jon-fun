@@ -40,11 +40,11 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
       className={`overflow-x-hidden ${fullBleed ? 'h-dynamic flex flex-col overflow-y-hidden' : 'min-h-screen'}`}
       style={{ backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
     >
-      <header className={`flex-none px-4 py-4 md:py-6 ${!isHome ? 'border-b' : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
+      <header className={`flex-none ${fullBleed ? 'px-3 py-2' : 'px-4 py-4 md:py-6'} ${!isHome ? 'border-b' : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
         <div className={`mx-auto max-w-6xl flex items-center ${isHome ? 'justify-center' : 'justify-between'}`}>
           <Link
             href="/"
-            className={`font-lora font-semibold hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded ${isHome ? 'text-4xl md:text-5xl lg:text-6xl' : ''}`}
+            className={`font-lora font-semibold hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded ${isHome ? 'text-4xl md:text-5xl lg:text-6xl' : fullBleed ? 'text-2xl sm:text-3xl' : ''}`}
             style={{ color: 'var(--ink-text)' }}
           >
             sfjc.dev

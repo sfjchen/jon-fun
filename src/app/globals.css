@@ -63,8 +63,30 @@
 
   /* Full viewport height for full-bleed layouts (mobile Safari: dvh) */
   .h-dynamic {
-    height: 100vh;
+    height: 100svh;
     height: 100dvh;
+  }
+
+  /* Show scrollbar only when needed, but keep gutter stable */
+  .scrollbar-needed {
+    overflow: auto;
+    scrollbar-gutter: stable both-edges;
+    -webkit-overflow-scrolling: touch;
+  }
+  .scrollbar-needed::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-needed::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.12);
+    border-radius: 4px;
+  }
+  .scrollbar-needed::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.35);
+    border-radius: 4px;
+  }
+  .scrollbar-needed::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.5);
   }
 
   /* Scrollbars always visible — use overflow: scroll so track is always reserved, never fades */

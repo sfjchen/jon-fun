@@ -357,10 +357,13 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
+- **1 Sentence Everyday**: Sync on visibility (immediate when tab visible again); 60s interval when visible, 1hr when hidden
+- **Pear Navigator mobile viewport pass**: Reduced full-bleed header height on game pages, removed extra safe-area padding from PearNavigator chrome, tightened mobile guide panel max-height (11–16vh), reduced simulator bezel/insets on small screens, lowered scale floor (`0.32`) to prevent mock cutout on narrow/tall devices, and added `scrollbar-needed` utility for overflow-only scrollbar rendering with stable gutter.
 - **Pear Navigator editor density**: Filled simulator space by increasing mock design size (`700x520`), compacting hotspot control heights, and switching forced `overflow-y-scroll` panels to `overflow-y-auto` so sidebars only scroll when truly needed and controls fit more naturally.
 
 **2025-03**
 
+- **1 Sentence Everyday**: Visibility-aware sync – 60s when tab visible, 1hr when hidden; sync on visibility (user returns to tab) to reduce server load
 - **1 Sentence Everyday**: Sync-failed alert – prominent banner on all views when saves to Supabase fail; initial + periodic sync set syncFailed; banner persists until retry succeeds
 - **Pear Navigator responsive**: Mobile/iPhone, narrow & wide laptop—min-h-dynamic (100dvh), safe-area toast, 44px touch targets, guide max-h so demo fits; docs/RESPONSIVE-BEST-PRACTICES.md
 - **Pear Navigator mobile fix**: PageShell fullBleed uses h-dynamic + flex so main gets viewport height; PearNavigator flex-1 fills; simulator no longer collapses to black empty space on iPhone
