@@ -959,6 +959,7 @@ export default function PearNavigator() {
   const stepStartTimeRef = useRef<number>(0)
   const sessionIdRef = useRef<string | null>(null)
   const stepTimesRef = useRef<number[]>([])
+  const variantRef = useRef<ABVariant | null>(null)
 
   const task = taskId ? TASKS[taskId] : null
   const step = task ? task.steps[stepIdx] : null
@@ -980,11 +981,12 @@ export default function PearNavigator() {
 
   const sendProgress = useCallback((opts: { completed?: boolean; rating?: FeedbackRating }) => {
     const sid = sessionIdRef.current
-    if (!sid || !variant || !taskId || !task) return
+    const v = variantRef.current ?? variant
+    if (!sid || !v || !taskId || !task) return
     const stepTimes = [...stepTimesRef.current]
     const body = {
       sessionId: sid,
-      variant,
+      variant: v,
       taskId,
       stepReached: opts.completed ? task.steps.length - 1 : stepIdx,
       stepTimes,
@@ -1009,7 +1011,9 @@ export default function PearNavigator() {
 
   const handleStart = useCallback(() => {
     if (!taskId) return
-    if (variant == null) setVariant(Math.random() < 0.5 ? 'a' : 'b')
+    const v: ABVariant = variant ?? (Math.random() < 0.5 ? 'a' : 'b')
+    if (variant == null) setVariant(v)
+    variantRef.current = v
     sessionIdRef.current = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `s-${Date.now()}-${Math.random().toString(36).slice(2)}`
     stepTimesRef.current = []
     setPhase('steps')
@@ -1054,6 +1058,7 @@ export default function PearNavigator() {
 
   const handleReset = useCallback(() => {
     sessionIdRef.current = null
+    variantRef.current = null
     setPhase('task')
     setTaskId(null)
     setStepIdx(0)
@@ -1066,12 +1071,13 @@ export default function PearNavigator() {
   useEffect(() => {
     const onVisibilityChange = () => {
       if (document.visibilityState !== 'hidden') return
-      if (phase !== 'steps' || !sessionIdRef.current || !variant || !taskId || !task) return
+      const v = variantRef.current ?? variant
+      if (phase !== 'steps' || !sessionIdRef.current || !v || !taskId || !task) return
       const partial = Math.round((Date.now() - stepStartTimeRef.current) / 1000)
       const stepTimes = [...stepTimesRef.current, partial]
       const body = {
         sessionId: sessionIdRef.current,
-        variant,
+        variant: v,
         taskId,
         stepReached: stepIdx,
         stepTimes,
