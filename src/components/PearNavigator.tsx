@@ -955,6 +955,9 @@ export default function PearNavigator() {
   const [variant, setVariant] = useState<ABVariant | null>(null)
   const [feedbackRating, setFeedbackRating] = useState<FeedbackRating | null>(null)
   const taskStartTimeRef = useRef<number>(0)
+  const stepStartTimeRef = useRef<number>(0)
+  const sessionIdRef = useRef<string | null>(null)
+  const stepTimesRef = useRef<number[]>([])
 
   const task = taskId ? TASKS[taskId] : null
   const step = task ? task.steps[stepIdx] : null
@@ -968,25 +971,63 @@ export default function PearNavigator() {
     return () => clearTimeout(t)
   }, [wrongTapToast])
 
+  const sendProgress = useCallback((opts: { completed?: boolean; rating?: FeedbackRating }) => {
+    const sid = sessionIdRef.current
+    if (!sid || !variant || !taskId || !task) return
+    const stepTimes = [...stepTimesRef.current]
+    const body = {
+      sessionId: sid,
+      variant,
+      taskId,
+      stepReached: opts.completed ? task.steps.length - 1 : stepIdx,
+      stepTimes,
+      completed: opts.completed ?? false,
+      rating: opts.rating,
+      totalSec: opts.completed ? Math.round((Date.now() - taskStartTimeRef.current) / 1000) : undefined,
+      stepsCount: opts.completed ? task.steps.length : undefined,
+    }
+    const url = '/api/pear-navigator/sessions'
+    if (opts.completed && navigator.sendBeacon) {
+      navigator.sendBeacon(url, new Blob([JSON.stringify(body)], { type: 'application/json' }))
+    } else {
+      fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).catch(() => {})
+    }
+  }, [variant, taskId, task, stepIdx])
+
+  useEffect(() => {
+    if (phase === 'steps' && stepIdx === 0 && sessionIdRef.current && variant && taskId && task) {
+      sendProgress({ completed: false })
+    }
+  }, [phase, stepIdx, variant, taskId, task, sendProgress])
+
   const handleStart = useCallback(() => {
     if (!taskId) return
     if (variant == null) setVariant(Math.random() < 0.5 ? 'a' : 'b')
+    sessionIdRef.current = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `s-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    stepTimesRef.current = []
     setPhase('steps')
     setStepIdx(0)
     setShowHighlight(true)
-    taskStartTimeRef.current = Date.now()
+    const now = Date.now()
+    taskStartTimeRef.current = now
+    stepStartTimeRef.current = now
   }, [taskId, variant])
 
   const handleNext = useCallback(() => {
     if (!task) return
+    const now = Date.now()
+    const stepDur = Math.round((now - stepStartTimeRef.current) / 1000)
+    stepTimesRef.current.push(stepDur)
+    stepStartTimeRef.current = now
     if (isLastStep) {
       setPhase('done')
       setShowHighlight(false)
     } else {
+      sendProgress({ completed: false })
       setStepIdx((i) => i + 1)
       setShowHighlight(true)
     }
-  }, [task, isLastStep])
+  }, [task, isLastStep, sendProgress])
 
   const handlePrev = useCallback(() => {
     if (stepIdx > 0) setStepIdx((i) => i - 1)
@@ -995,20 +1036,17 @@ export default function PearNavigator() {
   const handleWrongTap = useCallback(() => setWrongTapToast(true), [])
 
   const handleFeedback = useCallback((rating: FeedbackRating) => {
-    const totalMs = Date.now() - taskStartTimeRef.current
-    const totalSec = Math.round(totalMs / 1000)
-    const avgSec = task ? Math.round(totalMs / 1000 / task.steps.length) : 0
+    const now = Date.now()
+    const stepDur = Math.round((now - stepStartTimeRef.current) / 1000)
+    stepTimesRef.current.push(stepDur)
     setFeedbackRating(rating)
-    if (variant && taskId) {
-      fetch('/api/pear-navigator/results', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ variant, taskId, rating, totalSec, avgSecPerStep: avgSec, stepsCount: task?.steps.length ?? 0 }),
-      }).catch(() => {})
+    if (variant && taskId && task) {
+      sendProgress({ completed: true, rating })
     }
-  }, [variant, taskId, task])
+  }, [variant, taskId, task, sendProgress])
 
   const handleReset = useCallback(() => {
+    sessionIdRef.current = null
     setPhase('task')
     setTaskId(null)
     setStepIdx(0)
@@ -1016,6 +1054,26 @@ export default function PearNavigator() {
     setVariant(null)
     setFeedbackRating(null)
   }, [])
+
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState !== 'hidden') return
+      if (phase !== 'steps' || !sessionIdRef.current || !variant || !taskId || !task) return
+      const partial = Math.round((Date.now() - stepStartTimeRef.current) / 1000)
+      const stepTimes = [...stepTimesRef.current, partial]
+      const body = {
+        sessionId: sessionIdRef.current,
+        variant,
+        taskId,
+        stepReached: stepIdx,
+        stepTimes,
+        completed: false,
+      }
+      navigator.sendBeacon?.('/api/pear-navigator/sessions', new Blob([JSON.stringify(body)], { type: 'application/json' }))
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange)
+  }, [phase, variant, taskId, task, stepIdx])
 
   const MockComponent = task ? MOCK_COMPONENTS[task.mock] : null
 
