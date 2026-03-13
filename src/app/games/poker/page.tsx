@@ -1,11 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import PokerJoinForm from '@/components/PokerJoinForm'
 
 export default function PokerPage() {
   const router = useRouter()
+  const pathname = usePathname()
+  const base = pathname?.startsWith('/notebook') ? '/notebook' : ''
   const [mode, setMode] = useState<'create' | 'join'>('create')
   const [hostName, setHostName] = useState('')
   const [joinPin, setJoinPin] = useState('')
@@ -43,7 +45,7 @@ export default function PokerPage() {
       sessionStorage.setItem('poker_playerId', data.playerId || data.hostId)
       sessionStorage.setItem('poker_playerName', hostName.trim())
 
-      router.push(`/games/poker/lobby/${data.pin}`)
+      router.push(`${base}/games/poker/lobby/${data.pin}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create room')
       setLoading(false)
@@ -90,7 +92,7 @@ export default function PokerPage() {
       sessionStorage.setItem('poker_playerId', data.playerId)
       sessionStorage.setItem('poker_playerName', playerName.trim())
 
-      router.push(`/games/poker/lobby/${joinPin}`)
+      router.push(`${base}/games/poker/lobby/${joinPin}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to join room')
       setLoading(false)

@@ -44,6 +44,38 @@
 
 ---
 
+## Alternate Theme: Notebook (at `/notebook`)
+
+Same functionality as main site, different aesthetic. Applied when pathname starts with `/notebook` via `data-theme="notebook"`.
+
+### Color Palette
+
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `--nb-bg` | `#f9f5ed` | Page background (creamier) |
+| `--nb-text` | `#1a1a1a` | Primary text |
+| `--nb-muted` | `#6b6359` | Secondary |
+| `--nb-accent` | `#5c4a3d` | Links, CTAs (graphite/sepia) |
+| `--nb-border` | `#e8e2d8` | Dividers |
+| `--nb-paper` | `#f5f0e6` | Cards |
+
+### Typography
+
+- **Headings:** Caveat (handwritten, elegant). Applied via `[data-theme="notebook"] .font-lora { font-family: 'Caveat' }`.
+- **Body:** Charter (unchanged).
+
+### Doodles
+
+- `public/doodles/notebook/` — Simplified, pen-drawn variants (tmr, daily, pear, game24, jeopardy, chwazi, leaderboards, coming-soon, poker).
+- Notebook pages use these; main pages use `public/doodles/`.
+
+### Navigation
+
+- Main site: "Notebook" link → `/notebook`.
+- Notebook site: "Main" link → `/`, "← Home" → `/notebook`.
+
+---
+
 ## Related Docs
 
 - `docs/Website-Themes-Reference.md` — Alternative themes (Monolith, Charcoal, etc.)
