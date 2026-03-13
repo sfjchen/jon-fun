@@ -470,14 +470,14 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
                     <HotspotButton id="fig-text" currentHotspotId={currentHotspotId} onStepComplete={onStepComplete} {...(onWrongTap != null && { onWrongTap })} showHighlight={showHighlight}>
                       <div className={`rounded-full px-6 py-3 ${hasStyle ? 'px-16 py-8 text-xl' : 'px-6 py-3 text-base'} ${hasComponent && !hasFill ? `border-2 border-[#8b5cf6] ${hasAutoLayout ? 'bg-[#4c1d95]' : 'bg-[#8b5cf6]/20'}` : !hasFill ? `border border-white/30 ${hasAutoLayout ? 'bg-[#4a4a4a]' : 'bg-white/10'}` : ''} ${currentHotspotId === 'fig-text' ? 'ring-2 ring-[#34c759]/50' : ''}`} style={hasFill && mmFillOuter ? { backgroundColor: MM_FILL_COLORS.find((c) => c.id === mmFillOuter)?.bg ?? '#4c1d95', border: `2px solid ${MM_FILL_COLORS.find((c) => c.id === mmFillOuter)?.border ?? '#7c3aed'}` } : undefined}>
-                        {hasText && <span className="text-white font-medium">Project</span>}
+                        {hasText && <span className="text-white font-medium">Topic</span>}
                         {!hasText && <span className="text-white/40">Frame</span>}
                       </div>
                     </HotspotButton>
                   </div>
                 )}
                 {instanceCount > 0 && !hasStyle && (() => {
-                  const labels = ['Idea A', 'Idea B', 'Idea C', 'Idea D', 'Idea E', 'Idea F', 'Idea G', 'Idea H', 'Idea I']
+                  const labels = ['Node 1', 'Node 2', 'Node 3', 'Node 4', 'Node 5', 'Node 6', 'Node 7', 'Node 8', 'Node 9']
                   const fillColor = hasFill && mmFillOuter ? MM_FILL_COLORS.find((c) => c.id === mmFillOuter) : null
                   return (
                     <>
