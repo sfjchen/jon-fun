@@ -1,11 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import PokerTable from '@/components/PokerTable'
 
 export default function PokerTablePage({ params }: { params: Promise<{ pin: string }> }) {
   const router = useRouter()
+  const pathname = usePathname()
+  const base = pathname?.startsWith('/notebook') ? '/notebook' : ''
   const [pin, setPin] = useState<string>('')
 
   useEffect(() => {
@@ -21,13 +23,12 @@ export default function PokerTablePage({ params }: { params: Promise<{ pin: stri
   }
 
   const handleBack = () => {
-    // Clear session storage when leaving game
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('poker_hostId')
       sessionStorage.removeItem('poker_playerId')
       sessionStorage.removeItem('poker_playerName')
     }
-    router.push('/games/poker')
+    router.push(`${base}/games/poker`)
   }
 
   return (

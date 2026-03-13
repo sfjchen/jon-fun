@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap');
 @import "tailwindcss";
 
 /* Ink & Paper design tokens — cream + burgundy palette */
@@ -11,6 +12,30 @@
   --ink-paper: #f5f1eb;
 }
 
+/* Notebook theme tokens — creamier paper, graphite accent */
+:root {
+  --nb-bg: #f9f5ed;
+  --nb-text: #1a1a1a;
+  --nb-muted: #6b6359;
+  --nb-accent: #5c4a3d;
+  --nb-border: #e8e2d8;
+  --nb-paper: #f5f0e6;
+}
+
+/* Notebook theme: map ink vars to nb vars */
+[data-theme="notebook"] {
+  --ink-bg: var(--nb-bg);
+  --ink-text: var(--nb-text);
+  --ink-muted: var(--nb-muted);
+  --ink-accent: var(--nb-accent);
+  --ink-border: var(--nb-border);
+  --ink-paper: var(--nb-paper);
+}
+
+[data-theme="notebook"] .font-lora {
+  font-family: 'Caveat', cursive;
+}
+
 @theme {
   --color-ink-bg: #faf6f0;
   --color-ink-text: #1a1a1a;
@@ -19,6 +44,7 @@
   --color-ink-border: #e8e2da;
   --color-ink-paper: #f5f1eb;
   --font-lora: 'Lora', serif;
+  --font-caveat: 'Caveat', cursive;
   --font-charter: Charter, 'Bitstream Charter', Georgia, serif;
 }
 
