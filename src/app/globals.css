@@ -61,6 +61,12 @@
     bottom: calc(2rem + env(safe-area-inset-bottom, 0));
   }
 
+  /* Full viewport height for full-bleed layouts (mobile Safari: dvh) */
+  .h-dynamic {
+    height: 100vh;
+    height: 100dvh;
+  }
+
   /* Header Section */
   .header-section {
     background-color: rgb(30 58 138);
