@@ -16,6 +16,7 @@ type GameCardProps = {
   game: GameCardGame
   onComingSoonClick: () => void
   linePaper?: boolean
+  compact?: boolean
 }
 
 const cardBase =
@@ -24,21 +25,22 @@ const cardBase =
   'hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2'
 
-export function GameCard({ game, onComingSoonClick, linePaper }: GameCardProps) {
-  const cardClass = cardBase + (linePaper ? ' bg-transparent h-full min-h-0 flex flex-col p-[30px]' : ' p-6')
+export function GameCard({ game, onComingSoonClick, linePaper, compact }: GameCardProps) {
+  const useCompact = compact ?? !linePaper
+  const cardClass = cardBase + (linePaper ? ' bg-transparent h-full min-h-0 flex flex-col' : '') + (useCompact ? ' p-6' : ' p-[30px]')
   const content = (
     <>
-      <div className={`flex h-16 items-center justify-center shrink-0 ${linePaper ? 'mb-[30px]' : 'mb-4'}`}>
+      <div className={`flex h-16 items-center justify-center shrink-0 ${useCompact ? 'mb-4' : 'mb-[30px]'}`}>
         {game.icon.startsWith('/') ? (
           <Image src={game.icon} alt={game.title} width={64} height={64} className="h-14 w-14 sm:h-16 sm:w-16 object-contain drop-shadow-lg" priority />
         ) : (
           <span className="text-5xl leading-none">{game.icon}</span>
         )}
       </div>
-      <h2 className={`font-lora text-xl font-semibold ${linePaper ? 'mb-[30px]' : 'mb-2'}`} style={{ color: 'var(--ink-text)' }}>
+      <h2 className={`font-lora text-xl font-semibold ${useCompact ? 'mb-2' : 'mb-[30px]'}`} style={{ color: 'var(--ink-text)' }}>
         {game.title}
       </h2>
-      <p className={`text-sm flex-1 min-h-0 ${linePaper ? 'mb-[30px] line-clamp-3' : 'mb-4 line-clamp-2'}`} style={{ color: 'var(--ink-muted)' }}>
+      <p className={`text-sm flex-1 min-h-0 ${useCompact ? 'mb-4 line-clamp-2' : 'mb-[30px] line-clamp-3'}`} style={{ color: 'var(--ink-muted)' }}>
         {game.description}
       </p>
       <div className="text-sm" style={{ color: 'var(--ink-accent)' }}>
