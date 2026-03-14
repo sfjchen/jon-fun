@@ -41,6 +41,7 @@
 
 - **PageShell:** sfjc.dev header, ← Home on subpages. No header border on home.
 - **Content:** `max-w-6xl mx-auto px-4`. Full-bleed for Pear Navigator, Poker lobby/table.
+- **Header exceptions (own-theme pages):** Pear Navigator and Chwazi mobile use compact header (px-3 py-2, smaller logo); all other theme2 pages use standardized header (px-4 py-3 md:py-4, text-3xl md:text-4xl).
 
 ---
 

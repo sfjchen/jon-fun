@@ -65,26 +65,21 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
 
   const isCardPage = (pathname?.includes('/games/jeopardy') || pathname?.includes('/games/chwazi') || pathname?.includes('/leaderboards')) ?? false
   const outerLinePaper = isNotebook && !pearNav && !isCardPage
+  const useCompactHeader = fullBleed && !useBigLogo
+  const headerPadding = useCompactHeader ? 'px-3 py-2' : isNotebook ? 'px-4 py-3 md:py-4' : 'px-4 py-3 md:py-4'
+  const logoSize = useBigLogo ? 'text-5xl md:text-6xl lg:text-7xl' : useCompactHeader ? 'text-2xl sm:text-3xl' : 'text-3xl md:text-4xl'
   return (
     <div
       data-theme={isNotebook ? 'notebook' : undefined}
       className={`overflow-x-hidden ${fullBleed ? 'h-dynamic flex flex-col overflow-y-hidden' : 'min-h-screen'} ${outerLinePaper ? 'notebook-line-paper' : ''}`}
       style={outerLinePaper ? { color: 'var(--ink-text)' } : { backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
     >
-      <header className={`flex-none ${fullBleed && !useBigLogo ? 'px-3 py-2' : isNotebook ? 'px-4 py-3 md:py-4' : 'px-4 py-4 md:py-6'} ${!isHome && !outerLinePaper ? 'border-b' : ''} ${outerLinePaper ? 'bg-[var(--ink-paper)] h-[90px] flex flex-col justify-center' : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
+      <header className={`flex-none ${headerPadding} ${!isHome && !outerLinePaper ? 'border-b' : ''} ${outerLinePaper ? 'bg-[var(--ink-paper)] h-[90px] flex flex-col justify-center' : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
         <div className="mx-auto max-w-6xl flex w-full items-center justify-between">
           <div className="flex-1" />
           <Link
             href={homeHref}
-            className={`font-lora font-semibold hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded shrink-0 ${
-              useBigLogo
-                ? 'text-5xl md:text-6xl lg:text-7xl'
-                : isHome
-                  ? 'text-4xl md:text-5xl lg:text-6xl'
-                  : fullBleed
-                    ? 'text-2xl sm:text-3xl'
-                    : ''
-            }`}
+            className={`font-lora font-semibold hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded shrink-0 ${logoSize}`}
             style={{ color: 'var(--ink-text)' }}
           >
             sfjc.dev
