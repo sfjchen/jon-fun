@@ -22,7 +22,7 @@ npm run dev
 
 ## 🎨 Design System
 
-**Theme:** Ink & Paper (cream + burgundy). See **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)** for color palette, typography, and guidelines. Use `var(--ink-*)` tokens from `globals.css`. Game-specific themes: Poker (green felt), Pear Navigator (dark). **Default theme** (notebook) at `/`—brighter cream, Patrick Hand, line paper. **Theme 2** (Ink & Paper) at `/theme2`—burgundy accent, Lora/Charter.
+**Theme:** Ink & Paper (cream + burgundy). See **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)** for color palette, typography, and guidelines. Use `var(--ink-*)` tokens from `globals.css`. Game-specific themes: Poker (green felt), Pear Navigator (dark). **Default theme** (notebook) at `/`—brighter cream, Patrick Hand, line paper. **Theme 2** (Ink & Paper) at `/theme2`—burgundy accent, Lora/Charter. **Own-theme pages:** Chwazi mobile and Pear Navigator always use their own theme (no notebook styling); theme switch hidden on Chwazi mobile.
 
 ---
 
@@ -357,6 +357,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
+- **Chwazi mobile own-theme**: Chwazi on mobile (≤767px) always uses theme2 styling (pre-notebook look); fullBleed layout; theme switch hidden. Chwazi mobile and Pear Navigator always have their own theme—documented in Design System.
 - **Theme switch preserves path**: Theme 2 / Main links now switch theme but stay on same page (e.g. /games/tmr ↔ /theme2/games/tmr); added theme2 pear-navigator/results route
 - **Pear Navigator variant B demo content**: When variant B (Next step flow), auto-show example text on business card (Alex Chen, Product Designer, alex@studio.co) and example paint strokes (blue + yellow) on canvas to demonstrate capability
 - **Pear Navigator A/B variant tracking**: variantRef ensures variant is always available for sendProgress/visibility beacon; assignment at Start; validated in sessions/results APIs

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 type PageShellProps = {
   children: React.ReactNode
@@ -10,7 +10,8 @@ type PageShellProps = {
   showBack?: boolean
 }
 
-function isFullBleed(pathname: string): boolean {
+function isFullBleed(pathname: string, isChwaziMobile?: boolean): boolean {
+  if (isChwaziMobile) return true
   return (
     pathname === '/games/pear-navigator' ||
     pathname.startsWith('/games/poker/lobby/') ||
@@ -25,17 +26,31 @@ function isPearNavigator(pathname: string): boolean {
   return pathname.includes('pear-navigator')
 }
 
+function isChwaziPath(pathname: string): boolean {
+  return pathname?.includes('/games/chwazi') ?? false
+}
+
 export function PageShell({ children, title, showBack }: PageShellProps) {
   const pathname = usePathname()
+  const [isMobile, setIsMobile] = useState(false)
   const isTheme2 = pathname.startsWith('/theme2')
-  const isNotebook = !isTheme2
+  const chwaziMobile = isChwaziPath(pathname ?? '') && isMobile
+  const isNotebook = !isTheme2 && !chwaziMobile
   const isHome = pathname === '/' || pathname === '/theme2'
   const showBackLink = showBack ?? !isHome
-  const fullBleed = isFullBleed(pathname)
+  const fullBleed = isFullBleed(pathname ?? '', chwaziMobile)
   const pearNav = isPearNavigator(pathname ?? '')
   const homeHref = isTheme2 ? '/theme2' : '/'
   const themeSwitchHref = isNotebook ? `/theme2${pathname === '/' ? '' : (pathname ?? '')}` : (pathname?.replace(/^\/theme2/, '') || '/')
   const useBigLogo = isNotebook && !pearNav
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)')
+    setIsMobile(mq.matches)
+    const fn = () => setIsMobile(mq.matches)
+    mq.addEventListener('change', fn)
+    return () => mq.removeEventListener('change', fn)
+  }, [])
 
   useEffect(() => {
     if (!fullBleed) return
@@ -48,7 +63,8 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
     }
   }, [fullBleed])
 
-  const outerLinePaper = isNotebook && !pearNav
+  const isCardPage = (pathname?.includes('/games/jeopardy') || pathname?.includes('/games/chwazi') || pathname?.includes('/leaderboards')) ?? false
+  const outerLinePaper = isNotebook && !pearNav && !isCardPage
   return (
     <div
       data-theme={isNotebook ? 'notebook' : undefined}
@@ -83,15 +99,6 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
                 ← Home
               </Link>
             )}
-            {isNotebook ? (
-              <Link href={themeSwitchHref} className="text-sm hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded" style={{ color: 'var(--ink-accent)' }}>
-                Theme 2
-              </Link>
-            ) : (
-              <Link href={themeSwitchHref} className="text-sm hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded" style={{ color: 'var(--ink-accent)' }}>
-                Main
-              </Link>
-            )}
           </div>
         </div>
       </header>
@@ -109,6 +116,15 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
         )}
         {children}
       </main>
+      {!chwaziMobile && (
+        <Link
+          href={themeSwitchHref}
+          className="fixed right-4 z-40 text-sm px-3 py-2 rounded-lg bg-[var(--ink-paper)] border border-[var(--ink-border)] shadow-md hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2"
+          style={{ color: 'var(--ink-accent)', bottom: 'calc(1rem + env(safe-area-inset-bottom, 0))' }}
+        >
+          {isNotebook ? 'Theme 2' : 'Main'}
+        </Link>
+      )}
     </div>
   )
 }
