@@ -22,7 +22,7 @@ npm run dev
 
 ## 🎨 Design System
 
-**Theme:** Ink & Paper (cream + burgundy). See **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)** for color palette, typography, and guidelines. Use `var(--ink-*)` tokens from `globals.css`. Game-specific themes: Poker (green felt), Pear Navigator (dark). **Default theme** (notebook) at `/`—brighter cream, Patrick Hand, line paper. **Theme 2** (Ink & Paper) at `/theme2`—burgundy accent, Lora/Charter. **Own-theme pages:** Chwazi mobile and Pear Navigator always use their own theme (no notebook styling); theme switch hidden on Chwazi mobile.
+**Theme:** Ink & Paper (cream + burgundy). See **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)** for color palette, typography, and guidelines. Use `var(--ink-*)` tokens from `globals.css`. Game-specific themes: Poker (green felt), Pear Navigator (dark). **Default theme** (notebook) at `/`—brighter cream, Patrick Hand, line paper. **Theme 2** (Ink & Paper) at `/theme2`—burgundy accent, Lora/Charter. **Own-theme pages:** Chwazi mobile and Pear Navigator always use their own theme (no notebook styling); theme switch hidden on Chwazi mobile. These pages use compact header; all other theme2 pages use standardized header (see docs/DESIGN-SYSTEM.md).
 
 ---
 
@@ -357,6 +357,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
+- **Theme2 header standardized**: All theme2 pages (except Pear Navigator, Chwazi mobile, Poker lobby/table) use same header (px-4 py-3 md:py-4, logo text-3xl md:text-4xl); own-theme pages keep compact header; documented in DESIGN-SYSTEM.md.
 - **Theme switch + header + cards**: Theme switch fixed bottom-right on all pages (theme1 and theme2); main-theme header shorter (py-3 md:py-4, min-h-80px); notebook home cards use compact size (gap-6, p-6) to match theme2.
 - **Chwazi mobile own-theme**: Chwazi on mobile (≤767px) always uses theme2 styling (pre-notebook look); fullBleed layout; theme switch hidden. Chwazi mobile and Pear Navigator always have their own theme—documented in Design System.
 - **Theme switch preserves path**: Theme 2 / Main links now switch theme but stay on same page (e.g. /games/tmr ↔ /theme2/games/tmr); added theme2 pear-navigator/results route
