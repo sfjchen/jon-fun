@@ -34,7 +34,7 @@ export default function Home() {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-x-6 gap-y-[30px] md:grid-cols-2 lg:grid-cols-3 max-w-6xl [grid-auto-rows:240px]">
+      <div className="grid grid-cols-1 gap-x-6 gap-y-[30px] md:grid-cols-2 lg:grid-cols-3 max-w-6xl">
         {items.map((item) => (
           <GameCard key={item.id} game={item} onComingSoonClick={() => setShowComingSoon(true)} linePaper />
         ))}
