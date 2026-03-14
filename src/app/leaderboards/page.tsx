@@ -19,8 +19,8 @@ export default function LeaderboardsPage() {
       </h1>
 
       <div
-        className="rounded-lg border p-[30px] bg-transparent"
-        style={{ borderColor: 'var(--ink-border)' }}
+        className="rounded-lg border p-[30px]"
+        style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
       >
         <div className="mb-[30px]">
           <Image src="/doodles/notebook/coming-soon.svg" alt="" width={64} height={64} className="h-16 w-16" />

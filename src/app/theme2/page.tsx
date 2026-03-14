@@ -6,15 +6,15 @@ import { GameCard } from '@/components/GameCard'
 import type { GameCardGame } from '@/components/GameCard'
 
 const items: GameCardGame[] = [
-  { id: 'tmr', title: 'TMR System', description: 'Targeted Memory Reactivation for enhanced learning and memory consolidation', icon: '/doodles/tmr.svg', href: '/theme2/games/tmr', available: true },
-  { id: 'daily-log', title: '1 Sentence Everyday', description: 'Log one sentence (or more) per day; view history, calendar, and export', icon: '/doodles/daily.svg', href: '/theme2/games/daily-log', available: true },
-  { id: 'pear-navigator', title: 'Pear Navigator', description: 'Step-by-step guide with AI-style highlight overlay for creative apps (Procreate, Figma)', icon: '/doodles/pear.svg', href: '/theme2/games/pear-navigator', available: true },
-  { id: '24', title: '24 (Jon\'s favorite)', description: 'Use 4 numbers and basic arithmetic to make 24', icon: '/doodles/game24.svg', href: '/theme2/games/24', available: true },
-  { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom Jeopardy boards locally', icon: '/doodles/jeopardy.svg', href: '/theme2/games/jeopardy', available: true },
-  { id: 'poker', title: 'Texas Hold\'em', description: 'Poker chip tracker with real-time multiplayer lobbies', icon: '/doodles/poker.svg', href: '/theme2/games/poker', available: true },
-  { id: 'chwazi', title: 'Chwazi Finger Chooser', description: 'Place fingers on screen to randomly select a winner', icon: '/doodles/chwazi.svg', href: '/theme2/games/chwazi', available: true },
-  { id: 'leaderboards', title: 'Leaderboards', description: 'See the best scores and compete with others', icon: '/doodles/leaderboards.svg', href: '/theme2/leaderboards', available: true },
-  { id: 'coming-soon', title: 'Coming Soon', description: 'More brain games are in development', icon: '/doodles/coming-soon.svg', href: '#', available: false },
+  { id: 'tmr', title: 'TMR System', description: 'Targeted Memory Reactivation for learning and sleep', icon: '/doodles/tmr.svg', href: '/theme2/games/tmr', available: true },
+  { id: 'daily-log', title: '1 Sentence Everyday', description: 'One sentence per day; history, calendar, export', icon: '/doodles/daily.svg', href: '/theme2/games/daily-log', available: true },
+  { id: 'pear-navigator', title: 'Pear Navigator', description: 'Step-by-step guides for Procreate, Figma', icon: '/doodles/pear.svg', href: '/theme2/games/pear-navigator', available: true },
+  { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: '/doodles/game24.svg', href: '/theme2/games/24', available: true },
+  { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom boards locally', icon: '/doodles/jeopardy.svg', href: '/theme2/games/jeopardy', available: true },
+  { id: 'poker', title: 'Texas Hold\'em', description: 'Chip tracker with multiplayer lobbies', icon: '/doodles/poker.svg', href: '/theme2/games/poker', available: true },
+  { id: 'chwazi', title: 'Chwazi Finger Chooser', description: 'Touch screen to pick a winner', icon: '/doodles/chwazi.svg', href: '/theme2/games/chwazi', available: true },
+  { id: 'leaderboards', title: 'Leaderboards', description: 'Scores and rankings', icon: '/doodles/leaderboards.svg', href: '/theme2/leaderboards', available: true },
+  { id: 'coming-soon', title: 'Coming Soon', description: 'More brain games in development', icon: '/doodles/coming-soon.svg', href: '#', available: false },
 ]
 
 const futureFeatures = [
@@ -40,12 +40,12 @@ export default function Theme2Home() {
       </div>
 
       {showComingSoon && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 p-4">
           <div
             className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg border p-8"
             style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
           >
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-4 flex items-center justify-between">
               <h2 className="font-lora text-2xl font-semibold flex items-center gap-2" style={{ color: 'var(--ink-text)' }}>
                 <Image src="/doodles/coming-soon.svg" alt="" width={32} height={32} className="h-8 w-8" />
                 Coming Soon
@@ -60,11 +60,11 @@ export default function Theme2Home() {
               </button>
             </div>
 
-            <p className="mb-6" style={{ color: 'var(--ink-muted)' }}>
+            <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>
               We&apos;re working hard to bring you these exciting new features:
             </p>
 
-            <div className="mb-8 grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-2">
               {futureFeatures.map((feature, index) => (
                 <div
                   key={index}
