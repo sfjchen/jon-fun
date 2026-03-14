@@ -34,6 +34,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
   const fullBleed = isFullBleed(pathname)
   const pearNav = isPearNavigator(pathname ?? '')
   const homeHref = isTheme2 ? '/theme2' : '/'
+  const themeSwitchHref = isNotebook ? `/theme2${pathname === '/' ? '' : (pathname ?? '')}` : (pathname?.replace(/^\/theme2/, '') || '/')
   const useBigLogo = isNotebook && !pearNav
 
   useEffect(() => {
@@ -83,11 +84,11 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
               </Link>
             )}
             {isNotebook ? (
-              <Link href="/theme2" className="text-sm hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded" style={{ color: 'var(--ink-accent)' }}>
+              <Link href={themeSwitchHref} className="text-sm hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded" style={{ color: 'var(--ink-accent)' }}>
                 Theme 2
               </Link>
             ) : (
-              <Link href="/" className="text-sm hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded" style={{ color: 'var(--ink-accent)' }}>
+              <Link href={themeSwitchHref} className="text-sm hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded" style={{ color: 'var(--ink-accent)' }}>
                 Main
               </Link>
             )}

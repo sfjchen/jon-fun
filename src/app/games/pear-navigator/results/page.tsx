@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 type SessionRow = {
@@ -85,6 +86,8 @@ function chiSquareRatings(a: Record<string, number>, b: Record<string, number>):
 }
 
 export default function PearNavigatorResultsPage() {
+  const pathname = usePathname()
+  const base = pathname?.startsWith('/theme2') ? '/theme2/games/pear-navigator' : '/games/pear-navigator'
   const [rows, setRows] = useState<SessionRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -111,7 +114,7 @@ export default function PearNavigatorResultsPage() {
     return (
       <div className="mx-auto max-w-4xl px-4 py-12">
         <p className="text-red-500">{error}</p>
-        <Link href="/games/pear-navigator" className="mt-4 inline-block text-[var(--ink-accent)] hover:underline">
+        <Link href={base} className="mt-4 inline-block text-[var(--ink-accent)] hover:underline">
           ← Back to Pear Navigator
         </Link>
       </div>
@@ -161,7 +164,7 @@ export default function PearNavigatorResultsPage() {
         <h1 className="text-2xl font-bold" style={{ color: 'var(--ink-text)' }}>
           Pear Navigator A/B Test Results
         </h1>
-        <Link href="/games/pear-navigator" className="text-sm hover:opacity-80" style={{ color: 'var(--ink-accent)' }}>
+        <Link href={base} className="text-sm hover:opacity-80" style={{ color: 'var(--ink-accent)' }}>
           ← Back to demo
         </Link>
       </div>
