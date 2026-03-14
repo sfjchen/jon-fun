@@ -52,7 +52,7 @@
   font-family: 'Patrick Hand', cursive;
 }
 
-/* Notebook line paper — single global source, fixed to viewport so lines align everywhere; hidden on laptop/desktop */
+/* Notebook line paper — single global source, fixed to viewport so lines align everywhere */
 .notebook-line-paper {
   background-color: var(--ink-paper);
   background-image: repeating-linear-gradient(
@@ -62,12 +62,6 @@
     rgba(26, 26, 26, 0.02) 31px
   );
   background-attachment: fixed;
-}
-@media (min-width: 768px) {
-  .notebook-line-paper {
-    background-image: none;
-    background-color: var(--ink-bg);
-  }
 }
 
 @theme {
