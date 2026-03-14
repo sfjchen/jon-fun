@@ -38,7 +38,7 @@ export function GameCard({ game, onComingSoonClick, linePaper }: GameCardProps) 
       <h2 className={`font-lora text-xl font-semibold ${linePaper ? 'mb-[30px]' : 'mb-2'}`} style={{ color: 'var(--ink-text)' }}>
         {game.title}
       </h2>
-      <p className={`line-clamp-2 text-sm flex-1 min-h-0 ${linePaper ? 'mb-[30px]' : 'mb-4'}`} style={{ color: 'var(--ink-muted)' }}>
+      <p className={`text-sm flex-1 min-h-0 ${linePaper ? 'mb-[30px] line-clamp-3' : 'mb-4 line-clamp-2'}`} style={{ color: 'var(--ink-muted)' }}>
         {game.description}
       </p>
       <div className="text-sm" style={{ color: 'var(--ink-accent)' }}>
