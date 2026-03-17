@@ -62,7 +62,7 @@ export default function DailyLearnManager() {
       .finally(() => setSyncing(false))
   }, [refresh])
 
-  // Periodic sync: 60s when tab visible, 1hr when hidden. Sync on visibility (user returns to tab)
+  // Periodic sync: 5 min when tab visible, 1hr when hidden. Sync on visibility (user returns to tab)
   useEffect(() => {
     const runSync = () => {
       syncWithServer().then((r) => {
@@ -73,7 +73,7 @@ export default function DailyLearnManager() {
     let id: ReturnType<typeof setInterval> | null = null
     const schedule = () => {
       if (id) clearInterval(id)
-      const ms = document.visibilityState === 'visible' ? 60_000 : 3_600_000
+      const ms = document.visibilityState === 'visible' ? 300_000 : 3_600_000
       id = setInterval(() => {
         runSync()
         schedule()
