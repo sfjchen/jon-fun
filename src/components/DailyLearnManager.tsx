@@ -93,7 +93,14 @@ export default function DailyLearnManager() {
 
   useEffect(() => {
     const d = getTodayDate()
-    setTodayText(getEntryByDate(d)?.text ?? '')
+    const fromStorage = getEntryByDate(d)?.text ?? ''
+    setTodayText((prev) => {
+      // Load from storage when empty and storage has content (initial load)
+      if (!prev && fromStorage) return fromStorage
+      // Preserve user's draft when it differs from storage (typing, not yet saved)
+      if (prev && prev !== fromStorage) return prev
+      return fromStorage
+    })
   }, [view, entries])
 
   useEffect(() => {

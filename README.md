@@ -357,6 +357,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
+- **1 Sentence Everyday draft preservation**: Periodic sync (60s) no longer overwrites unsaved draft; todayText only updated from storage when empty (initial load) or when it matches stored value (post-save).
 - **Theme2 header standardized**: All theme2 pages (except Pear Navigator, Chwazi mobile, Poker lobby/table) use same header (px-4 py-3 md:py-4, logo text-3xl md:text-4xl); own-theme pages keep compact header; documented in DESIGN-SYSTEM.md.
 - **Theme switch + header + cards**: Theme switch fixed bottom-right on all pages (theme1 and theme2); main-theme header shorter (py-3 md:py-4, min-h-80px); notebook home cards use compact size (gap-6, p-6) to match theme2.
 - **Chwazi mobile own-theme**: Chwazi on mobile (≤767px) always uses theme2 styling (pre-notebook look); fullBleed layout; theme switch hidden. Chwazi mobile and Pear Navigator always have their own theme—documented in Design System.
