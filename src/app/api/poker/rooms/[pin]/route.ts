@@ -185,22 +185,46 @@ export async function POST(
         // Determine blind structure based on player count
         const playerCount = players.length
         const useSingleBlind = playerCount <= 3 // Only big blind for 2-3 players
-        
+        const sb = useSingleBlind ? 0 : room.small_blind
+        const bb = room.big_blind
+
         // Calculate blind positions
         let smallBlindPosition = -1
         let bigBlindPosition = 0
         let actionOnPosition = 1
-        
+
         if (useSingleBlind) {
-          // Only big blind, no small blind
           bigBlindPosition = 0
           actionOnPosition = 1
         } else {
-          // Standard: small blind, big blind, then action
           smallBlindPosition = 0
           bigBlindPosition = 1
           actionOnPosition = 2
         }
+
+        // Give starting chips (100 big blinds) and post blinds
+        const startingChips = 100 * bb
+        for (const p of players) {
+          let chips = startingChips
+          let currentBet = 0
+          if (p.position === smallBlindPosition && p.position === bigBlindPosition) {
+            chips = startingChips - sb - bb
+            currentBet = sb + bb
+          } else if (p.position === smallBlindPosition) {
+            chips = startingChips - sb
+            currentBet = sb
+          } else if (p.position === bigBlindPosition) {
+            chips = startingChips - bb
+            currentBet = bb
+          }
+          await supabase
+            .from('poker_players')
+            .update({ chips, current_bet: currentBet })
+            .eq('room_pin', pin)
+            .eq('player_id', p.player_id)
+        }
+
+        const potMain = sb + bb
 
         // Initialize game state
         const { error: stateError } = await supabase
@@ -209,14 +233,14 @@ export async function POST(
             room_pin: pin,
             hand_number: 1,
             betting_round: 'pre-flop',
-            current_bet: room.big_blind,
+            current_bet: bb,
             dealer_position: 0,
             small_blind_position: useSingleBlind ? -1 : smallBlindPosition,
             big_blind_position: bigBlindPosition,
             action_on: actionOnPosition < playerCount ? actionOnPosition : 0,
-            small_blind: useSingleBlind ? 0 : room.small_blind,
-            big_blind: room.big_blind,
-            pot_main: 0,
+            small_blind: sb,
+            big_blind: bb,
+            pot_main: potMain,
             pot_side_pots: [],
             community_cards: [],
             is_game_active: true,

@@ -103,6 +103,92 @@ export async function POST(request: NextRequest) {
         ? Math.max(gameState.current_bet ?? 0, (player.current_bet ?? 0) + actionAmount)
         : gameState.current_bet
 
+    // Add bet to pot for any action that puts chips in
+    const addToPot = actionAmount
+    const newPotMain = (gameState.pot_main ?? 0) + addToPot
+
+    // Fetch all players to compute next action_on
+    const { data: allPlayers } = await supabase
+      .from('poker_players')
+      .select('position, has_folded, is_all_in, has_acted')
+      .eq('room_pin', pin)
+      .order('position', { ascending: true })
+
+    const players = allPlayers || []
+    const canAct = (p: { has_folded?: boolean; is_all_in?: boolean }) =>
+      !p.has_folded && !p.is_all_in
+
+    // After this action, get updated has_acted for current player
+    const updatedPlayerActed = true
+    const updatedPlayerFolded = action === 'fold'
+    const updatedPlayerAllIn = action !== 'fold' && player.chips - actionAmount <= 0
+
+    const stillCanAct = (p: { position: number; has_folded?: boolean; is_all_in?: boolean; has_acted?: boolean }) => {
+      if (p.position === player.position) {
+        return !updatedPlayerFolded && !updatedPlayerAllIn
+      }
+      return canAct(p)
+    }
+
+    const hasActedAfter = (p: { position: number; has_acted?: boolean }) => {
+      if (p.position === player.position) return updatedPlayerActed
+      return p.has_acted ?? false
+    }
+
+    const ROUNDS = ['pre-flop', 'flop', 'turn', 'river'] as const
+    const roundIdx = ROUNDS.indexOf((gameState.betting_round as (typeof ROUNDS)[number]) ?? 'pre-flop')
+    const nextRound =
+      roundIdx >= 0 && roundIdx < 3 ? ROUNDS[roundIdx + 1]! : gameState.betting_round
+
+    const remainingCanAct = players.filter(stillCanAct)
+    const allActed = remainingCanAct.every((p) => hasActedAfter(p))
+    const onlyOneLeft = remainingCanAct.length <= 1
+
+    let nextActionOn = gameState.action_on
+    let nextBettingRound = gameState.betting_round
+    let nextCurrentBet = newCurrentBet
+    const nextPotMain = newPotMain
+    let resetHasActed = false
+
+    if (allActed || onlyOneLeft) {
+      // Advance to next betting round (or hand complete)
+      nextBettingRound = nextRound
+      nextCurrentBet = 0
+      resetHasActed = true
+      if (roundIdx < 3) {
+        // First to act post-flop: left of dealer (use stillCanAct to account for current player's action)
+        const dealerPos = gameState.dealer_position ?? 0
+        for (let i = 1; i <= 12; i++) {
+          const pos = (dealerPos + i) % 12
+          const p = players.find((x) => x.position === pos)
+          if (p && stillCanAct(p)) {
+            nextActionOn = pos
+            break
+          }
+        }
+      } else {
+        // River complete, hand over
+        nextActionOn = -1
+      }
+    } else {
+      // Advance to next player
+      for (let i = 1; i <= 12; i++) {
+        const pos = (gameState.action_on + i) % 12
+        const p = players.find((x) => x.position === pos)
+        if (p && stillCanAct({ ...p, has_acted: p.position === player.position ? updatedPlayerActed : p.has_acted })) {
+          nextActionOn = pos
+          break
+        }
+      }
+    }
+
+    const stateUpdate: Record<string, unknown> = {
+      current_bet: nextCurrentBet,
+      pot_main: nextPotMain,
+      action_on: nextActionOn,
+      betting_round: nextBettingRound,
+    }
+
     const dbUpdates = [
       supabase.from('poker_actions').insert({
         room_pin: pin,
@@ -116,13 +202,17 @@ export async function POST(request: NextRequest) {
         .from('poker_rooms')
         .update({ last_activity: now })
         .eq('pin', pin),
+      supabase
+        .from('poker_game_state')
+        .update(stateUpdate)
+        .eq('room_pin', pin),
     ]
 
-    if (action === 'bet' || action === 'raise') {
+    if (resetHasActed) {
       dbUpdates.push(
         supabase
-          .from('poker_game_state')
-          .update({ current_bet: newCurrentBet })
+          .from('poker_players')
+          .update({ has_acted: false })
           .eq('room_pin', pin)
       )
     }
