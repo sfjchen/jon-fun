@@ -171,7 +171,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
   // Timer countdown effect
   useEffect(() => {
-    if (!gameState || !room?.timer_per_turn) return
+    if (!gameState || !room?.timer_per_turn || gameState.action_on < 0) return
 
     const timerPerTurn = room.timer_per_turn
     const actionOnPosition = gameState.action_on
@@ -459,9 +459,15 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
           </div>
         )}
 
-        {!isMyTurn && currentPlayer && (
+        {!isMyTurn && currentPlayer && gameState.action_on >= 0 && (
           <div className="mt-6 text-center text-gray-300">
             Waiting for other players...
+          </div>
+        )}
+
+        {gameState.action_on === -1 && (
+          <div className="mt-6 text-center text-yellow-300 font-semibold">
+            Hand complete — showdown
           </div>
         )}
       </div>
