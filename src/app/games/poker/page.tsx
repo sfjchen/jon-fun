@@ -142,8 +142,9 @@ export default function PokerPage() {
             {mode === 'create' ? (
               <form onSubmit={handleCreateRoom} className="space-y-4">
                 <div>
-                  <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>Your Name</label>
+                  <label htmlFor="poker-host-name" className="block mb-2" style={{ color: 'var(--ink-text)' }}>Your Name</label>
                   <input
+                    id="poker-host-name"
                     type="text"
                     value={hostName}
                     onChange={(e) => setHostName(e.target.value)}
@@ -157,8 +158,9 @@ export default function PokerPage() {
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>Small Blind</label>
+                    <label htmlFor="poker-small-blind" className="block mb-2" style={{ color: 'var(--ink-text)' }}>Small Blind</label>
                     <input
+                      id="poker-small-blind"
                       type="number"
                       value={smallBlind}
                       onChange={(e) => setSmallBlind(Math.max(1, parseInt(e.target.value) || 1))}
@@ -169,8 +171,9 @@ export default function PokerPage() {
                     />
                   </div>
                   <div>
-                    <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>Big Blind</label>
+                    <label htmlFor="poker-big-blind" className="block mb-2" style={{ color: 'var(--ink-text)' }}>Big Blind</label>
                     <input
+                      id="poker-big-blind"
                       type="number"
                       value={bigBlind}
                       onChange={(e) => setBigBlind(Math.max(smallBlind * 2, parseInt(e.target.value) || smallBlind * 2))}
@@ -181,8 +184,9 @@ export default function PokerPage() {
                     />
                   </div>
                   <div>
-                    <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>Timer (seconds)</label>
+                    <label htmlFor="poker-timer" className="block mb-2" style={{ color: 'var(--ink-text)' }}>Timer (seconds)</label>
                     <input
+                      id="poker-timer"
                       type="number"
                       value={timerPerTurn}
                       onChange={(e) => setTimerPerTurn(Math.max(5, Math.min(300, parseInt(e.target.value) || 40)))}
