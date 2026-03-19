@@ -322,6 +322,7 @@ src/
 ### E2E Testing
 
 - **Playwright** in `e2e/` — tests in `e2e/*.spec.ts`
+- **Coverage**: Home, navigation (all games + theme2), Game24 (practice), Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Leaderboards
 - **Agent**: Use `/e2e-reviewer` when Playwright E2E tests are needed to confirm site functionality, fix failing tests, or iterate on improvements. Prefer Composer 1.5 for interactive sessions.
 
 ### MCP Servers
@@ -364,7 +365,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
-- **E2E testing**: Playwright in `e2e/`; `e2e-reviewer` agent for Playwright-based verification and iteration. Use `/e2e-reviewer` when confirming site functionality or fixing E2E tests.
+- **E2E testing**: Full Playwright suite across home, navigation, Game24, Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Leaderboards. `e2e-reviewer` agent for verification/iteration.
 - **Texas Hold'em room fixes**: Actions API now advances action_on to next player after each action; pot_main updated when players bet; game start assigns 100 BB starting chips and posts blinds; hand complete (action_on -1) shows showdown message.
 - **1 Sentence Everyday draft preservation**: Periodic sync (60s) no longer overwrites unsaved draft; todayText only updated from storage when empty (initial load) or when it matches stored value (post-save).
 - **Theme2 header standardized**: All theme2 pages (except Pear Navigator, Chwazi mobile, Poker lobby/table) use same header (px-4 py-3 md:py-4, logo text-3xl md:text-4xl); own-theme pages keep compact header; documented in DESIGN-SYSTEM.md.
