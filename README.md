@@ -322,7 +322,7 @@ src/
 ### E2E Testing
 
 - **Playwright** in `e2e/` — tests in `e2e/*.spec.ts`
-- **Coverage**: Home, navigation (all games + theme2), Game24 (practice), Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Leaderboards
+- **Coverage**: Home, navigation (all games + theme2), Game24 (practice), Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Leaderboards. Chromium + Mobile Chrome.
 - **Agent**: Use `/e2e-reviewer` when Playwright E2E tests are needed to confirm site functionality, fix failing tests, or iterate on improvements. Prefer Composer 1.5 for interactive sessions.
 
 ### MCP Servers
