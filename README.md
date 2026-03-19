@@ -319,6 +319,11 @@ src/
 - Same variables configured in Vercel dashboard
 - `CLEANUP_API_KEY` (optional, for cleanup endpoint)
 
+### E2E Testing
+
+- **Playwright** in `e2e/` — tests in `e2e/*.spec.ts`
+- **Agent**: Use `/e2e-reviewer` when Playwright E2E tests are needed to confirm site functionality, fix failing tests, or iterate on improvements. Prefer Composer 1.5 for interactive sessions.
+
 ### MCP Servers
 
 - **Supabase MCP**: Database queries, migrations, project management
@@ -340,6 +345,8 @@ src/
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
 - `npm run type-check` - Run TypeScript type checking
+- `npm run test:e2e` - Run Playwright E2E tests (starts dev server if needed)
+- `npm run test:e2e:ui` - Run E2E tests with Playwright UI
 
 ## 📝 Key Architectural Decisions
 
@@ -357,6 +364,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
+- **E2E testing**: Playwright in `e2e/`; `e2e-reviewer` agent for Playwright-based verification and iteration. Use `/e2e-reviewer` when confirming site functionality or fixing E2E tests.
 - **Texas Hold'em room fixes**: Actions API now advances action_on to next player after each action; pot_main updated when players bet; game start assigns 100 BB starting chips and posts blinds; hand complete (action_on -1) shows showdown message.
 - **1 Sentence Everyday draft preservation**: Periodic sync (60s) no longer overwrites unsaved draft; todayText only updated from storage when empty (initial load) or when it matches stored value (post-save).
 - **Theme2 header standardized**: All theme2 pages (except Pear Navigator, Chwazi mobile, Poker lobby/table) use same header (px-4 py-3 md:py-4, logo text-3xl md:text-4xl); own-theme pages keep compact header; documented in DESIGN-SYSTEM.md.
