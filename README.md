@@ -365,6 +365,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
+- **Deploy fix**: `playwright.config.ts` no longer sets `workers: undefined` (incompatible with `exactOptionalPropertyTypes` during `next build` typecheck).
 - **Theme 1 readability**: `html.notebook-theme-root` scales root `rem` (~112.5%) plus wider letter-spacing (skipped on Pear Navigator URLs so its own-theme UI stays unchanged); notebook shell inherits slightly larger Patrick Hand size. Game 24 number tiles much larger on Theme 1 only.
 - **Pear Navigator on main home**: Card removed from `/` grid; entry preserved in `src/data/notebook-home-games-archive.ts` for restore. `/games/pear-navigator` and Theme 2 home unchanged.
 - **E2E testing**: Full Playwright suite across home, navigation, Game24, Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Leaderboards. `e2e-reviewer` agent for verification/iteration.
@@ -456,6 +457,8 @@ Running log of project work. Update this section when making significant changes
 ## 📋 README Maintenance Guidelines
 
 **For AI Agents**: When making changes to the project, update this README if: adding a game, DB tables/columns, API routes, architectural changes, or tech stack changes. Add entries to the Changelog section above for significant changes. **For UI/theme changes:** Consult [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md) and keep palette/guidelines in sync.
+
+**Deployments (sfjc.dev on Vercel):** After `git add` / `commit` / `push`, the agent should confirm the Vercel deployment succeeds (e.g. run `npm run build` locally to match CI, and check the latest deployment in the Vercel dashboard or `vercel` CLI). If the deployment fails, diagnose and fix the build (or config) before stopping—not only push and assume green.
 
 **Keep it concise**:
 
