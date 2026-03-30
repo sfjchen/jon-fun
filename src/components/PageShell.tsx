@@ -110,7 +110,15 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
         className={
           fullBleed
             ? 'flex-1 min-h-0 w-full max-w-none px-0 flex flex-col'
-            : `mx-auto max-w-6xl px-4 ${isHome && outerLinePaper ? 'pt-[30px] pb-8' : isHome ? 'py-8' : 'py-6'} ${isNotebook ? 'min-h-[calc(100vh-6rem)]' : ''}`
+            : `mx-auto max-w-6xl px-4 ${
+                isHome && outerLinePaper
+                  ? 'pt-[30px] pb-8'
+                  : isHome
+                    ? 'py-8'
+                    : isNotebook && outerLinePaper
+                      ? 'pt-[30px] pb-8'
+                      : 'py-6'
+              } ${isNotebook ? 'min-h-[calc(100vh-6rem)]' : ''}`
         }
       >
         {title && !isHome && (

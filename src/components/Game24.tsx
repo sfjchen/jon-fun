@@ -1,5 +1,6 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import {
@@ -67,6 +68,8 @@ const formatSeconds = (seconds: number) => {
 }
 
 export default function Game24() {
+  const pathname = usePathname() ?? ''
+  const notebookLayout = !pathname.startsWith('/theme2')
   const solver = useMemo(() => new Solver24(), [])
   const [gameState, setGameState] = useState<GameState>({
     numbers: [],
@@ -785,7 +788,9 @@ export default function Game24() {
 
   return (
     <div className="flex items-start lg:items-center">
-      <div className="max-w-6xl mx-auto px-4 py-10 lg:py-14 flex flex-col gap-6 w-full">
+      <div
+        className={`max-w-6xl mx-auto px-4 flex flex-col gap-6 w-full ${notebookLayout ? 'py-4 lg:py-6' : 'py-10 lg:py-14'}`}
+      >
         <div className="grid lg:grid-cols-[320px_1fr] gap-6 order-1">
           <aside className="rounded-lg border p-4 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
             {!room && (
