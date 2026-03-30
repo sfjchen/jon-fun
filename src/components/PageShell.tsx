@@ -72,7 +72,12 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
     }
   }, [fullBleed])
 
-  const isCardPage = (pathname?.includes('/games/jeopardy') || pathname?.includes('/games/chwazi') || pathname?.includes('/leaderboards')) ?? false
+  const isCardPage =
+    (pathname?.includes('/games/jeopardy') ||
+      pathname?.includes('/games/chwazi') ||
+      pathname?.includes('/games/mental-obstacle-course') ||
+      pathname?.includes('/leaderboards')) ??
+    false
   const outerLinePaper = isNotebook && !pearNav && !isCardPage
   const useCompactHeader = fullBleed && !useBigLogo
   const headerPadding = useCompactHeader ? 'px-3 py-2' : isNotebook ? 'px-4 py-3 md:py-4' : 'px-4 py-3 md:py-4'

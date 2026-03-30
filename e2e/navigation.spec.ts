@@ -7,6 +7,7 @@ const GAME_ROUTES = [
   { path: '/games/jeopardy', name: 'Jeopardy' },
   { path: '/games/poker', name: "Texas Hold'em" },
   { path: '/games/chwazi', name: 'Chwazi' },
+  { path: '/games/mental-obstacle-course', name: 'Mental Obstacle' },
   { path: '/leaderboards', name: 'Leaderboards' },
 ] as const
 
