@@ -365,6 +365,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
+- **Chwazi mobile Home**: Shell header gets `z-50` above the full-screen touch layer; touch handlers skip `preventDefault` on link targets; in-game ← Home uses correct Theme 2 href and a larger tap target.
 - **Deploy fix**: `playwright.config.ts` no longer sets `workers: undefined` (incompatible with `exactOptionalPropertyTypes` during `next build` typecheck).
 - **Theme 1 readability**: Notebook root scale ~106.25% (half of prior bump), Patrick Hand ~1.225rem / ~0.043em tracking; Pear Navigator URLs still skip root scale. Game 24: only `.card-number` scales up on Theme 1 (tile/grid CSS unchanged); main line-paper pages use same `pt-[30px] pb-8` as home; Game 24 shell padding tighter on Main. Home game card titles `font-bold`.
 - **Pear Navigator on main home**: Card removed from `/` grid; entry preserved in `src/data/notebook-home-games-archive.ts` for restore. `/games/pear-navigator` and Theme 2 home unchanged.

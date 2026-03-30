@@ -1,7 +1,8 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 type Status = 'idle' | 'primed' | 'selecting' | 'winner'
 
@@ -26,7 +27,16 @@ const CHWAZI_COLORS = [
 const PRIME_DELAY_MS = 650
 const SELECT_DELAY_MS = 950
 
+function touchTargetIsLink(target: EventTarget | null): boolean {
+  if (!(target instanceof Node)) return false
+  const el =
+    target.nodeType === Node.TEXT_NODE ? target.parentElement : (target as Element)
+  return el?.closest('a[href]') != null
+}
+
 export default function ChwaziGame() {
+  const pathname = usePathname() ?? ''
+  const homeHref = pathname.startsWith('/theme2') ? '/theme2' : '/'
   const [touches, setTouches] = useState<Map<number, TouchPoint>>(new Map())
   const [status, setStatus] = useState<Status>('idle')
   const [winnerId, setWinnerId] = useState<number | null>(null)
@@ -123,6 +133,7 @@ export default function ChwaziGame() {
     if (!container) return
 
     const handleTouchStart = (e: TouchEvent) => {
+      if (touchTargetIsLink(e.target)) return
       e.preventDefault()
       const rect = container.getBoundingClientRect()
       const updated = new Map(touchesRef.current)
@@ -147,6 +158,7 @@ export default function ChwaziGame() {
     }
 
     const handleTouchMove = (e: TouchEvent) => {
+      if (touchTargetIsLink(e.target)) return
       e.preventDefault()
       const rect = container.getBoundingClientRect()
       const updated = new Map(touchesRef.current)
@@ -166,6 +178,7 @@ export default function ChwaziGame() {
     }
 
     const handleTouchEnd = (e: TouchEvent) => {
+      if (touchTargetIsLink(e.target)) return
       e.preventDefault()
       const updated = new Map(touchesRef.current)
 
@@ -203,10 +216,10 @@ export default function ChwaziGame() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(64,196,255,0.08),transparent_35%),radial-gradient(circle_at_80%_30%,rgba(255,64,129,0.12),transparent_35%),radial-gradient(circle_at_50%_80%,rgba(29,233,182,0.12),transparent_35%)]" />
 
       <div className="relative h-full w-full">
-        <div className="absolute top-6 left-4 z-10">
+        <div className="absolute top-6 left-4 z-20 pointer-events-auto">
           <Link
-            href="/"
-            className="text-white/90 hover:text-white text-lg font-semibold"
+            href={homeHref}
+            className="text-white/90 hover:text-white text-lg font-semibold inline-block min-h-11 min-w-11 py-2 pr-4"
             aria-label="Back to home"
           >
             ← Home
