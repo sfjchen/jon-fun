@@ -5,7 +5,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // Omit `workers` locally (Playwright default); CI needs 1 for stability — avoid `undefined` (exactOptionalPropertyTypes + next build)
+  ...(process.env.CI ? { workers: 1 } : {}),
   reporter: 'html',
   use: {
     baseURL: 'http://localhost:3000',
