@@ -1,6 +1,6 @@
 # sfjc.dev Design System
 
-**For AI agents:** Use this doc when making UI/theme changes. Keep it in sync with `src/app/globals.css`.
+**For AI agents:** **Product, UX, and data-model principles** (audience, navigation, minimal UI, sync philosophy) live in the README **[Core design principles](../README.md#core-design-principles)** section. **This file** is the reference for **color tokens, typography stacks, layout notes, and theme mechanics**—keep it aligned with `src/app/globals.css`.
 
 ---
 
@@ -62,7 +62,7 @@ Main site aesthetic. Applied when pathname does NOT start with `/theme2` via `da
 
 ### Typography
 
-- **All text:** Patrick Hand (readable handwritten). Applied via `[data-theme="notebook"]` with `font-size: 1.2rem`.
+- **All text:** Patrick Hand (readable handwritten). Applied via `[data-theme="notebook"]` plus optional `html.notebook-theme-root` scale—**exact sizes:** see `globals.css` (values evolve; README principles stay stable).
 - **Inputs, textarea, button:** Inherit Patrick Hand.
 
 ### Doodles
