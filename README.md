@@ -365,6 +365,8 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
+- **Theme 1 readability**: `html.notebook-theme-root` scales root `rem` (~112.5%) plus wider letter-spacing; notebook shell inherits slightly larger Patrick Hand size. Game 24 number tiles much larger on Theme 1 only.
+- **Pear Navigator on main home**: Card removed from `/` grid; entry preserved in `src/data/notebook-home-games-archive.ts` for restore. `/games/pear-navigator` and Theme 2 home unchanged.
 - **E2E testing**: Full Playwright suite across home, navigation, Game24, Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Leaderboards. `e2e-reviewer` agent for verification/iteration.
 - **Texas Hold'em room fixes**: Actions API now advances action_on to next player after each action; pot_main updated when players bet; game start assigns 100 BB starting chips and posts blinds; hand complete (action_on -1) shows showdown message.
 - **1 Sentence Everyday draft preservation**: Periodic sync (60s) no longer overwrites unsaved draft; todayText only updated from storage when empty (initial load) or when it matches stored value (post-save).

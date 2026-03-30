@@ -3,7 +3,6 @@ import { test, expect } from '@playwright/test'
 const GAME_ROUTES = [
   { path: '/games/tmr', name: 'TMR System' },
   { path: '/games/daily-log', name: '1 Sentence Everyday' },
-  { path: '/games/pear-navigator', name: 'Pear Navigator' },
   { path: '/games/24', name: '24' },
   { path: '/games/jeopardy', name: 'Jeopardy' },
   { path: '/games/poker', name: "Texas Hold'em" },
@@ -39,5 +38,10 @@ test.describe('Navigation', () => {
     await page.goto('/theme2')
     await expect(page.getByText('sfjc.dev')).toBeVisible()
     await expect(page.getByText('TMR System')).toBeVisible()
+  })
+
+  test('Pear Navigator still reachable by URL (archived from Theme 1 home)', async ({ page }) => {
+    await page.goto('/games/pear-navigator')
+    await expect(page).toHaveURL(/\/games\/pear-navigator/)
   })
 })

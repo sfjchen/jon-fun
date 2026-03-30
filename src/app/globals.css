@@ -33,11 +33,17 @@
   --ink-paper: var(--nb-paper);
 }
 
-/* Notebook: Patrick Hand (readable handwritten), larger text, wider letter-spacing */
+/* Theme 1 (notebook): bump root rem so Tailwind text-* scales; extra tracking */
+html.notebook-theme-root {
+  font-size: 112.5%;
+  letter-spacing: 0.035em;
+}
+
+/* Notebook: Patrick Hand (readable handwritten), inherited size + tracking */
 [data-theme="notebook"] {
   font-family: 'Patrick Hand', cursive;
-  font-size: 1.2rem;
-  letter-spacing: 0.03em;
+  font-size: 1.25rem;
+  letter-spacing: 0.055em;
 }
 [data-theme="notebook"] .font-lora {
   font-family: 'Patrick Hand', cursive;
@@ -285,6 +291,16 @@
     font-size: 1.875rem;
     font-weight: 700;
   }
+
+  /* Game 24 — much larger number glyphs on Theme 1 (notebook) */
+  html.notebook-theme-root .game-card:not(.empty) {
+    font-size: 2.35rem;
+  }
+
+  html.notebook-theme-root .card-number {
+    font-size: 2.65rem;
+    line-height: 1;
+  }
   
   .card-expression {
     font-size: 0.5rem;
@@ -473,6 +489,14 @@
     
     .game-card {
       font-size: 1.5rem;
+    }
+
+    html.notebook-theme-root .game-card:not(.empty) {
+      font-size: 2.1rem;
+    }
+
+    html.notebook-theme-root .card-number {
+      font-size: 2.35rem;
     }
     
     .operator-btn {
