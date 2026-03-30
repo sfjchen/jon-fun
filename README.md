@@ -11,6 +11,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **TMR System** (`/games/tmr`): Targeted Memory Reactivation for learning and sleep
 - **1 Sentence Everyday** (`/games/daily-log`): One sentence per day, history, calendar, export, cross-device sync (localStorage + Supabase)
 - **Pear Navigator** (`/games/pear-navigator`): PearPad tablet simulator—Procreate, Notion, Figma guides; tap UI elements to advance; MS&E 165 demo; A/B test results at `/games/pear-navigator/results`
+- **Mental Obstacle Course** (`/games/mental-obstacle-course`): Six-round playful benchmark (reaction, arithmetic, patterns, digit memory, words, trivia) with a radar chart by domain; scores and history in **localStorage** only (no accounts)
 
 ## 🚀 Quick Start
 
@@ -84,7 +85,8 @@ src/
 │   │   ├── chwazi/
 │   │   ├── tmr/
 │   │   ├── daily-log/
-│   │   └── pear-navigator/
+│   │   ├── pear-navigator/
+│   │   └── mental-obstacle-course/
 │   ├── leaderboards/       # Leaderboards page
 │   ├── globals.css         # Global styles
 │   ├── layout.tsx          # Root layout
@@ -103,14 +105,16 @@ src/
 │   ├── PokerJoinForm.tsx
 │   ├── TMRManager.tsx
 │   ├── DailyLearnManager.tsx
-│   └── PearNavigator.tsx
+│   ├── PearNavigator.tsx
+│   └── MentalObstacleCourse.tsx
 └── lib/                    # Utility libraries
     ├── supabase.ts         # Supabase client
     ├── poker.ts            # Poker types & utilities
     ├── jeopardy.ts         # Jeopardy types & utilities
     ├── tmr.ts              # TMR config & session storage
     ├── dailyLearn.ts       # 1 Sentence Everyday (localStorage)
-    └── solver24.ts         # 24 Game solver algorithm
+    ├── solver24.ts         # 24 Game solver algorithm
+    └── mental-obstacle-course.ts  # Mental Obstacle Course domains, scoring, local persistence
 ```
 
 ## 🗄️ Database Schema (Supabase)
@@ -398,6 +402,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
+- **Mental Obstacle Course**: New game at `/games/mental-obstacle-course` (Theme 2 mirror under `/theme2/games/mental-obstacle-course`) — six sequential rounds (Speed, Numbers, Logic, Working memory, Words, Knowledge) with SVG radar chart, course score, localStorage history + personal best; non-clinical copy throughout; home cards + `PageShell` card-page styling; e2e navigation entry.
 - **README — Core design principles**: Product, UX, visual tone, `PageShell` / home-link behavior, and local-first + optional Supabase sync documented in-repo (principles centralized in README; `DESIGN-SYSTEM.md` remains token/palette reference).
 - **Chwazi mobile Home**: Shell header gets `z-50` above the full-screen touch layer; touch handlers skip `preventDefault` on link targets; in-game ← Home uses correct Theme 2 href and a larger tap target.
 - **Deploy fix**: `playwright.config.ts` no longer sets `workers: undefined` (incompatible with `exactOptionalPropertyTypes` during `next build` typecheck).

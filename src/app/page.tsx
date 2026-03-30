@@ -14,6 +14,14 @@ const items: GameCardGame[] = [
   { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom boards locally', icon: `${nb}/jeopardy.svg`, href: '/games/jeopardy', available: true },
   { id: 'poker', title: 'Texas Hold\'em', description: 'Chip tracker with multiplayer lobbies', icon: `${nb}/poker.svg`, href: '/games/poker', available: true },
   { id: 'chwazi', title: 'Chwazi Finger Chooser', description: 'Touch screen to pick a winner', icon: `${nb}/chwazi.svg`, href: '/games/chwazi', available: true },
+  {
+    id: 'mental-obstacle-course',
+    title: 'Mental Obstacle Course',
+    description: 'Six-round brain benchmark: reaction, math, patterns, memory, words, trivia — radar chart (local scores)',
+    icon: `${nb}/obstacle.svg`,
+    href: '/games/mental-obstacle-course',
+    available: true,
+  },
   { id: 'leaderboards', title: 'Leaderboards', description: 'Scores and rankings', icon: `${nb}/leaderboards.svg`, href: '/leaderboards', available: true },
   { id: 'coming-soon', title: 'Coming Soon', description: 'More brain games in development', icon: `${nb}/coming-soon.svg`, href: '#', available: false },
 ]
