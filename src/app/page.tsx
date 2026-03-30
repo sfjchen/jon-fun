@@ -6,10 +6,10 @@ import { GameCard } from '@/components/GameCard'
 import type { GameCardGame } from '@/components/GameCard'
 
 const nb = '/doodles/notebook'
+/** Pear Navigator card archived — restore from `@/data/notebook-home-games-archive` */
 const items: GameCardGame[] = [
   { id: 'tmr', title: 'TMR System', description: 'Targeted Memory Reactivation for learning and sleep', icon: `${nb}/tmr.svg`, href: '/games/tmr', available: true },
   { id: 'daily-log', title: '1 Sentence Everyday', description: 'One sentence per day; history, calendar, export', icon: `${nb}/daily.svg`, href: '/games/daily-log', available: true },
-  { id: 'pear-navigator', title: 'Pear Navigator', description: 'Step-by-step guides for Procreate, Figma', icon: `${nb}/pear.svg`, href: '/games/pear-navigator', available: true },
   { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: `${nb}/game24.svg`, href: '/games/24', available: true },
   { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom boards locally', icon: `${nb}/jeopardy.svg`, href: '/games/jeopardy', available: true },
   { id: 'poker', title: 'Texas Hold\'em', description: 'Chip tracker with multiplayer lobbies', icon: `${nb}/poker.svg`, href: '/games/poker', available: true },

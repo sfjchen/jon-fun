@@ -53,6 +53,13 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
   }, [])
 
   useEffect(() => {
+    const root = document.documentElement
+    if (isNotebook) root.classList.add('notebook-theme-root')
+    else root.classList.remove('notebook-theme-root')
+    return () => root.classList.remove('notebook-theme-root')
+  }, [isNotebook])
+
+  useEffect(() => {
     if (!fullBleed) return
     const prev = { html: document.documentElement.style.overflow, body: document.body.style.overflow }
     document.documentElement.style.overflow = 'hidden'
