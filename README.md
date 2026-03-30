@@ -20,9 +20,42 @@ npm run dev
 # Visit http://localhost:3000
 ```
 
-## 🎨 Design System
+## 🎨 Core design principles
 
-**Theme:** Ink & Paper (cream + burgundy). See **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)** for color palette, typography, and guidelines. Use `var(--ink-*)` tokens from `globals.css`. Game-specific themes: Poker (green felt), Pear Navigator (dark). **Default theme** (notebook) at `/`—brighter cream, Patrick Hand, line paper. **Theme 2** (Ink & Paper) at `/theme2`—burgundy accent, Lora/Charter. **Own-theme pages:** Chwazi mobile and Pear Navigator always use their own theme (no notebook styling); theme switch hidden on Chwazi mobile. These pages use compact header; all other theme2 pages use standardized header (see docs/DESIGN-SYSTEM.md).
+These guide **what** we build (product + UX) and **how** it should feel (visual tone). **Implementation details** (hex values, font stacks, component tokens) stay in **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)** and `globals.css`.
+
+### Audience and context
+
+- **Primary audience:** Personal use first; occasionally **friends and professional acquaintances**. Optimize for **honest utility and low cognitive load**, not growth metrics or onboarding funnels.
+- **Devices:** Design for **laptop and mobile** by default. Some experiences are **intentionally skewed** (e.g. Chwazi on **touch-only** mobile; dense editors may lean **desktop**). When a flow is one-sided, say so in the game blurb or UI once—don’t scatter disclaimers.
+
+### Interaction and information architecture
+
+- **Direct, simple, concrete:** Every label, helper paragraph, and button must **earn its place**. Prefer **removing** or **deferring** (progressive disclosure) over decorating. Copy should state the next action, not market the product.
+- **Flat navigation:** Prefer **few steps** from home to the main task (e.g. home grid → game). Avoid deep hierarchies; if you need sections, use **obvious siblings** (tabs, side column) instead of nested “settings inside settings.”
+- **Balanced density:** **Not** ultra-minimal to the point of mystery, **not** dashboard clutter—enough structure to scan, not more.
+
+### Global chrome (`PageShell`)
+
+- **`sfjc.dev` masthead** appears across games and tools in a **consistent role**: same centered title treatment as on the home page, and **always links to the correct home** (`/` on Main theme, `/theme2` when browsing Theme 2). Subpages keep **← Home** for explicit back navigation where useful.
+- **Exceptions** (compact header, full-bleed): Pear Navigator, Chwazi mobile, Poker lobby/table—still branded **sfjc.dev**, still wired to home (see `PageShell.tsx`).
+
+### Visual and tonal language (ties to themes)
+
+- **Simple, bold, elegant:** Strong type and a **restrained palette**—confident without being stiff (**not** corporate-formal) and clear without being cute (**not** overly casual copy or novelty UI).
+- **Two public faces:** **Notebook** (`/`)—hand-drawn Patrick Hand, cream line-paper, Stanford-adjacent red accent. **Ink & Paper** (`/theme2`)—Lora + Charter, cream + burgundy. Game-specific skins (Poker felt, Pear Navigator dark) are **allowed exceptions** where they aid the metaphor.
+
+### Data, identity, and sync
+
+- **No mandatory accounts** for personal tools when avoidable. Prefer **local-first state** (e.g. `localStorage`, session storage) so each device has an **immediate, offline-tolerant** experience.
+- **Optional cloud sync** without sign-in friction: background or periodic merge to **Supabase** when it improves continuity—**1 Sentence Everyday** is the reference pattern (local draft + sync, visibility-aware intervals).
+- **Multiplayer / rooms** (Poker, Game 24, etc.) use **ephemeral pins and session identity** as needed; that’s separate from “my personal journal data.”
+
+---
+
+## 🎨 Visual system & themes (quick reference)
+
+**Themes:** **Notebook** (default at `/`) and **Ink & Paper** at `/theme2`. **Tokens:** `var(--ink-*)` in `globals.css`; notebook maps those to `--nb-*` via `data-theme="notebook"`. **Game-specific:** Poker (green felt), Pear Navigator (dark inner UI). **Own-theme / compact header:** Chwazi mobile, Pear Navigator, Poker lobby & table; theme switch is **hidden** on Chwazi mobile. Full detail: **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)**.
 
 ---
 
@@ -365,6 +398,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
+- **README — Core design principles**: Product, UX, visual tone, `PageShell` / home-link behavior, and local-first + optional Supabase sync documented in-repo (principles centralized in README; `DESIGN-SYSTEM.md` remains token/palette reference).
 - **Chwazi mobile Home**: Shell header gets `z-50` above the full-screen touch layer; touch handlers skip `preventDefault` on link targets; in-game ← Home uses correct Theme 2 href and a larger tap target.
 - **Deploy fix**: `playwright.config.ts` no longer sets `workers: undefined` (incompatible with `exactOptionalPropertyTypes` during `next build` typecheck).
 - **Theme 1 readability**: Notebook root scale ~106.25% (half of prior bump), Patrick Hand ~1.225rem / ~0.043em tracking; Pear Navigator URLs still skip root scale. Game 24: only `.card-number` scales up on Theme 1 (tile/grid CSS unchanged); main line-paper pages use same `pt-[30px] pb-8` as home; Game 24 shell padding tighter on Main. Home game card titles `font-bold`.
@@ -457,7 +491,7 @@ Running log of project work. Update this section when making significant changes
 
 ## 📋 README Maintenance Guidelines
 
-**For AI Agents**: When making changes to the project, update this README if: adding a game, DB tables/columns, API routes, architectural changes, or tech stack changes. Add entries to the Changelog section above for significant changes. **For UI/theme changes:** Consult [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md) and keep palette/guidelines in sync.
+**For AI Agents**: When making changes to the project, update this README if: adding a game, DB tables/columns, API routes, architectural changes, or tech stack changes. Add entries to the Changelog section above for significant changes. **Product and UX:** Follow **Core design principles** in this README (audience, minimal UI, flat nav, `PageShell` behavior, local-first + optional sync). **Visual tokens / palette:** [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md) + `globals.css`—keep them in sync when colors or typography change.
 
 **Deployments (sfjc.dev on Vercel):** After `git add` / `commit` / `push`, the agent should confirm the Vercel deployment succeeds (e.g. run `npm run build` locally to match CI, and check the latest deployment in the Vercel dashboard or `vercel` CLI). If the deployment fails, diagnose and fix the build (or config) before stopping—not only push and assume green.
 
