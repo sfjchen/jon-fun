@@ -52,12 +52,14 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
     return () => mq.removeEventListener('change', fn)
   }, [])
 
+  const notebookTypographyRoot = isNotebook && !pearNav
+
   useEffect(() => {
     const root = document.documentElement
-    if (isNotebook) root.classList.add('notebook-theme-root')
+    if (notebookTypographyRoot) root.classList.add('notebook-theme-root')
     else root.classList.remove('notebook-theme-root')
     return () => root.classList.remove('notebook-theme-root')
-  }, [isNotebook])
+  }, [notebookTypographyRoot])
 
   useEffect(() => {
     if (!fullBleed) return
