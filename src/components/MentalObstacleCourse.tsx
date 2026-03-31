@@ -1,11 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   DOMAIN_LABELS,
   DOMAIN_ORDER,
+  MOC_E2E_QUERY,
   type CourseRunResult,
   type InputMode,
   type MentalDomain,
@@ -17,6 +18,11 @@ import {
   loadBestCourseScore,
   loadHistory,
   maybeUpdateBest,
+  mocArithmeticDurationMs,
+  mocMemoryShowDurationMs,
+  mocScheduleReactionDelayMs,
+  mocTriviaPerQuestionMs,
+  mocWordTapDurationMs,
   pickTriviaBatch,
   randomArithmeticProblem,
   randomDigitString,
@@ -34,12 +40,6 @@ import {
   shuffledLetters,
   strongestWeakest,
 } from '@/lib/mental-obstacle-course'
-
-const ROUND_MS = {
-  arithmetic: 55_000,
-  triviaPerQ: 14_000,
-  wordTap: 35_000,
-} as const
 
 function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
   const rad = ((angleDeg - 90) * Math.PI) / 180
@@ -86,7 +86,14 @@ function RadarChart({ scores }: { scores: Record<MentalDomain, number> }) {
     )
   })
   return (
-    <svg width={280} height={260} viewBox="0 0 240 240" className="mx-auto" aria-label="Radar chart of domain scores">
+    <svg
+      data-testid="moc-radar"
+      width={280}
+      height={260}
+      viewBox="0 0 240 240"
+      className="mx-auto"
+      aria-label="Radar chart of domain scores"
+    >
       {grid}
       {spokes}
       <polygon points={poly} fill="var(--ink-accent)" fillOpacity={0.2} stroke="var(--ink-accent)" strokeWidth={2} />
@@ -94,7 +101,7 @@ function RadarChart({ scores }: { scores: Record<MentalDomain, number> }) {
   )
 }
 
-function ReactionPhase({ onDone }: { onDone: (score: number) => void }) {
+function ReactionPhase({ onDone, quickE2e }: { onDone: (score: number) => void; quickE2e: boolean }) {
   const [phase, setPhase] = useState<'wait' | 'go' | 'tooSoon'>('wait')
   const rts = useRef<number[]>([])
   const trial = useRef(0)
@@ -114,8 +121,8 @@ function ReactionPhase({ onDone }: { onDone: (score: number) => void }) {
       toRef.current = null
       setPhase('go')
       goAt.current = performance.now()
-    }, 800 + Math.random() * 2200)
-  }, [])
+    }, mocScheduleReactionDelayMs(quickE2e))
+  }, [quickE2e])
 
   useEffect(() => {
     if (phase === 'wait') scheduleWait()
@@ -160,6 +167,8 @@ function ReactionPhase({ onDone }: { onDone: (score: number) => void }) {
       </p>
       <button
         type="button"
+        data-testid="moc-reaction-tap"
+        aria-label={`Reaction trial: ${label}`}
         onClick={tap}
         className="h-40 w-full max-w-sm rounded-xl border-4 text-xl font-semibold transition-colors md:h-48"
         style={{
@@ -174,23 +183,24 @@ function ReactionPhase({ onDone }: { onDone: (score: number) => void }) {
   )
 }
 
-function ArithmeticPhase({ onDone }: { onDone: (score: number) => void }) {
+function ArithmeticPhase({ onDone, quickE2e }: { onDone: (score: number) => void; quickE2e: boolean }) {
+  const durationMs = mocArithmeticDurationMs(quickE2e)
   const start = useRef(performance.now())
   const [prob, setProb] = useState<ArithmeticProblem>(() => randomArithmeticProblem())
   const [input, setInput] = useState('')
   const [correct, setCorrect] = useState(0)
   const [wrong, setWrong] = useState(0)
   const [done, setDone] = useState(false)
-  const [secLeft, setSecLeft] = useState(() => Math.ceil(ROUND_MS.arithmetic / 1000))
+  const [secLeft, setSecLeft] = useState(() => Math.ceil(durationMs / 1000))
 
   useEffect(() => {
     const id = window.setInterval(() => {
       const elapsed = performance.now() - start.current
-      setSecLeft(Math.max(0, Math.ceil((ROUND_MS.arithmetic - elapsed) / 1000)))
-      if (elapsed > ROUND_MS.arithmetic) setDone(true)
+      setSecLeft(Math.max(0, Math.ceil((durationMs - elapsed) / 1000)))
+      if (elapsed > durationMs) setDone(true)
     }, 250)
     return () => clearInterval(id)
-  }, [])
+  }, [durationMs])
 
   useEffect(() => {
     if (!done) return
@@ -214,10 +224,29 @@ function ArithmeticPhase({ onDone }: { onDone: (score: number) => void }) {
         Solve as many as you can. ~{secLeft}s left.
       </p>
       <div
-        className="rounded-lg border p-6 text-center font-mono text-3xl"
+        className="relative rounded-lg border p-6 text-center font-mono text-3xl"
         style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
       >
         {prob.prompt} = ?
+        {quickE2e && (
+          <span
+            data-testid="moc-arithmetic-expected"
+            className="sr-only"
+            style={{
+              position: 'absolute',
+              width: 1,
+              height: 1,
+              padding: 0,
+              margin: -1,
+              overflow: 'hidden',
+              clip: 'rect(0,0,0,0)',
+              whiteSpace: 'nowrap',
+              border: 0,
+            }}
+          >
+            {prob.answer}
+          </span>
+        )}
       </div>
       <form onSubmit={submit} className="flex gap-2">
         <input
@@ -245,7 +274,7 @@ function ArithmeticPhase({ onDone }: { onDone: (score: number) => void }) {
   )
 }
 
-function LogicPhase({ onDone }: { onDone: (score: number) => void }) {
+function LogicPhase({ onDone, quickE2e }: { onDone: (score: number) => void; quickE2e: boolean }) {
   const [prob, setProb] = useState<PatternProblem>(() => randomPatternProblem())
   const [correct, setCorrect] = useState(0)
   const [total, setTotal] = useState(0)
@@ -287,6 +316,7 @@ function LogicPhase({ onDone }: { onDone: (score: number) => void }) {
           <button
             key={c}
             type="button"
+            data-testid={quickE2e && c === prob.answer ? 'moc-logic-correct' : undefined}
             onClick={() => pick(c)}
             className="rounded-lg border py-3 font-mono text-lg"
             style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
@@ -299,7 +329,7 @@ function LogicPhase({ onDone }: { onDone: (score: number) => void }) {
   )
 }
 
-function MemoryPhase({ onDone }: { onDone: (score: number) => void }) {
+function MemoryPhase({ onDone, quickE2e }: { onDone: (score: number) => void; quickE2e: boolean }) {
   const [len, setLen] = useState(3)
   const [phase, setPhase] = useState<'show' | 'input' | 'done'>('show')
   const [digits, setDigits] = useState(() => randomDigitString(3))
@@ -308,10 +338,10 @@ function MemoryPhase({ onDone }: { onDone: (score: number) => void }) {
 
   useEffect(() => {
     if (phase !== 'show') return
-    const showMs = 800 + len * 350
+    const showMs = mocMemoryShowDurationMs(quickE2e, len)
     const t = window.setTimeout(() => setPhase('input'), showMs)
     return () => clearTimeout(t)
-  }, [phase, len, digits])
+  }, [phase, len, digits, quickE2e])
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -340,7 +370,11 @@ function MemoryPhase({ onDone }: { onDone: (score: number) => void }) {
         <p className="mb-4 text-sm" style={{ color: 'var(--ink-muted)' }}>
           Memorize the digits ({len}).
         </p>
-        <div className="font-mono text-4xl tracking-widest" style={{ color: 'var(--ink-text)' }}>
+        <div
+          data-testid="moc-memory-digits"
+          className="font-mono text-4xl tracking-widest"
+          style={{ color: 'var(--ink-text)' }}
+        >
           {digits}
         </div>
       </div>
@@ -374,9 +408,11 @@ function MemoryPhase({ onDone }: { onDone: (score: number) => void }) {
 function WordsPhase({
   touchMode,
   onDone,
+  quickE2e,
 }: {
   touchMode: boolean
   onDone: (score: number) => void
+  quickE2e: boolean
 }) {
   const phrase = useRef(randomTypingPhrase())
   const word = useRef(randomTapWord())
@@ -390,21 +426,20 @@ function WordsPhase({
   const wrongRef = useRef(0)
   wrongRef.current = wrongTaps
   const [done, setDone] = useState(false)
+  const wordTapMs = mocWordTapDurationMs(quickE2e)
 
   useEffect(() => {
     if (!touchMode || done) return
     const id = window.setInterval(() => {
-      if (performance.now() - start.current > ROUND_MS.wordTap) {
+      if (performance.now() - start.current > wordTapMs) {
         setDone(true)
         const target = word.current
         const ok = pickedRef.current.join('') === target
-        onDone(
-          scoreWordTap(ok, wrongRef.current, performance.now() - start.current, ROUND_MS.wordTap),
-        )
+        onDone(scoreWordTap(ok, wrongRef.current, performance.now() - start.current, wordTapMs))
       }
     }, 300)
     return () => clearInterval(id)
-  }, [touchMode, done, onDone])
+  }, [touchMode, done, onDone, wordTapMs])
 
   if (touchMode) {
     const target = word.current
@@ -420,7 +455,7 @@ function WordsPhase({
         if (n.length === target.length) {
           setDone(true)
           queueMicrotask(() =>
-            onDone(scoreWordTap(true, wrongRef.current, performance.now() - start.current, ROUND_MS.wordTap)),
+            onDone(scoreWordTap(true, wrongRef.current, performance.now() - start.current, wordTapMs)),
           )
         }
         return n
@@ -429,6 +464,11 @@ function WordsPhase({
 
     return (
       <div className="mx-auto max-w-md space-y-4">
+        {quickE2e && (
+          <span data-testid="moc-word-target" className="hidden">
+            {target}
+          </span>
+        )}
         <p className="text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
           Tap letters in order to spell the word ({target.length} letters).
         </p>
@@ -466,6 +506,7 @@ function WordsPhase({
         Type the phrase exactly (lowercase ok).
       </p>
       <div
+        data-testid="moc-typing-phrase"
         className="rounded-lg border p-4 font-mono text-lg"
         style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-muted)' }}
       >
@@ -487,12 +528,25 @@ function WordsPhase({
   )
 }
 
-function TriviaPhase({ batch, onDone }: { batch: TriviaItem[]; onDone: (score: number) => void }) {
+function TriviaPhase({
+  batch,
+  onDone,
+  quickE2e,
+}: {
+  batch: TriviaItem[]
+  onDone: (score: number) => void
+  quickE2e: boolean
+}) {
   const [idx, setIdx] = useState(0)
   const [correct, setCorrect] = useState(0)
   const [done, setDone] = useState(false)
   const finished = useRef(false)
   const correctRef = useRef(0)
+  const perQMs = mocTriviaPerQuestionMs(quickE2e)
+
+  useEffect(() => {
+    correctRef.current = correct
+  }, [correct])
 
   const finish = useCallback(
     (finalCorrect: number) => {
@@ -512,9 +566,9 @@ function TriviaPhase({ batch, onDone }: { batch: TriviaItem[]; onDone: (score: n
       } else {
         setIdx((j) => j + 1)
       }
-    }, ROUND_MS.triviaPerQ)
+    }, perQMs)
     return () => clearTimeout(t)
-  }, [idx, done, batch.length, finish])
+  }, [idx, done, batch.length, finish, perQMs])
 
   const q = batch[idx]
   if (!q) {
@@ -545,8 +599,9 @@ function TriviaPhase({ batch, onDone }: { batch: TriviaItem[]; onDone: (score: n
       <div className="grid gap-2">
         {q.choices.map((c, i) => (
           <button
-            key={c}
+            key={`${idx}-${i}-${c}`}
             type="button"
+            data-testid={quickE2e && i === q.correct ? 'moc-trivia-correct' : undefined}
             onClick={() => pick(i)}
             className="rounded-lg border px-4 py-3 text-left text-sm"
             style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
@@ -563,6 +618,8 @@ type Screen = 'intro' | 'calibrate' | 'play' | 'results'
 
 export default function MentalObstacleCourse() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const quickE2e = searchParams.get(MOC_E2E_QUERY) === '1'
   const base = pathname?.startsWith('/theme2') ? '/theme2' : ''
   const [screen, setScreen] = useState<Screen>('intro')
   const [inputMode, setInputMode] = useState<InputMode>('mixed')
@@ -633,7 +690,7 @@ export default function MentalObstacleCourse() {
   const domain = DOMAIN_ORDER[roundIdx]
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <div className="mx-auto max-w-3xl space-y-8 pb-24 md:pb-28">
       <div>
         <h1 className="font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>
           Mental Obstacle Course
@@ -663,6 +720,7 @@ export default function MentalObstacleCourse() {
           )}
           <button
             type="button"
+            data-testid="moc-intro-continue"
             onClick={start}
             className="rounded-lg px-6 py-3 text-white"
             style={{ backgroundColor: 'var(--ink-accent)' }}
@@ -687,6 +745,7 @@ export default function MentalObstacleCourse() {
           </p>
           <button
             type="button"
+            data-testid="moc-start-course"
             onClick={beginPlay}
             className="rounded-lg px-6 py-3 text-white"
             style={{ backgroundColor: 'var(--ink-accent)' }}
@@ -714,14 +773,26 @@ export default function MentalObstacleCourse() {
             ))}
           </div>
 
-          {domain === 'speed' && <ReactionPhase onDone={(s) => onRoundComplete('speed', s)} />}
-          {domain === 'numbers' && <ArithmeticPhase onDone={(s) => onRoundComplete('numbers', s)} />}
-          {domain === 'logic' && <LogicPhase onDone={(s) => onRoundComplete('logic', s)} />}
-          {domain === 'workingMemory' && <MemoryPhase onDone={(s) => onRoundComplete('workingMemory', s)} />}
-          {domain === 'words' && (
-            <WordsPhase touchMode={inputMode !== 'keyboard'} onDone={(s) => onRoundComplete('words', s)} />
+          {domain === 'speed' && (
+            <ReactionPhase quickE2e={quickE2e} onDone={(s) => onRoundComplete('speed', s)} />
           )}
-          {domain === 'knowledge' && <TriviaPhase batch={triviaBatch} onDone={(s) => onRoundComplete('knowledge', s)} />}
+          {domain === 'numbers' && (
+            <ArithmeticPhase quickE2e={quickE2e} onDone={(s) => onRoundComplete('numbers', s)} />
+          )}
+          {domain === 'logic' && <LogicPhase quickE2e={quickE2e} onDone={(s) => onRoundComplete('logic', s)} />}
+          {domain === 'workingMemory' && (
+            <MemoryPhase quickE2e={quickE2e} onDone={(s) => onRoundComplete('workingMemory', s)} />
+          )}
+          {domain === 'words' && (
+            <WordsPhase
+              quickE2e={quickE2e}
+              touchMode={inputMode !== 'keyboard'}
+              onDone={(s) => onRoundComplete('words', s)}
+            />
+          )}
+          {domain === 'knowledge' && (
+            <TriviaPhase quickE2e={quickE2e} batch={triviaBatch} onDone={(s) => onRoundComplete('knowledge', s)} />
+          )}
         </div>
       )}
 
@@ -746,6 +817,7 @@ export default function MentalObstacleCourse() {
             {DOMAIN_ORDER.map((d) => (
               <div
                 key={d}
+                data-testid={`moc-domain-${d}`}
                 className="flex justify-between rounded-lg border px-3 py-2 text-sm"
                 style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
               >
@@ -757,6 +829,7 @@ export default function MentalObstacleCourse() {
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
+              data-testid="moc-run-again"
               onClick={retry}
               className="rounded-lg px-5 py-2 text-white"
               style={{ backgroundColor: 'var(--ink-accent)' }}

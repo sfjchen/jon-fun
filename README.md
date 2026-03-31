@@ -12,6 +12,9 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **1 Sentence Everyday** (`/games/daily-log`): One sentence per day, history, calendar, export, cross-device sync (localStorage + Supabase)
 - **Pear Navigator** (`/games/pear-navigator`): PearPad tablet simulator—Procreate, Notion, Figma guides; tap UI elements to advance; MS&E 165 demo; A/B test results at `/games/pear-navigator/results`
 - **Mental Obstacle Course** (`/games/mental-obstacle-course`): Six-round playful benchmark (reaction, arithmetic, patterns, digit memory, words, trivia) with a radar chart by domain; scores and history in **localStorage** only (no accounts)
+- **Quip Clash** (`/games/quip-clash`): Party room (4-digit **PIN** — Personal Identification Number) — Quiplash-style paired prompts, sequential votes, round multipliers, final round; **Supabase** (PostgreSQL) + **Realtime**; session keys `party_quiplash_*`
+- **Fib It** (`/games/fib-it`): Fibbage-style bluff trivia — lies, shuffled options, picks, likes, 3 rounds; 2–8 players; `party_fibbage_*` session keys
+- **Enough About You** (`/games/enough-about-you`): Intake questions, subject rounds (reputation bonus), final truth-vs-lie vote per player; 3–8 players; `party_eay_*` session keys
 
 ## 🚀 Quick Start
 
@@ -86,7 +89,10 @@ src/
 │   │   ├── tmr/
 │   │   ├── daily-log/
 │   │   ├── pear-navigator/
-│   │   └── mental-obstacle-course/
+│   │   ├── mental-obstacle-course/
+│   │   ├── quip-clash/
+│   │   ├── fib-it/
+│   │   └── enough-about-you/
 │   ├── leaderboards/       # Leaderboards page
 │   ├── globals.css         # Global styles
 │   ├── layout.tsx          # Root layout
@@ -106,15 +112,17 @@ src/
 │   ├── TMRManager.tsx
 │   ├── DailyLearnManager.tsx
 │   ├── PearNavigator.tsx
-│   └── MentalObstacleCourse.tsx
+│   ├── MentalObstacleCourse.tsx
+│   └── party/              # Quip Clash, Fib It, Enough About You (shared hook + UIs)
 └── lib/                    # Utility libraries
+    ├── party/              # Party game types, prompts, seed/scoring helpers
     ├── supabase.ts         # Supabase client
     ├── poker.ts            # Poker types & utilities
     ├── jeopardy.ts         # Jeopardy types & utilities
     ├── tmr.ts              # TMR config & session storage
     ├── dailyLearn.ts       # 1 Sentence Everyday (localStorage)
     ├── solver24.ts         # 24 Game solver algorithm
-    └── mental-obstacle-course.ts  # Mental Obstacle Course domains, scoring, local persistence
+    └── mental-obstacle-course.ts  # Mental Obstacle Course domains, scoring, local persistence, ?mocE2e=1 timings
 ```
 
 ## 🗄️ Database Schema (Supabase)
@@ -210,6 +218,14 @@ src/
 - `score_awarded` (integer)
 - `submitted_at` (timestamptz)
 
+**Party games** (shared `party_rooms` + `party_players`; per-game tables — see `supabase-migration-party-games.sql`)
+
+- **`party_rooms`**: `pin`, `host_id`, `game_kind` (`quiplash` | `fibbage` | `eay`), `phase`, `round_index`, `step_index`, `deadline_at`, `settings` (jsonb), `version`, `max_players`, `last_activity`
+- **`party_players`**: `room_pin`, `player_id`, `name`, `score`, `joined_at`
+- **Quiplash-like**: `party_quiplash_matchups`, `party_quiplash_answers`, `party_quiplash_votes`, `party_quiplash_final_prompt`, `party_quiplash_final_answers`, `party_quiplash_final_votes`
+- **Fibbage-like**: `party_fibbage_rounds`, `party_fibbage_lies`, `party_fibbage_picks`, `party_fibbage_likes`
+- **Enough About You-like**: `party_eay_intake`, `party_eay_rounds`, `party_eay_lies`, `party_eay_picks`, `party_eay_likes`, `party_eay_final`, `party_eay_final_picks`
+
 **`daily_learn_entries`**
 
 - `id` (uuid, primary key)
@@ -233,6 +249,7 @@ src/
 - `idx_game24_rooms_last_activity` on `game24_rooms(last_activity)`
 - `game24_rounds_room_pin_round_number_key`
 - `idx_game24_submissions_room_round` / `idx_game24_submissions_player_round`
+- `idx_party_rooms_last_activity` on `party_rooms(last_activity)` (cleanup)
 
 ## 🔌 API Routes
 
@@ -260,8 +277,15 @@ src/
 
 **`POST /api/poker/cleanup`**: Cleanup inactive rooms (cron)
 
-- Deletes rooms inactive >24 hours
+- Deletes poker, Game 24, and **party** (`party_rooms`) rooms inactive >24 hours (party child rows cascade on room delete)
 - Requires `CLEANUP_API_KEY` env var (optional)
+
+**Party games** (`/api/party/…`)
+
+- **`POST /api/party/rooms`**: `{ hostName, gameKind: 'quiplash' | 'fibbage' | 'eay' }` → `{ pin, hostId, playerId }`
+- **`GET /api/party/rooms/[pin]`**: Room, players, game payload (`quiplash` | `fibbage` | `eay`)
+- **`POST /api/party/rooms/[pin]`**: `join` | `start` | `leave` | `play-again` (host reset)
+- **`POST /api/party/quiplash/[pin]`**, **`/api/party/fibbage/[pin]`**, **`/api/party/eay/[pin]`**: game actions (answers, votes, advance, etc.)
 
 **`POST /api/game24/rooms`**: Create Game24 room (4-digit PIN)
 
@@ -402,7 +426,9 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
+- **Party games (Quip Clash, Fib It, Enough About You)**: Shared Supabase schema (`supabase-migration-party-games.sql`), APIs under `/api/party/*`, client in `src/components/party/` + `src/lib/party/`; routes `/games/quip-clash`, `/games/fib-it`, `/games/enough-about-you` + Theme 2 mirrors; home cards; `PageShell` card-page paths; cleanup cron includes `party_rooms`; Playwright navigation entries.
 - **Mental Obstacle Course**: New game at `/games/mental-obstacle-course` (Theme 2 mirror under `/theme2/games/mental-obstacle-course`) — six sequential rounds (Speed, Numbers, Logic, Working memory, Words, Knowledge) with SVG radar chart, course score, localStorage history + personal best; non-clinical copy throughout; home cards + `PageShell` card-page styling; e2e navigation entry.
+- **E2E (Mental Obstacle + shell)**: `?mocE2e=1` shortens timers and exposes `data-testid` hooks for Playwright; `e2e/mental-obstacle-course.spec.ts` (desktop full run + mobile tap/trivia + theme query preservation); `e2e/helpers/moc.ts`; `PageShell` preserves query string on Theme 2 / Main switch; theme switcher moves to **top-right** on mental-obstacle routes so it does not cover bottom controls; root `layout` wraps `PageShell` in `Suspense` for `useSearchParams`.
 - **README — Core design principles**: Product, UX, visual tone, `PageShell` / home-link behavior, and local-first + optional Supabase sync documented in-repo (principles centralized in README; `DESIGN-SYSTEM.md` remains token/palette reference).
 - **Chwazi mobile Home**: Shell header gets `z-50` above the full-screen touch layer; touch handlers skip `preventDefault` on link targets; in-game ← Home uses correct Theme 2 href and a larger tap target.
 - **Deploy fix**: `playwright.config.ts` no longer sets `workers: undefined` (incompatible with `exactOptionalPropertyTypes` during `next build` typecheck).

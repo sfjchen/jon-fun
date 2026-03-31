@@ -33,8 +33,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch game24 rooms' }, { status: 500 })
     }
 
+    const { data: inactivePartyRooms, error: fetchPartyError } = await supabase
+      .from('party_rooms')
+      .select('pin')
+      .or(`last_activity.is.null,last_activity.lt.${twentyFourHoursAgo.toISOString()}`)
+
+    if (fetchPartyError) {
+      return NextResponse.json({ error: 'Failed to fetch party rooms' }, { status: 500 })
+    }
+
     const pins = inactiveRooms?.map(r => r.pin) || []
     const game24Pins = inactiveGame24Rooms?.map(r => r.pin) || []
+    const partyPins = inactivePartyRooms?.map(r => r.pin) || []
 
     // Delete related data first (foreign key constraints) - run in parallel
     await Promise.all([
@@ -53,6 +63,13 @@ export async function POST(request: NextRequest) {
           ])
         : Promise.resolve(),
     ])
+
+    if (partyPins.length) {
+      const { error: deletePartyError } = await supabase.from('party_rooms').delete().in('pin', partyPins)
+      if (deletePartyError) {
+        return NextResponse.json({ error: 'Failed to delete party rooms' }, { status: 500 })
+      }
+    }
     
     // Delete rooms
     if (pins.length) {
@@ -75,7 +92,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const deletedCount = (inactiveRooms?.length || 0) + (inactiveGame24Rooms?.length || 0)
+    const deletedCount = (inactiveRooms?.length || 0) + (inactiveGame24Rooms?.length || 0) + (inactivePartyRooms?.length || 0)
 
     return NextResponse.json({ 
       deleted: deletedCount, 

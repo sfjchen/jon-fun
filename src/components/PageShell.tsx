@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { usePathname, useSearchParams } from 'next/navigation'
+import { useEffect, useState, type CSSProperties } from 'react'
 
 type PageShellProps = {
   children: React.ReactNode
@@ -30,8 +30,14 @@ function isChwaziPath(pathname: string): boolean {
   return pathname?.includes('/games/chwazi') ?? false
 }
 
+function isMentalObstacleCoursePath(pathname: string): boolean {
+  return pathname?.includes('mental-obstacle-course') ?? false
+}
+
 export function PageShell({ children, title, showBack }: PageShellProps) {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const searchSuffix = searchParams.toString() ? `?${searchParams.toString()}` : ''
   const [isMobile, setIsMobile] = useState(false)
   const isTheme2 = pathname.startsWith('/theme2')
   const chwaziMobile = isChwaziPath(pathname ?? '') && isMobile
@@ -41,7 +47,9 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
   const fullBleed = isFullBleed(pathname ?? '', chwaziMobile)
   const pearNav = isPearNavigator(pathname ?? '')
   const homeHref = isTheme2 ? '/theme2' : '/'
-  const themeSwitchHref = isNotebook ? `/theme2${pathname === '/' ? '' : (pathname ?? '')}` : (pathname?.replace(/^\/theme2/, '') || '/')
+  const themeSwitchHref = isNotebook
+    ? `/theme2${pathname === '/' ? '' : (pathname ?? '')}${searchSuffix}`
+    : `${pathname?.replace(/^\/theme2/, '') || '/'}${searchSuffix}`
   const useBigLogo = isNotebook && !pearNav
 
   useEffect(() => {
@@ -76,6 +84,9 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
     (pathname?.includes('/games/jeopardy') ||
       pathname?.includes('/games/chwazi') ||
       pathname?.includes('/games/mental-obstacle-course') ||
+      pathname?.includes('/games/quip-clash') ||
+      pathname?.includes('/games/fib-it') ||
+      pathname?.includes('/games/enough-about-you') ||
       pathname?.includes('/leaderboards')) ??
     false
   const outerLinePaper = isNotebook && !pearNav && !isCardPage
@@ -84,6 +95,17 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
   const logoSize = useBigLogo ? 'text-5xl md:text-6xl lg:text-7xl' : useCompactHeader ? 'text-2xl sm:text-3xl' : 'text-3xl md:text-4xl'
   /* Chwazi mobile: full-viewport fixed layer in main would paint over header without a stacking boost */
   const headerStackClass = chwaziMobile ? 'relative z-50' : ''
+  const mentalObstacle = isMentalObstacleCoursePath(pathname ?? '')
+  const themeSwitchStyle: CSSProperties = mentalObstacle
+    ? {
+        color: 'var(--ink-accent)',
+        top: 'calc(0.65rem + env(safe-area-inset-top, 0px))',
+        bottom: 'auto',
+      }
+    : {
+        color: 'var(--ink-accent)',
+        bottom: 'calc(1rem + env(safe-area-inset-bottom, 0))',
+      }
   return (
     <div
       data-theme={isNotebook ? 'notebook' : undefined}
@@ -138,8 +160,9 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
       {!chwaziMobile && (
         <Link
           href={themeSwitchHref}
+          data-testid="theme-switch"
           className="fixed right-4 z-40 text-sm px-3 py-2 rounded-lg bg-[var(--ink-paper)] border border-[var(--ink-border)] shadow-md hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2"
-          style={{ color: 'var(--ink-accent)', bottom: 'calc(1rem + env(safe-area-inset-bottom, 0))' }}
+          style={themeSwitchStyle}
         >
           {isNotebook ? 'Theme 2' : 'Main'}
         </Link>
