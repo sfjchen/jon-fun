@@ -62,8 +62,8 @@ Main site aesthetic. Applied when pathname does NOT start with `/theme2` via `da
 
 ### Typography
 
-- **All text:** Kalam (readable handwritten/calligraphic). Applied via `[data-theme="notebook"]` plus optional `html.notebook-theme-root` scale—**exact sizes:** see `globals.css` (values evolve; README principles stay stable).
-- **Inputs, textarea, button:** Inherit Kalam.
+- **All text:** Architects Daughter (upright print-style handwriting; open counters, less slant than Kalam). Applied via `[data-theme="notebook"]` plus optional `html.notebook-theme-root` scale—**exact sizes/tracking:** see `globals.css`. **`font-synthesis: none`** on notebook avoids faux-bold on the single master.
+- **Inputs, textarea, button:** Inherit notebook stack.
 
 ### Doodles
 

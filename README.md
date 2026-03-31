@@ -47,7 +47,7 @@ These guide **what** we build (product + UX) and **how** it should feel (visual 
 ### Visual and tonal language (ties to themes)
 
 - **Simple, bold, elegant:** Strong type and a **restrained palette**—confident without being stiff (**not** corporate-formal) and clear without being cute (**not** overly casual copy or novelty UI).
-- **Two public faces:** **Notebook** (`/`)—handwritten/calligraphic **Kalam**, cream line-paper, Stanford-adjacent red accent. **Ink & Paper** (`/theme2`)—Lora + Charter, cream + burgundy. Game-specific skins (Poker felt, Pear Navigator dark) are **allowed exceptions** where they aid the metaphor.
+- **Two public faces:** **Notebook** (`/`)—handwritten **Architects Daughter** (upright, open counters; wider tracking than Kalam), cream line-paper, Stanford-adjacent red accent. **Ink & Paper** (`/theme2`)—Lora + Charter, cream + burgundy. Game-specific skins (Poker felt, Pear Navigator dark) are **allowed exceptions** where they aid the metaphor.
 
 ### Data, identity, and sync
 
@@ -429,6 +429,7 @@ Running log of project work. Update this section when making significant changes
 **2026-03**
 
 - **Notebook font legibility pass**: Main theme switched from Patrick Hand to **Kalam**; tightened stacked letter spacing (root + theme) and reduced over-scaling for easier paragraph reading while keeping handwritten/calligraphic feel. Updated `globals.css`, README principles, and `docs/DESIGN-SYSTEM.md`.
+- **Notebook font (second pass)**: **Kalam** → **Architects Daughter** for less slant, more letter-spacing and line-height, and **`font-synthesis: none`** so `font-bold` does not faux-bold the single master. Home **`GameCard`** titles use **`font-semibold`** + **`tracking-wide`**. Docs/README aligned.
 - **Party games (Quip Clash, Fib It, Enough About You)**: Shared Supabase schema (`supabase-migration-party-games.sql`), APIs under `/api/party/*`, client in `src/components/party/` + `src/lib/party/`; routes `/games/quip-clash`, `/games/fib-it`, `/games/enough-about-you` + Theme 2 mirrors; home cards; `PageShell` card-page paths; cleanup cron includes `party_rooms`; Playwright navigation entries; client `partyFetch` + 25s timeout; `data-testid` `party-room-pin` / `party-error`.
 - **E2E (party)**: `e2e/party-games.spec.ts` runs **serial** with lobby scoped to first `aside`; create/join assertions use `expect.poll` for pin or error; Fib It **← Home** waits for lobby **Create** enabled then `waitForURL('/')` + click to avoid hydration flake; removed invalid `maxFailures: 0` from Playwright config.
 - **Mental Obstacle Course**: New game at `/games/mental-obstacle-course` (Theme 2 mirror under `/theme2/games/mental-obstacle-course`) — six sequential rounds (Speed, Numbers, Logic, Working memory, Words, Knowledge) with SVG radar chart, course score, localStorage history + personal best; non-clinical copy throughout; home cards + `PageShell` card-page styling; e2e navigation entry.

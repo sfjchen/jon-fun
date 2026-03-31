@@ -40,7 +40,7 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact }: GameCa
           <span className="text-5xl leading-none">{game.icon}</span>
         )}
       </div>
-      <h2 className={`font-lora text-xl font-bold ${useCompact ? 'mb-2' : 'mb-[30px]'}`} style={{ color: 'var(--ink-text)' }}>
+      <h2 className={`font-lora text-xl font-semibold tracking-wide ${useCompact ? 'mb-2' : 'mb-[30px]'}`} style={{ color: 'var(--ink-text)' }}>
         {game.title}
       </h2>
       <p className={`text-sm flex-1 min-h-0 ${useCompact ? 'mb-4 line-clamp-2' : 'mb-[30px] line-clamp-3'}`} style={{ color: 'var(--ink-muted)' }}>
