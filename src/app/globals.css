@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap');
 @import "tailwindcss";
 
 /* Ink & Paper design tokens — cream + burgundy palette */
@@ -33,21 +33,25 @@
   --ink-paper: var(--nb-paper);
 }
 
-/* Theme 1 (notebook): keep close to base scale for readability. */
+/* Theme 1 (notebook): slight scale + tracking for handwriting legibility (x-height, open counters). */
 html.notebook-theme-root {
   font-size: 104.5%;
-  letter-spacing: 0.006em;
+  letter-spacing: 0.012em;
 }
 
-/* Notebook: Kalam — handwritten/calligraphic feel with better body-text legibility. */
+/*
+ * Notebook: Architects Daughter — upright print-style handwriting, open counters vs Kalam’s slant/density.
+ * Legibility: generous tracking/leading; font-synthesis:none avoids faux-bold clogging apertures (single master).
+ */
 [data-theme="notebook"] {
-  font-family: 'Kalam', cursive;
+  font-family: 'Architects Daughter', cursive;
   font-size: 1.15rem;
-  letter-spacing: 0.012em;
-  line-height: 1.55;
+  letter-spacing: 0.028em;
+  line-height: 1.62;
+  font-synthesis: none;
 }
 [data-theme="notebook"] .font-lora {
-  font-family: 'Kalam', cursive;
+  font-family: 'Architects Daughter', cursive;
 }
 [data-theme="notebook"] input,
 [data-theme="notebook"] textarea,
@@ -56,7 +60,7 @@ html.notebook-theme-root {
   font-family: inherit;
 }
 [data-theme="notebook"] .font-mono {
-  font-family: 'Kalam', cursive;
+  font-family: 'Architects Daughter', cursive;
 }
 
 /* Notebook line paper — single global source, fixed to viewport so lines align everywhere */
@@ -80,8 +84,8 @@ html.notebook-theme-root {
   --color-ink-paper: #f5f1eb;
   --font-lora: 'Lora', serif;
   --font-caveat: 'Caveat', cursive;
-  --font-kalam: 'Kalam', cursive;
-  --font-patrick-hand: 'Kalam', cursive;
+  --font-kalam: 'Architects Daughter', cursive;
+  --font-patrick-hand: 'Architects Daughter', cursive;
   --font-charter: Charter, 'Bitstream Charter', Georgia, serif;
 }
 
