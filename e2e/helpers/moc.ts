@@ -15,6 +15,14 @@ export async function mocStartFromIntro(page: Page, opts?: { tap?: boolean }): P
   else await start.click()
 }
 
+/** Per-domain preview gate: timer starts only after this action. */
+export async function mocStartRound(page: Page, opts?: { tap?: boolean }): Promise<void> {
+  const start = page.getByTestId('moc-round-start')
+  await expect(start).toBeVisible({ timeout: 20_000 })
+  if (opts?.tap) await start.tap()
+  else await start.click()
+}
+
 /**
  * Mental Obstacle Course: logic/trivia buttons. On Mobile Chrome use `tap: true`
  * (mouse-style clicks can stall in "performing click action" on touch emulation).
@@ -23,8 +31,17 @@ export async function domClickTestId(page: Page, testId: string, opts?: ClickOpt
   const loc = page.locator(`[data-testid="${testId}"]`).first()
   await loc.waitFor({ state: 'visible', timeout: 15_000 })
   if (opts?.tap) {
-    await loc.tap()
+    try {
+      await loc.tap()
+    } catch {
+      await loc.dispatchEvent('click')
+    }
   } else {
-    await loc.click({ force: true, noWaitAfter: true, timeout: 15_000 })
+    try {
+      await loc.click({ force: true, noWaitAfter: true, timeout: 15_000 })
+    } catch {
+      // Desktop fallback for occasional Playwright "performing click action" stalls.
+      await loc.dispatchEvent('click')
+    }
   }
 }

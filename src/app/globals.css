@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap');
 @import "tailwindcss";
 
 /* Ink & Paper design tokens — cream + burgundy palette */
@@ -33,20 +33,21 @@
   --ink-paper: var(--nb-paper);
 }
 
-/* Theme 1 (notebook): half of prior bump vs default (was 112.5% / +12.5% → +6.25%) */
+/* Theme 1 (notebook): keep close to base scale for readability. */
 html.notebook-theme-root {
-  font-size: 106.25%;
-  letter-spacing: 0.018em;
+  font-size: 104.5%;
+  letter-spacing: 0.006em;
 }
 
-/* Notebook: Patrick Hand (readable handwritten); half-step between original 1.2rem/0.03em and full bump */
+/* Notebook: Kalam — handwritten/calligraphic feel with better body-text legibility. */
 [data-theme="notebook"] {
-  font-family: 'Patrick Hand', cursive;
-  font-size: 1.225rem;
-  letter-spacing: 0.043em;
+  font-family: 'Kalam', cursive;
+  font-size: 1.15rem;
+  letter-spacing: 0.012em;
+  line-height: 1.55;
 }
 [data-theme="notebook"] .font-lora {
-  font-family: 'Patrick Hand', cursive;
+  font-family: 'Kalam', cursive;
 }
 [data-theme="notebook"] input,
 [data-theme="notebook"] textarea,
@@ -55,7 +56,7 @@ html.notebook-theme-root {
   font-family: inherit;
 }
 [data-theme="notebook"] .font-mono {
-  font-family: 'Patrick Hand', cursive;
+  font-family: 'Kalam', cursive;
 }
 
 /* Notebook line paper — single global source, fixed to viewport so lines align everywhere */
@@ -79,7 +80,8 @@ html.notebook-theme-root {
   --color-ink-paper: #f5f1eb;
   --font-lora: 'Lora', serif;
   --font-caveat: 'Caveat', cursive;
-  --font-patrick-hand: 'Patrick Hand', cursive;
+  --font-kalam: 'Kalam', cursive;
+  --font-patrick-hand: 'Kalam', cursive;
   --font-charter: Charter, 'Bitstream Charter', Georgia, serif;
 }
 
