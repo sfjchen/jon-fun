@@ -62,7 +62,7 @@ Main site aesthetic. Applied when pathname does NOT start with `/theme2` via `da
 
 ### Typography
 
-- **All text:** Architects Daughter (upright print-style handwriting; open counters, less slant than Kalam). Applied via `[data-theme="notebook"]` plus optional `html.notebook-theme-root` scale—**exact sizes/tracking:** see `globals.css`. **`font-synthesis: none`** on notebook avoids faux-bold on the single master.
+- **All text:** Patrick Hand (medium-weight casual handwriting—between thin Architects Daughter and heavy Kalam). Applied via `[data-theme="notebook"]` plus optional `html.notebook-theme-root` scale—**exact sizes/tracking:** see `globals.css`. **`font-synthesis: none`** on notebook avoids faux-bold on the single master.
 - **Inputs, textarea, button:** Inherit notebook stack.
 
 ### Doodles
