@@ -330,9 +330,9 @@ function LogicPhase({ onDone, quickE2e }: { onDone: (score: number) => void; qui
 }
 
 function MemoryPhase({ onDone, quickE2e }: { onDone: (score: number) => void; quickE2e: boolean }) {
-  const [len, setLen] = useState(3)
+  const [len, setLen] = useState(4)
   const [phase, setPhase] = useState<'show' | 'input' | 'done'>('show')
-  const [digits, setDigits] = useState(() => randomDigitString(3))
+  const [digits, setDigits] = useState(() => randomDigitString(4))
   const [value, setValue] = useState('')
   const maxAchieved = useRef(0)
 
@@ -348,9 +348,9 @@ function MemoryPhase({ onDone, quickE2e }: { onDone: (score: number) => void; qu
     if (phase !== 'input') return
     if (value === digits) {
       maxAchieved.current = Math.max(maxAchieved.current, len)
-      if (len >= 9) {
+      if (len >= 10) {
         setPhase('done')
-        onDone(scoreDigitSpan(9))
+        onDone(scoreDigitSpan(10))
         return
       }
       const nextLen = len + 1
@@ -616,6 +616,45 @@ function TriviaPhase({
 
 type Screen = 'intro' | 'calibrate' | 'play' | 'results'
 
+type RoundPrep = {
+  title: string
+  howTo: string
+  demo: string
+}
+
+const ROUND_PREP: Record<MentalDomain, RoundPrep> = {
+  speed: {
+    title: 'Speed',
+    howTo: 'Tap only when the panel turns green. Early taps are penalized and reset the flow.',
+    demo: 'Demo: wait... wait... GREEN -> tap once as fast as you can.',
+  },
+  numbers: {
+    title: 'Numbers',
+    howTo: 'Solve quickly but do not spam. Accuracy and pace are both scored.',
+    demo: 'Demo: 36 ÷ 6 = 6, then move to the next prompt.',
+  },
+  logic: {
+    title: 'Logic',
+    howTo: 'Pick the next number in the sequence. Patterns now include stronger distractors.',
+    demo: 'Demo: 3, 6, 12, 24, ? -> 48.',
+  },
+  workingMemory: {
+    title: 'Working memory',
+    howTo: 'Memorize the digits shown, then type them exactly in order.',
+    demo: 'Demo: see 7391, hide it, then type 7391 from memory.',
+  },
+  words: {
+    title: 'Words',
+    howTo: 'Desktop: type a longer phrase exactly. Touch: tap letters in order to complete the target word.',
+    demo: 'Demo: keep rhythm over the full sentence; avoid rushing the first half.',
+  },
+  knowledge: {
+    title: 'Knowledge',
+    howTo: 'Choose one answer per question. Keep pace, but prioritize certainty.',
+    demo: 'Demo: read all choices, eliminate two, then commit.',
+  },
+}
+
 export default function MentalObstacleCourse() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -625,6 +664,7 @@ export default function MentalObstacleCourse() {
   const [clientReady, setClientReady] = useState(false)
   const [inputMode, setInputMode] = useState<InputMode>('mixed')
   const [roundIdx, setRoundIdx] = useState(0)
+  const [roundReady, setRoundReady] = useState(false)
   const accRef = useRef<Partial<Record<MentalDomain, number>>>({})
   const [result, setResult] = useState<CourseRunResult | null>(null)
   const [triviaBatch, setTriviaBatch] = useState(() => pickTriviaBatch(6))
@@ -667,6 +707,7 @@ export default function MentalObstacleCourse() {
         setResult(run)
         setScreen('results')
       } else {
+        setRoundReady(false)
         setRoundIdx((i) => i + 1)
       }
     },
@@ -682,6 +723,7 @@ export default function MentalObstacleCourse() {
     accRef.current = {}
     setTriviaBatch(pickTriviaBatch(6))
     setRoundIdx(0)
+    setRoundReady(false)
     setScreen('play')
   }
 
@@ -689,10 +731,24 @@ export default function MentalObstacleCourse() {
     setResult(null)
     accRef.current = {}
     setRoundIdx(0)
+    setRoundReady(false)
     setScreen('intro')
   }
 
-  const domain = DOMAIN_ORDER[roundIdx]
+  const domain = DOMAIN_ORDER[roundIdx] ?? 'speed'
+  const prep = ROUND_PREP[domain]
+
+  useEffect(() => {
+    if (screen !== 'play' || roundReady) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === 'NumpadEnter') {
+        e.preventDefault()
+        setRoundReady(true)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [screen, roundReady])
 
   return (
     <div className="mx-auto max-w-3xl space-y-8 pb-24 md:pb-28">
@@ -779,25 +835,58 @@ export default function MentalObstacleCourse() {
             ))}
           </div>
 
-          {domain === 'speed' && (
-            <ReactionPhase quickE2e={quickE2e} onDone={(s) => onRoundComplete('speed', s)} />
-          )}
-          {domain === 'numbers' && (
-            <ArithmeticPhase quickE2e={quickE2e} onDone={(s) => onRoundComplete('numbers', s)} />
-          )}
-          {domain === 'logic' && <LogicPhase quickE2e={quickE2e} onDone={(s) => onRoundComplete('logic', s)} />}
-          {domain === 'workingMemory' && (
-            <MemoryPhase quickE2e={quickE2e} onDone={(s) => onRoundComplete('workingMemory', s)} />
-          )}
-          {domain === 'words' && (
-            <WordsPhase
-              quickE2e={quickE2e}
-              touchMode={inputMode !== 'keyboard'}
-              onDone={(s) => onRoundComplete('words', s)}
-            />
-          )}
-          {domain === 'knowledge' && (
-            <TriviaPhase quickE2e={quickE2e} batch={triviaBatch} onDone={(s) => onRoundComplete('knowledge', s)} />
+          {!roundReady ? (
+            <div
+              className="space-y-4 rounded-lg border p-5"
+              style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+              data-testid="moc-round-preview"
+            >
+              <p className="text-sm font-semibold" style={{ color: 'var(--ink-text)' }}>
+                Up next: {prep.title}
+              </p>
+              <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                {prep.howTo}
+              </p>
+              <p className="rounded border px-3 py-2 text-xs" style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-muted)' }}>
+                {prep.demo}
+              </p>
+              <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
+                Timer starts only after you press Start (or Enter / Return).
+              </p>
+              <button
+                type="button"
+                data-testid="moc-round-start"
+                onClick={() => setRoundReady(true)}
+                className="rounded-lg px-5 py-2 text-white"
+                style={{ backgroundColor: 'var(--ink-accent)' }}
+                autoFocus
+              >
+                Start {prep.title}
+              </button>
+            </div>
+          ) : (
+            <>
+              {domain === 'speed' && (
+                <ReactionPhase quickE2e={quickE2e} onDone={(s) => onRoundComplete('speed', s)} />
+              )}
+              {domain === 'numbers' && (
+                <ArithmeticPhase quickE2e={quickE2e} onDone={(s) => onRoundComplete('numbers', s)} />
+              )}
+              {domain === 'logic' && <LogicPhase quickE2e={quickE2e} onDone={(s) => onRoundComplete('logic', s)} />}
+              {domain === 'workingMemory' && (
+                <MemoryPhase quickE2e={quickE2e} onDone={(s) => onRoundComplete('workingMemory', s)} />
+              )}
+              {domain === 'words' && (
+                <WordsPhase
+                  quickE2e={quickE2e}
+                  touchMode={inputMode !== 'keyboard'}
+                  onDone={(s) => onRoundComplete('words', s)}
+                />
+              )}
+              {domain === 'knowledge' && (
+                <TriviaPhase quickE2e={quickE2e} batch={triviaBatch} onDone={(s) => onRoundComplete('knowledge', s)} />
+              )}
+            </>
           )}
         </div>
       )}

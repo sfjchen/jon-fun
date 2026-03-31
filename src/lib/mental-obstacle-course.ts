@@ -66,11 +66,14 @@ export function scoreReactionMedian(rtsMs: number[]): number {
 
 /** Arithmetic sprint: accuracy-weighted throughput vs a soft target. */
 export function scoreArithmetic(correct: number, wrong: number, durationMs: number): number {
+  const attempts = correct + wrong
+  if (attempts <= 0) return 0
   const t = Math.max(durationMs, 1)
   const cpm = (correct * 60000) / t
-  const penalty = wrong * 8
-  const raw = cpm * 4 - penalty
-  return Math.round(clamp(raw, 0, 100))
+  const acc = correct / attempts
+  const pace = clamp(cpm / 20, 0, 1)
+  const base = acc * 0.7 + pace * 0.3
+  return Math.round(clamp(base, 0, 1) * 100)
 }
 
 /** Pattern logic: correct rounds / total, small time bonus. */
@@ -102,8 +105,8 @@ export function scoreWordBurst(
   for (let i = 0; i < n; i++) if (exp[i] === got[i]) matches++
   const acc = matches / exp.length
   const wpm = got.length / Math.max(elapsedMs / 60000, 0.001)
-  const speedPart = clamp(wpm / 60, 0, 1) * 40
-  return Math.round(acc * 60 + speedPart)
+  const speedPart = clamp(wpm / 48, 0, 1) * 30
+  return Math.round(acc * 70 + speedPart)
 }
 
 /** Mobile word: taps in order, time cap. */
@@ -141,17 +144,33 @@ function randInt(a: number, b: number): number {
 export type ArithmeticProblem = { prompt: string; answer: number }
 
 export function randomArithmeticProblem(): ArithmeticProblem {
-  const op = (['+', '-', '*'] as const)[randInt(0, 2)]!
-  let a = randInt(2, 12)
-  let b = randInt(2, 12)
-  if (op === '-') {
+  const kind = randInt(0, 4)
+  if (kind === 0) {
+    const a = randInt(18, 79)
+    const b = randInt(12, 69)
+    return { prompt: `${a} + ${b}`, answer: a + b }
+  }
+  if (kind === 1) {
+    let a = randInt(40, 150)
+    let b = randInt(15, 95)
     if (a < b) [a, b] = [b, a]
     return { prompt: `${a} − ${b}`, answer: a - b }
   }
-  if (op === '+') return { prompt: `${a} + ${b}`, answer: a + b }
-  a = randInt(2, 9)
-  b = randInt(2, 9)
-  return { prompt: `${a} × ${b}`, answer: a * b }
+  if (kind === 2) {
+    const a = randInt(6, 16)
+    const b = randInt(4, 13)
+    return { prompt: `${a} × ${b}`, answer: a * b }
+  }
+  if (kind === 3) {
+    const b = randInt(3, 14)
+    const q = randInt(4, 18)
+    const a = b * q
+    return { prompt: `${a} ÷ ${b}`, answer: q }
+  }
+  const a = randInt(6, 28)
+  const b = randInt(2, 11)
+  const c = randInt(2, 9)
+  return { prompt: `${a} + ${b} × ${c}`, answer: a + b * c }
 }
 
 export type PatternProblem = {
@@ -171,30 +190,46 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function randomPatternProblem(): PatternProblem {
-  const kind = randInt(0, 3)
+  const kind = randInt(0, 6)
   let seq: number[]
   let ans: number
   if (kind === 0) {
-    const start = randInt(1, 8)
-    const step = randInt(2, 4)
+    const start = randInt(3, 14)
+    const step = randInt(3, 8)
     seq = [start, start + step, start + step * 2, start + step * 3]
     ans = start + step * 4
   } else if (kind === 1) {
-    const start = randInt(1, 4)
-    seq = [start, start * 2, start * 4, start * 8]
-    ans = start * 16
+    const start = randInt(2, 7)
+    const mul = randInt(2, 4)
+    seq = [start, start * mul, start * mul * mul, start * mul * mul * mul]
+    ans = start * mul * mul * mul * mul
   } else if (kind === 2) {
-    const base = randInt(2, 5)
+    const base = randInt(3, 6)
     seq = [base, base * base, base * base * base]
     ans = Math.pow(base, 4)
+  } else if (kind === 3) {
+    const start = randInt(2, 9)
+    const d = randInt(2, 5)
+    seq = [start, start + d, start + d + (d + 1), start + d + (d + 1) + (d + 2)]
+    ans = seq[3]! + (d + 3)
+  } else if (kind === 4) {
+    const a = randInt(2, 7)
+    const b = randInt(6, 14)
+    seq = [a, b, a + 2, b + 2]
+    ans = a + 4
+  } else if (kind === 5) {
+    const s = randInt(2, 6)
+    seq = [s, s + 3, s + 8, s + 15]
+    ans = s + 24
   } else {
-    seq = [1, 4, 9, 16]
-    ans = 25
+    const s = randInt(2, 10)
+    seq = [s, s + 5, s + 12, s + 21]
+    ans = s + 32
   }
   const prompt = `${seq.join(', ')}, ?`
   const wrong = new Set<number>()
   while (wrong.size < 3) {
-    const delta = randInt(-8, 8)
+    const delta = randInt(-6, 6)
     const w = ans + delta
     if (w !== ans && w > 0 && w < 500) wrong.add(w)
   }
@@ -211,19 +246,29 @@ export type TriviaItem = {
 
 const TRIVIA_BANK: TriviaItem[] = [
   {
-    question: 'How many sides does a hexagon have?',
-    choices: ['5', '6', '7', '8'],
+    question: 'Which law states that pressure is inversely proportional to volume at constant temperature?',
+    choices: ['Charles law', 'Avogadro law', 'Boyle law', 'Hooke law'],
+    correct: 2,
+  },
+  {
+    question: 'What is the derivative of x^3 at x = 2?',
+    choices: ['6', '8', '10', '12'],
+    correct: 3,
+  },
+  {
+    question: 'Which sorting algorithm has average time complexity O(n log n)?',
+    choices: ['Bubble sort', 'Insertion sort', 'Merge sort', 'Selection sort'],
+    correct: 2,
+  },
+  {
+    question: 'In probability, if events A and B are independent, P(A ∩ B) equals:',
+    choices: ['P(A) + P(B)', 'P(A)P(B)', 'P(A)/P(B)', '1 - P(A)'],
     correct: 1,
   },
   {
-    question: 'Which planet is known as the Red Planet?',
-    choices: ['Venus', 'Jupiter', 'Mars', 'Saturn'],
-    correct: 2,
-  },
-  {
-    question: 'What is the chemical symbol for water?',
-    choices: ['O2', 'CO2', 'H2O', 'NaCl'],
-    correct: 2,
+    question: 'Which element has atomic number 26?',
+    choices: ['Copper', 'Iron', 'Nickel', 'Zinc'],
+    correct: 1,
   },
   {
     question: 'In computing, what does CPU stand for?',
@@ -236,49 +281,44 @@ const TRIVIA_BANK: TriviaItem[] = [
     correct: 0,
   },
   {
-    question: 'Which ocean is the largest?',
-    choices: ['Atlantic', 'Indian', 'Arctic', 'Pacific'],
-    correct: 3,
-  },
-  {
-    question: 'How many minutes are in one hour?',
-    choices: ['30', '60', '100', '90'],
+    question: 'What is 17% of 350?',
+    choices: ['49.5', '59.5', '69.5', '79.5'],
     correct: 1,
   },
   {
-    question: 'What is 15% of 200?',
-    choices: ['20', '25', '30', '35'],
+    question: 'In SQL, which clause is evaluated after GROUP BY to filter grouped rows?',
+    choices: ['WHERE', 'LIMIT', 'HAVING', 'ORDER BY'],
     correct: 2,
   },
   {
-    question: 'Which shape has three sides?',
-    choices: ['Square', 'Triangle', 'Pentagon', 'Circle'],
+    question: 'If f(x) = 2x + 3 and g(x) = x^2, what is f(g(2))?',
+    choices: ['7', '9', '11', '13'],
+    correct: 2,
+  },
+  {
+    question: 'Which ocean current is known for warming Western Europe?',
+    choices: ['Labrador Current', 'Gulf Stream', 'Canary Current', 'Benguela Current'],
     correct: 1,
   },
   {
-    question: 'What does HTML stand for?',
+    question: 'For a right triangle with legs 9 and 12, the hypotenuse is:',
+    choices: ['13', '14', '15', '16'],
+    correct: 2,
+  },
+  {
+    question: 'Which data structure works on LIFO order?',
+    choices: ['Queue', 'Stack', 'Heap', 'Graph'],
+    correct: 1,
+  },
+  {
+    question: 'Which statement about standard deviation is true?',
     choices: [
-      'HyperText Markup Language',
-      'High Transfer Mode Link',
-      'Home Tool Markup List',
-      'Hyperlink Text Management Layer',
+      'It measures central tendency',
+      'It measures spread around the mean',
+      'It is always greater than variance',
+      'It cannot be zero',
     ],
-    correct: 0,
-  },
-  {
-    question: 'Which month has 28 or 29 days in a leap year for February?',
-    choices: ['January', 'February', 'March', 'April'],
     correct: 1,
-  },
-  {
-    question: 'Speed of light is fastest in which medium?',
-    choices: ['Water', 'Glass', 'Vacuum', 'Air'],
-    correct: 2,
-  },
-  {
-    question: 'A dozen equals how many items?',
-    choices: ['10', '11', '12', '13'],
-    correct: 2,
   },
 ]
 
@@ -287,14 +327,14 @@ export function pickTriviaBatch(count: number): TriviaItem[] {
 }
 
 const WORD_PHRASES = [
-  'the quick fox',
-  'type fast now',
-  'mental course run',
-  'sfjc dot dev hub',
-  'logic speed words',
+  'during focused practice, calm repetition beats rushing through each question',
+  'balanced performance comes from steady attention, accuracy, and consistent pacing',
+  'train the fundamentals first, then add speed without sacrificing control',
+  'small gains in each domain add up to meaningful progress over time',
+  'when a round feels hard, slow down, breathe, and commit to a clean attempt',
 ]
 
-const TAP_WORDS = ['FOCUS', 'BRAIN', 'QUIZ', 'MIND', 'SHARP', 'CALM', 'FLOW', 'GRID']
+const TAP_WORDS = ['FOCUSING', 'BALANCED', 'PATTERNS', 'MEMORIES', 'STAMINAS', 'CONTROLS', 'CONSISTS', 'ATTENTIVE']
 
 export function randomTypingPhrase(): string {
   return WORD_PHRASES[randInt(0, WORD_PHRASES.length - 1)]!

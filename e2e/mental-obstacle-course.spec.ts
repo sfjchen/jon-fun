@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { domClickTestId, mocStartFromIntro } from './helpers/moc'
+import { domClickTestId, mocStartFromIntro, mocStartRound } from './helpers/moc'
 
 /** Short timers + test selectors; see `MOC_E2E_QUERY` in `mental-obstacle-course.ts`. */
 const MOC_QUICK = (path: string) =>
@@ -35,6 +35,7 @@ test.describe('Mental Obstacle Course', () => {
       timeout: 60_000,
     })
     await mocStartFromIntro(page)
+    await mocStartRound(page)
 
     const rx = page.getByTestId('moc-reaction-tap')
     await expect(rx).toBeVisible({ timeout: 15_000 })
@@ -44,6 +45,7 @@ test.describe('Mental Obstacle Course', () => {
       await rx.click()
     }
 
+    await mocStartRound(page)
     await expect(page.getByLabel('Answer')).toBeVisible({ timeout: 8000 })
     const ans = page.getByTestId('moc-arithmetic-expected')
     for (let k = 0; k < 4; k++) {
@@ -53,20 +55,24 @@ test.describe('Mental Obstacle Course', () => {
       await page.getByRole('button', { name: 'OK' }).click()
     }
 
+    await mocStartRound(page)
     for (let k = 0; k < 6; k++) {
       await expect(page.getByTestId('moc-logic-correct')).toBeVisible({ timeout: 15_000 })
       await domClickTestId(page, 'moc-logic-correct')
     }
 
+    await mocStartRound(page)
     await expect(page.getByLabel('Digits')).toBeVisible({ timeout: 12_000 })
     await page.getByLabel('Digits').fill('999')
     await page.getByRole('button', { name: 'Check' }).click()
 
+    await mocStartRound(page)
     await expect(page.getByTestId('moc-typing-phrase')).toBeVisible({ timeout: 8000 })
     const phrase = (await page.getByTestId('moc-typing-phrase').textContent())?.trim() ?? ''
     await page.getByLabel('Type phrase').fill(phrase)
     await page.getByRole('button', { name: 'Done' }).click()
 
+    await mocStartRound(page)
     for (let k = 0; k < 6; k++) {
       await expect(page.getByTestId('moc-trivia-correct')).toBeVisible({ timeout: 10_000 })
       await domClickTestId(page, 'moc-trivia-correct')
@@ -86,6 +92,7 @@ test.describe('Mental Obstacle Course', () => {
       timeout: 60_000,
     })
     await mocStartFromIntro(page, { tap: true })
+    await mocStartRound(page, { tap: true })
 
     const rx = page.getByTestId('moc-reaction-tap')
     for (let i = 0; i < 8; i++) {
@@ -93,6 +100,7 @@ test.describe('Mental Obstacle Course', () => {
       await rx.tap()
     }
 
+    await mocStartRound(page, { tap: true })
     const ans = page.getByTestId('moc-arithmetic-expected')
     for (let k = 0; k < 3; k++) {
       const v = await ans.textContent()
@@ -101,19 +109,22 @@ test.describe('Mental Obstacle Course', () => {
       await page.getByRole('button', { name: 'OK' }).click()
     }
 
+    await mocStartRound(page, { tap: true })
     for (let k = 0; k < 6; k++) {
       await expect(page.getByTestId('moc-logic-correct')).toBeVisible({ timeout: 15_000 })
       await domClickTestId(page, 'moc-logic-correct', { tap: true })
     }
 
+    await mocStartRound(page, { tap: true })
     await expect(page.getByLabel('Digits')).toBeVisible({ timeout: 12_000 })
     await page.getByLabel('Digits').fill('999')
     await page.getByRole('button', { name: 'Check' }).click()
 
+    await mocStartRound(page, { tap: true })
     await expect(page.getByText(/Tap letters in order/i)).toBeVisible({ timeout: 8000 })
     /* Word-tap order is easy to flake on emulated touch; quick mode ends this round on timer. */
+    await mocStartRound(page, { tap: true })
     await expect(page.getByTestId('moc-trivia-correct')).toBeVisible({ timeout: 20_000 })
-
     for (let k = 0; k < 6; k++) {
       await expect(page.getByTestId('moc-trivia-correct')).toBeVisible({ timeout: 10_000 })
       await domClickTestId(page, 'moc-trivia-correct', { tap: true })
@@ -131,6 +142,7 @@ test.describe('Mental Obstacle Course', () => {
       timeout: 60_000,
     })
     await mocStartFromIntro(page)
+    await mocStartRound(page)
 
     const rx = page.getByTestId('moc-reaction-tap')
     for (let i = 0; i < 8; i++) {
@@ -138,6 +150,7 @@ test.describe('Mental Obstacle Course', () => {
       await rx.click()
     }
 
+    await mocStartRound(page)
     const ans = page.getByTestId('moc-arithmetic-expected')
     for (let k = 0; k < 2; k++) {
       const v = await ans.textContent()
@@ -146,19 +159,23 @@ test.describe('Mental Obstacle Course', () => {
       await page.getByRole('button', { name: 'OK' }).click()
     }
 
+    await mocStartRound(page)
     for (let k = 0; k < 6; k++) {
       await expect(page.getByTestId('moc-logic-correct')).toBeVisible({ timeout: 15_000 })
       await domClickTestId(page, 'moc-logic-correct')
     }
 
+    await mocStartRound(page)
     await expect(page.getByLabel('Digits')).toBeVisible({ timeout: 12_000 })
     await page.getByLabel('Digits').fill('999')
     await page.getByRole('button', { name: 'Check' }).click()
 
+    await mocStartRound(page)
     const phrase = (await page.getByTestId('moc-typing-phrase').textContent())?.trim() ?? ''
     await page.getByLabel('Type phrase').fill(phrase)
     await page.getByRole('button', { name: 'Done' }).click()
 
+    await mocStartRound(page)
     for (let k = 0; k < 6; k++) {
       await expect(page.getByTestId('moc-trivia-correct')).toBeVisible({ timeout: 10_000 })
       await domClickTestId(page, 'moc-trivia-correct')

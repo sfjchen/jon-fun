@@ -62,8 +62,8 @@ Main site aesthetic. Applied when pathname does NOT start with `/theme2` via `da
 
 ### Typography
 
-- **All text:** Patrick Hand (readable handwritten). Applied via `[data-theme="notebook"]` plus optional `html.notebook-theme-root` scale—**exact sizes:** see `globals.css` (values evolve; README principles stay stable).
-- **Inputs, textarea, button:** Inherit Patrick Hand.
+- **All text:** Kalam (readable handwritten/calligraphic). Applied via `[data-theme="notebook"]` plus optional `html.notebook-theme-root` scale—**exact sizes:** see `globals.css` (values evolve; README principles stay stable).
+- **Inputs, textarea, button:** Inherit Kalam.
 
 ### Doodles
 
