@@ -622,6 +622,7 @@ export default function MentalObstacleCourse() {
   const quickE2e = searchParams.get(MOC_E2E_QUERY) === '1'
   const base = pathname?.startsWith('/theme2') ? '/theme2' : ''
   const [screen, setScreen] = useState<Screen>('intro')
+  const [clientReady, setClientReady] = useState(false)
   const [inputMode, setInputMode] = useState<InputMode>('mixed')
   const [roundIdx, setRoundIdx] = useState(0)
   const accRef = useRef<Partial<Record<MentalDomain, number>>>({})
@@ -629,6 +630,10 @@ export default function MentalObstacleCourse() {
   const [triviaBatch, setTriviaBatch] = useState(() => pickTriviaBatch(6))
   const [best, setBest] = useState(0)
   const [historyCount, setHistoryCount] = useState(0)
+
+  useEffect(() => {
+    setClientReady(true)
+  }, [])
 
   useEffect(() => {
     setBest(loadBestCourseScore())
@@ -721,8 +726,9 @@ export default function MentalObstacleCourse() {
           <button
             type="button"
             data-testid="moc-intro-continue"
+            disabled={!clientReady}
             onClick={start}
-            className="rounded-lg px-6 py-3 text-white"
+            className="rounded-lg px-6 py-3 text-white disabled:opacity-50"
             style={{ backgroundColor: 'var(--ink-accent)' }}
           >
             Continue

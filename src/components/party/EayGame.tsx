@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { sessionKeys } from '@/lib/party/constants'
+import { partyFetch, sessionKeys } from '@/lib/party/constants'
 import { EAY_INTAKE_QUESTIONS } from '@/lib/party/prompts-eay'
 import { usePartyRoomData } from './usePartyRoomData'
 
@@ -46,6 +46,7 @@ export default function EayGame() {
   const [finals, setFinals] = useState<FinalRow[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [clientReady, setClientReady] = useState(false)
 
   const onPayload = useCallback((data: unknown) => {
     if (!data || typeof data !== 'object') return
@@ -72,6 +73,10 @@ export default function EayGame() {
   }, [])
 
   usePartyRoomData(room?.pin ?? (pinInput.length === 4 ? pinInput : null), 'eay', onPayload)
+
+  useEffect(() => {
+    setClientReady(true)
+  }, [])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -103,12 +108,13 @@ export default function EayGame() {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch(`/api/party/rooms/${p}`)
+        const res = await partyFetch(`/api/party/rooms/${p}`)
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Load failed')
         onPayload(data)
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Load failed')
+        const aborted = e instanceof DOMException && e.name === 'AbortError'
+        setError(aborted ? 'Request timed out' : e instanceof Error ? e.message : 'Load failed')
       } finally {
         setLoading(false)
       }
@@ -121,7 +127,7 @@ export default function EayGame() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/party/rooms', {
+      const res = await partyFetch('/api/party/rooms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ hostName: nameInput.trim(), gameKind: 'eay' }),
@@ -134,7 +140,8 @@ export default function EayGame() {
       saveSession({ pin: data.pin, playerId: data.playerId, hostId: data.hostId, playerName: nameInput.trim() })
       await loadOnce(data.pin)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Create failed')
+      const aborted = e instanceof DOMException && e.name === 'AbortError'
+      setError(aborted ? 'Request timed out' : e instanceof Error ? e.message : 'Create failed')
     } finally {
       setLoading(false)
     }
@@ -145,7 +152,7 @@ export default function EayGame() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/party/rooms/${pinInput}`, {
+      const res = await partyFetch(`/api/party/rooms/${pinInput}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'join', playerName: nameInput.trim() }),
@@ -156,7 +163,8 @@ export default function EayGame() {
       saveSession({ pin: pinInput, playerId: data.playerId, playerName: nameInput.trim() })
       await loadOnce(pinInput)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Join failed')
+      const aborted = e instanceof DOMException && e.name === 'AbortError'
+      setError(aborted ? 'Request timed out' : e instanceof Error ? e.message : 'Join failed')
     } finally {
       setLoading(false)
     }
@@ -164,7 +172,7 @@ export default function EayGame() {
 
   const startGame = async () => {
     if (!room?.pin || !playerId) return
-    const res = await fetch(`/api/party/rooms/${room.pin}`, {
+    const res = await partyFetch(`/api/party/rooms/${room.pin}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'start', playerId }),
@@ -176,7 +184,7 @@ export default function EayGame() {
 
   const postEay = async (body: Record<string, unknown>) => {
     if (!room?.pin || !playerId) return
-    const res = await fetch(`/api/party/eay/${room.pin}`, {
+    const res = await partyFetch(`/api/party/eay/${room.pin}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...body, playerId }),
@@ -188,7 +196,7 @@ export default function EayGame() {
 
   const playAgain = async () => {
     if (!room?.pin || !playerId) return
-    await fetch(`/api/party/rooms/${room.pin}`, {
+    await partyFetch(`/api/party/rooms/${room.pin}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'play-again', playerId }),
@@ -243,14 +251,18 @@ export default function EayGame() {
                 className="flex-1 rounded border px-3 py-2"
                 style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
               />
-              <button type="button" onClick={joinRoom} disabled={loading} className="px-3 py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>
+              <button type="button" onClick={joinRoom} disabled={loading || !clientReady} className="px-3 py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>
                 Join
               </button>
             </div>
-            <button type="button" onClick={createRoom} disabled={loading} className="w-full py-2 rounded text-white" style={{ backgroundColor: 'rgb(22 101 52)' }}>
+            <button type="button" onClick={createRoom} disabled={loading || !clientReady} className="w-full py-2 rounded text-white" style={{ backgroundColor: 'rgb(22 101 52)' }}>
               Create
             </button>
-            {error && <div className="text-sm text-red-600">{error}</div>}
+            {error && (
+              <div className="text-sm text-red-600" data-testid="party-error">
+                {error}
+              </div>
+            )}
           </div>
         </aside>
       )}
@@ -258,7 +270,9 @@ export default function EayGame() {
       {room && (
         <div className="grid lg:grid-cols-[260px_1fr] gap-6">
           <aside className="rounded-lg border p-4 h-fit shadow-sm" style={cardStyle}>
-            <div className="text-xl font-bold tracking-widest mb-2">{room.pin}</div>
+            <div className="text-xl font-bold tracking-widest mb-2" data-testid="party-room-pin">
+              {room.pin}
+            </div>
             <div className="text-xs mb-3" style={{ color: 'var(--ink-muted)' }}>
               {phase} · R{room.round_index} · S{room.step_index}
             </div>
@@ -295,7 +309,11 @@ export default function EayGame() {
           </aside>
 
           <main className="rounded-lg border p-4 shadow-sm space-y-4" style={cardStyle}>
-            {error && <div className="text-red-600 text-sm">{error}</div>}
+            {error && (
+              <div className="text-red-600 text-sm" data-testid="party-error">
+                {error}
+              </div>
+            )}
 
             {phase === 'eay_intake' && playerId && (
               <div className="space-y-4">

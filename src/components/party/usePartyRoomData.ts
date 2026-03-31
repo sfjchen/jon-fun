@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef } from 'react'
+import { partyFetch } from '@/lib/party/constants'
 import { supabase } from '@/lib/supabase'
 import type { PartyGameKind } from '@/lib/party/types'
 
@@ -18,7 +19,7 @@ export function usePartyRoomData(
     async (silent = false, signal?: AbortSignal): Promise<LoadResult> => {
       if (!pin) return { ok: false }
       try {
-        const res = await fetch(`/api/party/rooms/${pin}`, signal ? { signal } : undefined)
+        const res = await partyFetch(`/api/party/rooms/${pin}`, signal ? { signal } : undefined)
         const data = await res.json()
         if (!res.ok) return { ok: false }
         onData(data)

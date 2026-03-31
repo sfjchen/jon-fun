@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
     "test:e2e": "playwright test",
+    "test:e2e:ci": "CI=1 playwright test",
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {

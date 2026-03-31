@@ -29,11 +29,12 @@ test.describe('Texas Hold\'em', () => {
     await page.goto('/games/poker')
     await page.getByPlaceholder('Enter your name').fill('E2E Host')
     await page.locator('form').getByRole('button', { name: 'Create Room' }).click()
-    // Either redirects to lobby (Supabase ok) or shows error
-    await page.waitForTimeout(3000)
-    const url = page.url()
-    const hasLobby = url.includes('/lobby/')
-    const hasError = await page.getByText(/Failed|error|invalid/i).isVisible().catch(() => false)
-    expect(hasLobby || hasError || true).toBeTruthy()
+    try {
+      await page.waitForURL(/\/lobby\//, { timeout: 25_000 })
+    } catch {
+      await expect(
+        page.getByText(/Failed|error|invalid|Unauthorized|could not|Network|Something went wrong/i).first(),
+      ).toBeVisible({ timeout: 10_000 })
+    }
   })
 })

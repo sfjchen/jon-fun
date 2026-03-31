@@ -23,6 +23,8 @@ const eslintConfig = [
       "tailwind.config.*",
       "Smart OverlayEye/**",
       "TMR_audio/**",
+      "playwright-report/**",
+      "test-results/**",
     ],
   },
   {
