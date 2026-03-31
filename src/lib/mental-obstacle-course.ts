@@ -317,6 +317,31 @@ export function randomDigitString(len: number): string {
   return s
 }
 
+/** URL query key: `?mocE2e=1` shortens timers and exposes stable selectors for Playwright only. */
+export const MOC_E2E_QUERY = 'mocE2e'
+
+export function mocArithmeticDurationMs(quick: boolean): number {
+  return quick ? 5_000 : 55_000
+}
+
+export function mocTriviaPerQuestionMs(quick: boolean): number {
+  return quick ? 8_000 : 14_000
+}
+
+export function mocWordTapDurationMs(quick: boolean): number {
+  /* Short in ?mocE2e=1 so mobile E2E can advance via timeout without brittle letter taps. */
+  return quick ? 7_500 : 35_000
+}
+
+/** Delay before green “go” signal (one draw per call). */
+export function mocScheduleReactionDelayMs(quick: boolean): number {
+  return quick ? 50 + Math.random() * 120 : 800 + Math.random() * 2200
+}
+
+export function mocMemoryShowDurationMs(quick: boolean, len: number): number {
+  return quick ? 180 + len * 100 : 800 + len * 350
+}
+
 // --- Persistence ---
 
 export function loadHistory(): CourseRunResult[] {

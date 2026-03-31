@@ -7,6 +7,10 @@ test.describe('Home page', () => {
     await expect(page.getByText('TMR System')).toBeVisible()
     await expect(page.getByText('1 Sentence Everyday')).toBeVisible()
     await expect(page.getByRole('link', { name: /24/ })).toBeVisible()
+    await expect(page.getByRole('link', { name: /Mental Obstacle Course/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /Quip Clash/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /Fib It/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /Enough About You/i })).toBeVisible()
   })
 
   test('navigates to TMR game', async ({ page }) => {

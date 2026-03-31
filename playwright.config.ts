@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './e2e',
+  /** Mental Obstacle Course: use `?mocE2e=1` for short timers + stable test IDs (see `MOC_E2E_QUERY`). */
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
