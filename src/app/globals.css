@@ -33,22 +33,17 @@
   --ink-paper: var(--nb-paper);
 }
 
-/* Theme 1 (notebook): slight scale + tracking for handwriting legibility (x-height, open counters). */
+/* Theme 1 (notebook): half of prior bump vs default (was 112.5% / +12.5% → +6.25%) */
 html.notebook-theme-root {
-  font-size: 104.5%;
-  letter-spacing: 0.012em;
+  font-size: 106.25%;
+  letter-spacing: 0.018em;
 }
 
-/*
- * Notebook: Patrick Hand — stroke weight between Architects Daughter (thin) and Kalam (heavy/slanted);
- * keep generous tracking/leading from the legibility pass; font-synthesis:none avoids faux-bold on one master.
- */
+/* Notebook: Patrick Hand (readable handwritten); half-step between original 1.2rem/0.03em and full bump */
 [data-theme="notebook"] {
   font-family: 'Patrick Hand', cursive;
-  font-size: 1.15rem;
-  letter-spacing: 0.022em;
-  line-height: 1.6;
-  font-synthesis: none;
+  font-size: 1.225rem;
+  letter-spacing: 0.043em;
 }
 [data-theme="notebook"] .font-lora {
   font-family: 'Patrick Hand', cursive;
@@ -84,7 +79,6 @@ html.notebook-theme-root {
   --color-ink-paper: #f5f1eb;
   --font-lora: 'Lora', serif;
   --font-caveat: 'Caveat', cursive;
-  --font-kalam: 'Patrick Hand', cursive;
   --font-patrick-hand: 'Patrick Hand', cursive;
   --font-charter: Charter, 'Bitstream Charter', Georgia, serif;
 }
