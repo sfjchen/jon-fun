@@ -383,7 +383,8 @@ src/
 ### E2E Testing
 
 - **Playwright** in `e2e/` — tests in `e2e/*.spec.ts`
-- **Coverage**: Home, navigation (all games + theme2), Game24 (practice), Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Leaderboards. Chromium + Mobile Chrome.
+- **Coverage**: Home, navigation (all games + theme2), Game24 (practice), Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Mental Obstacle Course, party games (Quip Clash, Fib It, Enough About You), Leaderboards. **Local**: Chromium + Mobile Chrome. **`CI=1` / `npm run test:e2e:ci`**: Chromium only (faster, less memory).
+- **Dev server**: Playwright starts `next dev` on **port 3001** by default (`PLAYWRIGHT_WEB_PORT`, `PLAYWRIGHT_BASE_URL` to override).
 - **Agent**: Use `/e2e-reviewer` when Playwright E2E tests are needed to confirm site functionality, fix failing tests, or iterate on improvements. Prefer Composer 1.5 for interactive sessions.
 
 ### MCP Servers
@@ -408,6 +409,7 @@ src/
 - `npm run lint` - Run ESLint
 - `npm run type-check` - Run TypeScript type checking
 - `npm run test:e2e` - Run Playwright E2E tests (starts dev server if needed)
+- `npm run test:e2e:ci` - Same with `CI=1` (Chromium-only projects, stricter `forbidOnly`, retries)
 - `npm run test:e2e:ui` - Run E2E tests with Playwright UI
 
 ## 📝 Key Architectural Decisions
@@ -426,9 +428,12 @@ Running log of project work. Update this section when making significant changes
 
 **2026-03**
 
-- **Party games (Quip Clash, Fib It, Enough About You)**: Shared Supabase schema (`supabase-migration-party-games.sql`), APIs under `/api/party/*`, client in `src/components/party/` + `src/lib/party/`; routes `/games/quip-clash`, `/games/fib-it`, `/games/enough-about-you` + Theme 2 mirrors; home cards; `PageShell` card-page paths; cleanup cron includes `party_rooms`; Playwright navigation entries.
+- **Party games (Quip Clash, Fib It, Enough About You)**: Shared Supabase schema (`supabase-migration-party-games.sql`), APIs under `/api/party/*`, client in `src/components/party/` + `src/lib/party/`; routes `/games/quip-clash`, `/games/fib-it`, `/games/enough-about-you` + Theme 2 mirrors; home cards; `PageShell` card-page paths; cleanup cron includes `party_rooms`; Playwright navigation entries; client `partyFetch` + 25s timeout; `data-testid` `party-room-pin` / `party-error`.
+- **E2E (party)**: `e2e/party-games.spec.ts` runs **serial** with lobby scoped to first `aside`; create/join assertions use `expect.poll` for pin or error; Fib It **← Home** waits for lobby **Create** enabled then `waitForURL('/')` + click to avoid hydration flake; removed invalid `maxFailures: 0` from Playwright config.
 - **Mental Obstacle Course**: New game at `/games/mental-obstacle-course` (Theme 2 mirror under `/theme2/games/mental-obstacle-course`) — six sequential rounds (Speed, Numbers, Logic, Working memory, Words, Knowledge) with SVG radar chart, course score, localStorage history + personal best; non-clinical copy throughout; home cards + `PageShell` card-page styling; e2e navigation entry.
-- **E2E (Mental Obstacle + shell)**: `?mocE2e=1` shortens timers and exposes `data-testid` hooks for Playwright; `e2e/mental-obstacle-course.spec.ts` (desktop full run + mobile tap/trivia + theme query preservation); `e2e/helpers/moc.ts`; `PageShell` preserves query string on Theme 2 / Main switch; theme switcher moves to **top-right** on mental-obstacle routes so it does not cover bottom controls; root `layout` wraps `PageShell` in `Suspense` for `useSearchParams`.
+- **E2E (Mental Obstacle + shell)**: `?mocE2e=1` shortens timers and exposes `data-testid` hooks for Playwright; `e2e/mental-obstacle-course.spec.ts` (desktop full run + mobile tap/trivia + theme query preservation); `e2e/helpers/moc.ts` (`mocStartFromIntro` waits for **Continue** enabled after client mount); `PageShell` preserves query string on Theme 2 / Main switch; theme switcher moves to **top-right** on mental-obstacle routes so it does not cover bottom controls; root `layout` wraps `PageShell` in `Suspense` for `useSearchParams`. Specs use `domcontentloaded` + longer reaction waits for cold `next dev`; Playwright dev server on **port 3001** by default (`PLAYWRIGHT_WEB_PORT`), `webServer.timeout` 180s.
+- **Mental Obstacle Course UX**: Intro **Continue** stays `disabled` until `useEffect` runs so first tap always hits a hydrated handler (fixes flaky Playwright when `next dev` compiles mid-run).
+- **Build / types / lint**: `FibRound` includes optional `picker_player_id` (Fibbage UI); Quiplash sync state uses `[, setVotes]` / `[, setFinalVotes]` to satisfy `no-unused-vars`; EAY (Enough About You) API loop drops unused `fooled` counter.
 - **README — Core design principles**: Product, UX, visual tone, `PageShell` / home-link behavior, and local-first + optional Supabase sync documented in-repo (principles centralized in README; `DESIGN-SYSTEM.md` remains token/palette reference).
 - **Chwazi mobile Home**: Shell header gets `z-50` above the full-screen touch layer; touch handlers skip `preventDefault` on link targets; in-game ← Home uses correct Theme 2 href and a larger tap target.
 - **Deploy fix**: `playwright.config.ts` no longer sets `workers: undefined` (incompatible with `exactOptionalPropertyTypes` during `next build` typecheck).

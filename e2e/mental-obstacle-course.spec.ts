@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { domClickTestId } from './helpers/moc'
+import { domClickTestId, mocStartFromIntro } from './helpers/moc'
 
 /** Short timers + test selectors; see `MOC_E2E_QUERY` in `mental-obstacle-course.ts`. */
 const MOC_QUICK = (path: string) =>
@@ -12,14 +12,17 @@ test.describe('Mental Obstacle Course', () => {
   test.describe.configure({ timeout: 90_000 })
 
   test('loads with title and intro', async ({ page }) => {
-    await page.goto('/games/mental-obstacle-course')
+    await page.goto('/games/mental-obstacle-course', { waitUntil: 'domcontentloaded', timeout: 60_000 })
     await expect(page.getByRole('heading', { name: 'Mental Obstacle Course' })).toBeVisible()
     await expect(page.getByText(/not a clinical test/i)).toBeVisible()
     await expect(page.getByTestId('moc-intro-continue')).toBeVisible()
   })
 
   test('theme2 route loads', async ({ page }) => {
-    await page.goto('/theme2/games/mental-obstacle-course')
+    await page.goto('/theme2/games/mental-obstacle-course', {
+      waitUntil: 'domcontentloaded',
+      timeout: 60_000,
+    })
     await expect(page).toHaveURL(/\/theme2\/games\/mental-obstacle-course/)
     await expect(page.getByRole('heading', { name: 'Mental Obstacle Course' })).toBeVisible()
   })
@@ -27,15 +30,17 @@ test.describe('Mental Obstacle Course', () => {
   test('full quick course completes with results (keyboard / desktop)', async ({ page }, testInfo) => {
     test.skip(!isChromiumDesktop(testInfo.project.name), 'Words round uses typing only on desktop Chromium')
 
-    await page.goto(MOC_QUICK('/games/mental-obstacle-course'))
-    await page.getByTestId('moc-intro-continue').click()
-    await expect(page.getByText(/Input detected/i)).toBeVisible()
-    await page.getByTestId('moc-start-course').click()
+    await page.goto(MOC_QUICK('/games/mental-obstacle-course'), {
+      waitUntil: 'domcontentloaded',
+      timeout: 60_000,
+    })
+    await mocStartFromIntro(page)
 
     const rx = page.getByTestId('moc-reaction-tap')
-    await expect(rx).toBeVisible({ timeout: 5000 })
+    await expect(rx).toBeVisible({ timeout: 15_000 })
+    /* Cold dev / CPU: green can be delayed; keep margin above worst-case quick delay. */
     for (let i = 0; i < 8; i++) {
-      await expect(rx).toHaveText('Tap now!', { timeout: 12_000 })
+      await expect(rx).toHaveText('Tap now!', { timeout: 20_000 })
       await rx.click()
     }
 
@@ -49,7 +54,7 @@ test.describe('Mental Obstacle Course', () => {
     }
 
     for (let k = 0; k < 6; k++) {
-      await expect(page.getByTestId('moc-logic-correct')).toBeVisible({ timeout: 8000 })
+      await expect(page.getByTestId('moc-logic-correct')).toBeVisible({ timeout: 15_000 })
       await domClickTestId(page, 'moc-logic-correct')
     }
 
@@ -76,14 +81,16 @@ test.describe('Mental Obstacle Course', () => {
   test('quick course on mobile: tap logic + word timeout + tap trivia', async ({ page }, testInfo) => {
     test.skip(!isMobileProject(testInfo.project.name), 'Touch-specific; uses tap() for logic/trivia')
 
-    await page.goto(MOC_QUICK('/games/mental-obstacle-course'))
-    await page.getByTestId('moc-intro-continue').click()
-    await page.getByTestId('moc-start-course').click()
+    await page.goto(MOC_QUICK('/games/mental-obstacle-course'), {
+      waitUntil: 'domcontentloaded',
+      timeout: 60_000,
+    })
+    await mocStartFromIntro(page, { tap: true })
 
     const rx = page.getByTestId('moc-reaction-tap')
     for (let i = 0; i < 8; i++) {
-      await expect(rx).toHaveText('Tap now!', { timeout: 12_000 })
-      await rx.click()
+      await expect(rx).toHaveText('Tap now!', { timeout: 20_000 })
+      await rx.tap()
     }
 
     const ans = page.getByTestId('moc-arithmetic-expected')
@@ -95,7 +102,7 @@ test.describe('Mental Obstacle Course', () => {
     }
 
     for (let k = 0; k < 6; k++) {
-      await expect(page.getByTestId('moc-logic-correct')).toBeVisible({ timeout: 8000 })
+      await expect(page.getByTestId('moc-logic-correct')).toBeVisible({ timeout: 15_000 })
       await domClickTestId(page, 'moc-logic-correct', { tap: true })
     }
 
@@ -119,13 +126,15 @@ test.describe('Mental Obstacle Course', () => {
   test('run again returns to intro', async ({ page }, testInfo) => {
     test.skip(!isChromiumDesktop(testInfo.project.name), 'Same keyboard flow as desktop full course')
 
-    await page.goto(MOC_QUICK('/games/mental-obstacle-course'))
-    await page.getByTestId('moc-intro-continue').click()
-    await page.getByTestId('moc-start-course').click()
+    await page.goto(MOC_QUICK('/games/mental-obstacle-course'), {
+      waitUntil: 'domcontentloaded',
+      timeout: 60_000,
+    })
+    await mocStartFromIntro(page)
 
     const rx = page.getByTestId('moc-reaction-tap')
     for (let i = 0; i < 8; i++) {
-      await expect(rx).toHaveText('Tap now!', { timeout: 12_000 })
+      await expect(rx).toHaveText('Tap now!', { timeout: 20_000 })
       await rx.click()
     }
 
@@ -138,7 +147,7 @@ test.describe('Mental Obstacle Course', () => {
     }
 
     for (let k = 0; k < 6; k++) {
-      await expect(page.getByTestId('moc-logic-correct')).toBeVisible({ timeout: 8000 })
+      await expect(page.getByTestId('moc-logic-correct')).toBeVisible({ timeout: 15_000 })
       await domClickTestId(page, 'moc-logic-correct')
     }
 
@@ -161,7 +170,10 @@ test.describe('Mental Obstacle Course', () => {
   })
 
   test('theme switch preserves mental obstacle path and query', async ({ page }) => {
-    await page.goto(MOC_QUICK('/games/mental-obstacle-course'))
+    await page.goto(MOC_QUICK('/games/mental-obstacle-course'), {
+      waitUntil: 'domcontentloaded',
+      timeout: 60_000,
+    })
     await expect(page).toHaveURL(/mocE2e=1/)
     await page.getByRole('link', { name: 'Theme 2' }).click()
     await expect(page).toHaveURL(/\/theme2\/games\/mental-obstacle-course/)

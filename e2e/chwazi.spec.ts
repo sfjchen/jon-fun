@@ -6,8 +6,8 @@ test.describe('Chwazi Finger Chooser', () => {
     // On desktop: "This game is only available on touchscreen devices"
     // On touch/mobile: shows the game with "Place your fingers" or "Place and hold"
     await expect(
-      page.getByText(/Chwazi|Place your fingers|Place and hold|touchscreen devices/i).nth(0)
-    ).toBeVisible({ timeout: 8000 })
+      page.getByText(/Chwazi|Place your fingers|Place and hold|touchscreen devices/i).nth(0),
+    ).toBeVisible({ timeout: 15_000 })
   })
 
   test('theme2 chwazi loads', async ({ page }) => {

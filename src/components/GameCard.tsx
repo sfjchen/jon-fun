@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -26,6 +27,8 @@ const cardBase =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2'
 
 export function GameCard({ game, onComingSoonClick, linePaper, compact }: GameCardProps) {
+  const [clientReady, setClientReady] = useState(false)
+  useEffect(() => setClientReady(true), [])
   const useCompact = compact ?? !linePaper
   const cardClass = cardBase + (linePaper ? ' bg-transparent h-full min-h-0 flex flex-col' : '') + (useCompact ? ' p-6' : ' p-[30px]')
   const content = (
@@ -51,7 +54,7 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact }: GameCa
 
   if (!game.available) {
     return (
-      <button onClick={onComingSoonClick} className={cardClass}>
+      <button onClick={onComingSoonClick} disabled={!clientReady} className={`${cardClass} disabled:opacity-50`}>
         {content}
       </button>
     )

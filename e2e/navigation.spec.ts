@@ -42,6 +42,19 @@ test.describe('Navigation', () => {
     await page.goto('/theme2')
     await expect(page.getByText('sfjc.dev')).toBeVisible()
     await expect(page.getByText('TMR System')).toBeVisible()
+    await expect(page.getByRole('link', { name: /Quip Clash/i }).first()).toBeVisible()
+    await expect(page.getByRole('link', { name: /Fib It/i }).first()).toBeVisible()
+    await expect(page.getByRole('link', { name: /Enough About You/i }).first()).toBeVisible()
+  })
+
+  test('theme2 navigates to party games from home', async ({ page }) => {
+    for (const path of ['/theme2/games/quip-clash', '/theme2/games/fib-it', '/theme2/games/enough-about-you'] as const) {
+      await page.goto('/theme2')
+      const name =
+        path.endsWith('quip-clash') ? 'Quip Clash' : path.endsWith('fib-it') ? 'Fib It' : 'Enough About You'
+      await page.getByRole('link', { name: new RegExp(name, 'i') }).first().click()
+      await expect(page).toHaveURL(new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+    }
   })
 
   test('Pear Navigator still reachable by URL (archived from Theme 1 home)', async ({ page }) => {

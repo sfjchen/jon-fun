@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { sessionKeys } from '@/lib/party/constants'
+import { partyFetch, sessionKeys } from '@/lib/party/constants'
 import { usePartyRoomData } from './usePartyRoomData'
 
 type Player = { player_id: string; name: string; score: number }
@@ -35,6 +35,7 @@ export default function FibbageGame() {
   const [picks, setPicks] = useState<Pick[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [clientReady, setClientReady] = useState(false)
 
   const onPayload = useCallback((data: unknown) => {
     if (!data || typeof data !== 'object') return
@@ -53,6 +54,10 @@ export default function FibbageGame() {
   }, [])
 
   usePartyRoomData(room?.pin ?? (pinInput.length === 4 ? pinInput : null), 'fibbage', onPayload)
+
+  useEffect(() => {
+    setClientReady(true)
+  }, [])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -84,12 +89,13 @@ export default function FibbageGame() {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch(`/api/party/rooms/${p}`)
+        const res = await partyFetch(`/api/party/rooms/${p}`)
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Load failed')
         onPayload(data)
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Load failed')
+        const aborted = e instanceof DOMException && e.name === 'AbortError'
+        setError(aborted ? 'Request timed out' : e instanceof Error ? e.message : 'Load failed')
       } finally {
         setLoading(false)
       }
@@ -102,7 +108,7 @@ export default function FibbageGame() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/party/rooms', {
+      const res = await partyFetch('/api/party/rooms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ hostName: nameInput.trim(), gameKind: 'fibbage' }),
@@ -115,7 +121,8 @@ export default function FibbageGame() {
       saveSession({ pin: data.pin, playerId: data.playerId, hostId: data.hostId, playerName: nameInput.trim() })
       await loadOnce(data.pin)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Create failed')
+      const aborted = e instanceof DOMException && e.name === 'AbortError'
+      setError(aborted ? 'Request timed out' : e instanceof Error ? e.message : 'Create failed')
     } finally {
       setLoading(false)
     }
@@ -126,7 +133,7 @@ export default function FibbageGame() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/party/rooms/${pinInput}`, {
+      const res = await partyFetch(`/api/party/rooms/${pinInput}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'join', playerName: nameInput.trim() }),
@@ -137,7 +144,8 @@ export default function FibbageGame() {
       saveSession({ pin: pinInput, playerId: data.playerId, playerName: nameInput.trim() })
       await loadOnce(pinInput)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Join failed')
+      const aborted = e instanceof DOMException && e.name === 'AbortError'
+      setError(aborted ? 'Request timed out' : e instanceof Error ? e.message : 'Join failed')
     } finally {
       setLoading(false)
     }
@@ -145,7 +153,7 @@ export default function FibbageGame() {
 
   const startGame = async () => {
     if (!room?.pin || !playerId) return
-    const res = await fetch(`/api/party/rooms/${room.pin}`, {
+    const res = await partyFetch(`/api/party/rooms/${room.pin}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'start', playerId }),
@@ -157,7 +165,7 @@ export default function FibbageGame() {
 
   const postFib = async (body: Record<string, unknown>) => {
     if (!room?.pin || !playerId) return
-    const res = await fetch(`/api/party/fibbage/${room.pin}`, {
+    const res = await partyFetch(`/api/party/fibbage/${room.pin}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...body, playerId }),
@@ -169,7 +177,7 @@ export default function FibbageGame() {
 
   const playAgain = async () => {
     if (!room?.pin || !playerId) return
-    await fetch(`/api/party/rooms/${room.pin}`, {
+    await partyFetch(`/api/party/rooms/${room.pin}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'play-again', playerId }),
@@ -204,10 +212,14 @@ export default function FibbageGame() {
             <input value={nameInput} onChange={(e) => setNameInput(e.target.value)} placeholder="Name" className="w-full rounded border px-3 py-2" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }} />
             <div className="flex gap-2">
               <input value={pinInput} onChange={(e) => setPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))} maxLength={4} placeholder="PIN" className="flex-1 rounded border px-3 py-2" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }} />
-              <button type="button" onClick={joinRoom} disabled={loading} className="px-3 py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>Join</button>
+              <button type="button" onClick={joinRoom} disabled={loading || !clientReady} className="px-3 py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>Join</button>
             </div>
-            <button type="button" onClick={createRoom} disabled={loading} className="w-full py-2 rounded text-white" style={{ backgroundColor: 'rgb(22 101 52)' }}>Create</button>
-            {error && <div className="text-sm text-red-600">{error}</div>}
+            <button type="button" onClick={createRoom} disabled={loading || !clientReady} className="w-full py-2 rounded text-white" style={{ backgroundColor: 'rgb(22 101 52)' }}>Create</button>
+            {error && (
+              <div className="text-sm text-red-600" data-testid="party-error">
+                {error}
+              </div>
+            )}
           </div>
         </aside>
       )}
@@ -215,7 +227,9 @@ export default function FibbageGame() {
       {room && (
         <div className="grid lg:grid-cols-[260px_1fr] gap-6">
           <aside className="rounded-lg border p-4 h-fit shadow-sm" style={cardStyle}>
-            <div className="text-xl font-bold tracking-widest mb-2">{room.pin}</div>
+            <div className="text-xl font-bold tracking-widest mb-2" data-testid="party-room-pin">
+              {room.pin}
+            </div>
             <div className="text-xs mb-3" style={{ color: 'var(--ink-muted)' }}>{phase} · R{room.round_index}</div>
             {sortedPlayers.map((p) => (
               <div key={p.player_id} className="flex justify-between text-sm py-1 border-b" style={{ borderColor: 'var(--ink-border)' }}>
@@ -234,7 +248,11 @@ export default function FibbageGame() {
             )}
           </aside>
           <main className="rounded-lg border p-4 shadow-sm space-y-4" style={cardStyle}>
-            {error && <div className="text-red-600 text-sm">{error}</div>}
+            {error && (
+              <div className="text-red-600 text-sm" data-testid="party-error">
+                {error}
+              </div>
+            )}
             {currentRound && phase === 'fibbage_lie' && (
               <div>
                 <div className="text-xs mb-1" style={{ color: 'var(--ink-muted)' }}>

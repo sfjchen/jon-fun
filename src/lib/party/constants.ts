@@ -1,5 +1,31 @@
 import type { PartyGameKind } from './types'
 
+/** Wall-clock cap for party API calls from the browser (prevents infinite spinners if a route hangs). */
+export const PARTY_FETCH_TIMEOUT_MS = 25_000
+
+/**
+ * `fetch` with timeout; forwards `init.signal` so callers can still abort early (e.g. Playwright / navigation).
+ */
+export async function partyFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const c = new AbortController()
+  const timer = setTimeout(() => c.abort(), PARTY_FETCH_TIMEOUT_MS)
+  const outer = init?.signal
+  const onOuterAbort = () => c.abort()
+  if (outer) {
+    if (outer.aborted) {
+      clearTimeout(timer)
+      throw new DOMException('Aborted', 'AbortError')
+    }
+    outer.addEventListener('abort', onOuterAbort, { once: true })
+  }
+  try {
+    return await fetch(input, { ...init, signal: c.signal })
+  } finally {
+    clearTimeout(timer)
+    if (outer) outer.removeEventListener('abort', onOuterAbort)
+  }
+}
+
 export const PARTY_MAX_PLAYERS_DEFAULT = 8
 export const PARTY_MIN_PLAYERS_QUIPLASH = 3
 export const PARTY_MIN_PLAYERS_FIBBAGE = 2
