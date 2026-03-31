@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap');
 @import "tailwindcss";
 
 /* Ink & Paper design tokens — cream + burgundy palette */
@@ -40,18 +40,18 @@ html.notebook-theme-root {
 }
 
 /*
- * Notebook: Architects Daughter — upright print-style handwriting, open counters vs Kalam’s slant/density.
- * Legibility: generous tracking/leading; font-synthesis:none avoids faux-bold clogging apertures (single master).
+ * Notebook: Patrick Hand — stroke weight between Architects Daughter (thin) and Kalam (heavy/slanted);
+ * keep generous tracking/leading from the legibility pass; font-synthesis:none avoids faux-bold on one master.
  */
 [data-theme="notebook"] {
-  font-family: 'Architects Daughter', cursive;
+  font-family: 'Patrick Hand', cursive;
   font-size: 1.15rem;
-  letter-spacing: 0.028em;
-  line-height: 1.62;
+  letter-spacing: 0.022em;
+  line-height: 1.6;
   font-synthesis: none;
 }
 [data-theme="notebook"] .font-lora {
-  font-family: 'Architects Daughter', cursive;
+  font-family: 'Patrick Hand', cursive;
 }
 [data-theme="notebook"] input,
 [data-theme="notebook"] textarea,
@@ -60,7 +60,7 @@ html.notebook-theme-root {
   font-family: inherit;
 }
 [data-theme="notebook"] .font-mono {
-  font-family: 'Architects Daughter', cursive;
+  font-family: 'Patrick Hand', cursive;
 }
 
 /* Notebook line paper — single global source, fixed to viewport so lines align everywhere */
@@ -84,8 +84,8 @@ html.notebook-theme-root {
   --color-ink-paper: #f5f1eb;
   --font-lora: 'Lora', serif;
   --font-caveat: 'Caveat', cursive;
-  --font-kalam: 'Architects Daughter', cursive;
-  --font-patrick-hand: 'Architects Daughter', cursive;
+  --font-kalam: 'Patrick Hand', cursive;
+  --font-patrick-hand: 'Patrick Hand', cursive;
   --font-charter: Charter, 'Bitstream Charter', Georgia, serif;
 }
 
