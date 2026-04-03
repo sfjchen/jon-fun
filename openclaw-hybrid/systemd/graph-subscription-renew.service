@@ -1,0 +1,12 @@
+[Unit]
+Description=Renew Microsoft Graph mailbox subscription
+After=network-online.target openclaw-bridge.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=openclaw
+Group=openclaw
+WorkingDirectory=/opt/openclaw-hybrid
+EnvironmentFile=/opt/openclaw-hybrid/config/env.cloud
+ExecStart=/usr/bin/env node /opt/openclaw-hybrid/scripts/graph-subscription.mjs upsert

@@ -1,0 +1,86 @@
+{
+  gateway: {
+    mode: "local",
+    bind: "loopback",
+    port: 18789,
+    auth: {
+      mode: "token",
+      token: "${OPENCLAW_HOOKS_TOKEN}",
+    },
+    trustedProxies: ["127.0.0.1"],
+  },
+  hooks: {
+    enabled: true,
+    token: "${OPENCLAW_HOOKS_TOKEN}",
+    path: "/hooks",
+    allowedAgentIds: ["main", "orchestrator", "comms", "research"],
+    defaultSessionKey: "hook:ingress",
+    allowRequestSessionKey: false,
+    allowedSessionKeyPrefixes: ["hook:"],
+  },
+  cron: {
+    enabled: true,
+    maxConcurrentRuns: 1,
+    retry: {
+      maxAttempts: 3,
+      backoffMs: [30000, 60000, 300000],
+      retryOn: ["rate_limit", "overloaded", "network", "server_error"],
+    },
+    sessionRetention: "24h",
+  },
+  agents: {
+    defaults: {
+      model: {
+        primary: "openrouter/qwen/qwen3.5-plus-02-15",
+        fallbacks: [
+          "openrouter/deepseek/deepseek-chat-v3.2",
+          "openrouter/qwen/qwen3-coder-next",
+        ],
+      },
+      models: {
+        "openrouter/qwen/qwen3.5-plus-02-15": { alias: "PrimaryReasoning" },
+        "openrouter/deepseek/deepseek-chat-v3.2": { alias: "BalancedFallback" },
+        "openrouter/qwen/qwen3-coder-next": { alias: "LowCostFallback" },
+      },
+    },
+    list: [
+      {
+        id: "orchestrator",
+        tools: {
+          deny: ["exec", "process", "gateway"],
+        },
+      },
+      {
+        id: "comms",
+        tools: {
+          deny: ["exec", "process", "gateway"],
+        },
+      },
+      {
+        id: "research",
+        tools: {
+          deny: ["exec", "process", "gateway"],
+        },
+      },
+    ],
+  },
+  channels: {
+    bluebubbles: {
+      enabled: true,
+      serverUrl: "${BLUEBUBBLES_SERVER_URL}",
+      password: "${BLUEBUBBLES_PASSWORD}",
+      webhookPath: "/bluebubbles-webhook",
+      dmPolicy: "pairing",
+      groupPolicy: "allowlist",
+      sendReadReceipts: true,
+      actions: {
+        edit: false,
+      },
+    },
+    telegram: {
+      enabled: true,
+      token: "${TELEGRAM_BOT_TOKEN}",
+      dmPolicy: "allowlist",
+    },
+  },
+}

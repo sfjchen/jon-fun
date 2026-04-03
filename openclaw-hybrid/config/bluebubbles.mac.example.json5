@@ -1,0 +1,20 @@
+{
+  channels: {
+    bluebubbles: {
+      enabled: true,
+      serverUrl: "http://127.0.0.1:1234",
+      password: "replace-with-bluebubbles-password",
+      webhookPath: "/bluebubbles-webhook",
+      dmPolicy: "pairing",
+      groupPolicy: "allowlist",
+      sendReadReceipts: true,
+      actions: {
+        reactions: true,
+        edit: false,
+        unsend: true,
+        reply: true,
+        sendAttachment: true,
+      },
+    },
+  },
+}

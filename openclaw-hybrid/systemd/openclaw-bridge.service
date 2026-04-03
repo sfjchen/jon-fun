@@ -1,0 +1,18 @@
+[Unit]
+Description=OpenClaw Hybrid Bridge Service
+After=network-online.target openclaw-gateway.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=openclaw
+Group=openclaw
+WorkingDirectory=/opt/openclaw-hybrid
+EnvironmentFile=/opt/openclaw-hybrid/config/env.cloud
+ExecStart=/usr/bin/env node /opt/openclaw-hybrid/scripts/bridge-server.mjs
+Restart=always
+RestartSec=5
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target

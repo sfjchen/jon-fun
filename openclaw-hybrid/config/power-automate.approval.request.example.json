@@ -1,0 +1,11 @@
+{
+  "action": "request_approval",
+  "outboundId": "out_1710000000_abcd1234",
+  "requiresApproval": true,
+  "payload": {
+    "type": "outlook_email",
+    "to": "recipient@example.com",
+    "subject": "Review request",
+    "body": "Please review this before sending."
+  }
+}

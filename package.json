@@ -10,7 +10,11 @@
     "type-check": "tsc --noEmit",
     "test:e2e": "playwright test",
     "test:e2e:ci": "CI=1 playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "openclaw:bridge": "node openclaw-hybrid/scripts/bridge-server.mjs",
+    "openclaw:dispatch": "node openclaw-hybrid/scripts/dispatcher.mjs",
+    "openclaw:graph:upsert": "node openclaw-hybrid/scripts/graph-subscription.mjs upsert",
+    "openclaw:graph:delete": "node openclaw-hybrid/scripts/graph-subscription.mjs delete"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
