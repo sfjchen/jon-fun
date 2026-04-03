@@ -1,0 +1,36 @@
+{
+  "importantKeywords": [
+    "urgent",
+    "asap",
+    "action required",
+    "respond by",
+    "deadline",
+    "interview",
+    "invoice due"
+  ],
+  "vipSenders": [
+    "manager@company.com",
+    "professor@stanford.edu"
+  ],
+  "highRiskDomains": [
+    "lawfirm.com",
+    "bank.com"
+  ],
+  "highRiskKeywords": [
+    "wire",
+    "bank transfer",
+    "payment",
+    "contract",
+    "signed agreement",
+    "social security"
+  ],
+  "styleProfile": {
+    "tone": "clear, warm, concise",
+    "length": "short",
+    "signature": "optional",
+    "avoidPhrases": [
+      "just circling back",
+      "per my last email"
+    ]
+  }
+}

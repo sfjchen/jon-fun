@@ -1,0 +1,24 @@
+{
+  "autoApprove": {
+    "enabled": false,
+    "maxEmailsPerDay": 2,
+    "allowedRecipientDomains": ["stanford.edu", "company.com"],
+    "blockedRecipientDomains": ["lawfirm.com", "bank.com"],
+    "blockedKeywords": ["wire", "payment", "contract", "social security"]
+  },
+  "highRiskRules": {
+    "alwaysRequireApprovalIfContains": [
+      "legal",
+      "invoice",
+      "bank transfer",
+      "deadline today",
+      "signed agreement"
+    ],
+    "alwaysRequireApprovalIfRecipientDomainIn": ["external-client.com", "bank.com"]
+  },
+  "approvalUx": {
+    "fieldsToShow": ["to", "subject", "body", "riskReason"],
+    "actions": ["approve", "reject", "edit_then_approve"],
+    "defaultTimeoutMinutes": 240
+  }
+}
