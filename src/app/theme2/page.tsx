@@ -6,6 +6,14 @@ import { GameCard } from '@/components/GameCard'
 import type { GameCardGame } from '@/components/GameCard'
 
 const items: GameCardGame[] = [
+  {
+    id: 'five-can-sorting',
+    title: '5 Can Sorting',
+    description: 'Swap two cans at a time; only see how many are in the right place — deduce the hidden order',
+    icon: '/doodles/cans.svg',
+    href: '/theme2/games/five-can-sorting',
+    available: true,
+  },
   { id: 'tmr', title: 'TMR System', description: 'Targeted Memory Reactivation for learning and sleep', icon: '/doodles/tmr.svg', href: '/theme2/games/tmr', available: true },
   { id: 'daily-log', title: '1 Sentence Everyday', description: 'One sentence per day; history, calendar, export', icon: '/doodles/daily.svg', href: '/theme2/games/daily-log', available: true },
   { id: 'pear-navigator', title: 'Pear Navigator', description: 'Step-by-step guides for Procreate, Figma', icon: '/doodles/pear.svg', href: '/theme2/games/pear-navigator', available: true },

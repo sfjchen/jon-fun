@@ -84,6 +84,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
     (pathname?.includes('/games/jeopardy') ||
       pathname?.includes('/games/chwazi') ||
       pathname?.includes('/games/mental-obstacle-course') ||
+      pathname?.includes('/games/five-can-sorting') ||
       pathname?.includes('/games/quip-clash') ||
       pathname?.includes('/games/fib-it') ||
       pathname?.includes('/games/enough-about-you') ||

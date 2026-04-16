@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 const GAME_ROUTES = [
+  { path: '/games/five-can-sorting', name: '5 Can Sorting' },
   { path: '/games/tmr', name: 'TMR System' },
   { path: '/games/daily-log', name: '1 Sentence Everyday' },
   { path: '/games/24', name: '24' },

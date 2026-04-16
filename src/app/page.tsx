@@ -8,6 +8,14 @@ import type { GameCardGame } from '@/components/GameCard'
 const nb = '/doodles/notebook'
 /** Pear Navigator card archived — restore from `@/data/notebook-home-games-archive` */
 const items: GameCardGame[] = [
+  {
+    id: 'five-can-sorting',
+    title: '5 Can Sorting',
+    description: 'Swap two cans at a time; only see how many are in the right place — deduce the hidden order',
+    icon: `${nb}/cans.svg`,
+    href: '/games/five-can-sorting',
+    available: true,
+  },
   { id: 'tmr', title: 'TMR System', description: 'Targeted Memory Reactivation for learning and sleep', icon: `${nb}/tmr.svg`, href: '/games/tmr', available: true },
   { id: 'daily-log', title: '1 Sentence Everyday', description: 'One sentence per day; history, calendar, export', icon: `${nb}/daily.svg`, href: '/games/daily-log', available: true },
   { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: `${nb}/game24.svg`, href: '/games/24', available: true },
