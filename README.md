@@ -435,6 +435,7 @@ Running log of project work. Update this section when making significant changes
 **2026-04**
 
 - **5 Can Sorting**: New puzzle at `/games/five-can-sorting` (Theme 2 mirror) — swap two of five labeled cans per move, positional count feedback only, win when all five match hidden order; `FiveCanGame` + `five-can-game` lib, home cards, `PageShell` card-page path, doodle `cans.svg`, E2E home navigation entry.
+- **5 Can Sorting UI**: Parody soda-can artwork in `public/images/five-can/`, big “correct / 5” beside the row, feedback history list (newest first).
 
 - **OpenClaw local-only channel cleanup (ops)**: Removed email/cloud bridge settings from active OpenClaw runtime by dropping `hooks` and `channels.telegram` from `~/.openclaw/openclaw.json`; retained only BlueBubbles (iMessage) + WhatsApp channels. Tightened BlueBubbles allowlists to self-number thread identifiers only to prevent unintended chat activation.
 - **OpenClaw env local simplification (ops)**: Reduced `openclaw-hybrid/config/env.cloud` to local essentials only (`OPENCLAW_*`, `OPENROUTER_API_KEY`, `BLUEBUBBLES_*`), removing Outlook Graph, Power Automate, bridge relay, Telegram fallback, and Twilio escalation variables.
