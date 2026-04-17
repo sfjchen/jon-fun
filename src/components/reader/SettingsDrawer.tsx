@@ -65,12 +65,12 @@ function Toggle({
   onChange: (next: boolean) => void
 }) {
   return (
-    <label className="flex items-center justify-between gap-3 rounded-xl border px-3 py-2" style={{ borderColor: 'var(--reader-border)' }}>
+    <label className="flex items-center justify-between gap-3 rounded-xl border px-3 py-2" style={{ borderColor: 'var(--ink-border)' }}>
       <span className="text-sm">{label}</span>
       <button
         type="button"
         className="reader-focus relative h-7 w-12 rounded-full transition-colors"
-        style={{ backgroundColor: checked ? 'var(--reader-accent)' : 'var(--reader-chrome)' }}
+        style={{ backgroundColor: checked ? 'var(--ink-accent)' : 'var(--ink-bg)' }}
         onClick={() => onChange(!checked)}
         aria-pressed={checked}
       >
@@ -105,27 +105,27 @@ export function SettingsDrawer({
 
   const panel = (
     <aside
-      className={`reader-panel reader-scrollbar ${mobile ? 'h-full w-full max-w-md overflow-y-auto rounded-l-3xl p-5' : 'sticky top-6 w-[340px] shrink-0 overflow-y-auto rounded-3xl p-5'}`}
+      className={`e-reader-chrome-panel e-reader-chrome-scrollbar ${mobile ? 'h-full w-full max-w-md overflow-y-auto rounded-l-3xl p-5' : 'sticky top-6 w-[340px] shrink-0 overflow-y-auto rounded-3xl p-5'}`}
       aria-label="Reader settings"
     >
       <div className="mb-5 flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] reader-muted">Reader settings</p>
+          <p className="e-reader-chrome-muted text-xs uppercase tracking-[0.24em]">Reader settings</p>
           <h2 className="text-lg font-semibold">Customize your reading view</h2>
         </div>
-        <button type="button" onClick={onClose} className="reader-chip reader-focus rounded-full px-3 py-1.5 text-sm">
+        <button type="button" onClick={onClose} className="e-reader-chrome-chip reader-focus rounded-full px-3 py-1.5 text-sm">
           Close
         </button>
       </div>
 
       <div className="mb-5 grid grid-cols-3 gap-2">
-        <button type="button" onClick={onGoPrev} disabled={!canGoPrev} className="reader-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
+        <button type="button" onClick={onGoPrev} disabled={!canGoPrev} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
           Prev
         </button>
-        <button type="button" onClick={hasBookmark ? onJumpToBookmark : onSaveBookmark} className="reader-chip reader-focus rounded-xl px-3 py-2 text-sm">
+        <button type="button" onClick={hasBookmark ? onJumpToBookmark : onSaveBookmark} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm">
           {hasBookmark ? 'Bookmark' : 'Save spot'}
         </button>
-        <button type="button" onClick={onGoNext} disabled={!canGoNext} className="reader-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
+        <button type="button" onClick={onGoNext} disabled={!canGoNext} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
           Next
         </button>
       </div>
@@ -137,7 +137,7 @@ export function SettingsDrawer({
             <button
               key={preset.id}
               type="button"
-              className="reader-chip reader-focus rounded-xl px-3 py-2 text-sm"
+              className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm"
               data-active={prefs.fontPreset === preset.id}
               onClick={() => onChange('fontPreset', preset.id)}
             >
@@ -152,10 +152,10 @@ export function SettingsDrawer({
         <label className="block">
           <div className="mb-1 flex items-center justify-between text-sm">
             <span>Font size</span>
-            <span className="reader-muted">{prefs.fontSize}px</span>
+            <span className="e-reader-chrome-muted">{prefs.fontSize}px</span>
           </div>
           <input
-            className="reader-slider w-full"
+            className="e-reader-chrome-slider w-full"
             type="range"
             min={14}
             max={34}
@@ -167,10 +167,10 @@ export function SettingsDrawer({
         <label className="block">
           <div className="mb-1 flex items-center justify-between text-sm">
             <span>Line height</span>
-            <span className="reader-muted">{prefs.lineHeight.toFixed(2)}</span>
+            <span className="e-reader-chrome-muted">{prefs.lineHeight.toFixed(2)}</span>
           </div>
           <input
-            className="reader-slider w-full"
+            className="e-reader-chrome-slider w-full"
             type="range"
             min={1.3}
             max={2.1}
@@ -182,10 +182,10 @@ export function SettingsDrawer({
         <label className="block">
           <div className="mb-1 flex items-center justify-between text-sm">
             <span>Paragraph gap</span>
-            <span className="reader-muted">{prefs.paragraphGap}px</span>
+            <span className="e-reader-chrome-muted">{prefs.paragraphGap}px</span>
           </div>
           <input
-            className="reader-slider w-full"
+            className="e-reader-chrome-slider w-full"
             type="range"
             min={8}
             max={40}
@@ -197,10 +197,10 @@ export function SettingsDrawer({
         <label className="block">
           <div className="mb-1 flex items-center justify-between text-sm">
             <span>Page width</span>
-            <span className="reader-muted">{prefs.maxWidth}px</span>
+            <span className="e-reader-chrome-muted">{prefs.maxWidth}px</span>
           </div>
           <input
-            className="reader-slider w-full"
+            className="e-reader-chrome-slider w-full"
             type="range"
             min={560}
             max={1080}
@@ -218,7 +218,7 @@ export function SettingsDrawer({
             <button
               key={alignment.id}
               type="button"
-              className="reader-chip reader-focus rounded-xl px-3 py-2 text-sm"
+              className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm"
               data-active={prefs.textAlign === alignment.id}
               onClick={() => onChange('textAlign', alignment.id)}
             >
@@ -242,7 +242,7 @@ export function SettingsDrawer({
             <button
               key={theme.id}
               type="button"
-              className="reader-chip reader-focus rounded-xl px-3 py-2 text-sm"
+              className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm"
               data-active={prefs.theme === theme.id}
               onClick={() => onChange('theme', theme.id)}
             >
@@ -261,8 +261,8 @@ export function SettingsDrawer({
               type="button"
               className="reader-focus flex items-center gap-2 rounded-full border px-3 py-2 text-sm"
               style={{
-                borderColor: prefs.accent === accent.id ? accent.color : 'var(--reader-border)',
-                backgroundColor: prefs.accent === accent.id ? `${accent.color}22` : 'var(--reader-panel)',
+                borderColor: prefs.accent === accent.id ? accent.color : 'var(--ink-border)',
+                backgroundColor: prefs.accent === accent.id ? `${accent.color}22` : 'var(--ink-bg)',
               }}
               onClick={() => onChange('accent', accent.id)}
             >
@@ -276,17 +276,17 @@ export function SettingsDrawer({
       <section className="mb-5 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold">Text to speech</h3>
-          <button type="button" onClick={onToggleSpeak} className="reader-action reader-focus rounded-xl px-3 py-2 text-sm">
+          <button type="button" onClick={onToggleSpeak} className="e-reader-chrome-action reader-focus rounded-xl px-3 py-2 text-sm">
             {isSpeaking ? 'Stop' : 'Play'}
           </button>
         </div>
         <label className="block">
           <div className="mb-1 flex items-center justify-between text-sm">
             <span>Rate</span>
-            <span className="reader-muted">{prefs.ttsRate.toFixed(1)}x</span>
+            <span className="e-reader-chrome-muted">{prefs.ttsRate.toFixed(1)}x</span>
           </div>
           <input
-            className="reader-slider w-full"
+            className="e-reader-chrome-slider w-full"
             type="range"
             min={0.7}
             max={1.6}
@@ -298,8 +298,7 @@ export function SettingsDrawer({
         <label className="block text-sm">
           <span className="mb-1 block">Voice</span>
           <select
-            className="reader-focus w-full rounded-xl border px-3 py-2"
-            style={{ borderColor: 'var(--reader-border)', backgroundColor: 'var(--reader-panel)' }}
+            className="e-reader-chrome-input reader-focus w-full rounded-xl border px-3 py-2"
             value={prefs.voiceURI}
             onChange={(event) => onChange('voiceURI', event.target.value)}
           >
@@ -320,10 +319,10 @@ export function SettingsDrawer({
         <label className="block">
           <div className="mb-1 flex items-center justify-between text-sm">
             <span>Scroll speed</span>
-            <span className="reader-muted">{prefs.autoScrollSpeed.toFixed(1)}</span>
+            <span className="e-reader-chrome-muted">{prefs.autoScrollSpeed.toFixed(1)}</span>
           </div>
           <input
-            className="reader-slider w-full"
+            className="e-reader-chrome-slider w-full"
             type="range"
             min={0.6}
             max={4}
@@ -334,7 +333,7 @@ export function SettingsDrawer({
         </label>
       </section>
 
-      <button type="button" onClick={onReset} className="reader-action reader-focus w-full rounded-xl px-4 py-3 text-sm font-semibold">
+      <button type="button" onClick={onReset} className="e-reader-chrome-action reader-focus w-full rounded-xl px-4 py-3 text-sm font-semibold">
         Reset to defaults
       </button>
     </aside>
