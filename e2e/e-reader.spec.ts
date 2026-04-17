@@ -29,7 +29,10 @@ const hasMeditationsPdf = fs.existsSync(MEDITATIONS_PDF)
     const summaryText = await summary.innerText()
     const m = summaryText.match(/(\d+)\s+detected chapters/)
     expect(m, `expected chapter count in "${summaryText}"`).toBeTruthy()
-    expect(Number(m![1])).toBeGreaterThanOrEqual(8)
+    expect(Number(m![1])).toBe(12)
+
+    const firstTitle = page.getByTestId('reader-import-preview').locator('input').first()
+    await expect(firstTitle).toHaveValue(/Book\s*1/i)
 
     await page.getByTestId('reader-save-open').click()
     await expect(page).toHaveURL(/\/games\/e-reader\/read\/.+\/.+/, { timeout: 30_000 })
