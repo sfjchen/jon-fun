@@ -20,10 +20,4 @@ test.describe('TMR System', () => {
     await page.getByRole('button', { name: /Study Session/i }).nth(0).click()
     await expect(page.getByRole('button', { name: /Back|←/i })).toBeVisible()
   })
-
-  test('theme2 TMR loads', async ({ page }) => {
-    await page.goto('/theme2/games/tmr')
-    await expect(page).toHaveURL(/\/theme2\/games\/tmr/)
-    await expect(page.getByRole('button', { name: /Study Session/i }).nth(0)).toBeVisible()
-  })
 })

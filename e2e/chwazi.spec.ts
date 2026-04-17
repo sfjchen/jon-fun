@@ -9,9 +9,4 @@ test.describe('Chwazi Finger Chooser', () => {
       page.getByText(/Chwazi|Place your fingers|Place and hold|touchscreen devices/i).nth(0),
     ).toBeVisible({ timeout: 15_000 })
   })
-
-  test('theme2 chwazi loads', async ({ page }) => {
-    await page.goto('/theme2/games/chwazi')
-    await expect(page).toHaveURL(/\/theme2\/games\/chwazi/)
-  })
 })

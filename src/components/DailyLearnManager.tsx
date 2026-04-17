@@ -25,7 +25,7 @@ type View = 'log' | 'analytics' | 'export' | 'sync'
 export default function DailyLearnManager() {
   const pathname = usePathname()
   const isDailyLog = pathname?.includes('daily-log')
-  const inNotebook = !pathname?.startsWith('/theme2')
+  const inNotebook = true
   const [view, setView] = useState<View>('log')
   const [entries, setEntries] = useState<DailyLearnEntry[]>([])
   const [todayText, setTodayText] = useState('')

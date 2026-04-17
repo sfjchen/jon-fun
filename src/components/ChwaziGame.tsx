@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 type Status = 'idle' | 'primed' | 'selecting' | 'winner'
@@ -35,8 +34,7 @@ function touchTargetIsLink(target: EventTarget | null): boolean {
 }
 
 export default function ChwaziGame() {
-  const pathname = usePathname() ?? ''
-  const homeHref = pathname.startsWith('/theme2') ? '/theme2' : '/'
+  const homeHref = '/'
   const [touches, setTouches] = useState<Map<number, TouchPoint>>(new Map())
   const [status, setStatus] = useState<Status>('idle')
   const [winnerId, setWinnerId] = useState<number | null>(null)

@@ -39,19 +39,16 @@ async function waitPartyLobbyReady(page: import('@playwright/test').Page, create
 const PARTY_GAMES = [
   {
     path: '/games/quip-clash',
-    theme2Path: '/theme2/games/quip-clash',
     heading: /Quip Clash/i,
     createLabel: 'Create room',
   },
   {
     path: '/games/fib-it',
-    theme2Path: '/theme2/games/fib-it',
     heading: /Fib It/i,
     createLabel: 'Create',
   },
   {
     path: '/games/enough-about-you',
-    theme2Path: '/theme2/games/enough-about-you',
     heading: /Enough About You/i,
     createLabel: 'Create',
   },
@@ -68,12 +65,6 @@ test.describe('Party games (Quip Clash, Fib It, Enough About You)', () => {
       await expect(page.getByPlaceholder('PIN')).toBeVisible()
       await expect(partyLobby(page).getByRole('button', { name: 'Join' })).toBeVisible()
       await expect(partyLobby(page).getByRole('button', { name: g.createLabel })).toBeVisible()
-    })
-
-    test(`${g.theme2Path} loads`, async ({ page }) => {
-      await page.goto(g.theme2Path, { waitUntil: 'domcontentloaded' })
-      await expect(page).toHaveURL(new RegExp(g.theme2Path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
-      await expect(page.getByRole('heading', { name: g.heading })).toBeVisible()
     })
   }
 
@@ -112,15 +103,6 @@ test.describe('Party games (Quip Clash, Fib It, Enough About You)', () => {
     await page.getByPlaceholder('PIN').fill('9999')
     await pressPartyLobbyButton(page, 'Join', mobile)
     await expect(page.getByTestId('party-error').first()).toBeVisible({ timeout: 25_000 })
-  })
-
-  test('theme switch preserves Quip Clash path', async ({ page }) => {
-    await page.goto('/games/quip-clash', { waitUntil: 'domcontentloaded' })
-    await page.getByRole('link', { name: 'Theme 2' }).click()
-    await expect(page).toHaveURL(/\/theme2\/games\/quip-clash/)
-    await expect(page.getByRole('heading', { name: /Quip Clash/i })).toBeVisible()
-    await page.getByRole('link', { name: 'Main' }).click()
-    await expect(page).toHaveURL(/\/games\/quip-clash/)
   })
 
   test('← Home from Fib It', async ({ page }) => {

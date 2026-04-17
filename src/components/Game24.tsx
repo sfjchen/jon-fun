@@ -1,6 +1,5 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import {
@@ -68,8 +67,7 @@ const formatSeconds = (seconds: number) => {
 }
 
 export default function Game24() {
-  const pathname = usePathname() ?? ''
-  const notebookLayout = !pathname.startsWith('/theme2')
+  const notebookLayout = true
   const solver = useMemo(() => new Solver24(), [])
   const [gameState, setGameState] = useState<GameState>({
     numbers: [],

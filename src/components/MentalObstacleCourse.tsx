@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   DOMAIN_LABELS,
@@ -656,10 +656,9 @@ const ROUND_PREP: Record<MentalDomain, RoundPrep> = {
 }
 
 export default function MentalObstacleCourse() {
-  const pathname = usePathname()
   const searchParams = useSearchParams()
   const quickE2e = searchParams.get(MOC_E2E_QUERY) === '1'
-  const base = pathname?.startsWith('/theme2') ? '/theme2' : ''
+  const base = ''
   const [screen, setScreen] = useState<Screen>('intro')
   const [clientReady, setClientReady] = useState(false)
   const [inputMode, setInputMode] = useState<InputMode>('mixed')

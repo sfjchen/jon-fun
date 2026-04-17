@@ -2,7 +2,6 @@
 
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
-import { usePathname } from 'next/navigation'
 import TMRStudySession from './TMRStudySession'
 import TMRSleepReactivation from './TMRSleepReactivation'
 import {
@@ -15,8 +14,7 @@ import {
 type View = 'menu' | 'study' | 'sleep' | 'history'
 
 export default function TMRManager() {
-  const pathname = usePathname()
-  const inNotebook = !pathname?.startsWith('/theme2')
+  const inNotebook = true
   const [view, setView] = useState<View>('menu')
   const [studySessions, setStudySessions] = useState<StudySession[]>([])
   const [sleepSessions, setSleepSessions] = useState<SleepSession[]>([])

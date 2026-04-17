@@ -1,13 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import PokerTable from '@/components/PokerTable'
 
 export default function PokerTablePage({ params }: { params: Promise<{ pin: string }> }) {
   const router = useRouter()
-  const pathname = usePathname()
-  const base = pathname?.startsWith('/theme2') ? '/theme2' : ''
+  const base = ''
   const [pin, setPin] = useState<string>('')
 
   useEffect(() => {

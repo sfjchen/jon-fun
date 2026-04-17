@@ -2,8 +2,6 @@
 
 import Link from 'next/link'
 import { useState, useEffect, useCallback } from 'react'
-import { usePathname } from 'next/navigation'
-
 const TMR_ADMIN_KEY = 'tmr_admin_ok'
 
 type StudyRow = {
@@ -29,8 +27,7 @@ type SleepRow = {
 }
 
 export default function TMRAdminPage() {
-  const pathname = usePathname()
-  const hubHref = pathname?.startsWith('/theme2') ? '/theme2' : '/'
+  const hubHref = '/'
   const [key, setKey] = useState('')
   const [authorized, setAuthorized] = useState(false)
   const [studySessions, setStudySessions] = useState<StudyRow[]>([])

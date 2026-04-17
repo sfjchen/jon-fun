@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 type SessionRow = {
@@ -86,8 +85,7 @@ function chiSquareRatings(a: Record<string, number>, b: Record<string, number>):
 }
 
 export default function PearNavigatorResultsPage() {
-  const pathname = usePathname()
-  const base = pathname?.startsWith('/theme2') ? '/theme2/games/pear-navigator' : '/games/pear-navigator'
+  const base = '/games/pear-navigator'
   const [rows, setRows] = useState<SessionRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

@@ -2,7 +2,6 @@
 
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
-import { usePathname } from 'next/navigation'
 import ChwaziGame from '@/components/ChwaziGame'
 
 function isTouchDevice(): boolean {
@@ -11,8 +10,7 @@ function isTouchDevice(): boolean {
 }
 
 export default function ChwaziPage() {
-  const pathname = usePathname()
-  const isNotebook = !pathname?.startsWith('/theme2')
+  const isNotebook = true
   const [touchOk, setTouchOk] = useState<boolean | null>(null)
 
   useEffect(() => {

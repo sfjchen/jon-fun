@@ -2,15 +2,13 @@
 
 import Image from 'next/image'
 import { useRef, useState } from 'react'
-import { usePathname } from 'next/navigation'
 import JeopardyEditor from '@/components/JeopardyEditor'
 import JeopardyPlayer from '@/components/JeopardyPlayer'
 import type { JeopardyBoard } from '@/lib/jeopardy'
 import { readBoardFromFile, createDefaultBoard } from '@/lib/jeopardy'
 
 export default function JeopardyPage() {
-  const pathname = usePathname()
-  const isNotebook = !pathname?.startsWith('/theme2')
+  const isNotebook = true
   const [mode, setMode] = useState<'menu' | 'editor' | 'player'>('menu')
   const [currentBoard, setCurrentBoard] = useState<JeopardyBoard | null>(null)
   const [error, setError] = useState<string | null>(null)

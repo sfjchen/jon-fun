@@ -22,9 +22,4 @@ test.describe('Pear Navigator', () => {
     await expect(page).toHaveURL(/\/games\/pear-navigator\/results/)
     await expect(page.locator('body')).toContainText(/variant|completion|A\/B|statistical|Results/i, { timeout: 20_000 })
   })
-
-  test('theme2 pear-navigator loads', async ({ page }) => {
-    await page.goto('/theme2/games/pear-navigator')
-    await expect(page).toHaveURL(/\/theme2\/games\/pear-navigator/)
-  })
 })

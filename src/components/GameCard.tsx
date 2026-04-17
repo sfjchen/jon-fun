@@ -18,6 +18,8 @@ type GameCardProps = {
   onComingSoonClick: () => void
   linePaper?: boolean
   compact?: boolean
+  /** Omit description line (e.g. home grid — copy lives on the game page). */
+  hideDescription?: boolean
 }
 
 const cardBase =
@@ -26,7 +28,7 @@ const cardBase =
   'hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2'
 
-export function GameCard({ game, onComingSoonClick, linePaper, compact }: GameCardProps) {
+export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDescription }: GameCardProps) {
   const [clientReady, setClientReady] = useState(false)
   useEffect(() => setClientReady(true), [])
   const useCompact = compact ?? !linePaper
@@ -40,12 +42,14 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact }: GameCa
           <span className="text-5xl leading-none">{game.icon}</span>
         )}
       </div>
-      <h2 className={`font-lora text-xl font-bold ${useCompact ? 'mb-2' : 'mb-[30px]'}`} style={{ color: 'var(--ink-text)' }}>
+      <h2 className={`font-lora text-xl font-bold ${hideDescription ? (useCompact ? 'mb-4' : 'mb-[30px]') : useCompact ? 'mb-2' : 'mb-[30px]'}`} style={{ color: 'var(--ink-text)' }}>
         {game.title}
       </h2>
-      <p className={`text-sm flex-1 min-h-0 ${useCompact ? 'mb-4 line-clamp-2' : 'mb-[30px] line-clamp-3'}`} style={{ color: 'var(--ink-muted)' }}>
-        {game.description}
-      </p>
+      {!hideDescription && (
+        <p className={`text-sm flex-1 min-h-0 ${useCompact ? 'mb-4 line-clamp-2' : 'mb-[30px] line-clamp-3'}`} style={{ color: 'var(--ink-muted)' }}>
+          {game.description}
+        </p>
+      )}
       <div className="text-sm" style={{ color: 'var(--ink-accent)' }}>
         {game.available ? 'Click to play →' : 'Click to see features →'}
       </div>

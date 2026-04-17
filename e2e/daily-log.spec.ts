@@ -15,10 +15,4 @@ test.describe('1 Sentence Everyday', () => {
     await textarea.fill('E2E test entry')
     await expect(textarea).toHaveValue('E2E test entry')
   })
-
-  test('theme2 daily-log loads', async ({ page }) => {
-    await page.goto('/theme2/games/daily-log')
-    await expect(page).toHaveURL(/\/theme2\/games\/daily-log/)
-    await expect(page.getByRole('heading', { name: '1 Sentence Everyday' })).toBeVisible({ timeout: 5000 })
-  })
 })

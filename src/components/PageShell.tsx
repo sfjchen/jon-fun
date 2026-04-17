@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
-import { useEffect, useState, type CSSProperties } from 'react'
+import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 type PageShellProps = {
   children: React.ReactNode
@@ -15,10 +15,7 @@ function isFullBleed(pathname: string, isChwaziMobile?: boolean): boolean {
   return (
     pathname === '/games/pear-navigator' ||
     pathname.startsWith('/games/poker/lobby/') ||
-    pathname.startsWith('/games/poker/table/') ||
-    pathname === '/theme2/games/pear-navigator' ||
-    pathname.startsWith('/theme2/games/poker/lobby/') ||
-    pathname.startsWith('/theme2/games/poker/table/')
+    pathname.startsWith('/games/poker/table/')
   )
 }
 
@@ -30,26 +27,16 @@ function isChwaziPath(pathname: string): boolean {
   return pathname?.includes('/games/chwazi') ?? false
 }
 
-function isMentalObstacleCoursePath(pathname: string): boolean {
-  return pathname?.includes('mental-obstacle-course') ?? false
-}
-
 export function PageShell({ children, title, showBack }: PageShellProps) {
   const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const searchSuffix = searchParams.toString() ? `?${searchParams.toString()}` : ''
   const [isMobile, setIsMobile] = useState(false)
-  const isTheme2 = pathname.startsWith('/theme2')
   const chwaziMobile = isChwaziPath(pathname ?? '') && isMobile
-  const isNotebook = !isTheme2 && !chwaziMobile
-  const isHome = pathname === '/' || pathname === '/theme2'
+  const isNotebook = !chwaziMobile
+  const isHome = pathname === '/'
   const showBackLink = showBack ?? !isHome
   const fullBleed = isFullBleed(pathname ?? '', chwaziMobile)
   const pearNav = isPearNavigator(pathname ?? '')
-  const homeHref = isTheme2 ? '/theme2' : '/'
-  const themeSwitchHref = isNotebook
-    ? `/theme2${pathname === '/' ? '' : (pathname ?? '')}${searchSuffix}`
-    : `${pathname?.replace(/^\/theme2/, '') || '/'}${searchSuffix}`
+  const homeHref = '/'
   const useBigLogo = isNotebook && !pearNav
 
   useEffect(() => {
@@ -84,6 +71,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
     (pathname?.includes('/games/jeopardy') ||
       pathname?.includes('/games/chwazi') ||
       pathname?.includes('/games/mental-obstacle-course') ||
+      pathname?.includes('/games/e-reader') ||
       pathname?.includes('/games/five-can-sorting') ||
       pathname?.includes('/games/quip-clash') ||
       pathname?.includes('/games/fib-it') ||
@@ -96,17 +84,6 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
   const logoSize = useBigLogo ? 'text-5xl md:text-6xl lg:text-7xl' : useCompactHeader ? 'text-2xl sm:text-3xl' : 'text-3xl md:text-4xl'
   /* Chwazi mobile: full-viewport fixed layer in main would paint over header without a stacking boost */
   const headerStackClass = chwaziMobile ? 'relative z-50' : ''
-  const mentalObstacle = isMentalObstacleCoursePath(pathname ?? '')
-  const themeSwitchStyle: CSSProperties = mentalObstacle
-    ? {
-        color: 'var(--ink-accent)',
-        top: 'calc(0.65rem + env(safe-area-inset-top, 0px))',
-        bottom: 'auto',
-      }
-    : {
-        color: 'var(--ink-accent)',
-        bottom: 'calc(1rem + env(safe-area-inset-bottom, 0))',
-      }
   return (
     <div
       data-theme={isNotebook ? 'notebook' : undefined}
@@ -158,16 +135,6 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
         )}
         {children}
       </main>
-      {!chwaziMobile && (
-        <Link
-          href={themeSwitchHref}
-          data-testid="theme-switch"
-          className="fixed right-4 z-40 text-sm px-3 py-2 rounded-lg bg-[var(--ink-paper)] border border-[var(--ink-border)] shadow-md hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2"
-          style={themeSwitchStyle}
-        >
-          {isNotebook ? 'Theme 2' : 'Main'}
-        </Link>
-      )}
     </div>
   )
 }

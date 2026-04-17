@@ -9,6 +9,14 @@ const nb = '/doodles/notebook'
 /** Pear Navigator card archived — restore from `@/data/notebook-home-games-archive` */
 const items: GameCardGame[] = [
   {
+    id: 'e-reader',
+    title: 'Web E-Reader',
+    description: 'Import text or PDF files into a chapterized reader with typography controls, bookmarks, TTS, and local progress',
+    icon: 'Aa',
+    href: '/games/e-reader',
+    available: true,
+  },
+  {
     id: 'five-can-sorting',
     title: '5 Can Sorting',
     description: 'Swap two cans at a time; only see how many are in the right place — deduce the hidden order',
@@ -74,9 +82,16 @@ export default function Home() {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl">
+      <div className="grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-2">
         {items.map((item) => (
-          <GameCard key={item.id} game={item} onComingSoonClick={() => setShowComingSoon(true)} linePaper compact />
+          <GameCard
+            key={item.id}
+            game={item}
+            onComingSoonClick={() => setShowComingSoon(true)}
+            linePaper
+            compact
+            hideDescription
+          />
         ))}
       </div>
 
