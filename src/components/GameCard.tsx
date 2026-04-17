@@ -28,8 +28,6 @@ const cardBase =
   'hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2'
 
-const ICON_BOX = 'flex size-[4.25rem] shrink-0 items-center justify-center rounded-2xl border shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]'
-
 function HomeTileContent({
   game,
   available,
@@ -39,37 +37,30 @@ function HomeTileContent({
 }) {
   return (
     <>
-      <div className="mb-4 flex justify-center">
-        <div
-          className={ICON_BOX}
-          style={{
-            borderColor: 'var(--ink-border)',
-            backgroundColor: 'rgba(255,255,255,0.35)',
-          }}
-        >
-          {game.icon.startsWith('/') ? (
-            <Image
-              src={game.icon}
-              alt=""
-              width={48}
-              height={48}
-              className="size-12 object-contain"
-              priority
-            />
-          ) : (
-            <span className="select-none text-[1.65rem] font-semibold leading-none tracking-tight" style={{ color: 'var(--ink-text)' }}>
-              {game.icon}
-            </span>
-          )}
-        </div>
+      {/* Icons sit on the card surface (no inner tile) — matches pre–home-tile layout */}
+      <div className="mb-6 flex h-20 shrink-0 items-center justify-center">
+        {game.icon.startsWith('/') ? (
+          <Image
+            src={game.icon}
+            alt=""
+            width={64}
+            height={64}
+            className="h-16 w-16 object-contain drop-shadow-lg sm:h-18 sm:w-18"
+            priority
+          />
+        ) : (
+          <span className="select-none text-5xl leading-none" style={{ color: 'var(--ink-text)' }}>
+            {game.icon}
+          </span>
+        )}
       </div>
       <div
-        className="mb-1 min-h-11 flex-1 text-center font-lora text-[1.05rem] font-semibold leading-snug sm:text-[1.125rem] line-clamp-2"
+        className="mb-3 min-h-14 flex-1 text-center font-lora text-xl font-bold leading-snug sm:min-h-16 sm:text-2xl sm:leading-snug line-clamp-2"
         style={{ color: 'var(--ink-text)' }}
       >
         {game.title}
       </div>
-      <p className="text-center text-xs font-medium tabular-nums tracking-wide" style={{ color: 'var(--ink-accent)' }}>
+      <p className="text-center text-sm font-medium tabular-nums tracking-wide" style={{ color: 'var(--ink-accent)' }}>
         {available ? 'Open' : 'Preview'}
       </p>
     </>
@@ -86,7 +77,7 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDesc
     cardBase +
     (linePaper ? ' bg-transparent min-h-0 flex flex-col' : '') +
     (homeTile
-      ? ' h-full w-full min-h-[12.5rem] flex flex-col p-5 sm:min-h-[13rem] sm:p-6'
+      ? ' h-full w-full min-h-[14rem] flex flex-col p-6 sm:min-h-[15rem] sm:p-7'
       : useCompact
         ? ' p-6'
         : ' p-[30px]')
