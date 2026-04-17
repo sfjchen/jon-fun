@@ -25,7 +25,6 @@ type View = 'log' | 'analytics' | 'export' | 'sync'
 export default function DailyLearnManager() {
   const pathname = usePathname()
   const isDailyLog = pathname?.includes('daily-log')
-  const inNotebook = true
   const [view, setView] = useState<View>('log')
   const [entries, setEntries] = useState<DailyLearnEntry[]>([])
   const [todayText, setTodayText] = useState('')
@@ -160,11 +159,12 @@ export default function DailyLearnManager() {
     setToday(getTodayDate())
   }, [])
 
-  const linePaperClass = isDailyLog && !inNotebook ? 'notebook-line-paper rounded-lg p-4' : isDailyLog && inNotebook ? 'rounded-lg p-4' : ''
+  /** Outer padding only; page background comes from `PageShell` (card routes = solid ink-bg). */
+  const shellPadClass = isDailyLog ? 'rounded-lg p-4' : ''
   const layout = (title: string, children: React.ReactNode) => (
-    <div className={`max-w-4xl mx-auto ${linePaperClass}`}>
+    <div className={`max-w-5xl mx-auto ${shellPadClass}`}>
       {syncFailedBanner}
-      <h1 className="text-4xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>{title}</h1>
+      <h1 className="mb-4 font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>{title}</h1>
       {children}
     </div>
   )
@@ -215,10 +215,10 @@ export default function DailyLearnManager() {
 
   if (view === 'log') {
     return (
-      <div className={`max-w-4xl mx-auto ${linePaperClass}`}>
+      <div className={`max-w-5xl mx-auto ${shellPadClass}`}>
         {syncFailedBanner}
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-4xl font-bold font-lora" style={{ color: 'var(--ink-text)' }}>1 Sentence Everyday</h1>
+          <h1 className="font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>1 Sentence Everyday</h1>
           {syncing && <span className="text-sm" style={{ color: 'var(--ink-muted)' }}>Syncing…</span>}
         </div>
 
