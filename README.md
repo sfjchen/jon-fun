@@ -4,7 +4,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 
 ## 🎮 Games
 
-- **5 Can Sorting** (`/games/five-can-sorting`): Five labeled cans (A–E), hidden target order; swap two positions per move and receive only the count of cans in the correct place; reach all five correct to win (local-only, no account)
+- **5 Can Sorting** (`/games/five-can-sorting`): Five doodle soda cans, hidden target order; swap two positions per move and receive only the count correct; keyboard 1–5 / Enter / Esc / N; local-only
 - **24 Game** (`/games/24`): Use 4 numbers and basic arithmetic to make 24
 - **Jeopardy with Friends** (`/games/jeopardy`): Create and play custom Jeopardy boards locally
 - **Texas Hold'em** (`/games/poker`): Poker chip tracker with real-time multiplayer lobbies
@@ -116,6 +116,7 @@ src/
 │   ├── PearNavigator.tsx
 │   ├── MentalObstacleCourse.tsx
 │   ├── FiveCanGame.tsx
+│   ├── FiveCanDoodle.tsx
 │   └── party/              # Quip Clash, Fib It, Enough About You (shared hook + UIs)
 └── lib/                    # Utility libraries
     ├── party/              # Party game types, prompts, seed/scoring helpers
@@ -435,7 +436,7 @@ Running log of project work. Update this section when making significant changes
 **2026-04**
 
 - **5 Can Sorting**: New puzzle at `/games/five-can-sorting` (Theme 2 mirror) — swap two of five labeled cans per move, positional count feedback only, win when all five match hidden order; `FiveCanGame` + `five-can-game` lib, home cards, `PageShell` card-page path, doodle `cans.svg`, E2E home navigation entry.
-- **5 Can Sorting UI**: Parody soda-can artwork in `public/images/five-can/`, big “correct / 5” beside the row, feedback history list (newest first).
+- **5 Can Sorting UI**: SVG doodle cans (`FiveCanDoodle`), big “correct / 5” beside a single-row strip (horizontal scroll on narrow viewports), feedback history (newest first), keyboard shortcuts (1–5, Enter, Esc, N).
 
 - **OpenClaw local-only channel cleanup (ops)**: Removed email/cloud bridge settings from active OpenClaw runtime by dropping `hooks` and `channels.telegram` from `~/.openclaw/openclaw.json`; retained only BlueBubbles (iMessage) + WhatsApp channels. Tightened BlueBubbles allowlists to self-number thread identifiers only to prevent unintended chat activation.
 - **OpenClaw env local simplification (ops)**: Reduced `openclaw-hybrid/config/env.cloud` to local essentials only (`OPENCLAW_*`, `OPENROUTER_API_KEY`, `BLUEBUBBLES_*`), removing Outlook Graph, Power Automate, bridge relay, Telegram fallback, and Twilio escalation variables.

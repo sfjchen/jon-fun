@@ -1,11 +1,10 @@
 'use client'
 
-import Image from 'next/image'
-import { memo, useCallback, useState } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { FiveCanDoodle } from '@/components/FiveCanDoodle'
 import {
   CAN_BRAND_NAMES,
   applySwap,
-  canImageSrc,
   countCorrect,
   randomDerangedStart,
   randomPermutation,
@@ -60,27 +59,20 @@ const Slot = memo(function Slot({
       data-testid={`five-can-slot-${idx}`}
       disabled={disabled}
       onClick={() => onPick(idx)}
-      className={`flex w-[72px] flex-col items-center justify-start rounded-lg border px-1.5 pb-2 pt-1 transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 disabled:opacity-50 sm:w-[80px] ${ring}`}
+      className={`flex w-[64px] shrink-0 flex-col items-center justify-start rounded-lg border px-1 pb-1.5 pt-1 transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 disabled:opacity-50 sm:w-[72px] ${ring}`}
       style={{
         backgroundColor: 'var(--ink-paper)',
         borderColor: 'var(--ink-border)',
         color: 'var(--ink-text)',
       }}
     >
-      <span className="mb-1 text-[10px] font-normal leading-none" style={{ color: 'var(--ink-muted)' }}>
+      <span className="mb-0.5 text-[10px] font-normal leading-none" style={{ color: 'var(--ink-muted)' }}>
         {idx + 1}
       </span>
-      <div className="relative h-[100px] w-full sm:h-[112px]">
-        <Image
-          src={canImageSrc(canId)}
-          alt={`${brand} can`}
-          fill
-          className="object-contain object-bottom"
-          sizes="80px"
-          priority={idx < 2}
-        />
+      <div className="h-[88px] w-full [&>svg]:h-full [&>svg]:w-full">
+        <FiveCanDoodle canId={canId} />
       </div>
-      <span className="mt-1 line-clamp-2 min-h-[2rem] text-center text-[10px] leading-tight" style={{ color: 'var(--ink-muted)' }}>
+      <span className="mt-0.5 line-clamp-2 min-h-[1.75rem] text-center text-[9px] leading-tight" style={{ color: 'var(--ink-muted)' }}>
         {brand}
       </span>
     </button>
@@ -141,89 +133,140 @@ export default function FiveCanGame() {
     setSecond(null)
   }, [])
 
+  const clearSelection = useCallback(() => {
+    setFirst(null)
+    setSecond(null)
+  }, [])
+
+  const keyCb = useRef({ pick, doSwap, newGame, clearSelection })
+  keyCb.current = { pick, doSwap, newGame, clearSelection }
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.defaultPrevented) return
+      const t = e.target as HTMLElement | null
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
+
+      const { pick: p, doSwap: swap, newGame: ng, clearSelection: clear } = keyCb.current
+
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        clear()
+        return
+      }
+      if (e.key === 'n' || e.key === 'N') {
+        if (e.metaKey || e.ctrlKey || e.altKey) return
+        e.preventDefault()
+        ng()
+        return
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        swap()
+        return
+      }
+      const n = e.key >= '1' && e.key <= '5' ? Number.parseInt(e.key, 10) - 1 : -1
+      if (n >= 0 && n <= 4) {
+        e.preventDefault()
+        p(n)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   const canIds = g.current
 
   const canSwap = first !== null && second !== null && !g.won
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6">
       <header className="space-y-2">
         <h1 className="font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>
           5 Can Sorting
         </h1>
         <p className="text-sm leading-relaxed" style={{ color: 'var(--ink-muted)' }}>
-          Five knockoff soda cans have a hidden correct left-to-right order. You start with{' '}
-          <strong style={{ color: 'var(--ink-text)' }}>no</strong> cans in the right place. Swap two positions;
-          after each swap you only see how many cans are now correct (positional feedback). Reach{' '}
-          <strong style={{ color: 'var(--ink-text)' }}>5</strong> correct to win.
+          Five doodle soda cans have a hidden left-to-right order. You start with{' '}
+          <strong style={{ color: 'var(--ink-text)' }}>no</strong> cans correct. Swap two positions; after each
+          swap you only see how many are in the right place. Reach <strong style={{ color: 'var(--ink-text)' }}>5</strong>{' '}
+          to win.
         </p>
       </header>
 
       <div
-        className="rounded-lg border p-4 md:p-6"
+        className="rounded-xl border p-4 md:p-6"
         style={{ borderColor: 'var(--ink-border)', backgroundColor: 'transparent' }}
       >
-        <div className="mb-4 text-sm" style={{ color: 'var(--ink-muted)' }}>
-          Moves: <strong style={{ color: 'var(--ink-text)' }}>{g.moves}</strong>
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2 text-sm" style={{ color: 'var(--ink-muted)' }}>
+          <span>
+            Moves: <strong style={{ color: 'var(--ink-text)' }}>{g.moves}</strong>
+          </span>
+          <span className="text-xs">
+            Keys: <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>1</kbd>–
+            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>5</kbd> pick ·{' '}
+            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>Enter</kbd> swap ·{' '}
+            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>Esc</kbd> clear ·{' '}
+            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>N</kbd> new
+          </span>
         </div>
 
-        <p className="mb-4 text-xs" style={{ color: 'var(--ink-muted)' }}>
-          Tap two positions, then Swap. Slots 1–5 are left to right.
-        </p>
-
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:gap-6">
-          <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-center sm:gap-4">
-            <div
-              className="flex shrink-0 flex-col items-center justify-center rounded-xl border px-4 py-3 sm:px-5"
-              style={{ borderColor: 'var(--ink-accent)', backgroundColor: 'var(--ink-paper)' }}
-              aria-live="polite"
-              aria-label={`${currentCorrect} of 5 cans in correct position`}
-            >
-              <span className="text-xs font-medium uppercase tracking-wide" style={{ color: 'var(--ink-muted)' }}>
-                Correct
-              </span>
-              <span
-                className="font-lora text-5xl font-semibold leading-none tabular-nums sm:text-6xl"
-                style={{ color: 'var(--ink-text)' }}
-                data-testid="five-can-correct-big"
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-stretch lg:gap-6">
+          <div className="min-w-0 flex-1 space-y-4">
+            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
+              <div
+                className="flex shrink-0 flex-col items-center justify-center rounded-xl border px-4 py-2.5 sm:py-3"
+                style={{ borderColor: 'var(--ink-accent)', backgroundColor: 'var(--ink-paper)' }}
+                aria-live="polite"
+                aria-label={`${currentCorrect} of 5 cans in correct position`}
               >
-                {currentCorrect}
-                <span className="text-2xl font-normal sm:text-3xl" style={{ color: 'var(--ink-muted)' }}>
-                  {' '}
-                  / 5
+                <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: 'var(--ink-muted)' }}>
+                  Correct
                 </span>
-              </span>
-            </div>
+                <span
+                  className="font-lora text-4xl font-semibold leading-none tabular-nums sm:text-5xl"
+                  style={{ color: 'var(--ink-text)' }}
+                  data-testid="five-can-correct-big"
+                >
+                  {currentCorrect}
+                  <span className="text-xl font-normal sm:text-2xl" style={{ color: 'var(--ink-muted)' }}>
+                    {' '}
+                    / 5
+                  </span>
+                </span>
+              </div>
 
-            <div className="flex min-w-0 flex-1 flex-wrap justify-center gap-2 sm:justify-start sm:gap-3">
-              {[0, 1, 2, 3, 4].map((idx) => (
-                <Slot
-                  key={idx}
-                  idx={idx}
-                  canId={canIds[idx] ?? 0}
-                  selected={first === idx ? 'first' : second === idx ? 'second' : null}
-                  disabled={g.won}
-                  onPick={pick}
-                />
-              ))}
+              <div className="min-w-0 flex-1 touch-pan-x overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
+                <div className="flex w-max min-w-full flex-nowrap justify-center gap-2 sm:min-w-0 sm:justify-start">
+                  {[0, 1, 2, 3, 4].map((idx) => (
+                    <Slot
+                      key={idx}
+                      idx={idx}
+                      canId={canIds[idx] ?? 0}
+                      selected={first === idx ? 'first' : second === idx ? 'second' : null}
+                      disabled={g.won}
+                      onPick={pick}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
           <aside
-            className="w-full shrink-0 rounded-lg border p-3 lg:max-w-[220px] lg:border-l lg:pl-4"
+            className="w-full shrink-0 rounded-lg border p-3 lg:w-[200px] lg:border-l lg:pl-4"
             style={{ borderColor: 'var(--ink-border)' }}
           >
             <h2 className="mb-2 font-lora text-sm font-semibold" style={{ color: 'var(--ink-text)' }}>
               Feedback history
             </h2>
             {g.feedbackHistory.length === 0 ? (
-              <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
-                After each swap, the count appears here (newest first).
+              <p className="text-xs leading-snug" style={{ color: 'var(--ink-muted)' }}>
+                Newest swap results appear on top after you press Swap.
               </p>
             ) : (
               <ul
                 data-testid="five-can-feedback"
-                className="scrollbar-needed max-h-[min(280px,40vh)] space-y-2 overflow-y-auto pr-1 text-sm"
+                className="scrollbar-needed max-h-[min(240px,35vh)] space-y-1.5 overflow-y-auto pr-1 text-sm"
               >
                 {g.feedbackHistory.map((e, i) => (
                   <li
@@ -246,7 +289,7 @@ export default function FiveCanGame() {
           </aside>
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-3">
+        <div className="mt-5 flex flex-wrap items-center gap-3 border-t pt-4" style={{ borderColor: 'var(--ink-border)' }}>
           <button
             type="button"
             data-testid="five-can-swap"
@@ -266,11 +309,15 @@ export default function FiveCanGame() {
           >
             New game
           </button>
+          <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>
+            {first !== null && second === null && <>Slot {first + 1} selected — pick another.</>}
+            {first !== null && second !== null && <>Ready to swap slots {first + 1} ↔ {second + 1}.</>}
+          </span>
         </div>
 
         {g.won && (
           <div
-            className="mt-6 rounded-lg border p-4 text-center"
+            className="mt-5 rounded-lg border p-4 text-center"
             style={{ borderColor: 'var(--ink-accent)', backgroundColor: 'var(--ink-paper)' }}
             data-testid="five-can-won"
           >
@@ -280,19 +327,13 @@ export default function FiveCanGame() {
             <p className="mt-3 text-sm" style={{ color: 'var(--ink-muted)' }}>
               Target order (left → right):
             </p>
-            <div className="mt-3 flex flex-wrap items-end justify-center gap-3">
+            <div className="mx-auto mt-3 flex w-max max-w-full flex-nowrap justify-center gap-2 overflow-x-auto pb-1">
               {g.target.map((id) => (
-                <div key={id} className="flex w-14 flex-col items-center gap-1">
-                  <div className="relative h-20 w-full">
-                    <Image
-                      src={canImageSrc(id)}
-                      alt={CAN_BRAND_NAMES[id] ?? 'can'}
-                      fill
-                      className="object-contain object-bottom"
-                      sizes="56px"
-                    />
+                <div key={id} className="flex w-[52px] shrink-0 flex-col items-center gap-1">
+                  <div className="h-[72px] w-full [&>svg]:h-full [&>svg]:w-full">
+                    <FiveCanDoodle canId={id} />
                   </div>
-                  <span className="text-center text-[10px] leading-tight" style={{ color: 'var(--ink-muted)' }}>
+                  <span className="text-center text-[9px] leading-tight" style={{ color: 'var(--ink-muted)' }}>
                     {CAN_BRAND_NAMES[id]}
                   </span>
                 </div>

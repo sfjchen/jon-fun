@@ -1,13 +1,8 @@
 /** Five distinct cans as labels (analysis paper uses A–E). */
 export const CAN_LABELS = ['A', 'B', 'C', 'D', 'E'] as const
 
-/** Fictional parody brand names for UI (mapped by can id 0–4). */
-export const CAN_BRAND_NAMES = ['Classic Fizz', 'Lite Pop', 'Zest Up', 'Mist Verde', 'Volt Rush'] as const
-
-/** Static art in `public/images/five-can/` (generated knockoff-style cans). */
-export function canImageSrc(canId: number): string {
-  return `/images/five-can/five-can-brand-${canId}.png`
-}
+/** Short parody-style names (mapped by can id 0–4). */
+export const CAN_BRAND_NAMES = ['Classic Red', 'Blue Wave', 'Dr. Zing', 'Lime Spritz', 'Orange Fizz'] as const
 
 /** `target[i]` = which can belongs at position i (0–4). */
 export type Perm5 = readonly [number, number, number, number, number]
