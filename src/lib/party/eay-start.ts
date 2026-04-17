@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin as supabase } from '@/lib/supabase'
 import { PARTY_PHASE_SECONDS_DEFAULT } from './constants'
 import { EAY_INTAKE_QUESTIONS } from './prompts-eay'
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin as supabase } from '@/lib/supabase'
 import { validateRoomPin } from '@/lib/poker'
 import { ANSWER_MAX_LEN, PARTY_PHASE_SECONDS_DEFAULT, PARTY_VOTE_SECONDS_DEFAULT } from '@/lib/party/constants'
 import { QUIPLASH_FINAL_PROMPTS } from '@/lib/party/prompts-quiplash'

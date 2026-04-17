@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin as supabase } from '@/lib/supabase'
 import { PARTY_PHASE_SECONDS_DEFAULT } from './constants'
 import { FIBBAGE_BANK } from './prompts-fibbage'
 
