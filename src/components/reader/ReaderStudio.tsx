@@ -189,8 +189,8 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
       <div className="rounded-3xl border p-5 md:p-6" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
         <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-sm font-semibold" style={{ color: 'var(--ink-accent)' }}>NovelFire-style web reader</p>
-            <h1 className="font-lora text-3xl font-semibold" style={{ color: 'var(--ink-text)' }}>Import books into a local-first e-reader</h1>
+            <p className="text-base font-semibold" style={{ color: 'var(--ink-accent)' }}>NovelFire-style web reader</p>
+            <h1 className="font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>Import books into a local-first e-reader</h1>
             <p className="mt-2 max-w-3xl text-sm" style={{ color: 'var(--ink-muted)' }}>
               Paste plain text or upload a text file entirely on-device. For PDFs, text is extracted once on the server (not stored) so the reader stays reliable in the browser; saved books and progress stay local in IndexedDB.
             </p>

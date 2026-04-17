@@ -229,7 +229,7 @@ export default function FiveCanGame() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <header className="space-y-2">
-        <h1 className="font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>
+        <h1 className="font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>
           5 Can Sorting
         </h1>
         <p className="text-sm leading-relaxed" style={{ color: 'var(--ink-muted)' }}>

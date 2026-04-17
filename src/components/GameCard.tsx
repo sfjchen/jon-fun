@@ -49,7 +49,7 @@ function HomeTileContent({ game }: { game: GameCardGame }) {
         )}
       </div>
       <div
-        className="min-h-12 flex-1 text-center font-lora text-lg font-bold leading-snug sm:min-h-14 sm:text-xl sm:leading-snug line-clamp-2"
+        className="min-h-14 flex-1 text-center font-lora text-xl font-semibold leading-snug sm:min-h-16 sm:text-2xl sm:leading-snug line-clamp-2"
         style={{ color: 'var(--ink-text)' }}
       >
         {game.title}
@@ -68,7 +68,7 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDesc
     cardBase +
     (linePaper ? ' bg-transparent min-h-0 flex flex-col' : '') +
     (homeTile
-      ? ' h-full w-full min-h-[11rem] flex flex-col p-4 sm:min-h-[12rem] sm:p-5'
+      ? ' h-full w-full min-h-[12rem] flex flex-col p-4 sm:min-h-[13rem] sm:p-5'
       : useCompact
         ? ' p-6'
         : ' p-[30px]')
@@ -90,7 +90,10 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDesc
           <span className="text-5xl leading-none">{game.icon}</span>
         )}
       </div>
-      <h2 className={`font-lora text-xl font-bold ${hideDescription ? (useCompact ? 'mb-4' : 'mb-[30px]') : useCompact ? 'mb-2' : 'mb-[30px]'}`} style={{ color: 'var(--ink-text)' }}>
+      <h2
+        className={`font-lora text-xl font-semibold sm:text-2xl ${hideDescription ? (useCompact ? 'mb-4' : 'mb-[30px]') : useCompact ? 'mb-2' : 'mb-[30px]'}`}
+        style={{ color: 'var(--ink-text)' }}
+      >
         {game.title}
       </h2>
       {!hideDescription && (
