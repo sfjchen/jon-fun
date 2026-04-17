@@ -1,6 +1,6 @@
 /**
  * Simple line-art soda can doodles (parody / generic — not official brand assets).
- * ids: 0 red cola, 1 blue cola, 2 dr.-style, 3 lime citrus, 4 orange soda.
+ * ids match `CAN_BRAND_NAMES`: 0 red Cola, 1 blue Pepsy, 2 maroon Dr. Prepper, 3 green Spritz, 4 orange Fantuh.
  */
 export function FiveCanDoodle({ canId, className }: { canId: number; className?: string }) {
   const stroke = '#1a1a1a'
