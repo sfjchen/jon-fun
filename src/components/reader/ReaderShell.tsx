@@ -429,19 +429,19 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
 
   if (!chapter) {
     return (
-      <section className="p-8 text-center text-sm" style={{ color: 'var(--reader-muted, #666)' }}>
+      <section className="e-reader-chrome-muted p-8 text-center text-sm">
         <p>This publication has no chapters.</p>
       </section>
     )
   }
 
   return (
-    <section style={cssVars} className="pb-safe">
+    <section style={cssVars} className="notebook-line-paper pb-safe">
       <div
         className="sticky top-0 z-30 mb-5 rounded-3xl border px-4 py-4 shadow-sm md:px-6"
-        style={{ backgroundColor: 'var(--reader-chrome)', borderColor: 'var(--reader-border)', color: 'var(--reader-text)' }}
+        style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
       >
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm reader-muted">
+        <div className="e-reader-chrome-muted mb-3 flex flex-wrap items-center justify-between gap-3 text-sm">
           <nav className="flex flex-wrap items-center gap-2" aria-label="Breadcrumb">
             <Link href="/" className="reader-focus rounded-md hover:underline">
               Home
@@ -463,7 +463,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
             </span>
           </nav>
           {flashMessage ? (
-            <span className="rounded-full px-3 py-1 text-xs" style={{ backgroundColor: 'var(--reader-panel)', color: 'var(--reader-accent)' }}>
+            <span className="rounded-full px-3 py-1 text-xs" style={{ backgroundColor: 'var(--ink-bg)', color: 'var(--ink-accent)' }}>
               {flashMessage}
             </span>
           ) : null}
@@ -471,11 +471,11 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
 
         <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
-            <p className="mb-1 text-sm font-semibold" style={{ color: 'var(--reader-accent)' }}>
+            <p className="mb-1 text-sm font-semibold" style={{ color: 'var(--ink-accent)' }}>
               {publication.title}
             </p>
             <h1 className="text-2xl font-semibold md:text-3xl">{chapter.title}</h1>
-            <p className="mt-1 text-sm reader-muted">
+            <p className="e-reader-chrome-muted mt-1 text-sm">
               Chapter {currentIndex + 1} of {chapters.length} · {formatWordCount(chapter.wordCount)}
             </p>
           </div>
@@ -484,26 +484,29 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
               <button
                 type="button"
                 onClick={() => setTocOpen((v) => !v)}
-                className="reader-chip reader-focus rounded-2xl px-4 py-2 text-sm font-medium"
+                className="e-reader-chrome-chip reader-focus rounded-2xl px-4 py-2 text-sm font-medium"
                 aria-pressed={tocOpen}
               >
                 {tocOpen ? 'Hide contents' : 'Contents'}
               </button>
             ) : null}
-            <button type="button" onClick={cycleTheme} className="reader-chip reader-focus rounded-2xl px-4 py-2 text-sm font-medium" title="Cycle theme">
+            <button type="button" onClick={cycleTheme} className="e-reader-chrome-chip reader-focus rounded-2xl px-4 py-2 text-sm font-medium" title="Cycle theme">
               Theme
             </button>
             <button
               type="button"
               onClick={() => updatePref('panelOpen', !prefs.panelOpen)}
-              className="reader-action reader-focus rounded-2xl px-4 py-2 text-sm font-medium"
+              className="e-reader-chrome-action reader-focus rounded-2xl px-4 py-2 text-sm font-medium"
             >
               {prefs.panelOpen ? 'Hide settings' : 'Open settings'}
             </button>
           </div>
         </div>
 
-        <div className="mb-4 flex flex-col gap-2 rounded-2xl border px-3 py-3 md:flex-row md:flex-wrap md:items-center" style={{ borderColor: 'var(--reader-border)', backgroundColor: 'var(--reader-panel)' }}>
+        <div
+          className="mb-4 flex flex-col gap-2 rounded-2xl border px-3 py-3 md:flex-row md:flex-wrap md:items-center"
+          style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)' }}
+        >
           <label className="min-w-0 flex-1 md:min-w-[200px]">
             <span className="sr-only">Search in book</span>
             <input
@@ -517,32 +520,31 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
                 }
               }}
               placeholder="Search in book…"
-              className="reader-focus w-full rounded-xl border px-3 py-2 text-sm"
-              style={{ borderColor: 'var(--reader-border)', backgroundColor: 'var(--reader-chrome)', color: 'var(--reader-text)' }}
+              className="e-reader-chrome-input reader-focus w-full rounded-xl border px-3 py-2 text-sm"
               autoComplete="off"
               spellCheck={false}
             />
           </label>
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={runFind} className="reader-action reader-focus rounded-xl px-3 py-2 text-sm font-medium">
+            <button type="button" onClick={runFind} className="e-reader-chrome-action reader-focus rounded-xl px-3 py-2 text-sm font-medium">
               Find
             </button>
-            <button type="button" onClick={prevHit} disabled={!hits.length} className="reader-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
+            <button type="button" onClick={prevHit} disabled={!hits.length} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
               Prev
             </button>
-            <button type="button" onClick={nextHit} disabled={!hits.length} className="reader-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
+            <button type="button" onClick={nextHit} disabled={!hits.length} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
               Next
             </button>
-            <button type="button" onClick={clearSearch} className="reader-chip reader-focus rounded-xl px-3 py-2 text-sm">
+            <button type="button" onClick={clearSearch} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm">
               Clear
             </button>
-            <span className="flex items-center px-2 text-xs reader-muted" aria-live="polite">
+            <span className="e-reader-chrome-muted flex items-center px-2 text-xs" aria-live="polite">
               {hitLabel}
             </span>
           </div>
         </div>
 
-        <p className="mb-3 text-xs reader-muted">
+        <p className="e-reader-chrome-muted mb-3 text-xs">
           Shortcuts: / focus search · Enter find · n / Shift+n next/prev match · [ ] prev/next chapter · g chapter menu
         </p>
 
@@ -551,7 +553,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
             type="button"
             onClick={() => prevChapterId && goToChapter(prevChapterId)}
             disabled={!canGoPrev}
-            className="reader-action reader-focus rounded-2xl px-4 py-3 text-sm font-medium disabled:opacity-40"
+            className="e-reader-chrome-action reader-focus rounded-2xl px-4 py-3 text-sm font-medium disabled:opacity-40"
           >
             Previous
           </button>
@@ -559,8 +561,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
             <span className="sr-only">Choose chapter</span>
             <select
               ref={chapterSelectRef}
-              className="reader-focus w-full rounded-2xl border px-4 py-3 text-sm"
-              style={{ borderColor: 'var(--reader-border)', backgroundColor: 'var(--reader-panel)', color: 'var(--reader-text)' }}
+              className="e-reader-chrome-input reader-focus w-full rounded-2xl border px-4 py-3 text-sm"
               value={chapter.id}
               onChange={(event) => goToChapter(event.target.value)}
             >
@@ -575,7 +576,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
             type="button"
             onClick={() => nextChapterId && goToChapter(nextChapterId)}
             disabled={!canGoNext}
-            className="reader-action reader-focus rounded-2xl px-4 py-3 text-sm font-medium disabled:opacity-40"
+            className="e-reader-chrome-action reader-focus rounded-2xl px-4 py-3 text-sm font-medium disabled:opacity-40"
           >
             Next
           </button>
@@ -585,10 +586,10 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
       <div className="flex items-start gap-6">
         {!mobile && tocOpen ? (
           <nav
-            className="reader-panel reader-scrollbar sticky top-24 z-10 hidden max-h-[70vh] w-52 shrink-0 overflow-y-auto rounded-3xl p-4 lg:block"
+            className="e-reader-chrome-panel e-reader-chrome-scrollbar sticky top-24 z-10 hidden max-h-[70vh] w-52 shrink-0 overflow-y-auto rounded-3xl p-4 lg:block"
             aria-label="Table of contents"
           >
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] reader-muted">Contents</p>
+            <p className="e-reader-chrome-muted mb-3 text-xs font-semibold uppercase tracking-[0.2em]">Contents</p>
             <ul className="space-y-1">
               {chapters.map((c, index) => (
                 <li key={c.id}>
@@ -597,12 +598,12 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
                     onClick={() => goToChapter(c.id)}
                     className="reader-focus w-full rounded-xl px-3 py-2 text-left text-sm leading-snug transition-colors"
                     style={{
-                      backgroundColor: c.id === chapter.id ? 'color-mix(in srgb, var(--reader-accent) 18%, var(--reader-panel))' : 'transparent',
-                      color: 'var(--reader-text)',
-                      border: c.id === chapter.id ? '1px solid var(--reader-accent)' : '1px solid transparent',
+                      backgroundColor: c.id === chapter.id ? 'color-mix(in srgb, var(--ink-accent) 18%, var(--ink-paper))' : 'transparent',
+                      color: 'var(--ink-text)',
+                      border: c.id === chapter.id ? '1px solid var(--ink-accent)' : '1px solid transparent',
                     }}
                   >
-                    <span className="reader-muted">{index + 1}. </span>
+                    <span className="e-reader-chrome-muted">{index + 1}. </span>
                     <span className="line-clamp-3">{c.title}</span>
                   </button>
                 </li>
@@ -613,7 +614,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
 
         <div className="min-w-0 flex-1">
           {prefersReducedMotion && prefs.autoScrollEnabled ? (
-            <div className="mb-4 rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'var(--reader-border)', backgroundColor: 'var(--reader-panel)', color: 'var(--reader-muted)' }}>
+            <div className="e-reader-chrome-muted mb-4 rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)' }}>
               Auto scroll is paused because reduced motion is enabled on this device.
             </div>
           ) : null}
@@ -649,7 +650,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
         <button
           type="button"
           onClick={() => updatePref('panelOpen', true)}
-          className="reader-action reader-focus fixed bottom-safe right-4 z-40 rounded-full px-4 py-3 text-sm font-semibold shadow-lg"
+          className="e-reader-chrome-action reader-focus fixed bottom-safe right-4 z-40 rounded-full px-4 py-3 text-sm font-semibold shadow-lg"
         >
           Reader settings
         </button>

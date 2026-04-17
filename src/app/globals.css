@@ -169,6 +169,48 @@ html.notebook-theme-root {
     accent-color: var(--reader-accent);
   }
 
+  /* E-reader chrome (TOC, settings, top bar): site notebook ink; reader-surface column keeps NovelFire-style reader tokens */
+  .e-reader-chrome-muted {
+    color: var(--ink-muted);
+  }
+  .e-reader-chrome-panel {
+    background: var(--ink-paper);
+    color: var(--ink-text);
+    border: 1px solid var(--ink-border);
+    box-shadow: 0 12px 24px rgba(140, 56, 56, 0.08);
+  }
+  .e-reader-chrome-chip {
+    border: 1px solid var(--ink-border);
+    background: var(--ink-bg);
+    color: var(--ink-text);
+    transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease;
+  }
+  .e-reader-chrome-chip:hover {
+    transform: translateY(-1px);
+    border-color: var(--ink-accent);
+  }
+  .e-reader-chrome-chip[data-active='true'] {
+    background: color-mix(in srgb, var(--ink-accent) 16%, var(--ink-paper));
+    border-color: var(--ink-accent);
+  }
+  .e-reader-chrome-action {
+    border: 1px solid color-mix(in srgb, var(--ink-accent) 35%, var(--ink-border));
+    background: color-mix(in srgb, var(--ink-accent) 12%, var(--ink-paper));
+    color: var(--ink-text);
+  }
+  .e-reader-chrome-input {
+    border-color: var(--ink-border);
+    background: var(--ink-bg);
+    color: var(--ink-text);
+  }
+  .e-reader-chrome-slider {
+    accent-color: var(--ink-accent);
+  }
+  .e-reader-chrome-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--ink-accent) 55%, transparent) transparent;
+  }
+
   .reader-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: color-mix(in srgb, var(--reader-accent) 65%, transparent) transparent;

@@ -11,6 +11,83 @@ export function isStructuredChapterHeadingLine(line: string): boolean {
   return CHAPTER_HEADING_RE.test(t)
 }
 
+function extractBookNumber(title: string): number | null {
+  const m = /^Book\s+(\d{1,2})\b/i.exec(title.trim())
+  return m ? Number(m[1]) : null
+}
+
+function isBookLineTocNoise(line: string): boolean {
+  const t = line.trim()
+  if (/index of persons|table of contents|half title page|chronology|appendix$/i.test(t)) return true
+  if (/notes\s+index\s+of/i.test(t)) return true
+  if (/^Book\s+\d+\s+Notes\s+/i.test(t)) return true
+  if (t.length > 140) return true
+  return false
+}
+
+/**
+ * A real "Book N" heading line (Meditations: TOC, then intro prose, then body headings like
+ * "Book 1 DEBTS AND LESSONS"). Rejects "Book 1 of the Meditations…" (intro paragraph) and TOC junk.
+ */
+function isBookSplitLine(line: string): boolean {
+  const t = line.trim()
+  if (!/^Book\s+(\d{1,2})\b/i.test(t)) return false
+  if (t.length > 140) return false
+  if (/^Book\s+\d{1,2}\s+of\s+(the|a)\b/i.test(t)) return false
+  return !isBookLineTocNoise(t)
+}
+
+/** From each candidate "Book 1" in the file, take 1,2,3,… in order; pick the longest run, tie-break to later in file (body after TOC). */
+function buildAscendingBookRun(marks: { idx: number; title: string }[], start: number): { idx: number; title: string }[] {
+  const run: { idx: number; title: string }[] = []
+  let next = 1
+  for (let j = start; j < marks.length; j++) {
+    const mk = marks[j]
+    if (!mk) continue
+    const n = extractBookNumber(mk.title)
+    if (n === next) {
+      run.push(mk)
+      next++
+    }
+  }
+  return run
+}
+
+function findBestBookHeadingRun(marks: { idx: number; title: string }[]): { idx: number; title: string }[] | null {
+  let best: { idx: number; title: string }[] | null = null
+  for (let start = 0; start < marks.length; start++) {
+    const at = marks[start]
+    if (!at || extractBookNumber(at.title) !== 1) continue
+    const run = buildAscendingBookRun(marks, start)
+    if (run.length < 3) continue
+    const runHead = run[0]
+    const bestHead = best?.[0]
+    if (
+      !best ||
+      run.length > best.length ||
+      (run.length === best.length && runHead && bestHead && runHead.idx > bestHead.idx)
+    ) {
+      best = run
+    }
+  }
+  return best && best.length >= 3 ? best : null
+}
+
+/** TOC / list lines that match CHAPTER_HEADING_RE but should not start a chapter (PDF table of contents, etc.). */
+function isTocJunkHeading(line: string): boolean {
+  const t = line.trim()
+  if (!CHAPTER_HEADING_RE.test(t)) return false
+  if (t.length > 120) return true
+  if (/^Book\s+\d+/i.test(t) && t.length > 90) return true
+  if (/^Chapter\s+\d+/i.test(t) && t.length > 70) return true
+  if (/index of|persons|half title|chronology|contents\s+title|title page/i.test(t)) return true
+  return false
+}
+
+function isHeadingLine(line: string): boolean {
+  return CHAPTER_HEADING_RE.test(line) && !isTocJunkHeading(line)
+}
+
 function normalizeText(raw: string): string {
   return raw
     .replace(/\r\n/g, '\n')
@@ -66,6 +143,57 @@ function finalizeChapter(chapters: ReaderChapter[], title: string, paragraphs: s
   chapters.push(makeChapter(title, cleaned, chapters.length))
 }
 
+/** One paragraph per non-empty line block (PDF line list). */
+function paragraphsFromLineList(lines: string[]): string[] {
+  const t = lines.map((l) => l.trim()).filter(Boolean)
+  if (!t.length) return []
+  return splitParagraphs(t.join('\n\n'))
+}
+
+/**
+ * Meditations / similar: split on real "Book N" / "Book N: …" lines; merge front matter into Book 1.
+ */
+function splitOnBookHeadings(normalized: string): ReaderChapter[] | null {
+  const lines = normalized.split('\n')
+  const marks: { idx: number; title: string }[] = []
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]?.trim() ?? ''
+    if (!line) continue
+    if (isBookSplitLine(line)) marks.push({ idx: i, title: line })
+  }
+
+  const best = findBestBookHeadingRun(marks)
+  if (!best || best.length < 3) return null
+
+  const chapters: ReaderChapter[] = []
+  for (let m = 0; m < best.length; m++) {
+    const cur = best[m]
+    const next = best[m + 1]
+    if (!cur) continue
+    const start = cur.idx + 1
+    const end = next ? next.idx : lines.length
+    let segment = lines
+      .slice(start, end)
+      .map((l) => l.trim())
+      .filter(Boolean)
+    if (m === 0) {
+      const first = best[0]
+      if (first) {
+        const fm = lines
+          .slice(0, first.idx)
+          .map((l) => l.trim())
+          .filter(Boolean)
+        if (fm.length) segment = [...fm, ...segment]
+      }
+    }
+    const paragraphs = paragraphsFromLineList(segment)
+    if (!paragraphs.length) continue
+    chapters.push(makeChapter(cur.title, paragraphs, chapters.length))
+  }
+
+  return chapters.length >= 2 ? chapters : null
+}
+
 function detectStructuredChapters(normalized: string): ReaderChapter[] {
   const blocks = normalized.split('\n')
   const chapters: ReaderChapter[] = []
@@ -87,7 +215,7 @@ function detectStructuredChapters(normalized: string): ReaderChapter[] {
       continue
     }
 
-    if (CHAPTER_HEADING_RE.test(line) && (currentParagraphs.length > 0 || currentParagraphLines.length > 0 || chapters.length > 0)) {
+    if (isHeadingLine(line) && (currentParagraphs.length > 0 || currentParagraphLines.length > 0 || chapters.length > 0)) {
       flushParagraph()
       finalizeChapter(chapters, currentTitle || chapterTitleFromIndex(chapters.length), currentParagraphs)
       currentTitle = line
@@ -95,7 +223,7 @@ function detectStructuredChapters(normalized: string): ReaderChapter[] {
       continue
     }
 
-    if (CHAPTER_HEADING_RE.test(line) && !currentTitle && currentParagraphs.length === 0 && currentParagraphLines.length === 0) {
+    if (isHeadingLine(line) && !currentTitle && currentParagraphs.length === 0 && currentParagraphLines.length === 0) {
       currentTitle = line
       continue
     }
@@ -134,9 +262,14 @@ function chunkParagraphs(paragraphs: string[], targetWords = 1800): ReaderChapte
   return chapters
 }
 
-export function chapterizeText(raw: string): ReaderChapter[] {
+export function chapterizeText(raw: string, sourceType: ReaderSourceType = 'paste'): ReaderChapter[] {
   const normalized = normalizeText(raw)
   if (!normalized) return []
+
+  if (sourceType === 'pdf') {
+    const bookSplit = splitOnBookHeadings(normalized)
+    if (bookSplit && bookSplit.length >= 2) return bookSplit
+  }
 
   const structured = detectStructuredChapters(normalized)
   if (structured.length >= 2) return structured
@@ -155,13 +288,24 @@ export function createImportDraft(input: {
     input.title?.trim() ||
     input.originalFileName?.replace(/\.[^/.]+$/, '').trim() ||
     'Untitled reader import'
-  const chapters = chapterizeText(input.rawText)
+  const chapters = chapterizeText(input.rawText, input.sourceType)
+
+  const importNotes = [...(input.notes ?? [])]
+  if (
+    input.sourceType === 'pdf' &&
+    chapters.length >= 2 &&
+    chapters.some((c) => /^Book\s+\d+/i.test(c.title))
+  ) {
+    importNotes.push(
+      "Chapters were split on strict 'Book N' headings (typical for Meditations). Title page and TOC lines are merged into Book 1 when present.",
+    )
+  }
 
   const draft: ReaderImportDraft = {
     title,
     sourceType: input.sourceType,
     chapters,
-    importNotes: input.notes ?? [],
+    importNotes,
   }
 
   if (input.originalFileName) draft.originalFileName = input.originalFileName
