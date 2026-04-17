@@ -5,7 +5,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 ## 🎮 Games
 
 - **Web e-reader** (`/games/e-reader`): Local-first NovelFire-style reader — paste/upload text or PDF, chapterize, typography + themes, TTS (Text-To-Speech), bookmarks, in-book search with highlights, TOC (Table Of Contents) sidebar, keyboard shortcuts, export `.txt` from library
-- **5 Can Sorting** (`/games/five-can-sorting`): Five doodle soda cans, hidden target order; swap two positions per move and receive only the count correct; keyboard 1–5 / Enter / Esc / N; local-only
+- **5 Can Sorting** (`/games/five-can-sorting`): Five doodle soda cans, hidden target order; **Swap** mode (swap-only) or **Shift** mode (insert-from/to or swap); optional **Hint** (shortest path to solution); count-correct feedback only; keyboard 1–5 / Enter / H / Esc / N; local-only
 - **24 Game** (`/games/24`): Use 4 numbers and basic arithmetic to make 24
 - **Jeopardy with Friends** (`/games/jeopardy`): Create and play custom Jeopardy boards locally
 - **Texas Hold'em** (`/games/poker`): Poker chip tracker with real-time multiplayer lobbies
@@ -453,6 +453,7 @@ Running log of project work. Update this section when making significant changes
 - **Deploy fix (Vercel build)**: Removed archived `theme2` e-reader pages that imported `@/components/reader/*` before that code existed on `main` — Next.js still typechecks files under `src/app/_archive`, so those imports broke `npm run build` on Vercel.
 - **5 Can Sorting**: New puzzle at `/games/five-can-sorting` — swap two of five labeled cans per move, positional count feedback only, win when all five match hidden order; `FiveCanGame` + `five-can-game` lib, home cards, `PageShell` card-page path, doodle `cans.svg`, E2E home navigation entry.
 - **5 Can Sorting UI**: SVG doodle cans (`FiveCanDoodle`), Swap vs Shift gamemodes, theory sidebar (swap feedback game ≤7 moves per paper; shift/insert sorting diameter 4 on S₅), correct count 0–5 only, single-row strip + larger slots, inset selection, keyboard shortcuts (1–5, Enter, Esc, N).
+- **5 Can Sorting (hint + shift mode)**: **Hint** picks slots for one step on a shortest path to the hidden order (BFS on legal moves); **Shift** mode adds **Insert | Swap** so insertion moves and swaps are both available (`hintFirstMoveOnShortestPath` in `five-can-game.ts`).
 
 - **OpenClaw local-only channel cleanup (ops)**: Removed email/cloud bridge settings from active OpenClaw runtime by dropping `hooks` and `channels.telegram` from `~/.openclaw/openclaw.json`; retained only BlueBubbles (iMessage) + WhatsApp channels. Tightened BlueBubbles allowlists to self-number thread identifiers only to prevent unintended chat activation.
 - **OpenClaw env local simplification (ops)**: Reduced `openclaw-hybrid/config/env.cloud` to local essentials only (`OPENCLAW_*`, `OPENROUTER_API_KEY`, `BLUEBUBBLES_*`), removing Outlook Graph, Power Automate, bridge relay, Telegram fallback, and Twilio escalation variables.

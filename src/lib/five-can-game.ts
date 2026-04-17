@@ -80,3 +80,80 @@ export const THEORY_WORST_CASE_SWAP_MOVES = 7
  * per move (BFS diameter on S₅). Distinct from the feedback-identification game.
  */
 export const THEORY_WORST_CASE_SHIFT_SORT_MOVES = 4
+
+/** Top-level UI mode: `swap` = swaps only; `shift` = swaps + insertion moves. */
+export type FiveCanGameMode = 'swap' | 'shift'
+
+export function permKey(p: readonly number[]): string {
+  return `${p[0]},${p[1]},${p[2]},${p[3]},${p[4]}`
+}
+
+/** One legal move toward the target (used by hint). */
+export type HintMove =
+  | { kind: 'swap'; i: number; j: number }
+  | { kind: 'shift'; from: number; to: number }
+
+function neighborsForMode(
+  mode: FiveCanGameMode,
+  p: Perm5,
+): Array<{ next: Perm5; move: HintMove }> {
+  const out: Array<{ next: Perm5; move: HintMove }> = []
+  for (let i = 0; i < 5; i++) {
+    for (let j = i + 1; j < 5; j++) {
+      out.push({ next: applySwap(p, i, j), move: { kind: 'swap', i, j } })
+    }
+  }
+  if (mode === 'shift') {
+    for (let from = 0; from < 5; from++) {
+      for (let to = 0; to < 5; to++) {
+        if (from === to) continue
+        out.push({ next: applyShiftInsert(p, from, to), move: { kind: 'shift', from, to } })
+      }
+    }
+  }
+  return out
+}
+
+/**
+ * One step on a shortest path from `current` to `target` in the graph defined by `mode`
+ * (swap-only vs swap + insertion). Uses full target — intended as a solver hint, not
+ * feedback-optimal play.
+ */
+export function hintFirstMoveOnShortestPath(
+  current: Perm5,
+  target: Perm5,
+  mode: FiveCanGameMode,
+): HintMove | null {
+  const ck = permKey(current)
+  const tk = permKey(target)
+  if (ck === tk) return null
+
+  const q: Perm5[] = [current]
+  const parent = new Map<string, { prevKey: string; move: HintMove }>()
+  const seen = new Set<string>([ck])
+
+  while (q.length) {
+    const u = q.shift()!
+    const uk = permKey(u)
+    if (uk === tk) {
+      const moves: HintMove[] = []
+      let k = tk
+      while (k !== ck) {
+        const step = parent.get(k)
+        if (!step) return null
+        moves.push(step.move)
+        k = step.prevKey
+      }
+      return moves[moves.length - 1] ?? null
+    }
+    for (const { next, move } of neighborsForMode(mode, u)) {
+      const nk = permKey(next)
+      if (!seen.has(nk)) {
+        seen.add(nk)
+        parent.set(nk, { prevKey: uk, move })
+        q.push(next)
+      }
+    }
+  }
+  return null
+}

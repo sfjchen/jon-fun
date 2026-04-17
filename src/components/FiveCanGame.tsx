@@ -9,14 +9,14 @@ import {
   applyShiftInsert,
   applySwap,
   countCorrect,
+  hintFirstMoveOnShortestPath,
   randomDerangedStart,
   randomPermutation,
+  type FiveCanGameMode,
   type Perm5,
 } from '@/lib/five-can-game'
 
 type FeedbackEntry = { move: number; correct: number }
-
-type GameMode = 'swap' | 'shift'
 
 type GameState = {
   target: Perm5
@@ -85,7 +85,9 @@ function Slot({
 
 export default function FiveCanGame() {
   const [g, setG] = useState<GameState>(() => initialState())
-  const [mode, setMode] = useState<GameMode>('swap')
+  const [mode, setMode] = useState<FiveCanGameMode>('swap')
+  /** In shift mode: apply a swap of the two slots vs insert-from / insert-to. */
+  const [shiftMoveKind, setShiftMoveKind] = useState<'swap' | 'insert'>('insert')
   const [first, setFirst] = useState<number | null>(null)
   const [second, setSecond] = useState<number | null>(null)
 
@@ -122,7 +124,9 @@ export default function FiveCanGame() {
     const next =
       mode === 'swap'
         ? applySwap(g.current, first, second)
-        : applyShiftInsert(g.current, first, second)
+        : shiftMoveKind === 'swap'
+          ? applySwap(g.current, first, second)
+          : applyShiftInsert(g.current, first, second)
     const fb = countCorrect(next, g.target)
     const moveNum = g.moves + 1
     setG((prev) => ({
@@ -134,12 +138,13 @@ export default function FiveCanGame() {
     }))
     setFirst(null)
     setSecond(null)
-  }, [first, second, g, mode])
+  }, [first, second, g, mode, shiftMoveKind])
 
   const newGame = useCallback(() => {
     setG(initialState())
     setFirst(null)
     setSecond(null)
+    setShiftMoveKind('insert')
   }, [])
 
   const clearSelection = useCallback(() => {
@@ -147,14 +152,32 @@ export default function FiveCanGame() {
     setSecond(null)
   }, [])
 
-  const onModeChange = useCallback((m: GameMode) => {
+  const onModeChange = useCallback((m: FiveCanGameMode) => {
     setMode(m)
     setFirst(null)
     setSecond(null)
+    if (m === 'swap') setShiftMoveKind('insert')
   }, [])
 
-  const keyCb = useRef({ pick, applyMove, newGame, clearSelection })
-  keyCb.current = { pick, applyMove, newGame, clearSelection }
+  const solverHint = !g.won ? hintFirstMoveOnShortestPath(g.current, g.target, mode) : null
+
+  const applyHint = useCallback(() => {
+    if (g.won) return
+    const h = hintFirstMoveOnShortestPath(g.current, g.target, mode)
+    if (!h) return
+    if (h.kind === 'swap') {
+      setFirst(h.i)
+      setSecond(h.j)
+      if (mode === 'shift') setShiftMoveKind('swap')
+    } else {
+      setFirst(h.from)
+      setSecond(h.to)
+      if (mode === 'shift') setShiftMoveKind('insert')
+    }
+  }, [g, mode])
+
+  const keyCb = useRef({ pick, applyMove, newGame, clearSelection, applyHint })
+  keyCb.current = { pick, applyMove, newGame, clearSelection, applyHint }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -162,7 +185,7 @@ export default function FiveCanGame() {
       const t = e.target as HTMLElement | null
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
 
-      const { pick: p, applyMove: go, newGame: ng, clearSelection: clear } = keyCb.current
+      const { pick: p, applyMove: go, newGame: ng, clearSelection: clear, applyHint: hi } = keyCb.current
 
       if (e.key === 'Escape') {
         e.preventDefault()
@@ -180,6 +203,12 @@ export default function FiveCanGame() {
         go()
         return
       }
+      if (e.key === 'h' || e.key === 'H') {
+        if (e.metaKey || e.ctrlKey || e.altKey) return
+        e.preventDefault()
+        hi()
+        return
+      }
       const n = e.key >= '1' && e.key <= '5' ? Number.parseInt(e.key, 10) - 1 : -1
       if (n >= 0 && n <= 4) {
         e.preventDefault()
@@ -193,6 +222,9 @@ export default function FiveCanGame() {
   const canIds = g.current
 
   const canApply = first !== null && second !== null && !g.won && first !== second
+
+  const applyLabel =
+    mode === 'swap' ? 'Swap' : shiftMoveKind === 'swap' ? 'Swap' : 'Shift'
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -245,12 +277,52 @@ export default function FiveCanGame() {
                 Shift
               </button>
             </div>
+            {mode === 'shift' && (
+              <div
+                className="inline-flex rounded-lg border p-0.5"
+                style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)' }}
+                role="group"
+                aria-label="Shift mode: insert vs swap"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShiftMoveKind('insert')
+                    setFirst(null)
+                    setSecond(null)
+                  }}
+                  className="rounded-md px-2.5 py-1.5 text-xs font-medium transition"
+                  style={{
+                    backgroundColor: shiftMoveKind === 'insert' ? 'var(--ink-accent)' : 'transparent',
+                    color: shiftMoveKind === 'insert' ? '#fff' : 'var(--ink-text)',
+                  }}
+                >
+                  Insert
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShiftMoveKind('swap')
+                    setFirst(null)
+                    setSecond(null)
+                  }}
+                  className="rounded-md px-2.5 py-1.5 text-xs font-medium transition"
+                  style={{
+                    backgroundColor: shiftMoveKind === 'swap' ? 'var(--ink-accent)' : 'transparent',
+                    color: shiftMoveKind === 'swap' ? '#fff' : 'var(--ink-text)',
+                  }}
+                >
+                  Swap
+                </button>
+              </div>
+            )}
           </div>
           <span className="text-xs leading-relaxed" style={{ color: 'var(--ink-muted)' }}>
             <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>1</kbd>–
             <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>5</kbd> pick ·{' '}
             <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>Enter</kbd>{' '}
-            apply · <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>Esc</kbd>{' '}
+            apply · <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>H</kbd>{' '}
+            hint · <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>Esc</kbd>{' '}
             clear · <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>N</kbd>{' '}
             new
           </span>
@@ -308,10 +380,10 @@ export default function FiveCanGame() {
                 identify the hidden order (paper).
               </p>
               <p>
-                <strong style={{ color: 'var(--ink-text)' }}>Shift:</strong> one can removed and reinserted; sorting any
-                layout needs at most{' '}
-                <strong style={{ color: 'var(--ink-text)' }}>{THEORY_WORST_CASE_SHIFT_SORT_MOVES}</strong> insertion moves
-                (group diameter on S₅).
+                <strong style={{ color: 'var(--ink-text)' }}>Shift mode:</strong> choose <strong>Insert</strong> (pick
+                source slot then destination) or <strong>Swap</strong> (two slots). Insertion alone sorts any layout in at
+                most <strong style={{ color: 'var(--ink-text)' }}>{THEORY_WORST_CASE_SHIFT_SORT_MOVES}</strong> moves
+                (diameter on S₅); swaps are optional when helpful.
               </p>
             </div>
 
@@ -358,7 +430,18 @@ export default function FiveCanGame() {
               className="min-h-[44px] min-w-[120px] rounded-lg px-4 py-2 text-sm font-medium text-white transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 disabled:opacity-45"
               style={{ backgroundColor: 'var(--ink-accent)' }}
             >
-              {mode === 'swap' ? 'Swap' : 'Shift'}
+              {applyLabel}
+            </button>
+            <button
+              type="button"
+              data-testid="five-can-hint"
+              disabled={g.won || solverHint === null}
+              onClick={applyHint}
+              className="min-h-[44px] rounded-lg border px-4 py-2 text-sm font-medium transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 disabled:opacity-45"
+              style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+              title="Shortest path to the hidden order (full state). Does not spend a move."
+            >
+              Hint
             </button>
             <button
               type="button"
@@ -375,9 +458,17 @@ export default function FiveCanGame() {
             {mode === 'swap' && first !== null && second !== null && (
               <>Swap slots {first + 1} ↔ {second + 1}.</>
             )}
-            {mode === 'shift' && first !== null && second === null && <>Pick insert position (destination slot).</>}
-            {mode === 'shift' && first !== null && second !== null && (
+            {mode === 'shift' && shiftMoveKind === 'insert' && first !== null && second === null && (
+              <>Pick insert position (destination slot).</>
+            )}
+            {mode === 'shift' && shiftMoveKind === 'insert' && first !== null && second !== null && (
               <>Move can from slot {first + 1} to position {second + 1}.</>
+            )}
+            {mode === 'shift' && shiftMoveKind === 'swap' && first !== null && second === null && (
+              <>Pick a second slot, then Swap.</>
+            )}
+            {mode === 'shift' && shiftMoveKind === 'swap' && first !== null && second !== null && (
+              <>Swap slots {first + 1} ↔ {second + 1}.</>
             )}
           </span>
         </div>
