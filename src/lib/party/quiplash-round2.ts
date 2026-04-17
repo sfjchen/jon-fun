@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin as supabase } from '@/lib/supabase'
 import { PARTY_PHASE_SECONDS_DEFAULT } from './constants'
 import { QUIPLASH_PROMPT_POOL } from './prompts-quiplash'
 import { buildQuiplashMatchups } from './quiplash-pairing'

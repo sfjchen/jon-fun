@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin as supabase } from '@/lib/supabase'
 
 // This endpoint should be called by a cron job to clean up inactive rooms
 export async function POST(request: NextRequest) {

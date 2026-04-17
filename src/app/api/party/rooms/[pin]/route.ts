@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin as supabase } from '@/lib/supabase'
 import { validateRoomPin } from '@/lib/poker'
 import { PARTY_MAX_PLAYERS_DEFAULT } from '@/lib/party/constants'
 import { seedQuiplashRound1 } from '@/lib/party/quiplash-start'
