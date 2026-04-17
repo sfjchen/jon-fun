@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap');
 @import "tailwindcss";
@@ -96,6 +97,109 @@ html.notebook-theme-root {
 }
 
 @layer components {
+  .reader-surface {
+    background: var(--reader-bg);
+    color: var(--reader-text);
+    border: 1px solid var(--reader-border);
+    border-radius: 1.25rem;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+  }
+
+  .reader-panel {
+    background: var(--reader-panel);
+    color: var(--reader-text);
+    border: 1px solid var(--reader-border);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  }
+
+  .reader-chip {
+    border: 1px solid var(--reader-border);
+    background: var(--reader-panel);
+    color: var(--reader-text);
+    transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease;
+  }
+
+  .reader-chip:hover {
+    transform: translateY(-1px);
+    border-color: var(--reader-accent);
+  }
+
+  .reader-chip[data-active="true"] {
+    background: color-mix(in srgb, var(--reader-accent) 16%, var(--reader-panel));
+    border-color: var(--reader-accent);
+    color: var(--reader-text);
+  }
+
+  .reader-action {
+    border: 1px solid color-mix(in srgb, var(--reader-accent) 28%, var(--reader-border));
+    background: color-mix(in srgb, var(--reader-accent) 12%, var(--reader-panel));
+    color: var(--reader-text);
+  }
+
+  .reader-prose {
+    color: var(--reader-text);
+    font-family: var(--reader-font-family);
+    font-size: var(--reader-font-size);
+    line-height: var(--reader-line-height);
+    max-width: var(--reader-max-width);
+    margin-inline: auto;
+    letter-spacing: 0.01em;
+  }
+
+  .reader-prose[data-indent="true"] p + p {
+    text-indent: 1.4em;
+  }
+
+  .reader-prose p {
+    margin: 0 0 var(--reader-paragraph-gap);
+  }
+
+  .reader-prose p:last-child {
+    margin-bottom: 0;
+  }
+
+  .reader-prose mark.reader-search-match {
+    background: color-mix(in srgb, var(--reader-accent) 38%, transparent);
+    color: inherit;
+    padding: 0 0.08em;
+    border-radius: 0.2em;
+  }
+
+  .reader-slider {
+    accent-color: var(--reader-accent);
+  }
+
+  .reader-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--reader-accent) 65%, transparent) transparent;
+  }
+
+  .reader-scrollbar::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .reader-scrollbar::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--reader-accent) 65%, transparent);
+    border-radius: 999px;
+  }
+
+  .reader-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .reader-muted {
+    color: var(--reader-muted);
+  }
+
+  .reader-divider {
+    border-color: var(--reader-border);
+  }
+
+  .reader-focus:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--reader-accent);
+  }
+
   /* Utility helpers for mobile overflow/wrapping */
   .wrap-anywhere {
     overflow-wrap: anywhere;

@@ -20,7 +20,6 @@ type GameCardProps = {
   compact?: boolean
   /** Omit description line (e.g. home grid — copy lives on the game page). */
   hideDescription?: boolean
-  className?: string
 }
 
 const cardBase =
@@ -64,12 +63,12 @@ function HomeTileContent({
           )}
         </div>
       </div>
-      <h2
+      <div
         className="mb-1 min-h-11 flex-1 text-center font-lora text-[1.05rem] font-semibold leading-snug sm:text-[1.125rem] line-clamp-2"
         style={{ color: 'var(--ink-text)' }}
       >
         {game.title}
-      </h2>
+      </div>
       <p className="text-center text-xs font-medium tabular-nums tracking-wide" style={{ color: 'var(--ink-accent)' }}>
         {available ? 'Open' : 'Preview'}
       </p>
@@ -77,7 +76,7 @@ function HomeTileContent({
   )
 }
 
-export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDescription, className }: GameCardProps) {
+export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDescription }: GameCardProps) {
   const [clientReady, setClientReady] = useState(false)
   useEffect(() => setClientReady(true), [])
   const useCompact = compact ?? !linePaper
@@ -90,11 +89,16 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDesc
       ? ' h-full w-full min-h-[12.5rem] flex flex-col p-5 sm:min-h-[13rem] sm:p-6'
       : useCompact
         ? ' p-6'
-        : ' p-[30px]') +
-    (className ? ` ${className}` : '')
+        : ' p-[30px]')
+
+  const homeTileVisual = (
+    <span aria-hidden className="flex min-h-0 flex-1 flex-col">
+      <HomeTileContent game={game} available={game.available} />
+    </span>
+  )
 
   const content = homeTile ? (
-    <HomeTileContent game={game} available={game.available} />
+    homeTileVisual
   ) : (
     <>
       <div className={`flex h-16 items-center justify-center shrink-0 ${useCompact ? 'mb-4' : 'mb-[30px]'}`}>
@@ -120,14 +124,24 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDesc
 
   if (!game.available) {
     return (
-      <button onClick={onComingSoonClick} disabled={!clientReady} className={`${cardClass} disabled:opacity-50`}>
+      <button
+        type="button"
+        onClick={onComingSoonClick}
+        disabled={!clientReady}
+        className={`${cardClass} disabled:opacity-50${homeTile ? ' text-center' : ''}`}
+        aria-label={homeTile ? 'Preview coming soon projects' : undefined}
+      >
         {content}
       </button>
     )
   }
 
   return (
-    <Link href={game.href} className={cardClass + (homeTile ? ' text-center' : '')}>
+    <Link
+      href={game.href}
+      className={cardClass + (homeTile ? ' text-center' : '')}
+      aria-label={homeTile ? `Open ${game.title}` : undefined}
+    >
       {content}
     </Link>
   )
