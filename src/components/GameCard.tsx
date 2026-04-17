@@ -32,24 +32,24 @@ function HomeTileContent({ game }: { game: GameCardGame }) {
   return (
     <>
       {/* Icons sit on the card surface (no inner tile) — matches pre–home-tile layout */}
-      <div className="mb-3 flex h-14 shrink-0 items-center justify-center sm:h-16">
+      <div className="mb-2 flex h-11 shrink-0 items-center justify-center sm:h-12">
         {game.icon.startsWith('/') ? (
           <Image
             src={game.icon}
             alt=""
-            width={56}
-            height={56}
-            className="h-12 w-12 object-contain drop-shadow-lg sm:h-14 sm:w-14"
+            width={48}
+            height={48}
+            className="h-10 w-10 object-contain drop-shadow-md sm:h-11 sm:w-11"
             priority
           />
         ) : (
-          <span className="select-none text-4xl leading-none sm:text-5xl" style={{ color: 'var(--ink-text)' }}>
+          <span className="select-none text-3xl leading-none sm:text-4xl" style={{ color: 'var(--ink-text)' }}>
             {game.icon}
           </span>
         )}
       </div>
       <div
-        className="min-h-14 flex-1 text-center font-lora text-xl font-semibold leading-snug sm:min-h-16 sm:text-2xl sm:leading-snug line-clamp-2"
+        className="min-h-11 flex-1 text-center font-lora text-lg font-semibold leading-tight sm:min-h-12 sm:text-xl sm:leading-snug line-clamp-2"
         style={{ color: 'var(--ink-text)' }}
       >
         {game.title}
@@ -68,7 +68,7 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDesc
     cardBase +
     (linePaper ? ' bg-transparent min-h-0 flex flex-col' : '') +
     (homeTile
-      ? ' h-full w-full min-h-[12rem] flex flex-col p-4 sm:min-h-[13rem] sm:p-5'
+      ? ' h-full w-full min-h-[9.75rem] flex flex-col justify-center px-3 py-3 sm:min-h-[10.25rem] sm:px-4 sm:py-3.5'
       : useCompact
         ? ' p-6'
         : ' p-[30px]')
