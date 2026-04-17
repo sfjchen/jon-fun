@@ -1,9 +1,12 @@
 'use client'
 
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { FiveCanDoodle } from '@/components/FiveCanDoodle'
 import {
   CAN_BRAND_NAMES,
+  THEORY_WORST_CASE_SHIFT_SORT_MOVES,
+  THEORY_WORST_CASE_SWAP_MOVES,
+  applyShiftInsert,
   applySwap,
   countCorrect,
   randomDerangedStart,
@@ -12,6 +15,8 @@ import {
 } from '@/lib/five-can-game'
 
 type FeedbackEntry = { move: number; correct: number }
+
+type GameMode = 'swap' | 'shift'
 
 type GameState = {
   target: Perm5
@@ -33,7 +38,7 @@ function initialState(): GameState {
   }
 }
 
-const Slot = memo(function Slot({
+function Slot({
   idx,
   canId,
   selected,
@@ -46,41 +51,41 @@ const Slot = memo(function Slot({
   disabled: boolean
   onPick: (i: number) => void
 }) {
-  const ring =
-    selected === 'first'
-      ? 'ring-2 ring-[var(--ink-accent)] ring-offset-2'
-      : selected === 'second'
-        ? 'ring-2 ring-[var(--ink-muted)] ring-offset-2'
-        : ''
   const brand = CAN_BRAND_NAMES[canId] ?? 'Can'
+  const sel =
+    selected === 'first'
+      ? 'border-[var(--ink-accent)] shadow-[inset_0_0_0_2px_var(--ink-accent)]'
+      : selected === 'second'
+        ? 'border-[var(--ink-muted)] shadow-[inset_0_0_0_2px_var(--ink-muted)]'
+        : 'border-[var(--ink-border)]'
+
   return (
     <button
       type="button"
       data-testid={`five-can-slot-${idx}`}
       disabled={disabled}
       onClick={() => onPick(idx)}
-      className={`flex w-[64px] shrink-0 flex-col items-center justify-start rounded-lg border px-1 pb-1.5 pt-1 transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 disabled:opacity-50 sm:w-[72px] ${ring}`}
+      className={`flex w-[min(22vw,104px)] shrink-0 flex-col items-center justify-start rounded-xl border-2 px-1.5 pb-2 pt-1.5 transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 disabled:opacity-50 sm:w-[104px] md:w-[112px] ${sel}`}
       style={{
         backgroundColor: 'var(--ink-paper)',
-        borderColor: 'var(--ink-border)',
-        color: 'var(--ink-text)',
       }}
     >
-      <span className="mb-0.5 text-[10px] font-normal leading-none" style={{ color: 'var(--ink-muted)' }}>
+      <span className="mb-1 text-[11px] font-medium leading-none" style={{ color: 'var(--ink-muted)' }}>
         {idx + 1}
       </span>
-      <div className="h-[88px] w-full [&>svg]:h-full [&>svg]:w-full">
+      <div className="h-[min(28vw,120px)] w-full sm:h-[120px] [&>svg]:h-full [&>svg]:w-full">
         <FiveCanDoodle canId={canId} />
       </div>
-      <span className="mt-0.5 line-clamp-2 min-h-[1.75rem] text-center text-[9px] leading-tight" style={{ color: 'var(--ink-muted)' }}>
+      <span className="mt-1.5 line-clamp-2 min-h-[2.25rem] text-center text-[11px] leading-snug sm:text-xs" style={{ color: 'var(--ink-muted)' }}>
         {brand}
       </span>
     </button>
   )
-})
+}
 
 export default function FiveCanGame() {
   const [g, setG] = useState<GameState>(() => initialState())
+  const [mode, setMode] = useState<GameMode>('swap')
   const [first, setFirst] = useState<number | null>(null)
   const [second, setSecond] = useState<number | null>(null)
 
@@ -95,6 +100,7 @@ export default function FiveCanGame() {
       }
       if (first === i) {
         setFirst(null)
+        setSecond(null)
         return
       }
       if (second === null) {
@@ -111,9 +117,12 @@ export default function FiveCanGame() {
     [first, second, g.won],
   )
 
-  const doSwap = useCallback(() => {
+  const applyMove = useCallback(() => {
     if (g.won || first === null || second === null) return
-    const next = applySwap(g.current, first, second)
+    const next =
+      mode === 'swap'
+        ? applySwap(g.current, first, second)
+        : applyShiftInsert(g.current, first, second)
     const fb = countCorrect(next, g.target)
     const moveNum = g.moves + 1
     setG((prev) => ({
@@ -125,7 +134,7 @@ export default function FiveCanGame() {
     }))
     setFirst(null)
     setSecond(null)
-  }, [first, second, g])
+  }, [first, second, g, mode])
 
   const newGame = useCallback(() => {
     setG(initialState())
@@ -138,8 +147,14 @@ export default function FiveCanGame() {
     setSecond(null)
   }, [])
 
-  const keyCb = useRef({ pick, doSwap, newGame, clearSelection })
-  keyCb.current = { pick, doSwap, newGame, clearSelection }
+  const onModeChange = useCallback((m: GameMode) => {
+    setMode(m)
+    setFirst(null)
+    setSecond(null)
+  }, [])
+
+  const keyCb = useRef({ pick, applyMove, newGame, clearSelection })
+  keyCb.current = { pick, applyMove, newGame, clearSelection }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -147,7 +162,7 @@ export default function FiveCanGame() {
       const t = e.target as HTMLElement | null
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
 
-      const { pick: p, doSwap: swap, newGame: ng, clearSelection: clear } = keyCb.current
+      const { pick: p, applyMove: go, newGame: ng, clearSelection: clear } = keyCb.current
 
       if (e.key === 'Escape') {
         e.preventDefault()
@@ -162,7 +177,7 @@ export default function FiveCanGame() {
       }
       if (e.key === 'Enter') {
         e.preventDefault()
-        swap()
+        go()
         return
       }
       const n = e.key >= '1' && e.key <= '5' ? Number.parseInt(e.key, 10) - 1 : -1
@@ -177,19 +192,18 @@ export default function FiveCanGame() {
 
   const canIds = g.current
 
-  const canSwap = first !== null && second !== null && !g.won
+  const canApply = first !== null && second !== null && !g.won && first !== second
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <header className="space-y-2">
         <h1 className="font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>
           5 Can Sorting
         </h1>
         <p className="text-sm leading-relaxed" style={{ color: 'var(--ink-muted)' }}>
           Five doodle soda cans have a hidden left-to-right order. You start with{' '}
-          <strong style={{ color: 'var(--ink-text)' }}>no</strong> cans correct. Swap two positions; after each
-          swap you only see how many are in the right place. Reach <strong style={{ color: 'var(--ink-text)' }}>5</strong>{' '}
-          to win.
+          <strong style={{ color: 'var(--ink-text)' }}>no</strong> cans correct. After each move you only see how many
+          are in the right place. Reach <strong style={{ color: 'var(--ink-text)' }}>5</strong> correct to win.
         </p>
       </header>
 
@@ -197,46 +211,74 @@ export default function FiveCanGame() {
         className="rounded-xl border p-4 md:p-6"
         style={{ borderColor: 'var(--ink-border)', backgroundColor: 'transparent' }}
       >
-        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2 text-sm" style={{ color: 'var(--ink-muted)' }}>
-          <span>
-            Moves: <strong style={{ color: 'var(--ink-text)' }}>{g.moves}</strong>
-          </span>
-          <span className="text-xs">
-            Keys: <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>1</kbd>–
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+              Moves: <strong style={{ color: 'var(--ink-text)' }}>{g.moves}</strong>
+            </span>
+            <div
+              className="inline-flex rounded-lg border p-0.5"
+              style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)' }}
+              role="group"
+              aria-label="Move type"
+            >
+              <button
+                type="button"
+                onClick={() => onModeChange('swap')}
+                className="rounded-md px-3 py-1.5 text-xs font-medium transition"
+                style={{
+                  backgroundColor: mode === 'swap' ? 'var(--ink-accent)' : 'transparent',
+                  color: mode === 'swap' ? '#fff' : 'var(--ink-text)',
+                }}
+              >
+                Swap
+              </button>
+              <button
+                type="button"
+                onClick={() => onModeChange('shift')}
+                className="rounded-md px-3 py-1.5 text-xs font-medium transition"
+                style={{
+                  backgroundColor: mode === 'shift' ? 'var(--ink-accent)' : 'transparent',
+                  color: mode === 'shift' ? '#fff' : 'var(--ink-text)',
+                }}
+              >
+                Shift
+              </button>
+            </div>
+          </div>
+          <span className="text-xs leading-relaxed" style={{ color: 'var(--ink-muted)' }}>
+            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>1</kbd>–
             <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>5</kbd> pick ·{' '}
-            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>Enter</kbd> swap ·{' '}
-            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>Esc</kbd> clear ·{' '}
-            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>N</kbd> new
+            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>Enter</kbd>{' '}
+            apply · <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>Esc</kbd>{' '}
+            clear · <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>N</kbd>{' '}
+            new
           </span>
         </div>
 
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-stretch lg:gap-6">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-stretch xl:gap-5">
           <div className="min-w-0 flex-1 space-y-4">
-            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-stretch">
               <div
-                className="flex shrink-0 flex-col items-center justify-center rounded-xl border px-4 py-2.5 sm:py-3"
+                className="flex shrink-0 flex-col items-center justify-center rounded-xl border px-5 py-3 lg:min-w-[7rem]"
                 style={{ borderColor: 'var(--ink-accent)', backgroundColor: 'var(--ink-paper)' }}
                 aria-live="polite"
-                aria-label={`${currentCorrect} of 5 cans in correct position`}
+                aria-label={`${currentCorrect} cans in correct position`}
               >
                 <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: 'var(--ink-muted)' }}>
                   Correct
                 </span>
                 <span
-                  className="font-lora text-4xl font-semibold leading-none tabular-nums sm:text-5xl"
-                  style={{ color: 'var(--ink-text)' }}
+                  className="font-lora text-5xl font-semibold tabular-nums sm:text-6xl"
+                  style={{ color: 'var(--ink-text)', lineHeight: 1 }}
                   data-testid="five-can-correct-big"
                 >
                   {currentCorrect}
-                  <span className="text-xl font-normal sm:text-2xl" style={{ color: 'var(--ink-muted)' }}>
-                    {' '}
-                    / 5
-                  </span>
                 </span>
               </div>
 
               <div className="min-w-0 flex-1 touch-pan-x overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
-                <div className="flex w-max min-w-full flex-nowrap justify-center gap-2 sm:min-w-0 sm:justify-start">
+                <div className="flex h-full min-h-[200px] w-max min-w-full flex-nowrap items-stretch justify-between gap-2 sm:gap-3 md:min-w-0 md:justify-evenly">
                   {[0, 1, 2, 3, 4].map((idx) => (
                     <Slot
                       key={idx}
@@ -253,65 +295,90 @@ export default function FiveCanGame() {
           </div>
 
           <aside
-            className="w-full shrink-0 rounded-lg border p-3 lg:w-[200px] lg:border-l lg:pl-4"
-            style={{ borderColor: 'var(--ink-border)' }}
+            className="flex w-full shrink-0 flex-col gap-4 lg:max-w-[13.5rem] xl:w-[13.5rem]"
+            style={{ color: 'var(--ink-muted)' }}
           >
-            <h2 className="mb-2 font-lora text-sm font-semibold" style={{ color: 'var(--ink-text)' }}>
-              Feedback history
-            </h2>
-            {g.feedbackHistory.length === 0 ? (
-              <p className="text-xs leading-snug" style={{ color: 'var(--ink-muted)' }}>
-                Newest swap results appear on top after you press Swap.
+            <div className="rounded-lg border p-3 text-xs leading-snug" style={{ borderColor: 'var(--ink-border)' }}>
+              <p className="mb-1.5 font-lora font-semibold" style={{ color: 'var(--ink-text)' }}>
+                Theory (worst case)
               </p>
-            ) : (
-              <ul
-                data-testid="five-can-feedback"
-                className="scrollbar-needed max-h-[min(240px,35vh)] space-y-1.5 overflow-y-auto pr-1 text-sm"
-              >
-                {g.feedbackHistory.map((e, i) => (
-                  <li
-                    key={`${e.move}-${e.correct}-${i}`}
-                    data-testid={i === 0 ? 'five-can-feedback-latest' : undefined}
-                    className="flex justify-between gap-2 rounded border px-2 py-1.5"
-                    style={{
-                      borderColor: i === 0 ? 'var(--ink-accent)' : 'var(--ink-border)',
-                      backgroundColor: i === 0 ? 'var(--ink-paper)' : 'transparent',
-                    }}
-                  >
-                    <span style={{ color: 'var(--ink-muted)' }}>Move {e.move}</span>
-                    <span className="tabular-nums font-medium" style={{ color: 'var(--ink-text)' }}>
-                      {e.correct} / 5
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
+              <p className="mb-2 border-b pb-2" style={{ borderColor: 'var(--ink-border)' }}>
+                <strong style={{ color: 'var(--ink-text)' }}>Swap:</strong> optimal play with positional feedback only
+                needs at most <strong style={{ color: 'var(--ink-text)' }}>{THEORY_WORST_CASE_SWAP_MOVES}</strong> moves to
+                identify the hidden order (paper).
+              </p>
+              <p>
+                <strong style={{ color: 'var(--ink-text)' }}>Shift:</strong> one can removed and reinserted; sorting any
+                layout needs at most{' '}
+                <strong style={{ color: 'var(--ink-text)' }}>{THEORY_WORST_CASE_SHIFT_SORT_MOVES}</strong> insertion moves
+                (group diameter on S₅).
+              </p>
+            </div>
+
+            <div className="rounded-lg border p-3" style={{ borderColor: 'var(--ink-border)' }}>
+              <h2 className="mb-2 font-lora text-sm font-semibold" style={{ color: 'var(--ink-text)' }}>
+                Feedback history
+              </h2>
+              {g.feedbackHistory.length === 0 ? (
+                <p className="text-xs leading-snug">Newest results on top after you apply a move.</p>
+              ) : (
+                <ul
+                  data-testid="five-can-feedback"
+                  className="scrollbar-needed max-h-[min(220px,32vh)] space-y-1.5 overflow-y-auto pr-1 text-sm"
+                >
+                  {g.feedbackHistory.map((e, i) => (
+                    <li
+                      key={`${e.move}-${e.correct}-${i}`}
+                      data-testid={i === 0 ? 'five-can-feedback-latest' : undefined}
+                      className="flex justify-between gap-2 rounded border px-2 py-1.5"
+                      style={{
+                        borderColor: i === 0 ? 'var(--ink-accent)' : 'var(--ink-border)',
+                        backgroundColor: i === 0 ? 'var(--ink-paper)' : 'transparent',
+                      }}
+                    >
+                      <span style={{ color: 'var(--ink-muted)' }}>Move {e.move}</span>
+                      <span className="tabular-nums font-semibold" style={{ color: 'var(--ink-text)' }}>
+                        {e.correct}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </aside>
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center gap-3 border-t pt-4" style={{ borderColor: 'var(--ink-border)' }}>
-          <button
-            type="button"
-            data-testid="five-can-swap"
-            disabled={!canSwap}
-            onClick={doSwap}
-            className="min-h-[44px] min-w-[120px] rounded-lg px-4 py-2 text-sm font-medium text-white transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 disabled:opacity-45"
-            style={{ backgroundColor: 'var(--ink-accent)' }}
-          >
-            Swap
-          </button>
-          <button
-            type="button"
-            data-testid="five-can-new"
-            onClick={newGame}
-            className="min-h-[44px] rounded-lg border px-4 py-2 text-sm font-medium transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2"
-            style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-accent)' }}
-          >
-            New game
-          </button>
+        <div className="mt-6 flex flex-col gap-3 border-t pt-5 sm:flex-row sm:flex-wrap sm:items-center" style={{ borderColor: 'var(--ink-border)' }}>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              data-testid="five-can-swap"
+              disabled={!canApply}
+              onClick={applyMove}
+              className="min-h-[44px] min-w-[120px] rounded-lg px-4 py-2 text-sm font-medium text-white transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 disabled:opacity-45"
+              style={{ backgroundColor: 'var(--ink-accent)' }}
+            >
+              {mode === 'swap' ? 'Swap' : 'Shift'}
+            </button>
+            <button
+              type="button"
+              data-testid="five-can-new"
+              onClick={newGame}
+              className="min-h-[44px] rounded-lg border px-4 py-2 text-sm font-medium transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2"
+              style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-accent)' }}
+            >
+              New game
+            </button>
+          </div>
           <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>
-            {first !== null && second === null && <>Slot {first + 1} selected — pick another.</>}
-            {first !== null && second !== null && <>Ready to swap slots {first + 1} ↔ {second + 1}.</>}
+            {mode === 'swap' && first !== null && second === null && <>Pick a second slot, then Swap.</>}
+            {mode === 'swap' && first !== null && second !== null && (
+              <>Swap slots {first + 1} ↔ {second + 1}.</>
+            )}
+            {mode === 'shift' && first !== null && second === null && <>Pick insert position (destination slot).</>}
+            {mode === 'shift' && first !== null && second !== null && (
+              <>Move can from slot {first + 1} to position {second + 1}.</>
+            )}
           </span>
         </div>
 
@@ -327,13 +394,13 @@ export default function FiveCanGame() {
             <p className="mt-3 text-sm" style={{ color: 'var(--ink-muted)' }}>
               Target order (left → right):
             </p>
-            <div className="mx-auto mt-3 flex w-max max-w-full flex-nowrap justify-center gap-2 overflow-x-auto pb-1">
+            <div className="mx-auto mt-3 flex w-full max-w-2xl flex-nowrap justify-center gap-2 overflow-x-auto pb-1 sm:gap-3">
               {g.target.map((id) => (
-                <div key={id} className="flex w-[52px] shrink-0 flex-col items-center gap-1">
-                  <div className="h-[72px] w-full [&>svg]:h-full [&>svg]:w-full">
+                <div key={id} className="flex w-[72px] shrink-0 flex-col items-center gap-1 sm:w-20">
+                  <div className="h-[88px] w-full [&>svg]:h-full [&>svg]:w-full">
                     <FiveCanDoodle canId={id} />
                   </div>
-                  <span className="text-center text-[9px] leading-tight" style={{ color: 'var(--ink-muted)' }}>
+                  <span className="text-center text-[10px] leading-tight sm:text-[11px]" style={{ color: 'var(--ink-muted)' }}>
                     {CAN_BRAND_NAMES[id]}
                   </span>
                 </div>
