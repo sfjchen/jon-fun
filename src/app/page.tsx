@@ -82,18 +82,19 @@ export default function Home() {
 
   return (
     <>
-      <div className="grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-2">
+      <ul className="mx-auto grid w-full max-w-5xl list-none grid-cols-1 gap-x-6 gap-y-5 p-0 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-6">
         {items.map((item) => (
-          <GameCard
-            key={item.id}
-            game={item}
-            onComingSoonClick={() => setShowComingSoon(true)}
-            linePaper
-            compact
-            hideDescription
-          />
+          <li key={item.id} className="min-h-0 flex">
+            <GameCard
+              game={item}
+              onComingSoonClick={() => setShowComingSoon(true)}
+              linePaper
+              compact
+              hideDescription
+            />
+          </li>
         ))}
-      </div>
+      </ul>
 
       {showComingSoon && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 p-4">

@@ -4,6 +4,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 
 ## 🎮 Games
 
+- **Web e-reader** (`/games/e-reader`): Local-first NovelFire-style reader — paste/upload text or PDF, chapterize, typography + themes, TTS (Text-To-Speech), bookmarks, in-book search with highlights, TOC (Table Of Contents) sidebar, keyboard shortcuts, export `.txt` from library
 - **5 Can Sorting** (`/games/five-can-sorting`): Five doodle soda cans, hidden target order; swap two positions per move and receive only the count correct; keyboard 1–5 / Enter / Esc / N; local-only
 - **24 Game** (`/games/24`): Use 4 numbers and basic arithmetic to make 24
 - **Jeopardy with Friends** (`/games/jeopardy`): Create and play custom Jeopardy boards locally
@@ -435,6 +436,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-04**
 
+- **Web e-reader UX**: In-reader search (`findSearchHits` + `<mark>` highlights), sticky chrome bar, desktop TOC sidebar, breadcrumb links, theme cycle control, keyboard shortcuts (`/` search, `n` / `Shift+n` matches, `[` / `]` chapters, `g` chapter `<select>`), right-align option in settings, library **Export .txt**; `GameCard` accepts optional `className` (fixes home grid typing).
 - **Party games API (production fix)**: `/api/party/*` routes and `src/lib/party/*` seed helpers now use `supabaseAdmin` (Supabase service role) for reads/writes. Anonymous client inserts were failing on production (`POST /api/party/rooms` → 500 “Failed to create room”). **Vercel:** set `SUPABASE_SERVICE_ROLE_KEY` (without it, the admin client falls back to the anon key). Poker cleanup cron uses the same admin client for party/poker/game24 deletes.
 - **Single public theme + home grid**: Removed the `/theme2` route and theme switcher; **sfjc.dev** is notebook-only. Former Theme 2 app routes are archived under `src/app/_archive/theme2` (not exposed). Home is a **two-column** project grid (neal.fun–style) with **titles only** on cards; blurbs stay on individual game pages. Updated Playwright specs accordingly.
 - **Deploy fix (Vercel build)**: Removed archived `theme2` e-reader pages that imported `@/components/reader/*` before that code existed on `main` — Next.js still typechecks files under `src/app/_archive`, so those imports broke `npm run build` on Vercel.

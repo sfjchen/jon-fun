@@ -20,6 +20,7 @@ type GameCardProps = {
   compact?: boolean
   /** Omit description line (e.g. home grid — copy lives on the game page). */
   hideDescription?: boolean
+  className?: string
 }
 
 const cardBase =
@@ -28,12 +29,73 @@ const cardBase =
   'hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2'
 
-export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDescription }: GameCardProps) {
+const ICON_BOX = 'flex size-[4.25rem] shrink-0 items-center justify-center rounded-2xl border shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]'
+
+function HomeTileContent({
+  game,
+  available,
+}: {
+  game: GameCardGame
+  available: boolean
+}) {
+  return (
+    <>
+      <div className="mb-4 flex justify-center">
+        <div
+          className={ICON_BOX}
+          style={{
+            borderColor: 'var(--ink-border)',
+            backgroundColor: 'rgba(255,255,255,0.35)',
+          }}
+        >
+          {game.icon.startsWith('/') ? (
+            <Image
+              src={game.icon}
+              alt=""
+              width={48}
+              height={48}
+              className="size-12 object-contain"
+              priority
+            />
+          ) : (
+            <span className="select-none text-[1.65rem] font-semibold leading-none tracking-tight" style={{ color: 'var(--ink-text)' }}>
+              {game.icon}
+            </span>
+          )}
+        </div>
+      </div>
+      <h2
+        className="mb-1 min-h-11 flex-1 text-center font-lora text-[1.05rem] font-semibold leading-snug sm:text-[1.125rem] line-clamp-2"
+        style={{ color: 'var(--ink-text)' }}
+      >
+        {game.title}
+      </h2>
+      <p className="text-center text-xs font-medium tabular-nums tracking-wide" style={{ color: 'var(--ink-accent)' }}>
+        {available ? 'Open' : 'Preview'}
+      </p>
+    </>
+  )
+}
+
+export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDescription, className }: GameCardProps) {
   const [clientReady, setClientReady] = useState(false)
   useEffect(() => setClientReady(true), [])
   const useCompact = compact ?? !linePaper
-  const cardClass = cardBase + (linePaper ? ' bg-transparent h-full min-h-0 flex flex-col' : '') + (useCompact ? ' p-6' : ' p-[30px]')
-  const content = (
+  const homeTile = Boolean(hideDescription && useCompact && linePaper)
+
+  const cardClass =
+    cardBase +
+    (linePaper ? ' bg-transparent min-h-0 flex flex-col' : '') +
+    (homeTile
+      ? ' h-full w-full min-h-[12.5rem] flex flex-col p-5 sm:min-h-[13rem] sm:p-6'
+      : useCompact
+        ? ' p-6'
+        : ' p-[30px]') +
+    (className ? ` ${className}` : '')
+
+  const content = homeTile ? (
+    <HomeTileContent game={game} available={game.available} />
+  ) : (
     <>
       <div className={`flex h-16 items-center justify-center shrink-0 ${useCompact ? 'mb-4' : 'mb-[30px]'}`}>
         {game.icon.startsWith('/') ? (
@@ -65,7 +127,7 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDesc
   }
 
   return (
-    <Link href={game.href} className={cardClass}>
+    <Link href={game.href} className={cardClass + (homeTile ? ' text-center' : '')}>
       {content}
     </Link>
   )
