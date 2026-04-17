@@ -28,41 +28,32 @@ const cardBase =
   'hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2'
 
-function HomeTileContent({
-  game,
-  available,
-}: {
-  game: GameCardGame
-  available: boolean
-}) {
+function HomeTileContent({ game }: { game: GameCardGame }) {
   return (
     <>
       {/* Icons sit on the card surface (no inner tile) — matches pre–home-tile layout */}
-      <div className="mb-6 flex h-20 shrink-0 items-center justify-center">
+      <div className="mb-3 flex h-14 shrink-0 items-center justify-center sm:h-16">
         {game.icon.startsWith('/') ? (
           <Image
             src={game.icon}
             alt=""
-            width={64}
-            height={64}
-            className="h-16 w-16 object-contain drop-shadow-lg sm:h-18 sm:w-18"
+            width={56}
+            height={56}
+            className="h-12 w-12 object-contain drop-shadow-lg sm:h-14 sm:w-14"
             priority
           />
         ) : (
-          <span className="select-none text-5xl leading-none" style={{ color: 'var(--ink-text)' }}>
+          <span className="select-none text-4xl leading-none sm:text-5xl" style={{ color: 'var(--ink-text)' }}>
             {game.icon}
           </span>
         )}
       </div>
       <div
-        className="mb-3 min-h-14 flex-1 text-center font-lora text-xl font-bold leading-snug sm:min-h-16 sm:text-2xl sm:leading-snug line-clamp-2"
+        className="min-h-12 flex-1 text-center font-lora text-lg font-bold leading-snug sm:min-h-14 sm:text-xl sm:leading-snug line-clamp-2"
         style={{ color: 'var(--ink-text)' }}
       >
         {game.title}
       </div>
-      <p className="text-center text-sm font-medium tabular-nums tracking-wide" style={{ color: 'var(--ink-accent)' }}>
-        {available ? 'Open' : 'Preview'}
-      </p>
     </>
   )
 }
@@ -77,14 +68,14 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDesc
     cardBase +
     (linePaper ? ' bg-transparent min-h-0 flex flex-col' : '') +
     (homeTile
-      ? ' h-full w-full min-h-[14rem] flex flex-col p-6 sm:min-h-[15rem] sm:p-7'
+      ? ' h-full w-full min-h-[11rem] flex flex-col p-4 sm:min-h-[12rem] sm:p-5'
       : useCompact
         ? ' p-6'
         : ' p-[30px]')
 
   const homeTileVisual = (
     <span aria-hidden className="flex min-h-0 flex-1 flex-col">
-      <HomeTileContent game={game} available={game.available} />
+      <HomeTileContent game={game} />
     </span>
   )
 
