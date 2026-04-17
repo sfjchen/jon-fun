@@ -61,3 +61,22 @@ export function applySwap(current: readonly number[], i: number, j: number): Per
   next[j] = t!
   return next
 }
+
+/** Remove can at `from`, insert at index `to` (0–4). One insertion move. */
+export function applyShiftInsert(current: readonly number[], from: number, to: number): Perm5 {
+  if (from === to) return current as Perm5
+  const a = [...current]
+  const el = a[from]!
+  a.splice(from, 1)
+  a.splice(to, 0, el)
+  return [a[0]!, a[1]!, a[2]!, a[3]!, a[4]!]
+}
+
+/** Paper theorem: optimal positional-feedback identification (swap moves). */
+export const THEORY_WORST_CASE_SWAP_MOVES = 7
+
+/**
+ * Maximum moves needed to reach any permutation from any other using one insertion
+ * per move (BFS diameter on S₅). Distinct from the feedback-identification game.
+ */
+export const THEORY_WORST_CASE_SHIFT_SORT_MOVES = 4
