@@ -4,7 +4,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 
 ## 🎮 Games
 
-- **Web e-reader** (`/games/e-reader`): Local-first NovelFire-style reader — paste/upload text or PDF, chapterize, typography + themes, TTS (Text-To-Speech), bookmarks, in-book search with highlights, TOC (Table Of Contents) sidebar, keyboard shortcuts, export `.txt` from library
+- **Web e-reader** (`/games/e-reader`): NovelFire-style reader — paste/upload text or PDF (PDF text via `POST /api/reader/extract-pdf`, not stored), chapterize, typography + themes, TTS (Text-To-Speech), bookmarks, in-book search + highlights, TOC sidebar, keyboard shortcuts, export `.txt`; library in IndexedDB
 - **5 Can Sorting** (`/games/five-can-sorting`): Five doodle soda cans, hidden target order; **Swap** mode (swap-only) or **Shift** mode (insert-from/to or swap); optional **Hint** (shortest path to solution); count-correct feedback only; keyboard 1–5 / Enter / H / Esc / N; local-only
 - **24 Game** (`/games/24`): Use 4 numbers and basic arithmetic to make 24
 - **Jeopardy with Friends** (`/games/jeopardy`): Create and play custom Jeopardy boards locally
@@ -319,6 +319,8 @@ src/
 
 **`POST /api/game24/next-round`**: Advance state (active → intermission (5s) → next round up to 8, then finished)
 
+**`POST /api/reader/extract-pdf`**: Multipart form field `file` (PDF, max ~12 MB) — returns `{ text, notes }` for the web e-reader import. Used so PDF text extraction runs reliably on the server (file is not persisted); saved books remain in IndexedDB on the client.
+
 **`GET /api/daily-learn/entries?userId=`**: Fetch entries for sync key/user
 
 **`POST /api/daily-learn/entries`**: Upsert entries – Body: `{ userId, entries: [{ date, text }] }`
@@ -447,6 +449,7 @@ Running log of project work. Update this section when making significant changes
 
 - **Repo layout (flat)**: `5_can_sorting_game/` → `docs/five-can-sorting/` (paper sources); Meditations PDF → `e2e/fixtures/` (e-reader E2E); sample Jeopardy JSON → `data/jeopardy/`; stray `image/cursor_*` → `docs/image/cursor-viewport-validation/`; `.vercelignore` updated; README “Repository layout” section.
 - **Home cards**: Removed inner icon “tile” (border + white fill); icons sit on the card again with `drop-shadow`. Larger titles (`text-xl` / `sm:text-2xl`), more padding and grid gaps.
+- **Web e-reader (PDF pipeline)**: PDF import uses `pdf-parse` on the server (`/api/reader/extract-pdf`) with `pdf-reflow` paragraph logic + `B ook`→`Book` normalization + chapter-heading line breaks; `next.config.mjs` `serverExternalPackages` for `pdf-parse`/`pdfjs-dist`; E2E `e2e/e-reader.spec.ts` (optional fixture `e2e/fixtures/meditations-a-new-translation-hardcover.pdf` or repo root); `?e2eUpload=1` opens file mode for tests.
 - **Web e-reader UX**: In-reader search (`findSearchHits` + `<mark>` highlights), sticky chrome bar, desktop TOC sidebar, breadcrumb links, theme cycle control, keyboard shortcuts (`/` search, `n` / `Shift+n` matches, `[` / `]` chapters, `g` chapter `<select>`), right-align option in settings, library **Export .txt**; `GameCard` accepts optional `className` (fixes home grid typing).
 - **Party games API (production fix)**: `/api/party/*` routes and `src/lib/party/*` seed helpers now use `supabaseAdmin` (Supabase service role) for reads/writes. Anonymous client inserts were failing on production (`POST /api/party/rooms` → 500 “Failed to create room”). **Vercel:** set `SUPABASE_SERVICE_ROLE_KEY` (without it, the admin client falls back to the anon key). Poker cleanup cron uses the same admin client for party/poker/game24 deletes.
 - **Single public theme + home grid**: Removed the `/theme2` route and theme switcher; **sfjc.dev** is notebook-only. Former Theme 2 app routes are archived under `src/app/_archive/theme2` (not exposed). Home is a **two-column** project grid (neal.fun–style) with **titles only** on cards; blurbs stay on individual game pages. Updated Playwright specs accordingly.
