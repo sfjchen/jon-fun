@@ -27,6 +27,27 @@ function isChwaziPath(pathname: string): boolean {
   return pathname?.includes('/games/chwazi') ?? false
 }
 
+/** Notebook “card” routes: compact header + border, solid page bg — same shell as e-reader / party games (not the tall 90px line-paper header). */
+function isNotebookCardPage(pathname: string | null): boolean {
+  if (!pathname) return false
+  const p = pathname
+  return (
+    p.includes('/games/jeopardy') ||
+    p.includes('/games/chwazi') ||
+    p.includes('/games/mental-obstacle-course') ||
+    p.includes('/games/e-reader') ||
+    p.includes('/games/five-can-sorting') ||
+    p.includes('/games/quip-clash') ||
+    p.includes('/games/fib-it') ||
+    p.includes('/games/enough-about-you') ||
+    p.includes('/games/daily-log') ||
+    p.includes('/games/24') ||
+    p.includes('/games/tmr') ||
+    p.includes('/games/poker') ||
+    p.includes('/leaderboards')
+  )
+}
+
 export function PageShell({ children, title, showBack }: PageShellProps) {
   const pathname = usePathname()
   const [isMobile, setIsMobile] = useState(false)
@@ -67,17 +88,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
     }
   }, [fullBleed])
 
-  const isCardPage =
-    (pathname?.includes('/games/jeopardy') ||
-      pathname?.includes('/games/chwazi') ||
-      pathname?.includes('/games/mental-obstacle-course') ||
-      pathname?.includes('/games/e-reader') ||
-      pathname?.includes('/games/five-can-sorting') ||
-      pathname?.includes('/games/quip-clash') ||
-      pathname?.includes('/games/fib-it') ||
-      pathname?.includes('/games/enough-about-you') ||
-      pathname?.includes('/leaderboards')) ??
-    false
+  const isCardPage = isNotebookCardPage(pathname ?? null)
   const outerLinePaper = isNotebook && !pearNav && !isCardPage
   const useCompactHeader = fullBleed && !useBigLogo
   const headerPadding = useCompactHeader ? 'px-3 py-2' : isNotebook ? 'px-4 py-3 md:py-4' : 'px-4 py-3 md:py-4'

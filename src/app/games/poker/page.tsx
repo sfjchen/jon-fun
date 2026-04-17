@@ -99,8 +99,8 @@ export default function PokerPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-2xl mx-auto">
+    <div className="mx-auto max-w-5xl py-2">
+      <div className="mx-auto max-w-2xl">
         <header className="text-center mb-8">
           <h1 className="text-5xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>🃏 Texas Hold&apos;em</h1>
           <p className="text-xl" style={{ color: 'var(--ink-muted)' }}>Poker Chip Tracker</p>
@@ -133,7 +133,7 @@ export default function PokerPage() {
             </div>
 
             {error && (
-              <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200">
+              <div className="mb-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800" role="alert">
                 {error}
               </div>
             )}
