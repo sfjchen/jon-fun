@@ -7,14 +7,6 @@ import type { GameCardGame } from '@/components/GameCard'
 
 const items: GameCardGame[] = [
   {
-    id: 'e-reader',
-    title: 'Web E-Reader',
-    description: 'Import text or PDF files into a chapterized reader with typography controls, bookmarks, TTS, and local progress',
-    icon: 'Aa',
-    href: '/theme2/games/e-reader',
-    available: true,
-  },
-  {
     id: 'five-can-sorting',
     title: '5 Can Sorting',
     description: 'Swap two cans at a time; only see how many are in the right place — deduce the hidden order',
