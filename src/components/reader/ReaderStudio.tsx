@@ -81,6 +81,18 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
     void registerReaderServiceWorker()
   }, [loadLibrary])
 
+  /** E2E (End-to-End): `?e2eUpload=1` opens file mode without relying on click timing (Playwright). */
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      if (new URLSearchParams(window.location.search).get('e2eUpload') === '1') {
+        setImportMode('file')
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [])
+
   const parseImport = useCallback(async () => {
     setBusy(true)
     setError('')
@@ -180,11 +192,11 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
             <p className="text-sm font-semibold" style={{ color: 'var(--ink-accent)' }}>NovelFire-style web reader</p>
             <h1 className="font-lora text-3xl font-semibold" style={{ color: 'var(--ink-text)' }}>Import books into a local-first e-reader</h1>
             <p className="mt-2 max-w-3xl text-sm" style={{ color: 'var(--ink-muted)' }}>
-              Paste plain text, upload a text file, or import a PDF into a chapterized reader with saved progress, typography controls, TTS, bookmarks, and offline-friendly local storage.
+              Paste plain text or upload a text file entirely on-device. For PDFs, text is extracted once on the server (not stored) so the reader stays reliable in the browser; saved books and progress stay local in IndexedDB.
             </p>
           </div>
           <div className="rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-muted)' }}>
-            PDF imports are reflowed into clean reader paragraphs. Complex layouts may need chapter cleanup before saving.
+            PDF text extraction uses a server route (file is not persisted). Output is reflowed into paragraphs; complex layouts may need chapter cleanup before saving.
           </div>
         </div>
 
@@ -244,6 +256,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                 <span className="mb-2 block text-sm font-medium" style={{ color: 'var(--ink-text)' }}>Choose a `.txt`, `.md`, or `.pdf` file</span>
                 <input
                   type="file"
+                  data-testid="reader-file-input"
                   accept=".txt,.md,.pdf,text/plain,application/pdf"
                   onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
                   className="w-full rounded-2xl border px-4 py-3 text-sm"
@@ -266,6 +279,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"
+                data-testid="reader-detect-chapters"
                 onClick={() => void parseImport()}
                 disabled={busy}
                 className="rounded-2xl px-5 py-3 text-sm font-semibold text-white disabled:opacity-60"
@@ -352,18 +366,23 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
       </div>
 
       {draft ? (
-        <div className="rounded-3xl border p-5 md:p-6" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+        <div
+          className="rounded-3xl border p-5 md:p-6"
+          data-testid="reader-import-preview"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
           <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-sm font-semibold" style={{ color: 'var(--ink-accent)' }}>Imported preview</p>
               <h2 className="font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>{draft.title}</h2>
-              <p className="mt-1 text-sm" style={{ color: 'var(--ink-muted)' }}>
+              <p className="mt-1 text-sm" data-testid="reader-chapter-summary" style={{ color: 'var(--ink-muted)' }}>
                 {draft.chapters.length} detected chapters · {sourceLabel(draft.sourceType)}
                 {draft.originalFileName ? ` · ${draft.originalFileName}` : ''}
               </p>
             </div>
             <button
               type="button"
+              data-testid="reader-save-open"
               onClick={() => void saveDraft()}
               className="rounded-2xl px-5 py-3 text-sm font-semibold text-white"
               style={{ backgroundColor: 'var(--ink-accent)' }}

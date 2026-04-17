@@ -4,6 +4,13 @@ import type { ReaderChapter, ReaderImportDraft, ReaderSourceType } from '@/lib/r
 const CHAPTER_HEADING_RE =
   /^(chapter|chap\.?|book|part|section|episode|prologue|epilogue)\s+((\d+|[ivxlcdm]+)([\s.:~-].*)?|[a-z0-9'":,\- ]+)$/i
 
+/** Single-line titles like “Book 2” or “Part III: …” — used when reflowing PDF lines so headings become chapter boundaries. */
+export function isStructuredChapterHeadingLine(line: string): boolean {
+  const t = line.trim()
+  if (!t || t.length > 200) return false
+  return CHAPTER_HEADING_RE.test(t)
+}
+
 function normalizeText(raw: string): string {
   return raw
     .replace(/\r\n/g, '\n')

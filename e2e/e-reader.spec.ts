@@ -1,10 +1,14 @@
+import fs from 'node:fs'
 import path from 'node:path'
 
 import { expect, test } from '@playwright/test'
 
-const MEDITATIONS_PDF = path.join(process.cwd(), 'e2e/fixtures/meditations-a-new-translation-hardcover.pdf')
+const FIXTURE = path.join(process.cwd(), 'e2e/fixtures/meditations-a-new-translation-hardcover.pdf')
+const ROOT = path.join(process.cwd(), 'meditations-a-new-translation-hardcover.pdf')
+const MEDITATIONS_PDF = fs.existsSync(FIXTURE) ? FIXTURE : ROOT
+const hasMeditationsPdf = fs.existsSync(MEDITATIONS_PDF)
 
-test.describe('E-reader (local)', () => {
+;(hasMeditationsPdf ? test.describe : test.describe.skip)('E-reader (local)', () => {
   test('Meditations PDF: multi-chapter import, save, reader search', async ({ page }) => {
     test.setTimeout(180_000)
 
@@ -19,7 +23,7 @@ test.describe('E-reader (local)', () => {
     await expect(page.getByTestId('reader-detect-chapters')).toBeDisabled()
     await expect(page.getByTestId('reader-detect-chapters')).toBeEnabled({ timeout: 120_000 })
 
-    await expect(page.getByTestId('reader-import-preview')).toBeVisible()
+    await expect(page.getByTestId('reader-import-preview')).toBeVisible({ timeout: 120_000 })
     const summary = page.getByTestId('reader-chapter-summary')
     await expect(summary).toContainText(/PDF/)
     const summaryText = await summary.innerText()
