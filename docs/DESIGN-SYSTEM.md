@@ -41,13 +41,13 @@
 
 - **PageShell:** sfjc.dev header, ← Home on subpages. No header border on home.
 - **Content:** `max-w-6xl mx-auto px-4`. Full-bleed for Pear Navigator, Poker lobby/table.
-- **Header exceptions (own-theme pages):** Pear Navigator and Chwazi mobile use compact header (px-3 py-2, smaller logo); all other theme2 pages use standardized header (px-4 py-3 md:py-4, text-3xl md:text-4xl).
+- **Header exceptions (own-theme pages):** Pear Navigator and Chwazi mobile use compact header (px-3 py-2, smaller logo); notebook subpages otherwise use the standard header (px-4 py-3 md:py-4, text-3xl md:text-4xl).
 
 ---
 
 ## Default Theme: Notebook (at `/`)
 
-Main site aesthetic. Applied when pathname does NOT start with `/theme2` via `data-theme="notebook"`.
+Main site aesthetic (the only **public** theme). Applied when the shell is in notebook mode via `data-theme="notebook"` (Chwazi mobile is an exception and uses the root Ink & Paper look without the notebook line paper).
 
 ### Color Palette (notebook)
 
@@ -67,7 +67,7 @@ Main site aesthetic. Applied when pathname does NOT start with `/theme2` via `da
 
 ### Doodles
 
-- `public/doodles/notebook/` — Doodly, handwritten-style variants. Default theme uses these; Theme 2 uses `public/doodles/`.
+- `public/doodles/notebook/` — Doodly, handwritten-style variants. Default theme uses these; non-notebook surfaces (e.g. archived Ink & Paper pages in source) may use `public/doodles/`.
 
 ### Line Paper
 
@@ -77,15 +77,14 @@ Main site aesthetic. Applied when pathname does NOT start with `/theme2` via `da
 
 ### Navigation
 
-- Main site (notebook): "Theme 2" link → `/theme2`.
-- Theme 2 site: "Main" link → `/`, "← Home" → `/theme2`.
+- Masthead **sfjc.dev** links to `/`; subpages use **← Home** to `/`.
 - Redirect: `/notebook` and `/notebook/*` → `/` and `/*` (permanent).
 
 ---
 
-## Alternate Theme: Ink & Paper (at `/theme2`)
+## Alternate Theme: Ink & Paper (archived, not public)
 
-Same functionality, different aesthetic. Applied when pathname starts with `/theme2`. Uses root `--ink-*` palette (cream + burgundy).
+A second **Ink & Paper** route tree previously lived at `/theme2`. It is **not** deployed: sources are kept under `src/app/_archive/theme2` (Next.js private folder, no public URL). Same components as the main app where applicable; uses root `--ink-*` palette (cream + burgundy) when run from that tree.
 
 ---
 

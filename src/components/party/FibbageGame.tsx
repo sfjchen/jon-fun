@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { usePathname } from 'next/navigation'
 import { partyFetch, sessionKeys } from '@/lib/party/constants'
 import { usePartyRoomData } from './usePartyRoomData'
 
@@ -20,8 +19,7 @@ type Lie = { round_id: string; player_id: string; lie_text: string; from_suggest
 type Pick = { round_id: string; player_id: string; picked_index: number }
 
 export default function FibbageGame() {
-  const pathname = usePathname() ?? ''
-  const notebookLayout = !pathname.startsWith('/theme2')
+  const notebookLayout = true
   const keys = sessionKeys('fibbage')
 
   const [pinInput, setPinInput] = useState('')

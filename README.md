@@ -42,13 +42,13 @@ These guide **what** we build (product + UX) and **how** it should feel (visual 
 
 ### Global chrome (`PageShell`)
 
-- **`sfjc.dev` masthead** appears across games and tools in a **consistent role**: same centered title treatment as on the home page, and **always links to the correct home** (`/` on Main theme, `/theme2` when browsing Theme 2). Subpages keep **← Home** for explicit back navigation where useful.
+- **`sfjc.dev` masthead** appears across games and tools in a **consistent role**: same centered title treatment as on the home page, and **always links to home** (`/`). Subpages keep **← Home** for explicit back navigation where useful.
 - **Exceptions** (compact header, full-bleed): Pear Navigator, Chwazi mobile, Poker lobby/table—still branded **sfjc.dev**, still wired to home (see `PageShell.tsx`).
 
 ### Visual and tonal language (ties to themes)
 
 - **Simple, bold, elegant:** Strong type and a **restrained palette**—confident without being stiff (**not** corporate-formal) and clear without being cute (**not** overly casual copy or novelty UI).
-- **Two public faces:** **Notebook** (`/`)—hand-drawn Patrick Hand, cream line-paper, Stanford-adjacent red accent. **Ink & Paper** (`/theme2`)—Lora + Charter, cream + burgundy. Game-specific skins (Poker felt, Pear Navigator dark) are **allowed exceptions** where they aid the metaphor.
+- **Notebook (main site)** (`/`): hand-drawn Patrick Hand, cream line-paper, Stanford-adjacent red accent. An older **Ink & Paper** variant is kept only under `src/app/_archive/theme2` (not deployed as routes). Game-specific skins (Poker felt, Pear Navigator dark) are **allowed exceptions** where they aid the metaphor.
 
 ### Data, identity, and sync
 
@@ -60,7 +60,7 @@ These guide **what** we build (product + UX) and **how** it should feel (visual 
 
 ## 🎨 Visual system & themes (quick reference)
 
-**Themes:** **Notebook** (default at `/`) and **Ink & Paper** at `/theme2`. **Tokens:** `var(--ink-*)` in `globals.css`; notebook maps those to `--nb-*` via `data-theme="notebook"`. **Game-specific:** Poker (green felt), Pear Navigator (dark inner UI). **Own-theme / compact header:** Chwazi mobile, Pear Navigator, Poker lobby & table; theme switch is **hidden** on Chwazi mobile. Full detail: **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)**.
+**Themes:** **Notebook** is the only public theme (at `/`). Legacy **Ink & Paper** pages live in `src/app/_archive/theme2` (Next.js private folder — not reachable on the web). **Tokens:** `var(--ink-*)` in `globals.css`; notebook maps those to `--nb-*` via `data-theme="notebook"`. **Game-specific:** Poker (green felt), Pear Navigator (dark inner UI). **Own-theme / compact header:** Chwazi mobile, Pear Navigator, Poker lobby & table. Full detail: **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)**.
 
 ---
 
@@ -388,7 +388,7 @@ src/
 ### E2E Testing
 
 - **Playwright** in `e2e/` — tests in `e2e/*.spec.ts`
-- **Coverage**: Home, navigation (all games + theme2), Game24 (practice), Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Mental Obstacle Course, party games (Quip Clash, Fib It, Enough About You), Leaderboards. **Local**: Chromium + Mobile Chrome. **`CI=1` / `npm run test:e2e:ci`**: Chromium only (faster, less memory).
+- **Coverage**: Home, navigation (all games on the main grid), Game24 (practice), Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Mental Obstacle Course, party games (Quip Clash, Fib It, Enough About You), Leaderboards. **Local**: Chromium + Mobile Chrome. **`CI=1` / `npm run test:e2e:ci`**: Chromium only (faster, less memory).
 - **Dev server**: Playwright starts `next dev` on **port 3001** by default (`PLAYWRIGHT_WEB_PORT`, `PLAYWRIGHT_BASE_URL` to override).
 - **Agent**: Use `/e2e-reviewer` when Playwright E2E tests are needed to confirm site functionality, fix failing tests, or iterate on improvements. Prefer Composer 1.5 for interactive sessions.
 
@@ -435,7 +435,9 @@ Running log of project work. Update this section when making significant changes
 
 **2026-04**
 
-- **5 Can Sorting**: New puzzle at `/games/five-can-sorting` (Theme 2 mirror) — swap two of five labeled cans per move, positional count feedback only, win when all five match hidden order; `FiveCanGame` + `five-can-game` lib, home cards, `PageShell` card-page path, doodle `cans.svg`, E2E home navigation entry.
+- **Party games API (production fix)**: `/api/party/*` routes and `src/lib/party/*` seed helpers now use `supabaseAdmin` (Supabase service role) for reads/writes. Anonymous client inserts were failing on production (`POST /api/party/rooms` → 500 “Failed to create room”). **Vercel:** set `SUPABASE_SERVICE_ROLE_KEY` (without it, the admin client falls back to the anon key). Poker cleanup cron uses the same admin client for party/poker/game24 deletes.
+- **Single public theme + home grid**: Removed the `/theme2` route and theme switcher; **sfjc.dev** is notebook-only. Former Theme 2 app routes are archived under `src/app/_archive/theme2` (not exposed). Home is a **two-column** project grid (neal.fun–style) with **titles only** on cards; blurbs stay on individual game pages. Updated Playwright specs accordingly.
+- **5 Can Sorting**: New puzzle at `/games/five-can-sorting` — swap two of five labeled cans per move, positional count feedback only, win when all five match hidden order; `FiveCanGame` + `five-can-game` lib, home cards, `PageShell` card-page path, doodle `cans.svg`, E2E home navigation entry.
 - **5 Can Sorting UI**: SVG doodle cans (`FiveCanDoodle`), big “correct / 5” beside a single-row strip (horizontal scroll on narrow viewports), feedback history (newest first), keyboard shortcuts (1–5, Enter, Esc, N).
 
 - **OpenClaw local-only channel cleanup (ops)**: Removed email/cloud bridge settings from active OpenClaw runtime by dropping `hooks` and `channels.telegram` from `~/.openclaw/openclaw.json`; retained only BlueBubbles (iMessage) + WhatsApp channels. Tightened BlueBubbles allowlists to self-number thread identifiers only to prevent unintended chat activation.

@@ -18,15 +18,6 @@ test.describe('Mental Obstacle Course', () => {
     await expect(page.getByTestId('moc-intro-continue')).toBeVisible()
   })
 
-  test('theme2 route loads', async ({ page }) => {
-    await page.goto('/theme2/games/mental-obstacle-course', {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    })
-    await expect(page).toHaveURL(/\/theme2\/games\/mental-obstacle-course/)
-    await expect(page.getByRole('heading', { name: 'Mental Obstacle Course' })).toBeVisible()
-  })
-
   test('full quick course completes with results (keyboard / desktop)', async ({ page }, testInfo) => {
     test.skip(!isChromiumDesktop(testInfo.project.name), 'Words round uses typing only on desktop Chromium')
 
@@ -186,18 +177,4 @@ test.describe('Mental Obstacle Course', () => {
     await expect(page.getByTestId('moc-intro-continue')).toBeVisible()
   })
 
-  test('theme switch preserves mental obstacle path and query', async ({ page }) => {
-    await page.goto(MOC_QUICK('/games/mental-obstacle-course'), {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    })
-    await expect(page).toHaveURL(/mocE2e=1/)
-    await page.getByRole('link', { name: 'Theme 2' }).click()
-    await expect(page).toHaveURL(/\/theme2\/games\/mental-obstacle-course/)
-    await expect(page.url()).toMatch(/mocE2e=1/)
-    await expect(page.getByRole('heading', { name: 'Mental Obstacle Course' })).toBeVisible()
-    await page.getByRole('link', { name: 'Main' }).click()
-    await expect(page).toHaveURL(/\/games\/mental-obstacle-course/)
-    await expect(page.url()).toMatch(/mocE2e=1/)
-  })
 })

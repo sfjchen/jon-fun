@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { usePathname } from 'next/navigation'
 import { partyFetch, sessionKeys } from '@/lib/party/constants'
 import { usePartyRoomData } from './usePartyRoomData'
 
@@ -14,8 +13,7 @@ type FinalAns = { player_id: string; body: string }
 type FinalVote = { voter_player_id: string; slot: number; target_player_id: string }
 
 export default function QuiplashGame() {
-  const pathname = usePathname() ?? ''
-  const notebookLayout = !pathname.startsWith('/theme2')
+  const notebookLayout = true
   const keys = sessionKeys('quiplash')
 
   const [pinInput, setPinInput] = useState('')

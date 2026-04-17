@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { usePathname } from 'next/navigation'
 import { partyFetch, sessionKeys } from '@/lib/party/constants'
 import { EAY_INTAKE_QUESTIONS } from '@/lib/party/prompts-eay'
 import { usePartyRoomData } from './usePartyRoomData'
@@ -29,8 +28,7 @@ type Pick = { round_id: string; player_id: string; picked_index: number }
 type FinalRow = { player_id: string; truth_text: string; lie_text: string }
 
 export default function EayGame() {
-  const pathname = usePathname() ?? ''
-  const notebookLayout = !pathname.startsWith('/theme2')
+  const notebookLayout = true
   const keys = sessionKeys('eay')
 
   const [pinInput, setPinInput] = useState('')

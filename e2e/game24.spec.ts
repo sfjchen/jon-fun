@@ -23,10 +23,4 @@ test.describe('Game 24', () => {
     await firstCard.click()
     await expect(page.getByRole('button', { name: '+ operator' })).toBeVisible({ timeout: 2000 })
   })
-
-  test('theme2 game24 loads', async ({ page }) => {
-    await page.goto('/theme2/games/24')
-    await expect(page).toHaveURL(/\/theme2\/games\/24/)
-    await expect(page.getByPlaceholder('Enter your name')).toBeVisible({ timeout: 5000 })
-  })
 })

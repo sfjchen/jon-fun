@@ -1,13 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import PokerJoinForm from '@/components/PokerJoinForm'
 
 export default function PokerPage() {
   const router = useRouter()
-  const pathname = usePathname()
-  const base = pathname?.startsWith('/theme2') ? '/theme2' : ''
+  const base = ''
   const [mode, setMode] = useState<'create' | 'join'>('create')
   const [hostName, setHostName] = useState('')
   const [joinPin, setJoinPin] = useState('')

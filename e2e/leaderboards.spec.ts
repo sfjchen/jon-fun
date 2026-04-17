@@ -13,10 +13,4 @@ test.describe('Leaderboards', () => {
     await page.getByRole('link', { name: /Play 24 Game/i }).click()
     await expect(page).toHaveURL(/\/games\/24/)
   })
-
-  test('theme2 leaderboards loads', async ({ page }) => {
-    await page.goto('/theme2/leaderboards')
-    await expect(page).toHaveURL(/\/theme2\/leaderboards/)
-    await expect(page.getByText('Coming Soon!')).toBeVisible()
-  })
 })
