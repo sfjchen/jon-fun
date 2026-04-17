@@ -1,0 +1,680 @@
+'use client'
+
+import Link from 'next/link'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { ReaderBody } from '@/components/reader/ReaderBody'
+import { SettingsDrawer } from '@/components/reader/SettingsDrawer'
+import {
+  defaultReaderPreferences,
+  loadReaderBookmark,
+  loadReaderPreferences,
+  loadReaderProgress,
+  readerCssVariables,
+  saveReaderBookmark,
+  saveReaderPreferences,
+  saveReaderProgress,
+} from '@/lib/reader/settings'
+import { registerReaderServiceWorker } from '@/lib/reader/pwa'
+import { findSearchHits } from '@/lib/reader/search-book'
+import type { ReaderBookmark, ReaderPreferences, ReaderPublication, ReaderTheme } from '@/lib/reader/types'
+
+type ReaderShellProps = {
+  publication: ReaderPublication
+  initialChapterId: string
+  routeBase: string
+}
+
+type VoiceOption = {
+  label: string
+  value: string
+}
+
+const THEME_CYCLE: ReaderTheme[] = ['paper', 'sepia', 'night', 'midnight']
+
+function formatWordCount(count: number): string {
+  return `${count.toLocaleString()} words`
+}
+
+function formatSavedAt(iso: string): string {
+  return new Date(iso).toLocaleString([], {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
+}
+
+function isEditableTarget(t: EventTarget | null): boolean {
+  if (!t || !(t instanceof HTMLElement)) return false
+  const tag = t.tagName
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true
+  return t.isContentEditable
+}
+
+export function ReaderShell({ publication, initialChapterId, routeBase }: ReaderShellProps) {
+  const router = useRouter()
+  const [chapterId, setChapterId] = useState(initialChapterId)
+  const [prefs, setPrefs] = useState<ReaderPreferences>(defaultReaderPreferences)
+  const [mobile, setMobile] = useState(false)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const [voiceOptions, setVoiceOptions] = useState<VoiceOption[]>([])
+  const [isSpeaking, setIsSpeaking] = useState(false)
+  const [bookmark, setBookmark] = useState<ReaderBookmark | null>(null)
+  const [flashMessage, setFlashMessage] = useState('')
+  const [searchDraft, setSearchDraft] = useState('')
+  const [searchActiveQuery, setSearchActiveQuery] = useState('')
+  const [hitIndex, setHitIndex] = useState(0)
+  const [tocOpen, setTocOpen] = useState(true)
+
+  const pendingRestoreRef = useRef<number | null>(null)
+  const autoNextLockRef = useRef('')
+  const flashTimeoutRef = useRef<number | null>(null)
+  const searchInputRef = useRef<HTMLInputElement | null>(null)
+  const chapterSelectRef = useRef<HTMLSelectElement | null>(null)
+
+  const chapters = publication.chapters
+  const currentIndex = Math.max(
+    0,
+    chapters.findIndex((c) => c.id === chapterId),
+  )
+  const chapter = chapters[currentIndex] ?? chapters[0]
+  const prevChapterId = currentIndex > 0 ? chapters[currentIndex - 1]?.id ?? '' : ''
+  const nextChapterId = currentIndex < chapters.length - 1 ? chapters[currentIndex + 1]?.id ?? '' : ''
+
+  const hits = useMemo(() => findSearchHits(publication, searchActiveQuery), [publication, searchActiveQuery])
+
+  useEffect(() => {
+    setChapterId(initialChapterId)
+  }, [initialChapterId])
+
+  useEffect(() => {
+    setPrefs(loadReaderPreferences())
+    setBookmark(loadReaderBookmark(publication.id))
+  }, [publication.id])
+
+  useEffect(() => {
+    saveReaderPreferences(prefs)
+  }, [prefs])
+
+  useEffect(() => {
+    registerReaderServiceWorker()
+  }, [])
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 1023px)')
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const syncMedia = () => setMobile(media.matches)
+    const syncMotion = () => setPrefersReducedMotion(motion.matches)
+
+    syncMedia()
+    syncMotion()
+
+    media.addEventListener('change', syncMedia)
+    motion.addEventListener('change', syncMotion)
+    return () => {
+      media.removeEventListener('change', syncMedia)
+      motion.removeEventListener('change', syncMotion)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!mobile) return
+    setPrefs((current) => (current.panelOpen ? { ...current, panelOpen: false } : current))
+  }, [mobile])
+
+  useEffect(() => {
+    if (!mobile || !prefs.panelOpen) return
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previous
+    }
+  }, [mobile, prefs.panelOpen])
+
+  useEffect(() => {
+    const updateVoices = () => {
+      const voices = window.speechSynthesis?.getVoices?.() ?? []
+      setVoiceOptions(
+        voices.map((voice) => ({
+          label: `${voice.name} (${voice.lang})`,
+          value: voice.voiceURI,
+        })),
+      )
+    }
+
+    updateVoices()
+    window.speechSynthesis?.addEventListener?.('voiceschanged', updateVoices)
+    return () => window.speechSynthesis?.removeEventListener?.('voiceschanged', updateVoices)
+  }, [])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const pending = pendingRestoreRef.current
+      if (!chapter) {
+        pendingRestoreRef.current = null
+        return
+      }
+      const saved = pending ?? loadReaderProgress(publication.id, chapter.id)?.scrollY ?? 0
+      window.scrollTo({ top: saved, behavior: 'auto' })
+      pendingRestoreRef.current = null
+    }, 40)
+
+    return () => window.clearTimeout(timer)
+  }, [publication.id, chapter])
+
+  useEffect(() => {
+    if (!hits.length) {
+      if (hitIndex !== 0) setHitIndex(0)
+      return
+    }
+    const safeIdx = Math.min(hitIndex, hits.length - 1)
+    if (safeIdx !== hitIndex) setHitIndex(safeIdx)
+  }, [hits.length, hitIndex])
+
+  useEffect(() => {
+    if (!hits.length || !chapter) return
+    const hit = hits[Math.min(hitIndex, hits.length - 1)]
+    if (!hit || hit.chapterId !== chapter.id) return
+
+    const id = requestAnimationFrame(() => {
+      const el = document.querySelector<HTMLElement>(`[data-search-paragraph="${hit.paragraphIndex}"]`)
+      el?.scrollIntoView({ block: 'center', behavior: prefersReducedMotion ? 'auto' : 'smooth' })
+    })
+    return () => cancelAnimationFrame(id)
+  }, [hitIndex, chapter, hits, prefersReducedMotion])
+
+  const showFlash = useCallback((message: string) => {
+    setFlashMessage(message)
+    if (flashTimeoutRef.current !== null) window.clearTimeout(flashTimeoutRef.current)
+    flashTimeoutRef.current = window.setTimeout(() => setFlashMessage(''), 2200)
+  }, [])
+
+  useEffect(
+    () => () => {
+      if (flashTimeoutRef.current !== null) window.clearTimeout(flashTimeoutRef.current)
+    },
+    [],
+  )
+
+  const goToChapter = useCallback(
+    (nextChapterId: string, scrollY = 0) => {
+      if (!nextChapterId || !chapter || nextChapterId === chapter.id) {
+        pendingRestoreRef.current = scrollY
+        window.scrollTo({ top: scrollY, behavior: 'auto' })
+        return
+      }
+
+      pendingRestoreRef.current = scrollY
+      window.speechSynthesis?.cancel()
+      setIsSpeaking(false)
+      setChapterId(nextChapterId)
+      router.replace(`${routeBase}/read/${publication.id}/${nextChapterId}`, { scroll: false })
+    },
+    [chapter, publication.id, routeBase, router],
+  )
+
+  const saveCurrentProgress = useCallback(() => {
+    if (!chapter) return
+    saveReaderProgress(publication.id, chapter.id, window.scrollY)
+  }, [publication.id, chapter])
+
+  useEffect(() => {
+    let throttle: number | null = null
+
+    const maybeAutoNext = () => {
+      if (!chapter || !prefs.autoNextChapter || !nextChapterId) return
+      const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 24
+      if (!nearBottom || autoNextLockRef.current === chapter.id) return
+      autoNextLockRef.current = chapter.id
+      window.setTimeout(() => {
+        if (nextChapterId) goToChapter(nextChapterId)
+      }, 220)
+    }
+
+    const onScroll = () => {
+      maybeAutoNext()
+      if (throttle !== null) return
+      throttle = window.setTimeout(() => {
+        saveCurrentProgress()
+        throttle = null
+      }, 180)
+    }
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') saveCurrentProgress()
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('beforeunload', saveCurrentProgress)
+    document.addEventListener('visibilitychange', onVisibility)
+
+    return () => {
+      if (throttle !== null) window.clearTimeout(throttle)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('beforeunload', saveCurrentProgress)
+      document.removeEventListener('visibilitychange', onVisibility)
+      saveCurrentProgress()
+    }
+  }, [chapter, goToChapter, nextChapterId, prefs.autoNextChapter, publication.id, saveCurrentProgress])
+
+  useEffect(() => {
+    if (!prefs.autoScrollEnabled || prefersReducedMotion) return
+    const id = window.setInterval(() => {
+      window.scrollBy(0, prefs.autoScrollSpeed)
+    }, 24)
+    return () => window.clearInterval(id)
+  }, [prefs.autoScrollEnabled, prefs.autoScrollSpeed, prefersReducedMotion])
+
+  useEffect(() => () => {
+    window.speechSynthesis?.cancel()
+  }, [])
+
+  const updatePref = useCallback(<K extends keyof ReaderPreferences>(key: K, value: ReaderPreferences[K]) => {
+    setPrefs((current) => ({ ...current, [key]: value }))
+  }, [])
+
+  const cycleTheme = useCallback(() => {
+    const idx = Math.max(0, THEME_CYCLE.indexOf(prefs.theme))
+    const next = THEME_CYCLE[(idx + 1) % THEME_CYCLE.length] ?? prefs.theme
+    updatePref('theme', next)
+  }, [prefs.theme, updatePref])
+
+  const runFind = useCallback(() => {
+    const q = searchDraft.trim()
+    setSearchActiveQuery(q)
+    const nextHits = findSearchHits(publication, q)
+    setHitIndex(0)
+    const first = nextHits[0]
+    if (first && first.chapterId !== chapterId) {
+      goToChapter(first.chapterId, 0)
+    }
+  }, [searchDraft, publication, chapterId, goToChapter])
+
+  const nextHit = useCallback(() => {
+    if (!hits.length) return
+    const next = (hitIndex + 1) % hits.length
+    setHitIndex(next)
+    const h = hits[next]
+    if (!h) return
+    if (h.chapterId !== chapterId) {
+      goToChapter(h.chapterId, 0)
+    }
+  }, [hits, hitIndex, chapterId, goToChapter])
+
+  const prevHit = useCallback(() => {
+    if (!hits.length) return
+    const prev = (hitIndex - 1 + hits.length) % hits.length
+    setHitIndex(prev)
+    const h = hits[prev]
+    if (!h) return
+    if (h.chapterId !== chapterId) {
+      goToChapter(h.chapterId, 0)
+    }
+  }, [hits, hitIndex, chapterId, goToChapter])
+
+  const clearSearch = useCallback(() => {
+    setSearchDraft('')
+    setSearchActiveQuery('')
+    setHitIndex(0)
+  }, [])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+
+      const typing = isEditableTarget(e.target)
+
+      if (e.key === '/' && !typing) {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+        return
+      }
+
+      if (e.key === 'Escape' && document.activeElement === searchInputRef.current) {
+        searchInputRef.current?.blur()
+        return
+      }
+
+      if (typing && document.activeElement !== searchInputRef.current) return
+
+      if (typing && document.activeElement === searchInputRef.current && e.key !== 'Escape') {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          runFind()
+        }
+        return
+      }
+
+      if (typing) return
+
+      if (e.key === 'n' && hits.length > 0) {
+        e.preventDefault()
+        nextHit()
+        return
+      }
+
+      if (e.key === 'N' && hits.length > 0) {
+        e.preventDefault()
+        prevHit()
+        return
+      }
+
+      if (e.key === '[' && prevChapterId) {
+        e.preventDefault()
+        goToChapter(prevChapterId)
+        return
+      }
+
+      if (e.key === ']' && nextChapterId) {
+        e.preventDefault()
+        goToChapter(nextChapterId)
+        return
+      }
+
+      if (e.key === 'g' && !e.shiftKey) {
+        e.preventDefault()
+        chapterSelectRef.current?.focus()
+      }
+    }
+
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [goToChapter, hits.length, nextChapterId, nextHit, prevChapterId, prevHit, runFind])
+
+  const handleReset = useCallback(() => {
+    setPrefs({ ...defaultReaderPreferences, panelOpen: mobile ? false : true })
+  }, [mobile])
+
+  const handleSaveBookmark = useCallback(() => {
+    if (!chapter) return
+    const next = {
+      chapterId: chapter.id,
+      scrollY: window.scrollY,
+      savedAt: new Date().toISOString(),
+    }
+    saveReaderBookmark(publication.id, next.chapterId, next.scrollY)
+    setBookmark(next)
+    showFlash('Saved bookmark')
+  }, [chapter, publication.id, showFlash])
+
+  const handleJumpToBookmark = useCallback(() => {
+    if (!bookmark) return
+    goToChapter(bookmark.chapterId, bookmark.scrollY)
+    showFlash(`Jumped to bookmark from ${formatSavedAt(bookmark.savedAt)}`)
+  }, [bookmark, goToChapter, showFlash])
+
+  const toggleSpeak = useCallback(() => {
+    if (!window.speechSynthesis || !chapter) return
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      window.speechSynthesis.cancel()
+      setIsSpeaking(false)
+      return
+    }
+
+    const utterance = new SpeechSynthesisUtterance(chapter.paragraphs.join('\n\n'))
+    const selectedVoice = window.speechSynthesis.getVoices().find((voice) => voice.voiceURI === prefs.voiceURI)
+    if (selectedVoice) utterance.voice = selectedVoice
+    utterance.rate = prefs.ttsRate
+    utterance.onend = () => setIsSpeaking(false)
+    utterance.onerror = () => setIsSpeaking(false)
+    setIsSpeaking(true)
+    window.speechSynthesis.speak(utterance)
+  }, [chapter, prefs.ttsRate, prefs.voiceURI])
+
+  const cssVars = useMemo(() => readerCssVariables(prefs), [prefs])
+  const canGoPrev = currentIndex > 0
+  const canGoNext = currentIndex < chapters.length - 1
+  const hitLabel = hits.length ? `${Math.min(hitIndex + 1, hits.length)}/${hits.length}` : '0/0'
+
+  if (!chapter) {
+    return (
+      <section className="p-8 text-center text-sm" style={{ color: 'var(--reader-muted, #666)' }}>
+        <p>This publication has no chapters.</p>
+      </section>
+    )
+  }
+
+  return (
+    <section style={cssVars} className="pb-safe">
+      <div
+        className="sticky top-0 z-30 mb-5 rounded-3xl border px-4 py-4 shadow-sm md:px-6"
+        style={{ backgroundColor: 'var(--reader-chrome)', borderColor: 'var(--reader-border)', color: 'var(--reader-text)' }}
+      >
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm reader-muted">
+          <nav className="flex flex-wrap items-center gap-2" aria-label="Breadcrumb">
+            <Link href="/" className="reader-focus rounded-md hover:underline">
+              Home
+            </Link>
+            <span aria-hidden>/</span>
+            <Link href={routeBase} className="reader-focus rounded-md hover:underline">
+              Reader
+            </Link>
+            <span aria-hidden>/</span>
+            <Link
+              href={`${routeBase}/read/${publication.id}/${chapter.id}`}
+              className="reader-focus max-w-[14rem] truncate rounded-md hover:underline md:max-w-[18rem]"
+            >
+              {publication.title}
+            </Link>
+            <span aria-hidden>/</span>
+            <span className="max-w-[14rem] truncate md:max-w-[18rem]" title={chapter.title}>
+              {chapter.title}
+            </span>
+          </nav>
+          {flashMessage ? (
+            <span className="rounded-full px-3 py-1 text-xs" style={{ backgroundColor: 'var(--reader-panel)', color: 'var(--reader-accent)' }}>
+              {flashMessage}
+            </span>
+          ) : null}
+        </div>
+
+        <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-3xl">
+            <p className="mb-1 text-sm font-semibold" style={{ color: 'var(--reader-accent)' }}>
+              {publication.title}
+            </p>
+            <h1 className="text-2xl font-semibold md:text-3xl">{chapter.title}</h1>
+            <p className="mt-1 text-sm reader-muted">
+              Chapter {currentIndex + 1} of {chapters.length} · {formatWordCount(chapter.wordCount)}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 self-start">
+            {!mobile ? (
+              <button
+                type="button"
+                onClick={() => setTocOpen((v) => !v)}
+                className="reader-chip reader-focus rounded-2xl px-4 py-2 text-sm font-medium"
+                aria-pressed={tocOpen}
+              >
+                {tocOpen ? 'Hide contents' : 'Contents'}
+              </button>
+            ) : null}
+            <button type="button" onClick={cycleTheme} className="reader-chip reader-focus rounded-2xl px-4 py-2 text-sm font-medium" title="Cycle theme">
+              Theme
+            </button>
+            <button
+              type="button"
+              onClick={() => updatePref('panelOpen', !prefs.panelOpen)}
+              className="reader-action reader-focus rounded-2xl px-4 py-2 text-sm font-medium"
+            >
+              {prefs.panelOpen ? 'Hide settings' : 'Open settings'}
+            </button>
+          </div>
+        </div>
+
+        <div className="mb-4 flex flex-col gap-2 rounded-2xl border px-3 py-3 md:flex-row md:flex-wrap md:items-center" style={{ borderColor: 'var(--reader-border)', backgroundColor: 'var(--reader-panel)' }}>
+          <label className="min-w-0 flex-1 md:min-w-[200px]">
+            <span className="sr-only">Search in book</span>
+            <input
+              ref={searchInputRef}
+              value={searchDraft}
+              onChange={(e) => setSearchDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  runFind()
+                }
+              }}
+              placeholder="Search in book…"
+              className="reader-focus w-full rounded-xl border px-3 py-2 text-sm"
+              style={{ borderColor: 'var(--reader-border)', backgroundColor: 'var(--reader-chrome)', color: 'var(--reader-text)' }}
+              autoComplete="off"
+              spellCheck={false}
+            />
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={runFind} className="reader-action reader-focus rounded-xl px-3 py-2 text-sm font-medium">
+              Find
+            </button>
+            <button type="button" onClick={prevHit} disabled={!hits.length} className="reader-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
+              Prev
+            </button>
+            <button type="button" onClick={nextHit} disabled={!hits.length} className="reader-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
+              Next
+            </button>
+            <button type="button" onClick={clearSearch} className="reader-chip reader-focus rounded-xl px-3 py-2 text-sm">
+              Clear
+            </button>
+            <span className="flex items-center px-2 text-xs reader-muted" aria-live="polite">
+              {hitLabel}
+            </span>
+          </div>
+        </div>
+
+        <p className="mb-3 text-xs reader-muted">
+          Shortcuts: / focus search · Enter find · n / Shift+n next/prev match · [ ] prev/next chapter · g chapter menu
+        </p>
+
+        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+          <button
+            type="button"
+            onClick={() => prevChapterId && goToChapter(prevChapterId)}
+            disabled={!canGoPrev}
+            className="reader-action reader-focus rounded-2xl px-4 py-3 text-sm font-medium disabled:opacity-40"
+          >
+            Previous
+          </button>
+          <label className="flex-1">
+            <span className="sr-only">Choose chapter</span>
+            <select
+              ref={chapterSelectRef}
+              className="reader-focus w-full rounded-2xl border px-4 py-3 text-sm"
+              style={{ borderColor: 'var(--reader-border)', backgroundColor: 'var(--reader-panel)', color: 'var(--reader-text)' }}
+              value={chapter.id}
+              onChange={(event) => goToChapter(event.target.value)}
+            >
+              {chapters.map((item, index) => (
+                <option key={item.id} value={item.id}>
+                  {index + 1}. {item.title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            onClick={() => nextChapterId && goToChapter(nextChapterId)}
+            disabled={!canGoNext}
+            className="reader-action reader-focus rounded-2xl px-4 py-3 text-sm font-medium disabled:opacity-40"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+
+      <div className="flex items-start gap-6">
+        {!mobile && tocOpen ? (
+          <nav
+            className="reader-panel reader-scrollbar sticky top-24 z-10 hidden max-h-[70vh] w-52 shrink-0 overflow-y-auto rounded-3xl p-4 lg:block"
+            aria-label="Table of contents"
+          >
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] reader-muted">Contents</p>
+            <ul className="space-y-1">
+              {chapters.map((c, index) => (
+                <li key={c.id}>
+                  <button
+                    type="button"
+                    onClick={() => goToChapter(c.id)}
+                    className="reader-focus w-full rounded-xl px-3 py-2 text-left text-sm leading-snug transition-colors"
+                    style={{
+                      backgroundColor: c.id === chapter.id ? 'color-mix(in srgb, var(--reader-accent) 18%, var(--reader-panel))' : 'transparent',
+                      color: 'var(--reader-text)',
+                      border: c.id === chapter.id ? '1px solid var(--reader-accent)' : '1px solid transparent',
+                    }}
+                  >
+                    <span className="reader-muted">{index + 1}. </span>
+                    <span className="line-clamp-3">{c.title}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ) : null}
+
+        <div className="min-w-0 flex-1">
+          {prefersReducedMotion && prefs.autoScrollEnabled ? (
+            <div className="mb-4 rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'var(--reader-border)', backgroundColor: 'var(--reader-panel)', color: 'var(--reader-muted)' }}>
+              Auto scroll is paused because reduced motion is enabled on this device.
+            </div>
+          ) : null}
+
+          <div className="reader-surface px-4 py-8 md:px-8 md:py-10">
+            <ReaderBody chapter={chapter} prefs={prefs} highlightQuery={searchActiveQuery} />
+          </div>
+        </div>
+
+        {!mobile && prefs.panelOpen ? (
+          <SettingsDrawer
+            open={prefs.panelOpen}
+            mobile={false}
+            prefs={prefs}
+            voiceOptions={voiceOptions}
+            isSpeaking={isSpeaking}
+            canGoPrev={canGoPrev}
+            canGoNext={canGoNext}
+            onClose={() => updatePref('panelOpen', false)}
+            onChange={updatePref}
+            onGoPrev={() => prevChapterId && goToChapter(prevChapterId)}
+            onGoNext={() => nextChapterId && goToChapter(nextChapterId)}
+            onSaveBookmark={handleSaveBookmark}
+            onJumpToBookmark={handleJumpToBookmark}
+            hasBookmark={Boolean(bookmark)}
+            onToggleSpeak={toggleSpeak}
+            onReset={handleReset}
+          />
+        ) : null}
+      </div>
+
+      {mobile && !prefs.panelOpen ? (
+        <button
+          type="button"
+          onClick={() => updatePref('panelOpen', true)}
+          className="reader-action reader-focus fixed bottom-safe right-4 z-40 rounded-full px-4 py-3 text-sm font-semibold shadow-lg"
+        >
+          Reader settings
+        </button>
+      ) : null}
+
+      {mobile && prefs.panelOpen ? (
+        <SettingsDrawer
+          open={prefs.panelOpen}
+          mobile
+          prefs={prefs}
+          voiceOptions={voiceOptions}
+          isSpeaking={isSpeaking}
+          canGoPrev={canGoPrev}
+          canGoNext={canGoNext}
+          onClose={() => updatePref('panelOpen', false)}
+          onChange={updatePref}
+          onGoPrev={() => prevChapterId && goToChapter(prevChapterId)}
+          onGoNext={() => nextChapterId && goToChapter(nextChapterId)}
+          onSaveBookmark={handleSaveBookmark}
+          onJumpToBookmark={handleJumpToBookmark}
+          hasBookmark={Boolean(bookmark)}
+          onToggleSpeak={toggleSpeak}
+          onReset={handleReset}
+        />
+      ) : null}
+    </section>
+  )
+}
