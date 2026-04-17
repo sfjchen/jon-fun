@@ -74,7 +74,16 @@ These guide **what** we build (product + UX) and **how** it should feel (visual 
 - **Deployment**: Vercel
 - **Analytics**: Vercel Analytics & Speed Insights
 
-## 📁 Project Structure
+## 📁 Repository layout (flat)
+
+- **`src/`** — Next.js app ([sfjc.dev](https://sfjc.dev))
+- **`e2e/`** — Playwright tests; **`e2e/fixtures/`** — large assets for E2E (e.g. Meditations PDF for e-reader upload tests)
+- **`docs/`** — design notes, images, reference writeups (**`docs/five-can-sorting/`** — LaTeX/PDF for the 5-can analysis paper)
+- **`data/`** — sample JSON and seed data (e.g. Jeopardy boards)
+- **`scripts/`** — repo automation; **`openclaw-hybrid/`** — ops / hybrid kit (not in the Next bundle)
+- **`Smart OverlayEye/`**, **`sports-talent-research/`**, **`TMR_audio/`** — separate projects / research (not deployed with the game hub)
+
+## 📁 Project Structure (`src/`)
 
 ```
 src/
@@ -436,6 +445,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-04**
 
+- **Repo layout (flat)**: `5_can_sorting_game/` → `docs/five-can-sorting/` (paper sources); Meditations PDF → `e2e/fixtures/` (e-reader E2E); sample Jeopardy JSON → `data/jeopardy/`; stray `image/cursor_*` → `docs/image/cursor-viewport-validation/`; `.vercelignore` updated; README “Repository layout” section.
 - **Home cards**: Removed inner icon “tile” (border + white fill); icons sit on the card again with `drop-shadow`. Larger titles (`text-xl` / `sm:text-2xl`), more padding and grid gaps.
 - **Web e-reader UX**: In-reader search (`findSearchHits` + `<mark>` highlights), sticky chrome bar, desktop TOC sidebar, breadcrumb links, theme cycle control, keyboard shortcuts (`/` search, `n` / `Shift+n` matches, `[` / `]` chapters, `g` chapter `<select>`), right-align option in settings, library **Export .txt**; `GameCard` accepts optional `className` (fixes home grid typing).
 - **Party games API (production fix)**: `/api/party/*` routes and `src/lib/party/*` seed helpers now use `supabaseAdmin` (Supabase service role) for reads/writes. Anonymous client inserts were failing on production (`POST /api/party/rooms` → 500 “Failed to create room”). **Vercel:** set `SUPABASE_SERVICE_ROLE_KEY` (without it, the admin client falls back to the anon key). Poker cleanup cron uses the same admin client for party/poker/game24 deletes.
