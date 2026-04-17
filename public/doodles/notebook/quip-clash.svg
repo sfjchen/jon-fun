@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- paired speech bubbles -->
+  <path d="M12 18 H36 Q44 18 44 26 V34 Q44 42 36 42 H22 L14 52 L16 40 H12 Q8 40 8 34 V26 Q8 18 12 18 Z" />
+  <path d="M52 22 H32 Q26 22 26 28 V38 Q26 44 32 44 H42 L50 50 L48 42 H52 Q56 42 56 36 V28 Q56 22 52 22 Z" />
+</svg>
