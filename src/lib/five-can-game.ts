@@ -2,7 +2,7 @@
 export const CAN_LABELS = ['A', 'B', 'C', 'D', 'E'] as const
 
 /** Short parody-style names (mapped by can id 0–4). */
-export const CAN_BRAND_NAMES = ['Classic Red', 'Blue Wave', 'Dr. Zing', 'Lime Spritz', 'Orange Fizz'] as const
+export const CAN_BRAND_NAMES = ['Cola', 'Pepsy', 'Spritz', 'Fantuh', 'Dr. Prepper'] as const
 
 /** `target[i]` = which can belongs at position i (0–4). */
 export type Perm5 = readonly [number, number, number, number, number]
