@@ -1,4 +1,7 @@
+import { installNodePdfPolyfills } from '@/lib/reader/node-pdf-polyfill'
 import { normalizePdfTextArtifacts, paragraphize } from '@/lib/reader/pdf-reflow'
+
+installNodePdfPolyfills()
 
 /**
  * Server-side PDF text extraction (Node) via `pdf-parse` (embeds pdf.js).
