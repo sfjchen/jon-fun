@@ -1,4 +1,5 @@
 import { installNodePdfPolyfills } from '@/lib/reader/node-pdf-polyfill'
+import { getPdfWorkerSrcForNode } from '@/lib/reader/pdf-worker-path'
 import { normalizePdfTextArtifacts, paragraphize } from '@/lib/reader/pdf-reflow'
 
 installNodePdfPolyfills()
@@ -9,6 +10,7 @@ installNodePdfPolyfills()
  */
 export async function extractPdfTextFromBuffer(buffer: ArrayBuffer): Promise<{ text: string; notes: string[] }> {
   const { PDFParse } = await import('pdf-parse')
+  PDFParse.setWorker(getPdfWorkerSrcForNode())
   const parser = new PDFParse({ data: new Uint8Array(buffer) })
   try {
     const textResult = await parser.getText()
