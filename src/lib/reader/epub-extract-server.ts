@@ -1,6 +1,6 @@
 import { unzipSync } from 'fflate'
 import { XMLParser } from 'fast-xml-parser'
-import { parse } from 'node-html-parser'
+import { parse, HTMLElement as HtmlElement, Node as ParserNode } from 'node-html-parser'
 
 const xmlParser = new XMLParser({
   ignoreAttributes: false,
@@ -69,10 +69,26 @@ function asArray<T>(x: T | T[] | undefined): T[] {
   return Array.isArray(x) ? x : [x]
 }
 
+/** True if `inner` is a strict descendant of `ancestor` (node-html-parser has no `contains()`). */
+function isAncestorOf(ancestor: HtmlElement, inner: HtmlElement): boolean {
+  let cur: ParserNode | undefined = inner.parentNode
+  while (cur) {
+    if (cur === ancestor) return true
+    cur = cur.parentNode
+  }
+  return false
+}
+
+/** Keep only matches that are not ancestors of another match (avoid parent+child duplicate text). */
+function leafElements(container: HtmlElement, selector: string): HtmlElement[] {
+  const all = Array.from(container.querySelectorAll(selector)) as HtmlElement[]
+  return all.filter((el) => !all.some((other) => other !== el && isAncestorOf(el, other)))
+}
+
 function stripXhtmlToParagraphs(xhtml: string): string[] {
   const root = parse(xhtml, { lowerCaseTagName: true })
   root.querySelectorAll('script, style, noscript').forEach((el) => el.remove())
-  const body = root.querySelector('body') ?? root
+  const body = (root.querySelector('body') ?? root) as HtmlElement
 
   const blocks: string[] = []
   const pushText = (t: string) => {
@@ -80,15 +96,19 @@ function stripXhtmlToParagraphs(xhtml: string): string[] {
     if (s) blocks.push(s)
   }
 
-  for (const el of body.querySelectorAll('p')) {
-    pushText(el.text)
+  /** Reading order: headings + paragraphs (captures section titles + body; avoids losing `<h2>` when `<p>` exists). */
+  const flow = body.querySelectorAll('h1, h2, h3, h4, h5, h6, p')
+  if (flow.length) {
+    for (const el of flow) pushText(el.text)
+    if (blocks.length) return blocks
   }
-  if (blocks.length) return blocks
 
-  for (const el of body.querySelectorAll('div, section, article, li, h1, h2, h3, h4, h5, h6')) {
-    const t = el.text.replace(/\s+/g, ' ').trim()
-    if (t.length > 1) pushText(t)
-  }
+  /**
+   * Fallback when there are no `<p>`/heading tags: only **leaf** block nodes so parent `<div>`s
+   * do not duplicate all child text (common in trade EPUBs — was breaking anthologies).
+   */
+  const fallbackSel = 'div, section, article, li, blockquote, td, th, header, aside, main, figure'
+  for (const el of leafElements(body, fallbackSel)) pushText(el.text)
   if (blocks.length) return blocks
 
   pushText(body.text.replace(/\s+/g, ' '))
@@ -96,7 +116,7 @@ function stripXhtmlToParagraphs(xhtml: string): string[] {
 }
 
 function titleFromXhtml(xhtml: string): string {
-  const root = parse(xhtml, { lowerCaseTagName: true })
+  const root = parse(xhtml, { lowerCaseTagName: true }) as HtmlElement
   const t = root.querySelector('title')?.text?.trim()
   if (t) return t
   const h = root.querySelector('h1')?.text?.trim()

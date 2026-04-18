@@ -58,7 +58,15 @@ export function expandEmbeddedNewlines(paragraphs: string[]): string[] {
   return out
 }
 
-/** Flatten + break oversized paragraphs for comfortable on-screen reading. */
-export function formatImportParagraphs(paragraphs: string[]): string[] {
-  return expandEmbeddedNewlines(paragraphs).flatMap((p) => splitLongParagraph(p))
+/**
+ * Flatten embedded newlines; optionally split very long blobs (PDF/paste).
+ * EPUBs already have `<p>` boundaries — pass `splitLong: false` to avoid breaking author flow.
+ */
+export function formatImportParagraphs(paragraphs: string[], options?: { splitLong?: boolean }): string[] {
+  const splitLong = options?.splitLong !== false
+  const expanded = expandEmbeddedNewlines(paragraphs)
+  if (!splitLong) {
+    return expanded.map((p) => p.replace(/[ \t]+/g, ' ').trim()).filter(Boolean)
+  }
+  return expanded.flatMap((p) => splitLongParagraph(p))
 }
