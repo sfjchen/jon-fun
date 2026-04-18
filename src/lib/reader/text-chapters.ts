@@ -35,6 +35,9 @@ function isBookSplitLine(line: string): boolean {
   if (!/^Book\s+(\d{1,2})\b/i.test(t)) return false
   if (t.length > 140) return false
   if (/^Book\s+\d{1,2}\s+of\s+(the|a)\b/i.test(t)) return false
+  // Anthology / series appendix lines: "Book 1—The Way of Kings", "Book 2: Title"
+  if (/^Book\s+\d{1,2}\s*[—–\-–]/.test(t)) return false
+  if (/^Book\s+\d{1,2}\s*:\s*\S/.test(t)) return false
   return !isBookLineTocNoise(t)
 }
 
@@ -126,9 +129,9 @@ function chapterTitleFromIndex(index: number): string {
   return `Chapter ${index + 1}`
 }
 
-function applyReadingFormatToChapters(chapters: ReaderChapter[]): ReaderChapter[] {
+function applyReadingFormatToChapters(chapters: ReaderChapter[], splitLongParagraphs = true): ReaderChapter[] {
   return chapters.map((ch, order) => {
-    const paras = formatImportParagraphs(ch.paragraphs)
+    const paras = formatImportParagraphs(ch.paragraphs, { splitLong: splitLongParagraphs })
     return makeChapter(ch.title, paras, order, ch.id)
   })
 }
@@ -297,7 +300,7 @@ export function createImportDraft(input: {
     input.originalFileName?.replace(/\.[^/.]+$/, '').trim() ||
     'Untitled reader import'
   let chapters = chapterizeText(input.rawText, input.sourceType)
-  chapters = applyReadingFormatToChapters(chapters)
+  chapters = applyReadingFormatToChapters(chapters, true)
 
   const importNotes = [...(input.notes ?? [])]
   if (
@@ -342,13 +345,13 @@ export function createEpubImportDraft(input: {
     const chTitle = c.title.trim() || chapterTitleFromIndex(order)
     return makeChapter(chTitle, paras, order)
   })
-  chapters = applyReadingFormatToChapters(chapters)
+  chapters = applyReadingFormatToChapters(chapters, false)
 
   const importNotes = [...(input.notes ?? [])]
   if (!importNotes.some((n) => /spine/i.test(n))) {
     importNotes.push('Chapters follow the EPUB spine reading order.')
   }
-  importNotes.push('Paragraphs were spaced for reading: blank lines split blocks; long passages split at sentences.')
+  importNotes.push('EPUB paragraphs follow the file’s `<p>` / heading blocks; long-paragraph splitting is skipped so anthology layout stays intact.')
 
   const draft: ReaderImportDraft = {
     title,
@@ -385,9 +388,21 @@ export function splitChapterAtMidpoint(chapters: ReaderChapter[], chapterId: str
   if (!chapter) return chapters
   if (chapter.paragraphs.length < 2) return chapters
 
-  const midpoint = Math.floor(chapter.paragraphs.length / 2)
-  const left = makeChapter(`${chapter.title} (A)`, chapter.paragraphs.slice(0, midpoint), chapter.order, chapter.id)
-  const right = makeChapter(`${chapter.title} (B)`, chapter.paragraphs.slice(midpoint), chapter.order + 1)
+  const paras = chapter.paragraphs
+  const halfWords = chapter.wordCount / 2
+  let acc = 0
+  let cut = 1
+  for (let i = 0; i < paras.length; i++) {
+    acc += wordCount(paras[i]!)
+    if (acc >= halfWords) {
+      cut = i + 1
+      break
+    }
+  }
+  cut = Math.max(1, Math.min(paras.length - 1, cut))
+
+  const left = makeChapter(`${chapter.title} (A)`, paras.slice(0, cut), chapter.order, chapter.id)
+  const right = makeChapter(`${chapter.title} (B)`, paras.slice(cut), chapter.order + 1)
   const next = [...chapters]
   next.splice(index, 1, left, right)
   return next.map((item, order) => ({ ...item, order }))
