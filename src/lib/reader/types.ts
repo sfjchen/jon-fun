@@ -1,4 +1,4 @@
-export type ReaderSourceType = 'txt' | 'paste' | 'pdf'
+export type ReaderSourceType = 'txt' | 'paste' | 'pdf' | 'epub'
 
 export type ReaderFontPreset = 'default' | 'lora' | 'roboto' | 'accessible'
 
