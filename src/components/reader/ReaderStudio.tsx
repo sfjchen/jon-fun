@@ -485,11 +485,12 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                   <span>{chapter.paragraphs.length} paragraphs</span>
                 </div>
 
-                <div className="rounded-2xl border px-4 py-3 text-sm leading-7" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}>
-                  {chapter.paragraphs.slice(0, 2).map((paragraph) => (
-                    <p key={paragraph.slice(0, 24)} className="mb-4 last:mb-0">
-                      {paragraph}
-                    </p>
+                <div
+                  className="reader-import-preview-prose rounded-2xl border px-4 py-4 text-[15px] leading-[1.75]"
+                  style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
+                >
+                  {chapter.paragraphs.slice(0, 3).map((paragraph, pi) => (
+                    <p key={`${chapter.id}-pv-${pi}-${paragraph.slice(0, 20)}`}>{paragraph}</p>
                   ))}
                 </div>
               </div>

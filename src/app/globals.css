@@ -143,7 +143,9 @@ html.notebook-theme-root {
     line-height: var(--reader-line-height);
     max-width: var(--reader-max-width);
     margin-inline: auto;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.012em;
+    word-spacing: 0.04em;
+    text-wrap: pretty;
   }
 
   .reader-prose[data-indent="true"] p + p {
@@ -152,6 +154,7 @@ html.notebook-theme-root {
 
   .reader-prose p {
     margin: 0 0 var(--reader-paragraph-gap);
+    white-space: pre-line;
   }
 
   .reader-prose p:last-child {
@@ -163,6 +166,19 @@ html.notebook-theme-root {
     color: inherit;
     padding: 0 0.08em;
     border-radius: 0.2em;
+  }
+
+  /* Import studio preview: match reader rhythm (NovelFire-style comfortable blocks) */
+  .reader-import-preview-prose p {
+    margin: 0 0 1.25rem;
+    white-space: pre-line;
+    letter-spacing: 0.01em;
+    word-spacing: 0.03em;
+    text-wrap: pretty;
+  }
+
+  .reader-import-preview-prose p:last-child {
+    margin-bottom: 0;
   }
 
   .reader-slider {

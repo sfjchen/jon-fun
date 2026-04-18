@@ -44,6 +44,14 @@ export function paragraphize(linesByPage: string[][]): string {
         continue
       }
 
+      if (current.trim().length > 720) {
+        const sp = current.lastIndexOf(' ', 560)
+        if (sp > 280) {
+          cleaned.push(current.slice(0, sp).trim())
+          current = current.slice(sp + 1).trim()
+        }
+      }
+
       const endsSentence = /[.!?:"']$/.test(line)
       const nextParagraphBreak = current.length > 0 && endsSentence
       current = current ? `${current} ${line}` : line
