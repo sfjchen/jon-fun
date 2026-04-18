@@ -66,9 +66,9 @@ const FONT_MAP: Record<ReaderFontPreset, string> = {
 export const defaultReaderPreferences: ReaderPreferences = {
   fontPreset: 'default',
   fontSize: 19,
-  lineHeight: 1.7,
-  paragraphGap: 24,
-  maxWidth: 820,
+  lineHeight: 1.78,
+  paragraphGap: 28,
+  maxWidth: 840,
   textAlign: 'left',
   textIndent: false,
   bionic: false,

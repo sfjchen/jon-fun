@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
+import { formatImportParagraphs } from '@/lib/reader/paragraph-format'
 import type { ReaderChapter, ReaderImportDraft, ReaderSourceType } from '@/lib/reader/types'
 
 const CHAPTER_HEADING_RE =
@@ -123,6 +124,13 @@ function splitParagraphs(raw: string): string[] {
 
 function chapterTitleFromIndex(index: number): string {
   return `Chapter ${index + 1}`
+}
+
+function applyReadingFormatToChapters(chapters: ReaderChapter[]): ReaderChapter[] {
+  return chapters.map((ch, order) => {
+    const paras = formatImportParagraphs(ch.paragraphs)
+    return makeChapter(ch.title, paras, order, ch.id)
+  })
 }
 
 function makeChapter(title: string, paragraphs: string[], order: number, id?: string): ReaderChapter {
@@ -288,7 +296,8 @@ export function createImportDraft(input: {
     input.title?.trim() ||
     input.originalFileName?.replace(/\.[^/.]+$/, '').trim() ||
     'Untitled reader import'
-  const chapters = chapterizeText(input.rawText, input.sourceType)
+  let chapters = chapterizeText(input.rawText, input.sourceType)
+  chapters = applyReadingFormatToChapters(chapters)
 
   const importNotes = [...(input.notes ?? [])]
   if (
@@ -300,6 +309,7 @@ export function createImportDraft(input: {
       "Chapters were split on strict 'Book N' headings (typical for Meditations). Title page and TOC lines are merged into Book 1 when present.",
     )
   }
+  importNotes.push('Paragraphs were spaced for reading: blank lines split blocks; long passages split at sentences.')
 
   const draft: ReaderImportDraft = {
     title,
@@ -327,16 +337,18 @@ export function createEpubImportDraft(input: {
     input.originalFileName?.replace(/\.[^/.]+$/, '').trim() ||
     'Untitled EPUB import'
 
-  const chapters = input.spineChapters.map((c, order) => {
+  let chapters = input.spineChapters.map((c, order) => {
     const paras = c.paragraphs.map((p) => cleanParagraph(p)).filter(Boolean)
     const chTitle = c.title.trim() || chapterTitleFromIndex(order)
     return makeChapter(chTitle, paras, order)
   })
+  chapters = applyReadingFormatToChapters(chapters)
 
   const importNotes = [...(input.notes ?? [])]
   if (!importNotes.some((n) => /spine/i.test(n))) {
     importNotes.push('Chapters follow the EPUB spine reading order.')
   }
+  importNotes.push('Paragraphs were spaced for reading: blank lines split blocks; long passages split at sentences.')
 
   const draft: ReaderImportDraft = {
     title,
