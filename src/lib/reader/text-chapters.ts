@@ -313,6 +313,41 @@ export function createImportDraft(input: {
   return draft
 }
 
+/** EPUB spine already defines chapters; skip heuristic chapterizeText. */
+export function createEpubImportDraft(input: {
+  packageTitle: string
+  spineChapters: { title: string; paragraphs: string[] }[]
+  title?: string
+  originalFileName?: string
+  notes?: string[]
+}): ReaderImportDraft {
+  const title =
+    input.title?.trim() ||
+    input.packageTitle?.trim() ||
+    input.originalFileName?.replace(/\.[^/.]+$/, '').trim() ||
+    'Untitled EPUB import'
+
+  const chapters = input.spineChapters.map((c, order) => {
+    const paras = c.paragraphs.map((p) => cleanParagraph(p)).filter(Boolean)
+    const chTitle = c.title.trim() || chapterTitleFromIndex(order)
+    return makeChapter(chTitle, paras, order)
+  })
+
+  const importNotes = [...(input.notes ?? [])]
+  if (!importNotes.some((n) => /spine/i.test(n))) {
+    importNotes.push('Chapters follow the EPUB spine reading order.')
+  }
+
+  const draft: ReaderImportDraft = {
+    title,
+    sourceType: 'epub',
+    chapters,
+    importNotes,
+  }
+  if (input.originalFileName) draft.originalFileName = input.originalFileName
+  return draft
+}
+
 export function renameChapter(chapters: ReaderChapter[], chapterId: string, title: string): ReaderChapter[] {
   return chapters.map((chapter) => (chapter.id === chapterId ? makeChapter(title, chapter.paragraphs, chapter.order, chapter.id) : chapter))
 }

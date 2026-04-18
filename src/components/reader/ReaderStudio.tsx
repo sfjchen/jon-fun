@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createImportDraft, mergeWithPreviousChapter, renameChapter, splitChapterAtMidpoint } from '@/lib/reader/text-chapters'
+import { createEpubImportDraft, createImportDraft, mergeWithPreviousChapter, renameChapter, splitChapterAtMidpoint } from '@/lib/reader/text-chapters'
+import { extractEpub } from '@/lib/reader/epub-extract'
 import { extractPdfText } from '@/lib/reader/pdf-extract'
 import { deleteReaderPublication, getReaderPublication, listReaderPublications, saveReaderPublication } from '@/lib/reader/publications'
 import { loadLastReaderLocation } from '@/lib/reader/settings'
@@ -23,6 +24,8 @@ function sourceLabel(sourceType: ReaderSourceType): string {
   switch (sourceType) {
     case 'pdf':
       return 'PDF'
+    case 'epub':
+      return 'EPUB'
     case 'txt':
       return 'Text file'
     default:
@@ -110,7 +113,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
         return
       }
 
-      if (!selectedFile) throw new Error('Choose a .txt, .md, or .pdf file first.')
+      if (!selectedFile) throw new Error('Choose a .txt, .md, .pdf, or .epub file first.')
 
       const isPdf = selectedFile.type === 'application/pdf' || /\.pdf$/i.test(selectedFile.name)
       if (isPdf) {
@@ -119,6 +122,24 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
           createImportDraft({
             rawText: extracted.text,
             sourceType: 'pdf',
+            title,
+            originalFileName: selectedFile.name,
+            notes: extracted.notes,
+          }),
+        )
+        return
+      }
+
+      const isEpub =
+        /\.epub$/i.test(selectedFile.name) ||
+        selectedFile.type === 'application/epub+zip' ||
+        selectedFile.type === 'application/x-epub+zip'
+      if (isEpub) {
+        const extracted = await extractEpub(selectedFile)
+        setDraft(
+          createEpubImportDraft({
+            packageTitle: extracted.packageTitle,
+            spineChapters: extracted.chapters,
             title,
             originalFileName: selectedFile.name,
             notes: extracted.notes,
@@ -192,11 +213,11 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
             <p className="text-base font-semibold" style={{ color: 'var(--ink-accent)' }}>NovelFire-style web reader</p>
             <h1 className="font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>Import books into a local-first e-reader</h1>
             <p className="mt-2 max-w-3xl text-sm" style={{ color: 'var(--ink-muted)' }}>
-              Paste plain text or upload a text file entirely on-device. For PDFs, text is extracted once on the server (not stored) so the reader stays reliable in the browser; saved books and progress stay local in IndexedDB.
+              Paste plain text or upload `.txt` / `.md` on-device. PDF and EPUB are parsed once on the server (not stored) for reliable text; chapters follow PDF heuristics or the EPUB spine. DRM EPUBs are not supported. Saved books and progress stay in IndexedDB.
             </p>
           </div>
           <div className="rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-muted)' }}>
-            PDF text extraction uses a server route (file is not persisted). Output is reflowed into paragraphs; complex layouts may need chapter cleanup before saving.
+            PDFs are reflowed into paragraphs; EPUBs use spine order and plain text from XHTML. Complex layouts, images, and footnotes may need cleanup before saving.
           </div>
         </div>
 
@@ -253,11 +274,11 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
               </label>
             ) : (
               <label className="block">
-                <span className="mb-2 block text-sm font-medium" style={{ color: 'var(--ink-text)' }}>Choose a `.txt`, `.md`, or `.pdf` file</span>
+                <span className="mb-2 block text-sm font-medium" style={{ color: 'var(--ink-text)' }}>Choose a `.txt`, `.md`, `.pdf`, or `.epub` file</span>
                 <input
                   type="file"
                   data-testid="reader-file-input"
-                  accept=".txt,.md,.pdf,text/plain,application/pdf"
+                  accept=".txt,.md,.pdf,.epub,text/plain,application/pdf,application/epub+zip"
                   onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
                   className="w-full rounded-2xl border px-4 py-3 text-sm"
                   style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
