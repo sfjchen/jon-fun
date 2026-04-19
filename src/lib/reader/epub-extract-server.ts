@@ -85,8 +85,19 @@ function leafElements(container: HtmlElement, selector: string): HtmlElement[] {
   return all.filter((el) => !all.some((other) => other !== el && isAncestorOf(el, other)))
 }
 
+/**
+ * Kobo-style EPUBs use `<script .../>` in `<head>`. node-html-parser treats that as an unclosed script
+ * and swallows the rest of the document, so `<body>` never parses — strip before parse.
+ */
+function preNormalizeXhtmlForParse(xhtml: string): string {
+  return xhtml
+    .replace(/<script\b[\s\S]*?\/>/gi, '')
+    .replace(/<script\b[\s\S]*?<\/script>/gi, '')
+}
+
 function stripXhtmlToParagraphs(xhtml: string): string[] {
-  const root = parse(xhtml, { lowerCaseTagName: true })
+  const xhtmlClean = preNormalizeXhtmlForParse(xhtml)
+  const root = parse(xhtmlClean, { lowerCaseTagName: true })
   root.querySelectorAll('script, style, noscript').forEach((el) => el.remove())
   const body = (root.querySelector('body') ?? root) as HtmlElement
 
@@ -116,7 +127,7 @@ function stripXhtmlToParagraphs(xhtml: string): string[] {
 }
 
 function titleFromXhtml(xhtml: string): string {
-  const root = parse(xhtml, { lowerCaseTagName: true }) as HtmlElement
+  const root = parse(preNormalizeXhtmlForParse(xhtml), { lowerCaseTagName: true }) as HtmlElement
   const t = root.querySelector('title')?.text?.trim()
   if (t) return t
   const h = root.querySelector('h1')?.text?.trim()

@@ -51,6 +51,29 @@ export async function listReaderPublications(): Promise<ReaderPublicationSummary
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
 }
 
+/** Full books for export / backup (cross-device via shared JSON file). */
+export async function getAllReaderPublications(): Promise<ReaderPublication[]> {
+  const db = await openDb()
+  const tx = db.transaction(STORE, 'readonly')
+  const store = tx.objectStore(STORE)
+  const all = await txRequest(store.getAll())
+  db.close()
+  return (all as ReaderPublication[]).sort(
+    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+  )
+}
+
+/** Merge imported publications into IndexedDB (overwrites same `id`). */
+export async function importReaderPublicationsMerge(publications: ReaderPublication[]): Promise<void> {
+  const db = await openDb()
+  const tx = db.transaction(STORE, 'readwrite')
+  const store = tx.objectStore(STORE)
+  for (const pub of publications) {
+    await txRequest(store.put(pub))
+  }
+  db.close()
+}
+
 export async function getReaderPublication(id: string): Promise<ReaderPublication | null> {
   const db = await openDb()
   const tx = db.transaction(STORE, 'readonly')
