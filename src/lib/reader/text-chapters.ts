@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-import { formatImportParagraphs } from '@/lib/reader/paragraph-format'
+import { formatImportParagraphs, normalizeLinesKeepVerticalStructure } from '@/lib/reader/paragraph-format'
 import type { ReaderChapter, ReaderImportDraft, ReaderSourceType } from '@/lib/reader/types'
 
 const CHAPTER_HEADING_RE =
@@ -114,17 +114,12 @@ function wordCount(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length
 }
 
-/** Collapse horizontal whitespace; preserve intentional newlines (EPUB `<br>` / verse). */
+/** Collapse horizontal whitespace per line; preserve blank lines (EPUB `<br>` / verse). */
 function cleanParagraph(paragraph: string): string {
   if (paragraph.includes('\n')) {
-    return paragraph
-      .split('\n')
-      .map((line) => line.replace(/[ \t]+/g, ' ').trim())
-      .filter(Boolean)
-      .join('\n')
-      .trim()
+    return normalizeLinesKeepVerticalStructure(paragraph)
   }
-  return paragraph.replace(/\s+/g, ' ').trim()
+  return paragraph.replace(/[ \t\f\v]+/g, ' ').trim()
 }
 
 function splitParagraphs(raw: string): string[] {
@@ -328,7 +323,9 @@ export function createImportDraft(input: {
       "Chapters were split on strict 'Book N' headings (typical for Meditations). Title page and TOC lines are merged into Book 1 when present.",
     )
   }
-  importNotes.push('Paragraphs were spaced for reading: blank lines split blocks; long passages split at sentences.')
+  importNotes.push(
+    'Import adjusts whitespace and paragraph breaks only (long blobs may split at sentence boundaries for reading). No wording is shortened, rewritten, or expanded.',
+  )
 
   const draft: ReaderImportDraft = {
     title,
@@ -378,7 +375,7 @@ export function createEpubImportDraft(input: {
     )
   }
   importNotes.push(
-    'EPUB text uses `<br>`/line breaks and spine titles where possible (NovelFire-style blocks); only very long paragraphs are split (~1100 chars).',
+    'EPUB text keeps `<br>`/line breaks and spine titles where possible (NovelFire-style blocks). Only very long single lines split at ~1100 chars for display; full wording is preserved.',
   )
 
   const draft: ReaderImportDraft = {
