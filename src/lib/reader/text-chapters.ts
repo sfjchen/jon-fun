@@ -408,6 +408,19 @@ export function mergeWithPreviousChapter(chapters: ReaderChapter[], chapterId: s
   return next.map((chapter, chapterIndex) => ({ ...chapter, order: chapterIndex }))
 }
 
+/** Merge chapters [startIdx+1 … endIdx] into startIdx (inclusive range on the right). */
+export function mergeChapterIndexRange(chapters: ReaderChapter[], startIdx: number, endIdx: number): ReaderChapter[] {
+  if (startIdx < 0 || endIdx >= chapters.length || endIdx <= startIdx) return chapters
+  let next = [...chapters]
+  const times = endIdx - startIdx
+  for (let t = 0; t < times; t++) {
+    const victim = next[startIdx + 1]
+    if (!victim) break
+    next = mergeWithPreviousChapter(next, victim.id)
+  }
+  return next
+}
+
 export function splitChapterAtMidpoint(chapters: ReaderChapter[], chapterId: string): ReaderChapter[] {
   const index = chapters.findIndex((chapter) => chapter.id === chapterId)
   if (index === -1) return chapters

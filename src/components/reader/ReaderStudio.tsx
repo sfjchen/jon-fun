@@ -4,7 +4,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createEpubImportDraft, createImportDraft, mergeWithPreviousChapter, renameChapter, splitChapterAtMidpoint } from '@/lib/reader/text-chapters'
+import { analyzeImportDraft, draftToChapterStructurePayload } from '@/lib/reader/chapter-import-analyze'
+import {
+  createEpubImportDraft,
+  createImportDraft,
+  mergeChapterIndexRange,
+  mergeWithPreviousChapter,
+  renameChapter,
+  splitChapterAtMidpoint,
+} from '@/lib/reader/text-chapters'
 import { extractEpub } from '@/lib/reader/epub-extract'
 import { extractPdfText } from '@/lib/reader/pdf-extract'
 import { parsePortableLibrary, stringifyPortableLibrary } from '@/lib/reader/library-portable'
@@ -99,6 +107,12 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
   const [error, setError] = useState('')
   const [catalogBanner, setCatalogBanner] = useState('')
   const [catalogBusy, setCatalogBusy] = useState(false)
+  const [aiMerges, setAiMerges] = useState<{ startIndex: number; endIndex: number; reason: string; kind: 'llm' }[]>(
+    [],
+  )
+  const [aiNotes, setAiNotes] = useState<string[]>([])
+  const [aiBusy, setAiBusy] = useState(false)
+  const [aiError, setAiError] = useState('')
   const [lastLocation, setLastLocation] = useState<{ bookId: string; chapterId: string } | null>(null)
   const libraryImportInputRef = useRef<HTMLInputElement>(null)
 
@@ -301,6 +315,51 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
     setTitle('')
     router.push(`${routeBase}/read/${publication.id}/${publication.chapters[0]?.id ?? ''}`)
   }, [draft, loadLibrary, routeBase, router])
+
+  const chapterAnalysis = useMemo(() => (draft ? analyzeImportDraft(draft) : null), [draft])
+
+  useEffect(() => {
+    setAiMerges([])
+    setAiNotes([])
+    setAiError('')
+  }, [draft])
+
+  const applyMergeRangeToDraft = useCallback((startIndex: number, endIndex: number) => {
+    setDraft((cur) => {
+      if (!cur) return cur
+      const chapters = mergeChapterIndexRange(cur.chapters, startIndex, endIndex)
+      return { ...cur, chapters }
+    })
+  }, [])
+
+  const fetchAiChapterHints = useCallback(async () => {
+    if (!draft) return
+    setAiBusy(true)
+    setAiError('')
+    try {
+      const res = await fetch('/api/reader/suggest-chapter-structure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(draftToChapterStructurePayload(draft)),
+      })
+      const data = (await res.json()) as {
+        error?: string
+        disabled?: boolean
+        merges?: { startIndex: number; endIndex: number; reason: string; kind: 'llm' }[]
+        notes?: string[]
+      }
+      if (!res.ok) {
+        setAiError(data.error ?? 'AI request failed.')
+        return
+      }
+      setAiMerges(data.merges ?? [])
+      setAiNotes(data.notes ?? [])
+    } catch (caught) {
+      setAiError(caught instanceof Error ? caught.message : 'AI request failed.')
+    } finally {
+      setAiBusy(false)
+    }
+  }, [draft])
 
   const libraryCards = useMemo(
     () =>
@@ -573,6 +632,127 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                   <li key={note}>{note}</li>
                 ))}
               </ul>
+            </div>
+          ) : null}
+
+          {chapterAnalysis ? (
+            <div
+              className="mb-4 rounded-2xl border px-4 py-3 text-sm"
+              style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-muted)' }}
+              data-testid="reader-chapter-structure-hints"
+            >
+              <p className="mb-2 font-semibold" style={{ color: 'var(--ink-text)' }}>
+                Chapter structure (automatic checks)
+              </p>
+              <p className="mb-3 text-xs">
+                Heuristics run locally (no API). Optional AI uses OpenRouter with excerpts only — set{' '}
+                <code className="rounded bg-black/5 px-1">READER_CHAPTER_LLM_KEY</code> or{' '}
+                <code className="rounded bg-black/5 px-1">OPENROUTER_API_KEY</code> on the server. Apply merges one
+                suggestion at a time (indices update after each merge).
+              </p>
+              <p className="mb-2 text-xs">
+                {chapterAnalysis.stats.chapterCount} chapters · {chapterAnalysis.stats.totalWords.toLocaleString()} words
+                · median {chapterAnalysis.stats.medianChapterWords.toLocaleString()} words/chapter ·{' '}
+                {(chapterAnalysis.stats.shortChapterFraction * 100).toFixed(0)}% under{' '}
+                {chapterAnalysis.tinyWordThreshold}w
+              </p>
+
+              {chapterAnalysis.duplicateTitleGroups.length > 0 ? (
+                <div className="mb-3">
+                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>Duplicate chapter titles</p>
+                  <ul className="list-disc pl-5 text-xs">
+                    {chapterAnalysis.duplicateTitleGroups.map((g) => (
+                      <li key={g.normalized}>
+                        “{g.normalized}” — chapters {g.indices.map((i) => i + 1).join(', ')}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              {chapterAnalysis.splitHints.length > 0 ? (
+                <div className="mb-3">
+                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>Possible stuck-together chapters</p>
+                  <ul className="list-disc pl-5 text-xs">
+                    {chapterAnalysis.splitHints.map((h) => (
+                      <li key={`${h.chapterIndex}-${h.title}`}>
+                        Ch. {h.chapterIndex + 1} ({h.title}): {h.reason}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              {chapterAnalysis.heuristicMerges.length > 0 ? (
+                <div className="mb-3">
+                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>Suggested merges (local)</p>
+                  <ul className="space-y-2">
+                    {chapterAnalysis.heuristicMerges.map((s) => (
+                      <li key={`${s.startIndex}-${s.endIndex}`} className="flex flex-wrap items-start justify-between gap-2 text-xs">
+                        <span>
+                          Ch. {s.startIndex + 1}–{s.endIndex + 1}: {s.reason}
+                        </span>
+                        <button
+                          type="button"
+                          data-testid={`reader-apply-merge-${s.startIndex}-${s.endIndex}`}
+                          className="shrink-0 rounded-full border px-3 py-1 text-xs font-semibold"
+                          style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                          onClick={() => applyMergeRangeToDraft(s.startIndex, s.endIndex)}
+                        >
+                          Merge
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  data-testid="reader-ai-chapter-hints"
+                  disabled={aiBusy}
+                  onClick={() => void fetchAiChapterHints()}
+                  className="rounded-full border px-3 py-2 text-xs font-semibold disabled:opacity-50"
+                  style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                >
+                  {aiBusy ? 'Asking model…' : 'AI merge hints (optional)'}
+                </button>
+              </div>
+              {aiError ? (
+                <p className="mb-2 text-xs" style={{ color: '#7f1d1d' }}>
+                  {aiError}
+                </p>
+              ) : null}
+              {aiNotes.length > 0 ? (
+                <ul className="mb-2 list-disc pl-5 text-xs">
+                  {aiNotes.map((n) => (
+                    <li key={n}>{n}</li>
+                  ))}
+                </ul>
+              ) : null}
+              {aiMerges.length > 0 ? (
+                <div>
+                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>AI suggested merges</p>
+                  <ul className="space-y-2">
+                    {aiMerges.map((s) => (
+                      <li key={`ai-${s.startIndex}-${s.endIndex}`} className="flex flex-wrap items-start justify-between gap-2 text-xs">
+                        <span>
+                          Ch. {s.startIndex + 1}–{s.endIndex + 1}: {s.reason}
+                        </span>
+                        <button
+                          type="button"
+                          className="shrink-0 rounded-full border px-3 py-1 text-xs font-semibold"
+                          style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                          onClick={() => applyMergeRangeToDraft(s.startIndex, s.endIndex)}
+                        >
+                          Merge
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
             </div>
           ) : null}
 
