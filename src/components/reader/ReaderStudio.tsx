@@ -41,6 +41,23 @@ function sourceLabel(sourceType: ReaderSourceType): string {
   }
 }
 
+/** Import preview: more text than a tiny slice, capped so the studio stays usable. */
+const IMPORT_PREVIEW_MAX_PARAS = 14
+const IMPORT_PREVIEW_MAX_CHARS = 4200
+
+function selectImportPreviewParagraphs(paragraphs: string[]): { show: string[]; truncated: boolean } {
+  const show: string[] = []
+  let chars = 0
+  for (const p of paragraphs) {
+    if (show.length >= IMPORT_PREVIEW_MAX_PARAS) break
+    const addLen = p.length + (show.length ? 2 : 0)
+    if (show.length >= 4 && chars + addLen > IMPORT_PREVIEW_MAX_CHARS) break
+    show.push(p)
+    chars += addLen
+  }
+  return { show, truncated: show.length < paragraphs.length }
+}
+
 function exportPublicationAsTxt(pub: ReaderPublication) {
   const body = pub.chapters
     .map((c) => {
@@ -498,7 +515,9 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
           ) : null}
 
           <div className="space-y-4">
-            {draft.chapters.map((chapter, index) => (
+            {draft.chapters.map((chapter, index) => {
+              const preview = selectImportPreviewParagraphs(chapter.paragraphs)
+              return (
               <div key={chapter.id} className="rounded-2xl border p-4" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)' }}>
                 <div className="mb-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div className="flex-1">
@@ -562,15 +581,21 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                 </div>
 
                 <div
-                  className="reader-import-preview-prose rounded-2xl border px-4 py-4 text-[15px] leading-[1.75]"
+                  className="reader-import-preview-prose max-h-[min(28rem,55vh)] overflow-y-auto rounded-2xl border px-4 py-4 text-[15px] leading-[1.75]"
                   style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
                 >
-                  {chapter.paragraphs.slice(0, 3).map((paragraph, pi) => (
-                    <p key={`${chapter.id}-pv-${pi}-${paragraph.slice(0, 20)}`}>{paragraph}</p>
+                  {preview.show.map((paragraph, pi) => (
+                    <p key={`${chapter.id}-pv-${pi}-${paragraph.slice(0, 24)}`}>{paragraph}</p>
                   ))}
+                  {preview.truncated ? (
+                    <p className="mb-0 text-sm italic" style={{ color: 'var(--ink-muted)' }}>
+                      Preview only — open the reader after saving to see the full chapter.
+                    </p>
+                  ) : null}
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       ) : null}

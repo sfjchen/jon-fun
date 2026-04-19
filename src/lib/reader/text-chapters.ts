@@ -371,6 +371,12 @@ export function createEpubImportDraft(input: {
   if (!importNotes.some((n) => /spine/i.test(n))) {
     importNotes.push('Chapters follow the EPUB spine reading order.')
   }
+  const shortSpineSections = chapters.filter((c) => c.wordCount < 72).length
+  if (shortSpineSections >= 2 && chapters.length >= 5) {
+    importNotes.push(
+      `${shortSpineSections} spine section(s) are very short (under ~72 words)—often front matter or ads. Use Merge up in the import preview if you want fewer TOC (table of contents) entries.`,
+    )
+  }
   importNotes.push(
     'EPUB text uses `<br>`/line breaks and spine titles where possible (NovelFire-style blocks); only very long paragraphs are split (~1100 chars).',
   )
