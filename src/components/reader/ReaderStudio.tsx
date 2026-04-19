@@ -449,6 +449,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
+                      data-testid="reader-merge-up"
                       disabled={index === 0}
                       onClick={() =>
                         setDraft((current) =>
@@ -464,6 +465,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                     </button>
                     <button
                       type="button"
+                      data-testid="reader-split-chapter"
                       disabled={chapter.paragraphs.length < 2}
                       onClick={() =>
                         setDraft((current) =>
