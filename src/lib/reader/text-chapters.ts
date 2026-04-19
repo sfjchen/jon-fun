@@ -114,7 +114,16 @@ function wordCount(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length
 }
 
+/** Collapse horizontal whitespace; preserve intentional newlines (EPUB `<br>` / verse). */
 function cleanParagraph(paragraph: string): string {
+  if (paragraph.includes('\n')) {
+    return paragraph
+      .split('\n')
+      .map((line) => line.replace(/[ \t]+/g, ' ').trim())
+      .filter(Boolean)
+      .join('\n')
+      .trim()
+  }
   return paragraph.replace(/\s+/g, ' ').trim()
 }
 
@@ -129,9 +138,16 @@ function chapterTitleFromIndex(index: number): string {
   return `Chapter ${index + 1}`
 }
 
-function applyReadingFormatToChapters(chapters: ReaderChapter[], splitLongParagraphs = true): ReaderChapter[] {
+function applyReadingFormatToChapters(
+  chapters: ReaderChapter[],
+  formatOpts?: { splitLong?: boolean; maxChunkLen?: number; breakSingleNewlines?: boolean },
+): ReaderChapter[] {
+  const splitLong = formatOpts?.splitLong !== false
   return chapters.map((ch, order) => {
-    const paras = formatImportParagraphs(ch.paragraphs, { splitLong: splitLongParagraphs })
+    const fmt: { splitLong: boolean; maxChunkLen?: number; breakSingleNewlines?: boolean } = { splitLong }
+    if (formatOpts?.maxChunkLen != null) fmt.maxChunkLen = formatOpts.maxChunkLen
+    if (formatOpts?.breakSingleNewlines === true) fmt.breakSingleNewlines = true
+    const paras = formatImportParagraphs(ch.paragraphs, fmt)
     return makeChapter(ch.title, paras, order, ch.id)
   })
 }
@@ -300,7 +316,7 @@ export function createImportDraft(input: {
     input.originalFileName?.replace(/\.[^/.]+$/, '').trim() ||
     'Untitled reader import'
   let chapters = chapterizeText(input.rawText, input.sourceType)
-  chapters = applyReadingFormatToChapters(chapters, true)
+  chapters = applyReadingFormatToChapters(chapters, { splitLong: true, maxChunkLen: 540 })
 
   const importNotes = [...(input.notes ?? [])]
   if (
@@ -345,13 +361,19 @@ export function createEpubImportDraft(input: {
     const chTitle = c.title.trim() || chapterTitleFromIndex(order)
     return makeChapter(chTitle, paras, order)
   })
-  chapters = applyReadingFormatToChapters(chapters, false)
+  chapters = applyReadingFormatToChapters(chapters, {
+    splitLong: true,
+    maxChunkLen: 1100,
+    breakSingleNewlines: true,
+  })
 
   const importNotes = [...(input.notes ?? [])]
   if (!importNotes.some((n) => /spine/i.test(n))) {
     importNotes.push('Chapters follow the EPUB spine reading order.')
   }
-  importNotes.push('EPUB paragraphs follow the file’s `<p>` / heading blocks; long-paragraph splitting is skipped so anthology layout stays intact.')
+  importNotes.push(
+    'EPUB text uses `<br>`/line breaks and spine titles where possible (NovelFire-style blocks); only very long paragraphs are split (~1100 chars).',
+  )
 
   const draft: ReaderImportDraft = {
     title,
