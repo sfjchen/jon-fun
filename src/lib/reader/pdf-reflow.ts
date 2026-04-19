@@ -17,11 +17,13 @@ export function bucketLines(items: PdfPositionedItem[]): string[] {
   }
 
   return lines
-    .map((line) => line.sort((a, b) => a.x - b.x).map((item) => item.text).join(' ').replace(/\s+/g, ' ').trim())
+    .map((line) =>
+      line.sort((a, b) => a.x - b.x).map((item) => item.text).join(' ').replace(/[ \t]+/g, ' ').trim(),
+    )
     .filter(Boolean)
 }
 
-/** Common pdf.js text-run splits (e.g. “B” + “ook” → line “B ook 2”). */
+/** Repair pdf.js run breaks (e.g. “B” + “ook” → “B ook”); restores the word “Book”, not an abbreviation rewrite. */
 export function normalizePdfTextArtifacts(text: string): string {
   return text.replace(/\bB\s+ook\b/gi, 'Book')
 }

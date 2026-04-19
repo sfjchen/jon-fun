@@ -1,11 +1,25 @@
 /**
  * Normalize paragraph list after import so reading UI gets breathable blocks
  * (embedded newlines, very long PDF blobs split at sentence-ish boundaries).
+ *
+ * We only normalize **horizontal** whitespace and paragraph breaks — no wording changes,
+ * no abbrev expansion, no summarization. Blank lines inside a block (verse / `<br>` chains)
+ * are preserved.
  */
 
 const ABBREV_NO_BREAK = /(?:\b(?:Mr|Mrs|Ms|Dr|Prof|St|Mt|vs|etc|i\.e|e\.g|Fig|Vol|Ch)\.)\s*$/i
 
-function splitLongParagraph(text: string, maxLen = 540): string[] {
+/** Collapse spaces/tabs per line; keep empty lines; trim only leading/trailing empty lines of the block. */
+export function normalizeLinesKeepVerticalStructure(raw: string): string {
+  const lines = raw.split('\n').map((line) => line.replace(/[ \t\f\v]+/g, ' ').trimEnd())
+  let a = 0
+  while (a < lines.length && lines[a] === '') a++
+  let b = lines.length
+  while (b > a && lines[b - 1] === '') b--
+  return lines.slice(a, b).join('\n')
+}
+
+function splitLongParagraphSingleLine(text: string, maxLen: number): string[] {
   const normalized = text.replace(/[ \t]+/g, ' ').trim()
   if (!normalized) return []
   if (normalized.length <= maxLen) return [normalized]
@@ -48,12 +62,32 @@ function splitLongParagraph(text: string, maxLen = 540): string[] {
   return out.filter(Boolean)
 }
 
+/** Long blobs split at sentence/word boundaries only — never drops characters. */
+function splitLongParagraph(text: string, maxLen = 540): string[] {
+  if (text === '') return ['']
+  if (text.includes('\n')) {
+    const lines = text.split('\n')
+    const out: string[] = []
+    for (const line of lines) {
+      if (line === '') {
+        out.push('')
+        continue
+      }
+      out.push(...splitLongParagraphSingleLine(line, maxLen))
+    }
+    return out
+  }
+  return splitLongParagraphSingleLine(text, maxLen)
+}
+
 /** Split on blank lines from source text / EPUB / paste. */
 export function expandEmbeddedNewlines(paragraphs: string[]): string[] {
   const out: string[] = []
   for (const p of paragraphs) {
-    const blocks = p.split(/\n\n+/).map((x) => x.replace(/[ \t]+/g, ' ').trim()).filter(Boolean)
-    for (const b of blocks) out.push(b)
+    const blocks = p.split(/\n\n+/).map((block) => normalizeLinesKeepVerticalStructure(block))
+    for (const b of blocks) {
+      if (b !== '') out.push(b)
+    }
   }
   return out
 }
@@ -70,12 +104,10 @@ export function formatImportParagraphs(
   const maxChunkLen = options?.maxChunkLen ?? 540
   let expanded = expandEmbeddedNewlines(paragraphs)
   if (options?.breakSingleNewlines) {
-    expanded = expanded.flatMap((p) =>
-      p.split(/\n/).map((x) => x.replace(/[ \t]+/g, ' ').trim()).filter(Boolean),
-    )
+    expanded = expanded.flatMap((p) => p.split('\n').map((line) => line.replace(/[ \t\f\v]+/g, ' ').trimEnd()))
   }
   if (!splitLong) {
-    return expanded.map((p) => p.replace(/[ \t]+/g, ' ').trim()).filter(Boolean)
+    return expanded.map((p) => normalizeLinesKeepVerticalStructure(p)).filter((p) => p !== '')
   }
   return expanded.flatMap((p) => splitLongParagraph(p, maxChunkLen))
 }

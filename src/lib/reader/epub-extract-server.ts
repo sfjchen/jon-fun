@@ -1,6 +1,7 @@
 import { unzipSync } from 'fflate'
 import { XMLParser } from 'fast-xml-parser'
 import { parse, HTMLElement as HtmlElement, Node as ParserNode } from 'node-html-parser'
+import { normalizeLinesKeepVerticalStructure } from '@/lib/reader/paragraph-format'
 
 const xmlParser = new XMLParser({
   ignoreAttributes: false,
@@ -95,18 +96,13 @@ function preNormalizeXhtmlForParse(xhtml: string): string {
     .replace(/<script\b[\s\S]*?<\/script>/gi, '')
 }
 
-/** Collapse spaces per line; keep `<br>` as newlines (structuredText). */
+/** Collapse horizontal space per line; keep `<br>` as newlines and preserve blank lines (structuredText). */
 function normalizeBlockText(raw: string): string {
-  return raw
-    .split('\n')
-    .map((line) => line.replace(/[ \t\f\v]+/g, ' ').trim())
-    .filter(Boolean)
-    .join('\n')
-    .trim()
+  return normalizeLinesKeepVerticalStructure(raw)
 }
 
 function pushStructuredBlock(blocks: string[], el: HtmlElement): void {
-  const raw = (el.structuredText ?? el.text ?? '').trim()
+  const raw = el.structuredText ?? el.text ?? ''
   const s = normalizeBlockText(raw)
   if (s) blocks.push(s)
 }
