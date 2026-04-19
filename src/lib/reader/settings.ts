@@ -68,7 +68,7 @@ export const defaultReaderPreferences: ReaderPreferences = {
   fontSize: 19,
   lineHeight: 1.78,
   paragraphGap: 28,
-  maxWidth: 840,
+  maxWidth: 980,
   textAlign: 'left',
   textIndent: false,
   bionic: false,

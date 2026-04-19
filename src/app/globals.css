@@ -97,6 +97,34 @@ html.notebook-theme-root {
 }
 
 @layer components {
+  /**
+   * Reading column width ceiling by viewport (phone narrow, laptop wide).
+   * User “Page width” (--reader-max-width) is min()’d with this so sliders still work.
+   */
+  :root {
+    --reader-layout-cap: min(26rem, calc(100vw - 2rem));
+  }
+  @media (min-width: 480px) {
+    :root {
+      --reader-layout-cap: min(32rem, calc(100vw - 2.25rem));
+    }
+  }
+  @media (min-width: 640px) {
+    :root {
+      --reader-layout-cap: min(40rem, calc(100vw - 2.5rem));
+    }
+  }
+  @media (min-width: 1024px) {
+    :root {
+      --reader-layout-cap: min(54rem, calc(100vw - 3.5rem));
+    }
+  }
+  @media (min-width: 1280px) {
+    :root {
+      --reader-layout-cap: min(62rem, calc(100vw - 4rem));
+    }
+  }
+
   .reader-surface {
     background: var(--reader-bg);
     color: var(--reader-text);
@@ -141,8 +169,10 @@ html.notebook-theme-root {
     font-family: var(--reader-font-family);
     font-size: var(--reader-font-size);
     line-height: var(--reader-line-height);
-    max-width: var(--reader-max-width);
+    width: 100%;
+    max-width: min(var(--reader-max-width), var(--reader-layout-cap));
     margin-inline: auto;
+    box-sizing: border-box;
     letter-spacing: 0.012em;
     word-spacing: 0.04em;
     text-wrap: pretty;
