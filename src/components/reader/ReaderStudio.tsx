@@ -1,13 +1,21 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createEpubImportDraft, createImportDraft, mergeWithPreviousChapter, renameChapter, splitChapterAtMidpoint } from '@/lib/reader/text-chapters'
 import { extractEpub } from '@/lib/reader/epub-extract'
 import { extractPdfText } from '@/lib/reader/pdf-extract'
-import { deleteReaderPublication, getReaderPublication, listReaderPublications, saveReaderPublication } from '@/lib/reader/publications'
+import { parsePortableLibrary, stringifyPortableLibrary } from '@/lib/reader/library-portable'
+import {
+  deleteReaderPublication,
+  getAllReaderPublications,
+  getReaderPublication,
+  importReaderPublicationsMerge,
+  listReaderPublications,
+  saveReaderPublication,
+} from '@/lib/reader/publications'
 import { loadLastReaderLocation } from '@/lib/reader/settings'
 import { registerReaderServiceWorker } from '@/lib/reader/pwa'
 import type { ReaderImportDraft, ReaderPublication, ReaderPublicationSummary, ReaderSourceType } from '@/lib/reader/types'
@@ -72,6 +80,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [lastLocation, setLastLocation] = useState<{ bookId: string; chapterId: string } | null>(null)
+  const libraryImportInputRef = useRef<HTMLInputElement>(null)
 
   const loadLibrary = useCallback(async () => {
     const summaries = await listReaderPublications()
@@ -164,6 +173,44 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
     }
   }, [importMode, pasteText, selectedFile, title])
 
+  const exportPortableLibrary = useCallback(async () => {
+    setError('')
+    try {
+      const pubs = await getAllReaderPublications()
+      if (!pubs.length) {
+        setError('Library is empty — save a book first.')
+        return
+      }
+      const blob = new Blob([stringifyPortableLibrary(pubs)], { type: 'application/json;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `reader-library-${new Date().toISOString().slice(0, 10)}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not export library.')
+    }
+  }, [])
+
+  const onPickPortableLibrary = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0]
+      event.target.value = ''
+      if (!file) return
+      setError('')
+      try {
+        const text = await file.text()
+        const pubs = parsePortableLibrary(text)
+        await importReaderPublicationsMerge(pubs)
+        await loadLibrary()
+      } catch (caught) {
+        setError(caught instanceof Error ? caught.message : 'Could not import library file.')
+      }
+    },
+    [loadLibrary],
+  )
+
   const saveDraft = useCallback(async () => {
     if (!draft || draft.chapters.length === 0) {
       setError('Import something with at least one chapter first.')
@@ -213,7 +260,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
             <p className="text-base font-semibold" style={{ color: 'var(--ink-accent)' }}>NovelFire-style web reader</p>
             <h1 className="font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>Import books into a local-first e-reader</h1>
             <p className="mt-2 max-w-3xl text-sm" style={{ color: 'var(--ink-muted)' }}>
-              Paste plain text or upload `.txt` / `.md` on-device. PDF and EPUB are parsed once on the server (not stored) for reliable text; chapters follow PDF heuristics or the EPUB spine. DRM EPUBs are not supported. Saved books and progress stay in IndexedDB.
+              Paste plain text or upload `.txt` / `.md` on-device. PDF and EPUB are parsed once on the server (not stored) for reliable text; chapters follow PDF heuristics or the EPUB spine. DRM EPUBs are not supported. Saved books live in this browser&apos;s IndexedDB; use Export library (.json) and Import library (.json) to copy the same shelf to another device (Drive, iCloud, email). Reading progress stays per-browser unless you also move localStorage keys.
             </p>
           </div>
           <div className="rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-muted)' }}>
@@ -323,9 +370,36 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
 
           <div className="rounded-3xl border p-5" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)' }}>
             <h2 className="mb-3 font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>Library</h2>
+            <div className="mb-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                data-testid="reader-export-library-json"
+                onClick={() => void exportPortableLibrary()}
+                className="rounded-full border px-4 py-2 text-sm font-semibold"
+                style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+              >
+                Export library (.json)
+              </button>
+              <button
+                type="button"
+                data-testid="reader-import-library-json"
+                onClick={() => libraryImportInputRef.current?.click()}
+                className="rounded-full border px-4 py-2 text-sm font-semibold"
+                style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+              >
+                Import library (.json)
+              </button>
+              <input
+                ref={libraryImportInputRef}
+                type="file"
+                accept="application/json,.json"
+                className="hidden"
+                onChange={(e) => void onPickPortableLibrary(e)}
+              />
+            </div>
             {libraryCards.length === 0 ? (
               <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-                No saved books yet. Import one on the left and it will stay on this device with resume links and offline-friendly storage.
+                No saved books yet. Import one on the left, or import a `.json` shelf from another device.
               </p>
             ) : (
               <div className="space-y-3">

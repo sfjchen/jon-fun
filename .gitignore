@@ -44,3 +44,6 @@ next-env.d.ts
 node_modules
 .env.local
 .env*.local
+
+# local e-reader portable export (may contain full book text)
+/reader-library-portable.json
