@@ -8,6 +8,7 @@ import { createEpubImportDraft, createImportDraft, mergeWithPreviousChapter, ren
 import { extractEpub } from '@/lib/reader/epub-extract'
 import { extractPdfText } from '@/lib/reader/pdf-extract'
 import { parsePortableLibrary, stringifyPortableLibrary } from '@/lib/reader/library-portable'
+import { syncBundledReaderCatalog } from '@/lib/reader/bundled-library-seed'
 import {
   deleteReaderPublication,
   getAllReaderPublications,
@@ -96,6 +97,8 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
   const [draft, setDraft] = useState<ReaderImportDraft | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [catalogBanner, setCatalogBanner] = useState('')
+  const [catalogBusy, setCatalogBusy] = useState(false)
   const [lastLocation, setLastLocation] = useState<{ bookId: string; chapterId: string } | null>(null)
   const libraryImportInputRef = useRef<HTMLInputElement>(null)
 
@@ -106,8 +109,17 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
   }, [])
 
   useEffect(() => {
-    void loadLibrary()
     void registerReaderServiceWorker()
+    void (async () => {
+      await loadLibrary()
+      const result = await syncBundledReaderCatalog(false)
+      if (result.kind === 'merged' && result.count > 0) {
+        await loadLibrary()
+        setCatalogBanner(
+          `Site catalog: added or updated ${result.count} book(s). Deploy public/reader/library-curated.json with stable publication ids so every device gets the same “best” editions.`,
+        )
+      }
+    })()
   }, [loadLibrary])
 
   /** E2E (End-to-End): `?e2eUpload=1` opens file mode without relying on click timing (Playwright). */
@@ -228,6 +240,39 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
     [loadLibrary],
   )
 
+  const loadSiteCatalog = useCallback(async () => {
+    setCatalogBusy(true)
+    setError('')
+    setCatalogBanner('')
+    try {
+      const result = await syncBundledReaderCatalog(true)
+      if (result.kind === 'error') {
+        setError(result.message)
+        return
+      }
+      await loadLibrary()
+      if (result.kind === 'merged') {
+        setCatalogBanner(
+          result.count > 0
+            ? `Site catalog: merged ${result.count} book(s) for this device.`
+            : 'Site catalog loaded but contained no books.',
+        )
+        return
+      }
+      if (result.kind === 'empty') {
+        setCatalogBanner(
+          'Site catalog file exists but has zero books — edit public/reader/library-curated.json (see public/reader/README.txt).',
+        )
+        return
+      }
+      if (result.kind === 'skipped' && result.reason === 'unavailable') {
+        setError('Site catalog not reachable (missing public/reader/library-curated.json on this deployment).')
+      }
+    } finally {
+      setCatalogBusy(false)
+    }
+  }, [loadLibrary])
+
   const saveDraft = useCallback(async () => {
     if (!draft || draft.chapters.length === 0) {
       setError('Import something with at least one chapter first.')
@@ -277,7 +322,9 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
             <p className="text-base font-semibold" style={{ color: 'var(--ink-accent)' }}>NovelFire-style web reader</p>
             <h1 className="font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>Import books into a local-first e-reader</h1>
             <p className="mt-2 max-w-3xl text-sm" style={{ color: 'var(--ink-muted)' }}>
-              Paste plain text or upload `.txt` / `.md` on-device. PDF and EPUB are parsed once on the server (not stored) for reliable text; chapters follow PDF heuristics or the EPUB spine. DRM EPUBs are not supported. Saved books live in this browser&apos;s IndexedDB; use Export library (.json) and Import library (.json) to copy the same shelf to another device (Drive, iCloud, email). Reading progress stays per-browser unless you also move localStorage keys.
+              Paste plain text or upload `.txt` / `.md` on-device. PDF and EPUB are parsed once on the server (not stored) for reliable text; chapters follow PDF heuristics or the EPUB spine. DRM EPUBs are not supported.{' '}
+              <strong style={{ color: 'var(--ink-text)' }}>Your library is only on this browser</strong> (IndexedDB (Indexed Database API)): another laptop or phone starts with an empty shelf until you import something. Use Export / Import library (.json) to clone your shelf, or deploy a{' '}
+              <code className="rounded bg-black/5 px-1">public/reader/library-curated.json</code> site catalog so every visitor gets the same curated books automatically. Reading progress stays per-browser unless you move localStorage keys too.
             </p>
           </div>
           <div className="rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-muted)' }}>
@@ -387,6 +434,11 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
 
           <div className="rounded-3xl border p-5" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)' }}>
             <h2 className="mb-3 font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>Library</h2>
+            {catalogBanner ? (
+              <p className="mb-3 rounded-2xl border px-3 py-2 text-sm" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-muted)' }}>
+                {catalogBanner}
+              </p>
+            ) : null}
             <div className="mb-4 flex flex-wrap gap-2">
               <button
                 type="button"
@@ -406,6 +458,16 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
               >
                 Import library (.json)
               </button>
+              <button
+                type="button"
+                data-testid="reader-load-site-catalog"
+                disabled={catalogBusy}
+                onClick={() => void loadSiteCatalog()}
+                className="rounded-full border px-4 py-2 text-sm font-semibold disabled:opacity-50"
+                style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+              >
+                {catalogBusy ? 'Loading catalog…' : 'Load site catalog'}
+              </button>
               <input
                 ref={libraryImportInputRef}
                 type="file"
@@ -416,7 +478,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
             </div>
             {libraryCards.length === 0 ? (
               <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-                No saved books yet. Import one on the left, or import a `.json` shelf from another device.
+                No saved books yet. Import one on the left, import a `.json` shelf from another device, or use Load site catalog if this deployment ships `library-curated.json`.
               </p>
             ) : (
               <div className="space-y-3">
