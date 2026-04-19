@@ -16,7 +16,7 @@ export async function extractPdfTextFromBuffer(buffer: ArrayBuffer): Promise<{ t
     const textResult = await parser.getText()
     const linesByPage = textResult.pages.map((p) => p.text.split('\n').map((l) => l.trim()).filter(Boolean))
     const notes: string[] = [
-      'PDF import reflows extracted text into a reader layout. Tables, multi-column layouts, headers, footers, and footnotes may need cleanup.',
+      'PDF import reflows extracted text into a reader layout (no AI summarization). Tables, multi-column layouts, headers, footers, and footnotes may need cleanup.',
     ]
     notes.push(`Extracted ${textResult.total} PDF pages into reflowed reader text.`)
     return {

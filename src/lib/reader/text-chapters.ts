@@ -323,8 +323,13 @@ export function createImportDraft(input: {
       "Chapters were split on strict 'Book N' headings (typical for Meditations). Title page and TOC lines are merged into Book 1 when present.",
     )
   }
+  if (input.sourceType === 'pdf') {
+    importNotes.push(
+      'PDF body text is not summarized or paraphrased. Mechanical steps only: reflow joins lines with spaces; lines that look like lone page numbers are skipped; a single repair turns split runs “B ook” into “Book” (pdf.js artifact). Compare with the source PDF if a phrase looks wrong.',
+    )
+  }
   importNotes.push(
-    'Import adjusts whitespace and paragraph breaks only (long blobs may split at sentence boundaries for reading). No wording is shortened, rewritten, or expanded.',
+    'TXT / paste / EPUB: no model rewriting — only whitespace, line breaks, and splitting very long blocks at sentences for display. Wording and letters stay as extracted.',
   )
 
   const draft: ReaderImportDraft = {
@@ -375,7 +380,7 @@ export function createEpubImportDraft(input: {
     )
   }
   importNotes.push(
-    'EPUB text keeps `<br>`/line breaks and spine titles where possible (NovelFire-style blocks). Only very long single lines split at ~1100 chars for display; full wording is preserved.',
+    'EPUB body text is not summarized or edited for wording. Spine chapter titles may be inferred from headings (up to 200 chars) but story paragraphs stay as in the file. `<br>`/line breaks preserved where possible; only very long single lines split at ~1100 chars for display.',
   )
 
   const draft: ReaderImportDraft = {
