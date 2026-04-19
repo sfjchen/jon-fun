@@ -95,6 +95,77 @@ function preNormalizeXhtmlForParse(xhtml: string): string {
     .replace(/<script\b[\s\S]*?<\/script>/gi, '')
 }
 
+/** Collapse spaces per line; keep `<br>` as newlines (structuredText). */
+function normalizeBlockText(raw: string): string {
+  return raw
+    .split('\n')
+    .map((line) => line.replace(/[ \t\f\v]+/g, ' ').trim())
+    .filter(Boolean)
+    .join('\n')
+    .trim()
+}
+
+function pushStructuredBlock(blocks: string[], el: HtmlElement): void {
+  const raw = (el.structuredText ?? el.text ?? '').trim()
+  const s = normalizeBlockText(raw)
+  if (s) blocks.push(s)
+}
+
+/**
+ * Prefer visible chapter labels (Calibre/Kobo blocks) over repeating `<title>` / package name
+ * (NovelFire-style TOC labels).
+ */
+function inferSpineChapterTitle(
+  paragraphs: string[],
+  packageTitle: string,
+  xhtmlTitle: string,
+  sectionIndex: number,
+): string {
+  const pkg = packageTitle.trim().toLowerCase()
+  const paras = paragraphs.map((p) => p.trim()).filter(Boolean)
+  const doc = xhtmlTitle.trim()
+  const docLower = doc.toLowerCase()
+  const isGenericDoc = !doc || docLower === pkg || /^section\s+\d+$/i.test(doc)
+
+  if (!paras.length) {
+    return doc || `Section ${sectionIndex + 1}`
+  }
+
+  const p0 = paras[0]!
+  const p1 = paras[1]
+
+  if (/^(table of contents|contents)$/i.test(p0)) return doc || 'Table of Contents'
+
+  const combined = /^(CHAPTER\s+(?:ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN|IX|IV|I{1,3}V?|VI{0,3}|XI{0,3}|\d+))\s*[-–—]\s*(.+)$/i.exec(
+    p0,
+  )
+  if (combined) {
+    return `${combined[1]} · ${combined[2]?.trim()}`.slice(0, 200).trim()
+  }
+
+  if (/^(chapter|book|part)\s+/i.test(p0) && p0.length < 160) {
+    if (p1 && p1.length < 130 && !/^(chapter|book|part)\s+/i.test(p1)) {
+      return `${p0} · ${p1}`.slice(0, 200).trim()
+    }
+    return p0.slice(0, 200)
+  }
+
+  if (/^(prologue|epilogue|interlude)\b/i.test(p0) && p0.length < 100) {
+    if (p1 && p1.length < 130 && !/^(prologue|epilogue|interlude)\b/i.test(p1)) {
+      return `${p0} · ${p1}`.slice(0, 200).trim()
+    }
+    return p0.slice(0, 200)
+  }
+
+  if (/^\d{1,3}$/.test(p0) && p1 && p1.length > 1 && p1.length < 130) {
+    return `${p0}: ${p1}`.slice(0, 200).trim()
+  }
+
+  if (!isGenericDoc && doc.length < 180) return doc
+
+  return doc || `Section ${sectionIndex + 1}`
+}
+
 function stripXhtmlToParagraphs(xhtml: string): string[] {
   const xhtmlClean = preNormalizeXhtmlForParse(xhtml)
   const root = parse(xhtmlClean, { lowerCaseTagName: true })
@@ -102,15 +173,11 @@ function stripXhtmlToParagraphs(xhtml: string): string[] {
   const body = (root.querySelector('body') ?? root) as HtmlElement
 
   const blocks: string[] = []
-  const pushText = (t: string) => {
-    const s = t.replace(/\s+/g, ' ').trim()
-    if (s) blocks.push(s)
-  }
 
   /** Reading order: headings + paragraphs (captures section titles + body; avoids losing `<h2>` when `<p>` exists). */
   const flow = body.querySelectorAll('h1, h2, h3, h4, h5, h6, p')
   if (flow.length) {
-    for (const el of flow) pushText(el.text)
+    for (const el of flow) pushStructuredBlock(blocks, el as HtmlElement)
     if (blocks.length) return blocks
   }
 
@@ -119,10 +186,12 @@ function stripXhtmlToParagraphs(xhtml: string): string[] {
    * do not duplicate all child text (common in trade EPUBs — was breaking anthologies).
    */
   const fallbackSel = 'div, section, article, li, blockquote, td, th, header, aside, main, figure'
-  for (const el of leafElements(body, fallbackSel)) pushText(el.text)
+  for (const el of leafElements(body, fallbackSel)) pushStructuredBlock(blocks, el)
   if (blocks.length) return blocks
 
-  pushText(body.text.replace(/\s+/g, ' '))
+  const fallbackRaw = (body.structuredText ?? body.text ?? '').trim()
+  const s = normalizeBlockText(fallbackRaw)
+  if (s) blocks.push(s)
   return blocks.filter(Boolean)
 }
 
@@ -239,8 +308,8 @@ export function extractEpubFromBuffer(buffer: ArrayBuffer): {
       continue
     }
 
-    let title = titleFromXhtml(xhtml)
-    if (!title) title = `Section ${chapters.length + 1}`
+    const docTitle = titleFromXhtml(xhtml)
+    const title = inferSpineChapterTitle(paragraphs, packageTitle, docTitle, chapters.length)
     chapters.push({ title, paragraphs })
   }
 

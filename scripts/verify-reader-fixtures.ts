@@ -94,7 +94,7 @@ async function runProfile(profile: ReaderFixtureProfile): Promise<boolean> {
   const text = fullText(draft)
   const words = draft.chapters.reduce((s: number, c: ReaderChapter) => s + c.wordCount, 0)
   const dup = maxChapterDupRate(draft)
-  logMetrics('metrics', draft, { extractedChars })
+  logMetrics(`metrics [${profile.fileName}]`, draft, { extractedChars })
 
   const strictPdf =
     profile.kind !== 'pdf' ||

@@ -60,13 +60,22 @@ export function expandEmbeddedNewlines(paragraphs: string[]): string[] {
 
 /**
  * Flatten embedded newlines; optionally split very long blobs (PDF/paste).
- * EPUBs already have `<p>` boundaries — pass `splitLong: false` to avoid breaking author flow.
+ * EPUB: use `splitLong: true` with high `maxChunkLen` + `breakSingleNewlines` for NovelFire-style `<br>` lines.
  */
-export function formatImportParagraphs(paragraphs: string[], options?: { splitLong?: boolean }): string[] {
+export function formatImportParagraphs(
+  paragraphs: string[],
+  options?: { splitLong?: boolean; maxChunkLen?: number; breakSingleNewlines?: boolean },
+): string[] {
   const splitLong = options?.splitLong !== false
-  const expanded = expandEmbeddedNewlines(paragraphs)
+  const maxChunkLen = options?.maxChunkLen ?? 540
+  let expanded = expandEmbeddedNewlines(paragraphs)
+  if (options?.breakSingleNewlines) {
+    expanded = expanded.flatMap((p) =>
+      p.split(/\n/).map((x) => x.replace(/[ \t]+/g, ' ').trim()).filter(Boolean),
+    )
+  }
   if (!splitLong) {
     return expanded.map((p) => p.replace(/[ \t]+/g, ' ').trim()).filter(Boolean)
   }
-  return expanded.flatMap((p) => splitLongParagraph(p))
+  return expanded.flatMap((p) => splitLongParagraph(p, maxChunkLen))
 }
