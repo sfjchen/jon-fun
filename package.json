@@ -10,6 +10,7 @@
     "type-check": "tsc --noEmit",
     "verify:meditations-pdf": "tsx scripts/verify-meditations-pdf.ts",
     "verify:epub-fixture": "tsx scripts/generate-minimal-epub.ts && tsx scripts/verify-epub-fixture.ts",
+    "verify:reader-fixtures": "tsx scripts/verify-reader-fixtures.ts",
     "test:e2e": "playwright test",
     "test:e2e:ci": "CI=1 playwright test",
     "test:e2e:ui": "playwright test --ui",
