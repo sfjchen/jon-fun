@@ -128,8 +128,17 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   const hits = rankedSearchHits ?? lexicalHits
 
   useEffect(() => {
-    setChapterId(initialChapterId)
-  }, [initialChapterId])
+    if (!chapters.length) return
+    const idx = chapters.findIndex((c) => c.id === initialChapterId)
+    if (idx >= 0) {
+      setChapterId(initialChapterId)
+      return
+    }
+    const firstId = chapters[0]?.id
+    if (!firstId) return
+    setChapterId(firstId)
+    router.replace(`${routeBase}/read/${publication.id}/${firstId}`, { scroll: false })
+  }, [chapters, initialChapterId, publication.id, routeBase, router])
 
   useEffect(() => {
     const loaded = loadReaderPreferences()
