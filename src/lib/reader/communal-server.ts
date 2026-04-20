@@ -1,0 +1,121 @@
+import type { ReaderChapter, ReaderPublication, ReaderPublicationSummary, ReaderSourceType } from '@/lib/reader/types'
+
+const SOURCE_TYPES: ReaderSourceType[] = ['txt', 'paste', 'pdf', 'epub']
+
+export function communalReaderBackendReady(): boolean {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
+  return Boolean(key && url && !url.includes('placeholder.supabase.co'))
+}
+
+/** Max JSON body size for one publication (bytes, UTF-8 length proxy). */
+export const READER_COMMUNAL_MAX_BODY_CHARS = 8_000_000
+
+export function publicationPayloadTooLarge(json: string): boolean {
+  return json.length > READER_COMMUNAL_MAX_BODY_CHARS
+}
+
+function isSourceType(v: unknown): v is ReaderSourceType {
+  return typeof v === 'string' && (SOURCE_TYPES as string[]).includes(v)
+}
+
+function isChapter(v: unknown): v is ReaderChapter {
+  if (!v || typeof v !== 'object') return false
+  const c = v as Record<string, unknown>
+  return (
+    typeof c.id === 'string' &&
+    typeof c.order === 'number' &&
+    typeof c.title === 'string' &&
+    Array.isArray(c.paragraphs) &&
+    c.paragraphs.every((p) => typeof p === 'string') &&
+    typeof c.wordCount === 'number'
+  )
+}
+
+/** Validate and return publication, or throw with a short message. */
+export function parseCommunalPublicationBody(body: unknown): ReaderPublication {
+  if (!body || typeof body !== 'object') throw new Error('Invalid body')
+  const p = body as Record<string, unknown>
+  if (typeof p.id !== 'string' || !p.id.trim()) throw new Error('id required')
+  if (typeof p.title !== 'string') throw new Error('title required')
+  if (!isSourceType(p.sourceType)) throw new Error('sourceType invalid')
+  if (!Array.isArray(p.chapters) || p.chapters.length === 0) throw new Error('chapters required')
+  if (!p.chapters.every(isChapter)) throw new Error('chapter shape invalid')
+  if (typeof p.createdAt !== 'string' || typeof p.updatedAt !== 'string') throw new Error('timestamps required')
+
+  const pub: ReaderPublication = {
+    id: p.id,
+    title: p.title,
+    sourceType: p.sourceType,
+    chapters: p.chapters as ReaderChapter[],
+    createdAt: p.createdAt,
+    updatedAt: p.updatedAt,
+  }
+  if (typeof p.originalFileName === 'string' && p.originalFileName !== '') {
+    pub.originalFileName = p.originalFileName
+  }
+  if (Array.isArray(p.importNotes) && p.importNotes.every((n) => typeof n === 'string')) {
+    pub.importNotes = p.importNotes as string[]
+  }
+  return pub
+}
+
+export type CommunalDbRow = {
+  id: string
+  title: string
+  source_type: string
+  chapters: ReaderChapter[]
+  chapter_count: number
+  total_words: number
+  first_chapter_id: string
+  original_file_name: string | null
+  import_notes: string[] | null
+  created_at: string
+  updated_at: string
+}
+
+export function publicationToDbRow(pub: ReaderPublication): Omit<CommunalDbRow, 'chapter_count' | 'total_words' | 'first_chapter_id'> & {
+  chapter_count: number
+  total_words: number
+  first_chapter_id: string
+} {
+  const totalWords = pub.chapters.reduce((s, c) => s + c.wordCount, 0)
+  return {
+    id: pub.id,
+    title: pub.title,
+    source_type: pub.sourceType,
+    chapters: pub.chapters,
+    chapter_count: pub.chapters.length,
+    total_words: totalWords,
+    first_chapter_id: pub.chapters[0]?.id ?? '',
+    original_file_name: pub.originalFileName ?? null,
+    import_notes: pub.importNotes?.length ? pub.importNotes : null,
+    created_at: pub.createdAt,
+    updated_at: pub.updatedAt,
+  }
+}
+
+export function dbRowToPublication(row: CommunalDbRow): ReaderPublication {
+  return {
+    id: row.id,
+    title: row.title,
+    sourceType: row.source_type as ReaderSourceType,
+    chapters: row.chapters,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    ...(row.original_file_name ? { originalFileName: row.original_file_name } : {}),
+    ...(row.import_notes?.length ? { importNotes: row.import_notes } : {}),
+  }
+}
+
+export function dbRowToSummary(row: Pick<CommunalDbRow, 'id' | 'title' | 'source_type' | 'chapter_count' | 'total_words' | 'updated_at' | 'first_chapter_id'>): ReaderPublicationSummary {
+  return {
+    id: row.id,
+    title: row.title,
+    sourceType: row.source_type as ReaderSourceType,
+    chapterCount: row.chapter_count,
+    totalWords: row.total_words,
+    updatedAt: row.updated_at,
+    firstChapterId: row.first_chapter_id ?? '',
+  }
+}

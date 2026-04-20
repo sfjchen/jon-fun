@@ -2,10 +2,9 @@ Site-wide e-reader catalog (optional)
 =====================================
 
 library-curated.json is a portable library (same shape as Export library (.json) from the studio).
-It is fetched by the e-reader page and merged into each visitor's browser IndexedDB when:
-
-  - They have not yet synced this catalog VERSION (see bundled-library-seed.ts), or
-  - They click "Load site catalog".
+When the communal Supabase shelf is not in use, it can be merged into this browser's IndexedDB (Indexed Database API)
+when the visitor clicks "Load site catalog" (see bundled-library-seed.ts). The shared communal library does not
+use this file.
 
 Rules:
   - Use stable publication `id` values so updates replace the same shelf slot instead of duplicating.

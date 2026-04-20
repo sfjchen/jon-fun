@@ -1,100 +1,107 @@
 import type { ReaderPublication, ReaderPublicationSummary } from '@/lib/reader/types'
+import {
+  deleteReaderPublicationIdb,
+  getAllReaderPublicationsIdb,
+  getReaderPublicationIdb,
+  importReaderPublicationsMergeIdb,
+  listReaderPublicationsIdb,
+  saveReaderPublicationIdb,
+} from '@/lib/reader/publications-idb'
 
-const DB_NAME = 'sfjc-reader'
-const DB_VERSION = 1
-const STORE = 'publications'
+const COMMUNAL = '/api/reader/communal'
 
-function openDb(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = window.indexedDB.open(DB_NAME, DB_VERSION)
-
-    request.onupgradeneeded = () => {
-      const db = request.result
-      if (!db.objectStoreNames.contains(STORE)) {
-        db.createObjectStore(STORE, { keyPath: 'id' })
-      }
-    }
-
-    request.onerror = () => reject(request.error)
-    request.onsuccess = () => resolve(request.result)
-  })
-}
-
-function txRequest<T>(request: IDBRequest<T>): Promise<T> {
-  return new Promise((resolve, reject) => {
-    request.onerror = () => reject(request.error)
-    request.onsuccess = () => resolve(request.result)
-  })
-}
-
-function toSummary(publication: ReaderPublication): ReaderPublicationSummary {
-  return {
-    id: publication.id,
-    title: publication.title,
-    sourceType: publication.sourceType,
-    chapterCount: publication.chapters.length,
-    totalWords: publication.chapters.reduce((sum, chapter) => sum + chapter.wordCount, 0),
-    updatedAt: publication.updatedAt,
-    firstChapterId: publication.chapters[0]?.id ?? '',
+async function communalList(): Promise<ReaderPublicationSummary[] | null> {
+  try {
+    const res = await fetch(COMMUNAL, { cache: 'no-store' })
+    if (res.status === 503) return null
+    if (!res.ok) return null
+    return (await res.json()) as ReaderPublicationSummary[]
+  } catch {
+    return null
   }
 }
 
 export async function listReaderPublications(): Promise<ReaderPublicationSummary[]> {
-  const db = await openDb()
-  const tx = db.transaction(STORE, 'readonly')
-  const store = tx.objectStore(STORE)
-  const all = await txRequest(store.getAll())
-  db.close()
-
-  return (all as ReaderPublication[])
-    .map(toSummary)
-    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+  const remote = await communalList()
+  if (remote !== null) return remote
+  return listReaderPublicationsIdb()
 }
 
-/** Full books for export / backup (cross-device via shared JSON file). */
 export async function getAllReaderPublications(): Promise<ReaderPublication[]> {
-  const db = await openDb()
-  const tx = db.transaction(STORE, 'readonly')
-  const store = tx.objectStore(STORE)
-  const all = await txRequest(store.getAll())
-  db.close()
-  return (all as ReaderPublication[]).sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-  )
+  try {
+    const res = await fetch(`${COMMUNAL}?export=1`, { cache: 'no-store' })
+    if (res.status === 503) return getAllReaderPublicationsIdb()
+    if (!res.ok) throw new Error(`Library export failed (${res.status})`)
+    return (await res.json()) as ReaderPublication[]
+  } catch {
+    return getAllReaderPublicationsIdb()
+  }
 }
 
-/** Merge imported publications into IndexedDB (overwrites same `id`). */
 export async function importReaderPublicationsMerge(publications: ReaderPublication[]): Promise<void> {
-  const db = await openDb()
-  const tx = db.transaction(STORE, 'readwrite')
-  const store = tx.objectStore(STORE)
-  for (const pub of publications) {
-    await txRequest(store.put(pub))
+  if (publications.length === 0) return
+  const first = await fetch(COMMUNAL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(publications[0]),
+  })
+  if (first.status === 503) {
+    await importReaderPublicationsMergeIdb(publications)
+    return
   }
-  db.close()
+  if (!first.ok) {
+    const err = await first.json().catch(() => ({}))
+    throw new Error(typeof (err as { error?: string }).error === 'string' ? (err as { error: string }).error : 'Import failed')
+  }
+  for (let i = 1; i < publications.length; i++) {
+    const res = await fetch(COMMUNAL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(publications[i]),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(typeof (err as { error?: string }).error === 'string' ? (err as { error: string }).error : 'Import failed')
+    }
+  }
 }
 
 export async function getReaderPublication(id: string): Promise<ReaderPublication | null> {
-  const db = await openDb()
-  const tx = db.transaction(STORE, 'readonly')
-  const store = tx.objectStore(STORE)
-  const publication = await txRequest(store.get(id))
-  db.close()
-  return (publication as ReaderPublication | undefined) ?? null
+  try {
+    const res = await fetch(`${COMMUNAL}/${encodeURIComponent(id)}`, { cache: 'no-store' })
+    if (res.status === 503) return getReaderPublicationIdb(id)
+    if (res.status === 404) return null
+    if (!res.ok) throw new Error(`Book load failed (${res.status})`)
+    return (await res.json()) as ReaderPublication
+  } catch {
+    return getReaderPublicationIdb(id)
+  }
 }
 
 export async function saveReaderPublication(publication: ReaderPublication): Promise<void> {
-  const db = await openDb()
-  const tx = db.transaction(STORE, 'readwrite')
-  const store = tx.objectStore(STORE)
-  await txRequest(store.put(publication))
-  db.close()
+  const res = await fetch(COMMUNAL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(publication),
+  })
+  if (res.status === 503) {
+    await saveReaderPublicationIdb(publication)
+    return
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(typeof (err as { error?: string }).error === 'string' ? (err as { error: string }).error : 'Save failed')
+  }
 }
 
 export async function deleteReaderPublication(id: string): Promise<void> {
-  const db = await openDb()
-  const tx = db.transaction(STORE, 'readwrite')
-  const store = tx.objectStore(STORE)
-  await txRequest(store.delete(id))
-  db.close()
+  const res = await fetch(`${COMMUNAL}/${encodeURIComponent(id)}`, { method: 'DELETE' })
+  if (res.status === 503) {
+    await deleteReaderPublicationIdb(id)
+    return
+  }
+  if (!res.ok && res.status !== 404) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(typeof (err as { error?: string }).error === 'string' ? (err as { error: string }).error : 'Delete failed')
+  }
 }
