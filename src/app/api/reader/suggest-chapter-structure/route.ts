@@ -1,7 +1,10 @@
 import {
   buildSuggestPayload,
+  clampFormatNotes,
   clampMerges,
+  clampSplitChapters,
   extractJsonFromAssistantText,
+  GEMINI_CHAPTER_STRUCTURE_SCHEMA,
   type IncomingSuggestBody,
   SUGGEST_SYSTEM_PROMPT,
 } from '@/lib/reader/suggest-chapter-structure-llm'
@@ -48,7 +51,7 @@ async function callOpenRouter(
     body: JSON.stringify({
       model,
       temperature: 0.1,
-      max_tokens: 2000,
+      max_tokens: 3072,
       messages: [
         { role: 'system', content: SUGGEST_SYSTEM_PROMPT },
         { role: 'user', content: userJson },
@@ -77,24 +80,46 @@ type GeminiGenerateResponse = {
   error?: { message?: string; status?: string; code?: number }
 }
 
-async function callGoogleGemini(apiKey: string, model: string, userJson: string): Promise<{ text: string; model: string }> {
+async function callGoogleGeminiOnce(
+  apiKey: string,
+  model: string,
+  userJson: string,
+  useResponseSchema: boolean,
+): Promise<Response> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`
 
-  const res = await fetch(url, {
+  const generationConfig: Record<string, unknown> = {
+    temperature: 0.1,
+    maxOutputTokens: 3072,
+    responseMimeType: 'application/json',
+  }
+  if (useResponseSchema) {
+    generationConfig.responseSchema = GEMINI_CHAPTER_STRUCTURE_SCHEMA
+  }
+
+  return fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: SUGGEST_SYSTEM_PROMPT }] },
       contents: [{ role: 'user', parts: [{ text: userJson }] }],
-      generationConfig: {
-        temperature: 0.1,
-        maxOutputTokens: 2048,
-        responseMimeType: 'application/json',
-      },
+      generationConfig,
     }),
   })
+}
 
-  const rawText = await res.text()
+async function callGoogleGemini(apiKey: string, model: string, userJson: string): Promise<{ text: string; model: string }> {
+  const allowSchema = (process.env.READER_CHAPTER_GEMINI_JSON_SCHEMA ?? '1') !== '0'
+
+  let res = await callGoogleGeminiOnce(apiKey, model, userJson, allowSchema)
+  let rawText = await res.text()
+
+  if (!res.ok && allowSchema && res.status === 400) {
+    const retry = await callGoogleGeminiOnce(apiKey, model, userJson, false)
+    rawText = await retry.text()
+    res = retry
+  }
+
   let data: GeminiGenerateResponse
   try {
     data = JSON.parse(rawText) as GeminiGenerateResponse
@@ -194,12 +219,17 @@ export async function POST(req: Request) {
   }
 
   const chapterCount = truncated.length
-  const { merges, notes } = clampMerges(parsed, chapterCount)
-  const allNotes = [...notes, ...(truncatedNote ? [truncatedNote] : [])]
+  const paraCounts = truncated.map((c) => c.paragraphCount)
+  const { merges, notes: mergeNotes } = clampMerges(parsed, chapterCount)
+  const { splits, notes: splitClampNotes } = clampSplitChapters(parsed, chapterCount, paraCounts)
+  const formatNotes = clampFormatNotes(parsed)
+  const structuralNotes = [...mergeNotes, ...splitClampNotes, ...(truncatedNote ? [truncatedNote] : [])]
 
   return Response.json({
     merges: merges.map((m) => ({ ...m, kind: 'llm' as const })),
-    notes: allNotes,
+    splitChapters: splits.map((s) => ({ ...s, kind: 'llm' as const })),
+    notes: structuralNotes,
+    formatNotes,
     model: modelLabel,
     provider: useGoogle ? 'google' : 'openrouter',
   })

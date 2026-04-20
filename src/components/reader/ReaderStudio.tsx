@@ -110,6 +110,8 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
   const [aiMerges, setAiMerges] = useState<{ startIndex: number; endIndex: number; reason: string; kind: 'llm' }[]>(
     [],
   )
+  const [aiSplitChapters, setAiSplitChapters] = useState<{ chapterIndex: number; reason: string; kind: 'llm' }[]>([])
+  const [aiFormatNotes, setAiFormatNotes] = useState<string[]>([])
   const [aiNotes, setAiNotes] = useState<string[]>([])
   const [aiBusy, setAiBusy] = useState(false)
   const [aiError, setAiError] = useState('')
@@ -311,6 +313,8 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
 
   useEffect(() => {
     setAiMerges([])
+    setAiSplitChapters([])
+    setAiFormatNotes([])
     setAiNotes([])
     setAiError('')
   }, [draft])
@@ -321,6 +325,18 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
       const chapters = mergeChapterIndexRange(cur.chapters, startIndex, endIndex)
       return { ...cur, chapters }
     })
+  }, [])
+
+  const applyAiSplitAtMidpoint = useCallback((chapterIndex: number) => {
+    setDraft((cur) => {
+      if (!cur) return cur
+      const ch = cur.chapters[chapterIndex]
+      if (!ch || ch.paragraphs.length < 2) return cur
+      return { ...cur, chapters: splitChapterAtMidpoint(cur.chapters, ch.id) }
+    })
+    setAiSplitChapters([])
+    setAiMerges([])
+    setAiNotes((n) => [...n, 'Re-run “AI merge hints” after splits — chapter indices shift.'])
   }, [])
 
   const fetchAiChapterHints = useCallback(async () => {
@@ -337,13 +353,17 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
         error?: string
         disabled?: boolean
         merges?: { startIndex: number; endIndex: number; reason: string; kind: 'llm' }[]
+        splitChapters?: { chapterIndex: number; reason: string; kind: 'llm' }[]
         notes?: string[]
+        formatNotes?: string[]
       }
       if (!res.ok) {
         setAiError(data.error ?? 'AI request failed.')
         return
       }
       setAiMerges(data.merges ?? [])
+      setAiSplitChapters(data.splitChapters ?? [])
+      setAiFormatNotes(data.formatNotes ?? [])
       setAiNotes(data.notes ?? [])
     } catch (caught) {
       setAiError(caught instanceof Error ? caught.message : 'AI request failed.')
@@ -647,8 +667,8 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                 <code className="rounded bg-black/5 px-1">READER_CHAPTER_LLM_KEY</code> or{' '}
                 <code className="rounded bg-black/5 px-1">OPENROUTER_API_KEY</code>. Override with{' '}
                 <code className="rounded bg-black/5 px-1">READER_CHAPTER_LLM_PROVIDER=google</code> or{' '}
-                <code className="rounded bg-black/5 px-1">openrouter</code>. Apply merges one suggestion at a time (indices
-                update after each merge).
+                <code className="rounded bg-black/5 px-1">openrouter</code>. Hints can include merges, midpoint splits, and
+                excerpt-only formatting notes. Apply one merge or split at a time (indices update after each edit).
               </p>
               <p className="mb-2 text-xs">
                 {chapterAnalysis.stats.chapterCount} chapters · {chapterAnalysis.stats.totalWords.toLocaleString()} words
@@ -716,7 +736,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                   className="rounded-full border px-3 py-2 text-xs font-semibold disabled:opacity-50"
                   style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
                 >
-                  {aiBusy ? 'Asking model…' : 'AI merge hints (optional)'}
+                  {aiBusy ? 'Asking model…' : 'AI structure hints (merges / splits)'}
                 </button>
               </div>
               {aiError ? (
@@ -726,10 +746,20 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
               ) : null}
               {aiNotes.length > 0 ? (
                 <ul className="mb-2 list-disc pl-5 text-xs">
-                  {aiNotes.map((n) => (
-                    <li key={n}>{n}</li>
+                  {aiNotes.map((n, i) => (
+                    <li key={`${i}-${n.slice(0, 48)}`}>{n}</li>
                   ))}
                 </ul>
+              ) : null}
+              {aiFormatNotes.length > 0 ? (
+                <div className="mb-2 rounded-xl border px-3 py-2 text-xs" style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-muted)' }}>
+                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>Formatting (excerpt-only, advisory)</p>
+                  <ul className="list-disc pl-5">
+                    {aiFormatNotes.map((n, i) => (
+                      <li key={`${i}-${n.slice(0, 48)}`}>{n}</li>
+                    ))}
+                  </ul>
+                </div>
               ) : null}
               {aiMerges.length > 0 ? (
                 <div>
@@ -747,6 +777,32 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                           onClick={() => applyMergeRangeToDraft(s.startIndex, s.endIndex)}
                         >
                           Merge
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {aiSplitChapters.length > 0 ? (
+                <div className="mb-2">
+                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>AI suggested splits</p>
+                  <p className="mb-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
+                    Uses midpoint word split as a first pass — refine titles after.
+                  </p>
+                  <ul className="space-y-2">
+                    {aiSplitChapters.map((s) => (
+                      <li key={`ai-split-${s.chapterIndex}`} className="flex flex-wrap items-start justify-between gap-2 text-xs">
+                        <span>
+                          Ch. {s.chapterIndex + 1}: {s.reason}
+                        </span>
+                        <button
+                          type="button"
+                          data-testid={`reader-ai-split-${s.chapterIndex}`}
+                          className="shrink-0 rounded-full border px-3 py-1 text-xs font-semibold"
+                          style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                          onClick={() => applyAiSplitAtMidpoint(s.chapterIndex)}
+                        >
+                          Split at midpoint
                         </button>
                       </li>
                     ))}

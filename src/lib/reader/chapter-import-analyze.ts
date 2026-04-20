@@ -147,7 +147,7 @@ export function analyzeImportDraft(
 }
 
 /** Build a compact payload for the LLM suggestion API (excerpts only). */
-export function draftToChapterStructurePayload(draft: ReaderImportDraft, excerptLen = 200) {
+export function draftToChapterStructurePayload(draft: ReaderImportDraft, excerptLen = 280) {
   const excerpt = (p: string[]) => {
     const joined = p.join('\n\n')
     if (joined.length <= excerptLen * 2) return { head: joined, tail: '' }
