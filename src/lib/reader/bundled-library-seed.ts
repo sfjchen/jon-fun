@@ -5,7 +5,7 @@ import { importReaderPublicationsMerge } from '@/lib/reader/publications'
  * Operator-maintained portable library shipped at /reader/library-curated.json.
  * Bump when the JSON changes so existing visitors re-merge (stable publication `id`s update in place).
  */
-export const BUNDLED_READER_CATALOG_VERSION = '1'
+export const BUNDLED_READER_CATALOG_VERSION = '2'
 
 const CATALOG_PATH = '/reader/library-curated.json'
 
