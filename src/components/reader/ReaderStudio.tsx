@@ -637,10 +637,18 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                 Chapter structure (automatic checks)
               </p>
               <p className="mb-3 text-xs">
-                Heuristics run locally (no API). Optional AI uses OpenRouter with excerpts only — set{' '}
+                Heuristics run locally (no API). Optional AI uses short excerpts only — default provider is{' '}
+                <strong style={{ color: 'var(--ink-text)' }}>Google Gemini</strong> when{' '}
+                <code className="rounded bg-black/5 px-1">GEMINI_API_KEY</code> or{' '}
+                <code className="rounded bg-black/5 px-1">GOOGLE_GENERATIVE_AI_API_KEY</code> is set (model{' '}
+                <code className="rounded bg-black/5 px-1">READER_CHAPTER_GEMINI_MODEL</code>, default{' '}
+                <code className="rounded bg-black/5 px-1">gemini-3.1-flash-lite-preview</code>), otherwise{' '}
+                <strong style={{ color: 'var(--ink-text)' }}>OpenRouter</strong> via{' '}
                 <code className="rounded bg-black/5 px-1">READER_CHAPTER_LLM_KEY</code> or{' '}
-                <code className="rounded bg-black/5 px-1">OPENROUTER_API_KEY</code> on the server. Apply merges one
-                suggestion at a time (indices update after each merge).
+                <code className="rounded bg-black/5 px-1">OPENROUTER_API_KEY</code>. Override with{' '}
+                <code className="rounded bg-black/5 px-1">READER_CHAPTER_LLM_PROVIDER=google</code> or{' '}
+                <code className="rounded bg-black/5 px-1">openrouter</code>. Apply merges one suggestion at a time (indices
+                update after each merge).
               </p>
               <p className="mb-2 text-xs">
                 {chapterAnalysis.stats.chapterCount} chapters · {chapterAnalysis.stats.totalWords.toLocaleString()} words
