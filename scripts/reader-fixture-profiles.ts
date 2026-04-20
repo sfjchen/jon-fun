@@ -70,10 +70,10 @@ export const READER_FIXTURE_PROFILES: ReaderFixtureProfile[] = [
   {
     fileName: 'dokumen.pub_meditations-a-new-translation-hardcover.epub',
     kind: 'epub',
-    description: 'Meditations EPUB — spine ≠ PDF books; expect many sections + body text',
+    description: 'Meditations EPUB — spine coalescing merges short Book N stubs + leading noise',
     optional: true,
-    expectMinChapters: 28,
-    expectMaxChapters: 45,
+    expectMinChapters: 14,
+    expectMaxChapters: 40,
     titleIncludes: ['Meditations'],
     keywordAnywhere: [/Marcus/i],
     minTotalWords: 50_000,

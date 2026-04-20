@@ -31,7 +31,7 @@ const hasFixture = fs.existsSync(FIXTURE)
     const m = summaryText.match(/(\d+)\s+detected chapters/)
     expect(m, `expected chapter count in "${summaryText}"`).toBeTruthy()
     const chapterCount = Number(m![1])
-    expect(chapterCount).toBeGreaterThanOrEqual(28)
+    expect(chapterCount).toBeGreaterThanOrEqual(14)
 
     const splitBtns = page.getByTestId('reader-split-chapter')
     await expect(splitBtns.first()).toBeEnabled()
