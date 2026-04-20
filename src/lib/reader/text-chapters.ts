@@ -344,6 +344,59 @@ export function createImportDraft(input: {
   return draft
 }
 
+export type EpubSpineSection = { title: string; paragraphs: string[] }
+
+function spineSectionWordCount(section: EpubSpineSection): number {
+  return section.paragraphs.reduce((sum, p) => sum + wordCount(p), 0)
+}
+
+/**
+ * Many trade EPUBs split a visible part heading (e.g. `Book 3 · …`) into a tiny XHTML spine item
+ * and put the body in the next item with a generic package `<title>` (often repeating "Meditations").
+ * Without this, **12 books** become **12 + 12** (or more) TOC rows.
+ */
+export function mergeEpubSpineShortBookHeadingIntoFollowing(spine: EpubSpineSection[]): EpubSpineSection[] {
+  const out: EpubSpineSection[] = []
+  let i = 0
+  while (i < spine.length) {
+    const cur = spine[i]!
+    const wc = spineSectionWordCount(cur)
+    const isShortBookHeading = /^book\s+\d+/i.test(cur.title.trim()) && wc < 120
+    if (isShortBookHeading && i + 1 < spine.length) {
+      const next = spine[i + 1]!
+      out.push({
+        title: cur.title,
+        paragraphs: [...cur.paragraphs, ...next.paragraphs],
+      })
+      i += 2
+      continue
+    }
+    out.push(cur)
+    i += 1
+  }
+  return out
+}
+
+/** Merge very short leading spine sections (half-title, copyright blips) into the following section. */
+export function mergeEpubSpineLeadingTrivialSections(
+  spine: EpubSpineSection[],
+  opts?: { maxTrivialWords?: number; maxIterations?: number },
+): EpubSpineSection[] {
+  const maxW = opts?.maxTrivialWords ?? 150
+  const maxIter = opts?.maxIterations ?? 24
+  let s = [...spine]
+  let iter = 0
+  while (s.length > 1 && iter < maxIter) {
+    const a = s[0]!
+    const b = s[1]!
+    if (spineSectionWordCount(a) < maxW && !/^book\s+\d+/i.test(a.title.trim())) {
+      s = [{ title: b.title, paragraphs: [...a.paragraphs, ...b.paragraphs] }, ...s.slice(2)]
+      iter++
+    } else break
+  }
+  return s
+}
+
 /** EPUB spine already defines chapters; skip heuristic chapterizeText. */
 export function createEpubImportDraft(input: {
   packageTitle: string
@@ -358,7 +411,19 @@ export function createEpubImportDraft(input: {
     input.originalFileName?.replace(/\.[^/.]+$/, '').trim() ||
     'Untitled EPUB import'
 
-  let chapters = input.spineChapters.map((c, order) => {
+  let spineSections: EpubSpineSection[] = input.spineChapters.map((c) => ({
+    title: c.title,
+    paragraphs: c.paragraphs,
+  }))
+  const spineCountBefore = spineSections.length
+  spineSections = mergeEpubSpineShortBookHeadingIntoFollowing(spineSections)
+  /** Long spines only: tiny 2-file EPUBs (e2e minimal) must keep separate sections. */
+  if (spineCountBefore >= 20) {
+    spineSections = mergeEpubSpineLeadingTrivialSections(spineSections)
+  }
+  const spineCoalesced = spineCountBefore - spineSections.length
+
+  let chapters = spineSections.map((c, order) => {
     const paras = c.paragraphs.map((p) => cleanParagraph(p)).filter(Boolean)
     const chTitle = c.title.trim() || chapterTitleFromIndex(order)
     return makeChapter(chTitle, paras, order)
@@ -372,6 +437,11 @@ export function createEpubImportDraft(input: {
   const importNotes = [...(input.notes ?? [])]
   if (!importNotes.some((n) => /spine/i.test(n))) {
     importNotes.push('Chapters follow the EPUB spine reading order.')
+  }
+  if (spineCoalesced > 0) {
+    importNotes.push(
+      `Coalesced ${spineCoalesced} spine section(s): short “Book N” heading files merged with the following body, and very short leading sections merged forward (common in Meditations-style trade EPUBs).`,
+    )
   }
   const shortSpineSections = chapters.filter((c) => c.wordCount < 72).length
   if (shortSpineSections >= 2 && chapters.length >= 5) {
