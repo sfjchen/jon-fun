@@ -802,15 +802,36 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
             </div>
           ) : null}
 
-          <div className="reader-surface max-md:pb-24 px-2 py-6 sm:px-4 md:px-8 md:py-10">
+          <div className="reader-surface px-2 py-6 sm:px-4 md:px-8 md:py-10">
             {mobile ? (
               <header className="mb-8 border-b pb-6" style={{ borderColor: 'var(--reader-border)' }}>
-                <h1 className="text-[1.35rem] font-semibold leading-snug sm:text-2xl" style={{ color: 'var(--reader-text)' }}>
-                  {chapter.title}
-                </h1>
-                <p className="mt-2 text-sm" style={{ color: 'var(--reader-muted)' }}>
-                  Chapter {currentIndex + 1} of {chapters.length} · {formatWordCount(chapter.wordCount)}
-                </p>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <h1 className="text-[1.35rem] font-semibold leading-snug sm:text-2xl" style={{ color: 'var(--reader-text)' }}>
+                      {chapter.title}
+                    </h1>
+                    <p className="mt-2 text-sm" style={{ color: 'var(--reader-muted)' }}>
+                      Chapter {currentIndex + 1} of {chapters.length} · {formatWordCount(chapter.wordCount)}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => updatePref('panelOpen', true)}
+                    className="reader-focus mt-0.5 shrink-0 rounded-xl border p-2.5"
+                    style={{
+                      borderColor: 'var(--reader-border)',
+                      backgroundColor: 'var(--reader-panel)',
+                      color: 'var(--reader-text)',
+                    }}
+                    aria-label="Reader settings — typography, theme, TTS (Text-To-Speech), and more"
+                    title="Reader settings"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <circle cx="12" cy="12" r="3" />
+                      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                    </svg>
+                  </button>
+                </div>
               </header>
             ) : null}
             <ReaderBody
@@ -853,21 +874,6 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
           />
         ) : null}
       </div>
-
-      {mobile && !prefs.panelOpen ? (
-        <button
-          type="button"
-          onClick={() => updatePref('panelOpen', true)}
-          className="e-reader-chrome-action reader-focus fixed bottom-safe right-3 z-40 flex h-12 w-12 items-center justify-center rounded-full shadow-lg"
-          aria-label="Reader settings — typography, theme, TTS (Text-To-Speech), and more"
-          title="Reader settings"
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <circle cx="12" cy="12" r="3" />
-            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-          </svg>
-        </button>
-      ) : null}
 
       {mobile && prefs.panelOpen ? (
         <SettingsDrawer
