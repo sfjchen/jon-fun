@@ -1,81 +1,149 @@
-import type { ReaderSourceType } from '@/lib/reader/types'
+import {
+  buildSuggestPayload,
+  clampMerges,
+  extractJsonFromAssistantText,
+  type IncomingSuggestBody,
+  SUGGEST_SYSTEM_PROMPT,
+} from '@/lib/reader/suggest-chapter-structure-llm'
 
 export const runtime = 'nodejs'
 
 const MAX_CHAPTERS = 96
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
-type IncomingBody = {
-  bookTitle: string
-  sourceType: ReaderSourceType
-  originalFileName?: string | null
-  chapters: {
-    index: number
-    title: string
-    wordCount: number
-    paragraphCount: number
-    excerptHead: string
-    excerptTail?: string
-  }[]
+/** Google AI Studio / Gemini API key (not OpenRouter). */
+function geminiApiKey(): string | undefined {
+  return process.env.GEMINI_API_KEY ?? process.env.GOOGLE_GENERATIVE_AI_API_KEY
 }
 
-type LlmMerge = { startIndex: number; endIndex: number; reason: string }
+function openRouterApiKey(): string | undefined {
+  return process.env.READER_CHAPTER_LLM_KEY ?? process.env.OPENROUTER_API_KEY
+}
 
-function clampMerges(raw: unknown, chapterCount: number): { merges: LlmMerge[]; notes: string[] } {
-  if (!raw || typeof raw !== 'object') return { merges: [], notes: ['LLM returned no object.'] }
-  const o = raw as { merges?: unknown; notes?: unknown }
-  const notes = Array.isArray(o.notes) ? o.notes.filter((n) => typeof n === 'string').map(String) : []
-  const mergesIn = o.merges
-  if (!Array.isArray(mergesIn)) return { merges: [], notes }
+/**
+ * When unset: use Google if `GEMINI_API_KEY` / `GOOGLE_GENERATIVE_AI_API_KEY` is set, else OpenRouter.
+ * Override: `READER_CHAPTER_LLM_PROVIDER=google` | `openrouter`
+ */
+function provider(): 'google' | 'openrouter' {
+  const p = (process.env.READER_CHAPTER_LLM_PROVIDER ?? '').toLowerCase()
+  if (p === 'google') return 'google'
+  if (p === 'openrouter') return 'openrouter'
+  return geminiApiKey() ? 'google' : 'openrouter'
+}
 
-  const merges: LlmMerge[] = []
-  for (const item of mergesIn) {
-    if (!item || typeof item !== 'object') continue
-    const it = item as { startIndex?: unknown; endIndex?: unknown; reason?: unknown }
-    if (typeof it.startIndex !== 'number' || typeof it.endIndex !== 'number') continue
-    const startIndex = Math.floor(it.startIndex)
-    const endIndex = Math.floor(it.endIndex)
-    if (
-      startIndex < 0 ||
-      endIndex < 0 ||
-      startIndex >= chapterCount ||
-      endIndex >= chapterCount ||
-      endIndex <= startIndex
-    ) {
-      continue
-    }
-    merges.push({
-      startIndex,
-      endIndex,
-      reason: typeof it.reason === 'string' ? it.reason : 'Model suggestion',
-    })
+async function callOpenRouter(
+  apiKey: string,
+  model: string,
+  site: string,
+  userJson: string,
+): Promise<{ text: string; model: string }> {
+  const res = await fetch(OPENROUTER_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+      'HTTP-Referer': site,
+      'X-Title': 'Jon-fun reader chapter structure',
+    },
+    body: JSON.stringify({
+      model,
+      temperature: 0.1,
+      max_tokens: 2000,
+      messages: [
+        { role: 'system', content: SUGGEST_SYSTEM_PROMPT },
+        { role: 'user', content: userJson },
+      ],
+    }),
+  })
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '')
+    throw new Error(`OpenRouter error ${res.status}: ${errText.slice(0, 500)}`)
   }
-  return { merges, notes }
+
+  const data = (await res.json()) as {
+    choices?: { message?: { content?: string } }[]
+  }
+  const content = data.choices?.[0]?.message?.content
+  if (!content) throw new Error('Empty OpenRouter response.')
+  return { text: content, model }
 }
 
-function extractJsonFromAssistantText(text: string): unknown {
-  const t = text.trim()
-  const fence = /^```(?:json)?\s*([\s\S]*?)```$/m.exec(t)
-  const raw = fence ? fence[1]!.trim() : t
-  return JSON.parse(raw) as unknown
+type GeminiGenerateResponse = {
+  candidates?: Array<{
+    content?: { parts?: Array<{ text?: string }> }
+    finishReason?: string
+  }>
+  error?: { message?: string; status?: string; code?: number }
+}
+
+async function callGoogleGemini(apiKey: string, model: string, userJson: string): Promise<{ text: string; model: string }> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: SUGGEST_SYSTEM_PROMPT }] },
+      contents: [{ role: 'user', parts: [{ text: userJson }] }],
+      generationConfig: {
+        temperature: 0.1,
+        maxOutputTokens: 2048,
+        responseMimeType: 'application/json',
+      },
+    }),
+  })
+
+  const rawText = await res.text()
+  let data: GeminiGenerateResponse
+  try {
+    data = JSON.parse(rawText) as GeminiGenerateResponse
+  } catch {
+    throw new Error(`Gemini invalid response (${res.status}): ${rawText.slice(0, 400)}`)
+  }
+
+  if (!res.ok) {
+    const msg = data.error?.message ?? rawText.slice(0, 500)
+    throw new Error(`Gemini error ${res.status}: ${msg}`)
+  }
+
+  const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? '').join('') ?? ''
+  if (!text.trim()) {
+    const reason = data.candidates?.[0]?.finishReason ?? 'unknown'
+    throw new Error(`Empty Gemini response (finish: ${reason}).`)
+  }
+  return { text, model }
 }
 
 export async function POST(req: Request) {
-  const apiKey = process.env.READER_CHAPTER_LLM_KEY ?? process.env.OPENROUTER_API_KEY
-  if (!apiKey) {
+  const useGoogle = provider() === 'google'
+  const gKey = geminiApiKey()
+  const orKey = openRouterApiKey()
+
+  if (useGoogle && !gKey) {
     return Response.json(
       {
         error:
-          'No API key: set READER_CHAPTER_LLM_KEY or OPENROUTER_API_KEY for AI chapter hints. Heuristic suggestions still run in the browser.',
+          'Google Gemini selected but no key: set GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY (server). Or set READER_CHAPTER_LLM_PROVIDER=openrouter and OPENROUTER_API_KEY.',
+        disabled: true,
+      },
+      { status: 501 },
+    )
+  }
+  if (!useGoogle && !orKey) {
+    return Response.json(
+      {
+        error:
+          'No API key: set GEMINI_API_KEY / GOOGLE_GENERATIVE_AI_API_KEY (Google) or READER_CHAPTER_LLM_KEY / OPENROUTER_API_KEY (OpenRouter). Heuristic suggestions still run in the browser.',
         disabled: true,
       },
       { status: 501 },
     )
   }
 
-  let body: IncomingBody
+  let body: IncomingSuggestBody
   try {
-    body = (await req.json()) as IncomingBody
+    body = (await req.json()) as IncomingSuggestBody
   } catch {
     return Response.json({ error: 'Invalid JSON body.' }, { status: 400 })
   }
@@ -91,77 +159,48 @@ export async function POST(req: Request) {
       ? `Only the first ${MAX_CHAPTERS} chapters were sent to the model (book has ${body.chapters.length}).`
       : null
 
-  const model = process.env.READER_CHAPTER_LLM_MODEL ?? 'openai/gpt-4o-mini'
+  const userPayload = buildSuggestPayload(truncated, body)
+  const userJson = JSON.stringify(userPayload)
+
   const site =
     process.env.NEXT_PUBLIC_SITE_URL ??
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
 
-  const userPayload = {
-    bookTitle: body.bookTitle,
-    sourceType: body.sourceType,
-    originalFileName: body.originalFileName,
-    chapters: truncated,
-    instruction:
-      'Indices are 0-based. Only suggest merging CONSECUTIVE chapters (startIndex..endIndex inclusive on the right). Prefer merging only when excerpts clearly look like front matter, legal boilerplate, TOC fragments, or empty spine noise — not real story chapters. When unsure, suggest nothing. Return strict JSON: { "merges": [ { "startIndex": number, "endIndex": number, "reason": string } ], "notes": string[] }',
-  }
-
-  const system =
-    'You help fix e-reader imports. You only output valid JSON. Be conservative: false negatives are better than merging real chapters.'
+  let modelLabel: string
+  let content: string
 
   try {
-    const res = await fetch(OPENROUTER_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-        'HTTP-Referer': site,
-        'X-Title': 'Jon-fun reader chapter structure',
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0.1,
-        max_tokens: 2000,
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: JSON.stringify(userPayload) },
-        ],
-      }),
-    })
-
-    if (!res.ok) {
-      const errText = await res.text().catch(() => '')
-      return Response.json(
-        { error: `OpenRouter error ${res.status}`, detail: errText.slice(0, 500) },
-        { status: 502 },
-      )
+    if (useGoogle) {
+      modelLabel = process.env.READER_CHAPTER_GEMINI_MODEL ?? 'gemini-3.1-flash-lite-preview'
+      const out = await callGoogleGemini(gKey!, modelLabel, userJson)
+      content = out.text
+      modelLabel = out.model
+    } else {
+      modelLabel = process.env.READER_CHAPTER_LLM_MODEL ?? 'openai/gpt-4o-mini'
+      const out = await callOpenRouter(orKey!, modelLabel, site, userJson)
+      content = out.text
+      modelLabel = out.model
     }
-
-    const data = (await res.json()) as {
-      choices?: { message?: { content?: string } }[]
-    }
-    const content = data.choices?.[0]?.message?.content
-    if (!content) {
-      return Response.json({ error: 'Empty model response.' }, { status: 502 })
-    }
-
-    let parsed: unknown
-    try {
-      parsed = extractJsonFromAssistantText(content)
-    } catch {
-      return Response.json({ error: 'Model did not return parseable JSON.', raw: content.slice(0, 800) }, { status: 502 })
-    }
-
-    const chapterCount = truncated.length
-    const { merges, notes } = clampMerges(parsed, chapterCount)
-    const allNotes = [...notes, ...(truncatedNote ? [truncatedNote] : [])]
-
-    return Response.json({
-      merges: merges.map((m) => ({ ...m, kind: 'llm' as const })),
-      notes: allNotes,
-      model,
-    })
   } catch (caught) {
     const message = caught instanceof Error ? caught.message : 'LLM request failed.'
-    return Response.json({ error: message }, { status: 500 })
+    return Response.json({ error: message }, { status: 502 })
   }
+
+  let parsed: unknown
+  try {
+    parsed = extractJsonFromAssistantText(content)
+  } catch {
+    return Response.json({ error: 'Model did not return parseable JSON.', raw: content.slice(0, 800) }, { status: 502 })
+  }
+
+  const chapterCount = truncated.length
+  const { merges, notes } = clampMerges(parsed, chapterCount)
+  const allNotes = [...notes, ...(truncatedNote ? [truncatedNote] : [])]
+
+  return Response.json({
+    merges: merges.map((m) => ({ ...m, kind: 'llm' as const })),
+    notes: allNotes,
+    model: modelLabel,
+    provider: useGoogle ? 'google' : 'openrouter',
+  })
 }
