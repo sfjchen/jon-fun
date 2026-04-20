@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 
-import type { ReaderPublication, ReaderPublicationSummary } from '../../src/lib/reader/types'
+import type { ReaderProgress, ReaderPublication, ReaderPublicationSummary } from '../../src/lib/reader/types'
 
 function toSummary(publication: ReaderPublication): ReaderPublicationSummary {
   return {
@@ -32,6 +32,7 @@ function isCommunalListPath(url: URL): boolean {
  */
 export function installReaderCommunalMock(page: Page): void {
   const store = new Map<string, ReaderPublication>()
+  const readingState = new Map<string, ReaderProgress>()
 
   void page.route(/\/api\/reader\/communal/i, async (route) => {
     const req = route.request()
@@ -39,6 +40,23 @@ export function installReaderCommunalMock(page: Page): void {
     const method = req.method()
     const pathId = communalPathId(url)
     const listPath = isCommunalListPath(url)
+    const readingStateMatch = url.pathname.match(/\/api\/reader\/communal\/([^/]+)\/reading-state\/?$/i)
+    const readingStateId = readingStateMatch?.[1] ?? null
+
+    if (readingStateId && method === 'GET') {
+      const p = readingState.get(readingStateId) ?? null
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ progress: p }) })
+    }
+
+    if (readingStateId && method === 'PATCH') {
+      try {
+        const body = JSON.parse(req.postData() || 'null') as ReaderProgress
+        if (body?.chapterId) readingState.set(readingStateId, body)
+        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) })
+      } catch {
+        return route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ error: 'bad_json' }) })
+      }
+    }
 
     if (method === 'GET' && listPath) {
       if (url.searchParams.get('export') === '1') {

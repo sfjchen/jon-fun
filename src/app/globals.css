@@ -198,6 +198,27 @@ html.notebook-theme-root {
     border-radius: 0.2em;
   }
 
+  /* Reading band: soften top/bottom of the column (focus / reduced distraction). */
+  .reader-prose[data-focus-band="on"] {
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 12%,
+      #000 88%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  }
+
+  [data-reader-ui="novel"] .reader-surface {
+    padding-top: 1.5rem;
+    padding-bottom: 2rem;
+  }
+  [data-reader-ui="study"] .reader-surface {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+  }
+
   /* Import studio preview: match reader rhythm (NovelFire-style comfortable blocks) */
   .reader-import-preview-prose p {
     margin: 0 0 1.25rem;

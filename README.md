@@ -4,7 +4,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 
 ## 🎮 Games
 
-- **Web e-reader** (`/games/e-reader`): NovelFire-style reader — paste/upload text, PDF, or **EPUB** (PDF/EPUB parsing via server routes `extract-pdf` / `extract-epub`, files not stored), chapterize (PDF heuristics or EPUB spine), typography + themes, TTS (Text-To-Speech), bookmarks, in-book search + highlights, TOC sidebar, keyboard shortcuts, export `.txt`; library in IndexedDB. **DRM (Digital Rights Management)** EPUBs are not supported.
+- **Web e-reader** (`/games/e-reader`): NovelFire-style reader — paste/upload **TXT**, PDF, or **EPUB** (PDF/EPUB via `extract-pdf` / `extract-epub`; files not stored), chapterize + optional **Gemini** merge/split hints, **anchored progress** (`data-block-id` + optional communal **`reading_state`** sync), **semantic search** re-ranking when `NEXT_PUBLIC_READER_SEMANTIC_SEARCH=1` + `POST /api/reader/embed`, typography/themes, **Novel / Study** UI modes, optional **reading band** mask, TTS (Text-To-Speech), bookmarks, in-book search, TOC sidebar, keyboard shortcuts, export `.txt`; library in IndexedDB or communal Supabase. Benchmark rubric: [`docs/READER-BENCHMARK.md`](docs/READER-BENCHMARK.md). **DRM (Digital Rights Management)** EPUBs are not supported.
 - **5 Can Sorting** (`/games/five-can-sorting`): Five doodle soda cans, hidden target order; **Swap** mode (swap-only) or **Shift** mode (insert-from/to or swap); optional **Hint** (shortest path to solution); count-correct feedback only; keyboard 1–5 / Enter / H / Esc / N; local-only
 - **24 Game** (`/games/24`): Use 4 numbers and basic arithmetic to make 24
 - **Jeopardy with Friends** (`/games/jeopardy`): Create and play custom Jeopardy boards locally
@@ -319,7 +319,11 @@ src/
 
 **`POST /api/game24/next-round`**: Advance state (active → intermission (5s) → next round up to 8, then finished)
 
-**`POST /api/reader/extract-pdf`**: Multipart form field `file` (PDF, max ~12 MB) — returns `{ text, notes }` for the web e-reader import. Used so PDF text extraction runs reliably on the server (file is not persisted); saved books remain in IndexedDB on the client.
+**`POST /api/reader/extract-pdf`**: Multipart form field `file` (PDF, max ~12 MB) — returns `{ text, notes, extractMeta }` (`pageCount`, `totalChars`, `avgCharsPerPage`, `scannedLikely`) for the web e-reader import. Used so PDF text extraction runs reliably on the server (file is not persisted); saved books remain in IndexedDB on the client.
+
+**`POST /api/reader/embed`**: JSON `{ query, excerpts[] }` — returns `{ scores[] }` (cosine vs query) using **`GEMINI_API_KEY`** and **`READER_EMBED_GEMINI_MODEL`** (default **`text-embedding-004`**). Optional client feature flag **`NEXT_PUBLIC_READER_SEMANTIC_SEARCH=1`** re-ranks in-book search hits.
+
+**`GET` / `PATCH /api/reader/communal/[id]/reading-state`**: Read/update **`reading_state`** JSON for communal shelf sync (503 if Supabase not configured).
 
 **`POST /api/reader/extract-epub`**: Multipart form field `file` (EPUB / `.epub`, max ~12 MB) — returns `{ packageTitle, chapters: { title, paragraphs[] }[], notes }` from the OPF spine (DRM-free EPUBs only). File is not persisted.
 
@@ -450,7 +454,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-04**
 
-- **Web e-reader (Gemini API)**: `POST /api/reader/suggest-chapter-structure` can call **Google** `generativelanguage.googleapis.com` with **`GEMINI_API_KEY`** / **`GOOGLE_GENERATIVE_AI_API_KEY`** (default model **`gemini-3.1-flash-lite-preview`**, **`READER_CHAPTER_GEMINI_MODEL`** to override). OpenRouter remains available; **`READER_CHAPTER_LLM_PROVIDER`** forces `google` vs `openrouter`.
+- **Web e-reader (benchmark + architecture pass)**: [`docs/READER-BENCHMARK.md`](docs/READER-BENCHMARK.md) rubric (NovelFire / Kobo / Readwise / BookFusion / Play Books–style criteria); **block-anchored** reading position + optional **`GET/PATCH /api/reader/communal/[id]/reading-state`** (Supabase columns `reading_state`, `ingest_meta` — [`supabase/migrations/20260419120000_reader_reading_state_ingest_meta.sql`](supabase/migrations/20260419120000_reader_reading_state_ingest_meta.sql)); **`POST /api/reader/suggest-chapter-structure`** defaults to **`gemini-2.5-flash`** with optional escalation to **`gemini-2.5-pro`** (`READER_CHAPTER_GEMINI_ESCALATION_MODEL`, disable with `READER_CHAPTER_GEMINI_ESCALATE=0`); **`READER_CHAPTER_GEMINI_MODEL`** / **`READER_CHAPTER_LLM_PROVIDER`** (`google` \| `openrouter`) unchanged; **`POST /api/reader/embed`** (text embeddings for semantic hit ordering when **`NEXT_PUBLIC_READER_SEMANTIC_SEARCH=1`**); PDF extract returns **`extractMeta`** (scanned-PDF likelihood); import drafts carry **`ingestMeta`** heuristics; **`reader-performance`** marks; E2E [`e2e/e-reader-txt.spec.ts`](e2e/e-reader-txt.spec.ts) + [`e2e/fixtures/minimal-reader-test.txt`](e2e/fixtures/minimal-reader-test.txt).
 - **Web e-reader (AI structure pipeline)**: Chapter hints return **`merges`**, **`splitChapters`** (midpoint split in UI), **`formatNotes`** (excerpt-only advisory), plus **`notes`**; Gemini uses optional **response schema** with JSON-mode fallback on 400. Payload excerpts default **~280 chars** per chapter (`draftToChapterStructurePayload`). Scripts: **`npm run smoke:reader-suggest-chapter`**, **`npm run smoke:reader-communal-list`**, **`npm run sync:reader-communal-fixtures`** (fixture → Supabase upsert + Arcanum cleanup).
 - **Web e-reader (EPUB spine coalescing)**: **`createEpubImportDraft`** merges short **`Book N`** spine stubs into the following section and (if original spine ≥20 items) merges very short leading sections — **Meditations** dokumen fixture **~34 → ~19** chapters (12 books + front/back matter) instead of duplicated “Meditations” TOC rows.
 - **Repo layout (flat)**: `5_can_sorting_game/` → `docs/five-can-sorting/` (paper sources); Meditations PDF → `e2e/fixtures/` (e-reader E2E); sample Jeopardy JSON → `data/jeopardy/`; stray `image/cursor_*` → `docs/image/cursor-viewport-validation/`; `.vercelignore` updated; README “Repository layout” section.

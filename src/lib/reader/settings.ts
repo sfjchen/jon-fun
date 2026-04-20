@@ -1,8 +1,10 @@
 import type {
   ReaderAccent,
+  ReaderBookmark,
   ReaderCssVariables,
   ReaderFontPreset,
   ReaderPreferences,
+  ReaderProgress,
   ReaderTheme,
   ReaderThemeTokens,
 } from '@/lib/reader/types'
@@ -81,6 +83,8 @@ export const defaultReaderPreferences: ReaderPreferences = {
   autoNextChapter: false,
   ttsRate: 1,
   voiceURI: '',
+  uiMode: 'novel',
+  focusBandEnabled: false,
 }
 
 function isBrowser(): boolean {
@@ -137,7 +141,7 @@ export function readerCssVariables(prefs: ReaderPreferences): ReaderCssVariables
   }
 }
 
-function progressKey(bookId: string, chapterId: string): string {
+export function readerProgressStorageKey(bookId: string, chapterId: string): string {
   return `${PROGRESS_PREFIX}:${bookId}:${chapterId}`
 }
 
@@ -145,59 +149,72 @@ function bookmarkKey(bookId: string): string {
   return `${BOOKMARK_PREFIX}:${bookId}`
 }
 
-export function saveReaderProgress(bookId: string, chapterId: string, scrollY: number) {
+export type SaveReaderProgressInput = {
+  scrollY: number
+  blockId?: string
+  charOffset?: number
+}
+
+export function saveReaderProgress(bookId: string, chapterId: string, scrollY: number, anchor?: Pick<SaveReaderProgressInput, 'blockId' | 'charOffset'>) {
   if (!isBrowser()) return
 
-  const payload = {
+  const payload: ReaderProgress = {
     chapterId,
     scrollY,
     savedAt: new Date().toISOString(),
+    schemaVersion: 2,
+    ...(anchor?.blockId ? { blockId: anchor.blockId, charOffset: anchor.charOffset ?? 0 } : {}),
   }
+  // chapterId always stored for sync + validation
 
-  window.localStorage.setItem(progressKey(bookId, chapterId), JSON.stringify(payload))
+  window.localStorage.setItem(readerProgressStorageKey(bookId, chapterId), JSON.stringify(payload))
   window.localStorage.setItem(LAST_BOOK_KEY, bookId)
   window.localStorage.setItem(LAST_ROUTE_KEY, `${bookId}:${chapterId}`)
 }
 
-export function loadReaderProgress(bookId: string, chapterId: string): { scrollY: number; savedAt: string } | null {
+export function loadReaderProgress(bookId: string, chapterId: string): ReaderProgress | null {
   if (!isBrowser()) return null
 
   try {
-    const raw = window.localStorage.getItem(progressKey(bookId, chapterId))
+    const raw = window.localStorage.getItem(readerProgressStorageKey(bookId, chapterId))
     if (!raw) return null
-    const parsed = JSON.parse(raw) as { scrollY?: number; savedAt?: string }
+    const parsed = JSON.parse(raw) as ReaderProgress
     if (typeof parsed.scrollY !== 'number' || typeof parsed.savedAt !== 'string') return null
-    return { scrollY: parsed.scrollY, savedAt: parsed.savedAt }
+    if (parsed.chapterId != null && parsed.chapterId !== chapterId) return null
+    return parsed
   } catch {
     return null
   }
 }
 
-export function saveReaderBookmark(bookId: string, chapterId: string, scrollY: number) {
+export function saveReaderBookmark(
+  bookId: string,
+  chapterId: string,
+  scrollY: number,
+  anchor?: { blockId?: string; charOffset?: number },
+) {
   if (!isBrowser()) return
 
   const payload = {
     chapterId,
     scrollY,
     savedAt: new Date().toISOString(),
+    schemaVersion: 2 as const,
+    ...(anchor?.blockId ? { blockId: anchor.blockId, charOffset: anchor.charOffset ?? 0 } : {}),
   }
 
   window.localStorage.setItem(bookmarkKey(bookId), JSON.stringify(payload))
 }
 
-export function loadReaderBookmark(bookId: string): { chapterId: string; scrollY: number; savedAt: string } | null {
+export function loadReaderBookmark(bookId: string): ReaderBookmark | null {
   if (!isBrowser()) return null
 
   try {
     const raw = window.localStorage.getItem(bookmarkKey(bookId))
     if (!raw) return null
-    const parsed = JSON.parse(raw) as { chapterId?: string; scrollY?: number; savedAt?: string }
+    const parsed = JSON.parse(raw) as ReaderBookmark
     if (typeof parsed.chapterId !== 'string' || typeof parsed.scrollY !== 'number' || typeof parsed.savedAt !== 'string') return null
-    return {
-      chapterId: parsed.chapterId,
-      scrollY: parsed.scrollY,
-      savedAt: parsed.savedAt,
-    }
+    return parsed
   } catch {
     return null
   }
