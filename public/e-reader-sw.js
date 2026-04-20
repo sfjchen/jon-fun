@@ -1,10 +1,10 @@
-const CACHE_NAME = 'sfjc-reader-shell-v1'
+const CACHE_NAME = 'sfjc-reader-shell-v2'
 const FALLBACK_PATH = '/games/e-reader'
-const PRECACHE = [FALLBACK_PATH, '/theme2/games/e-reader']
 
 self.addEventListener('install', (event) => {
+  // Never use cache.addAll with optional paths: one 404 fails the whole install.
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE)),
+    caches.open(CACHE_NAME).then((cache) => cache.add(FALLBACK_PATH)),
   )
   self.skipWaiting()
 })
