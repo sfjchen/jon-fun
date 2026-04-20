@@ -3,6 +3,8 @@ import path from 'node:path'
 
 import { expect, test } from '@playwright/test'
 
+import { installReaderCommunalMock } from './helpers/reader-communal-mock'
+
 const FIXTURE = path.join(process.cwd(), 'e2e/fixtures/meditations-a-new-translation-hardcover.pdf')
 const ROOT = path.join(process.cwd(), 'meditations-a-new-translation-hardcover.pdf')
 const MEDITATIONS_PDF = fs.existsSync(FIXTURE) ? FIXTURE : ROOT
@@ -12,8 +14,9 @@ const hasMeditationsPdf = fs.existsSync(MEDITATIONS_PDF)
   test('Meditations PDF: multi-chapter import, save, reader search', async ({ page }) => {
     test.setTimeout(180_000)
 
+    installReaderCommunalMock(page)
     await page.goto('/games/e-reader?e2eUpload=1', { waitUntil: 'domcontentloaded', timeout: 60_000 })
-    await expect(page.getByRole('heading', { name: /Import books into a local-first e-reader/i })).toBeVisible({ timeout: 25_000 })
+    await expect(page.getByRole('heading', { name: /Import books into the communal e-reader/i })).toBeVisible({ timeout: 25_000 })
 
     await expect(page.getByTestId('reader-file-input')).toBeVisible({ timeout: 15_000 })
     await page.getByTestId('reader-file-input').setInputFiles(MEDITATIONS_PDF)

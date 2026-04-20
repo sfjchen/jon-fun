@@ -124,16 +124,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
 
   useEffect(() => {
     void registerReaderServiceWorker()
-    void (async () => {
-      await loadLibrary()
-      const result = await syncBundledReaderCatalog(false)
-      if (result.kind === 'merged' && result.count > 0) {
-        await loadLibrary()
-        setCatalogBanner(
-          `Site catalog: added or updated ${result.count} book(s). Deploy public/reader/library-curated.json with stable publication ids so every device gets the same “best” editions.`,
-        )
-      }
-    })()
+    void loadLibrary()
   }, [loadLibrary])
 
   /** E2E (End-to-End): `?e2eUpload=1` opens file mode without relying on click timing (Playwright). */
@@ -379,11 +370,12 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
         <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-base font-semibold" style={{ color: 'var(--ink-accent)' }}>NovelFire-style web reader</p>
-            <h1 className="font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>Import books into a local-first e-reader</h1>
+            <h1 className="font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>Import books into the communal e-reader</h1>
             <p className="mt-2 max-w-3xl text-sm" style={{ color: 'var(--ink-muted)' }}>
               Paste plain text or upload `.txt` / `.md` on-device. PDF and EPUB are parsed once on the server (not stored) for reliable text; chapters follow PDF heuristics or the EPUB spine. DRM EPUBs are not supported.{' '}
-              <strong style={{ color: 'var(--ink-text)' }}>Your library is only on this browser</strong> (IndexedDB (Indexed Database API)): another laptop or phone starts with an empty shelf until you import something. Use Export / Import library (.json) to clone your shelf, or deploy a{' '}
-              <code className="rounded bg-black/5 px-1">public/reader/library-curated.json</code> site catalog so every visitor gets the same curated books automatically. Reading progress stays per-browser unless you move localStorage keys too.
+              <strong style={{ color: 'var(--ink-text)' }}>The shared shelf starts empty</strong> and grows when anyone uploads or saves a book: with the communal backend enabled, the same library list is visible on every device. If the backend is not configured for this deployment, the app falls back to{' '}
+              <strong style={{ color: 'var(--ink-text)' }}>this browser only</strong> (IndexedDB (Indexed Database API)). Reading progress and bookmarks stay per-device in localStorage unless you migrate those keys. Use Export / Import library (.json) for a portable backup. Optional{' '}
+              <code className="rounded bg-black/5 px-1">public/reader/library-curated.json</code> (Load site catalog) can still seed the local fallback when you self-host without Supabase.
             </p>
           </div>
           <div className="rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-muted)' }}>
@@ -537,7 +529,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
             </div>
             {libraryCards.length === 0 ? (
               <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-                No saved books yet. Import one on the left, import a `.json` shelf from another device, or use Load site catalog if this deployment ships `library-curated.json`.
+                No saved books in the shared shelf yet. Import on the left, merge a `.json` portable library, or use Load site catalog if this deployment ships `library-curated.json` (local-fallback seed only).
               </p>
             ) : (
               <div className="space-y-3">
