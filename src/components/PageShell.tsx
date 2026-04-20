@@ -27,27 +27,6 @@ function isChwaziPath(pathname: string): boolean {
   return pathname?.includes('/games/chwazi') ?? false
 }
 
-/** Notebook “card” routes: compact header + border, solid page bg — same shell as e-reader / party games (not the tall 90px line-paper header). */
-function isNotebookCardPage(pathname: string | null): boolean {
-  if (!pathname) return false
-  const p = pathname
-  return (
-    p.includes('/games/jeopardy') ||
-    p.includes('/games/chwazi') ||
-    p.includes('/games/mental-obstacle-course') ||
-    p.includes('/games/e-reader') ||
-    p.includes('/games/five-can-sorting') ||
-    p.includes('/games/quip-clash') ||
-    p.includes('/games/fib-it') ||
-    p.includes('/games/enough-about-you') ||
-    p.includes('/games/daily-log') ||
-    p.includes('/games/24') ||
-    p.includes('/games/tmr') ||
-    p.includes('/games/poker') ||
-    p.includes('/leaderboards')
-  )
-}
-
 export function PageShell({ children, title, showBack }: PageShellProps) {
   const pathname = usePathname()
   const [isMobile, setIsMobile] = useState(false)
@@ -88,8 +67,8 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
     }
   }, [fullBleed])
 
-  const isCardPage = isNotebookCardPage(pathname ?? null)
-  const outerLinePaper = isNotebook && !pearNav && !isCardPage
+  /** Same line-paper shell + 90px header on home and all notebook routes so the banner does not jump when navigating (pear-navigator keeps its own full-bleed shell). */
+  const outerLinePaper = isNotebook && !pearNav
   const useCompactHeader = fullBleed && !useBigLogo
   const headerPadding = useCompactHeader ? 'px-3 py-2' : isNotebook ? 'px-4 py-3 md:py-4' : 'px-4 py-3 md:py-4'
   const logoSize = useBigLogo ? 'text-5xl md:text-6xl lg:text-7xl' : useCompactHeader ? 'text-2xl sm:text-3xl' : 'text-3xl md:text-4xl'

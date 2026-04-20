@@ -44,7 +44,7 @@ These guide **what** we build (product + UX) and **how** it should feel (visual 
 ### Global chrome (`PageShell`)
 
 - **`sfjc.dev` masthead** appears across games and tools in a **consistent role**: same centered title treatment as on the home page, and **always links to home** (`/`). Subpages keep **← Home** for explicit back navigation where useful.
-- **Exceptions** (compact header, full-bleed): Pear Navigator, Chwazi mobile, Poker lobby/table—still branded **sfjc.dev**, still wired to home (see `PageShell.tsx`).
+- **Exceptions** (different shell / full-bleed): **Pear Navigator** (own layout), **Chwazi mobile** (non-notebook chrome for touch UI), **Poker lobby & table** (full-bleed main—masthead still **sfjc.dev** → home). Inner game pages share the same **line-paper + tall** header as `/` (see `PageShell.tsx`).
 
 ### Visual and tonal language (ties to themes)
 
@@ -61,7 +61,7 @@ These guide **what** we build (product + UX) and **how** it should feel (visual 
 
 ## 🎨 Visual system & themes (quick reference)
 
-**Themes:** **Notebook** is the only public theme (at `/`). Legacy **Ink & Paper** pages live in `src/app/_archive/theme2` (Next.js private folder — not reachable on the web). **Tokens:** `var(--ink-*)` in `globals.css`; notebook maps those to `--nb-*` via `data-theme="notebook"`. **Game-specific:** Poker (green felt), Pear Navigator (dark inner UI). **Own-theme / compact header:** Chwazi mobile, Pear Navigator, Poker lobby & table. Full detail: **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)**.
+**Themes:** **Notebook** is the only public theme (at `/`). Legacy **Ink & Paper** pages live in `src/app/_archive/theme2` (Next.js private folder — not reachable on the web). **Tokens:** `var(--ink-*)` in `globals.css`; notebook maps those to `--nb-*` via `data-theme="notebook"`. **Game-specific:** Poker (green felt), Pear Navigator (dark inner UI). **Shell exceptions:** Chwazi mobile, Pear Navigator, Poker lobby & table (full-bleed / alternate chrome). Full detail: **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)**.
 
 ---
 
@@ -456,7 +456,7 @@ Running log of project work. Update this section when making significant changes
 - **Home cards**: Removed inner icon “tile” (border + white fill); icons sit on the card again with `drop-shadow`. Larger titles (`text-xl` / `sm:text-2xl`), more padding and grid gaps.
 - **Home grid (compact)**: Dropped “Open/Preview” under titles; shorter min-heights and padding; e-reader / Quip Clash / Fib It / Enough About You use dedicated doodles (`ereader.svg`, `quip-clash.svg`, `fib-it.svg`, `eay.svg`) instead of reused Jeopardy / 24 / daily / “Aa” text.
 - **Typography**: Home project tiles use `text-xl` / `sm:text-2xl` Lora semibold (aligned with `PageShell` page titles); Web E-Reader hero and 5 Can Sorting `h1` scale to `text-3xl` / `sm:text-4xl`.
-- **PageShell card routes**: `isNotebookCardPage()` includes daily log, 24, TMR, and poker (plus existing games) so the header matches Web E-Reader / five-can (compact header + border, solid `ink-bg`) instead of the tall line-paper-only header. Daily Learn titles/width aligned with other games; poker hub error banner + outer padding adjusted for notebook background.
+- **PageShell header**: Notebook uses one **line-paper + 90px** header on **home and all inner routes** (`outerLinePaper = isNotebook && !pearNav`) so the top banner does not jump when opening games. Pear Navigator keeps its own full-bleed shell. (Earlier “card route” split removed.)
 - **Home grid**: Tighter project tiles (smaller icon row, padding, min-height, title step down to `text-lg`/`sm:text-xl`); larger gaps between tiles (`gap-y-10` / `sm:gap-y-12`, wider column gap on `sm`).
 - **Web e-reader (PDF pipeline)**: PDF import uses `pdf-parse` on the server (`/api/reader/extract-pdf`) with `pdf-reflow` paragraph logic + `B ook`→`Book` normalization + chapter-heading line breaks; `next.config.mjs` `serverExternalPackages` for `pdf-parse`/`pdfjs-dist`; E2E `e2e/e-reader.spec.ts` (optional fixture `e2e/fixtures/meditations-a-new-translation-hardcover.pdf` or repo root); `?e2eUpload=1` opens file mode for tests.
 - **Web e-reader (PDF / Node)**: Install `dommatrix` on `globalThis` before loading `pdf-parse` so pdf.js does not throw `DOMMatrix is not defined` in Node (see `src/lib/reader/node-pdf-polyfill.ts`).
