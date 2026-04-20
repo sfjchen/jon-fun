@@ -74,6 +74,9 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
   const logoSize = useBigLogo ? 'text-5xl md:text-6xl lg:text-7xl' : useCompactHeader ? 'text-2xl sm:text-3xl' : 'text-3xl md:text-4xl'
   /* Chwazi mobile: full-viewport fixed layer in main would paint over header without a stacking boost */
   const headerStackClass = chwaziMobile ? 'relative z-50' : ''
+  /** Tighter horizontal gutters on phone so e-reader text column uses more width. */
+  const readerReadCompact = (pathname ?? '').startsWith('/games/e-reader/read')
+  const mainPadX = readerReadCompact ? 'px-2 sm:px-4' : 'px-4'
   return (
     <div
       data-theme={isNotebook ? 'notebook' : undefined}
@@ -107,7 +110,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
         className={
           fullBleed
             ? 'flex-1 min-h-0 w-full max-w-none px-0 flex flex-col'
-            : `mx-auto max-w-6xl px-4 ${
+            : `mx-auto max-w-6xl ${mainPadX} ${
                 isHome && outerLinePaper
                   ? 'pt-[30px] pb-8'
                   : isHome

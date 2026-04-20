@@ -102,16 +102,17 @@ html.notebook-theme-root {
    * User “Page width” (--reader-max-width) is min()’d with this so sliders still work.
    */
   :root {
-    --reader-layout-cap: min(26rem, calc(100vw - 2rem));
+    /* Phone: keep prose nearly full-bleed; PageShell + reader-surface use smaller px on /games/e-reader/read */
+    --reader-layout-cap: min(26rem, calc(100vw - 1rem));
   }
   @media (min-width: 480px) {
     :root {
-      --reader-layout-cap: min(32rem, calc(100vw - 2.25rem));
+      --reader-layout-cap: min(32rem, calc(100vw - 1.25rem));
     }
   }
   @media (min-width: 640px) {
     :root {
-      --reader-layout-cap: min(40rem, calc(100vw - 2.5rem));
+      --reader-layout-cap: min(40rem, calc(100vw - 1.5rem));
     }
   }
   @media (min-width: 1024px) {

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ReaderBody } from '@/components/reader/ReaderBody'
+import { ReaderChapterEndNav } from '@/components/reader/ReaderChapterEndNav'
 import { SettingsDrawer } from '@/components/reader/SettingsDrawer'
 import { markReaderContentPaint } from '@/lib/reader/reader-performance'
 import {
@@ -550,7 +551,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   return (
     <section style={cssVars} className="notebook-line-paper pb-safe" data-reader-ui={prefs.uiMode}>
       <div
-        className="sticky top-0 z-30 mb-5 rounded-3xl border px-4 py-4 shadow-sm md:px-6"
+        className="sticky top-0 z-30 mb-5 rounded-3xl border px-2 py-4 shadow-sm sm:px-4 md:px-6"
         style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
       >
         <div className="e-reader-chrome-muted mb-3 flex flex-wrap items-center justify-between gap-3 text-sm">
@@ -695,7 +696,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
         </div>
       </div>
 
-      <div className="flex items-start gap-6">
+      <div className="flex items-start gap-3 md:gap-6">
         {!mobile && tocOpen ? (
           <nav
             className="e-reader-chrome-panel e-reader-chrome-scrollbar sticky top-24 z-10 hidden max-h-[70vh] w-52 shrink-0 overflow-y-auto rounded-3xl p-4 lg:block"
@@ -731,13 +732,23 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
             </div>
           ) : null}
 
-          <div className="reader-surface px-4 py-8 md:px-8 md:py-10">
+          <div className="reader-surface px-2 py-8 sm:px-4 md:px-8 md:py-10">
             <ReaderBody
               chapter={chapter}
               prefs={prefs}
               highlightQuery={searchActiveQuery}
               focusBand={prefs.focusBandEnabled}
             />
+            {mobile ? (
+              <ReaderChapterEndNav
+                chapters={chapters}
+                chapterId={chapter.id}
+                currentIndex={currentIndex}
+                canGoPrev={canGoPrev}
+                canGoNext={canGoNext}
+                onGoToChapter={(id) => goToChapter(id)}
+              />
+            ) : null}
           </div>
         </div>
 
