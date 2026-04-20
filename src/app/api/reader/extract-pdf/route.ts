@@ -29,8 +29,8 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { text, notes } = await extractPdfTextFromBuffer(buf)
-    return Response.json({ text, notes })
+    const { text, notes, extractMeta } = await extractPdfTextFromBuffer(buf)
+    return Response.json({ text, notes, extractMeta })
   } catch (caught) {
     const message = caught instanceof Error ? caught.message : 'PDF extraction failed.'
     return Response.json({ error: message }, { status: 500 })

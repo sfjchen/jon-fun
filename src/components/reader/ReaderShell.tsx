@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ReaderBody } from '@/components/reader/ReaderBody'
 import { SettingsDrawer } from '@/components/reader/SettingsDrawer'
+import { markReaderContentPaint } from '@/lib/reader/reader-performance'
 import {
   defaultReaderPreferences,
   loadReaderBookmark,
@@ -16,7 +17,9 @@ import {
   saveReaderProgress,
 } from '@/lib/reader/settings'
 import { registerReaderServiceWorker } from '@/lib/reader/pwa'
+import { mergeRemoteReadingStateIfNewer, syncRemoteReadingState } from '@/lib/reader/reading-state-sync'
 import { findSearchHits } from '@/lib/reader/search-book'
+import { rankSearchHitsByEmbedding } from '@/lib/reader/semantic-search'
 import type { ReaderBookmark, ReaderPreferences, ReaderPublication, ReaderTheme } from '@/lib/reader/types'
 
 type ReaderShellProps = {
@@ -52,6 +55,23 @@ function isEditableTarget(t: EventTarget | null): boolean {
   return t.isContentEditable
 }
 
+/** Pick the paragraph block closest to the upper reading anchor (stable resume). */
+function pickVisibleBlockAnchor(): { blockId: string; charOffset: number } | null {
+  const nodes = document.querySelectorAll<HTMLElement>('[data-block-id]')
+  if (!nodes.length) return null
+  const anchorY = window.innerHeight * 0.22
+  let best: { id: string; score: number } | null = null
+  for (const el of nodes) {
+    const r = el.getBoundingClientRect()
+    if (r.bottom < -80 || r.top > window.innerHeight + 80) continue
+    const id = el.dataset.blockId
+    if (!id) continue
+    const score = -Math.abs(r.top - anchorY)
+    if (!best || score > best.score) best = { id, score }
+  }
+  return best ? { blockId: best.id, charOffset: 0 } : null
+}
+
 export function ReaderShell({ publication, initialChapterId, routeBase }: ReaderShellProps) {
   const router = useRouter()
   const [chapterId, setChapterId] = useState(initialChapterId)
@@ -66,8 +86,11 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   const [searchActiveQuery, setSearchActiveQuery] = useState('')
   const [hitIndex, setHitIndex] = useState(0)
   const [tocOpen, setTocOpen] = useState(true)
+  const [rankedSearchHits, setRankedSearchHits] = useState<ReturnType<typeof findSearchHits> | null>(null)
 
   const pendingRestoreRef = useRef<number | null>(null)
+  /** After chapter navigation, scroll to this bookmark (not generic progress). */
+  const pendingBookmarkJumpRef = useRef<ReaderBookmark | null>(null)
   const autoNextLockRef = useRef('')
   const flashTimeoutRef = useRef<number | null>(null)
   const searchInputRef = useRef<HTMLInputElement | null>(null)
@@ -82,14 +105,40 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   const prevChapterId = currentIndex > 0 ? chapters[currentIndex - 1]?.id ?? '' : ''
   const nextChapterId = currentIndex < chapters.length - 1 ? chapters[currentIndex + 1]?.id ?? '' : ''
 
-  const hits = useMemo(() => findSearchHits(publication, searchActiveQuery), [publication, searchActiveQuery])
+  const lexicalHits = useMemo(() => findSearchHits(publication, searchActiveQuery), [publication, searchActiveQuery])
+
+  useEffect(() => {
+    setRankedSearchHits(null)
+    const q = searchActiveQuery.trim()
+    if (!q) return
+    if (process.env.NEXT_PUBLIC_READER_SEMANTIC_SEARCH !== '1') return
+    let cancelled = false
+    const base = findSearchHits(publication, q)
+    void rankSearchHitsByEmbedding(q, base, (h) => {
+      const ch = publication.chapters.find((c) => c.id === h.chapterId)
+      return ch?.paragraphs[h.paragraphIndex] ?? ''
+    }).then((next) => {
+      if (!cancelled) setRankedSearchHits(next)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [publication, searchActiveQuery])
+
+  const hits = rankedSearchHits ?? lexicalHits
 
   useEffect(() => {
     setChapterId(initialChapterId)
   }, [initialChapterId])
 
   useEffect(() => {
-    setPrefs(loadReaderPreferences())
+    const loaded = loadReaderPreferences()
+    setPrefs({
+      ...defaultReaderPreferences,
+      ...loaded,
+      uiMode: loaded.uiMode ?? defaultReaderPreferences.uiMode,
+      focusBandEnabled: loaded.focusBandEnabled ?? defaultReaderPreferences.focusBandEnabled,
+    })
     setBookmark(loadReaderBookmark(publication.id))
   }, [publication.id])
 
@@ -100,6 +149,14 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   useEffect(() => {
     registerReaderServiceWorker()
   }, [])
+
+  useEffect(() => {
+    void mergeRemoteReadingStateIfNewer(publication.id, chapterId)
+  }, [publication.id, chapterId])
+
+  useEffect(() => {
+    if (prefs.uiMode === 'study' && !mobile) setTocOpen(true)
+  }, [prefs.uiMode, mobile])
 
   useEffect(() => {
     const media = window.matchMedia('(max-width: 1023px)')
@@ -150,18 +207,48 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      const pending = pendingRestoreRef.current
       if (!chapter) {
         pendingRestoreRef.current = null
         return
       }
-      const saved = pending ?? loadReaderProgress(publication.id, chapter.id)?.scrollY ?? 0
-      window.scrollTo({ top: saved, behavior: 'auto' })
+
+      const bmJump = pendingBookmarkJumpRef.current
+      if (bmJump && bmJump.chapterId === chapter.id) {
+        pendingBookmarkJumpRef.current = null
+        pendingRestoreRef.current = null
+        if (bmJump.blockId) {
+          const el = document.querySelector<HTMLElement>(`[data-block-id="${CSS.escape(bmJump.blockId)}"]`)
+          if (el) {
+            el.scrollIntoView({ block: 'center', behavior: prefersReducedMotion ? 'auto' : 'smooth' })
+            markReaderContentPaint()
+            return
+          }
+        }
+        window.scrollTo({ top: bmJump.scrollY, behavior: prefersReducedMotion ? 'auto' : 'smooth' })
+        markReaderContentPaint()
+        return
+      }
+
+      const pending = pendingRestoreRef.current
+      const loaded = typeof pending === 'number' ? null : loadReaderProgress(publication.id, chapter.id)
+      const scrollFallback = typeof pending === 'number' ? pending : (loaded?.scrollY ?? 0)
+
+      if (loaded?.blockId) {
+        const el = document.querySelector<HTMLElement>(`[data-block-id="${CSS.escape(loaded.blockId)}"]`)
+        if (el) {
+          el.scrollIntoView({ block: 'start', behavior: 'auto' })
+          markReaderContentPaint()
+          pendingRestoreRef.current = null
+          return
+        }
+      }
+      window.scrollTo({ top: scrollFallback, behavior: 'auto' })
+      markReaderContentPaint()
       pendingRestoreRef.current = null
     }, 40)
 
     return () => window.clearTimeout(timer)
-  }, [publication.id, chapter])
+  }, [publication.id, chapter, prefersReducedMotion])
 
   useEffect(() => {
     if (!hits.length) {
@@ -216,7 +303,9 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
 
   const saveCurrentProgress = useCallback(() => {
     if (!chapter) return
-    saveReaderProgress(publication.id, chapter.id, window.scrollY)
+    const anchor = pickVisibleBlockAnchor()
+    saveReaderProgress(publication.id, chapter.id, window.scrollY, anchor ?? undefined)
+    void syncRemoteReadingState(publication.id, chapter.id, window.scrollY, anchor ?? undefined)
   }, [publication.id, chapter])
 
   useEffect(() => {
@@ -388,21 +477,35 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
 
   const handleSaveBookmark = useCallback(() => {
     if (!chapter) return
-    const next = {
+    const anchor = pickVisibleBlockAnchor()
+    const next: ReaderBookmark = {
       chapterId: chapter.id,
       scrollY: window.scrollY,
       savedAt: new Date().toISOString(),
+      schemaVersion: 2,
+      ...(anchor ? { blockId: anchor.blockId, charOffset: anchor.charOffset } : {}),
     }
-    saveReaderBookmark(publication.id, next.chapterId, next.scrollY)
+    saveReaderBookmark(publication.id, next.chapterId, next.scrollY, anchor ?? undefined)
     setBookmark(next)
     showFlash('Saved bookmark')
   }, [chapter, publication.id, showFlash])
 
   const handleJumpToBookmark = useCallback(() => {
-    if (!bookmark) return
-    goToChapter(bookmark.chapterId, bookmark.scrollY)
+    if (!bookmark || !chapter) return
+    if (bookmark.chapterId === chapter.id) {
+      if (bookmark.blockId) {
+        const el = document.querySelector<HTMLElement>(`[data-block-id="${CSS.escape(bookmark.blockId)}"]`)
+        el?.scrollIntoView({ block: 'center', behavior: prefersReducedMotion ? 'auto' : 'smooth' })
+      } else {
+        window.scrollTo({ top: bookmark.scrollY, behavior: prefersReducedMotion ? 'auto' : 'smooth' })
+      }
+      showFlash(`Jumped to bookmark from ${formatSavedAt(bookmark.savedAt)}`)
+      return
+    }
+    pendingBookmarkJumpRef.current = bookmark
+    goToChapter(bookmark.chapterId)
     showFlash(`Jumped to bookmark from ${formatSavedAt(bookmark.savedAt)}`)
-  }, [bookmark, goToChapter, showFlash])
+  }, [bookmark, chapter, goToChapter, prefersReducedMotion, showFlash])
 
   const toggleSpeak = useCallback(() => {
     if (!window.speechSynthesis || !chapter) return
@@ -436,7 +539,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   }
 
   return (
-    <section style={cssVars} className="notebook-line-paper pb-safe">
+    <section style={cssVars} className="notebook-line-paper pb-safe" data-reader-ui={prefs.uiMode}>
       <div
         className="sticky top-0 z-30 mb-5 rounded-3xl border px-4 py-4 shadow-sm md:px-6"
         style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
@@ -620,7 +723,12 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
           ) : null}
 
           <div className="reader-surface px-4 py-8 md:px-8 md:py-10">
-            <ReaderBody chapter={chapter} prefs={prefs} highlightQuery={searchActiveQuery} />
+            <ReaderBody
+              chapter={chapter}
+              prefs={prefs}
+              highlightQuery={searchActiveQuery}
+              focusBand={prefs.focusBandEnabled}
+            />
           </div>
         </div>
 

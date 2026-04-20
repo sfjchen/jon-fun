@@ -1,6 +1,13 @@
 'use client'
 
-import type { ReaderAccent, ReaderFontPreset, ReaderPreferences, ReaderTheme, ReaderTextAlign } from '@/lib/reader/types'
+import type {
+  ReaderAccent,
+  ReaderFontPreset,
+  ReaderPreferences,
+  ReaderTheme,
+  ReaderTextAlign,
+  ReaderUiMode,
+} from '@/lib/reader/types'
 
 type VoiceOption = {
   label: string
@@ -53,6 +60,11 @@ const alignments: Array<{ id: ReaderTextAlign; label: string }> = [
   { id: 'right', label: 'Right' },
   { id: 'justify', label: 'Justify' },
   { id: 'center', label: 'Center' },
+]
+
+const uiModes: Array<{ id: ReaderUiMode; label: string; hint: string }> = [
+  { id: 'novel', label: 'Novel', hint: 'Comfortable, minimal chrome bias' },
+  { id: 'study', label: 'Study', hint: 'Denser layout + TOC bias' },
 ]
 
 function Toggle({
@@ -228,11 +240,31 @@ export function SettingsDrawer({
         </div>
       </section>
 
+      <section className="mb-5">
+        <h3 className="mb-2 text-sm font-semibold">UI mode</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {uiModes.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              title={m.hint}
+              className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-left text-sm"
+              data-active={prefs.uiMode === m.id}
+              onClick={() => onChange('uiMode', m.id)}
+            >
+              <span className="font-medium">{m.label}</span>
+              <span className="e-reader-chrome-muted mt-0.5 block text-xs">{m.hint}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
       <section className="mb-5 space-y-2">
         <h3 className="text-sm font-semibold">Reading helpers</h3>
         <Toggle checked={prefs.textIndent} label="Text indent" onChange={(next) => onChange('textIndent', next)} />
         <Toggle checked={prefs.bionic} label="Bionic reading" onChange={(next) => onChange('bionic', next)} />
         <Toggle checked={prefs.copyEnabled} label="Copy text" onChange={(next) => onChange('copyEnabled', next)} />
+        <Toggle checked={prefs.focusBandEnabled} label="Reading band (soft edges)" onChange={(next) => onChange('focusBandEnabled', next)} />
       </section>
 
       <section className="mb-5">

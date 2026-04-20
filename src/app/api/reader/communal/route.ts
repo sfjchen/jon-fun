@@ -65,6 +65,16 @@ export async function POST(request: NextRequest) {
   }
 
   const row = publicationToDbRow(publication)
+  const { data: existing } = await supabaseAdmin
+    .from('reader_communal_publications')
+    .select('reading_state')
+    .eq('id', publication.id)
+    .maybeSingle()
+  const existingState = existing && typeof existing === 'object' && 'reading_state' in existing ? (existing as { reading_state?: unknown }).reading_state : null
+  if (existingState && typeof existingState === 'object') {
+    ;(row as { reading_state?: unknown }).reading_state = existingState
+  }
+
   const { error } = await supabaseAdmin.from('reader_communal_publications').upsert(row, { onConflict: 'id' })
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })

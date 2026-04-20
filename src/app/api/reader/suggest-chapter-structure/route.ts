@@ -194,12 +194,21 @@ export async function POST(req: Request) {
   let modelLabel: string
   let content: string
 
+  const flashModel = process.env.READER_CHAPTER_GEMINI_MODEL ?? 'gemini-2.5-flash'
+  const escalationModel = process.env.READER_CHAPTER_GEMINI_ESCALATION_MODEL ?? 'gemini-2.5-pro'
+
   try {
     if (useGoogle) {
-      modelLabel = process.env.READER_CHAPTER_GEMINI_MODEL ?? 'gemini-3.1-flash-lite-preview'
-      const out = await callGoogleGemini(gKey!, modelLabel, userJson)
-      content = out.text
-      modelLabel = out.model
+      try {
+        const out = await callGoogleGemini(gKey!, flashModel, userJson)
+        content = out.text
+        modelLabel = out.model
+      } catch (firstErr) {
+        if ((process.env.READER_CHAPTER_GEMINI_ESCALATE ?? '1') === '0') throw firstErr
+        const out = await callGoogleGemini(gKey!, escalationModel, userJson)
+        content = out.text
+        modelLabel = `${out.model} (escalated)`
+      }
     } else {
       modelLabel = process.env.READER_CHAPTER_LLM_MODEL ?? 'openai/gpt-4o-mini'
       const out = await callOpenRouter(orKey!, modelLabel, site, userJson)

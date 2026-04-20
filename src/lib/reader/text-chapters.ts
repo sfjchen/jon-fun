@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
+import { mergeIngestMeta, scoreTxtChapterizeConfidence, epubDefaultIngestMeta } from '@/lib/reader/ingest-confidence'
 import { formatImportParagraphs, normalizeLinesKeepVerticalStructure } from '@/lib/reader/paragraph-format'
-import type { ReaderChapter, ReaderImportDraft, ReaderSourceType } from '@/lib/reader/types'
+import type { ReaderChapter, ReaderImportDraft, ReaderIngestMeta, ReaderSourceType } from '@/lib/reader/types'
 
 const CHAPTER_HEADING_RE =
   /^(chapter|chap\.?|book|part|section|episode|prologue|epilogue)\s+((\d+|[ivxlcdm]+)([\s.:~-].*)?|[a-z0-9'":,\- ]+)$/i
@@ -305,6 +306,8 @@ export function createImportDraft(input: {
   originalFileName?: string
   sourceType: ReaderSourceType
   notes?: string[]
+  /** e.g. PDF extract heuristics merged with TXT scoring. */
+  ingestMeta?: ReaderIngestMeta
 }): ReaderImportDraft {
   const title =
     input.title?.trim() ||
@@ -332,11 +335,15 @@ export function createImportDraft(input: {
     'TXT / paste / EPUB: no model rewriting — only whitespace, line breaks, and splitting very long blocks at sentences for display. Wording and letters stay as extracted.',
   )
 
+  const txtMeta = scoreTxtChapterizeConfidence(chapters, input.rawText.length)
+  const mergedMeta = mergeIngestMeta(input.ingestMeta, txtMeta)
+
   const draft: ReaderImportDraft = {
     title,
     sourceType: input.sourceType,
     chapters,
     importNotes,
+    ...(mergedMeta ? { ingestMeta: mergedMeta } : {}),
   }
 
   if (input.originalFileName) draft.originalFileName = input.originalFileName
@@ -458,6 +465,7 @@ export function createEpubImportDraft(input: {
     sourceType: 'epub',
     chapters,
     importNotes,
+    ingestMeta: epubDefaultIngestMeta(chapters.length),
   }
   if (input.originalFileName) draft.originalFileName = input.originalFileName
   return draft

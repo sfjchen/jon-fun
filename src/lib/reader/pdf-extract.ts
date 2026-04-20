@@ -3,7 +3,14 @@
  * Keeps the client bundle free of pdf.js workers (brittle under Next.js) while preserving the same
  * reflow output as `pdf-extract-server.ts` + `pdf-reflow.ts`.
  */
-export async function extractPdfText(file: File): Promise<{ text: string; notes: string[] }> {
+export type PdfExtractClientMeta = {
+  pageCount: number
+  totalChars: number
+  avgCharsPerPage: number
+  scannedLikely: boolean
+}
+
+export async function extractPdfText(file: File): Promise<{ text: string; notes: string[]; extractMeta?: PdfExtractClientMeta }> {
   const fd = new FormData()
   fd.append('file', file)
   const res = await fetch('/api/reader/extract-pdf', {
@@ -22,5 +29,5 @@ export async function extractPdfText(file: File): Promise<{ text: string; notes:
     throw new Error(message)
   }
 
-  return (await res.json()) as { text: string; notes: string[] }
+  return (await res.json()) as { text: string; notes: string[]; extractMeta?: PdfExtractClientMeta }
 }

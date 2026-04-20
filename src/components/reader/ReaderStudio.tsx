@@ -13,6 +13,7 @@ import {
   renameChapter,
   splitChapterAtMidpoint,
 } from '@/lib/reader/text-chapters'
+import { pdfExtractIngestMeta } from '@/lib/reader/ingest-confidence'
 import { extractEpub } from '@/lib/reader/epub-extract'
 import { extractPdfText } from '@/lib/reader/pdf-extract'
 import { parsePortableLibrary, stringifyPortableLibrary } from '@/lib/reader/library-portable'
@@ -163,6 +164,14 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
       const isPdf = selectedFile.type === 'application/pdf' || /\.pdf$/i.test(selectedFile.name)
       if (isPdf) {
         const extracted = await extractPdfText(selectedFile)
+        const pdfMeta =
+          extracted.extractMeta != null
+            ? pdfExtractIngestMeta(
+                extracted.extractMeta.pageCount,
+                extracted.extractMeta.totalChars,
+                extracted.extractMeta.scannedLikely,
+              )
+            : undefined
         setDraft(
           createImportDraft({
             rawText: extracted.text,
@@ -170,6 +179,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
             title,
             originalFileName: selectedFile.name,
             notes: extracted.notes,
+            ...(pdfMeta ? { ingestMeta: pdfMeta } : {}),
           }),
         )
         return
@@ -298,6 +308,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
         ? { originalFileName: draft.originalFileName }
         : {}),
       ...(draft.importNotes?.length ? { importNotes: draft.importNotes } : {}),
+      ...(draft.ingestMeta ? { ingestMeta: draft.ingestMeta } : {}),
     }
 
     await saveReaderPublication(publication)
