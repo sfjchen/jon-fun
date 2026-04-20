@@ -115,18 +115,32 @@ export function SettingsDrawer({
 }: SettingsDrawerProps) {
   if (!open) return null
 
+  const asideClass = mobile
+    ? 'e-reader-chrome-panel e-reader-chrome-scrollbar w-full max-h-[min(88dvh,calc(100dvh-0.5rem))] overflow-y-auto rounded-t-3xl rounded-b-none border-x-0 border-b-0 border-t p-5 pb-safe shadow-[0_-12px_40px_rgba(15,23,42,0.14)]'
+    : 'e-reader-chrome-panel e-reader-chrome-scrollbar sticky top-6 w-[340px] shrink-0 overflow-y-auto rounded-3xl p-5'
+
   const panel = (
     <aside
-      className={`e-reader-chrome-panel e-reader-chrome-scrollbar ${mobile ? 'h-full w-full max-w-md overflow-y-auto rounded-l-3xl p-5' : 'sticky top-6 w-[340px] shrink-0 overflow-y-auto rounded-3xl p-5'}`}
+      className={asideClass}
       aria-label="Reader settings"
+      role={mobile ? 'dialog' : undefined}
+      aria-modal={mobile ? true : undefined}
+      onClick={mobile ? (e) => e.stopPropagation() : undefined}
     >
+      {mobile ? (
+        <div
+          className="mx-auto mb-4 h-1 w-10 shrink-0 rounded-full"
+          style={{ backgroundColor: 'var(--ink-border)', opacity: 0.45 }}
+          aria-hidden
+        />
+      ) : null}
       <div className="mb-5 flex items-center justify-between gap-3">
         <div>
           <p className="e-reader-chrome-muted text-xs uppercase tracking-[0.24em]">Reader settings</p>
           <h2 className="text-lg font-semibold">Customize your reading view</h2>
         </div>
         <button type="button" onClick={onClose} className="e-reader-chrome-chip reader-focus rounded-full px-3 py-1.5 text-sm">
-          Close
+          {mobile ? 'Done' : 'Close'}
         </button>
       </div>
 
@@ -374,7 +388,11 @@ export function SettingsDrawer({
   if (!mobile) return panel
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/35 p-3 sm:p-4">
+    <div
+      className="fixed inset-0 z-50 flex flex-col justify-end bg-black/40 backdrop-blur-[1px]"
+      role="presentation"
+      onClick={onClose}
+    >
       {panel}
     </div>
   )

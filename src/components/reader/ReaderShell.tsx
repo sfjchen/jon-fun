@@ -87,6 +87,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   const [searchActiveQuery, setSearchActiveQuery] = useState('')
   const [hitIndex, setHitIndex] = useState(0)
   const [tocOpen, setTocOpen] = useState(true)
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [rankedSearchHits, setRankedSearchHits] = useState<ReturnType<typeof findSearchHits> | null>(null)
 
   const pendingRestoreRef = useRef<number | null>(null)
@@ -189,6 +190,12 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
     if (!mobile) return
     setPrefs((current) => (current.panelOpen ? { ...current, panelOpen: false } : current))
   }, [mobile])
+
+  useEffect(() => {
+    if (!mobile || !mobileSearchOpen) return
+    const id = window.requestAnimationFrame(() => searchInputRef.current?.focus())
+    return () => window.cancelAnimationFrame(id)
+  }, [mobile, mobileSearchOpen])
 
   useEffect(() => {
     if (!mobile || !prefs.panelOpen) return
@@ -426,12 +433,14 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
 
       if (e.key === '/' && !typing) {
         e.preventDefault()
+        if (mobile) setMobileSearchOpen(true)
         searchInputRef.current?.focus()
         return
       }
 
       if (e.key === 'Escape' && document.activeElement === searchInputRef.current) {
         searchInputRef.current?.blur()
+        if (mobile) setMobileSearchOpen(false)
         return
       }
 
@@ -479,7 +488,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
 
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [goToChapter, hits.length, nextChapterId, nextHit, prevChapterId, prevHit, runFind])
+  }, [goToChapter, hits.length, mobile, nextChapterId, nextHit, prevChapterId, prevHit, runFind])
 
   const handleReset = useCallback(() => {
     setPrefs({ ...defaultReaderPreferences, panelOpen: mobile ? false : true })
@@ -551,10 +560,69 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   return (
     <section style={cssVars} className="notebook-line-paper pb-safe" data-reader-ui={prefs.uiMode}>
       <div
-        className="sticky top-0 z-30 mb-5 rounded-3xl border px-2 py-4 shadow-sm sm:px-4 md:px-6"
+        className="sticky top-0 z-30 mb-3 rounded-2xl border px-2 py-3 shadow-sm sm:mb-4 sm:rounded-3xl sm:py-4 md:mb-5 md:px-6"
         style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
       >
-        <div className="e-reader-chrome-muted mb-3 flex flex-wrap items-center justify-between gap-3 text-sm">
+        <div className="flex flex-col gap-2 md:hidden">
+          <div className="flex items-center gap-2">
+            <Link
+              href={routeBase}
+              className="reader-focus shrink-0 rounded-xl px-2.5 py-2 text-sm font-semibold"
+              style={{ color: 'var(--ink-accent)' }}
+            >
+              ← Library
+            </Link>
+            <span
+              className="min-w-0 flex-1 truncate text-center text-xs font-medium leading-tight"
+              style={{ color: 'var(--ink-text)' }}
+              title={publication.title}
+            >
+              {publication.title}
+            </span>
+            <button
+              type="button"
+              onClick={cycleTheme}
+              className="e-reader-chrome-chip reader-focus shrink-0 rounded-xl px-3 py-2 text-xs font-semibold"
+              title="Cycle color theme"
+            >
+              Aa
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileSearchOpen((o) => !o)}
+              className={`reader-focus shrink-0 rounded-xl border px-3 py-2 text-xs font-semibold ${
+                mobileSearchOpen ? 'e-reader-chrome-action border-transparent' : 'e-reader-chrome-chip'
+              }`}
+              aria-expanded={mobileSearchOpen}
+            >
+              {mobileSearchOpen ? 'Done' : 'Search'}
+            </button>
+          </div>
+          {flashMessage ? (
+            <p className="text-center text-xs font-medium" style={{ color: 'var(--ink-accent)' }}>
+              {flashMessage}
+            </p>
+          ) : null}
+        </div>
+
+        {mobile ? (
+          <label className="sr-only">
+            <span>Choose chapter</span>
+            <select
+              ref={chapterSelectRef}
+              value={chapter.id}
+              onChange={(event) => goToChapter(event.target.value)}
+            >
+              {chapters.map((item, index) => (
+                <option key={item.id} value={item.id}>
+                  {index + 1}. {item.title}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+
+        <div className="e-reader-chrome-muted mb-3 hidden flex-wrap items-center justify-between gap-3 text-sm md:flex">
           <nav className="flex flex-wrap items-center gap-2" aria-label="Breadcrumb">
             <Link href="/" className="reader-focus rounded-md hover:underline">
               Home
@@ -566,12 +634,12 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
             <span aria-hidden>/</span>
             <Link
               href={`${routeBase}/read/${publication.id}/${chapter.id}`}
-              className="reader-focus max-w-[14rem] truncate rounded-md hover:underline md:max-w-[18rem]"
+              className="reader-focus max-w-56 truncate rounded-md hover:underline md:max-w-72"
             >
               {publication.title}
             </Link>
             <span aria-hidden>/</span>
-            <span className="max-w-[14rem] truncate md:max-w-[18rem]" title={chapter.title}>
+            <span className="max-w-56 truncate md:max-w-72" title={chapter.title}>
               {chapter.title}
             </span>
           </nav>
@@ -582,7 +650,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
           ) : null}
         </div>
 
-        <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="mb-4 hidden flex-col gap-4 lg:flex-row lg:items-start lg:justify-between md:flex">
           <div className="max-w-3xl">
             <p className="mb-1 text-sm font-semibold" style={{ color: 'var(--ink-accent)' }}>
               {publication.title}
@@ -593,16 +661,14 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
             </p>
           </div>
           <div className="flex flex-wrap gap-2 self-start">
-            {!mobile ? (
-              <button
-                type="button"
-                onClick={() => setTocOpen((v) => !v)}
-                className="e-reader-chrome-chip reader-focus rounded-2xl px-4 py-2 text-sm font-medium"
-                aria-pressed={tocOpen}
-              >
-                {tocOpen ? 'Hide contents' : 'Contents'}
-              </button>
-            ) : null}
+            <button
+              type="button"
+              onClick={() => setTocOpen((v) => !v)}
+              className="e-reader-chrome-chip reader-focus rounded-2xl px-4 py-2 text-sm font-medium"
+              aria-pressed={tocOpen}
+            >
+              {tocOpen ? 'Hide contents' : 'Contents'}
+            </button>
             <button type="button" onClick={cycleTheme} className="e-reader-chrome-chip reader-focus rounded-2xl px-4 py-2 text-sm font-medium" title="Cycle theme">
               Theme
             </button>
@@ -616,84 +682,88 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
           </div>
         </div>
 
-        <div
-          className="mb-4 flex flex-col gap-2 rounded-2xl border px-3 py-3 md:flex-row md:flex-wrap md:items-center"
-          style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)' }}
-        >
-          <label className="min-w-0 flex-1 md:min-w-[200px]">
-            <span className="sr-only">Search in book</span>
-            <input
-              ref={searchInputRef}
-              value={searchDraft}
-              onChange={(e) => setSearchDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  runFind()
-                }
-              }}
-              placeholder="Search in book…"
-              className="e-reader-chrome-input reader-focus w-full rounded-xl border px-3 py-2 text-sm"
-              autoComplete="off"
-              spellCheck={false}
-            />
-          </label>
-          <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={runFind} className="e-reader-chrome-action reader-focus rounded-xl px-3 py-2 text-sm font-medium">
-              Find
-            </button>
-            <button type="button" onClick={prevHit} disabled={!hits.length} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
-              Prev
-            </button>
-            <button type="button" onClick={nextHit} disabled={!hits.length} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
-              Next
-            </button>
-            <button type="button" onClick={clearSearch} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm">
-              Clear
-            </button>
-            <span className="e-reader-chrome-muted flex items-center px-2 text-xs" aria-live="polite">
-              {hitLabel}
-            </span>
+        {mobile && !mobileSearchOpen ? null : (
+          <div
+            className="mb-3 flex flex-col gap-2 rounded-2xl border px-3 py-3 md:mb-4 md:flex-row md:flex-wrap md:items-center"
+            style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)' }}
+          >
+            <label className="min-w-0 flex-1 md:min-w-[200px]">
+              <span className="sr-only">Search in book</span>
+              <input
+                ref={searchInputRef}
+                value={searchDraft}
+                onChange={(e) => setSearchDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    runFind()
+                  }
+                }}
+                placeholder="Search in book…"
+                className="e-reader-chrome-input reader-focus w-full rounded-xl border px-3 py-2 text-sm"
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </label>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={runFind} className="e-reader-chrome-action reader-focus rounded-xl px-3 py-2 text-sm font-medium">
+                Find
+              </button>
+              <button type="button" onClick={prevHit} disabled={!hits.length} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
+                Prev
+              </button>
+              <button type="button" onClick={nextHit} disabled={!hits.length} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
+                Next
+              </button>
+              <button type="button" onClick={clearSearch} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm">
+                Clear
+              </button>
+              <span className="e-reader-chrome-muted flex items-center px-2 text-xs" aria-live="polite">
+                {hitLabel}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
 
-        <p className="e-reader-chrome-muted mb-3 text-xs">
+        <p className="e-reader-chrome-muted mb-3 hidden text-xs md:block">
           Shortcuts: / focus search · Enter find · n / Shift+n next/prev match · [ ] prev/next chapter · g chapter menu
         </p>
 
-        <div className="flex flex-col gap-3 md:flex-row md:items-center">
-          <button
-            type="button"
-            onClick={() => prevChapterId && goToChapter(prevChapterId)}
-            disabled={!canGoPrev}
-            className="e-reader-chrome-action reader-focus rounded-2xl px-4 py-3 text-sm font-medium disabled:opacity-40"
-          >
-            Previous
-          </button>
-          <label className="flex-1">
-            <span className="sr-only">Choose chapter</span>
-            <select
-              ref={chapterSelectRef}
-              className="e-reader-chrome-input reader-focus w-full rounded-2xl border px-4 py-3 text-sm"
-              value={chapter.id}
-              onChange={(event) => goToChapter(event.target.value)}
+        {!mobile ? (
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <button
+              type="button"
+              onClick={() => prevChapterId && goToChapter(prevChapterId)}
+              disabled={!canGoPrev}
+              className="e-reader-chrome-action reader-focus rounded-2xl px-4 py-3 text-sm font-medium disabled:opacity-40"
             >
-              {chapters.map((item, index) => (
-                <option key={item.id} value={item.id}>
-                  {index + 1}. {item.title}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button
-            type="button"
-            onClick={() => nextChapterId && goToChapter(nextChapterId)}
-            disabled={!canGoNext}
-            className="e-reader-chrome-action reader-focus rounded-2xl px-4 py-3 text-sm font-medium disabled:opacity-40"
-          >
-            Next
-          </button>
-        </div>
+              Previous
+            </button>
+            <label className="flex-1">
+              <span className="sr-only">Choose chapter</span>
+              <select
+                ref={chapterSelectRef}
+                className="e-reader-chrome-input reader-focus w-full rounded-2xl border px-4 py-3 text-sm"
+                value={chapter.id}
+                onChange={(event) => goToChapter(event.target.value)}
+              >
+                {chapters.map((item, index) => (
+                  <option key={item.id} value={item.id}>
+                    {index + 1}. {item.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              onClick={() => nextChapterId && goToChapter(nextChapterId)}
+              disabled={!canGoNext}
+              className="e-reader-chrome-action reader-focus rounded-2xl px-4 py-3 text-sm font-medium disabled:opacity-40"
+            >
+              Next
+            </button>
+          </div>
+        ) : null}
       </div>
 
       <div className="flex items-start gap-3 md:gap-6">
@@ -732,7 +802,17 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
             </div>
           ) : null}
 
-          <div className="reader-surface px-2 py-8 sm:px-4 md:px-8 md:py-10">
+          <div className="reader-surface max-md:pb-24 px-2 py-6 sm:px-4 md:px-8 md:py-10">
+            {mobile ? (
+              <header className="mb-8 border-b pb-6" style={{ borderColor: 'var(--reader-border)' }}>
+                <h1 className="text-[1.35rem] font-semibold leading-snug sm:text-2xl" style={{ color: 'var(--reader-text)' }}>
+                  {chapter.title}
+                </h1>
+                <p className="mt-2 text-sm" style={{ color: 'var(--reader-muted)' }}>
+                  Chapter {currentIndex + 1} of {chapters.length} · {formatWordCount(chapter.wordCount)}
+                </p>
+              </header>
+            ) : null}
             <ReaderBody
               chapter={chapter}
               prefs={prefs}
@@ -778,9 +858,14 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
         <button
           type="button"
           onClick={() => updatePref('panelOpen', true)}
-          className="e-reader-chrome-action reader-focus fixed bottom-safe right-4 z-40 rounded-full px-4 py-3 text-sm font-semibold shadow-lg"
+          className="e-reader-chrome-action reader-focus fixed bottom-safe right-3 z-40 flex h-12 w-12 items-center justify-center rounded-full shadow-lg"
+          aria-label="Reader settings — typography, theme, TTS (Text-To-Speech), and more"
+          title="Reader settings"
         >
-          Reader settings
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+          </svg>
         </button>
       ) : null}
 

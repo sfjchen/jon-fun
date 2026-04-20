@@ -55,8 +55,11 @@ export function ReaderChapterEndNav({
 
   return (
     <nav
-      className="mt-10 border-t pt-6"
-      style={{ borderColor: 'var(--reader-border)' }}
+      className="mt-10 rounded-2xl border px-1 py-4 sm:px-2"
+      style={{
+        borderColor: 'var(--reader-border)',
+        backgroundColor: 'color-mix(in srgb, var(--reader-panel) 40%, transparent)',
+      }}
       aria-label="Chapter navigation"
     >
       <div className="flex items-stretch gap-2">
