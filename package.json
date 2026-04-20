@@ -15,6 +15,7 @@
     "patch:tinad-wiki-section1": "tsx scripts/patch-tinad-wiki-section1-portable.ts",
     "smoke:reader-suggest-chapter": "tsx scripts/smoke-reader-suggest-chapter.ts",
     "smoke:reader-communal-list": "tsx scripts/reader-communal-summarize.ts",
+    "sync:reader-communal-fixtures": "tsx scripts/sync-reader-communal-from-fixtures.ts",
     "test:e2e": "playwright test",
     "test:e2e:ci": "CI=1 playwright test",
     "test:e2e:ui": "playwright test --ui",
