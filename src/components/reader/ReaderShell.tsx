@@ -898,7 +898,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
               prefs={prefs}
               highlightQuery={searchActiveQuery}
               focusBand={prefs.focusBandEnabled}
-              commentGutter={commentGutterProps}
+              {...(commentGutterProps ? { commentGutter: commentGutterProps } : {})}
             />
             {mobile ? (
               <ReaderChapterEndNav
