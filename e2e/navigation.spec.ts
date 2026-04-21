@@ -13,7 +13,6 @@ const GAME_ROUTES = [
   { path: '/games/quip-clash', name: 'Quip Clash' },
   { path: '/games/fib-it', name: 'Fib It' },
   { path: '/games/enough-about-you', name: 'Enough About You' },
-  { path: '/leaderboards', name: 'Leaderboards' },
 ] as const
 
 test.describe('Navigation', () => {
@@ -34,5 +33,10 @@ test.describe('Navigation', () => {
   test('Pear Navigator still reachable by URL (archived from Theme 1 home)', async ({ page }) => {
     await page.goto('/games/pear-navigator')
     await expect(page).toHaveURL(/\/games\/pear-navigator/)
+  })
+
+  test('Leaderboards still reachable by URL (not on main home grid)', async ({ page }) => {
+    await page.goto('/leaderboards')
+    await expect(page).toHaveURL(/\/leaderboards/)
   })
 })
