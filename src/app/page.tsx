@@ -30,13 +30,13 @@ const items: GameCardGame[] = [
   { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom boards locally', icon: `${nb}/jeopardy.svg`, href: '/games/jeopardy', available: true },
   {
     id: 'connections',
-    title: 'Connections (community)',
+    title: 'Connections',
     description: 'NYT-style groups of four; build puzzles and browse a public shelf',
     icon: `${nb}/connections.svg`,
     href: '/games/connections',
     available: true,
   },
-  { id: 'poker', title: 'Texas Hold\'em', description: 'Chip tracker with multiplayer lobbies', icon: `${nb}/poker.svg`, href: '/games/poker', available: true },
+  { id: 'poker', title: 'Texas Hold\'em chip tracker', description: 'Chip tracker with multiplayer lobbies', icon: `${nb}/poker.svg`, href: '/games/poker', available: true },
   { id: 'chwazi', title: 'Chwazi Finger Chooser', description: 'Touch screen to pick a winner', icon: `${nb}/chwazi.svg`, href: '/games/chwazi', available: true },
   {
     id: 'mental-obstacle-course',
@@ -85,12 +85,6 @@ export default function Home() {
 
   return (
     <>
-      <div className="mx-auto mb-8 w-full max-w-3xl text-center sm:mb-10">
-        <p className="text-sm leading-7 sm:text-base" style={{ color: 'var(--ink-muted)' }}>
-          A personal lab of useful tools, social games, and playful experiments I actually use.
-        </p>
-      </div>
-
       <ul className="mx-auto grid w-full max-w-5xl list-none grid-cols-1 gap-x-8 gap-y-10 p-0 sm:grid-cols-2 sm:gap-x-10 sm:gap-y-12">
         {items.map((item) => (
           <li key={item.id} className="min-h-0 flex">

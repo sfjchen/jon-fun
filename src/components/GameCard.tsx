@@ -30,9 +30,9 @@ const cardBase =
 
 function HomeTileContent({ game }: { game: GameCardGame }) {
   return (
-    <>
-      {/* Icons sit on the card surface (no inner tile) — matches pre–home-tile layout */}
-      <div className="mb-2 flex h-11 shrink-0 items-center justify-center sm:h-12">
+    <div className="flex w-full flex-col items-center justify-center gap-2 sm:gap-2.5">
+      {/* Icon + title centered as one block (avoid flex-1 title stretching icon upward) */}
+      <div className="flex h-10 w-full shrink-0 items-center justify-center sm:h-11">
         {game.icon.startsWith('/') ? (
           <Image
             src={game.icon}
@@ -49,12 +49,12 @@ function HomeTileContent({ game }: { game: GameCardGame }) {
         )}
       </div>
       <div
-        className="min-h-11 flex-1 text-center font-lora text-lg font-semibold leading-tight sm:min-h-12 sm:text-xl sm:leading-snug line-clamp-2"
+        className="line-clamp-2 text-center font-lora text-lg font-semibold leading-tight sm:text-xl sm:leading-snug"
         style={{ color: 'var(--ink-text)' }}
       >
         {game.title}
       </div>
-    </>
+    </div>
   )
 }
 
@@ -74,7 +74,7 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDesc
         : ' p-[30px]')
 
   const homeTileVisual = (
-    <span aria-hidden className="flex min-h-0 flex-1 flex-col">
+    <span aria-hidden className="flex min-h-0 flex-1 flex-col items-center justify-center">
       <HomeTileContent game={game} />
     </span>
   )

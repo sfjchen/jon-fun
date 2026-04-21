@@ -87,7 +87,7 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="font-lora text-3xl font-semibold" style={{ color: 'var(--ink-text)' }}>
-            Connections (community)
+            Connections
           </h1>
           <p className="mt-1 text-sm" style={{ color: 'var(--ink-muted)' }}>
             Play puzzles from the shelf or publish your own (four groups × four words).

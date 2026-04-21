@@ -11,7 +11,7 @@ test.describe('Home page', () => {
     await expect(page.getByRole('link', { name: /Quip Clash/i })).toBeVisible()
     await expect(page.getByRole('link', { name: /Fib It/i })).toBeVisible()
     await expect(page.getByRole('link', { name: /Enough About You/i })).toBeVisible()
-    await expect(page.getByRole('link', { name: /Connections \(community\)/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /Open Connections/i })).toBeVisible()
   })
 
   test('navigates to TMR game', async ({ page }) => {

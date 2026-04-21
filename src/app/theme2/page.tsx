@@ -21,13 +21,13 @@ const items: GameCardGame[] = [
   { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom boards locally', icon: '/doodles/jeopardy.svg', href: '/theme2/games/jeopardy', available: true },
   {
     id: 'connections',
-    title: 'Connections (community)',
+    title: 'Connections',
     description: 'NYT-style groups of four; build puzzles and browse a public shelf',
     icon: '/doodles/connections.svg',
     href: '/theme2/games/connections',
     available: true,
   },
-  { id: 'poker', title: 'Texas Hold\'em', description: 'Chip tracker with multiplayer lobbies', icon: '/doodles/poker.svg', href: '/theme2/games/poker', available: true },
+  { id: 'poker', title: 'Texas Hold\'em chip tracker', description: 'Chip tracker with multiplayer lobbies', icon: '/doodles/poker.svg', href: '/theme2/games/poker', available: true },
   { id: 'chwazi', title: 'Chwazi Finger Chooser', description: 'Touch screen to pick a winner', icon: '/doodles/chwazi.svg', href: '/theme2/games/chwazi', available: true },
   {
     id: 'mental-obstacle-course',
