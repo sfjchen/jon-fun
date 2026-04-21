@@ -5,7 +5,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ReaderBody } from '@/components/reader/ReaderBody'
 import { ReaderChapterEndNav } from '@/components/reader/ReaderChapterEndNav'
+import { ReaderCommentPanel } from '@/components/reader/ReaderCommentPanel'
 import { SettingsDrawer } from '@/components/reader/SettingsDrawer'
+import { getReaderCommentDisplayName, setReaderCommentDisplayName } from '@/lib/reader/comment-identity'
+import type { ReaderPublicationCommentDto } from '@/lib/reader/comments-server'
 import { markReaderContentPaint } from '@/lib/reader/reader-performance'
 import {
   defaultReaderPreferences,
@@ -89,6 +92,11 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   const [tocOpen, setTocOpen] = useState(true)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [rankedSearchHits, setRankedSearchHits] = useState<ReturnType<typeof findSearchHits> | null>(null)
+  const [chapterComments, setChapterComments] = useState<ReaderPublicationCommentDto[]>([])
+  const [commentsAvailable, setCommentsAvailable] = useState<boolean | null>(null)
+  const [commentPanelOpen, setCommentPanelOpen] = useState(false)
+  const [commentPanelBlockId, setCommentPanelBlockId] = useState<string | null>(null)
+  const [commentDisplayName, setCommentDisplayNameState] = useState('Reader')
 
   const pendingRestoreRef = useRef<number | null>(null)
   /** After chapter navigation, scroll to this bookmark (not generic progress). */
@@ -196,6 +204,57 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
     const id = window.requestAnimationFrame(() => searchInputRef.current?.focus())
     return () => window.cancelAnimationFrame(id)
   }, [mobile, mobileSearchOpen])
+
+  useEffect(() => {
+    setCommentDisplayNameState(getReaderCommentDisplayName())
+  }, [])
+
+  const loadChapterComments = useCallback(async () => {
+    if (!chapter) return
+    const res = await fetch(
+      `/api/reader/comments?publicationId=${encodeURIComponent(publication.id)}&chapterId=${encodeURIComponent(chapter.id)}`,
+      { cache: 'no-store' },
+    )
+    if (res.status === 503) {
+      setCommentsAvailable(false)
+      setChapterComments([])
+      return
+    }
+    if (!res.ok) {
+      setCommentsAvailable(false)
+      setChapterComments([])
+      return
+    }
+    setCommentsAvailable(true)
+    const data = (await res.json()) as { comments?: ReaderPublicationCommentDto[] }
+    setChapterComments(data.comments ?? [])
+  }, [chapter, publication.id])
+
+  useEffect(() => {
+    void loadChapterComments()
+  }, [loadChapterComments])
+
+  const commentCountsByBlock = useMemo(() => {
+    const m: Record<string, number> = {}
+    for (const c of chapterComments) {
+      m[c.blockId] = (m[c.blockId] ?? 0) + 1
+    }
+    return m
+  }, [chapterComments])
+
+  const openCommentThread = useCallback((blockId: string) => {
+    setCommentPanelBlockId(blockId)
+    setCommentPanelOpen(true)
+  }, [])
+
+  const commentGutterProps = useMemo(() => {
+    if (commentsAvailable !== true) return undefined
+    return {
+      countsByBlock: commentCountsByBlock,
+      highlightBlockId: commentPanelOpen ? commentPanelBlockId : null,
+      onOpenThread: openCommentThread,
+    }
+  }, [commentsAvailable, commentCountsByBlock, commentPanelOpen, commentPanelBlockId, openCommentThread])
 
   useEffect(() => {
     if (!mobile || !prefs.panelOpen) return
@@ -839,6 +898,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
               prefs={prefs}
               highlightQuery={searchActiveQuery}
               focusBand={prefs.focusBandEnabled}
+              commentGutter={commentGutterProps}
             />
             {mobile ? (
               <ReaderChapterEndNav
@@ -871,6 +931,12 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
             hasBookmark={Boolean(bookmark)}
             onToggleSpeak={toggleSpeak}
             onReset={handleReset}
+            commentsEnabled={commentsAvailable === true}
+            commentDisplayName={commentDisplayName}
+            onCommentDisplayNameChange={(v) => {
+              setCommentDisplayNameState(v)
+              setReaderCommentDisplayName(v)
+            }}
           />
         ) : null}
       </div>
@@ -893,8 +959,29 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
           hasBookmark={Boolean(bookmark)}
           onToggleSpeak={toggleSpeak}
           onReset={handleReset}
+          commentsEnabled={commentsAvailable === true}
+          commentDisplayName={commentDisplayName}
+          onCommentDisplayNameChange={(v) => {
+            setCommentDisplayNameState(v)
+            setReaderCommentDisplayName(v)
+          }}
         />
       ) : null}
+
+      <ReaderCommentPanel
+        open={commentPanelOpen}
+        mobile={mobile}
+        publicationId={publication.id}
+        chapterId={chapter.id}
+        blockId={commentPanelBlockId}
+        chapterTitle={chapter.title}
+        comments={chapterComments}
+        onClose={() => {
+          setCommentPanelOpen(false)
+          setCommentPanelBlockId(null)
+        }}
+        onPosted={() => void loadChapterComments()}
+      />
     </section>
   )
 }

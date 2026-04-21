@@ -13,6 +13,12 @@ type ReaderBodyProps = {
   highlightQuery?: string
   /** Reading band focus (dims outside band). */
   focusBand?: boolean
+  /** Per-paragraph discussion gutter (+ / count); omitted when comments API unavailable. */
+  commentGutter?: {
+    countsByBlock: Record<string, number>
+    highlightBlockId: string | null
+    onOpenThread: (blockId: string) => void
+  }
 }
 
 function bionicSplit(word: string): { lead: string; tail: string } {
@@ -60,7 +66,13 @@ function renderParagraphContent(paragraph: string, prefs: ReaderPreferences, hig
   })
 }
 
-export function ReaderBody({ chapter, prefs, highlightQuery = '', focusBand = false }: ReaderBodyProps) {
+export function ReaderBody({
+  chapter,
+  prefs,
+  highlightQuery = '',
+  focusBand = false,
+  commentGutter,
+}: ReaderBodyProps) {
   const textAlign = prefs.textAlign
   const proseStyle = useMemo<CSSProperties>(
     () => ({
@@ -78,15 +90,46 @@ export function ReaderBody({ chapter, prefs, highlightQuery = '', focusBand = fa
       style={proseStyle}
       aria-label={`${chapter.title} reading text`}
     >
-      {chapter.paragraphs.map((paragraph, index) => (
-        <p
-          key={`${chapter.id}-${index}`}
-          data-search-paragraph={index}
-          data-block-id={readerBlockIdForParagraph(chapter.id, index)}
-        >
-          {renderParagraphContent(paragraph, prefs, highlightQuery)}
-        </p>
-      ))}
+      {chapter.paragraphs.map((paragraph, index) => {
+        const blockId = readerBlockIdForParagraph(chapter.id, index)
+        const cCount = commentGutter?.countsByBlock[blockId] ?? 0
+        const row = (
+          <p
+            key={`${chapter.id}-${index}`}
+            data-search-paragraph={index}
+            data-block-id={blockId}
+            className={commentGutter ? 'min-w-0 flex-1' : undefined}
+          >
+            {renderParagraphContent(paragraph, prefs, highlightQuery)}
+          </p>
+        )
+        if (!commentGutter) return row
+        return (
+          <div key={`${chapter.id}-${index}`} className="flex gap-1.5 sm:gap-2">
+            <div className="flex w-7 shrink-0 flex-col items-center pt-1 sm:w-8">
+              <button
+                type="button"
+                className={`reader-focus flex h-7 w-7 items-center justify-center rounded-lg border text-[10px] font-bold leading-none sm:h-8 sm:w-8 sm:text-xs ${
+                  commentGutter.highlightBlockId === blockId ? 'ring-2 ring-[var(--reader-accent)] ring-offset-1 ring-offset-[var(--reader-bg)]' : ''
+                }`}
+                style={{
+                  borderColor: 'var(--reader-border)',
+                  backgroundColor:
+                    cCount > 0
+                      ? 'color-mix(in srgb, var(--reader-accent) 20%, var(--reader-panel))'
+                      : 'var(--reader-panel)',
+                  color: 'var(--reader-text)',
+                }}
+                aria-label={cCount > 0 ? `${cCount} discussion note${cCount === 1 ? '' : 's'} on this paragraph` : 'Add discussion note on this paragraph'}
+                onClick={() => commentGutter.onOpenThread(blockId)}
+              >
+                {cCount > 0 ? (cCount > 99 ? '99+' : cCount) : '+'}
+              </button>
+            </div>
+            {row}
+          </div>
+        )
+      })}
     </article>
   )
 }
