@@ -31,6 +31,10 @@ type SettingsDrawerProps = {
   hasBookmark: boolean
   onToggleSpeak: () => void
   onReset: () => void
+  /** When true, show “discussion tag” field (stored locally; shown on posted notes). */
+  commentsEnabled?: boolean
+  commentDisplayName?: string
+  onCommentDisplayNameChange?: (value: string) => void
 }
 
 const fontPresets: Array<{ id: ReaderFontPreset; label: string }> = [
@@ -112,6 +116,9 @@ export function SettingsDrawer({
   hasBookmark,
   onToggleSpeak,
   onReset,
+  commentsEnabled = false,
+  commentDisplayName = '',
+  onCommentDisplayNameChange,
 }: SettingsDrawerProps) {
   if (!open) return null
 
@@ -378,6 +385,25 @@ export function SettingsDrawer({
           />
         </label>
       </section>
+
+      {commentsEnabled && onCommentDisplayNameChange ? (
+        <section className="mb-5">
+          <h3 className="mb-2 text-sm font-semibold">Discussion tag</h3>
+          <p className="e-reader-chrome-muted mb-2 text-xs leading-relaxed">
+            Name shown on notes you post next to paragraphs. Stored on this device only. When accounts exist on this deployment, this can be replaced by your login name later.
+          </p>
+          <label className="block">
+            <span className="sr-only">Display name for discussions</span>
+            <input
+              value={commentDisplayName}
+              onChange={(e) => onCommentDisplayNameChange(e.target.value)}
+              maxLength={64}
+              placeholder="e.g. Alex, bookclub_04"
+              className="e-reader-chrome-input reader-focus w-full rounded-xl border px-3 py-2 text-sm"
+            />
+          </label>
+        </section>
+      ) : null}
 
       <button type="button" onClick={onReset} className="e-reader-chrome-action reader-focus w-full rounded-xl px-4 py-3 text-sm font-semibold">
         Reset to defaults
