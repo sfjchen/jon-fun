@@ -185,7 +185,7 @@ export default function ConnectionsBoard({ puzzle, onComplete }: ConnectionsBoar
   }, [done, selectedKeys.size, submit])
 
   return (
-    <div className="w-full max-w-xl mx-auto space-y-4">
+    <div className="w-full max-w-xl mx-auto space-y-4" data-testid="connections-board">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex gap-1" aria-label="Mistakes remaining">
           {CONNECTIONS_DIFFICULTIES.map((_, i) => (

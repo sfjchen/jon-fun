@@ -6,6 +6,7 @@ const GAME_ROUTES = [
   { path: '/games/daily-log', name: '1 Sentence Everyday' },
   { path: '/games/24', name: '24' },
   { path: '/games/jeopardy', name: 'Jeopardy' },
+  { path: '/games/connections', name: 'Connections' },
   { path: '/games/poker', name: "Texas Hold'em" },
   { path: '/games/chwazi', name: 'Chwazi' },
   { path: '/games/mental-obstacle-course', name: 'Mental Obstacle' },

@@ -79,8 +79,11 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
     return sorted
   }, [items, search, sort])
 
+  const trulyEmpty = !loading && !offline && items.length === 0
+  const noSearchMatches = !loading && items.length > 0 && filtered.length === 0
+
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6">
+    <div className="mx-auto w-full max-w-4xl space-y-6" data-testid="connections-library">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="font-lora text-3xl font-semibold" style={{ color: 'var(--ink-text)' }}>
@@ -124,6 +127,7 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
         <input
           type="search"
           placeholder="Search title, description, tags…"
+          aria-label="Search puzzles"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full rounded-lg border px-3 py-2 text-sm sm:max-w-md"
@@ -145,10 +149,26 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
       </div>
 
       {loading ? (
-        <p style={{ color: 'var(--ink-muted)' }}>Loading…</p>
-      ) : filtered.length === 0 ? (
+        <p data-testid="connections-library-loading" style={{ color: 'var(--ink-muted)' }}>
+          Loading…
+        </p>
+      ) : noSearchMatches ? (
         <div
           className="rounded-lg border p-8 text-center"
+          data-testid="connections-library-no-matches"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
+          <p className="font-lora text-lg mb-2" style={{ color: 'var(--ink-text)' }}>
+            No matches
+          </p>
+          <p className="mb-4 text-sm" style={{ color: 'var(--ink-muted)' }}>
+            Try a different search or clear the box.
+          </p>
+        </div>
+      ) : trulyEmpty ? (
+        <div
+          className="rounded-lg border p-8 text-center"
+          data-testid="connections-library-empty"
           style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
         >
           <p className="font-lora text-lg mb-2" style={{ color: 'var(--ink-text)' }}>
@@ -165,11 +185,12 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
             Create puzzle
           </Link>
         </div>
-      ) : (
+      ) : filtered.length > 0 ? (
         <ul className="grid gap-4 sm:grid-cols-2">
           {filtered.map((it) => (
             <li
               key={it.id}
+              data-testid="connections-library-card"
               className="rounded-lg border p-4 shadow-sm transition-opacity hover:opacity-95"
               style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
             >
@@ -224,7 +245,7 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
             </li>
           ))}
         </ul>
-      )}
+      ) : null}
     </div>
   )
 }
