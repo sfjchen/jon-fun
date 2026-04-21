@@ -73,7 +73,11 @@ export default function ConnectionsPlay({ basePath, idOrSlug }: ConnectionsPlayP
   }, [])
 
   if (loading) {
-    return <p style={{ color: 'var(--ink-muted)' }}>Loading puzzle…</p>
+    return (
+      <p data-testid="connections-play-loading" style={{ color: 'var(--ink-muted)' }}>
+        Loading puzzle…
+      </p>
+    )
   }
   if (err || !puzzle) {
     return (

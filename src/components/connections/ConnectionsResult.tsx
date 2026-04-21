@@ -42,6 +42,7 @@ export default function ConnectionsResult({
   return (
     <div
       className="mx-auto w-full max-w-lg rounded-lg border p-6 shadow-sm"
+      data-testid="connections-result"
       style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
     >
       <h2 className="font-lora text-2xl font-semibold mb-2" style={{ color: 'var(--ink-text)' }}>
