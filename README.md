@@ -17,6 +17,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **Quip Clash** (`/games/quip-clash`): Party room (4-digit **PIN** — Personal Identification Number) — Quiplash-style paired prompts, sequential votes, round multipliers, final round; **Supabase** (PostgreSQL) + **Realtime**; session keys `party_quiplash_*`
 - **Fib It** (`/games/fib-it`): Fibbage-style bluff trivia — lies, shuffled options, picks, likes, 3 rounds; 2–8 players; `party_fibbage_*` session keys
 - **Enough About You** (`/games/enough-about-you`): Intake questions, subject rounds (reputation bonus), final truth-vs-lie vote per player; 3–8 players; `party_eay_*` session keys
+- **Connections (community)** (`/games/connections`): NYT (New York Times)-style **16-word / 4-group** puzzle; **author-assigned** yellow/green/blue/purple tiers; **public shelf** via Supabase (`connections_puzzles`) when service env is set; **fingerprint + display name** for ownership (no login); JSON import/export; theme2 mirror under `/theme2/games/connections`
 
 ## 🚀 Quick Start
 
@@ -104,6 +105,7 @@ src/
 │   │   ├── mental-obstacle-course/
 │   │   ├── quip-clash/
 │   │   ├── fib-it/
+│   │   ├── connections/    # Community Connections shelf + editor + play
 │   │   └── enough-about-you/
 │   ├── leaderboards/       # Leaderboards page
 │   ├── globals.css         # Global styles
@@ -246,6 +248,13 @@ src/
 - `id` (uuid, primary key)
 - `user_id` (text), `date` (date), `text` (text), `updated_at` (timestamptz)
 - Unique on `(user_id, date)` for cross-device sync
+
+**`connections_puzzles`** ([`supabase/migrations/20260421120000_connections_puzzles.sql`](supabase/migrations/20260421120000_connections_puzzles.sql))
+
+- `id` (uuid, primary key), `slug` (text, unique), `title`, `description`, `groups` (jsonb: 4× `{ category, difficulty, words[] }`), `tags` (text[])
+- `author_display`, `author_fingerprint` (browser UUID for edit/delete via API)
+- `play_count`, `solve_count`, `total_mistakes` (aggregate stats; **`connections_record_play`** RPC (Remote Procedure Call) increments atomically)
+- **RLS (Row Level Security)** on; no anon policies — **`GET/POST /api/connections/puzzles`**, **`GET/PATCH/DELETE /api/connections/puzzles/[id]`**, **`POST /api/connections/puzzles/[id]/record`** use **`SUPABASE_SERVICE_ROLE_KEY`**
 
 **`tmr_study_sessions`**
 
@@ -454,6 +463,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-04**
 
+- **Connections (community)**: NYT-style **4×4 word groups** game with **user-authored** puzzles, **public library** (`connections_puzzles` + **`connections_record_play`** RPC), routes **`/games/connections`** (and **`/theme2/games/connections`**), aggregate **play/solve/mistake** stats, **share grid** copy text, **JSON import/export**, **fingerprint** ownership for edit/delete (mirrors reader comment identity pattern).
 - **Web e-reader (paragraph discussions)**: When the communal Supabase backend is configured (`SUPABASE_SERVICE_ROLE_KEY` + real `NEXT_PUBLIC_SUPABASE_URL`), **`reader_publication_comments`** ([`supabase/migrations/20260420120000_reader_publication_comments.sql`](supabase/migrations/20260420120000_reader_publication_comments.sql)) stores notes anchored to **`data-block-id`** / `b-{chapterId}-p{n}`. **`GET/POST /api/reader/comments`** lists and creates threads per chapter. In the reader, each paragraph has a **+ / count** gutter to open a **discussion panel** (author **display tag** from settings + stable browser fingerprint; no login yet — room for future auth). **503** when comments API unavailable (no gutter).
 - **Web e-reader (mobile)**: Narrower horizontal gutters on `/games/e-reader/read` (`PageShell` + reader chrome + `reader-surface`), slightly wider `--reader-layout-cap` on small viewports. **Chapter end bar** (≤1023px): Prev / **chapter picker** (opens upward, single-line truncated titles) / Next. **Read view (≤1023px)**: compact sticky bar (← Library · title · **Aa** · **Search**); search panel **collapsible** (`/` opens it; **Done** / Esc collapses); chapter card header + **gear** opens settings (in-flow at top of chapter — no floating settings button while scrolling); **no duplicate** top Prev/Next row; **settings sheet** = bottom **drawer** with handle, backdrop tap to close, **Done** label.
 - **Web e-reader (reliability)**: Service worker install precaches only `/games/e-reader` (`cache.addAll` with a missing `/theme2/games/e-reader` URL could fail the whole install); cache name bumped so clients drop stale shells. **Invalid chapter URLs** (`/read/[bookId]/[chapterId]`) redirect to the first chapter instead of showing the wrong chapter with a mismatched address bar.
