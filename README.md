@@ -8,7 +8,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **5 Can Sorting** (`/games/five-can-sorting`): Five doodle soda cans, hidden target order; **Swap** mode (swap-only) or **Shift** mode (insert-from/to or swap); optional **Hint** (shortest path to solution); count-correct feedback only; keyboard 1–5 / Enter / H / Esc / N; local-only
 - **24 Game** (`/games/24`): Use 4 numbers and basic arithmetic to make 24
 - **Jeopardy with Friends** (`/games/jeopardy`): Create and play custom Jeopardy boards locally
-- **Texas Hold'em** (`/games/poker`): Poker chip tracker with real-time multiplayer lobbies
+- **Texas Hold'em chip tracker** (`/games/poker`): Poker chip tracker with real-time multiplayer lobbies
 - **Chwazi Finger Chooser** (`/games/chwazi`): Place fingers on screen to randomly select a winner
 - **TMR System** (`/games/tmr`): Targeted Memory Reactivation for learning and sleep
 - **1 Sentence Everyday** (`/games/daily-log`): One sentence per day, history, calendar, export, cross-device sync (localStorage + Supabase)
@@ -17,7 +17,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **Quip Clash** (`/games/quip-clash`): Party room (4-digit **PIN** — Personal Identification Number) — Quiplash-style paired prompts, sequential votes, round multipliers, final round; **Supabase** (PostgreSQL) + **Realtime**; session keys `party_quiplash_*`
 - **Fib It** (`/games/fib-it`): Fibbage-style bluff trivia — lies, shuffled options, picks, likes, 3 rounds; 2–8 players; `party_fibbage_*` session keys
 - **Enough About You** (`/games/enough-about-you`): Intake questions, subject rounds (reputation bonus), final truth-vs-lie vote per player; 3–8 players; `party_eay_*` session keys
-- **Connections (community)** (`/games/connections`): NYT (New York Times)-style **16-word / 4-group** puzzle; **author-assigned** yellow/green/blue/purple tiers; **public shelf** via Supabase (`connections_puzzles`) when service env is set; **fingerprint + display name** for ownership (no login); JSON import/export; theme2 mirror under `/theme2/games/connections`
+- **Connections** (`/games/connections`): NYT (New York Times)-style **16-word / 4-group** puzzle; **author-assigned** yellow/green/blue/purple tiers; **public shelf** via Supabase (`connections_puzzles`) when service env is set; **fingerprint + display name** for ownership (no login); JSON import/export; theme2 mirror under `/theme2/games/connections`
 
 ## 🚀 Quick Start
 
@@ -416,7 +416,7 @@ src/
 ### E2E Testing
 
 - **Playwright** in `e2e/` — tests in `e2e/*.spec.ts`
-- **Coverage**: Home, navigation (all games on the main grid), Game24 (practice), Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Mental Obstacle Course, party games (Quip Clash, Fib It, Enough About You), **Connections (community)** ([`e2e/connections.spec.ts`](e2e/connections.spec.ts) + in-memory [`e2e/helpers/connections-mock.ts`](e2e/helpers/connections-mock.ts)), Leaderboards. **Local**: Chromium + Mobile Chrome. **`CI=1` / `npm run test:e2e:ci`**: Chromium only (faster, less memory).
+- **Coverage**: Home, navigation (all games on the main grid), Game24 (practice), Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Mental Obstacle Course, party games (Quip Clash, Fib It, Enough About You), **Connections** ([`e2e/connections.spec.ts`](e2e/connections.spec.ts) + in-memory [`e2e/helpers/connections-mock.ts`](e2e/helpers/connections-mock.ts)), Leaderboards. **Local**: Chromium + Mobile Chrome. **`CI=1` / `npm run test:e2e:ci`**: Chromium only (faster, less memory).
 - **Dev server**: Playwright starts `next dev` on **port 3001** by default (`PLAYWRIGHT_WEB_PORT`, `PLAYWRIGHT_BASE_URL` to override).
 - **Agent**: Use `/e2e-reviewer` when Playwright E2E tests are needed to confirm site functionality, fix failing tests, or iterate on improvements. Prefer Composer 1.5 for interactive sessions.
 
@@ -463,7 +463,8 @@ Running log of project work. Update this section when making significant changes
 
 **2026-04**
 
-- **Connections (community)**: NYT-style **4×4 word groups** game with **user-authored** puzzles, **public library** (`connections_puzzles` + **`connections_record_play`** RPC), routes **`/games/connections`** (and **`/theme2/games/connections`**), aggregate **play/solve/mistake** stats, **share grid** copy text, **JSON import/export**, **fingerprint** ownership for edit/delete (mirrors reader comment identity pattern). **E2E**: [`e2e/connections.spec.ts`](e2e/connections.spec.ts) + [`e2e/helpers/connections-mock.ts`](e2e/helpers/connections-mock.ts) (no Supabase required in CI).
+- **Home grid**: Removed subtitle blurb under the masthead; **Connections** card title drops “(community)”; **Poker** card title is **Texas Hold'em chip tracker**; home **GameCard** tiles vertically center icon + title as one block (no stretched title pushing the icon up).
+- **Connections**: NYT-style **4×4 word groups** game with **user-authored** puzzles, **public library** (`connections_puzzles` + **`connections_record_play`** RPC), routes **`/games/connections`** (and **`/theme2/games/connections`**), aggregate **play/solve/mistake** stats, **share grid** copy text, **JSON import/export**, **fingerprint** ownership for edit/delete (mirrors reader comment identity pattern). **E2E**: [`e2e/connections.spec.ts`](e2e/connections.spec.ts) + [`e2e/helpers/connections-mock.ts`](e2e/helpers/connections-mock.ts) (no Supabase required in CI).
 - **Web e-reader (paragraph discussions)**: When the communal Supabase backend is configured (`SUPABASE_SERVICE_ROLE_KEY` + real `NEXT_PUBLIC_SUPABASE_URL`), **`reader_publication_comments`** ([`supabase/migrations/20260420120000_reader_publication_comments.sql`](supabase/migrations/20260420120000_reader_publication_comments.sql)) stores notes anchored to **`data-block-id`** / `b-{chapterId}-p{n}`. **`GET/POST /api/reader/comments`** lists and creates threads per chapter. In the reader, each paragraph has a **+ / count** gutter to open a **discussion panel** (author **display tag** from settings + stable browser fingerprint; no login yet — room for future auth). **503** when comments API unavailable (no gutter).
 - **Web e-reader (mobile)**: Narrower horizontal gutters on `/games/e-reader/read` (`PageShell` + reader chrome + `reader-surface`), slightly wider `--reader-layout-cap` on small viewports. **Chapter end bar** (≤1023px): Prev / **chapter picker** (opens upward, single-line truncated titles) / Next. **Read view (≤1023px)**: compact sticky bar (← Library · title · **Aa** · **Search**); search panel **collapsible** (`/` opens it; **Done** / Esc collapses); chapter card header + **gear** opens settings (in-flow at top of chapter — no floating settings button while scrolling); **no duplicate** top Prev/Next row; **settings sheet** = bottom **drawer** with handle, backdrop tap to close, **Done** label.
 - **Web e-reader (reliability)**: Service worker install precaches only `/games/e-reader` (`cache.addAll` with a missing `/theme2/games/e-reader` URL could fail the whole install); cache name bumped so clients drop stale shells. **Invalid chapter URLs** (`/read/[bookId]/[chapterId]`) redirect to the first chapter instead of showing the wrong chapter with a mismatched address bar.

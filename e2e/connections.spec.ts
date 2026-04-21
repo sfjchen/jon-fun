@@ -5,7 +5,7 @@ import {
   installConnectionsApiMock,
 } from './helpers/connections-mock'
 
-test.describe('Connections (community)', () => {
+test.describe('Connections', () => {
   test.beforeEach(({ page }) => {
     installConnectionsApiMock(page)
   })
@@ -14,7 +14,7 @@ test.describe('Connections (community)', () => {
     await page.goto('/games/connections', { waitUntil: 'domcontentloaded', timeout: 60_000 })
     await expect(page.getByTestId('connections-library')).toBeVisible({ timeout: 25_000 })
     await expect(page.getByTestId('connections-library-loading')).not.toBeVisible({ timeout: 15_000 })
-    await expect(page.getByRole('heading', { name: /Connections \(community\)/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /^Connections$/i })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'E2E Demo Puzzle' })).toBeVisible()
     await expect(page.getByTestId('connections-library-card')).toHaveCount(1)
 
