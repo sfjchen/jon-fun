@@ -863,7 +863,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
 
           <div className="reader-surface px-2 py-6 sm:px-4 md:px-8 md:py-10">
             {mobile ? (
-              <header className="mb-8 border-b pb-6" style={{ borderColor: 'var(--reader-border)' }}>
+              <header className="mb-6 border-b pb-6" style={{ borderColor: 'var(--reader-border)' }}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <h1 className="text-[1.35rem] font-semibold leading-snug sm:text-2xl" style={{ color: 'var(--reader-text)' }}>
@@ -893,6 +893,19 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
                 </div>
               </header>
             ) : null}
+            {mobile ? (
+              <div className="mb-8">
+                <ReaderChapterEndNav
+                  chapters={chapters}
+                  chapterId={chapter.id}
+                  currentIndex={currentIndex}
+                  canGoPrev={canGoPrev}
+                  canGoNext={canGoNext}
+                  onGoToChapter={(id) => goToChapter(id)}
+                  readerThemeVars={cssVars}
+                />
+              </div>
+            ) : null}
             <ReaderBody
               chapter={chapter}
               prefs={prefs}
@@ -900,16 +913,6 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
               focusBand={prefs.focusBandEnabled}
               {...(commentGutterProps ? { commentGutter: commentGutterProps } : {})}
             />
-            {mobile ? (
-              <ReaderChapterEndNav
-                chapters={chapters}
-                chapterId={chapter.id}
-                currentIndex={currentIndex}
-                canGoPrev={canGoPrev}
-                canGoNext={canGoNext}
-                onGoToChapter={(id) => goToChapter(id)}
-              />
-            ) : null}
           </div>
         </div>
 
