@@ -199,6 +199,27 @@ html.notebook-theme-root {
     border-radius: 0.2em;
   }
 
+  .reader-user-hl {
+    border-radius: 0.15em;
+    padding: 0 0.06em;
+  }
+
+  .reader-user-hl-yellow {
+    background: color-mix(in srgb, #facc15 50%, transparent);
+  }
+
+  .reader-user-hl-green {
+    background: color-mix(in srgb, #34d399 40%, transparent);
+  }
+
+  .reader-user-hl-blue {
+    background: color-mix(in srgb, #60a5fa 40%, transparent);
+  }
+
+  .reader-annotation-wrap {
+    position: relative;
+  }
+
   /* Reading band: soften top/bottom of the column (focus / reduced distraction). */
   .reader-prose[data-focus-band="on"] {
     -webkit-mask-image: linear-gradient(

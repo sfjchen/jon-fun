@@ -5,10 +5,25 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ReaderBody } from '@/components/reader/ReaderBody'
 import { ReaderChapterEndNav } from '@/components/reader/ReaderChapterEndNav'
-import { ReaderCommentPanel } from '@/components/reader/ReaderCommentPanel'
+import { ReaderPenLayer } from '@/components/reader/ReaderPenLayer'
 import { SettingsDrawer } from '@/components/reader/SettingsDrawer'
-import { getReaderCommentDisplayName, setReaderCommentDisplayName } from '@/lib/reader/comment-identity'
+import { getReaderCommentDisplayName, getReaderCommentIdentity, setReaderCommentDisplayName } from '@/lib/reader/comment-identity'
 import type { ReaderPublicationCommentDto } from '@/lib/reader/comments-server'
+import {
+  type ChapterAnnotationBundle,
+  type CommentAnchor,
+  buildPositionSelector,
+  buildTextQuoteFromRange,
+  emptyChapterAnnotationBundle,
+  loadChapterAnnotations,
+  mergeApiBlockComments,
+  newMessage,
+  newThread,
+  newHighlight,
+  normalizeParagraphText,
+  saveChapterAnnotations,
+} from '@/lib/reader/chapter-annotations'
+import { readerParagraphIndexFromBlockId } from '@/lib/reader/blocks'
 import { markReaderContentPaint } from '@/lib/reader/reader-performance'
 import {
   defaultReaderPreferences,
@@ -94,9 +109,12 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   const [rankedSearchHits, setRankedSearchHits] = useState<ReturnType<typeof findSearchHits> | null>(null)
   const [chapterComments, setChapterComments] = useState<ReaderPublicationCommentDto[]>([])
   const [commentsAvailable, setCommentsAvailable] = useState<boolean | null>(null)
-  const [commentPanelOpen, setCommentPanelOpen] = useState(false)
-  const [commentPanelBlockId, setCommentPanelBlockId] = useState<string | null>(null)
   const [commentDisplayName, setCommentDisplayNameState] = useState('Reader')
+  const [annBundle, setAnnBundle] = useState<ChapterAnnotationBundle>(emptyChapterAnnotationBundle)
+  const [activeMarkTool, setActiveMarkTool] = useState<'none' | 'comment' | 'highlight' | 'pen'>('none')
+  const [expandedKey, setExpandedKey] = useState<string | null>(null)
+  const [composer, setComposer] = useState<{ anchor: CommentAnchor; draft: string } | null>(null)
+  const annotationRootRef = useRef<HTMLDivElement | null>(null)
 
   const pendingRestoreRef = useRef<number | null>(null)
   /** After chapter navigation, scroll to this bookmark (not generic progress). */
@@ -234,27 +252,160 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
     void loadChapterComments()
   }, [loadChapterComments])
 
-  const commentCountsByBlock = useMemo(() => {
-    const m: Record<string, number> = {}
-    for (const c of chapterComments) {
-      m[c.blockId] = (m[c.blockId] ?? 0) + 1
-    }
-    return m
-  }, [chapterComments])
+  /** Local annotations when chapter changes. */
+  useEffect(() => {
+    if (!chapter) return
+    setAnnBundle(loadChapterAnnotations(publication.id, chapter.id))
+  }, [chapter, publication.id])
 
-  const openCommentThread = useCallback((blockId: string) => {
-    setCommentPanelBlockId(blockId)
-    setCommentPanelOpen(true)
+  /** Merge shared block comments (when API available) into the local bundle. */
+  useEffect(() => {
+    if (!chapter || commentsAvailable !== true || chapterComments.length === 0) return
+    setAnnBundle((b) =>
+      mergeApiBlockComments(
+        b,
+        chapterComments.map((c) => ({
+          id: c.id,
+          blockId: c.blockId,
+          body: c.body,
+          authorDisplay: c.authorDisplay,
+          authorFingerprint: c.authorFingerprint,
+          createdAt: c.createdAt,
+        })),
+      ),
+    )
+  }, [chapter, chapterComments, commentsAvailable, publication.id])
+
+  useEffect(() => {
+    if (!chapter) return
+    saveChapterAnnotations(publication.id, chapter.id, annBundle)
+  }, [annBundle, chapter, publication.id])
+
+  const openComposer = useCallback((anchor: CommentAnchor) => {
+    setComposer({ anchor, draft: '' })
+    setExpandedKey(null)
   }, [])
 
-  const commentGutterProps = useMemo(() => {
-    if (commentsAvailable !== true) return undefined
-    return {
-      countsByBlock: commentCountsByBlock,
-      highlightBlockId: commentPanelOpen ? commentPanelBlockId : null,
-      onOpenThread: openCommentThread,
+  const onRangeForComment = useCallback(
+    (blockId: string, start: number, end: number) => {
+      if (!chapter) return
+      const idx = readerParagraphIndexFromBlockId(blockId)
+      if (idx == null) return
+      const raw = chapter.paragraphs[idx] ?? ''
+      const ptext = normalizeParagraphText(raw)
+      const quote = buildTextQuoteFromRange(ptext, start, end)
+      const position = buildPositionSelector(start, end)
+      setComposer({ anchor: { kind: 'range', blockId, quote, position }, draft: '' })
+    },
+    [chapter],
+  )
+
+  const onAddHighlight = useCallback(
+    (blockId: string, start: number, end: number) => {
+      if (!chapter) return
+      const idx = readerParagraphIndexFromBlockId(blockId)
+      if (idx == null) return
+      const raw = chapter.paragraphs[idx] ?? ''
+      setAnnBundle((cur) => ({
+        ...cur,
+        highlights: [...cur.highlights, newHighlight(blockId, start, end, raw, 'yellow')],
+      }))
+    },
+    [chapter],
+  )
+
+  const onNewThread = useCallback(
+    (anchor: CommentAnchor, body: string) => {
+      const id = getReaderCommentIdentity()
+      const msg = newMessage(body, id.displayName || commentDisplayName, id.fingerprint)
+      setAnnBundle((cur) => ({ ...cur, threads: [...cur.threads, newThread(anchor, msg)] }))
+      setComposer(null)
+    },
+    [commentDisplayName],
+  )
+
+  const onPostMessage = useCallback((threadId: string, body: string) => {
+    const t = body.trim()
+    if (!t) return
+    const id = getReaderCommentIdentity()
+    const m = newMessage(t, id.displayName || commentDisplayName, id.fingerprint)
+    setAnnBundle((cur) => ({
+      ...cur,
+      threads: cur.threads.map((th) => (th.id === threadId ? { ...th, messages: [...th.messages, m] } : th)),
+    }))
+  }, [commentDisplayName])
+
+  const onComposerSubmit = useCallback(() => {
+    if (!composer?.draft.trim()) return
+    onNewThread(composer.anchor, composer.draft.trim())
+  }, [composer, onNewThread])
+
+  const onGapRowClick = useCallback(
+    (afterParagraphIndex: number) => {
+      const n = annBundle.threads
+        .filter((t) => t.anchor.kind === 'gap' && t.anchor.afterParagraphIndex === afterParagraphIndex)
+        .reduce((a, t) => a + t.messages.length, 0)
+      if (n > 0) {
+        setExpandedKey((k) => (k === `gap:${afterParagraphIndex}` ? null : `gap:${afterParagraphIndex}`))
+      } else {
+        openComposer({ kind: 'gap', afterParagraphIndex })
+      }
+    },
+    [annBundle.threads, openComposer],
+  )
+
+  const onPenStrokeEnd = useCallback((stroke: import('@/lib/reader/chapter-annotations').ReaderPenStroke) => {
+    setAnnBundle((cur) => ({ ...cur, penStrokes: [...cur.penStrokes, stroke] }))
+  }, [])
+
+  const onUndoPen = useCallback(() => {
+    setAnnBundle((cur) => (cur.penStrokes.length ? { ...cur, penStrokes: cur.penStrokes.slice(0, -1) } : cur))
+  }, [])
+
+  const getBlockIdAtPoint = useCallback((clientX: number, clientY: number) => {
+    const list = document.elementsFromPoint(clientX, clientY)
+    for (const n of list) {
+      if (n instanceof HTMLElement) {
+        const p = n.closest?.('[data-block-id]') as HTMLElement | null
+        const id = p?.dataset?.blockId
+        if (id) return id
+      }
     }
-  }, [commentsAvailable, commentCountsByBlock, commentPanelOpen, commentPanelBlockId, openCommentThread])
+    return null
+  }, [])
+
+  const inContextHandlers = useMemo(() => {
+    if (!chapter) return undefined
+    return {
+      bundle: annBundle,
+      expandedKey,
+      onExpand: setExpandedKey,
+      activeTool: activeMarkTool,
+      composer,
+      onOpenComposer: openComposer,
+      onComposerDraft: (d: string) => setComposer((c) => (c ? { ...c, draft: d } : null)),
+      onComposerSubmit,
+      onComposerCancel: () => setComposer(null),
+      onAddHighlight,
+      onRangeForComment,
+      onNewThread,
+      onPostMessage,
+      onGapRowClick,
+    }
+  }, [
+    annBundle,
+    chapter,
+    activeMarkTool,
+    composer,
+    expandedKey,
+    onAddHighlight,
+    onComposerSubmit,
+    onGapRowClick,
+    onNewThread,
+    onPostMessage,
+    onRangeForComment,
+    openComposer,
+  ])
 
   useEffect(() => {
     if (!mobile || !prefs.panelOpen) return
@@ -906,13 +1057,63 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
                 />
               </div>
             ) : null}
-            <ReaderBody
-              chapter={chapter}
-              prefs={prefs}
-              highlightQuery={searchActiveQuery}
-              focusBand={prefs.focusBandEnabled}
-              {...(commentGutterProps ? { commentGutter: commentGutterProps } : {})}
-            />
+            <div className="reader-annotation-wrap relative max-w-full" ref={annotationRootRef}>
+              <div className="mb-3 flex flex-wrap items-center gap-1.5">
+                <span className="text-xs" style={{ color: 'var(--reader-muted)' }}>
+                  Mark:
+                </span>
+                {(
+                  [
+                    { id: 'none' as const, label: 'Read' },
+                    { id: 'comment' as const, label: 'Note' },
+                    { id: 'highlight' as const, label: 'Highlight' },
+                    { id: 'pen' as const, label: 'Pen' },
+                  ] as const
+                ).map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveMarkTool(t.id)
+                      if (t.id !== 'comment') setComposer(null)
+                    }}
+                    className="reader-focus rounded-lg border px-2.5 py-1 text-xs font-medium"
+                    style={{
+                      borderColor: 'var(--reader-border)',
+                      backgroundColor: activeMarkTool === t.id ? 'color-mix(in srgb, var(--reader-accent) 22%, var(--reader-panel))' : 'var(--reader-panel)',
+                      color: 'var(--reader-text)',
+                    }}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+                {activeMarkTool === 'pen' ? (
+                  <button
+                    type="button"
+                    onClick={onUndoPen}
+                    className="reader-focus rounded-lg border px-2.5 py-1 text-xs"
+                    style={{ borderColor: 'var(--reader-border)', color: 'var(--reader-muted)' }}
+                  >
+                    Undo stroke
+                  </button>
+                ) : null}
+              </div>
+              <ReaderBody
+                chapter={chapter}
+                prefs={prefs}
+                highlightQuery={searchActiveQuery}
+                focusBand={prefs.focusBandEnabled}
+                {...(inContextHandlers ? { inContext: inContextHandlers } : {})}
+              />
+              <ReaderPenLayer
+                active={activeMarkTool === 'pen'}
+                strokes={annBundle.penStrokes}
+                color={String(cssVars['--reader-accent'] ?? '#64748b')}
+                onStrokeEnd={onPenStrokeEnd}
+                getBlockIdAtPoint={getBlockIdAtPoint}
+                rootRef={annotationRootRef}
+              />
+            </div>
           </div>
         </div>
 
@@ -934,7 +1135,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
             hasBookmark={Boolean(bookmark)}
             onToggleSpeak={toggleSpeak}
             onReset={handleReset}
-            commentsEnabled={commentsAvailable === true}
+            commentsEnabled={true}
             commentDisplayName={commentDisplayName}
             onCommentDisplayNameChange={(v) => {
               setCommentDisplayNameState(v)
@@ -962,7 +1163,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
           hasBookmark={Boolean(bookmark)}
           onToggleSpeak={toggleSpeak}
           onReset={handleReset}
-          commentsEnabled={commentsAvailable === true}
+          commentsEnabled={true}
           commentDisplayName={commentDisplayName}
           onCommentDisplayNameChange={(v) => {
             setCommentDisplayNameState(v)
@@ -971,20 +1172,6 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
         />
       ) : null}
 
-      <ReaderCommentPanel
-        open={commentPanelOpen}
-        mobile={mobile}
-        publicationId={publication.id}
-        chapterId={chapter.id}
-        blockId={commentPanelBlockId}
-        chapterTitle={chapter.title}
-        comments={chapterComments}
-        onClose={() => {
-          setCommentPanelOpen(false)
-          setCommentPanelBlockId(null)
-        }}
-        onPosted={() => void loadChapterComments()}
-      />
     </section>
   )
 }
