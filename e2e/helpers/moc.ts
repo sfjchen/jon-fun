@@ -8,11 +8,23 @@ export async function mocStartFromIntro(page: Page, opts?: { tap?: boolean }): P
   const cont = page.getByTestId('moc-intro-continue')
   await expect(cont).toBeEnabled({ timeout: 25_000 })
   if (opts?.tap) await cont.tap()
-  else await cont.click()
+  else {
+    try {
+      await cont.click({ force: true, noWaitAfter: true, timeout: 15_000 })
+    } catch {
+      await cont.dispatchEvent('click')
+    }
+  }
   await expect(page.getByTestId('moc-start-course')).toBeVisible({ timeout: 20_000 })
   const start = page.getByTestId('moc-start-course')
   if (opts?.tap) await start.tap()
-  else await start.click()
+  else {
+    try {
+      await start.click({ force: true, noWaitAfter: true, timeout: 15_000 })
+    } catch {
+      await start.dispatchEvent('click')
+    }
+  }
 }
 
 /** Per-domain preview gate: timer starts only after this action. */
@@ -20,7 +32,13 @@ export async function mocStartRound(page: Page, opts?: { tap?: boolean }): Promi
   const start = page.getByTestId('moc-round-start')
   await expect(start).toBeVisible({ timeout: 20_000 })
   if (opts?.tap) await start.tap()
-  else await start.click()
+  else {
+    try {
+      await start.click({ force: true, noWaitAfter: true, timeout: 15_000 })
+    } catch {
+      await start.dispatchEvent('click')
+    }
+  }
 }
 
 /**

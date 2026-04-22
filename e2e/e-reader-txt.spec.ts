@@ -74,7 +74,7 @@ test.describe('E-reader progress + settings', () => {
     await expect(page).toHaveURL(/\/games\/e-reader\/read\/.+\/.+/, { timeout: 30_000 })
 
     await page.getByRole('button', { name: 'Reader settings' }).click()
-    await expect(page.getByLabel('Reader settings')).toBeVisible()
+    await expect(page.getByRole('dialog', { name: 'Reader settings' })).toBeVisible()
     await expect(page.getByRole('heading', { name: /Customize your reading view/i })).toBeVisible()
   })
 })
