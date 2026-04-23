@@ -220,6 +220,16 @@ html.notebook-theme-root {
     position: relative;
   }
 
+  /* In-chapter user notes: Patrick Hand (sitewide notebook) + large comfortable size */
+  .reader-note-prose,
+  .reader-note-prose textarea,
+  .reader-note-prose input {
+    font-family: var(--font-patrick-hand), 'Patrick Hand', cursive;
+    font-size: 1.2rem;
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+  }
+
   /* Reading band: soften top/bottom of the column (focus / reduced distraction). */
   .reader-prose[data-focus-band="on"] {
     -webkit-mask-image: linear-gradient(

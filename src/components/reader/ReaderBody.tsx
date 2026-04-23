@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { readerBlockIdForParagraph } from '@/lib/reader/blocks'
 import type { ChapterAnnotationBundle, CommentAnchor, ReaderCommentThread } from '@/lib/reader/chapter-annotations'
@@ -8,6 +8,7 @@ import { buildTextSegments } from '@/lib/reader/annotation-segments'
 import { normalizeParagraphText, resolveQuoteInParagraph } from '@/lib/reader/chapter-annotations'
 import type { ReaderChapter, ReaderPreferences } from '@/lib/reader/types'
 import { escapeRegex } from '@/lib/reader/search-book'
+import { getTextOffsetInElement, wordRangeInParagraph } from '@/lib/reader/reader-gestures'
 
 type LegacyCommentGutter = {
   countsByBlock: Record<string, number>
@@ -26,11 +27,14 @@ export type ReaderInContextHandlers = {
   onComposerSubmit: () => void
   onComposerCancel: () => void
   onAddHighlight: (blockId: string, start: number, end: number) => void
+  onToggleWordHighlight: (blockId: string, start: number, end: number) => void
   onRangeForComment: (blockId: string, start: number, end: number) => void
   onNewThread: (anchor: CommentAnchor, body: string) => void
   onPostMessage: (threadId: string, body: string) => void
-  /** Gap: expand existing notes, or start composer if none. */
+  /** Single tap: toggle expand if gap has threads. */
   onGapRowClick: (afterParagraphIndex: number) => void
+  /** Double-tap/click: always add a note in this gap. */
+  onGapDoubleOpen: (afterParagraphIndex: number) => void
 }
 
 type ReaderBodyProps = {
@@ -147,15 +151,15 @@ function ComposerBox({
 }) {
   return (
     <div
-      className="reader-inline-composer my-1 rounded-lg border p-2"
+      className="reader-inline-composer reader-note-prose my-2 ml-1 rounded-lg border py-2 pl-4 pr-2"
       style={{ borderColor: 'var(--reader-border)', backgroundColor: 'var(--reader-panel)' }}
     >
       <textarea
         value={draft}
         onChange={(e) => onDraft(e.target.value)}
-        rows={2}
+        rows={3}
         placeholder={placeholder}
-        className="reader-focus w-full resize-none bg-transparent text-sm"
+        className="reader-focus w-full resize-none bg-transparent leading-snug"
         style={{ color: 'var(--reader-text)' }}
       />
       <div className="mt-1 flex gap-2">
@@ -182,17 +186,17 @@ function renderThreadCard(
   onDraft: (d: string) => void,
 ) {
   return (
-    <div key={t.id} className="rounded-lg border p-2 text-sm" style={{ borderColor: 'var(--reader-border)' }}>
+    <div key={t.id} className="reader-note-prose rounded-lg border py-2 pl-4 pr-2" style={{ borderColor: 'var(--reader-border)' }}>
       {t.messages.map((m) => (
-        <p key={m.id} className="whitespace-pre-wrap leading-snug" style={{ color: 'var(--reader-text)' }}>
-          <span className="font-semibold" style={{ color: 'var(--reader-accent)' }}>
+        <p key={m.id} className="whitespace-pre-wrap leading-relaxed" style={{ color: 'var(--reader-text)' }}>
+          <span className="text-base font-semibold" style={{ color: 'var(--reader-accent)' }}>
             {m.authorDisplay}
           </span>
           {': '}
           {m.body}
         </p>
       ))}
-      <label className="mt-1 block">
+      <label className="mt-2 block">
         <span className="sr-only">Reply</span>
         <input
           value={draft}
@@ -205,7 +209,7 @@ function renderThreadCard(
             }
           }}
           placeholder="Reply…"
-          className="reader-focus w-full rounded border bg-transparent px-2 py-1 text-xs"
+          className="reader-focus w-full rounded border bg-transparent py-1.5"
           style={{ borderColor: 'var(--reader-border)' }}
         />
       </label>
@@ -213,23 +217,66 @@ function renderThreadCard(
   )
 }
 
-function GapRow({ count, onClick }: { count: number; onClick: () => void }) {
+/** Between paragraphs: no filled chrome when empty; optional dot if notes exist. Double-tap to add; if notes, single-tap to expand. */
+function GapInterParagraphRow({
+  gCount,
+  onSingle,
+  onDouble,
+}: {
+  gCount: number
+  onSingle: () => void
+  onDouble: () => void
+}) {
+  const clickTimerRef = useRef<number | null>(null)
+  const lastPtrUp = useRef<{ t: number; x: number; y: number } | null>(null)
+
+  const clearTimer = () => {
+    if (clickTimerRef.current != null) {
+      window.clearTimeout(clickTimerRef.current)
+      clickTimerRef.current = null
+    }
+  }
+
   return (
     <div
-      className="reader-para-gap my-1 flex min-h-6 items-center justify-center gap-2 rounded border border-dashed py-0.5"
-      style={{ borderColor: 'var(--reader-border)' }}
+      className="reader-para-gap my-0.5 w-full"
+      style={{ touchAction: 'manipulation' }}
     >
-      <span className="text-[10px] opacity-50" style={{ color: 'var(--reader-muted)' }}>
-        space
-      </span>
-      <button
-        type="button"
-        onClick={onClick}
-        className="reader-focus rounded px-2 py-0.5 text-xs"
-        style={{ color: 'var(--reader-accent)' }}
+      <div
+        role="separator"
+        aria-label={gCount > 0 ? 'Between paragraphs — tap to show notes, double-tap to add' : 'Between paragraphs — double-tap to add a note'}
+        className="flex min-h-2 w-full select-none items-center justify-center"
+        onPointerUp={(e) => {
+          if (e.button !== 0) return
+          const pr = lastPtrUp.current
+          const now = e.timeStamp
+          if (pr && now - pr.t < 500 && Math.hypot(e.clientX - pr.x, e.clientY - pr.y) < 48) {
+            lastPtrUp.current = null
+            clearTimer()
+            e.preventDefault()
+            e.stopPropagation()
+            onDouble()
+            return
+          }
+          lastPtrUp.current = { t: now, x: e.clientX, y: e.clientY }
+          clearTimer()
+          clickTimerRef.current = window.setTimeout(() => {
+            clickTimerRef.current = null
+            lastPtrUp.current = null
+            if (gCount > 0) onSingle()
+          }, 360)
+        }}
+        onPointerCancel={() => {
+          lastPtrUp.current = null
+          clearTimer()
+        }}
       >
-        {count > 0 ? `·${count} note(s)` : '+ note'}
-      </button>
+        {gCount > 0 ? (
+          <span className="min-h-4 text-lg leading-none opacity-40" style={{ color: 'var(--reader-muted)' }} aria-hidden>
+            ·
+          </span>
+        ) : null}
+      </div>
     </div>
   )
 }
@@ -243,6 +290,7 @@ export function ReaderBody({
   inContext,
 }: ReaderBodyProps) {
   const [replyDraft, setReplyDraft] = useState<Record<string, string>>({})
+  const lastParaDbl = useRef<Record<string, { t: number; x: number; y: number }>>({})
 
   const useBionic = inContext ? false : prefs.bionic
   const textAlign = prefs.textAlign
@@ -292,7 +340,16 @@ export function ReaderBody({
 
   if (inContext) {
     const b = inContext.bundle
-    const { expandedKey, onExpand, composer, onOpenComposer, onComposerDraft, onComposerSubmit, onComposerCancel, onGapRowClick } = inContext
+    const {
+      expandedKey,
+      onExpand,
+      composer,
+      onComposerDraft,
+      onComposerSubmit,
+      onComposerCancel,
+      onGapRowClick,
+      onGapDoubleOpen,
+    } = inContext
     const post = (id: string, body: string) => {
       inContext.onPostMessage(id, body)
       setReplyDraft((d) => ({ ...d, [id]: '' }))
@@ -345,7 +402,11 @@ export function ReaderBody({
             <Fragment key={`${chapter.id}-wrap-${index}`}>
               {index > 0 ? (
                 <>
-                  <GapRow count={gCount} onClick={() => onGapRowClick(gapAfterPrev)} />
+                  <GapInterParagraphRow
+                    gCount={gCount}
+                    onSingle={() => onGapRowClick(gapAfterPrev)}
+                    onDouble={() => onGapDoubleOpen(gapAfterPrev)}
+                  />
                   {showGapComposer ? (
                     <ComposerBox
                       draft={composer.draft}
@@ -356,7 +417,10 @@ export function ReaderBody({
                     />
                   ) : null}
                   {expandedKey === `gap:${gapAfterPrev}` ? (
-                    <div className="ml-1 space-y-2 border-l-2 pl-2" style={{ borderColor: 'var(--reader-accent)' }}>
+                    <div
+                      className="reader-note-prose ml-1 space-y-3 border-l-2 pl-4"
+                      style={{ borderColor: 'var(--reader-accent)' }}
+                    >
                       {b.threads
                         .filter(
                           (t) => t.anchor.kind === 'gap' && t.anchor.afterParagraphIndex === gapAfterPrev,
@@ -371,7 +435,43 @@ export function ReaderBody({
                 </>
               ) : null}
 
-              <p data-search-paragraph={index} data-block-id={blockId} className="min-w-0">
+              <p
+                data-search-paragraph={index}
+                data-block-id={blockId}
+                className="min-w-0"
+                style={{ touchAction: 'manipulation' }}
+                onDoubleClick={(e) => {
+                  e.preventDefault()
+                  window.getSelection()?.removeAllRanges()
+                  const el = e.currentTarget
+                  const off = getTextOffsetInElement(el, e.clientX, e.clientY)
+                  if (off == null) return
+                  const wr = wordRangeInParagraph(ptext, off)
+                  if (wr) inContext.onToggleWordHighlight(blockId, wr.start, wr.end)
+                  else inContext.onOpenComposer({ kind: 'block', blockId })
+                }}
+                onTouchEnd={(e) => {
+                  if (e.touches.length > 0) return
+                  const t = e.changedTouches[0]
+                  if (!t) return
+                  const k = blockId
+                  const p = lastParaDbl.current[k]
+                  const now = performance.now()
+                  if (p && now - p.t < 520 && Math.hypot(t.clientX - p.x, t.clientY - p.y) < 36) {
+                    delete lastParaDbl.current[k]
+                    e.preventDefault()
+                    window.getSelection()?.removeAllRanges()
+                    const el = e.currentTarget
+                    const off = getTextOffsetInElement(el, t.clientX, t.clientY)
+                    if (off == null) return
+                    const wr = wordRangeInParagraph(ptext, off)
+                    if (wr) inContext.onToggleWordHighlight(blockId, wr.start, wr.end)
+                    else inContext.onOpenComposer({ kind: 'block', blockId })
+                    return
+                  }
+                  lastParaDbl.current[k] = { t: now, x: t.clientX, y: t.clientY }
+                }}
+              >
                 {segs.map((seg, si) => {
                   const piece = ptext.slice(seg.start, seg.end)
                   if (!piece) return null
@@ -416,30 +516,34 @@ export function ReaderBody({
                   }
                   return <Fragment key={`p${index}-s${si}`}>{inner}</Fragment>
                 })}
-                <button
-                  type="button"
-                  className="reader-ann-eop reader-focus ms-1 inline text-sm opacity-50 hover:opacity-100"
-                  aria-label={bMsg > 0 ? `Paragraph notes (${bMsg})` : 'Add paragraph note'}
-                  onClick={() => {
-                    if (bMsg > 0) onExpand(showBlock ? null : `block:${blockId}`)
-                    else onOpenComposer({ kind: 'block', blockId })
-                  }}
-                >
-                  {bMsg > 0 ? `·${bMsg > 99 ? '99+' : bMsg}` : '+'}
-                </button>
+                {bMsg > 0 ? (
+                  <button
+                    type="button"
+                    className="reader-focus reader-ann-eop ms-0.5 inline text-lg leading-none opacity-40"
+                    style={{ color: 'var(--reader-muted)' }}
+                    aria-label={showBlock ? 'Hide paragraph notes' : `Show ${bMsg} paragraph note(s)`}
+                    onClick={() => onExpand(showBlock ? null : `block:${blockId}`)}
+                  >
+                    ·
+                  </button>
+                ) : null}
               </p>
 
               {rTs.map(
                 (t) =>
                   expandedKey === `thread:${t.id}` ? (
-                    <div key={t.id} className="ml-1 border-l-2 pl-2" style={{ borderColor: 'var(--reader-accent)' }}>
+                    <div
+                      key={t.id}
+                      className="reader-note-prose ml-1 border-l-2 pl-4"
+                      style={{ borderColor: 'var(--reader-accent)' }}
+                    >
                     {renderThreadCard(t, post, replyDraft[t.id] ?? '', (x) => setRep(t.id, x))}
                   </div>
                 ) : null,
               )}
 
               {showBlock ? (
-                <div className="ml-1 space-y-2 border-l-2 pl-2" style={{ borderColor: 'var(--reader-accent)' }}>
+                <div className="reader-note-prose ml-1 space-y-3 border-l-2 pl-4" style={{ borderColor: 'var(--reader-accent)' }}>
                   {bTs.map((t) => (
                     <div key={t.id}>{renderThreadCard(t, post, replyDraft[t.id] ?? '', (x) => setRep(t.id, x))}</div>
                   ))}

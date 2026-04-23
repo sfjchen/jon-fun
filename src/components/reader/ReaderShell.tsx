@@ -112,6 +112,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   const [commentDisplayName, setCommentDisplayNameState] = useState('Reader')
   const [annBundle, setAnnBundle] = useState<ChapterAnnotationBundle>(emptyChapterAnnotationBundle)
   const [activeMarkTool, setActiveMarkTool] = useState<'none' | 'comment' | 'highlight' | 'pen'>('none')
+  const [shiftDraw, setShiftDraw] = useState(false)
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
   const [composer, setComposer] = useState<{ anchor: CommentAnchor; draft: string } | null>(null)
   const annotationRootRef = useRef<HTMLDivElement | null>(null)
@@ -209,6 +210,22 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
     return () => {
       media.removeEventListener('change', syncMedia)
       motion.removeEventListener('change', syncMotion)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') setShiftDraw(e.type === 'keydown')
+    }
+    const onBlur = () => setShiftDraw(false)
+    window.addEventListener('keydown', onKey)
+    window.addEventListener('keyup', onKey)
+    window.addEventListener('blur', onBlur)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('keyup', onKey)
+      window.removeEventListener('blur', onBlur)
     }
   }, [])
 
@@ -314,6 +331,40 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
     [chapter],
   )
 
+  const onToggleWordHighlight = useCallback(
+    (blockId: string, start: number, end: number) => {
+      if (!chapter) return
+      if (end <= start) return
+      const idx = readerParagraphIndexFromBlockId(blockId)
+      if (idx == null) return
+      const raw = normalizeParagraphText(chapter.paragraphs[idx] ?? '')
+      setAnnBundle((cur) => {
+        const inBlock = (h: (typeof cur.highlights)[0]) => h.blockId === blockId
+        const same = cur.highlights.find(
+          (h) => inBlock(h) && h.position.start === start && h.position.end === end,
+        )
+        if (same) {
+          return { ...cur, highlights: cur.highlights.filter((h) => h.id !== same.id) }
+        }
+        const sup = cur.highlights.find(
+          (h) => inBlock(h) && h.position.start <= start && h.position.end >= end,
+        )
+        if (sup) {
+          return { ...cur, highlights: cur.highlights.filter((h) => h.id !== sup.id) }
+        }
+        return { ...cur, highlights: [...cur.highlights, newHighlight(blockId, start, end, raw, 'yellow')] }
+      })
+    },
+    [chapter],
+  )
+
+  const onGapDoubleOpen = useCallback(
+    (afterParagraphIndex: number) => {
+      openComposer({ kind: 'gap', afterParagraphIndex })
+    },
+    [openComposer],
+  )
+
   const onNewThread = useCallback(
     (anchor: CommentAnchor, body: string) => {
       const id = getReaderCommentIdentity()
@@ -374,33 +425,39 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
     return null
   }, [])
 
+  const effectiveMarkTool: 'none' | 'comment' | 'highlight' | 'pen' = shiftDraw ? 'pen' : activeMarkTool
+
   const inContextHandlers = useMemo(() => {
     if (!chapter) return undefined
     return {
       bundle: annBundle,
       expandedKey,
       onExpand: setExpandedKey,
-      activeTool: activeMarkTool,
+      activeTool: effectiveMarkTool,
       composer,
       onOpenComposer: openComposer,
       onComposerDraft: (d: string) => setComposer((c) => (c ? { ...c, draft: d } : null)),
       onComposerSubmit,
       onComposerCancel: () => setComposer(null),
       onAddHighlight,
+      onToggleWordHighlight,
       onRangeForComment,
       onNewThread,
       onPostMessage,
       onGapRowClick,
+      onGapDoubleOpen,
     }
   }, [
     annBundle,
     chapter,
-    activeMarkTool,
+    effectiveMarkTool,
     composer,
     expandedKey,
     onAddHighlight,
+    onToggleWordHighlight,
     onComposerSubmit,
     onGapRowClick,
+    onGapDoubleOpen,
     onNewThread,
     onPostMessage,
     onRangeForComment,
@@ -1069,25 +1126,32 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
                     { id: 'highlight' as const, label: 'Highlight' },
                     { id: 'pen' as const, label: 'Pen' },
                   ] as const
-                ).map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => {
-                      setActiveMarkTool(t.id)
-                      if (t.id !== 'comment') setComposer(null)
-                    }}
-                    className="reader-focus rounded-lg border px-2.5 py-1 text-xs font-medium"
-                    style={{
-                      borderColor: 'var(--reader-border)',
-                      backgroundColor: activeMarkTool === t.id ? 'color-mix(in srgb, var(--reader-accent) 22%, var(--reader-panel))' : 'var(--reader-panel)',
-                      color: 'var(--reader-text)',
-                    }}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-                {activeMarkTool === 'pen' ? (
+                )
+                  .filter((t) => (mobile && t.id === 'pen' ? false : true))
+                  .map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveMarkTool(t.id)
+                        if (t.id !== 'comment') setComposer(null)
+                      }}
+                      className="reader-focus rounded-lg border px-2.5 py-1 text-xs font-medium"
+                      style={{
+                        borderColor: 'var(--reader-border)',
+                        backgroundColor: activeMarkTool === t.id ? 'color-mix(in srgb, var(--reader-accent) 22%, var(--reader-panel))' : 'var(--reader-panel)',
+                        color: 'var(--reader-text)',
+                      }}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                {!mobile ? (
+                  <span className="text-[10px] opacity-60" style={{ color: 'var(--reader-muted)' }} title="Hold Shift to draw with the pen">
+                    Hold Shift for pen
+                  </span>
+                ) : null}
+                {activeMarkTool === 'pen' || shiftDraw ? (
                   <button
                     type="button"
                     onClick={onUndoPen}
@@ -1098,6 +1162,24 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
                   </button>
                 ) : null}
               </div>
+                {mobile ? (
+                <button
+                  type="button"
+                  aria-pressed={activeMarkTool === 'pen'}
+                  aria-label="Toggle pen (draw in the text column)"
+                  onClick={() => {
+                    setActiveMarkTool((v) => (v === 'pen' ? 'none' : 'pen'))
+                    setComposer(null)
+                  }}
+                  className="reader-focus pointer-events-auto fixed z-[40] h-3.5 w-3.5 rounded-full border border-black/80 bg-zinc-900 shadow-sm"
+                  style={{
+                    bottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))',
+                    right: 'max(0.5rem, env(safe-area-inset-right, 0px))',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                    ...(activeMarkTool === 'pen' ? { outline: '2px solid var(--reader-accent, #8c3838)' } : {}),
+                  }}
+                />
+              ) : null}
               <ReaderBody
                 chapter={chapter}
                 prefs={prefs}
@@ -1106,7 +1188,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
                 {...(inContextHandlers ? { inContext: inContextHandlers } : {})}
               />
               <ReaderPenLayer
-                active={activeMarkTool === 'pen'}
+                active={effectiveMarkTool === 'pen'}
                 strokes={annBundle.penStrokes}
                 color={String(cssVars['--reader-accent'] ?? '#64748b')}
                 onStrokeEnd={onPenStrokeEnd}
