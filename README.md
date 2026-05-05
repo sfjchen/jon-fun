@@ -406,6 +406,7 @@ src/
 - `SUPABASE_SERVICE_ROLE_KEY` (recommended): Bypasses RLS for daily-learn API; if unset, falls back to anon (subject to RLS)
 - `TMR_ADMIN_SECRET` (optional): secret for `/admin/tmr` and `GET /api/tmr/admin/entries`
 - `DAILY_LEARN_ADMIN_SECRET` (optional): required for `GET /api/daily-learn/admin/keys`; if unset, endpoint returns 401
+- `HOME_COMING_SOON_EDIT_SECRET` (optional): if set, the home **Coming Soon** modal shows **Edit this message**; `POST /api/home/coming-soon` verifies the password and updates Supabase table `home_coming_soon_copy` ([`supabase/migrations/20260505120000_home_coming_soon_copy.sql`](supabase/migrations/20260505120000_home_coming_soon_copy.sql)). If unset or the table is missing, `GET` returns built-in defaults from [`src/data/home-coming-soon-defaults.ts`](src/data/home-coming-soon-defaults.ts).
 - **Web e-reader AI chapter hints** (`POST /api/reader/suggest-chapter-structure`): **`GEMINI_API_KEY`** or **`GOOGLE_GENERATIVE_AI_API_KEY`** (Google Gemini API, default model **`gemini-3.1-flash-lite-preview`**; override with **`READER_CHAPTER_GEMINI_MODEL`**; optional **`READER_CHAPTER_GEMINI_JSON_SCHEMA=0`** to skip structured JSON schema on Gemini). If no Gemini key, use **`READER_CHAPTER_LLM_KEY`** or **`OPENROUTER_API_KEY`** (OpenRouter; **`READER_CHAPTER_LLM_MODEL`** defaults to `openai/gpt-4o-mini`). **`READER_CHAPTER_LLM_PROVIDER`**: `google` \| `openrouter` to force one backend when both keys exist. Smoke: `npm run dev` then **`npm run smoke:reader-suggest-chapter`** (`SMOKE_BASE_URL` if not port 3000). Communal shelf inventory: **`npm run smoke:reader-communal-list`** (503 if communal DB not configured — local books stay in IndexedDB only).
 
 **Production (Vercel):**
@@ -458,6 +459,10 @@ src/
 ## 📜 Changelog
 
 Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
+
+**2026-05**
+
+- **Home Coming Soon**: Password-protected edit for the tile headline + modal copy (`GET`/`POST` [`/api/home/coming-soon`](src/app/api/home/coming-soon/route.ts), secret **`HOME_COMING_SOON_EDIT_SECRET`**, persisted in Supabase **`home_coming_soon_copy`** when migrated).
 
 **2026-03**
 

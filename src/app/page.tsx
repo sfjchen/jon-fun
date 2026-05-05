@@ -1,9 +1,10 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { GameCard } from '@/components/GameCard'
 import type { GameCardGame } from '@/components/GameCard'
+import { HOME_COMING_SOON_DEFAULTS, type HomeComingSoonCopy } from '@/data/home-coming-soon-defaults'
 
 const nb = '/doodles/notebook'
 /** Pear Navigator stays archived off home — see `@/data/notebook-home-games-archive` for the preserved card. */
@@ -73,20 +74,82 @@ const items: GameCardGame[] = [
   { id: 'coming-soon', title: 'Coming Soon', description: 'More brain games in development', icon: `${nb}/coming-soon.svg`, href: '#', available: false },
 ]
 
-const futureFeatures = [
-  'Deeper Web E-Reader polish: cleaner imports, smoother offline reading, and sharper reading UX',
-  'Small, repeatable local-first drills: typing speed, Zetamac-style arithmetic, and logic puzzles',
-  'A few stronger experiments instead of a wider account/chat/friend-system surface',
-  'Selective multiplayer polish only where it clearly improves actual game nights',
-]
-
 export default function Home() {
   const [showComingSoon, setShowComingSoon] = useState(false)
+  const [copy, setCopy] = useState<HomeComingSoonCopy>(HOME_COMING_SOON_DEFAULTS)
+  const [showEditor, setShowEditor] = useState(false)
+  const [editPwd, setEditPwd] = useState('')
+  const [editHeadline, setEditHeadline] = useState('')
+  const [editIntro, setEditIntro] = useState('')
+  const [editBullets, setEditBullets] = useState('')
+  const [saveErr, setSaveErr] = useState<string | null>(null)
+  const [saveBusy, setSaveBusy] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/home/coming-soon')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: HomeComingSoonCopy | null) => {
+        if (cancelled || !data?.headline || !data.intro || !Array.isArray(data.bullets)) return
+        setCopy(data)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const gridItems = useMemo(
+    () => items.map((item) => (item.id === 'coming-soon' ? { ...item, title: copy.headline } : item)),
+    [copy.headline],
+  )
+
+  function openEditorFields() {
+    setEditHeadline(copy.headline)
+    setEditIntro(copy.intro)
+    setEditBullets(copy.bullets.join('\n'))
+    setEditPwd('')
+    setSaveErr(null)
+    setShowEditor(true)
+  }
+
+  async function saveEdits() {
+    const bullets = editBullets
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean)
+    setSaveBusy(true)
+    setSaveErr(null)
+    try {
+      const res = await fetch('/api/home/coming-soon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: editPwd,
+          headline: editHeadline.trim(),
+          intro: editIntro.trim(),
+          bullets,
+        }),
+      })
+      const raw = (await res.json().catch(() => null)) as { error?: string } & Partial<HomeComingSoonCopy> | null
+      if (!res.ok) {
+        setSaveErr(typeof raw?.error === 'string' ? raw.error : 'Save failed')
+        return
+      }
+      if (raw && typeof raw.headline === 'string' && typeof raw.intro === 'string' && Array.isArray(raw.bullets)) {
+        setCopy({ headline: raw.headline, intro: raw.intro, bullets: raw.bullets as string[] })
+      }
+      setShowEditor(false)
+      setEditPwd('')
+    } finally {
+      setSaveBusy(false)
+    }
+  }
 
   return (
     <>
       <ul className="mx-auto grid w-full max-w-5xl list-none grid-cols-1 gap-x-8 gap-y-10 p-0 sm:grid-cols-2 sm:gap-x-10 sm:gap-y-12">
-        {items.map((item) => (
+        {gridItems.map((item) => (
           <li key={item.id} className="min-h-0 flex">
             <GameCard
               game={item}
@@ -105,13 +168,16 @@ export default function Home() {
             className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg border p-6 shadow-lg"
             style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
           >
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-lora text-2xl font-semibold flex items-center gap-2" style={{ color: 'var(--ink-text)' }}>
+            <div className="mb-4 flex items-center justify-between gap-2">
+              <h2 className="font-lora flex items-center gap-2 text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>
                 <Image src="/doodles/notebook/coming-soon.svg" alt="" width={32} height={32} className="h-8 w-8" />
-                Coming Soon
+                {copy.headline}
               </h2>
               <button
-                onClick={() => setShowComingSoon(false)}
+                onClick={() => {
+                  setShowComingSoon(false)
+                  setShowEditor(false)
+                }}
                 className="text-xl font-bold hover:opacity-70"
                 style={{ color: 'var(--ink-text)' }}
                 aria-label="Close modal"
@@ -121,11 +187,11 @@ export default function Home() {
             </div>
 
             <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>
-              We&apos;re working hard to bring you these exciting new features:
+              {copy.intro}
             </p>
 
             <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-2">
-              {futureFeatures.map((feature, index) => (
+              {copy.bullets.map((feature, index) => (
                 <div
                   key={index}
                   className="flex items-start rounded-lg border p-3"
@@ -137,9 +203,99 @@ export default function Home() {
               ))}
             </div>
 
+            {!showEditor ? (
+              <p className="mb-4 text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
+                <button
+                  type="button"
+                  className="underline-offset-2 hover:underline"
+                  style={{ color: 'var(--ink-accent)' }}
+                  onClick={openEditorFields}
+                >
+                  Edit this message (password)
+                </button>
+              </p>
+            ) : (
+              <div
+                className="mb-6 space-y-3 rounded-lg border p-4"
+                style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)' }}
+              >
+                <label className="block text-sm font-medium" style={{ color: 'var(--ink-text)' }}>
+                  Password
+                  <input
+                    type="password"
+                    autoComplete="current-password"
+                    value={editPwd}
+                    onChange={(e) => setEditPwd(e.target.value)}
+                    className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                    style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
+                  />
+                </label>
+                <label className="block text-sm font-medium" style={{ color: 'var(--ink-text)' }}>
+                  Headline (tile + modal title)
+                  <input
+                    type="text"
+                    value={editHeadline}
+                    onChange={(e) => setEditHeadline(e.target.value)}
+                    className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                    style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
+                  />
+                </label>
+                <label className="block text-sm font-medium" style={{ color: 'var(--ink-text)' }}>
+                  Intro paragraph
+                  <textarea
+                    value={editIntro}
+                    onChange={(e) => setEditIntro(e.target.value)}
+                    rows={2}
+                    className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                    style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
+                  />
+                </label>
+                <label className="block text-sm font-medium" style={{ color: 'var(--ink-text)' }}>
+                  Bullets (one line each)
+                  <textarea
+                    value={editBullets}
+                    onChange={(e) => setEditBullets(e.target.value)}
+                    rows={6}
+                    className="mt-1 w-full rounded border px-3 py-2 font-mono text-sm"
+                    style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
+                  />
+                </label>
+                {saveErr ? (
+                  <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+                    {saveErr}
+                  </p>
+                ) : null}
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => saveEdits()}
+                    disabled={saveBusy}
+                    className="rounded-lg px-4 py-2 text-sm text-white transition-colors hover:opacity-95 disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--ink-accent)' }}
+                  >
+                    {saveBusy ? 'Saving…' : 'Save'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEditor(false)
+                      setSaveErr(null)
+                    }}
+                    className="rounded-lg border px-4 py-2 text-sm"
+                    style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="text-center">
               <button
-                onClick={() => setShowComingSoon(false)}
+                onClick={() => {
+                  setShowComingSoon(false)
+                  setShowEditor(false)
+                }}
                 className="rounded-lg px-6 py-2 text-white transition-colors hover:opacity-95"
                 style={{ backgroundColor: 'var(--ink-accent)' }}
               >
