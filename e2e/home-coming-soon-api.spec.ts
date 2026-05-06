@@ -6,7 +6,9 @@ test.describe('Home Coming Soon API', () => {
     expect(res.ok()).toBeTruthy()
     const body = (await res.json()) as { headline?: unknown; intro?: unknown; bullets?: unknown }
     expect(typeof body.headline).toBe('string')
-    expect(body.headline!.length).toBeGreaterThan(0)
+    const headline = body.headline
+    if (typeof headline !== 'string') throw new Error('expected string headline')
+    expect(headline.length).toBeGreaterThan(0)
     expect(typeof body.intro).toBe('string')
     expect(Array.isArray(body.bullets)).toBe(true)
     expect((body.bullets as unknown[]).length).toBeGreaterThan(0)
