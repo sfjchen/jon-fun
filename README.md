@@ -433,6 +433,7 @@ src/
 - Changes not live? Check Vercel build logs and confirm changes are on `main`.
 - Supabase issues? Verify `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local` and Vercel.
 - Two Supabase projects (personal vs class)? See [docs/SUPABASE_TWO_PROJECTS.md](docs/SUPABASE_TWO_PROJECTS.md).
+- Home **Coming Soon** “Save” errors about **`home_coming_soon_copy`** / schema cache? The table is created by [`supabase/migrations/20260505120000_home_coming_soon_copy.sql`](supabase/migrations/20260505120000_home_coming_soon_copy.sql). In **Supabase Dashboard → SQL Editor**, paste that file’s contents, **Run**, then save again (use the same Supabase project as your production keys).
 - Still stale? Hard refresh cache (Cmd+Shift+R).
 
 ## 🛠️ Available Scripts
