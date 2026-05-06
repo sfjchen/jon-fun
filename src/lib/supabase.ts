@@ -7,7 +7,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholde
 // During build, uses placeholders which is fine for static analysis
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey)
 
-/** Server-only client using service role key. Bypasses RLS - use for API routes that need guaranteed access. */
+/** Server-only client using service role key. Bypasses RLS — required for writes in API routes (e.g. coming-soon save). Without SUPABASE_SERVICE_ROLE_KEY, falls back to anon (OK for reads if RLS allows SELECT). */
 function createServerClient(): SupabaseClient {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!serviceRoleKey) return createClient(supabaseUrl, supabaseAnonKey)

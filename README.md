@@ -406,7 +406,7 @@ src/
 - `SUPABASE_SERVICE_ROLE_KEY` (recommended): Bypasses RLS for daily-learn API; if unset, falls back to anon (subject to RLS)
 - `TMR_ADMIN_SECRET` (optional): secret for `/admin/tmr` and `GET /api/tmr/admin/entries`
 - `DAILY_LEARN_ADMIN_SECRET` (optional): required for `GET /api/daily-learn/admin/keys`; if unset, endpoint returns 401
-- `HOME_COMING_SOON_EDIT_SECRET` (optional): if set, the home **Coming Soon** modal shows **Edit this message**; `POST /api/home/coming-soon` verifies the password and updates Supabase table `home_coming_soon_copy` ([`supabase/migrations/20260505120000_home_coming_soon_copy.sql`](supabase/migrations/20260505120000_home_coming_soon_copy.sql)). If unset or the table is missing, `GET` returns built-in defaults from [`src/data/home-coming-soon-defaults.ts`](src/data/home-coming-soon-defaults.ts). **Production**: set this on Vercel (not only `.env.local`) and redeploy. **`.env.local`**: quote values that contain `#` (e.g. `HOME_COMING_SOON_EDIT_SECRET="pass#word"`).
+- `HOME_COMING_SOON_EDIT_SECRET` (optional): if set, the home **Coming Soon** modal shows **Edit this message**; `POST /api/home/coming-soon` verifies the password and updates Supabase table `home_coming_soon_copy` ([`supabase/migrations/20260505120000_home_coming_soon_copy.sql`](supabase/migrations/20260505120000_home_coming_soon_copy.sql)). **`SUPABASE_SERVICE_ROLE_KEY` is required for Save** (anon cannot pass RLS on upsert). After creating the table, run [`supabase/migrations/20260505130000_home_coming_soon_copy_rls_policies.sql`](supabase/migrations/20260505130000_home_coming_soon_copy_rls_policies.sql) so `GET` can read the row when the server falls back to the anon client. If unset or the table is missing, `GET` returns built-in defaults from [`src/data/home-coming-soon-defaults.ts`](src/data/home-coming-soon-defaults.ts). **Production**: set this on Vercel (not only `.env.local`) and redeploy. **`.env.local`**: quote values that contain `#` (e.g. `HOME_COMING_SOON_EDIT_SECRET="pass#word"`).
 - **Web e-reader AI chapter hints** (`POST /api/reader/suggest-chapter-structure`): **`GEMINI_API_KEY`** or **`GOOGLE_GENERATIVE_AI_API_KEY`** (Google Gemini API, default model **`gemini-3.1-flash-lite-preview`**; override with **`READER_CHAPTER_GEMINI_MODEL`**; optional **`READER_CHAPTER_GEMINI_JSON_SCHEMA=0`** to skip structured JSON schema on Gemini). If no Gemini key, use **`READER_CHAPTER_LLM_KEY`** or **`OPENROUTER_API_KEY`** (OpenRouter; **`READER_CHAPTER_LLM_MODEL`** defaults to `openai/gpt-4o-mini`). **`READER_CHAPTER_LLM_PROVIDER`**: `google` \| `openrouter` to force one backend when both keys exist. Smoke: `npm run dev` then **`npm run smoke:reader-suggest-chapter`** (`SMOKE_BASE_URL` if not port 3000). Communal shelf inventory: **`npm run smoke:reader-communal-list`** (503 if communal DB not configured — local books stay in IndexedDB only).
 
 **Production (Vercel):**
@@ -417,7 +417,7 @@ src/
 ### E2E Testing
 
 - **Playwright** in `e2e/` — tests in `e2e/*.spec.ts`
-- **Coverage**: Home, navigation (all games on the main grid), Game24 (practice), Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Mental Obstacle Course, party games (Quip Clash, Fib It, Enough About You), **Connections** ([`e2e/connections.spec.ts`](e2e/connections.spec.ts) + in-memory [`e2e/helpers/connections-mock.ts`](e2e/helpers/connections-mock.ts)), Leaderboards. **Local**: Chromium + Mobile Chrome. **`CI=1` / `npm run test:e2e:ci`**: Chromium only (faster, less memory).
+- **Coverage**: Home, navigation (all games on the main grid), Game24 (practice), Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Mental Obstacle Course, party games (Quip Clash, Fib It, Enough About You), **Connections** ([`e2e/connections.spec.ts`](e2e/connections.spec.ts) + in-memory [`e2e/helpers/connections-mock.ts`](e2e/helpers/connections-mock.ts)), Leaderboards, **Coming Soon API** ([`e2e/home-coming-soon-api.spec.ts`](e2e/home-coming-soon-api.spec.ts)). **Local**: Chromium + Mobile Chrome. **`CI=1` / `npm run test:e2e:ci`**: Chromium only (faster, less memory).
 - **Dev server**: Playwright starts `next dev` on **port 3001** by default (`PLAYWRIGHT_WEB_PORT`, `PLAYWRIGHT_BASE_URL` to override).
 - **Agent**: Use `/e2e-reviewer` when Playwright E2E tests are needed to confirm site functionality, fix failing tests, or iterate on improvements. Prefer Composer 1.5 for interactive sessions.
 
@@ -433,7 +433,7 @@ src/
 - Changes not live? Check Vercel build logs and confirm changes are on `main`.
 - Supabase issues? Verify `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local` and Vercel.
 - Two Supabase projects (personal vs class)? See [docs/SUPABASE_TWO_PROJECTS.md](docs/SUPABASE_TWO_PROJECTS.md).
-- Home **Coming Soon** “Save” errors about **`home_coming_soon_copy`** / schema cache? The table is created by [`supabase/migrations/20260505120000_home_coming_soon_copy.sql`](supabase/migrations/20260505120000_home_coming_soon_copy.sql). In **Supabase Dashboard → SQL Editor**, paste that file’s contents, **Run**, then save again (use the same Supabase project as your production keys).
+- Home **Coming Soon** “Save” errors about **`home_coming_soon_copy`** / schema cache / **row-level security**? Create the table from [`supabase/migrations/20260505120000_home_coming_soon_copy.sql`](supabase/migrations/20260505120000_home_coming_soon_copy.sql), then run [`supabase/migrations/20260505130000_home_coming_soon_copy_rls_policies.sql`](supabase/migrations/20260505130000_home_coming_soon_copy_rls_policies.sql). Set **`SUPABASE_SERVICE_ROLE_KEY`** on the server for **Save** (Vercel + `.env.local`). Use the same Supabase project as your URL/keys.
 - Still stale? Hard refresh cache (Cmd+Shift+R).
 
 ## 🛠️ Available Scripts
@@ -463,7 +463,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-05**
 
-- **Home Coming Soon**: Password-protected edit for the tile headline + modal copy (`GET`/`POST` [`/api/home/coming-soon`](src/app/api/home/coming-soon/route.ts), secret **`HOME_COMING_SOON_EDIT_SECRET`**, persisted in Supabase **`home_coming_soon_copy`** when migrated).
+- **Home Coming Soon**: Password-protected edit for the tile headline + modal copy (`GET`/`POST` [`/api/home/coming-soon`](src/app/api/home/coming-soon/route.ts), secret **`HOME_COMING_SOON_EDIT_SECRET`**, persisted in Supabase **`home_coming_soon_copy`**). **`SUPABASE_SERVICE_ROLE_KEY`** is required for **Save** (service role bypasses row-level security (RLS)); without it the route returns **503** instead of a cryptic RLS error. Run [`supabase/migrations/20260505130000_home_coming_soon_copy_rls_policies.sql`](supabase/migrations/20260505130000_home_coming_soon_copy_rls_policies.sql) in the SQL Editor so **public reads** work when the API uses the anon key for `GET`. E2E: [`e2e/home-coming-soon-api.spec.ts`](e2e/home-coming-soon-api.spec.ts).
 
 **2026-03**
 

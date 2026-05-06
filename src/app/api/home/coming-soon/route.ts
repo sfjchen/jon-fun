@@ -30,6 +30,12 @@ function saveErrorForClient(message: string): string {
       'supabase/migrations/20260505120000_home_coming_soon_copy.sql from this repo, then try Save again.'
     )
   }
+  if (m.includes('row-level security') || m.includes('rls policy') || m.includes('violates row-level security')) {
+    return (
+      'Database rejected the save (row-level security). Set SUPABASE_SERVICE_ROLE_KEY in Vercel or `.env.local` for the same Supabase project, ' +
+      'and run `supabase/migrations/20260505130000_home_coming_soon_copy_rls_policies.sql` in the SQL Editor if you still see this.'
+    )
+  }
   return message
 }
 
@@ -76,6 +82,17 @@ export async function POST(request: Request) {
   const { password, ...rest } = parsed.data
   if (!constantTimeEqualStr(password, configured)) {
     return NextResponse.json({ error: 'Wrong password' }, { status: 401 })
+  }
+
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) {
+    return NextResponse.json(
+      {
+        error:
+          'SUPABASE_SERVICE_ROLE_KEY is not set. Saves require the Supabase service role key on the server (Vercel → Environment Variables, or `.env.local`). ' +
+          'The public anon key cannot update this table. Never expose the service role key to the browser.',
+      },
+      { status: 503 },
+    )
   }
 
   const { error } = await supabaseAdmin.from('home_coming_soon_copy').upsert(
