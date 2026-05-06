@@ -22,6 +22,17 @@ function jsonCopy(row: { headline: string; intro: string; bullets: string[] }): 
   return { headline: row.headline, intro: row.intro, bullets: row.bullets }
 }
 
+function saveErrorForClient(message: string): string {
+  const m = message.toLowerCase()
+  if (m.includes('home_coming_soon_copy') && (m.includes('schema cache') || m.includes('could not find') || m.includes('does not exist'))) {
+    return (
+      'The table home_coming_soon_copy is not in your Supabase project yet. Open Supabase Dashboard → SQL Editor, paste and run the migration ' +
+      'supabase/migrations/20260505120000_home_coming_soon_copy.sql from this repo, then try Save again.'
+    )
+  }
+  return message
+}
+
 export async function GET() {
   try {
     const { data, error } = await supabaseAdmin
@@ -79,7 +90,7 @@ export async function POST(request: Request) {
   )
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: saveErrorForClient(error.message) }, { status: 500 })
   }
 
   return NextResponse.json(jsonCopy(rest))
