@@ -2,7 +2,11 @@ import { defineConfig, devices } from '@playwright/test'
 
 /** Dedicated port so E2E (End-to-End) does not fight `next dev` on :3000. Override with PLAYWRIGHT_WEB_PORT / PLAYWRIGHT_BASE_URL. */
 const e2ePort = process.env.PLAYWRIGHT_WEB_PORT ?? '3001'
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${e2ePort}`
+/** Set `PLAYWRIGHT_SKIP_WEBSERVER=1` to test against a deployed URL (no local `next dev`). */
+const skipWebServer = process.env.PLAYWRIGHT_SKIP_WEBSERVER === '1'
+const defaultLocalBase = `http://127.0.0.1:${e2ePort}`
+const baseURL =
+  process.env.PLAYWRIGHT_BASE_URL ?? (skipWebServer ? 'https://sfjc.dev' : defaultLocalBase)
 
 export default defineConfig({
   testDir: './e2e',
@@ -27,12 +31,16 @@ export default defineConfig({
         { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
         { name: 'Mobile Chrome', use: { ...devices['Pixel 5'] } },
       ],
-  webServer: {
-    command: `npm run dev -- -p ${e2ePort}`,
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 180_000,
-    stdout: 'pipe',
-    stderr: 'pipe',
-  },
+  ...(skipWebServer
+    ? {}
+    : {
+        webServer: {
+          command: `npm run dev -- -p ${e2ePort}`,
+          url: baseURL,
+          reuseExistingServer: !process.env.CI,
+          timeout: 180_000,
+          stdout: 'pipe',
+          stderr: 'pipe',
+        },
+      }),
 })
