@@ -433,6 +433,7 @@ src/
 - Changes not live? Check Vercel build logs and confirm changes are on `main`.
 - Supabase issues? Verify `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local` and Vercel.
 - Two Supabase projects (personal vs class)? See [docs/SUPABASE_TWO_PROJECTS.md](docs/SUPABASE_TWO_PROJECTS.md).
+- **`supabase db push`** fails with “Remote migration versions not found in local migrations directory”? Run `supabase migration list --linked`. Versions **Remote-only** (not present in `supabase/migrations/`) block the push; mark them **`reverted`** only if they are obsolete vs this repo: `supabase migration repair --status reverted <version> ... --linked --yes`, then `supabase db push --linked --yes`. Root-level `supabase-migration-*.sql` files are **not** applied by `db push` (copy into `supabase/migrations/` or run in SQL Editor).
 - Home **Coming Soon** “Save” errors about **`home_coming_soon_copy`** / schema cache / **row-level security**? Create the table from [`supabase/migrations/20260505120000_home_coming_soon_copy.sql`](supabase/migrations/20260505120000_home_coming_soon_copy.sql), then run [`supabase/migrations/20260505130000_home_coming_soon_copy_rls_policies.sql`](supabase/migrations/20260505130000_home_coming_soon_copy_rls_policies.sql). Set **`SUPABASE_SERVICE_ROLE_KEY`** on the server for **Save** (Vercel + `.env.local`). Use the same Supabase project as your URL/keys.
 - Still stale? Hard refresh cache (Cmd+Shift+R).
 
@@ -463,6 +464,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-05**
 
+- **Supabase CLI**: On the linked personal project, **`migration repair --status reverted`** cleared three **Remote-only** history rows that were not in `supabase/migrations/`; **`db push`** then applied repo migrations so **Local** and **Remote** columns match in `supabase migration list --linked`. See README Troubleshooting for the generic pattern.
 - **Home Coming Soon**: Password-protected edit for the tile headline + modal copy (`GET`/`POST` [`/api/home/coming-soon`](src/app/api/home/coming-soon/route.ts), secret **`HOME_COMING_SOON_EDIT_SECRET`**, persisted in Supabase **`home_coming_soon_copy`**). **`SUPABASE_SERVICE_ROLE_KEY`** is required for **Save** (service role bypasses row-level security (RLS)); without it the route returns **503** instead of a cryptic RLS error. Run [`supabase/migrations/20260505130000_home_coming_soon_copy_rls_policies.sql`](supabase/migrations/20260505130000_home_coming_soon_copy_rls_policies.sql) in the SQL Editor so **public reads** work when the API uses the anon key for `GET`. E2E: [`e2e/home-coming-soon-api.spec.ts`](e2e/home-coming-soon-api.spec.ts).
 
 **2026-03**
