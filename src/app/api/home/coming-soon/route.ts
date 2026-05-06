@@ -41,7 +41,13 @@ export async function GET() {
 export async function POST(request: Request) {
   const configured = process.env.HOME_COMING_SOON_EDIT_SECRET
   if (!configured) {
-    return NextResponse.json({ error: 'HOME_COMING_SOON_EDIT_SECRET is not set' }, { status: 503 })
+    return NextResponse.json(
+      {
+        error:
+          'HOME_COMING_SOON_EDIT_SECRET is not set. Add it in Vercel → Project → Settings → Environment Variables (then redeploy), or in .env.local for local dev. If the password contains #, quote the value in .env.local.',
+      },
+      { status: 503 },
+    )
   }
 
   let json: unknown
