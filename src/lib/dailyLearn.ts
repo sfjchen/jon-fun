@@ -3,6 +3,8 @@
  * One entry per calendar day (upsert by date)
  */
 
+import { formatDailyLearnCsv, parseDailyLearnCsv } from './dailyLearnCsv'
+
 export interface DailyLearnEntry {
   date: string // 'YYYY-MM-DD'
   text: string
@@ -16,7 +18,8 @@ export interface DailyLearnCounts {
 }
 
 const USER_ID_KEY = 'daily_learn_user_id'
-const ENTRIES_KEY = 'daily_learn_entries'
+/** localStorage key for entry JSON array — exported for E2E (End-to-End) and tooling */
+export const DAILY_LEARN_ENTRIES_KEY = 'daily_learn_entries'
 const SYNC_KEY = 'daily_learn_sync_key'
 
 function toLocalYYYYMMDD(d: Date): string {
@@ -171,7 +174,7 @@ export async function restoreFromServer(userId: string): Promise<{ restored: num
   const entries = Array.isArray(data.entries) ? data.entries : []
   if (entries.length > 0) {
     setSyncKey(key)
-    localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
+    localStorage.setItem(DAILY_LEARN_ENTRIES_KEY, JSON.stringify(entries))
   }
   return { restored: entries.length }
 }
@@ -183,8 +186,8 @@ export async function syncWithServer(): Promise<{ entries: DailyLearnEntry[]; pu
   const remote = await fetchEntriesFromServer()
   const merged = mergeEntries(local, remote)
   const mergedJson = JSON.stringify(merged)
-  if (localStorage.getItem(ENTRIES_KEY) !== mergedJson) {
-    localStorage.setItem(ENTRIES_KEY, mergedJson)
+  if (localStorage.getItem(DAILY_LEARN_ENTRIES_KEY) !== mergedJson) {
+    localStorage.setItem(DAILY_LEARN_ENTRIES_KEY, mergedJson)
   }
   const pushOk = await pushWithRetry(merged)
   return { entries: merged, pushOk }
@@ -192,13 +195,13 @@ export async function syncWithServer(): Promise<{ entries: DailyLearnEntry[]; pu
 
 export function loadEntries(): DailyLearnEntry[] {
   if (typeof window === 'undefined') return []
-  const stored = localStorage.getItem(ENTRIES_KEY)
+  const stored = localStorage.getItem(DAILY_LEARN_ENTRIES_KEY)
   if (!stored) return []
   try {
     const arr = JSON.parse(stored) as DailyLearnEntry[]
     const filtered = Array.isArray(arr) ? arr.filter((e) => (e.text ?? '').trim().length > 0) : []
     if (filtered.length !== (arr?.length ?? 0)) {
-      localStorage.setItem(ENTRIES_KEY, JSON.stringify(filtered))
+      localStorage.setItem(DAILY_LEARN_ENTRIES_KEY, JSON.stringify(filtered))
     }
     return filtered.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0))
   } catch {
@@ -215,7 +218,7 @@ export async function saveEntry(entry: { date: string; text: string }): Promise<
   if (!text) {
     if (idx >= 0) {
       entries.splice(idx, 1)
-      localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
+      localStorage.setItem(DAILY_LEARN_ENTRIES_KEY, JSON.stringify(entries))
       for (let i = 0; i < PUSH_RETRIES; i++) {
         if (await deleteEntryOnServer(entry.date)) return true
         if (i < PUSH_RETRIES - 1) await new Promise((r) => setTimeout(r, RETRY_DELAY_MS))
@@ -232,7 +235,7 @@ export async function saveEntry(entry: { date: string; text: string }): Promise<
   if (idx >= 0) entries[idx] = updated
   else entries.push(updated)
   entries.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0))
-  localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries))
+  localStorage.setItem(DAILY_LEARN_ENTRIES_KEY, JSON.stringify(entries))
   return pushWithRetry(entries)
 }
 
@@ -274,18 +277,50 @@ export function exportAsText(): string {
   return entries.map((e) => `${e.date}: ${capitalizeFirst(e.text)}`).join('\n')
 }
 
-/** RFC 4180: quote fields that contain comma, double-quote, CR, or LF; escape " as "". */
-function csvEscapeField(value: string): string {
-  if (/[",\r\n]/.test(value)) return `"${value.replace(/"/g, '""')}"`
-  return value
+/** Merge CSV rows into local storage (latest `updatedAt` wins per date); then sync push. */
+export async function importMergedCsv(csvText: string): Promise<{
+  success: boolean
+  parseError?: string
+  rowsFromFile: number
+  mergedTotal: number
+  pushOk: boolean
+}> {
+  if (typeof window === 'undefined') {
+    return {
+      success: false,
+      parseError: 'Import only runs in the browser',
+      rowsFromFile: 0,
+      mergedTotal: 0,
+      pushOk: false,
+    }
+  }
+  const prior = loadEntries()
+  const parsed = parseDailyLearnCsv(csvText)
+  if (parsed.error) {
+    return {
+      success: false,
+      parseError: parsed.error,
+      rowsFromFile: 0,
+      mergedTotal: prior.length,
+      pushOk: false,
+    }
+  }
+  const fromFile = parsed.entries as DailyLearnEntry[]
+  const merged = mergeEntries(prior, fromFile)
+  localStorage.setItem(DAILY_LEARN_ENTRIES_KEY, JSON.stringify(merged))
+  const pushOk = await pushWithRetry(merged)
+  return {
+    success: true,
+    rowsFromFile: fromFile.length,
+    mergedTotal: merged.length,
+    pushOk,
+  }
 }
 
 /** One header row + one row per entry (full history); safe for commas and quotes in `text`. */
 export function exportAsCsv(): string {
   const entries = loadEntries().map((e) => ({ ...e, text: capitalizeFirst(e.text) }))
-  const header = ['date', 'text', 'updatedAt'].map(csvEscapeField).join(',')
-  const lines = entries.map((e) => [e.date, e.text, e.updatedAt].map(csvEscapeField).join(','))
-  return [header, ...lines].join('\n')
+  return formatDailyLearnCsv(entries)
 }
 
 export function exportAsJson(): string {

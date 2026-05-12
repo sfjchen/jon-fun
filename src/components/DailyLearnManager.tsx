@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef, type ChangeEvent } from 'react'
 import { usePathname } from 'next/navigation'
 import {
   loadEntries,
@@ -11,6 +11,7 @@ import {
   exportAsText,
   exportAsCsv,
   exportAsJson,
+  importMergedCsv,
   getOrCreateUserId,
   getSyncKey,
   setSyncKey,
@@ -41,6 +42,8 @@ export default function DailyLearnManager() {
   const [restoreResult, setRestoreResult] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [syncFailed, setSyncFailed] = useState(false)
+  const csvImportRef = useRef<HTMLInputElement>(null)
+  const [importStatus, setImportStatus] = useState<string | null>(null)
 
   const refresh = useCallback(() => {
     setEntries(loadEntries())
@@ -161,6 +164,30 @@ export default function DailyLearnManager() {
     a.click()
     URL.revokeObjectURL(a.href)
   }, [])
+
+  const handleCsvImportChange = useCallback(
+    async (e: ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      e.target.value = ''
+      setImportStatus(null)
+      if (!file) return
+      try {
+        const text = await file.text()
+        const r = await importMergedCsv(text)
+        refresh()
+        setSyncFailed(!r.pushOk)
+        if (!r.success) {
+          setImportStatus(r.parseError ?? 'Import failed')
+          return
+        }
+        const syncHint = r.pushOk ? '' : ' Cloud sync failed — saved locally; will retry.'
+        setImportStatus(`Imported ${r.rowsFromFile} row(s); ${r.mergedTotal} entries after merge.${syncHint}`)
+      } catch {
+        setImportStatus('Could not read file')
+      }
+    },
+    [refresh],
+  )
 
   const counts = getCounts()
   const calendarDates = new Set(entries.map((e) => e.date))
@@ -361,7 +388,7 @@ export default function DailyLearnManager() {
 
           {editModal}
 
-          <nav className="flex flex-wrap gap-2">
+          <nav className="flex flex-wrap gap-2" aria-label="Daily log sections">
             {(['analytics', 'export', 'sync'] as const).map((v) => (
               <button
                 key={v}
@@ -498,7 +525,20 @@ export default function DailyLearnManager() {
     <>
       <div className="rounded-lg border shadow-sm p-4 mb-4" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
         <h2 className="text-2xl font-bold font-lora mb-3" style={{ color: 'var(--ink-text)' }}>Export</h2>
-        <p className="mb-3" style={{ color: 'var(--ink-muted)' }}>Copy as text to paste into ChatGPT or other tools, or download JSON / CSV (comma-safe quoting for spreadsheets).</p>
+        <p className="mb-3" style={{ color: 'var(--ink-muted)' }}>
+          Copy as text to paste into ChatGPT or other tools, or download JSON / CSV (comma-safe quoting). Import CSV merges by date — newer{' '}
+          <code className="text-xs rounded px-1" style={{ backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}>updatedAt</code>{' '}
+          wins when the same day appears locally and in the file.
+        </p>
+        <input
+          ref={csvImportRef}
+          type="file"
+          accept=".csv,text/csv"
+          className="sr-only"
+          data-testid="daily-learn-csv-import"
+          aria-label="Import daily log CSV file"
+          onChange={handleCsvImportChange}
+        />
         <div className="flex flex-wrap gap-3">
           <button
             onClick={handleCopy}
@@ -515,6 +555,14 @@ export default function DailyLearnManager() {
             Download CSV
           </button>
           <button
+            type="button"
+            onClick={() => csvImportRef.current?.click()}
+            className="px-6 py-2 rounded-lg border hover:opacity-90"
+            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+          >
+            Import CSV (merge)
+          </button>
+          <button
             onClick={handleDownload}
             className="px-6 py-2 rounded-lg border hover:opacity-90"
             style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
@@ -522,6 +570,21 @@ export default function DailyLearnManager() {
             Download JSON
           </button>
         </div>
+        {importStatus && (
+          <p
+            role="status"
+            aria-live="polite"
+            className={`text-sm mt-4 ${
+              importStatus.startsWith('Imported')
+                ? importStatus.includes('Cloud sync failed')
+                  ? 'text-amber-700'
+                  : 'text-green-700'
+                : 'text-red-600'
+            }`}
+          >
+            {importStatus}
+          </p>
+        )}
       </div>
       <button onClick={() => setView('log')} className="px-4 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
         ← Log
