@@ -9,6 +9,7 @@ import {
   getTodayDate,
   getCounts,
   exportAsText,
+  exportAsCsv,
   exportAsJson,
   getOrCreateUserId,
   getSyncKey,
@@ -148,6 +149,15 @@ export default function DailyLearnManager() {
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
     a.download = 'daily-learn-entries.json'
+    a.click()
+    URL.revokeObjectURL(a.href)
+  }, [])
+
+  const handleDownloadCsv = useCallback(() => {
+    const blob = new Blob([exportAsCsv()], { type: 'text/csv;charset=utf-8' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = 'daily-learn-entries.csv'
     a.click()
     URL.revokeObjectURL(a.href)
   }, [])
@@ -488,7 +498,7 @@ export default function DailyLearnManager() {
     <>
       <div className="rounded-lg border shadow-sm p-4 mb-4" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
         <h2 className="text-2xl font-bold font-lora mb-3" style={{ color: 'var(--ink-text)' }}>Export</h2>
-        <p className="mb-3" style={{ color: 'var(--ink-muted)' }}>Copy as text to paste into ChatGPT or other tools, or download JSON.</p>
+        <p className="mb-3" style={{ color: 'var(--ink-muted)' }}>Copy as text to paste into ChatGPT or other tools, or download JSON / CSV (comma-safe quoting for spreadsheets).</p>
         <div className="flex flex-wrap gap-3">
           <button
             onClick={handleCopy}
@@ -496,6 +506,13 @@ export default function DailyLearnManager() {
             style={{ backgroundColor: 'var(--ink-accent)' }}
           >
             Copy as text
+          </button>
+          <button
+            onClick={handleDownloadCsv}
+            className="px-6 py-2 rounded-lg border hover:opacity-90"
+            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+          >
+            Download CSV
           </button>
           <button
             onClick={handleDownload}

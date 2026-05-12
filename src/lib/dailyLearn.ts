@@ -274,6 +274,20 @@ export function exportAsText(): string {
   return entries.map((e) => `${e.date}: ${capitalizeFirst(e.text)}`).join('\n')
 }
 
+/** RFC 4180: quote fields that contain comma, double-quote, CR, or LF; escape " as "". */
+function csvEscapeField(value: string): string {
+  if (/[",\r\n]/.test(value)) return `"${value.replace(/"/g, '""')}"`
+  return value
+}
+
+/** One header row + one row per entry (full history); safe for commas and quotes in `text`. */
+export function exportAsCsv(): string {
+  const entries = loadEntries().map((e) => ({ ...e, text: capitalizeFirst(e.text) }))
+  const header = ['date', 'text', 'updatedAt'].map(csvEscapeField).join(',')
+  const lines = entries.map((e) => [e.date, e.text, e.updatedAt].map(csvEscapeField).join(','))
+  return [header, ...lines].join('\n')
+}
+
 export function exportAsJson(): string {
   const entries = loadEntries().map((e) => ({ ...e, text: capitalizeFirst(e.text) }))
   return JSON.stringify(entries, null, 2)
