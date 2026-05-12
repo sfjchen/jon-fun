@@ -11,7 +11,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **Texas Hold'em chip tracker** (`/games/poker`): Poker chip tracker with real-time multiplayer lobbies
 - **Chwazi Finger Chooser** (`/games/chwazi`): Place fingers on screen to randomly select a winner
 - **TMR System** (`/games/tmr`): Targeted Memory Reactivation for learning and sleep
-- **1 Sentence Everyday** (`/games/daily-log`): One sentence per day, history, calendar, export, cross-device sync (localStorage + Supabase)
+- **1 Sentence Everyday** (`/games/daily-log`): One sentence per day, history, calendar, export (text / JSON / RFC 4180 CSV), cross-device sync (localStorage + Supabase)
 - **Pear Navigator** (`/games/pear-navigator`): PearPad tablet simulator—Procreate, Notion, Figma guides; tap UI elements to advance; MS&E 165 demo; A/B test results at `/games/pear-navigator/results`
 - **Mental Obstacle Course** (`/games/mental-obstacle-course`): Six-round playful benchmark (reaction, arithmetic, patterns, digit memory, words, trivia) with a radar chart by domain; scores and history in **localStorage** only (no accounts)
 - **Quip Clash** (`/games/quip-clash`): Party room (4-digit **PIN** — Personal Identification Number) — Quiplash-style paired prompts, sequential votes, round multipliers, final round; **Supabase** (PostgreSQL) + **Realtime**; session keys `party_quiplash_*`
@@ -469,6 +469,7 @@ Running log of project work. Update this section when making significant changes
 - **Supabase CLI**: On the linked personal project, **`migration repair --status reverted`** cleared three **Remote-only** history rows that were not in `supabase/migrations/`; **`db push`** then applied repo migrations so **Local** and **Remote** columns match in `supabase migration list --linked`. See README Troubleshooting for the generic pattern.
 - **Home Coming Soon**: Password-protected edit for the tile headline + modal copy (`GET`/`POST` [`/api/home/coming-soon`](src/app/api/home/coming-soon/route.ts), secret **`HOME_COMING_SOON_EDIT_SECRET`**, persisted in Supabase **`home_coming_soon_copy`**). **`SUPABASE_SERVICE_ROLE_KEY`** is required for **Save** (service role bypasses row-level security (RLS)); without it the route returns **503** instead of a cryptic RLS error. Run [`supabase/migrations/20260505130000_home_coming_soon_copy_rls_policies.sql`](supabase/migrations/20260505130000_home_coming_soon_copy_rls_policies.sql) in the SQL Editor so **public reads** work when the API uses the anon key for `GET`. E2E: [`e2e/home-coming-soon-api.spec.ts`](e2e/home-coming-soon-api.spec.ts).
 - **Playwright**: `PLAYWRIGHT_SKIP_WEBSERVER=1` + optional `PLAYWRIGHT_BASE_URL` skips local `next dev` and targets deployment (default **`https://sfjc.dev`**); **`npm run test:e2e:deployment`** wraps that for Chromium-only CI-style runs.
+- **1 Sentence Everyday**: Export tab adds **Download CSV** (`exportAsCsv` in [`src/lib/dailyLearn.ts`](src/lib/dailyLearn.ts)) — RFC 4180–style quoting so commas, quotes, and line breaks in daily notes stay in one column across full history.
 
 **2026-03**
 
