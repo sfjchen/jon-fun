@@ -11,6 +11,7 @@
     "verify:meditations-pdf": "tsx scripts/verify-meditations-pdf.ts",
     "verify:epub-fixture": "tsx scripts/generate-minimal-epub.ts && tsx scripts/verify-epub-fixture.ts",
     "verify:reader-fixtures": "tsx scripts/generate-minimal-epub.ts && tsx scripts/verify-reader-fixtures.ts",
+    "verify:daily-learn-csv": "tsx scripts/verify-daily-learn-csv.ts",
     "seed:reader-portable": "tsx scripts/seed-reader-portable-from-fixtures.ts",
     "build:reader-curated": "tsx scripts/build-reader-library-curated.ts",
     "patch:tinad-wiki-section1": "tsx scripts/patch-tinad-wiki-section1-portable.ts",
