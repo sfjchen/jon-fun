@@ -118,10 +118,9 @@ export const READER_FIXTURE_PROFILES: ReaderFixtureProfile[] = [
   {
     fileName: 'Witcher 1 The Last Wish (Andrzej Sapkowski) (z-library.sk, 1lib.sk, z-lib.sk).epub',
     kind: 'epub',
-    description: 'The Witcher — short story collection',
+    description: 'The Witcher — Calibre frame (part-N) + story (chap-N) spine merged; NCX titles',
     optional: true,
-    expectMinChapters: 15,
-    expectMaxChapters: 25,
+    expectExactChapters: 12,
     titleIncludes: ['Last Wish'],
     keywordAnywhere: [/Geralt/i, /witcher/i],
     minTotalWords: 80_000,

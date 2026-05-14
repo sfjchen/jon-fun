@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-05-14T19:57:36.949Z",
+  "exportedAt": "2026-05-14T20:11:19.471Z",
   "publications": [
     {
       "id": "4915147c-6313-59f6-90d7-863e235b9736",
@@ -8,9 +8,9 @@
       "sourceType": "epub",
       "chapters": [
         {
-          "id": "prologue-there-is-no-antimemetics-division-585c4bd9",
+          "id": "prologue-890bee47",
           "order": 0,
-          "title": "Prologue, There Is No Antimemetics Division",
+          "title": "PROLOGUE",
           "paragraphs": [
             "About the Author",
             "qntm is the internet handle of Sam Hughes, a writer and software developer living in the UK. He has been writing short-form and serial science fiction for most of this millennium; his preferred writing technique is to start from an interesting hypothetical and drive it to breaking point and far beyond. His website is qntm.org.",
@@ -29,9 +29,9 @@
           "wordCount": 320
         },
         {
-          "id": "1-induction-00bcf028",
+          "id": "1-induction-5f0390ef",
           "order": 1,
-          "title": "1: Induction",
+          "title": "1: INDUCTION",
           "paragraphs": [
             "1",
             "Induction",
@@ -149,9 +149,9 @@
           "wordCount": 3230
         },
         {
-          "id": "2-introductory-antimemetics-f7639fd0",
+          "id": "2-introductory-antimemetics-c897c1b3",
           "order": 2,
-          "title": "2: Introductory Antimemetics",
+          "title": "2: INTRODUCTORY ANTIMEMETICS",
           "paragraphs": [
             "2",
             "Introductory Antimemetics",
@@ -262,9 +262,9 @@
           "wordCount": 4199
         },
         {
-          "id": "3-unforgettable-that-s-what-you-are-5efdb172",
+          "id": "3-unforgettable-that-s-what-you-are-c5f0ea7d",
           "order": 3,
-          "title": "3: Unforgettable, That’s What You Are",
+          "title": "3: UNFORGETTABLE, THAT’S WHAT YOU ARE",
           "paragraphs": [
             "3",
             "Unforgettable, That’s What You Are",
@@ -439,9 +439,9 @@
           "wordCount": 6052
         },
         {
-          "id": "the-ones-who-walk-very-slowly-there-is-no-antime-fe5a60b4",
+          "id": "the-ones-who-walk-very-slowly-05bd7901",
           "order": 4,
-          "title": "The Ones Who Walk Very Slowly, There Is No Antimemetics Division",
+          "title": "THE ONES WHO WALK VERY SLOWLY",
           "paragraphs": [
             "The Ones Who Walk Very Slowly",
             "Ref.: U-2256 • Cat.: ω",
@@ -466,9 +466,9 @@
           "wordCount": 943
         },
         {
-          "id": "1-immemorial-c6d9619b",
+          "id": "1-immemorial-e63e3290",
           "order": 5,
-          "title": "1: Immemorial",
+          "title": "1: IMMEMORIAL",
           "paragraphs": [
             "1",
             "Immemorial",
@@ -627,9 +627,9 @@
           "wordCount": 4298
         },
         {
-          "id": "2-where-have-you-been-all-my-life-8031b1ed",
+          "id": "2-where-have-you-been-all-my-life-18fde1ff",
           "order": 6,
-          "title": "2: Where Have You Been All My Life",
+          "title": "2: WHERE HAVE YOU BEEN ALL MY LIFE",
           "paragraphs": [
             "2",
             "Where Have You Been All My Life",
@@ -884,9 +884,9 @@
           "wordCount": 7888
         },
         {
-          "id": "3-case-colorless-green-2dc3ba10",
+          "id": "3-case-colorless-green-52b29f7c",
           "order": 7,
-          "title": "3: Case Colorless Green",
+          "title": "3: CASE COLORLESS GREEN",
           "paragraphs": [
             "3",
             "Case Colorless Green",
@@ -993,9 +993,9 @@
           "wordCount": 3955
         },
         {
-          "id": "4-your-last-first-day-e77ffad9",
+          "id": "4-your-last-first-day-c4c88d11",
           "order": 8,
-          "title": "4: Your Last First Day",
+          "title": "4: YOUR LAST FIRST DAY",
           "paragraphs": [
             "4",
             "Your Last First Day",
@@ -1083,9 +1083,9 @@
           "wordCount": 3020
         },
         {
-          "id": "quinn-s-god-there-is-no-antimemetics-division-aa8ba067",
+          "id": "quinn-s-god-d43e962d",
           "order": 9,
-          "title": "Quinn’s God, There Is No Antimemetics Division",
+          "title": "QUINN’S GOD",
           "paragraphs": [
             "Quinn’s God",
             "Ref.: U-2200 • Cat.: 1",
@@ -1136,9 +1136,9 @@
           "wordCount": 1276
         },
         {
-          "id": "ojai-there-is-no-antimemetics-division-d82df3fe",
+          "id": "ojai-0d279c04",
           "order": 10,
-          "title": "Ojai, There Is No Antimemetics Division",
+          "title": "OJAI",
           "paragraphs": [
             "Ojai",
             "Organisation operative James Bess is monolithic: nearly two metres tall and broad-shouldered, with a silhouette that’s almost triangular. He is bald, bearded and immaculately presented. His suit is tailored; there are few that will fit him off the rack.",
@@ -1231,9 +1231,9 @@
           "wordCount": 3160
         },
         {
-          "id": "1-case-hate-red-09306492",
+          "id": "1-case-hate-red-325d1557",
           "order": 11,
-          "title": "1: Case Hate Red",
+          "title": "1: CASE HATE RED",
           "paragraphs": [
             "1",
             "Case Hate Red",
@@ -1300,9 +1300,9 @@
           "wordCount": 2669
         },
         {
-          "id": "2-unthinkable-080d74f6",
+          "id": "2-unthinkable-af1d7cbf",
           "order": 12,
-          "title": "2: Unthinkable",
+          "title": "2: UNTHINKABLE",
           "paragraphs": [
             "2",
             "Unthinkable",
@@ -1360,9 +1360,9 @@
           "wordCount": 2049
         },
         {
-          "id": "3-blood-brain-f675d702",
+          "id": "3-blood-brain-f4c1fac5",
           "order": 13,
-          "title": "3: Blood/brain",
+          "title": "3: BLOOD/BRAIN",
           "paragraphs": [
             "3",
             "Blood/brain",
@@ -1453,7 +1453,7 @@
           "wordCount": 3410
         },
         {
-          "id": "4-u-3125-390a34d6",
+          "id": "4-u-3125-0dc57e33",
           "order": 14,
           "title": "4: U-3125",
           "paragraphs": [
@@ -1540,9 +1540,9 @@
           "wordCount": 2396
         },
         {
-          "id": "5-wild-light-dd7b9879",
+          "id": "5-wild-light-d1fbac56",
           "order": 15,
-          "title": "5: Wild Light",
+          "title": "5: WILD LIGHT",
           "paragraphs": [
             "5",
             "Wild Light",
@@ -1777,9 +1777,9 @@
           "wordCount": 8609
         },
         {
-          "id": "6-tombstone-cd97d9e7",
+          "id": "6-tombstone-74c377e0",
           "order": 16,
-          "title": "6: Tombstone",
+          "title": "6: TOMBSTONE",
           "paragraphs": [
             "6",
             "Tombstone",
@@ -1961,9 +1961,9 @@
           "wordCount": 6520
         },
         {
-          "id": "epilogue-7af32353",
+          "id": "epilogue-74568f72",
           "order": 17,
-          "title": "Epilogue",
+          "title": "EPILOGUE",
           "paragraphs": [
             "Epilogue",
             "The interior of vault 3011A is, once again, a mild surprise for Mahlo. He always expects a space where a somewhat humanoid entity could plausibly live; at minimum, a bed. Instead he finds a dense warren of tall, dark wooden shelves. The shelves are filled with boxes of many sizes and the boxes are filled to bursting with paperwork, folders and cards. It seems to be a library archive room, the kind he remembers from espionage work in the 1970s. The stale taste of the air gives him an unexpected jab of nostalgia.",
@@ -2002,9 +2002,9 @@
           "wordCount": 1186
         },
         {
-          "id": "acknowledgements-there-is-no-antimemetics-divisi-cdd35a20",
+          "id": "acknowledgments-c0fa9eb4",
           "order": 18,
-          "title": "Acknowledgements, There Is No Antimemetics Division",
+          "title": "ACKNOWLEDGMENTS",
           "paragraphs": [
             "Acknowledgements",
             "I wish to extend my gratitude to the readers, writers and staff of the SCP Foundation project, who responded overwhelmingly positively to the first version of Antimemetics when it was originally serialised there between 2015 and 2020. In particular, I thank all those who read and critiqued early drafts of individual chapters of those first serials, especially Fionn Ó Maoileoin, who had by far the most significant input.",
@@ -2014,9 +2014,9 @@
           "wordCount": 155
         },
         {
-          "id": "follow-penguin-228ac18d",
+          "id": "this-is-just-the-beginning-884aa42e",
           "order": 19,
-          "title": "Follow Penguin",
+          "title": "THIS IS JUST THE BEGINNING",
           "paragraphs": [
             "THIS IS JUST THE BEGINNING",
             "Find us online and join the conversation",
@@ -2033,9 +2033,9 @@
           "wordCount": 41
         },
         {
-          "id": "copyright-there-is-no-antimemetics-division-95b5fe91",
+          "id": "copyright-496d8f65",
           "order": 20,
-          "title": "Copyright, There Is No Antimemetics Division",
+          "title": "COPYRIGHT",
           "paragraphs": [
             "PENGUIN BOOKS",
             "UK | USA | Canada | Ireland | Australia",
@@ -2062,8 +2062,8 @@
           "wordCount": 304
         }
       ],
-      "createdAt": "2026-05-14T19:57:36.889Z",
-      "updatedAt": "2026-05-14T19:57:36.889Z",
+      "createdAt": "2026-05-14T20:11:19.405Z",
+      "updatedAt": "2026-05-14T20:11:19.405Z",
       "originalFileName": "There Is No Antimemetics Division (qntm) (z-library.sk, 1lib.sk, z-lib.sk).epub",
       "importNotes": [
         "Package title: There Is No Antimemetics Division",
@@ -2079,9 +2079,9 @@
       "sourceType": "epub",
       "chapters": [
         {
-          "id": "the-last-wish-44d98112",
+          "id": "copyright-8712f167",
           "order": 0,
-          "title": "The Last Wish",
+          "title": "Copyright",
           "paragraphs": [
             "This book is a work of fiction. Names, characters, places, and incidents are the product of the author’s imagination or are used fictitiously. Any resemblance to actual events, locales, or persons, living or dead, is coincidental.",
             "Original text copyright © 1993 by Andrzej Sapkowski",
@@ -2100,9 +2100,9 @@
           "wordCount": 156
         },
         {
-          "id": "the-last-wish-24e191a1",
+          "id": "table-of-contents-5d63e124",
           "order": 1,
-          "title": "The Last Wish",
+          "title": "Table of Contents",
           "paragraphs": [
             "Contents",
             "1: THE VOICE OF REASON",
@@ -2125,9 +2125,9 @@
           "wordCount": 65
         },
         {
-          "id": "the-last-wish-061358f4",
+          "id": "preface-8e028377",
           "order": 2,
-          "title": "The Last Wish",
+          "title": "Preface",
           "paragraphs": [
             "Geralt, steadying the carafe’s pewter stopper with his thumb, poured himself some wine, took a sip and leaned back into his chair.",
             "He was watching the monster with a smile. An exceptionally ugly one.",
@@ -2145,9 +2145,9 @@
           "wordCount": 247
         },
         {
-          "id": "the-last-wish-c4344b49",
+          "id": "the-witcher-dac2fa5f",
           "order": 3,
-          "title": "The Last Wish",
+          "title": "The Witcher",
           "paragraphs": [
             "THE VOICE OF REASON",
             "1",
@@ -2155,15 +2155,7 @@
             "She entered very carefully, moving silently, floating through the chamber like a phantom; the only sound was that of her mantle brushing her naked skin. Yet this faint sound was enough to wake the witcher—or maybe it only tore him from the half-slumber in which he rocked monotonously, as though traveling through fathomless depths, suspended between the seabed and its calm surface amid gently undulating strands of seaweed.",
             "He did not move, did not stir. The girl flitted closer, threw off her mantle and slowly, hesitantly, rested her knee on the edge of the large bed. He observed her through lowered lashes, still not betraying his wakefulness. The girl carefully climbed onto the bedclothes, and onto him, wrapping her thighs around him. Leaning forward on straining arms, she brushed his face with hair which smelled of chamomile. Determined, and as if impatient, she leaned over and touched his eyelids, cheeks, lips with the tips of her breasts. He smiled, very slowly, delicately, grasping her by the shoulders, and she straightened, escaping his fingers. She was radiant, luminous in the misty brilliance of dawn. He moved, but with pressure from both hands, she forbade him to change position and, with a light but decisive movement of her hips, demanded a response.",
             "He responded. She no longer backed away from his hands; she threw her head back, shook her hair. Her skin was cool and surprisingly smooth. Her eyes, glimpsed when her face came close to his, were huge and dark as the eyes of a water nymph.",
-            "Rocked, he sank into a sea of chamomile as it grew agitated and seethed."
-          ],
-          "wordCount": 281
-        },
-        {
-          "id": "the-last-wish-f1933857",
-          "order": 4,
-          "title": "The Last Wish",
-          "paragraphs": [
+            "Rocked, he sank into a sea of chamomile as it grew agitated and seethed.",
             "THE WITCHER",
             "I",
             "Later, it was said the man came from the north, from Ropers Gate. He came on foot, leading his laden horse by the bridle. It was late afternoon and the ropers’, saddlers’ and tanners’ stalls were already closed, the street empty. It was hot but the man had a black coat thrown over his shoulders. He drew attention to himself.",
@@ -2499,12 +2491,12 @@
             "“Good. I take my leave now. Rest.” Velerad got up. “Geralt? Before I go, tell me: why did you try to bite her to death? Eh? Geralt?”",
             "The witcher was asleep."
           ],
-          "wordCount": 10005
+          "wordCount": 10286
         },
         {
-          "id": "the-last-wish-62c3b5bd",
-          "order": 5,
-          "title": "The Last Wish",
+          "id": "a-grain-of-truth-984738d1",
+          "order": 4,
+          "title": "A Grain of Truth",
           "paragraphs": [
             "THE VOICE OF REASON",
             "2",
@@ -2564,15 +2556,7 @@
             "“No, I don’t. And do you know why?”",
             "“No.”",
             "Nenneke leaned over and looked him in the eyes with a strange smile on her pale lips.",
-            "“Because it would be the first proof I’ve ever heard of that a lack of faith has any kind of power at all.”"
-          ],
-          "wordCount": 1844
-        },
-        {
-          "id": "the-last-wish-1aa56989",
-          "order": 6,
-          "title": "The Last Wish",
-          "paragraphs": [
+            "“Because it would be the first proof I’ve ever heard of that a lack of faith has any kind of power at all.”",
             "A GRAIN OF TRUTH",
             "I",
             "A number of black points moving against a bright sky streaked with mist drew the witcher’s attention. Birds. They wheeled in slow, peaceful circles, then suddenly swooped and soared up again, flapping their wings.",
@@ -2889,12 +2873,12 @@
             "“That what, Geralt?”",
             "“It has to be true love.”"
           ],
-          "wordCount": 10238
+          "wordCount": 12082
         },
         {
-          "id": "the-last-wish-04e437aa",
-          "order": 7,
-          "title": "The Last Wish",
+          "id": "the-lesser-evil-45252a97",
+          "order": 5,
+          "title": "The Lesser Evil",
           "paragraphs": [
             "THE VOICE OF REASON",
             "3",
@@ -2933,15 +2917,7 @@
             "“You’ve dropped something, son,” Nenneke said calmly. “So pick it up; we don’t leave rubbish here. This is a temple. Falwick, take that fool from here or this will end in grief. You know what you’re to tell Hereward. And I’ll write a personal letter to him; you don’t look like trustworthy messengers to me. Get out of here. You can find your way out, I hope?”",
             "Falwick, restraining the enraged Tailles with an iron grip, bowed, his armor clattering. Then he looked the witcher in the eyes. The witcher didn’t smile. Falwick threw his crimson cloak over his shoulders.",
             "“This wasn’t our last visit, venerable Nenneke,” he said. “We’ll be back.”",
-            "“That’s just what I’m afraid of,” replied the priestess coldly. “The displeasure’s mine.”"
-          ],
-          "wordCount": 1481
-        },
-        {
-          "id": "the-last-wish-6c98ac28",
-          "order": 8,
-          "title": "The Last Wish",
-          "paragraphs": [
+            "“That’s just what I’m afraid of,” replied the priestess coldly. “The displeasure’s mine.”",
             "THE LESSER EVIL",
             "I",
             "As usual, cats and children noticed him first. A striped tomcat sleeping on a sun-warmed stack of wood, shuddered, raised his round head, pulled back his ears, hissed and bolted off into the nettles. Three-year-old Dragomir, fisherman Trigla’s son, who was sitting on the hut’s threshold doing his best to make dirtier an already dirty shirt, started to scream as he fixed his tearful eyes on the passing rider.",
@@ -3428,12 +3404,12 @@
             "The witcher looked round.",
             "“Don’t come back,” said Caldemeyn. “Never come back.”"
           ],
-          "wordCount": 12398
+          "wordCount": 13879
         },
         {
-          "id": "the-last-wish-2462e68a",
-          "order": 9,
-          "title": "The Last Wish",
+          "id": "a-question-of-price-a9d7690f",
+          "order": 6,
+          "title": "A Question of Price",
           "paragraphs": [
             "THE VOICE OF REASON",
             "4",
@@ -3471,15 +3447,7 @@
             "“Enough of this, we should go. It’s already dusk.",
             "“Thank you for talking to me. Thank you, Iola.",
             "“No, nothing’s wrong. I’m fine.",
-            "“Quite fine.”"
-          ],
-          "wordCount": 1380
-        },
-        {
-          "id": "the-last-wish-2d7f774c",
-          "order": 10,
-          "title": "The Last Wish",
-          "paragraphs": [
+            "“Quite fine.”",
             "A QUESTION OF PRICE",
             "I",
             "The witcher had a knife at his throat.",
@@ -3875,12 +3843,12 @@
             "“Pavetta!” exclaimed Calanthe. “Are you…are you—?”",
             "The princess lowered her eyes and blushed. Then replied."
           ],
-          "wordCount": 12821
+          "wordCount": 14201
         },
         {
-          "id": "the-last-wish-be728e14",
-          "order": 11,
-          "title": "The Last Wish",
+          "id": "the-edge-of-the-world-67e59684",
+          "order": 7,
+          "title": "The Edge of the World",
           "paragraphs": [
             "THE VOICE OF REASON",
             "5",
@@ -3944,15 +3912,7 @@
             "“Millet and mosquitoes! That reminds me of our first expedition together to the edge of the world,” he said. “Do you remember? We met at the fête in Gulet and you persuaded me—”",
             "“You persuaded me! You had to flee from Gulet as fast as your horse could carry you because the girl you’d knocked up under the musicians’ podium had four sturdy brothers. They were looking for you all over town, threatening to geld you and cover you in pitch and sawdust. That’s why you hung on to me then.”",
             "“And you almost jumped out of your pants with joy to have a companion. Until then, you only had your horse for company. But you’re right; it was as you say. I did have to disappear for a while, and the Valley of Flowers seemed just right for my purpose. It was, after all, supposed to be the edge of the inhabited world, the last outpost of civilization, the furthest point on the border of two worlds…Remember?”",
-            "“I remember.”"
-          ],
-          "wordCount": 2257
-        },
-        {
-          "id": "the-last-wish-25697225",
-          "order": 12,
-          "title": "The Last Wish",
-          "paragraphs": [
+            "“I remember.”",
             "THE EDGE OF THE WORLD",
             "I",
             "Dandilion came down the steps of the inn carefully, carrying two tankards dripping with froth. Cursing under his breath, he squeezed through a group of curious children and crossed the yard at a diagonal, avoiding the cowpats.",
@@ -4461,11 +4421,11 @@
             "“Banal,” snorted the poet. “Even if it really is the edge, it’s got to be described differently. Metaphorically. I take it you know what a metaphor is, Geralt? Hmm…Let me think…‘Where…’ Bloody hell. ‘Where—’”",
             "“Goodnight,” said the devil."
           ],
-          "wordCount": 14047
+          "wordCount": 16304
         },
         {
-          "id": "the-last-wish-dd2e2585",
-          "order": 13,
+          "id": "the-last-wish-bebd67dc",
+          "order": 8,
           "title": "The Last Wish",
           "paragraphs": [
             "THE VOICE OF REASON",
@@ -4549,15 +4509,7 @@
             "“I understand.” The witcher nodded. “And us, Nenneke? What about us? The sun shines on us, too. Shouldn’t we shelter under a roof like that?”",
             "“In principle, yes,” sighed the priestess. “But…”",
             "“But what?”",
-            "“It’s too late.”"
-          ],
-          "wordCount": 2129
-        },
-        {
-          "id": "the-last-wish-465f8864",
-          "order": 14,
-          "title": "The Last Wish",
-          "paragraphs": [
+            "“It’s too late.”",
             "THE LAST WISH",
             "I",
             "The catfish stuck its barbelled head above the surface, tugged with force, splashed, stirred the water and flashed its white belly.",
@@ -5233,12 +5185,12 @@
             "“What are they doing?” Dandilion was curious. “Tell me, dammit!”",
             "The elf smiled. Very, very sadly. “I don’t like grand words,” he said. “And it’s impossible to give it a name without using grand words.”"
           ],
-          "wordCount": 17931
+          "wordCount": 20060
         },
         {
-          "id": "the-last-wish-5c3799b3",
-          "order": 15,
-          "title": "The Last Wish",
+          "id": "7-the-voice-of-reason-1bc4b60e",
+          "order": 9,
+          "title": "7: THE VOICE OF REASON",
           "paragraphs": [
             "THE VOICE OF REASON",
             "7",
@@ -5362,9 +5314,9 @@
           "wordCount": 2848
         },
         {
-          "id": "the-last-wish-747413d6",
-          "order": 16,
-          "title": "The Last Wish",
+          "id": "meet-the-author-29563383",
+          "order": 10,
+          "title": "Meet the Author",
           "paragraphs": [
             "Meet the Author",
             "ANDRZEJ SAPKOWSKIwas born in 1948 in Poland. He studied economy and business, but the success of his fantasy cycle about the sorcerer Geralt de Riv turned him into a bestselling writer. He is now one of Poland’s most famous and successful authors."
@@ -5372,9 +5324,9 @@
           "wordCount": 45
         },
         {
-          "id": "the-last-wish-194ba5db",
-          "order": 17,
-          "title": "The Last Wish",
+          "id": "visit-the-orbit-blog-at-bd199dae",
+          "order": 11,
+          "title": "VISIT THE ORBIT BLOG AT",
           "paragraphs": [
             "VISIT THE ORBIT BLOG AT",
             "www.orbitbooks.net",
@@ -5399,13 +5351,14 @@
           "wordCount": 119
         }
       ],
-      "createdAt": "2026-05-14T19:57:36.949Z",
-      "updatedAt": "2026-05-14T19:57:36.949Z",
+      "createdAt": "2026-05-14T20:11:19.471Z",
+      "updatedAt": "2026-05-14T20:11:19.471Z",
       "originalFileName": "Witcher 1 The Last Wish (Andrzej Sapkowski) (z-library.sk, 1lib.sk, z-lib.sk).epub",
       "importNotes": [
         "Package title: Witcher 1: The Last Wish",
         "EPUB import uses the package spine (reading order). DRM-protected EPUBs are not supported. Complex layouts, footnotes, and images are reduced to plain text.",
-        "Imported 18 spine section(s) from EPUB. Skipped 1 non-text or non-linear item(s).",
+        "Merged 6 Calibre-style frame/story spine pair(s) (part-N + chap-N HTML files) into single sections.",
+        "Imported 12 spine section(s) from EPUB. Skipped 1 non-text or non-linear item(s).",
         "2 spine section(s) are very short (under ~72 words)—often front matter or ads. Use Merge up in the import preview if you want fewer TOC (table of contents) entries.",
         "EPUB body text is not summarized or edited for wording. Spine chapter titles may be inferred from headings (up to 200 chars) but story paragraphs stay as in the file. `<br>`/line breaks preserved where possible; only very long single lines split at ~1100 chars for display."
       ]
