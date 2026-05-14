@@ -7,7 +7,7 @@ const xmlParser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: '@_',
   removeNSPrefix: true,
-  isArray: (tagName) => ['item', 'itemref', 'meta', 'dc:creator'].includes(tagName),
+  isArray: (tagName) => ['item', 'itemref', 'meta', 'dc:creator', 'navPoint'].includes(tagName),
 })
 
 export type EpubSpineChapter = {
@@ -107,6 +107,134 @@ function pushStructuredBlock(blocks: string[], el: HtmlElement): void {
   if (s) blocks.push(s)
 }
 
+/** Calibre often uses `<p class="pt">` / `<p class="ct">` with banner lines instead of `<h1>`. */
+function looksLikeCalibreDisplayTitle(line: string): boolean {
+  const t = line.trim()
+  if (t.length < 4 || t.length > 160) return false
+  if (/^\d{1,2}:\s+[A-Z]/.test(t)) return true
+  const letters = t.replace(/[^a-zA-Z]/g, '')
+  if (letters.length < 4) return false
+  const lower = (t.match(/[a-z]/g) ?? []).length
+  const upper = (t.match(/[A-Z]/g) ?? []).length
+  if (upper >= 3 && lower === 0) return true
+  if (upper > 0 && lower / Math.max(upper, 1) <= 0.12) return true
+  return false
+}
+
+function navLabelToString(navLabel: unknown): string {
+  if (!navLabel || typeof navLabel !== 'object') return ''
+  const t = (navLabel as { text?: unknown }).text
+  if (typeof t === 'string') return t.trim()
+  if (t && typeof t === 'object' && '#text' in t) return String((t as { '#text': unknown })['#text']).trim()
+  return ''
+}
+
+function walkNcxNavPoints(
+  navPoint: Record<string, unknown> | Record<string, unknown>[] | undefined,
+  opfDir: string,
+  onSrcLabel: (contentPath: string, label: string) => void,
+): void {
+  for (const np of asArray(navPoint)) {
+    const label = navLabelToString(np.navLabel)
+    const content = np.content as Record<string, unknown> | undefined
+    const src = toStr(content?.['@_src'])
+    if (src && label) {
+      const pathOnly = (src.split('#')[0] ?? src).trim()
+      if (pathOnly) onSrcLabel(resolveOpfRelative(opfDir, pathOnly), label)
+    }
+    walkNcxNavPoints(np.navPoint as Record<string, unknown> | Record<string, unknown>[] | undefined, opfDir, onSrcLabel)
+  }
+}
+
+/** One primary label per XHTML file (skips Roman-numeral subsection nav labels). */
+function buildNcxPrimaryLabelByContentPath(ncxXml: string, opfDir: string): Map<string, string> {
+  const map = new Map<string, string>()
+  const parsed = xmlParser.parse(ncxXml) as Record<string, unknown>
+  const ncx = (parsed.ncx ?? parsed['ncx']) as Record<string, unknown> | undefined
+  const navMap = ncx?.navMap as Record<string, unknown> | undefined
+  const top = navMap?.navPoint
+
+  const isSubsectionLabel = (s: string) => {
+    const t = s.trim()
+    return /^(I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII|\d+)$/i.test(t)
+  }
+
+  const record = (contentPath: string, label: string) => {
+    if (isSubsectionLabel(label)) return
+    const prev = map.get(contentPath)
+    const next = label.slice(0, 240)
+    if (!prev) {
+      map.set(contentPath, next)
+      return
+    }
+    if (next.length > prev.length && next.toLowerCase() !== 'contents') map.set(contentPath, next)
+  }
+
+  walkNcxNavPoints(top as Record<string, unknown> | Record<string, unknown>[] | undefined, opfDir, record)
+  return map
+}
+
+function pickSpineChapterTitle(
+  ncxLabel: string | undefined,
+  paragraphs: string[],
+  packageTitle: string,
+  xhtmlTitle: string,
+  sectionIndex: number,
+  sourcePath: string,
+): string {
+  const pathLower = sourcePath.replace(/\\/g, '/').toLowerCase()
+  if (/fore-\d+\.(?:x?html?|htm)$/i.test(pathLower)) return 'Preface'
+  if (/(^|\/)LastWish_copy\.html$/i.test(pathLower) || /(^|\/)copy\.html$/i.test(pathLower)) return 'Copyright'
+
+  const hint = ncxLabel?.trim()
+  if (hint) {
+    const hLower = hint.toLowerCase()
+    const skipHints = ['cover', 'contents', 'table of contents']
+    if (!skipHints.some((s) => hLower === s) && hLower !== packageTitle.trim().toLowerCase()) {
+      return hint.slice(0, 240)
+    }
+  }
+  return inferSpineChapterTitle(paragraphs, packageTitle, xhtmlTitle, sectionIndex)
+}
+
+/**
+ * Calibre frame + story packs: `LastWish_part-3.html` immediately followed by `LastWish_chap-3.html`.
+ * Merge into one section titled from the story file (NCX / infer).
+ */
+function spineBasename(path: string | undefined): string {
+  if (!path) return ''
+  const s = path.replace(/\\/g, '/').split('/').pop() ?? ''
+  return s.toLowerCase()
+}
+
+function mergeCalibrePartChapSpinePairs(chapters: { title: string; paragraphs: string[]; sourcePath: string }[]): {
+  out: EpubSpineChapter[]
+  mergedPairs: number
+} {
+  let mergedPairs = 0
+  const out: EpubSpineChapter[] = []
+  for (let i = 0; i < chapters.length; i++) {
+    const a = chapters[i]
+    if (!a) break
+    const b = chapters[i + 1]
+    const ba = spineBasename(a.sourcePath)
+    const bb = spineBasename(b?.sourcePath)
+    const partM = /part-(\d+)\.(?:x?html?|htm)$/i.exec(ba)
+    const chapM = b && /chap-(\d+)\.(?:x?html?|htm)$/i.exec(bb)
+    if (b && partM && chapM && partM[1] === chapM[1]) {
+      out.push({
+        title: b.title,
+        paragraphs: [...a.paragraphs, ...b.paragraphs],
+      })
+      mergedPairs++
+      i++
+    } else {
+      out.push({ title: a.title, paragraphs: a.paragraphs })
+    }
+  }
+  return { out, mergedPairs }
+}
+
 /**
  * Prefer visible chapter labels (Calibre/Kobo blocks) over repeating `<title>` / package name
  * (NovelFire-style TOC labels).
@@ -121,7 +249,12 @@ function inferSpineChapterTitle(
   const paras = paragraphs.map((p) => p.trim()).filter(Boolean)
   const doc = xhtmlTitle.trim()
   const docLower = doc.toLowerCase()
-  const isGenericDoc = !doc || docLower === pkg || /^section\s+\d+$/i.test(doc)
+  const subtitle = pkg.includes(':') ? pkg.split(':').pop()!.trim() : ''
+  const isGenericDoc =
+    !doc ||
+    docLower === pkg ||
+    /^section\s+\d+$/i.test(doc) ||
+    (subtitle.length >= 4 && docLower === subtitle)
 
   if (!paras.length) {
     return doc || `Section ${sectionIndex + 1}`
@@ -130,7 +263,16 @@ function inferSpineChapterTitle(
   const p0 = paras[0]!
   const p1 = paras[1]
 
-  if (/^(table of contents|contents)$/i.test(p0)) return doc || 'Table of Contents'
+  if (/^(table of contents|contents)$/i.test(p0)) return 'Table of Contents'
+
+  if (/this book is a work of fiction|names, characters, places, and incidents are the product/i.test(p0)) {
+    return 'Copyright'
+  }
+
+  if (looksLikeCalibreDisplayTitle(p0)) {
+    if (p1 && /^\d{1,3}$/.test(p1.trim())) return p0.slice(0, 200)
+    if (!/^\d{1,3}$/.test(p0.trim())) return p0.slice(0, 200)
+  }
 
   const combined = /^(CHAPTER\s+(?:ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN|IX|IV|I{1,3}V?|VI{0,3}|XI{0,3}|\d+))\s*[-–—]\s*(.+)$/i.exec(
     p0,
@@ -264,7 +406,24 @@ export function extractEpubFromBuffer(buffer: ArrayBuffer): {
   const rawRefs = spine?.itemref
   const itemrefs = asArray(rawRefs as Record<string, unknown> | Record<string, unknown>[] | undefined)
 
-  const chapters: EpubSpineChapter[] = []
+  let ncxByPath = new Map<string, string>()
+  const spineTocId = toStr(spine?.['@_toc'])
+  if (spineTocId) {
+    const tocItem = idToHref.get(spineTocId)
+    if (tocItem?.href) {
+      const ncxPath = resolveOpfRelative(opfDir, tocItem.href)
+      const ncxBytes = fileMap[ncxPath]
+      if (ncxBytes) {
+        try {
+          ncxByPath = buildNcxPrimaryLabelByContentPath(new TextDecoder('utf-8').decode(ncxBytes), opfDir)
+        } catch {
+          notes.push('Could not parse toc.ncx — falling back to spine body heuristics for titles.')
+        }
+      }
+    }
+  }
+
+  const rawChapters: { title: string; paragraphs: string[]; sourcePath: string }[] = []
   let skipped = 0
 
   for (const ref of itemrefs) {
@@ -305,14 +464,22 @@ export function extractEpubFromBuffer(buffer: ArrayBuffer): {
     }
 
     const docTitle = titleFromXhtml(xhtml)
-    const title = inferSpineChapterTitle(paragraphs, packageTitle, docTitle, chapters.length)
-    chapters.push({ title, paragraphs })
+    const ncxHint = ncxByPath.get(absPath)
+    const title = pickSpineChapterTitle(ncxHint, paragraphs, packageTitle, docTitle, rawChapters.length, absPath)
+    rawChapters.push({ title, paragraphs, sourcePath: absPath })
   }
+
+  const { out: chapters, mergedPairs } = mergeCalibrePartChapSpinePairs(rawChapters)
 
   if (!chapters.length) {
     throw new Error('No readable chapter content found in EPUB spine (empty or unsupported structure).')
   }
 
+  if (mergedPairs > 0) {
+    notes.push(
+      `Merged ${mergedPairs} Calibre-style frame/story spine pair(s) (part-N + chap-N HTML files) into single sections.`,
+    )
+  }
   notes.push(`Imported ${chapters.length} spine section(s) from EPUB.${skipped > 0 ? ` Skipped ${skipped} non-text or non-linear item(s).` : ''}`)
   if (packageTitle) notes.unshift(`Package title: ${packageTitle}`)
 
