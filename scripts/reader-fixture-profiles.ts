@@ -116,6 +116,18 @@ export const READER_FIXTURE_PROFILES: ReaderFixtureProfile[] = [
     maxChapterConsecutiveDupRate: 0.04,
   },
   {
+    fileName: 'Witcher 1 The Last Wish (Andrzej Sapkowski) (z-library.sk, 1lib.sk, z-lib.sk).epub',
+    kind: 'epub',
+    description: 'The Witcher — short story collection',
+    optional: true,
+    expectMinChapters: 15,
+    expectMaxChapters: 25,
+    titleIncludes: ['Last Wish'],
+    keywordAnywhere: [/Geralt/i, /witcher/i],
+    minTotalWords: 80_000,
+    maxChapterConsecutiveDupRate: 0.04,
+  },
+  {
     fileName: 'There Is No Antimemetics Division (qntm) (z-library.sk, 1lib.sk, z-lib.sk).epub',
     kind: 'epub',
     description: 'Kobo-style XHTML (self-closing script) — must parse full body text',

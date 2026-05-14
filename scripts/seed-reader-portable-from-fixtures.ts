@@ -16,6 +16,7 @@ import type { ReaderPublication } from '../src/lib/reader/types'
 /** Order = shelf order; stable UUID (Universally Unique Identifier) per file for idempotent catalog merges. */
 const FIXTURE_NAMES = [
   'The Name of the Wind (Rothfuss Patrick) (z-library.sk, 1lib.sk, z-lib.sk).epub',
+  'Witcher 1 The Last Wish (Andrzej Sapkowski) (z-library.sk, 1lib.sk, z-lib.sk).epub',
   'There Is No Antimemetics Division (qntm) (z-library.sk, 1lib.sk, z-lib.sk).epub',
   'dokumen.pub_meditations-a-new-translation-hardcover.epub',
   '[Cradle 1 ] Wight, Will - Unsouled (2016, Hidden Gnome Publishing) - libgen.li.epub',

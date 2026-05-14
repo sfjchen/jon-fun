@@ -1,5 +1,5 @@
 /**
- * Re-build the four seed EPUBs from e2e/fixtures and upsert into reader_communal_publications
+ * Re-build the fixture seed EPUBs from e2e/fixtures and upsert into reader_communal_publications
  * (same stable UUID (Universally Unique Identifier) v5 ids as seed:reader-portable).
  * Deletes titles matching Arcanum Unbounded; removes stale rows per fixture file when
  * original_file_name matches but id differs.
@@ -36,6 +36,7 @@ loadEnvLocal()
 
 const FIXTURE_NAMES = [
   'The Name of the Wind (Rothfuss Patrick) (z-library.sk, 1lib.sk, z-lib.sk).epub',
+  'Witcher 1 The Last Wish (Andrzej Sapkowski) (z-library.sk, 1lib.sk, z-lib.sk).epub',
   'There Is No Antimemetics Division (qntm) (z-library.sk, 1lib.sk, z-lib.sk).epub',
   'dokumen.pub_meditations-a-new-translation-hardcover.epub',
   '[Cradle 1 ] Wight, Will - Unsouled (2016, Hidden Gnome Publishing) - libgen.li.epub',
