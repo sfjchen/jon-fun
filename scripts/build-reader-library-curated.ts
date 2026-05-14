@@ -1,6 +1,7 @@
 /**
- * Writes public/reader/library-curated.json from the TINAD EPUB in e2e/fixtures/ (when present).
- * Same stable publication id as seed:reader-portable / sync:reader-communal-fixtures so merges dedupe.
+ * Writes public/reader/library-curated.json from the TINAD EPUB in e2e/fixtures/ (required) plus
+ * optional extras (e.g. Witcher) when those files exist — same stable publication ids as
+ * seed:reader-portable / sync:reader-communal-fixtures so merges dedupe.
  *
  * After build, optional wiki Section I text:
  *   npx tsx scripts/patch-tinad-wiki-section1-portable.ts public/reader/library-curated.json
@@ -17,6 +18,11 @@ import type { ReaderPublication } from '../src/lib/reader/types'
 
 const TINAD_FILE =
   'There Is No Antimemetics Division (qntm) (z-library.sk, 1lib.sk, z-lib.sk).epub'
+
+/** Appended when present under e2e/fixtures/ (omit from repo/CI without breaking the build). */
+const CURATED_OPTIONAL_EPUBS = [
+  'Witcher 1 The Last Wish (Andrzej Sapkowski) (z-library.sk, 1lib.sk, z-lib.sk).epub',
+] as const
 const FIXTURES_DIR = join(process.cwd(), 'e2e/fixtures')
 const OUT = join(process.cwd(), 'public/reader/library-curated.json')
 const SEED_UUID_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'
@@ -49,8 +55,8 @@ function publicationFromEpub(absPath: string, fileName: string): ReaderPublicati
 }
 
 function main(): void {
-  const abs = join(FIXTURES_DIR, TINAD_FILE)
-  if (!existsSync(abs)) {
+  const tinadAbs = join(FIXTURES_DIR, TINAD_FILE)
+  if (!existsSync(tinadAbs)) {
     console.error(
       'Missing fixture:',
       TINAD_FILE,
@@ -58,9 +64,18 @@ function main(): void {
     )
     process.exit(1)
   }
-  const pub = publicationFromEpub(abs, TINAD_FILE)
-  writeFileSync(OUT, stringifyPortableLibrary([pub]), 'utf8')
-  console.log('Wrote', OUT, `(${TINAD_FILE}, id ${pub.id})`)
+  const pubs: ReaderPublication[] = [publicationFromEpub(tinadAbs, TINAD_FILE)]
+  for (const name of CURATED_OPTIONAL_EPUBS) {
+    const abs = join(FIXTURES_DIR, name)
+    if (!existsSync(abs)) {
+      console.warn('SKIP curated (missing optional fixture):', name)
+      continue
+    }
+    pubs.push(publicationFromEpub(abs, name))
+    console.log('Curated optional:', name)
+  }
+  writeFileSync(OUT, stringifyPortableLibrary(pubs), 'utf8')
+  console.log('Wrote', OUT, `(${pubs.length} books)`)
 }
 
 main()

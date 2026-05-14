@@ -14,6 +14,7 @@ Rules:
 
 Build flow (operator): with the TINAD EPUB under e2e/fixtures/ (same filename as seed:reader-portable),
   npm run build:reader-curated
-writes public/reader/library-curated.json (one book, stable id). Optional wiki Section I:
+writes public/reader/library-curated.json (TINAD plus any optional extras listed in the script when those
+EPUBs exist under e2e/fixtures/, stable ids). Optional wiki Section I:
   npx tsx scripts/patch-tinad-wiki-section1-portable.ts public/reader/library-curated.json
 Alternatively: npm run seed:reader-portable, vet, then copy the JSON slice you want into this path before deploy.
