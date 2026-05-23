@@ -5,7 +5,16 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { readBoardFromFile } from '@/lib/jeopardy'
-import { getRecents, removeRecent, type RecentBoard } from '@/lib/jeopardy-identity'
+import { getOrCreateIdentity, getRecents, removeRecent, type RecentBoard } from '@/lib/jeopardy-identity'
+
+const LIBRARY_PASSCODE_KEY = 'jeopardy:library-passcode'
+
+interface LibraryEntry {
+  filename: string
+  title: string
+  categories: number
+  rows: number
+}
 
 export default function JeopardyPage() {
   const router = useRouter()
@@ -15,10 +24,73 @@ export default function JeopardyPage() {
   const [error, setError] = useState<string | null>(null)
   const [joinCode, setJoinCode] = useState('')
   const [recents, setRecents] = useState<RecentBoard[]>([])
+  const [libraryPasscode, setLibraryPasscode] = useState('')
+  const [libraryItems, setLibraryItems] = useState<LibraryEntry[] | null>(null)
+  const [libraryLoading, setLibraryLoading] = useState(false)
+  const [importingFile, setImportingFile] = useState<string | null>(null)
 
   useEffect(() => {
     setRecents(getRecents())
+    const stored = typeof window !== 'undefined' ? localStorage.getItem(LIBRARY_PASSCODE_KEY) : null
+    if (stored) {
+      setLibraryPasscode(stored)
+      void unlockLibrary(stored)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  async function unlockLibrary(passcode: string) {
+    const code = passcode.trim()
+    if (!code) return
+    setLibraryLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(`/api/jeopardy/library?passcode=${encodeURIComponent(code)}`, { cache: 'no-store' })
+      if (res.status === 401) {
+        setError('Wrong passcode')
+        setTimeout(() => setError(null), 3000)
+        setLibraryItems(null)
+        localStorage.removeItem(LIBRARY_PASSCODE_KEY)
+        return
+      }
+      if (!res.ok) throw new Error('fail')
+      const data = await res.json()
+      setLibraryItems(Array.isArray(data.items) ? data.items : [])
+      localStorage.setItem(LIBRARY_PASSCODE_KEY, code)
+    } catch {
+      setError('Could not load library')
+      setTimeout(() => setError(null), 3000)
+    } finally {
+      setLibraryLoading(false)
+    }
+  }
+
+  function lockLibrary() {
+    localStorage.removeItem(LIBRARY_PASSCODE_KEY)
+    setLibraryPasscode('')
+    setLibraryItems(null)
+  }
+
+  async function importFromLibrary(filename: string) {
+    setImportingFile(filename)
+    setError(null)
+    try {
+      const ident = getOrCreateIdentity()
+      const res = await fetch(`/api/jeopardy/library/${encodeURIComponent(filename)}/import`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passcode: libraryPasscode, editorName: ident.name }),
+      })
+      if (!res.ok) throw new Error('fail')
+      const data = await res.json()
+      router.push(`/games/jeopardy/edit/${data.slug}`)
+    } catch {
+      setError('Failed to open from library')
+      setTimeout(() => setError(null), 3000)
+    } finally {
+      setImportingFile(null)
+    }
+  }
 
   async function createBoard(payload?: { board?: unknown; title?: string }) {
     setCreating(true)
@@ -119,6 +191,58 @@ export default function JeopardyPage() {
                 e.target.value = ''
               }
             }} />
+          </div>
+
+          <div className="mt-6">
+            <div className="text-xs uppercase tracking-wide mb-2 flex items-center justify-between" style={{ color: 'var(--ink-muted)' }}>
+              <span>📚 Saved library</span>
+              {libraryItems && (
+                <button onClick={lockLibrary} className="text-xs underline" style={{ color: 'var(--ink-muted)' }}>Lock</button>
+              )}
+            </div>
+            {!libraryItems ? (
+              <div className="flex gap-2">
+                <input
+                  type="password"
+                  value={libraryPasscode}
+                  onChange={(e) => setLibraryPasscode(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') void unlockLibrary(libraryPasscode) }}
+                  placeholder="Passcode"
+                  className="flex-1 px-3 py-2 rounded-lg border outline-none"
+                  style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                />
+                <button
+                  onClick={() => void unlockLibrary(libraryPasscode)}
+                  disabled={libraryLoading}
+                  className="px-4 py-2 rounded-lg border hover:opacity-90 disabled:opacity-50"
+                  style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                >
+                  {libraryLoading ? '…' : 'Unlock'}
+                </button>
+              </div>
+            ) : libraryItems.length === 0 ? (
+              <div className="text-sm" style={{ color: 'var(--ink-muted)' }}>No saved boards yet.</div>
+            ) : (
+              <ul className="space-y-1">
+                {libraryItems.map((item) => (
+                  <li key={item.filename} className="flex items-center gap-2">
+                    <button
+                      onClick={() => void importFromLibrary(item.filename)}
+                      disabled={importingFile === item.filename}
+                      className="flex-1 text-left px-3 py-2 rounded-lg border hover:opacity-90 truncate disabled:opacity-50"
+                      style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                      title={`Open ${item.title} in a new collab board`}
+                    >
+                      <span className="font-semibold">{item.title}</span>
+                      <span className="ml-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
+                        · {item.categories}×{item.rows}
+                        {importingFile === item.filename ? ' · opening…' : ''}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {recents.length > 0 && (
