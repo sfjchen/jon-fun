@@ -34,6 +34,8 @@ yarn-error.log*
 
 # env files
 !.env*
+openclaw-hybrid/config/env.cloud
+openclaw-hybrid/state/
 
 # vercel
 .vercel
