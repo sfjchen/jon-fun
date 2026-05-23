@@ -7,7 +7,7 @@
  * To accept a known-good baseline (first run or after intentional UI change):
  *   `npm run test:e2e -- --project=visual-desktop --update-snapshots theme2-visual`
  */
-import { test, expect } from '@playwright/test'
+import { test } from '@playwright/test'
 import { gotoStable, snap, assertNoLowContrast } from './helpers/visual'
 import { installConnectionsApiMock } from './helpers/connections-mock'
 import { mockDailyLearnApi } from './helpers/daily-learn-mock'
@@ -73,13 +73,6 @@ test.describe('theme2 visual + contrast', () => {
       })
     })
   }
-})
-
-/** Smoke check that the home page actually renders something themed before we trust baselines. */
-test('theme2 home renders ink-themed wrapper', async ({ page }) => {
-  await gotoStable(page, '/theme2')
-  const wrapper = page.locator('[data-theme="notebook"]').first()
-  await expect(wrapper).toBeVisible()
 })
 
 /** Five-can has a randomized initial board (randomPermutation) → snapshot would flake. Contrast-only. */

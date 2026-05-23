@@ -17,6 +17,8 @@ const nextConfig = {
   },
   /** Playwright uses 127.0.0.1:PLAYWRIGHT_WEB_PORT; Next dev defaults to localhost — allow dev HMR (Hot Module Replacement) fetches. */
   allowedDevOrigins: ['127.0.0.1'],
+  /** Hide the Next.js dev indicator in `next dev` when `PLAYWRIGHT_HIDE_NEXT_INDICATOR=1` so visual-regression snapshots don't capture it. */
+  devIndicators: process.env.PLAYWRIGHT_HIDE_NEXT_INDICATOR === '1' ? false : undefined,
   async redirects() {
     return [{ source: '/notebook', destination: '/', permanent: true }, { source: '/notebook/:path*', destination: '/:path*', permanent: true }]
   },
