@@ -11,6 +11,9 @@ const nextConfig = {
       './node_modules/pdfjs-dist/legacy/build/**/*',
       './node_modules/pdf-parse/node_modules/pdfjs-dist/legacy/build/**/*',
     ],
+    // Bundle curated Jeopardy boards so the passcode-gated library can read them at runtime on Vercel.
+    '/api/jeopardy/library': ['./data/jeopardy/**/*'],
+    '/api/jeopardy/library/[filename]/import': ['./data/jeopardy/**/*'],
   },
   /** Playwright uses 127.0.0.1:PLAYWRIGHT_WEB_PORT; Next dev defaults to localhost — allow dev HMR (Hot Module Replacement) fetches. */
   allowedDevOrigins: ['127.0.0.1'],
