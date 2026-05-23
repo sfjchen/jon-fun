@@ -75,6 +75,11 @@ export function useCollabBoard(slug: string | null, identity: EditorIdentity | n
   const editorId = identity?.id || ''
   const editorColor = identity?.color || '#3b82f6'
 
+  // Latest identity in a ref so the presence channel callbacks can read current
+  // values without tearing down the channel on every rename.
+  const identityRef = useRef({ name: editorName, color: editorColor })
+  identityRef.current = { name: editorName, color: editorColor }
+
   // ----- Initial fetch + realtime subscriptions -----
   const fetchBoard = useCallback(async (): Promise<void> => {
     if (!slug) return
@@ -140,7 +145,8 @@ export function useCollabBoard(slug: string | null, identity: EditorIdentity | n
     }
   }, [slug])
 
-  // Presence + lock broadcast channel.
+  // Presence + lock broadcast channel. Created ONCE per (slug, editorId).
+  // Name/color updates re-track via a separate effect so we don't churn the channel.
   useEffect(() => {
     if (!slug || !editorId) return
     const ch = supabase.channel(`jeopardy:collab:${slug}`, {
@@ -170,8 +176,8 @@ export function useCollabBoard(slug: string | null, identity: EditorIdentity | n
     ch.subscribe(async (status) => {
       if (status === 'SUBSCRIBED') {
         await ch.track({
-          name: editorName,
-          color: editorColor,
+          name: identityRef.current.name,
+          color: identityRef.current.color,
           online_at: new Date().toISOString(),
           lock: myLockRef.current,
         })
@@ -184,7 +190,21 @@ export function useCollabBoard(slug: string | null, identity: EditorIdentity | n
       void ch.untrack().catch(() => {})
       void ch.unsubscribe()
     }
-  }, [slug, editorId, editorName, editorColor])
+  }, [slug, editorId])
+
+  // Re-track presence when name/color changes (without recreating the channel).
+  useEffect(() => {
+    const ch = channelRef.current
+    if (!ch) return
+    void ch
+      .track({
+        name: editorName,
+        color: editorColor,
+        online_at: new Date().toISOString(),
+        lock: myLockRef.current,
+      })
+      .catch(() => {})
+  }, [editorName, editorColor])
 
   // ----- Send op -----
   const scheduleSavedClear = useCallback(() => {

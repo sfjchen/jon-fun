@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import JeopardyPlayer from '@/components/JeopardyPlayer'
@@ -14,11 +14,13 @@ export default function JeopardyPlayPage() {
   const slug = params?.slug || ''
   const [board, setBoard] = useState<JeopardyBoard | null>(null)
   const [notFound, setNotFound] = useState(false)
-  const [version, setVersion] = useState(0)
+  // Use a ref so the realtime callback always sees the latest version (state would be stale in closure).
+  const versionRef = useRef(0)
 
   useEffect(() => {
     if (!slug) return
     let cancelled = false
+    versionRef.current = 0
     async function load() {
       try {
         const res = await fetch(`/api/jeopardy/boards/${slug}`, { cache: 'no-store' })
@@ -30,7 +32,7 @@ export default function JeopardyPlayPage() {
         const data = await res.json()
         if (cancelled) return
         setBoard(normalizeBoard(data.board, data.board?.id ?? ''))
-        setVersion(data.version ?? 0)
+        versionRef.current = data.version ?? 0
         if (data.board?.title) pushRecent(slug, data.board.title)
       } catch {}
     }
@@ -42,12 +44,16 @@ export default function JeopardyPlayPage() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'jeopardy_boards', filter: `slug=eq.${slug}` },
         (payload) => {
+          if (payload.eventType === 'DELETE') {
+            setNotFound(true)
+            return
+          }
           const row = payload.new as Record<string, unknown> | null
           if (!row) return
           const incoming = typeof row.version === 'number' ? row.version : 0
-          if (incoming <= version) return
+          if (incoming <= versionRef.current) return
           setBoard(normalizeBoard(row.board, (row.id as string) || ''))
-          setVersion(incoming)
+          versionRef.current = incoming
         },
       )
       .subscribe()
@@ -56,7 +62,6 @@ export default function JeopardyPlayPage() {
       cancelled = true
       void ch.unsubscribe()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug])
 
   if (notFound) {

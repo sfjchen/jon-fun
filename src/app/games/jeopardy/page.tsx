@@ -8,6 +8,9 @@ import { readBoardFromFile } from '@/lib/jeopardy'
 import { getOrCreateIdentity, getRecents, removeRecent, type RecentBoard } from '@/lib/jeopardy-identity'
 
 const LIBRARY_PASSCODE_KEY = 'jeopardy:library-passcode'
+// Magic string that, when typed into the join field, unlocks the saved library.
+// Mirrors `DEFAULT_LIBRARY_PASSCODE` server-side; both must match (or both be overridden via env).
+const LIBRARY_TRIGGER = '890-'
 
 interface LibraryEntry {
   filename: string
@@ -36,7 +39,6 @@ export default function JeopardyPage() {
       setLibraryPasscode(stored)
       void unlockLibrary(stored)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function unlockLibrary(passcode: string) {
@@ -56,6 +58,7 @@ export default function JeopardyPage() {
       if (!res.ok) throw new Error('fail')
       const data = await res.json()
       setLibraryItems(Array.isArray(data.items) ? data.items : [])
+      setLibraryPasscode(code)
       localStorage.setItem(LIBRARY_PASSCODE_KEY, code)
     } catch {
       setError('Could not load library')
@@ -113,7 +116,14 @@ export default function JeopardyPage() {
   }
 
   function handleJoin() {
-    const code = joinCode.trim().toLowerCase()
+    const raw = joinCode.trim()
+    // Magic library-unlock trigger: typing the passcode in the join field reveals the saved library.
+    if (raw === LIBRARY_TRIGGER) {
+      setJoinCode('')
+      void unlockLibrary(raw)
+      return
+    }
+    const code = raw.toLowerCase()
     if (!/^[a-z0-9-]{3,}$/.test(code)) {
       setError('Enter a valid board code or link')
       setTimeout(() => setError(null), 3000)
@@ -193,57 +203,39 @@ export default function JeopardyPage() {
             }} />
           </div>
 
-          <div className="mt-6">
-            <div className="text-xs uppercase tracking-wide mb-2 flex items-center justify-between" style={{ color: 'var(--ink-muted)' }}>
-              <span>📚 Saved library</span>
-              {libraryItems && (
+          {libraryItems && (
+            <div className="mt-6">
+              <div className="text-xs uppercase tracking-wide mb-2 flex items-center justify-between" style={{ color: 'var(--ink-muted)' }}>
+                <span>📚 Saved library</span>
                 <button onClick={lockLibrary} className="text-xs underline" style={{ color: 'var(--ink-muted)' }}>Lock</button>
+              </div>
+              {libraryLoading && libraryItems.length === 0 ? (
+                <div className="text-sm" style={{ color: 'var(--ink-muted)' }}>Loading…</div>
+              ) : libraryItems.length === 0 ? (
+                <div className="text-sm" style={{ color: 'var(--ink-muted)' }}>No saved boards yet.</div>
+              ) : (
+                <ul className="space-y-1">
+                  {libraryItems.map((item) => (
+                    <li key={item.filename} className="flex items-center gap-2">
+                      <button
+                        onClick={() => void importFromLibrary(item.filename)}
+                        disabled={importingFile === item.filename}
+                        className="flex-1 text-left px-3 py-2 rounded-lg border hover:opacity-90 truncate disabled:opacity-50"
+                        style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                        title={`Open ${item.title} in a new collab board`}
+                      >
+                        <span className="font-semibold">{item.title}</span>
+                        <span className="ml-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
+                          · {item.categories}×{item.rows}
+                          {importingFile === item.filename ? ' · opening…' : ''}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
-            {!libraryItems ? (
-              <div className="flex gap-2">
-                <input
-                  type="password"
-                  value={libraryPasscode}
-                  onChange={(e) => setLibraryPasscode(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') void unlockLibrary(libraryPasscode) }}
-                  placeholder="Passcode"
-                  className="flex-1 px-3 py-2 rounded-lg border outline-none"
-                  style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-                />
-                <button
-                  onClick={() => void unlockLibrary(libraryPasscode)}
-                  disabled={libraryLoading}
-                  className="px-4 py-2 rounded-lg border hover:opacity-90 disabled:opacity-50"
-                  style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-                >
-                  {libraryLoading ? '…' : 'Unlock'}
-                </button>
-              </div>
-            ) : libraryItems.length === 0 ? (
-              <div className="text-sm" style={{ color: 'var(--ink-muted)' }}>No saved boards yet.</div>
-            ) : (
-              <ul className="space-y-1">
-                {libraryItems.map((item) => (
-                  <li key={item.filename} className="flex items-center gap-2">
-                    <button
-                      onClick={() => void importFromLibrary(item.filename)}
-                      disabled={importingFile === item.filename}
-                      className="flex-1 text-left px-3 py-2 rounded-lg border hover:opacity-90 truncate disabled:opacity-50"
-                      style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-                      title={`Open ${item.title} in a new collab board`}
-                    >
-                      <span className="font-semibold">{item.title}</span>
-                      <span className="ml-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
-                        · {item.categories}×{item.rows}
-                        {importingFile === item.filename ? ' · opening…' : ''}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          )}
 
           {recents.length > 0 && (
             <div className="mt-6">

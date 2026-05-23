@@ -75,6 +75,7 @@ export default function JeopardyEditPage() {
         setLock={collab.setLock}
         identityName={identity.name}
         shareUrl={typeof window !== 'undefined' ? window.location.href : ''}
+        onChangeName={() => setShowNamePrompt(true)}
       />
     </>
   )

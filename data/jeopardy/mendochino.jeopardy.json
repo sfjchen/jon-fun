@@ -1,0 +1,134 @@
+{
+  "id": "title-merwyq",
+  "version": 1,
+  "title": "mendochino",
+  "categories": [
+    {
+      "title": "jon",
+      "clues": [
+        {
+          "question": "fav movie",
+          "answer": ""
+        },
+        {
+          "question": "who would my mom like most",
+          "answer": ""
+        },
+        {
+          "question": "rice purity score (within 6)",
+          "answer": ""
+        },
+        {
+          "question": "# past exes",
+          "answer": ""
+        },
+        {
+          "question": "fav song",
+          "answer": ""
+        }
+      ]
+    },
+    {
+      "title": "shiz",
+      "clues": [
+        {
+          "question": "favorite car model",
+          "answer": "porsche 911"
+        },
+        {
+          "question": "how many women have I kissed in common with demon semen",
+          "answer": "2"
+        },
+        {
+          "question": "favorite song",
+          "answer": "Ew - joji"
+        },
+        {
+          "question": "what's the quickest way to get me attracted to you",
+          "answer": "j'adore perfume and flare pants"
+        },
+        {
+          "question": "",
+          "answer": ""
+        }
+      ]
+    },
+    {
+      "title": "simon",
+      "clues": [
+        {
+          "question": "What is Simon's type?",
+          "answer": "No Preference (white/asian)"
+        },
+        {
+          "question": "What is Simon's favorite author?",
+          "answer": "J. R. R. Tolkien"
+        },
+        {
+          "question": "",
+          "answer": ""
+        },
+        {
+          "question": "",
+          "answer": ""
+        },
+        {
+          "question": "",
+          "answer": ""
+        }
+      ]
+    },
+    {
+      "title": "amber",
+      "clues": [
+        {
+          "question": "Which friend here would I absolutely never set up with my sibling",
+          "answer": "Sean..."
+        },
+        {
+          "question": "Which person here would win a dating show in the Bay",
+          "answer": ""
+        },
+        {
+          "question": "",
+          "answer": ""
+        },
+        {
+          "question": "",
+          "answer": ""
+        },
+        {
+          "question": "",
+          "answer": ""
+        }
+      ]
+    },
+    {
+      "title": "heloise",
+      "clues": [
+        {
+          "question": "Which friend here could survive entirely on charm and caffeine?",
+          "answer": "Jay"
+        },
+        {
+          "question": "What do I secretly wish I was known for?",
+          "answer": "making chocolate mousse  🍫🇧🇪"
+        },
+        {
+          "question": "What quality makes me instantly trust someone?",
+          "answer": "authenticity, genuine kindness, & a disregard for the regard of others"
+        },
+        {
+          "question": "",
+          "answer": ""
+        },
+        {
+          "question": "",
+          "answer": ""
+        }
+      ]
+    }
+  ],
+  "baseValue": 200,
+  "increment": 200
+}
