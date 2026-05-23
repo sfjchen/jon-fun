@@ -1,30 +1,76 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { JeopardyBoard, JeopardyCategory, JeopardyClue } from '@/lib/jeopardy'
-import { createDefaultBoard, downloadBoard, getClueValue, readBoardFromFile, slugify } from '@/lib/jeopardy'
+import type { JeopardyBoard, JeopardyClue } from '@/lib/jeopardy'
+import { downloadBoard, getClueValue } from '@/lib/jeopardy'
+import type { JeopardyOp } from '@/lib/jeopardy-ops'
+import type { Collaborator, Lock, LockKey, SaveStatus } from '@/lib/jeopardy-collab'
+import { initialsFrom } from '@/lib/jeopardy-identity'
 
 interface JeopardyEditorProps {
-  initialBoard?: JeopardyBoard | null
-  onBack: () => void
-  onPlay: (board: JeopardyBoard) => void
+  board: JeopardyBoard
+  sendOp: (op: JeopardyOp) => void
+  onBack?: () => void
+  onPlay?: () => void
+  saveStatus?: SaveStatus
+  updatedAt?: string | null
+  lastEditor?: string
+  collaborators?: Collaborator[]
+  locks?: Record<LockKey, Lock>
+  setLock?: (key: LockKey | null) => void
+  identityName?: string
+  shareUrl?: string
 }
 
-export default function JeopardyEditor({ initialBoard, onBack, onPlay }: JeopardyEditorProps) {
-  const [board, setBoard] = useState<JeopardyBoard>(() => initialBoard ?? createDefaultBoard())
+const lockKeyForCell = (col: number, row: number): LockKey => `clue:${col}:${row}`
+
+export default function JeopardyEditor({
+  board,
+  sendOp,
+  onBack,
+  onPlay,
+  saveStatus = 'idle',
+  updatedAt,
+  lastEditor,
+  collaborators = [],
+  locks = {},
+  setLock,
+  identityName,
+  shareUrl,
+}: JeopardyEditorProps) {
   const [dragCol, setDragCol] = useState<number | null>(null)
   const [modal, setModal] = useState<{ colIndex: number; rowIndex: number } | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const [focused, setFocused] = useState<{ colIndex: number; rowIndex: number }>({ colIndex: 0, rowIndex: 0 })
-
+  const [shareToast, setShareToast] = useState<string | null>(null)
+  const [, forceLabelTick] = useState(0)
+  // Refresh "Saved Nm ago" label every 30s so it stays current without DB churn.
   useEffect(() => {
-    if (initialBoard) setBoard(initialBoard)
-  }, [initialBoard])
+    const id = setInterval(() => forceLabelTick((n) => (n + 1) % 1_000_000), 30_000)
+    return () => clearInterval(id)
+  }, [])
 
-  const rowsCount = useMemo(() => (board.categories[0]?.clues.length ?? 5), [board])
+  // Local mirror values for inputs the user may be actively typing into.
+  // We keep them controlled-locally so remote updates don't clobber the caret.
+  const [titleDraft, setTitleDraft] = useState(board.title)
+  const titleFocusedRef = useRef(false)
+  useEffect(() => {
+    if (!titleFocusedRef.current) setTitleDraft(board.title)
+  }, [board.title])
 
-  // Keyboard navigation and open on Enter/Space for the focused cell
+  const [catDrafts, setCatDrafts] = useState<string[]>(() => board.categories.map((c) => c.title))
+  const catFocusedRef = useRef<Set<number>>(new Set())
+  useEffect(() => {
+    setCatDrafts((prev) => {
+      const next = board.categories.map((c, i) =>
+        catFocusedRef.current.has(i) && prev[i] !== undefined ? prev[i]! : c.title,
+      )
+      return next
+    })
+  }, [board.categories])
+
+  const rowsCount = useMemo(() => board.categories[0]?.clues.length ?? 5, [board])
+
+  // Keyboard navigation (no inputs/textareas).
   useEffect(() => {
     if (modal) return
     function onKeyDown(e: KeyboardEvent) {
@@ -51,140 +97,141 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
         })
       } else if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault()
-        setModal({ colIndex: focused.colIndex, rowIndex: focused.rowIndex })
+        openCell(focused.colIndex, focused.rowIndex)
       }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [board.categories.length, rowsCount, focused, modal])
 
-  const handleAddRow = useCallback(() => {
-    setBoard((prev) => ({
-      ...prev,
-      categories: prev.categories.map((cat: JeopardyCategory) => ({
-        ...cat,
-        clues: [...cat.clues, { question: '', answer: '' }],
-      })),
-    }))
-  }, [])
+  const reorderColumns = useCallback(
+    (from: number, to: number) => {
+      if (from === to || from < 0 || to < 0) return
+      sendOp({ kind: 'reorderCols', from, to })
+    },
+    [sendOp],
+  )
 
-  const handleRemoveRow = useCallback(() => {
-    if (rowsCount <= 1) return
-    setBoard((prev) => ({
-      ...prev,
-      categories: prev.categories.map((cat: JeopardyCategory) => ({
-        ...cat,
-        clues: cat.clues.slice(0, cat.clues.length - 1),
-      })),
-    }))
-  }, [rowsCount])
+  const openCell = useCallback(
+    (colIndex: number, rowIndex: number) => {
+      const key = lockKeyForCell(colIndex, rowIndex)
+      if (locks[key]) return // someone else editing — block open
+      setFocused({ colIndex, rowIndex })
+      setModal({ colIndex, rowIndex })
+      setLock?.(key)
+    },
+    [locks, setLock],
+  )
 
-  const handleAddColumn = useCallback(() => {
-    setBoard((prev) => ({
-      ...prev,
-      categories: [
-        ...prev.categories,
-        {
-          title: `category ${prev.categories.length + 1}`,
-          clues: Array.from({ length: rowsCount }, () => ({ question: '', answer: '' })),
-        },
-      ],
-    }))
-  }, [rowsCount])
+  const closeCell = useCallback(() => {
+    setModal(null)
+    setLock?.(null)
+  }, [setLock])
 
-  const handleRemoveColumn = useCallback(() => {
-    setBoard((prev) => {
-      if (prev.categories.length <= 1) return prev
-      return {
-        ...prev,
-        categories: prev.categories.slice(0, prev.categories.length - 1),
-      }
-    })
-  }, [])
+  const saveCell = useCallback(
+    (colIndex: number, rowIndex: number, clue: JeopardyClue) => {
+      sendOp({ kind: 'setClue', col: colIndex, row: rowIndex, question: clue.question, answer: clue.answer })
+      closeCell()
+    },
+    [sendOp, closeCell],
+  )
 
-  const reorderColumns = useCallback((from: number, to: number) => {
-    if (from === to || from === null || to === null) return
-    setBoard((prev) => {
-      if (from < 0 || to < 0 || from >= prev.categories.length || to >= prev.categories.length) return prev
-      const next = [...prev.categories]
-      const removed = next.splice(from, 1)
-      const moved: JeopardyCategory | undefined = removed[0]
-      if (!moved) return prev
-      next.splice(to, 0, moved)
-      return { ...prev, categories: next }
-    })
-  }, [])
-
-  const updateCategoryTitle = useCallback((index: number, title: string) => {
-    setBoard((prev) => {
-      const next = [...prev.categories]
-      const existing = next[index] as JeopardyCategory
-      next[index] = { ...existing, title }
-      return { ...prev, categories: next }
-    })
-  }, [])
-
-  const updateClue = useCallback((colIndex: number, rowIndex: number, updater: (clue: JeopardyClue) => JeopardyClue) => {
-    setBoard((prev) => {
-      const next = [...prev.categories]
-      const cat = next[colIndex] as JeopardyCategory
-      const clues = [...cat.clues]
-      const current: JeopardyClue = clues[rowIndex] ?? { question: '', answer: '' }
-      clues[rowIndex] = updater(current)
-      next[colIndex] = { ...cat, clues }
-      return { ...prev, categories: next }
-    })
-  }, [])
-
-  const handleUploadClick = useCallback(() => {
-    fileInputRef.current?.click()
-  }, [])
-
-  const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleShare = useCallback(async () => {
+    const url = shareUrl || (typeof window !== 'undefined' ? window.location.href : '')
+    if (!url) return
     try {
-      const loaded = await readBoardFromFile(file)
-      setBoard(loaded)
-      setError(null)
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url)
+        setShareToast('Link copied — share with friends')
+      } else {
+        setShareToast(url)
+      }
     } catch {
-      setError('Failed to load board JSON')
-      setTimeout(() => setError(null), 3000)
-    } finally {
-      e.target.value = ''
+      setShareToast(url)
     }
-  }, [])
+    setTimeout(() => setShareToast(null), 2400)
+  }, [shareUrl])
 
-  // Ensure an initial hover on mount for new boards
   useEffect(() => {
     setFocused({ colIndex: 0, rowIndex: 0 })
   }, [])
 
+  const savedLabel = useMemo(() => {
+    if (saveStatus === 'saving') return 'Saving…'
+    if (saveStatus === 'error') return 'Save error'
+    if (saveStatus === 'offline') return 'Offline'
+    if (saveStatus === 'saved') return 'Saved'
+    if (updatedAt) {
+      const t = new Date(updatedAt).getTime()
+      const diff = Date.now() - t
+      if (diff < 60_000) return 'Saved just now'
+      if (diff < 3_600_000) return `Saved ${Math.round(diff / 60_000)}m ago`
+      return `Saved ${new Date(updatedAt).toLocaleString()}`
+    }
+    return ''
+  }, [saveStatus, updatedAt])
+
   return (
     <div className="p-4 flex flex-col">
-      {error && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-lg z-50">
-          {error}
+      {shareToast && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg z-50 text-white" style={{ backgroundColor: 'rgb(22 101 52)' }}>
+          {shareToast}
         </div>
       )}
-      <div className="flex items-center justify-between mb-4">
-        <button onClick={onBack} className="px-4 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>← Back</button>
-        <div className="flex gap-2 flex-wrap">
-          <button onClick={handleAddRow} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>+ Add Row</button>
-          <button onClick={handleRemoveRow} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Remove Row</button>
-          <button onClick={handleAddColumn} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>+ Add Column</button>
-          <button onClick={handleRemoveColumn} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Remove Column</button>
-          <button onClick={() => downloadBoard(board)} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Download JSON</button>
-          <button onClick={handleUploadClick} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Upload JSON</button>
-          <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleFileChange} />
-          <button onClick={() => onPlay(board)} className="text-white px-4 py-2 rounded-lg hover:opacity-90" style={{ backgroundColor: 'rgb(22 101 52)' }}>Play ▶</button>
+
+      <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+        <div className="flex items-center gap-2">
+          {onBack && (
+            <button onClick={onBack} className="px-4 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>← Back</button>
+          )}
+          <div className="text-xs sm:text-sm" style={{ color: 'var(--ink-muted)' }}>
+            <span aria-live="polite">{savedLabel}</span>
+            {lastEditor ? <span className="ml-2 hidden sm:inline">· last by {lastEditor}</span> : null}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <CollaboratorChips collaborators={collaborators} selfName={identityName} />
+        </div>
+
+        <div className="flex gap-2 flex-wrap items-center">
+          <div className="inline-flex rounded-lg border overflow-hidden" style={{ borderColor: 'var(--ink-border)' }}>
+            <button onClick={() => sendOp({ kind: 'addRow' })} className="px-3 py-2 hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }} title="Add row">+ Row</button>
+            <button onClick={() => {
+              if (rowsCount <= 1) return
+              if (!window.confirm('Remove the bottom row for everyone? This deletes the highest-value clues.')) return
+              sendOp({ kind: 'removeRow' })
+            }} className="px-3 py-2 border-l hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }} title="Remove bottom row">− Row</button>
+          </div>
+          <div className="inline-flex rounded-lg border overflow-hidden" style={{ borderColor: 'var(--ink-border)' }}>
+            <button onClick={() => sendOp({ kind: 'addCol' })} className="px-3 py-2 hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }} title="Add category column">+ Col</button>
+            <button onClick={() => {
+              if (board.categories.length <= 1) return
+              if (!window.confirm('Remove the last category for everyone? Its clues will be lost.')) return
+              sendOp({ kind: 'removeCol' })
+            }} className="px-3 py-2 border-l hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }} title="Remove last category">− Col</button>
+          </div>
+          <button onClick={() => downloadBoard(board)} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }} title="Download JSON backup">⬇ JSON</button>
+          <button onClick={handleShare} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }} title="Copy shareable link">🔗 Share</button>
+          {onPlay && (
+            <button onClick={onPlay} className="text-white px-4 py-2 rounded-lg hover:opacity-90" style={{ backgroundColor: 'rgb(22 101 52)' }}>Play ▶</button>
+          )}
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto w-full">
         <input
-          value={board.title}
-          onChange={(e) => setBoard({ ...board, title: e.target.value, id: board.id || slugify(e.target.value) })}
+          value={titleDraft}
+          onFocus={() => { titleFocusedRef.current = true }}
+          onBlur={() => {
+            titleFocusedRef.current = false
+            if (titleDraft !== board.title) sendOp({ kind: 'setBoardTitle', title: titleDraft })
+          }}
+          onChange={(e) => setTitleDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') (e.currentTarget as HTMLInputElement).blur()
+          }}
           className="w-full text-center text-2xl sm:text-3xl md:text-4xl font-bold bg-transparent outline-none border-b pb-2 mb-6 wrap-anywhere"
           style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
         />
@@ -206,8 +253,21 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
                   }}
                 >
                   <input
-                    value={cat.title}
-                    onChange={(e) => updateCategoryTitle(colIndex, e.target.value)}
+                    value={catDrafts[colIndex] ?? cat.title}
+                    onFocus={() => catFocusedRef.current.add(colIndex)}
+                    onBlur={() => {
+                      catFocusedRef.current.delete(colIndex)
+                      const v = catDrafts[colIndex] ?? cat.title
+                      if (v !== cat.title) sendOp({ kind: 'setCategoryTitle', col: colIndex, title: v })
+                    }}
+                    onChange={(e) => setCatDrafts((prev) => {
+                      const next = [...prev]
+                      next[colIndex] = e.target.value
+                      return next
+                    })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') (e.currentTarget as HTMLInputElement).blur()
+                    }}
                     className="w-full bg-transparent text-center outline-none wrap-anywhere"
                     style={{ color: 'var(--ink-text)' }}
                   />
@@ -215,7 +275,6 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
               ))}
             </div>
 
-            {/* Board grid */}
             <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
               {board.categories.map((cat, colIndex) => (
                 <div key={colIndex} className="grid" style={{ gridTemplateRows: `repeat(${rowsCount}, minmax(0, 1fr))` }}>
@@ -223,15 +282,30 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
                     const value = getClueValue(board, rowIndex)
                     const clue = cat.clues[rowIndex]
                     const isFocused = focused.colIndex === colIndex && focused.rowIndex === rowIndex
+                    const lock = locks[lockKeyForCell(colIndex, rowIndex)]
+                    const filled = !!(clue?.question?.trim() || clue?.answer?.trim())
                     return (
                       <button
                         key={rowIndex}
-                        onClick={() => { setFocused({ colIndex, rowIndex }); setModal({ colIndex, rowIndex }) }}
-                        className={`h-20 sm:h-24 md:h-28 lg:h-32 border text-2xl md:text-3xl font-extrabold flex items-center justify-center select-none rounded-b-lg ${isFocused ? '' : ''}`}
-                        style={{ borderColor: 'var(--ink-border)', backgroundColor: isFocused ? 'var(--ink-accent)' : 'var(--ink-paper)', color: isFocused ? 'white' : 'var(--ink-text)' }}
+                        onClick={() => openCell(colIndex, rowIndex)}
+                        disabled={!!lock}
+                        className="relative h-20 sm:h-24 md:h-28 lg:h-32 border text-2xl md:text-3xl font-extrabold flex items-center justify-center select-none rounded-b-lg disabled:cursor-not-allowed"
+                        style={{
+                          borderColor: lock ? lock.color : 'var(--ink-border)',
+                          backgroundColor: isFocused && !lock ? 'var(--ink-accent)' : 'var(--ink-paper)',
+                          color: isFocused && !lock ? 'white' : 'var(--ink-text)',
+                          boxShadow: lock ? `inset 0 0 0 2px ${lock.color}` : undefined,
+                          opacity: lock ? 0.7 : 1,
+                        }}
+                        title={lock ? `${lock.name} is editing` : undefined}
                       >
-                        {clue?.question?.trim() || clue?.answer?.trim() ? (
-                          <span className="text-xs sm:text-sm px-2" style={{ color: isFocused ? 'rgba(255,255,255,0.85)' : 'var(--ink-muted)' }}>Edit</span>
+                        {lock ? (
+                          <span className="flex flex-col items-center gap-1">
+                            <Avatar color={lock.color} name={lock.name} small />
+                            <span className="text-xs font-normal" style={{ color: 'var(--ink-muted)' }}>editing</span>
+                          </span>
+                        ) : filled ? (
+                          <span className="text-xs sm:text-sm px-2" style={{ color: isFocused ? 'rgba(255,255,255,0.85)' : 'var(--ink-muted)' }}>Edit · ${value}</span>
                         ) : (
                           <span>${value}</span>
                         )}
@@ -245,38 +319,78 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
         </div>
 
         <div className="mt-6 text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
-          Drag headers to reorder · Arrows navigate · Space/Return open · Tab ↓/wrap → · Esc close · Cmd/Ctrl+Enter save
+          Drag headers to reorder · Arrows navigate · Space/Return open · Esc close · Cmd/Ctrl+Enter save
         </div>
       </div>
 
-      {/* Modal */}
       {modal && (
         <CellModal
+          key={`${modal.colIndex}:${modal.rowIndex}`}
           value={getClueValue(board, modal.rowIndex)}
+          categoryTitle={board.categories[modal.colIndex]?.title ?? ''}
           clue={board.categories[modal.colIndex]?.clues[modal.rowIndex] ?? { question: '', answer: '' }}
-          onClose={() => setModal(null)}
-          onSave={(clue) => {
-            updateClue(modal.colIndex, modal.rowIndex, () => clue)
-            setModal(null)
-          }}
+          onClose={closeCell}
+          onSave={(clue) => saveCell(modal.colIndex, modal.rowIndex, clue)}
         />
       )}
     </div>
   )
 }
 
-function CellModal({ value, clue, onClose, onSave }: { value: number; clue: JeopardyClue; onClose: () => void; onSave: (clue: JeopardyClue) => void }) {
+function CollaboratorChips({ collaborators, selfName }: { collaborators: Collaborator[]; selfName?: string | undefined }) {
+  if (!collaborators.length) return null
+  const sorted = [...collaborators].sort((a, b) => a.online_at.localeCompare(b.online_at))
+  return (
+    <div className="flex items-center -space-x-2">
+      {sorted.slice(0, 6).map((c) => (
+        <div
+          key={c.id}
+          className="rounded-full flex items-center justify-center text-xs font-bold text-white border-2"
+          style={{ width: 28, height: 28, backgroundColor: c.color, borderColor: 'var(--ink-paper)' }}
+          title={`${c.name}${c.name === selfName ? ' (you)' : ''}`}
+        >
+          {initialsFrom(c.name)}
+        </div>
+      ))}
+      {sorted.length > 6 && (
+        <div className="text-xs ml-3" style={{ color: 'var(--ink-muted)' }}>+{sorted.length - 6}</div>
+      )}
+    </div>
+  )
+}
+
+function Avatar({ color, name, small }: { color: string; name: string; small?: boolean }) {
+  const size = small ? 20 : 28
+  return (
+    <span
+      className="inline-flex items-center justify-center rounded-full text-white font-bold"
+      style={{ width: size, height: size, backgroundColor: color, fontSize: small ? 10 : 12 }}
+    >
+      {initialsFrom(name)}
+    </span>
+  )
+}
+
+function CellModal({
+  value,
+  categoryTitle,
+  clue,
+  onClose,
+  onSave,
+}: {
+  value: number
+  categoryTitle: string
+  clue: JeopardyClue
+  onClose: () => void
+  onSave: (clue: JeopardyClue) => void
+}) {
   const [q, setQ] = useState(clue?.question ?? '')
   const [a, setA] = useState(clue?.answer ?? '')
   const qRef = useRef<HTMLTextAreaElement>(null)
   const qaRef = useRef<{ q: string; a: string }>({ q, a })
 
-  // Keep latest values for the key handler without re-binding the listener
-  useEffect(() => {
-    qaRef.current = { q, a }
-  }, [q, a])
+  useEffect(() => { qaRef.current = { q, a } }, [q, a])
 
-  // Focus question textarea on open only
   useEffect(() => {
     qRef.current?.focus()
     const el = qRef.current
@@ -286,7 +400,6 @@ function CellModal({ value, clue, onClose, onSave }: { value: number; clue: Jeop
     }
   }, [])
 
-  // Global hotkeys for close and save (does not alter focus)
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') {
@@ -307,27 +420,26 @@ function CellModal({ value, clue, onClose, onSave }: { value: number; clue: Jeop
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
       <div className="w-full max-w-3xl rounded-lg border shadow-lg" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
         <div className="p-4 flex items-center justify-between border-b" style={{ borderColor: 'var(--ink-border)' }}>
-          <div className="font-semibold" style={{ color: 'var(--ink-text)' }}>Edit Clue • Value ${value}</div>
+          <div className="font-semibold truncate" style={{ color: 'var(--ink-text)' }}>{categoryTitle || 'Clue'} • ${value}</div>
           <button onClick={onClose} className="px-3 py-1 rounded-lg hover:opacity-90" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>ESC</button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
           <div>
             <label className="text-sm" style={{ color: 'var(--ink-muted)' }}>Question Prompt</label>
-            <textarea ref={qRef} value={q} onChange={(e) => setQ(e.target.value)} className="mt-1 w-full h-40 rounded-lg p-3 outline-none border focus:ring-2 focus:ring-[var(--ink-accent)]" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }} />
+            <textarea ref={qRef} value={q} onChange={(e) => setQ(e.target.value)} className="mt-1 w-full h-40 rounded-lg p-3 outline-none border focus:ring-2 focus:ring-(--ink-accent)" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }} />
           </div>
           <div>
             <label className="text-sm" style={{ color: 'var(--ink-muted)' }}>Correct Response</label>
-            <textarea value={a} onChange={(e) => setA(e.target.value)} className="mt-1 w-full h-40 rounded-lg p-3 outline-none border focus:ring-2 focus:ring-[var(--ink-accent)]" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }} />
+            <textarea value={a} onChange={(e) => setA(e.target.value)} className="mt-1 w-full h-40 rounded-lg p-3 outline-none border focus:ring-2 focus:ring-(--ink-accent)" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }} />
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 p-4 border-t" style={{ borderColor: 'var(--ink-border)' }}>
-          <button onClick={() => onSave({ question: q, answer: a })} className="text-white px-4 py-2 rounded-lg hover:opacity-90" style={{ backgroundColor: 'rgb(22 101 52)' }}>Continue</button>
+        <div className="flex items-center justify-between gap-2 p-4 border-t" style={{ borderColor: 'var(--ink-border)' }}>
+          <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>Cmd/Ctrl+Enter to save</span>
+          <button onClick={() => onSave({ question: q, answer: a })} className="text-white px-4 py-2 rounded-lg hover:opacity-90" style={{ backgroundColor: 'rgb(22 101 52)' }}>Save</button>
         </div>
       </div>
     </div>
   )
 }
-
-
