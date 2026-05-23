@@ -1,26 +1,37 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import JeopardyPlayer from '@/components/JeopardyPlayer'
 import type { JeopardyBoard } from '@/lib/jeopardy'
 import { normalizeBoard } from '@/lib/jeopardy-ops'
 import { pushRecent } from '@/lib/jeopardy-identity'
+import {
+  applyPlayOp,
+  defaultPlayState,
+  normalizePlayState,
+  type JeopardyPlayOp,
+  type JeopardyPlayState,
+} from '@/lib/jeopardy-play-ops'
 
 export default function JeopardyPlayPage() {
   const params = useParams<{ slug: string }>()
   const router = useRouter()
   const slug = params?.slug || ''
   const [board, setBoard] = useState<JeopardyBoard | null>(null)
+  const [playState, setPlayState] = useState<JeopardyPlayState>(defaultPlayState())
   const [notFound, setNotFound] = useState(false)
-  // Use a ref so the realtime callback always sees the latest version (state would be stale in closure).
+  const [syncing, setSyncing] = useState(false)
   const versionRef = useRef(0)
+  const playVersionRef = useRef(0)
+  const pendingRef = useRef(0) // counts in-flight ops; suppress realtime overwrite while we have local-only changes
 
   useEffect(() => {
     if (!slug) return
     let cancelled = false
     versionRef.current = 0
+    playVersionRef.current = 0
     async function load() {
       try {
         const res = await fetch(`/api/jeopardy/boards/${slug}`, { cache: 'no-store' })
@@ -33,6 +44,8 @@ export default function JeopardyPlayPage() {
         if (cancelled) return
         setBoard(normalizeBoard(data.board, data.board?.id ?? ''))
         versionRef.current = data.version ?? 0
+        setPlayState(normalizePlayState(data.playState))
+        playVersionRef.current = data.playVersion ?? 0
         if (data.board?.title) pushRecent(slug, data.board.title)
       } catch {}
     }
@@ -51,9 +64,19 @@ export default function JeopardyPlayPage() {
           const row = payload.new as Record<string, unknown> | null
           if (!row) return
           const incoming = typeof row.version === 'number' ? row.version : 0
-          if (incoming <= versionRef.current) return
-          setBoard(normalizeBoard(row.board, (row.id as string) || ''))
-          versionRef.current = incoming
+          if (incoming > versionRef.current) {
+            setBoard(normalizeBoard(row.board, (row.id as string) || ''))
+            versionRef.current = incoming
+          }
+          const incomingPlay = typeof row.play_version === 'number' ? row.play_version : 0
+          // Skip stale + our own optimistic echoes (when local pendingRef > 0).
+          if (incomingPlay > playVersionRef.current && pendingRef.current === 0) {
+            setPlayState(normalizePlayState(row.play_state))
+            playVersionRef.current = incomingPlay
+          } else if (incomingPlay > playVersionRef.current) {
+            // Just bump the seen version so we don't re-apply later, but keep local optimistic state.
+            playVersionRef.current = incomingPlay
+          }
         },
       )
       .subscribe()
@@ -63,6 +86,45 @@ export default function JeopardyPlayPage() {
       void ch.unsubscribe()
     }
   }, [slug])
+
+  const dispatchPlayOp = useCallback(
+    (op: JeopardyPlayOp) => {
+      // Optimistic local apply.
+      setPlayState((prev) => applyPlayOp(prev, op))
+      pendingRef.current += 1
+      setSyncing(true)
+      ;(async () => {
+        try {
+          const res = await fetch(`/api/jeopardy/boards/${slug}/play-state`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ op }),
+          })
+          if (res.ok) {
+            const data = await res.json()
+            if (typeof data.playVersion === 'number' && data.playVersion > playVersionRef.current) {
+              playVersionRef.current = data.playVersion
+              setPlayState(normalizePlayState(data.playState))
+            }
+          } else if (res.status === 409 || res.status === 404) {
+            // Conflict or missing — refetch to reconcile.
+            const r = await fetch(`/api/jeopardy/boards/${slug}`, { cache: 'no-store' })
+            if (r.ok) {
+              const d = await r.json()
+              setPlayState(normalizePlayState(d.playState))
+              playVersionRef.current = d.playVersion ?? 0
+            }
+          }
+        } catch {
+          /* offline; local state still updated, realtime will reconcile when back */
+        } finally {
+          pendingRef.current = Math.max(0, pendingRef.current - 1)
+          if (pendingRef.current === 0) setSyncing(false)
+        }
+      })()
+    },
+    [slug],
+  )
 
   if (notFound) {
     return (
@@ -78,6 +140,9 @@ export default function JeopardyPlayPage() {
   return (
     <JeopardyPlayer
       board={board}
+      playState={playState}
+      dispatchPlayOp={dispatchPlayOp}
+      syncing={syncing}
       onBack={() => router.push('/games/jeopardy')}
       onEdit={() => router.push(`/games/jeopardy/edit/${slug}`)}
     />

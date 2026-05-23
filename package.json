@@ -19,6 +19,7 @@
     "smoke:reader-suggest-chapter": "tsx scripts/smoke-reader-suggest-chapter.ts",
     "smoke:reader-communal-list": "tsx scripts/reader-communal-summarize.ts",
     "sync:reader-communal-fixtures": "tsx scripts/sync-reader-communal-from-fixtures.ts",
+    "seed:jeopardy-mendochino": "tsx scripts/seed-jeopardy-mendochino.ts",
     "test:e2e": "playwright test",
     "test:e2e:ci": "CI=1 playwright test",
     "test:e2e:deployment": "PLAYWRIGHT_SKIP_WEBSERVER=1 CI=1 playwright test",

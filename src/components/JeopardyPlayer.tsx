@@ -3,23 +3,25 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { JeopardyBoard } from '@/lib/jeopardy'
 import { getClueValue } from '@/lib/jeopardy'
+import {
+  MAX_TEAMS,
+  type JeopardyPlayOp,
+  type JeopardyPlayState,
+} from '@/lib/jeopardy-play-ops'
 
 interface JeopardyPlayerProps {
   board: JeopardyBoard
+  playState: JeopardyPlayState
+  dispatchPlayOp: (op: JeopardyPlayOp) => void
   onBack: () => void
   onEdit: () => void
+  syncing?: boolean
 }
 
-type Team = { name: string; score: number }
-
-export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayerProps) {
-  const MAX_TEAMS = 12
-  const [teams, setTeams] = useState<Team[]>([{ name: 'Team 1', score: 0 }, { name: 'Team 2', score: 0 }])
-  const [teamCount, setTeamCount] = useState(2)
+export default function JeopardyPlayer({ board, playState, dispatchPlayOp, onBack, onEdit, syncing }: JeopardyPlayerProps) {
+  const { teamCount, teams, used, lastAnswered } = playState
   const [open, setOpen] = useState<{ col: number; row: number } | null>(null)
   const [revealed, setRevealed] = useState(false)
-  const [used, setUsed] = useState<Record<string, boolean>>({})
-  const [lastAnswered, setLastAnswered] = useState<{ col: number; row: number } | null>(null)
   const rowsCount = board.categories[0]?.clues.length ?? 5
   const COL_MIN_WIDTH_PX = 90
 
@@ -30,28 +32,15 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
     return { minCardWidth }
   }, [teamCount])
 
-  useEffect(() => {
-    // normalize team list to 1-MAX_TEAMS
-    setTeams((prev) => {
-      const next: Team[] = Array.from({ length: teamCount }, (_, i) => {
-        const existing = prev[i]
-        if (existing) return existing
-        return { name: `Team ${i + 1}`, score: 0 }
-      })
-      return next
-    })
-  }, [teamCount])
-
   const closeTile = useCallback(() => {
     setOpen((current) => {
       if (current && revealed) {
-        setUsed((u) => ({ ...u, [`${current.col}:${current.row}`]: true }))
-        setLastAnswered({ col: current.col, row: current.row })
+        dispatchPlayOp({ kind: 'markUsed', col: current.col, row: current.row, used: true, lastAnswered: true })
       }
       return null
     })
     setRevealed(false)
-  }, [revealed])
+  }, [revealed, dispatchPlayOp])
 
   // Only clue overlay hotkeys; board navigation is mouse/touch only
   useEffect(() => {
@@ -71,45 +60,37 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
   }, [])
 
   const adjustScore = useCallback((teamIndex: number, delta: number) => {
-    setTeams((prev) => {
-      const next = [...prev]
-      const existing = next[teamIndex] ?? { name: `Team ${teamIndex + 1}`, score: 0 }
-      next[teamIndex] = { ...existing, score: existing.score + delta }
-      return next
-    })
-  }, [])
+    dispatchPlayOp({ kind: 'adjustTeamScore', index: teamIndex, delta })
+  }, [dispatchPlayOp])
 
   const setScore = useCallback((teamIndex: number, newScore: number) => {
-    setTeams((prev) => {
-      const next = [...prev]
-      const existing = next[teamIndex] ?? { name: `Team ${teamIndex + 1}`, score: 0 }
-      next[teamIndex] = { ...existing, score: newScore }
-      return next
-    })
-  }, [])
+    dispatchPlayOp({ kind: 'setTeamScore', index: teamIndex, score: newScore })
+  }, [dispatchPlayOp])
 
   const resetTiles = useCallback(() => {
-    setUsed({})
+    dispatchPlayOp({ kind: 'resetTiles' })
     setOpen(null)
     setRevealed(false)
-  }, [])
+  }, [dispatchPlayOp])
 
   const resetTilesAndScores = useCallback(() => {
-    resetTiles()
-    setTeams((prev) => prev.map((t) => ({ ...t, score: 0 })))
-  }, [resetTiles])
+    dispatchPlayOp({ kind: 'resetTilesAndScores' })
+    setOpen(null)
+    setRevealed(false)
+  }, [dispatchPlayOp])
 
   return (
     <div className="p-4 flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <button onClick={onBack} className="px-4 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>← Back</button>
         <div className="flex items-center gap-2">
+          {syncing ? <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>syncing…</span> : null}
           <label className="text-sm" style={{ color: 'var(--ink-muted)' }}>Teams</label>
           <select
             className="rounded-lg px-2 py-1 border"
             style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
             value={teamCount}
-            onChange={(e) => setTeamCount(Math.min(MAX_TEAMS, Math.max(1, Number(e.target.value))))}
+            onChange={(e) => dispatchPlayOp({ kind: 'setTeamCount', count: Math.min(MAX_TEAMS, Math.max(1, Number(e.target.value))) })}
           >
             {Array.from({ length: MAX_TEAMS }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>{n}</option>
@@ -122,7 +103,7 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
       </div>
 
       <h1 className="text-center text-4xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>{board.title}</h1>
-      <div className="text-center text-sm mb-4" style={{ color: 'var(--ink-muted)' }}>Hotkeys: Space reveals • Esc goes back</div>
+      <div className="text-center text-sm mb-4" style={{ color: 'var(--ink-muted)' }}>Hotkeys: Space reveals • Esc goes back · Scores sync across devices</div>
 
       {/* Board */}
       <div className="max-w-6xl mx-auto w-full">
@@ -171,7 +152,7 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
             <input
               value={team.name}
               maxLength={24}
-              onChange={(e) => setTeams((prev) => prev.map((t, idx) => idx === i ? { ...t, name: e.target.value } : t))}
+              onChange={(e) => dispatchPlayOp({ kind: 'setTeamName', index: i, name: e.target.value })}
               className="w-full bg-transparent text-center font-semibold mb-2 outline-none"
               style={{ color: 'var(--ink-text)' }}
             />
@@ -226,5 +207,3 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
     </div>
   )
 }
-
-

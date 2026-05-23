@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin as supabase } from '@/lib/supabase'
 import { applyOp, normalizeBoard, type JeopardyOp } from '@/lib/jeopardy-ops'
 import type { JeopardyBoard } from '@/lib/jeopardy'
+import { normalizePlayState } from '@/lib/jeopardy-play-ops'
 
 function isValidSlug(s: string): boolean {
   return typeof s === 'string' && /^[a-z0-9-]{1,80}$/.test(s)
@@ -10,7 +11,7 @@ function isValidSlug(s: string): boolean {
 async function loadRow(slug: string) {
   return supabase
     .from('jeopardy_boards')
-    .select('id, slug, title, board, base_value, increment, version, updated_at, last_editor')
+    .select('id, slug, title, board, base_value, increment, version, updated_at, last_editor, play_state, play_version, play_updated_at')
     .eq('slug', slug)
     .single()
 }
@@ -28,6 +29,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ slu
     version: data.version,
     updatedAt: data.updated_at,
     lastEditor: data.last_editor,
+    playState: normalizePlayState(data.play_state),
+    playVersion: data.play_version ?? 0,
+    playUpdatedAt: data.play_updated_at,
   })
 }
 
