@@ -231,7 +231,7 @@ export default function JeopardyEditor({ initialBoard, onBack, onPlay }: Jeopard
                         style={{ borderColor: 'var(--ink-border)', backgroundColor: isFocused ? 'var(--ink-accent)' : 'var(--ink-paper)', color: isFocused ? 'white' : 'var(--ink-text)' }}
                       >
                         {clue?.question?.trim() || clue?.answer?.trim() ? (
-                          <span className="text-xs sm:text-sm text-white/80 px-2">Edit</span>
+                          <span className="text-xs sm:text-sm px-2" style={{ color: isFocused ? 'rgba(255,255,255,0.85)' : 'var(--ink-muted)' }}>Edit</span>
                         ) : (
                           <span>${value}</span>
                         )}
