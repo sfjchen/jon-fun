@@ -18,18 +18,36 @@ export default defineConfig({
   workers: Number(process.env.PLAYWRIGHT_WORKERS ?? '1'),
   reporter: 'html',
   timeout: 120_000,
-  expect: { timeout: 15_000 },
+  expect: {
+    timeout: 15_000,
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.01,
+      threshold: 0.2,
+      animations: 'disabled',
+      caret: 'hide',
+      scale: 'css',
+    },
+  },
   use: {
     baseURL,
     trace: 'on-first-retry',
     actionTimeout: 15_000,
     navigationTimeout: 45_000,
   },
+  /** Fixed-pixel viewports keep snapshot baselines deterministic; device descriptors (DPR/UA drift) cause flake. */
   projects: process.env.CI
-    ? [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }]
+    ? [
+        { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+        { name: 'visual-desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 } },
+        { name: 'visual-tablet', use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 }, deviceScaleFactor: 1 } },
+        { name: 'visual-mobile', use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 } },
+      ]
     : [
         { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
         { name: 'Mobile Chrome', use: { ...devices['Pixel 5'] } },
+        { name: 'visual-desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 } },
+        { name: 'visual-tablet', use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 }, deviceScaleFactor: 1 } },
+        { name: 'visual-mobile', use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 } },
       ],
   ...(skipWebServer
     ? {}
