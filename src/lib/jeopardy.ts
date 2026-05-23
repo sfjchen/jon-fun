@@ -37,6 +37,11 @@ export function slugify(input: string): string {
     .slice(0, 40) || 'board'
 }
 
+/** Slug pattern shared between the API routes that create boards: `${title-slug}-${5 random chars}`. */
+export function generateBoardSlug(title: string): string {
+  return `${slugify(title || 'board') || 'board'}-${Math.random().toString(36).slice(2, 7)}`
+}
+
 export function createDefaultBoard(title = 'Title'): JeopardyBoard {
   const cols = 5
   const rows = 5
