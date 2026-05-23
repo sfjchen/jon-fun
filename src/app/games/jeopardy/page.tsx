@@ -1,41 +1,56 @@
 'use client'
 
 import Image from 'next/image'
-import { useRef, useState } from 'react'
-import JeopardyEditor from '@/components/JeopardyEditor'
-import JeopardyPlayer from '@/components/JeopardyPlayer'
-import type { JeopardyBoard } from '@/lib/jeopardy'
-import { readBoardFromFile, createDefaultBoard } from '@/lib/jeopardy'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
+import { readBoardFromFile } from '@/lib/jeopardy'
+import { getRecents, removeRecent, type RecentBoard } from '@/lib/jeopardy-identity'
 
 export default function JeopardyPage() {
+  const router = useRouter()
   const isNotebook = true
-  const [mode, setMode] = useState<'menu' | 'editor' | 'player'>('menu')
-  const [currentBoard, setCurrentBoard] = useState<JeopardyBoard | null>(null)
-  const [error, setError] = useState<string | null>(null)
   const editFileRef = useRef<HTMLInputElement>(null)
-  const playFileRef = useRef<HTMLInputElement>(null)
+  const [creating, setCreating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [joinCode, setJoinCode] = useState('')
+  const [recents, setRecents] = useState<RecentBoard[]>([])
 
-  if (mode === 'editor') {
-    return (
-      <JeopardyEditor 
-        onBack={() => setMode('menu')}
-        onPlay={(board: JeopardyBoard) => {
-          setCurrentBoard(board)
-          setMode('player')
-        }}
-        initialBoard={currentBoard ?? createDefaultBoard()}
-      />
-    )
+  useEffect(() => {
+    setRecents(getRecents())
+  }, [])
+
+  async function createBoard(payload?: { board?: unknown; title?: string }) {
+    setCreating(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/jeopardy/boards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload ?? {}),
+      })
+      if (!res.ok) throw new Error('Failed to create board')
+      const data = await res.json()
+      router.push(`/games/jeopardy/edit/${data.slug}`)
+    } catch {
+      setError('Could not create board. Check your connection and try again.')
+      setTimeout(() => setError(null), 3500)
+    } finally {
+      setCreating(false)
+    }
   }
 
-  if (mode === 'player') {
-    return (
-      <JeopardyPlayer 
-        board={currentBoard as JeopardyBoard}
-        onBack={() => setMode('menu')}
-        onEdit={() => setMode('editor')}
-      />
-    )
+  function handleJoin() {
+    const code = joinCode.trim().toLowerCase()
+    if (!/^[a-z0-9-]{3,}$/.test(code)) {
+      setError('Enter a valid board code or link')
+      setTimeout(() => setError(null), 3000)
+      return
+    }
+    // Accept either a slug or a full URL
+    const m = code.match(/\/edit\/([a-z0-9-]+)/) || code.match(/\/play\/([a-z0-9-]+)/)
+    const slug = m?.[1] || code
+    router.push(`/games/jeopardy/edit/${slug}`)
   }
 
   return (
@@ -45,60 +60,58 @@ export default function JeopardyPage() {
           {error}
         </div>
       )}
-      <div className="rounded-lg border max-w-md w-full shadow-sm p-8" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-        <h1 className="text-4xl font-bold font-lora text-center flex items-center justify-center gap-3 mb-8" style={{ color: 'var(--ink-text)' }}>
+      <div className="rounded-lg border max-w-lg w-full shadow-sm p-8" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+        <h1 className="text-4xl font-bold font-lora text-center flex items-center justify-center gap-3 mb-2" style={{ color: 'var(--ink-text)' }}>
           <Image src={isNotebook ? '/doodles/notebook/jeopardy.svg' : '/doodles/jeopardy.svg'} alt="" width={40} height={40} className="h-10 w-10" />
           Jeopardy with Friends
         </h1>
-        
-        <div className="space-y-4">
+        <p className="text-center text-sm mb-6" style={{ color: 'var(--ink-muted)' }}>
+          Create a board together in realtime. Share one link — edit from any device.
+        </p>
+
+        <div className="space-y-3">
           <button
-            onClick={() => setMode('editor')}
-            className="w-full text-white py-4 px-6 rounded-lg text-xl font-semibold hover:opacity-90"
+            onClick={() => createBoard()}
+            disabled={creating}
+            className="w-full text-white py-4 px-6 rounded-lg text-xl font-semibold hover:opacity-90 disabled:opacity-50"
             style={{ backgroundColor: 'var(--ink-accent)' }}
           >
-            Create New Game
+            {creating ? 'Creating…' : 'Create New Game'}
           </button>
-          
-          <div className="grid gap-3">
+
+          <div className="flex gap-2">
+            <input
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleJoin() }}
+              placeholder="Paste link or code to join…"
+              className="flex-1 px-3 py-2 rounded-lg border outline-none"
+              style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+            />
             <button
-              onClick={() => editFileRef.current?.click()}
-              className="w-full py-3 px-6 rounded-lg border hover:opacity-90"
+              onClick={handleJoin}
+              className="px-4 py-2 rounded-lg border hover:opacity-90"
               style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
             >
-              Upload JSON to Edit
+              Join
+            </button>
+          </div>
+
+          <div className="grid gap-2">
+            <button
+              onClick={() => editFileRef.current?.click()}
+              disabled={creating}
+              className="w-full py-3 px-6 rounded-lg border hover:opacity-90 disabled:opacity-50"
+              style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+            >
+              Upload JSON → start collab edit
             </button>
             <input ref={editFileRef} type="file" accept="application/json" className="hidden" onChange={async (e) => {
               const file = e.target.files?.[0]
               if (!file) return
               try {
                 const loaded = await readBoardFromFile(file)
-                setCurrentBoard(loaded)
-                setMode('editor')
-                setError(null)
-              } catch {
-                setError('Failed to parse JSON')
-                setTimeout(() => setError(null), 3000)
-              } finally {
-                e.target.value = ''
-              }
-            }} />
-
-            <button
-              onClick={() => playFileRef.current?.click()}
-              className="w-full text-white py-3 px-6 rounded-lg hover:opacity-90"
-              style={{ backgroundColor: 'rgb(22 101 52)' }}
-            >
-              Upload JSON to Play
-            </button>
-            <input ref={playFileRef} type="file" accept="application/json" className="hidden" onChange={async (e) => {
-              const file = e.target.files?.[0]
-              if (!file) return
-              try {
-                const loaded = await readBoardFromFile(file)
-                setCurrentBoard(loaded)
-                setMode('player')
-                setError(null)
+                await createBoard({ board: loaded, title: loaded.title })
               } catch {
                 setError('Failed to parse JSON')
                 setTimeout(() => setError(null), 3000)
@@ -107,7 +120,38 @@ export default function JeopardyPage() {
               }
             }} />
           </div>
-          
+
+          {recents.length > 0 && (
+            <div className="mt-6">
+              <div className="text-xs uppercase tracking-wide mb-2" style={{ color: 'var(--ink-muted)' }}>Recent boards</div>
+              <ul className="space-y-1">
+                {recents.slice(0, 6).map((r) => (
+                  <li key={r.slug} className="flex items-center gap-2">
+                    <Link
+                      href={`/games/jeopardy/edit/${r.slug}`}
+                      className="flex-1 px-3 py-2 rounded-lg border hover:opacity-90 truncate"
+                      style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                    >
+                      <span className="font-semibold">{r.title}</span>
+                      <span className="ml-2 text-xs" style={{ color: 'var(--ink-muted)' }}>· {r.slug}</span>
+                    </Link>
+                    <Link
+                      href={`/games/jeopardy/play/${r.slug}`}
+                      className="px-2 py-2 rounded-lg border text-sm"
+                      style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                      title="Play"
+                    >▶</Link>
+                    <button
+                      onClick={() => { removeRecent(r.slug); setRecents(getRecents()) }}
+                      className="px-2 py-2 rounded-lg border text-sm"
+                      style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-muted)' }}
+                      title="Remove from list"
+                    >✕</button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </div>
