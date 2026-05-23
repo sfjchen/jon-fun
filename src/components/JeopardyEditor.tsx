@@ -20,6 +20,7 @@ interface JeopardyEditorProps {
   setLock?: (key: LockKey | null) => void
   identityName?: string
   shareUrl?: string
+  onChangeName?: () => void
 }
 
 const lockKeyForCell = (col: number, row: number): LockKey => `clue:${col}:${row}`
@@ -37,6 +38,7 @@ export default function JeopardyEditor({
   setLock,
   identityName,
   shareUrl,
+  onChangeName,
 }: JeopardyEditorProps) {
   const [dragCol, setDragCol] = useState<number | null>(null)
   const [modal, setModal] = useState<{ colIndex: number; rowIndex: number } | null>(null)
@@ -115,13 +117,14 @@ export default function JeopardyEditor({
 
   const openCell = useCallback(
     (colIndex: number, rowIndex: number) => {
+      if (modal) return // already editing a cell — guard against losing unsaved work
       const key = lockKeyForCell(colIndex, rowIndex)
       if (locks[key]) return // someone else editing — block open
       setFocused({ colIndex, rowIndex })
       setModal({ colIndex, rowIndex })
       setLock?.(key)
     },
-    [locks, setLock],
+    [modal, locks, setLock],
   )
 
   const closeCell = useCallback(() => {
@@ -192,7 +195,7 @@ export default function JeopardyEditor({
         </div>
 
         <div className="flex items-center gap-2">
-          <CollaboratorChips collaborators={collaborators} selfName={identityName} />
+          <CollaboratorChips collaborators={collaborators} selfName={identityName} onRenameSelf={onChangeName} />
         </div>
 
         <div className="flex gap-2 flex-wrap items-center">
@@ -223,6 +226,7 @@ export default function JeopardyEditor({
       <div className="max-w-6xl mx-auto w-full">
         <input
           value={titleDraft}
+          maxLength={120}
           onFocus={() => { titleFocusedRef.current = true }}
           onBlur={() => {
             titleFocusedRef.current = false
@@ -254,6 +258,7 @@ export default function JeopardyEditor({
                 >
                   <input
                     value={catDrafts[colIndex] ?? cat.title}
+                    maxLength={80}
                     onFocus={() => catFocusedRef.current.add(colIndex)}
                     onBlur={() => {
                       catFocusedRef.current.delete(colIndex)
@@ -337,21 +342,48 @@ export default function JeopardyEditor({
   )
 }
 
-function CollaboratorChips({ collaborators, selfName }: { collaborators: Collaborator[]; selfName?: string | undefined }) {
+function CollaboratorChips({
+  collaborators,
+  selfName,
+  onRenameSelf,
+}: {
+  collaborators: Collaborator[]
+  selfName?: string | undefined
+  onRenameSelf?: (() => void) | undefined
+}) {
   if (!collaborators.length) return null
   const sorted = [...collaborators].sort((a, b) => a.online_at.localeCompare(b.online_at))
   return (
     <div className="flex items-center -space-x-2">
-      {sorted.slice(0, 6).map((c) => (
-        <div
-          key={c.id}
-          className="rounded-full flex items-center justify-center text-xs font-bold text-white border-2"
-          style={{ width: 28, height: 28, backgroundColor: c.color, borderColor: 'var(--ink-paper)' }}
-          title={`${c.name}${c.name === selfName ? ' (you)' : ''}`}
-        >
-          {initialsFrom(c.name)}
-        </div>
-      ))}
+      {sorted.slice(0, 6).map((c) => {
+        const isSelf = c.name === selfName
+        const baseStyle = { width: 28, height: 28, backgroundColor: c.color, borderColor: 'var(--ink-paper)' } as const
+        const tooltip = `${c.name}${isSelf ? ' (you) · click to rename' : ''}`
+        const initials = initialsFrom(c.name)
+        if (isSelf && onRenameSelf) {
+          return (
+            <button
+              key={c.id}
+              onClick={onRenameSelf}
+              className="rounded-full flex items-center justify-center text-xs font-bold text-white border-2 cursor-pointer hover:scale-110 transition-transform"
+              style={baseStyle}
+              title={tooltip}
+            >
+              {initials}
+            </button>
+          )
+        }
+        return (
+          <div
+            key={c.id}
+            className="rounded-full flex items-center justify-center text-xs font-bold text-white border-2"
+            style={baseStyle}
+            title={tooltip}
+          >
+            {initials}
+          </div>
+        )
+      })}
       {sorted.length > 6 && (
         <div className="text-xs ml-3" style={{ color: 'var(--ink-muted)' }}>+{sorted.length - 6}</div>
       )}

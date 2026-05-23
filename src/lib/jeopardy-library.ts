@@ -9,7 +9,7 @@ import type { JeopardyBoard } from '@/lib/jeopardy'
 const DATA_DIR = path.join(process.cwd(), 'data', 'jeopardy')
 const FILE_RE = /^[a-z0-9._-]+\.jeopardy\.json$/i
 
-export const DEFAULT_LIBRARY_PASSCODE = '1234'
+export const DEFAULT_LIBRARY_PASSCODE = '890-'
 
 export function checkPasscode(input: string | null | undefined): boolean {
   const expected = (process.env.JEOPARDY_LIBRARY_PASSCODE || DEFAULT_LIBRARY_PASSCODE).trim()
