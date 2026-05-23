@@ -999,9 +999,9 @@ export default function Game24() {
                         style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-sm w-6 text-right text-white/80">{idx + 1}.</span>
-                          <span className="font-semibold text-white">{p.name}</span>
-                          <span className="text-sm text-white/70">({correct}/{total})</span>
+                          <span className="text-sm w-6 text-right" style={{ color: 'var(--ink-muted)' }}>{idx + 1}.</span>
+                          <span className="font-semibold" style={{ color: 'var(--ink-text)' }}>{p.name}</span>
+                          <span className="text-sm" style={{ color: 'var(--ink-muted)' }}>({correct}/{total})</span>
                         </div>
                         <span className="font-mono text-sm">{p.score ?? 0}</span>
                       </div>
