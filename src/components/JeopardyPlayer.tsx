@@ -21,10 +21,7 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
   const [used, setUsed] = useState<Record<string, boolean>>({})
   const [lastAnswered, setLastAnswered] = useState<{ col: number; row: number } | null>(null)
   const rowsCount = board.categories[0]?.clues.length ?? 5
-  // Keep last-clicked cell for UX focus; currently not rendered
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [focused, setFocused] = useState<{ col: number; row: number } | null>(null)
-  const colMinWidthPx = 90
+  const COL_MIN_WIDTH_PX = 90
 
   const teamLayout = useMemo(() => {
     // Keep sizing consistent for 5+ teams (including 9–12): wrap into more rows instead of shrinking.
@@ -45,19 +42,16 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
     })
   }, [teamCount])
 
-  const tileKey = useCallback((col: number, row: number) => `${col}:${row}`, [])
-
   const closeTile = useCallback(() => {
     setOpen((current) => {
       if (current && revealed) {
-        const key = tileKey(current.col, current.row)
-        setUsed((u) => ({ ...u, [key]: true }))
+        setUsed((u) => ({ ...u, [`${current.col}:${current.row}`]: true }))
         setLastAnswered({ col: current.col, row: current.row })
       }
       return null
     })
     setRevealed(false)
-  }, [revealed, tileKey])
+  }, [revealed])
 
   // Only clue overlay hotkeys; board navigation is mouse/touch only
   useEffect(() => {
@@ -133,7 +127,7 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
       {/* Board */}
       <div className="max-w-6xl mx-auto w-full">
         <div className="smooth-scroll-x">
-          <div style={{ minWidth: `${board.categories.length * colMinWidthPx}px` }}>
+          <div style={{ minWidth: `${board.categories.length * COL_MIN_WIDTH_PX}px` }}>
             <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
               {board.categories.map((cat, colIndex) => (
                 <div key={colIndex} className="px-2 py-2 border text-center font-semibold uppercase tracking-wide text-xs sm:text-sm md:text-lg select-none rounded-t-lg wrap-anywhere" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}>
@@ -147,12 +141,11 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
                 <div key={colIndex} className="grid" style={{ gridTemplateRows: `repeat(${rowsCount}, minmax(0, 1fr))` }}>
                   {Array.from({ length: rowsCount }, (_, rowIndex) => {
                     const value = getClueValue(board, rowIndex)
-                    const key = tileKey(colIndex, rowIndex)
-                    const disabled = used[key]
+                    const disabled = used[`${colIndex}:${rowIndex}`]
                     return (
                       <button
                         key={rowIndex}
-                        onClick={() => { setFocused({ col: colIndex, row: rowIndex }); openTile(colIndex, rowIndex) }}
+                        onClick={() => openTile(colIndex, rowIndex)}
                         className={`h-20 sm:h-24 md:h-28 lg:h-32 border text-2xl md:text-3xl font-extrabold rounded-b-lg transition-colors ${disabled ? '' : 'hover:opacity-90'}`}
                         style={{ borderColor: 'var(--ink-border)', backgroundColor: disabled ? 'var(--ink-bg)' : 'var(--ink-paper)', color: disabled ? 'var(--ink-muted)' : 'var(--ink-accent)' }}
                       >
@@ -177,11 +170,15 @@ export default function JeopardyPlayer({ board, onBack, onEdit }: JeopardyPlayer
             <div key={i} className="rounded-xl border min-w-0 p-3" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
             <input
               value={team.name}
+              maxLength={24}
               onChange={(e) => setTeams((prev) => prev.map((t, idx) => idx === i ? { ...t, name: e.target.value } : t))}
               className="w-full bg-transparent text-center font-semibold mb-2 outline-none"
               style={{ color: 'var(--ink-text)' }}
             />
             <input
+              type="text"
+              inputMode="numeric"
+              pattern="-?[0-9]*"
               value={team.score}
               onChange={(e) => setScore(i, Number(e.target.value) || 0)}
               className="w-full text-center text-2xl font-bold rounded-md py-2 outline-none border"
