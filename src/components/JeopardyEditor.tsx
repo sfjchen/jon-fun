@@ -25,6 +25,18 @@ interface JeopardyEditorProps {
 
 const lockKeyForCell = (col: number, row: number): LockKey => `clue:${col}:${row}`
 
+const AUTOSAVE_DELAY_MS = 500
+
+/** Debounce a value: returns the input value `delay`ms after the last update. Pairs with an effect that fires the autosave when the debounced value changes. */
+function useDebounced<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(t)
+  }, [value, delay])
+  return debounced
+}
+
 export default function JeopardyEditor({
   board,
   sendOp,
@@ -59,6 +71,13 @@ export default function JeopardyEditor({
     if (!titleFocusedRef.current) setTitleDraft(board.title)
   }, [board.title])
 
+  /** Debounced autosave for board title — flushes 500ms after last keystroke so a closed tab doesn't lose the edit. */
+  const debouncedTitle = useDebounced(titleDraft, AUTOSAVE_DELAY_MS)
+  useEffect(() => {
+    if (debouncedTitle !== board.title) sendOp({ kind: 'setBoardTitle', title: debouncedTitle })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedTitle])
+
   const [catDrafts, setCatDrafts] = useState<string[]>(() => board.categories.map((c) => c.title))
   const catFocusedRef = useRef<Set<number>>(new Set())
   useEffect(() => {
@@ -69,6 +88,18 @@ export default function JeopardyEditor({
       return next
     })
   }, [board.categories])
+
+  /** Debounced autosave for each category title. Joined to a single string so the effect deps are stable. */
+  const catDraftsKey = catDrafts.join('\u0000')
+  const debouncedCatDraftsKey = useDebounced(catDraftsKey, AUTOSAVE_DELAY_MS)
+  useEffect(() => {
+    const drafts = debouncedCatDraftsKey.split('\u0000')
+    drafts.forEach((v, i) => {
+      const current = board.categories[i]?.title
+      if (current !== undefined && v !== current) sendOp({ kind: 'setCategoryTitle', col: i, title: v })
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedCatDraftsKey])
 
   const rowsCount = useMemo(() => board.categories[0]?.clues.length ?? 5, [board])
 
@@ -336,6 +367,7 @@ export default function JeopardyEditor({
           clue={board.categories[modal.colIndex]?.clues[modal.rowIndex] ?? { question: '', answer: '' }}
           onClose={closeCell}
           onSave={(clue) => saveCell(modal.colIndex, modal.rowIndex, clue)}
+          onAutosave={(clue) => sendOp({ kind: 'setClue', col: modal.colIndex, row: modal.rowIndex, question: clue.question, answer: clue.answer })}
         />
       )}
     </div>
@@ -409,17 +441,23 @@ function CellModal({
   clue,
   onClose,
   onSave,
+  onAutosave,
 }: {
   value: number
   categoryTitle: string
   clue: JeopardyClue
   onClose: () => void
   onSave: (clue: JeopardyClue) => void
+  onAutosave: (clue: JeopardyClue) => void
 }) {
-  const [q, setQ] = useState(clue?.question ?? '')
-  const [a, setA] = useState(clue?.answer ?? '')
+  const initialQ = clue?.question ?? ''
+  const initialA = clue?.answer ?? ''
+  const [q, setQ] = useState(initialQ)
+  const [a, setA] = useState(initialA)
   const qRef = useRef<HTMLTextAreaElement>(null)
   const qaRef = useRef<{ q: string; a: string }>({ q, a })
+  /** Track what's already been persisted so we don't re-fire autosave for echoes from the server. */
+  const lastSavedRef = useRef<{ q: string; a: string }>({ q: initialQ, a: initialA })
 
   useEffect(() => { qaRef.current = { q, a } }, [q, a])
 
@@ -430,6 +468,26 @@ function CellModal({
       const len = el.value.length
       el.setSelectionRange(len, len)
     }
+  }, [])
+
+  /** Debounced autosave: 500ms after last keystroke, push the current Q/A to the server. */
+  const debouncedQ = useDebounced(q, AUTOSAVE_DELAY_MS)
+  const debouncedA = useDebounced(a, AUTOSAVE_DELAY_MS)
+  useEffect(() => {
+    if (debouncedQ === lastSavedRef.current.q && debouncedA === lastSavedRef.current.a) return
+    lastSavedRef.current = { q: debouncedQ, a: debouncedA }
+    onAutosave({ question: debouncedQ, answer: debouncedA })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedQ, debouncedA])
+
+  /** Flush any unsaved local edits when the modal unmounts (tab close, Esc, or Save). */
+  useEffect(() => {
+    return () => {
+      const { q: qLatest, a: aLatest } = qaRef.current
+      if (qLatest === lastSavedRef.current.q && aLatest === lastSavedRef.current.a) return
+      onAutosave({ question: qLatest, answer: aLatest })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -468,8 +526,8 @@ function CellModal({
         </div>
 
         <div className="flex items-center justify-between gap-2 p-4 border-t" style={{ borderColor: 'var(--ink-border)' }}>
-          <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>Cmd/Ctrl+Enter to save</span>
-          <button onClick={() => onSave({ question: q, answer: a })} className="text-white px-4 py-2 rounded-lg hover:opacity-90" style={{ backgroundColor: 'rgb(22 101 52)' }}>Save</button>
+          <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>Autosaves as you type · Esc to close · Cmd/Ctrl+Enter to save &amp; close</span>
+          <button onClick={() => onSave({ question: q, answer: a })} className="text-white px-4 py-2 rounded-lg hover:opacity-90" style={{ backgroundColor: 'rgb(22 101 52)' }}>Save &amp; close</button>
         </div>
       </div>
     </div>
