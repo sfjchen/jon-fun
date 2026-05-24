@@ -123,11 +123,21 @@ export default function JeopardyEditor({
         setFocused((p) => ({ colIndex: p.colIndex, rowIndex: Math.min(rowsCount - 1, p.rowIndex + 1) }))
       } else if (e.key === 'Tab') {
         e.preventDefault()
-        setFocused((p) => {
-          const nextRow = p.rowIndex < rowsCount - 1 ? p.rowIndex + 1 : 0
-          const nextCol = p.rowIndex < rowsCount - 1 ? p.colIndex : (p.colIndex + 1) % board.categories.length
-          return { colIndex: nextCol, rowIndex: nextRow }
-        })
+        const cols = board.categories.length
+        if (e.shiftKey) {
+          /** Reverse: up within column, wrap to bottom of previous column. */
+          setFocused((p) => {
+            const prevRow = p.rowIndex > 0 ? p.rowIndex - 1 : rowsCount - 1
+            const prevCol = p.rowIndex > 0 ? p.colIndex : (p.colIndex - 1 + cols) % cols
+            return { colIndex: prevCol, rowIndex: prevRow }
+          })
+        } else {
+          setFocused((p) => {
+            const nextRow = p.rowIndex < rowsCount - 1 ? p.rowIndex + 1 : 0
+            const nextCol = p.rowIndex < rowsCount - 1 ? p.colIndex : (p.colIndex + 1) % cols
+            return { colIndex: nextCol, rowIndex: nextRow }
+          })
+        }
       } else if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault()
         openCell(focused.colIndex, focused.rowIndex)
@@ -355,7 +365,7 @@ export default function JeopardyEditor({
         </div>
 
         <div className="mt-6 text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
-          Drag headers to reorder · Arrows navigate · Space/Return open · Esc close · Cmd/Ctrl+Enter save
+          Drag headers to reorder · Arrows navigate · Tab / Shift+Tab cycle · Space/Return open · Esc close · Cmd/Ctrl+Enter save
         </div>
       </div>
 
