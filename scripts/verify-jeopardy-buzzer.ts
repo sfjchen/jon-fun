@@ -86,7 +86,7 @@ async function patchSession(pin: string, kind: 'arm' | 'clear' | 'lock' | 'unloc
   return (await res.json()).session
 }
 
-async function join(pin: string, p: { playerId: string; name: string; clockOffsetMs: number }): Promise<void> {
+async function joinSession(pin: string, p: { playerId: string; name: string; clockOffsetMs: number }): Promise<void> {
   const res = await fetch(`${BASE}/api/jeopardy/buzzer/sessions/${pin}/join`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -134,7 +134,7 @@ async function main() {
     { playerId: uuidv4(), name: 'P2-MidPress',    clockOffsetMs: 0 },
     { playerId: uuidv4(), name: 'P3-LatePress',   clockOffsetMs: 0 },
   ]
-  for (const p of players) await join(session0.pin, p)
+  for (const p of players) await joinSession(session0.pin, p)
 
   try {
     // --- Test A: pre-arm buzz is rejected ---
@@ -204,7 +204,7 @@ async function main() {
     await patchSession(session0.pin, 'lock')
     // Use a new player so the unique index doesn't make the response idempotent.
     const lateNewPlayer = { playerId: uuidv4(), name: 'D-LateJoiner', clockOffsetMs: 0 }
-    await join(session0.pin, lateNewPlayer)
+    await joinSession(session0.pin, lateNewPlayer)
     const lockedRes = await buzz(session0.pin, {
       playerId: lateNewPlayer.playerId, name: lateNewPlayer.name,
       clientPressAt: Date.now(), preDelayMs: 0, clockOffsetMs: 0,
