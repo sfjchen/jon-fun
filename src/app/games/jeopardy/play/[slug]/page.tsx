@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import JeopardyPlayer from '@/components/JeopardyPlayer'
+import BuzzerHostPanel from '@/components/BuzzerHostPanel'
 import type { JeopardyBoard } from '@/lib/jeopardy'
 import { normalizeBoard } from '@/lib/jeopardy-ops'
 import { pushRecent } from '@/lib/jeopardy-identity'
@@ -23,6 +24,7 @@ export default function JeopardyPlayPage() {
   const [playState, setPlayState] = useState<JeopardyPlayState>(defaultPlayState())
   const [notFound, setNotFound] = useState(false)
   const [syncing, setSyncing] = useState(false)
+  const [buzzerEnabled, setBuzzerEnabled] = useState(false)
   const versionRef = useRef(0)
   const playVersionRef = useRef(0) // version of the play_state currently applied to React state
   const seenPlayVersionRef = useRef(0) // highest play_version observed via realtime (may be ahead of applied)
@@ -166,6 +168,16 @@ export default function JeopardyPlayPage() {
       syncing={syncing}
       onBack={() => router.push('/games/jeopardy')}
       onEdit={() => router.push(`/games/jeopardy/edit/${slug}`)}
+      buzzerEnabled={buzzerEnabled}
+      onBuzzerToggle={setBuzzerEnabled}
+      buzzerSlot={
+        <BuzzerHostPanel
+          slug={slug}
+          playState={playState}
+          dispatchPlayOp={dispatchPlayOp}
+          onClose={() => setBuzzerEnabled(false)}
+        />
+      }
     />
   )
 }
