@@ -16,9 +16,12 @@ interface JeopardyPlayerProps {
   onBack: () => void
   onEdit: () => void
   syncing?: boolean
+  buzzerEnabled?: boolean
+  onBuzzerToggle?: (enabled: boolean) => void
+  buzzerSlot?: React.ReactNode
 }
 
-export default function JeopardyPlayer({ board, playState, dispatchPlayOp, onBack, onEdit, syncing }: JeopardyPlayerProps) {
+export default function JeopardyPlayer({ board, playState, dispatchPlayOp, onBack, onEdit, syncing, buzzerEnabled, onBuzzerToggle, buzzerSlot }: JeopardyPlayerProps) {
   const { teamCount, teams, used, lastAnswered } = playState
   const [open, setOpen] = useState<{ col: number; row: number } | null>(null)
   const [revealed, setRevealed] = useState(false)
@@ -98,6 +101,20 @@ export default function JeopardyPlayer({ board, playState, dispatchPlayOp, onBac
           </select>
           <button onClick={resetTiles} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Reset Tiles</button>
           <button onClick={resetTilesAndScores} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Reset Tiles + Scores</button>
+          {onBuzzerToggle && (
+            <button
+              onClick={() => onBuzzerToggle(!buzzerEnabled)}
+              className="px-3 py-2 rounded-lg border hover:opacity-90 font-semibold"
+              style={{
+                backgroundColor: buzzerEnabled ? '#16a34a' : 'var(--ink-paper)',
+                borderColor: 'var(--ink-border)',
+                color: buzzerEnabled ? 'white' : 'var(--ink-text)',
+              }}
+              title="Toggle buzzer mode for players to buzz in"
+            >
+              Buzzer {buzzerEnabled ? 'ON' : 'OFF'}
+            </button>
+          )}
           <button onClick={onEdit} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Edit</button>
         </div>
       </div>
@@ -140,6 +157,9 @@ export default function JeopardyPlayer({ board, playState, dispatchPlayOp, onBac
           </div>
         </div>
       </div>
+
+      {/* Buzzer Mode panel */}
+      {buzzerEnabled && buzzerSlot}
 
       {/* Teams */}
       <div className="mt-6 w-full max-w-6xl mx-auto">
