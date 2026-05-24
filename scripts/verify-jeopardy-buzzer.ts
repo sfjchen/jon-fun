@@ -95,8 +95,20 @@ async function joinSession(pin: string, p: { playerId: string; name: string; clo
   if (!res.ok) throw new Error(`join failed: ${res.status} ${await res.text()}`)
 }
 
-async function buzz(pin: string, p: { playerId: string; name: string; clientPressAt: number; preDelayMs: number; clockOffsetMs: number }): Promise<{ rejected?: boolean; reason?: string; queue?: BuzzDto[] }> {
-  if (p.preDelayMs > 0) await new Promise((r) => setTimeout(r, p.preDelayMs))
+async function buzz(pin: string, p: {
+  playerId: string
+  name: string
+  /** Wall-clock instant (ms) the player "pressed" — sent verbatim in the body. */
+  clientPressAt: number
+  /** Hold this many ms BEFORE sending — simulates network transmission delay between press and arrival. */
+  transmissionDelayMs: number
+  clockOffsetMs: number
+}): Promise<{ rejected?: boolean; reason?: string; queue?: BuzzDto[] }> {
+  // Sleep until (clientPressAt + transmissionDelayMs) — i.e. the press already happened
+  // and the packet is now arriving at the server. This is the realistic shape.
+  const sendAt = p.clientPressAt + p.transmissionDelayMs
+  const waitMs = sendAt - Date.now()
+  if (waitMs > 0) await new Promise((r) => setTimeout(r, waitMs))
   const res = await fetch(`${BASE}/api/jeopardy/buzzer/sessions/${pin}/buzz`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -142,28 +154,28 @@ async function main() {
     {
       const res = await buzz(session0.pin, {
         playerId: players[0]!.playerId, name: players[0]!.name,
-        clientPressAt: Date.now(), preDelayMs: 0, clockOffsetMs: 0,
+        clientPressAt: Date.now(), transmissionDelayMs: 0, clockOffsetMs: 0,
       })
       check('rejected with reason=round_not_armed', res.rejected === true && res.reason === 'round_not_armed', `got: ${JSON.stringify(res)}`)
     }
 
-    // --- Test B: arm, then 3 buzzes with engineered timestamps ---
+    // --- Test B: arm, then 3 buzzes where press order is the REVERSE of arrival order ---
     console.log('\n[B] arm + 3 buzzes with reversed arrival order')
     const armed = await patchSession(session0.pin, 'arm')
     check('status now armed', armed.status === 'armed')
-    const armedAtMs = armed.armedAt ? Date.parse(armed.armedAt) : 0
 
-    // Engineer: press times in real wall-clock are P1 < P2 < P3 (P1 pressed earliest).
-    // But P1 will have the largest network delay before submitting. So the arrival order
-    // becomes P3, P2, P1 — yet the server's effective_server_press_at must rank P1 first.
-    const t = Date.now()
-    const pressTimes = [t + 200, t + 250, t + 300] // P1=200ms ahead of P3
-    const preDelays  = [600,    300,    50]        // P1 submits last; P3 submits first
+    // Anchor t to a moment shortly AFTER arm so all press times are post-arm.
+    const t = Date.now() + 100
+    // Press times: P1 pressed first (t+0), P2 next (t+50), P3 last (t+100).
+    const pressTimes = [t + 0, t + 50, t + 100]
+    // Transmission delays (ms from press → server receive): P1 slowest, P3 fastest.
+    // So arrival order is P3 (t+150) → P2 (t+350) → P1 (t+600). Press order is opposite.
+    const transmissionDelays = [600, 300, 50]
 
     const results = await Promise.all(players.map((p, i) => buzz(session0.pin, {
       playerId: p.playerId, name: p.name,
       clientPressAt: pressTimes[i]!,
-      preDelayMs: preDelays[i]!,
+      transmissionDelayMs: transmissionDelays[i]!,
       clockOffsetMs: 0,
     })))
 
@@ -190,7 +202,9 @@ async function main() {
     console.log('\n[C] duplicate buzz is silent no-op')
     const dup = await buzz(session0.pin, {
       playerId: players[0]!.playerId, name: players[0]!.name,
-      clientPressAt: pressTimes[0]! + 5_000, preDelayMs: 0, clockOffsetMs: 0,
+      // Send a "later" press; the unique index should reject it (no row replace).
+      // We deliberately keep this in the past so it doesn't get future-clamped.
+      clientPressAt: Date.now() - 50, transmissionDelayMs: 0, clockOffsetMs: 0,
     })
     check('queue size still 3 after duplicate', Array.isArray(dup.queue) && dup.queue.length === 3,
       `got queue.length = ${dup.queue?.length}`)
@@ -207,7 +221,7 @@ async function main() {
     await joinSession(session0.pin, lateNewPlayer)
     const lockedRes = await buzz(session0.pin, {
       playerId: lateNewPlayer.playerId, name: lateNewPlayer.name,
-      clientPressAt: Date.now(), preDelayMs: 0, clockOffsetMs: 0,
+      clientPressAt: Date.now(), transmissionDelayMs: 0, clockOffsetMs: 0,
     })
     check('rejected with round_not_armed', lockedRes.rejected === true && lockedRes.reason === 'round_not_armed',
       `got: ${JSON.stringify(lockedRes)}`)
