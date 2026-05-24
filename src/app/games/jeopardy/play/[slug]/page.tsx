@@ -24,7 +24,8 @@ export default function JeopardyPlayPage() {
   const [notFound, setNotFound] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const versionRef = useRef(0)
-  const playVersionRef = useRef(0)
+  const playVersionRef = useRef(0) // version of the play_state currently applied to React state
+  const seenPlayVersionRef = useRef(0) // highest play_version observed via realtime (may be ahead of applied)
   const pendingRef = useRef(0) // counts in-flight ops; suppress realtime overwrite while we have local-only changes
 
   useEffect(() => {
@@ -32,6 +33,7 @@ export default function JeopardyPlayPage() {
     let cancelled = false
     versionRef.current = 0
     playVersionRef.current = 0
+    seenPlayVersionRef.current = 0
     async function load() {
       try {
         const res = await fetch(`/api/jeopardy/boards/${slug}`, { cache: 'no-store' })
@@ -46,6 +48,7 @@ export default function JeopardyPlayPage() {
         versionRef.current = data.version ?? 0
         setPlayState(normalizePlayState(data.playState))
         playVersionRef.current = data.playVersion ?? 0
+        seenPlayVersionRef.current = data.playVersion ?? 0
         if (data.board?.title) pushRecent(slug, data.board.title)
       } catch {}
     }
@@ -69,12 +72,12 @@ export default function JeopardyPlayPage() {
             versionRef.current = incoming
           }
           const incomingPlay = typeof row.play_version === 'number' ? row.play_version : 0
-          // Skip stale + our own optimistic echoes (when local pendingRef > 0).
+          // Always track the highest version we've observed (used to detect "we missed updates while busy").
+          if (incomingPlay > seenPlayVersionRef.current) seenPlayVersionRef.current = incomingPlay
+          // Only apply when we have no in-flight optimistic ops (otherwise the echo could overwrite
+          // unflushed local changes). When pending drains, we'll refetch to catch up — see dispatchPlayOp.
           if (incomingPlay > playVersionRef.current && pendingRef.current === 0) {
             setPlayState(normalizePlayState(row.play_state))
-            playVersionRef.current = incomingPlay
-          } else if (incomingPlay > playVersionRef.current) {
-            // Just bump the seen version so we don't re-apply later, but keep local optimistic state.
             playVersionRef.current = incomingPlay
           }
         },
@@ -104,6 +107,7 @@ export default function JeopardyPlayPage() {
             const data = await res.json()
             if (typeof data.playVersion === 'number' && data.playVersion > playVersionRef.current) {
               playVersionRef.current = data.playVersion
+              if (data.playVersion > seenPlayVersionRef.current) seenPlayVersionRef.current = data.playVersion
               setPlayState(normalizePlayState(data.playState))
             }
           } else if (res.status === 409 || res.status === 404) {
@@ -113,13 +117,30 @@ export default function JeopardyPlayPage() {
               const d = await r.json()
               setPlayState(normalizePlayState(d.playState))
               playVersionRef.current = d.playVersion ?? 0
+              if ((d.playVersion ?? 0) > seenPlayVersionRef.current) seenPlayVersionRef.current = d.playVersion ?? 0
             }
           }
         } catch {
           /* offline; local state still updated, realtime will reconcile when back */
         } finally {
           pendingRef.current = Math.max(0, pendingRef.current - 1)
-          if (pendingRef.current === 0) setSyncing(false)
+          if (pendingRef.current === 0) {
+            setSyncing(false)
+            // If realtime fan-out delivered higher versions while we were busy, catch up now.
+            if (seenPlayVersionRef.current > playVersionRef.current) {
+              void (async () => {
+                try {
+                  const r = await fetch(`/api/jeopardy/boards/${slug}`, { cache: 'no-store' })
+                  if (!r.ok) return
+                  const d = await r.json()
+                  if ((d.playVersion ?? 0) > playVersionRef.current) {
+                    setPlayState(normalizePlayState(d.playState))
+                    playVersionRef.current = d.playVersion ?? 0
+                  }
+                } catch {}
+              })()
+            }
+          }
         }
       })()
     },
