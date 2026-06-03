@@ -14,6 +14,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **1 Sentence Everyday** (`/games/daily-log`): One sentence per day, history, calendar, export (text / JSON / RFC 4180 CSV) + CSV merge import (`updatedAt` wins per date), cross-device sync (localStorage + Supabase)
 - **Pear Navigator** (`/games/pear-navigator`): PearPad tablet simulator—Procreate, Notion, Figma guides; tap UI elements to advance; MS&E 165 demo; A/B test results at `/games/pear-navigator/results`
 - **Mental Obstacle Course** (`/games/mental-obstacle-course`): Six-round playful benchmark (reaction, arithmetic, patterns, digit memory, words, trivia) with a radar chart by domain; scores and history in **localStorage** only (no accounts)
+- **UBI × AI** (`/games/ubi-ai`): Interactive **R**-backed scenario model — universal basic income (UBI) social utility under AI job-security sliders; literature-calibrated parameters (IMF, Goldman Sachs, pilot RCTs); exports [`analysis/ubi-ai/output/`](analysis/ubi-ai/output/) — rebuild with **`npm run build:ubi-ai`**
 - **Quip Clash** (`/games/quip-clash`): Party room (4-digit **PIN** — Personal Identification Number) — Quiplash-style paired prompts, sequential votes, round multipliers, final round; **Supabase** (PostgreSQL) + **Realtime**; session keys `party_quiplash_*`
 - **Fib It** (`/games/fib-it`): Fibbage-style bluff trivia — lies, shuffled options, picks, likes, 3 rounds; 2–8 players; `party_fibbage_*` session keys
 - **Enough About You** (`/games/enough-about-you`): Intake questions, subject rounds (reputation bonus), final truth-vs-lie vote per player; 3–8 players; `party_eay_*` session keys
@@ -82,6 +83,7 @@ These guide **what** we build (product + UX) and **how** it should feel (visual 
 - **`e2e/`** — Playwright tests; **`e2e/fixtures/`** — E2E assets (e.g. Meditations PDF/EPUB, minimal EPUB, optional large PDFs/EPUBs). **`npm run verify:reader-fixtures`** exercises every profiled file (skips missing optional fixtures).
 - **`docs/`** — design notes, images, reference writeups (**`docs/five-can-sorting/`** — LaTeX/PDF for the 5-can analysis paper)
 - **`data/`** — sample JSON and seed data (e.g. Jeopardy boards)
+- **`analysis/ubi-ai/`** — R scenario model + `output/` artifacts for the UBI × AI dashboard (not in the Next.js bundle except copied JSON under `src/data/ubi-ai/`)
 - **`scripts/`** — repo automation; **`openclaw-hybrid/`** — ops / hybrid kit (not in the Next bundle)
 - **`Smart OverlayEye/`**, **`sports-talent-research/`**, **`TMR_audio/`** — separate projects / research (not deployed with the game hub)
 
@@ -501,6 +503,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-06**
 
+- **UBI × AI utility explorer** (`/games/ubi-ai`): Transparent scenario model (not causal national UBI scoring) — sliders for AI job security (−1 automation-heavy → +1 augmentation-heavy), UBI $0–$2,000/mo, financing (unfunded / flat / progressive tax); three presets (web/industrial transition, aligned augmentation, misaligned automation). **R** source [`analysis/ubi-ai/model.R`](analysis/ubi-ai/model.R) + cited [`analysis/ubi-ai/sources.json`](analysis/ubi-ai/sources.json); dashboard reads [`src/data/ubi-ai/ubi_ai_scenarios.json`](src/data/ubi-ai/ubi_ai_scenarios.json). Live math in [`src/lib/ubi-ai.ts`](src/lib/ubi-ai.ts); UI [`src/components/UbiAiDashboard.tsx`](src/components/UbiAiDashboard.tsx). **`npm run build:ubi-ai`** regenerates JSON/CSV.
 - **Madelyn & Patrick wedding site**: Single-page site at **`/wedding/madelyn-patrick`** (editorial ivory/champagne theme — Cormorant Garamond + Montserrat labels, vertical timeline, countdown, sticky mobile RSVP). Sections: hero, details, Supabase RSVP, story, logistics/FAQ, Venmo registry, photo gallery. Copy in [`src/data/wedding/madelyn-patrick.ts`](src/data/wedding/madelyn-patrick.ts). **`wedding_rsvps`** table ([`supabase/migrations/20260602120000_wedding_rsvps.sql`](supabase/migrations/20260602120000_wedding_rsvps.sql)); admin at **`/admin/wedding/madelyn-patrick`**. **`npm run wedding:rsvp-qr`**. Redirect **`/Madelyn-Patrick`** → wedding page.
 
 **2026-05**
