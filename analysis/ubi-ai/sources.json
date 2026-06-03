@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "disclaimer": "Literature-calibrated scenario model, not a causal national UBI estimate.",
+  "sources": [
+    {
+      "id": "imf_genai_2024",
+      "title": "Gen-AI: Artificial Intelligence and the Future of Work",
+      "org": "IMF",
+      "year": 2024,
+      "url": "https://www.imf.org/-/media/files/publications/sdn/2024/english/sdnea2024001.pdf",
+      "usedFor": ["global_exposure_share", "advanced_economy_exposure", "complementarity_split"]
+    },
+    {
+      "id": "goldman_ai_labor",
+      "title": "How Will AI Affect the US / Global Labor Market",
+      "org": "Goldman Sachs Research",
+      "year": 2025,
+      "url": "https://www.goldmansachs.com/insights/articles/how-will-ai-affect-the-us-labor-market",
+      "usedFor": ["displacement_baseline", "task_automation_share", "unemployment_transition"]
+    },
+    {
+      "id": "goldman_briggs_kodnani",
+      "title": "The Potentially Large Effects of AI on Economic Growth",
+      "org": "Goldman Sachs",
+      "year": 2023,
+      "url": "https://www.gspublishing.com/content/research/en/reports/2023/03/27/d64e052b-0f6e-45d7-967b-d7be35fabd16.pdf",
+      "usedFor": ["productivity_baseline_10y", "displacement_range"]
+    },
+    {
+      "id": "acemoglu_simple_ai",
+      "title": "The Simple Macroeconomics of AI",
+      "org": "MIT / Economic Policy",
+      "year": 2024,
+      "url": "https://economics.mit.edu/sites/default/files/2024-10/The%20Simple%20Macroeconomics%20of%20AI.pdf",
+      "usedFor": ["productivity_low_scenario"]
+    },
+    {
+      "id": "hbs_genai_labor",
+      "title": "Displacement or Complementarity? Labor Market Impact of Generative AI",
+      "org": "Harvard Business School",
+      "year": 2024,
+      "url": "https://www.hbs.edu/ris/Publication%20Files/25-039_05fbec84-1f23-459b-8410-e3cd7ab6c88a.pdf",
+      "usedFor": ["augmentation_vs_automation_postings"]
+    },
+    {
+      "id": "stockton_seed",
+      "title": "Stockton SEED RCT",
+      "org": "Journal of Urban Health",
+      "year": 2023,
+      "url": "https://link.springer.com/article/10.1007/s11524-023-00723-0",
+      "usedFor": ["volatility_reduction", "wellbeing", "employment_null"]
+    },
+    {
+      "id": "minneapolis_bi",
+      "title": "Basic Income RCT Minneapolis",
+      "org": "Federal Reserve Bank of Minneapolis",
+      "year": 2024,
+      "url": "https://researchdatabase.minneapolisfed.org/downloads/f7623c83c",
+      "usedFor": ["security_wellbeing", "labor_null"]
+    },
+    {
+      "id": "openresearch_orus",
+      "title": "OpenResearch Unconditional Income Study",
+      "org": "OpenResearch / NBER",
+      "year": 2024,
+      "url": "https://www.openresearchlab.org/projects/unconditional-cash-study",
+      "usedFor": ["employment_pp_at_1000", "hours_reduction"]
+    },
+    {
+      "id": "alaska_apf",
+      "title": "Alaska Permanent Fund labor impacts",
+      "org": "AEJ: Economic Policy",
+      "year": 2022,
+      "url": "https://www.aeaweb.org/articles?id=10.1257/pol.20190299",
+      "usedFor": ["scale_up_employment_caveat", "synthetic_control_method"]
+    },
+    {
+      "id": "chetty_big_data",
+      "title": "Using Big Data to Solve Economic and Social Problems",
+      "org": "Opportunity Insights / Harvard",
+      "year": 2019,
+      "url": "https://opportunityinsights.org/course/",
+      "usedFor": ["methods_framing_diff_in_diff_synthetic_ml"]
+    }
+  ],
+  "calibratedParameters": {
+    "globalEmploymentExposedShare": 0.4,
+    "advancedEconomyExposedShare": 0.6,
+    "usTaskAutomatableShare": 0.25,
+    "displacementAtAiIndex0": 0.065,
+    "displacementAtAiIndexPlus1": 0.03,
+    "displacementAtAiIndexMinus1": 0.14,
+    "unemploymentRiseGradualAdoption": 0.006,
+    "productivityGain10yAtIndex0": 0.015,
+    "productivityGain10yAtIndexPlus1": 0.12,
+    "productivityGain10yAtIndexMinus1": 0.005,
+    "volatilityPenaltyAtIndexMinus1": 0.08,
+    "ubiEmploymentPpPer1000Monthly": 2.0,
+    "ubiHoursPerWeekPer1000Monthly": 1.3,
+    "stocktonVolatilityReductionYear1": 0.07,
+    "alaskaPartTimePp": 1.8,
+    "adultPopulationMillions": 258,
+    "povertyLineAnnualUsd": 15060
+  }
+}
