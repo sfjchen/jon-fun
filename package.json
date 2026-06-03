@@ -22,6 +22,7 @@
     "seed:jeopardy-mendochino": "tsx scripts/seed-jeopardy-mendochino.ts",
     "verify:jeopardy-realtime": "tsx scripts/verify-jeopardy-realtime.ts",
     "verify:jeopardy-buzzer": "tsx scripts/verify-jeopardy-buzzer.ts",
+    "wedding:rsvp-qr": "tsx scripts/generate-wedding-rsvp-qr.ts",
     "test:e2e": "playwright test",
     "test:e2e:ci": "CI=1 playwright test",
     "test:e2e:deployment": "PLAYWRIGHT_SKIP_WEBSERVER=1 CI=1 playwright test",

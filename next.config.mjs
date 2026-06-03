@@ -20,7 +20,12 @@ const nextConfig = {
   /** Hide the Next.js dev indicator in `next dev` when `PLAYWRIGHT_HIDE_NEXT_INDICATOR=1` so visual-regression snapshots don't capture it. */
   devIndicators: process.env.PLAYWRIGHT_HIDE_NEXT_INDICATOR === '1' ? false : undefined,
   async redirects() {
-    return [{ source: '/notebook', destination: '/', permanent: true }, { source: '/notebook/:path*', destination: '/:path*', permanent: true }]
+    return [
+      { source: '/notebook', destination: '/', permanent: true },
+      { source: '/notebook/:path*', destination: '/:path*', permanent: true },
+      { source: '/Madelyn-Patrick', destination: '/wedding/madelyn-patrick', permanent: true },
+      { source: '/Madelyn-Patrick/:path*', destination: '/wedding/madelyn-patrick', permanent: true },
+    ]
   },
   experimental: {
     optimizePackageImports: ['@vercel/analytics'],
