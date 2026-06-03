@@ -18,6 +18,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **Fib It** (`/games/fib-it`): Fibbage-style bluff trivia — lies, shuffled options, picks, likes, 3 rounds; 2–8 players; `party_fibbage_*` session keys
 - **Enough About You** (`/games/enough-about-you`): Intake questions, subject rounds (reputation bonus), final truth-vs-lie vote per player; 3–8 players; `party_eay_*` session keys
 - **Connections** (`/games/connections`): NYT (New York Times)-style **16-word / 4-group** puzzle; **author-assigned** yellow/green/blue/purple tiers; **public shelf** via Supabase (`connections_puzzles`) when service env is set; **fingerprint + display name** for ownership (no login); JSON import/export; theme2 mirror under `/theme2/games/connections`
+- **Madelyn & Patrick wedding** (`/wedding/madelyn-patrick`): Unlisted single-page wedding site — details, story, logistics/FAQ, cash registry (Venmo), photo gallery, **Supabase RSVP** form; admin at `/admin/wedding/madelyn-patrick` (secret **`WEDDING_ADMIN_SECRET`**). Edit copy in [`src/data/wedding/madelyn-patrick.ts`](src/data/wedding/madelyn-patrick.ts). RSVP QR: **`npm run wedding:rsvp-qr`**. Short URL redirect: **`/Madelyn-Patrick`** → wedding page.
 
 ## 🚀 Quick Start
 
@@ -283,6 +284,11 @@ src/
 - `id` (uuid, primary key)
 - `user_id` (text), `start`, `end` (timestamptz), `duration_minutes` (numeric), `total_cues`, `cycles` (integer), `created_at` (timestamptz)
 
+**`wedding_rsvps`** ([`supabase/migrations/20260602120000_wedding_rsvps.sql`](supabase/migrations/20260602120000_wedding_rsvps.sql))
+
+- `id` (uuid, primary key), `guest_name` (text), `attending` (boolean), `plus_one_name`, `dietary`, `email`, `message` (text, nullable), `created_at` (timestamptz)
+- **RLS** on; no anon policies — writes via **`POST /api/wedding/rsvp`** with **`SUPABASE_SERVICE_ROLE_KEY`**; admin list via **`GET /api/wedding/admin/rsvps`** + **`WEDDING_ADMIN_SECRET`**
+
 ### Indexes
 
 - `idx_tmr_study_sessions_created_at`, `idx_tmr_sleep_sessions_created_at`
@@ -291,6 +297,7 @@ src/
 - `game24_rounds_room_pin_round_number_key`
 - `idx_game24_submissions_room_round` / `idx_game24_submissions_player_round`
 - `idx_party_rooms_last_activity` on `party_rooms(last_activity)` (cleanup)
+- `wedding_rsvps_created_at_idx`, `wedding_rsvps_attending_idx` on `wedding_rsvps`
 
 ## 🔌 API Routes
 
@@ -363,6 +370,10 @@ src/
 
 **`POST /api/tmr/sleep`**: Sync TMR sleep session to DB – Body: `{ userId, session }`
 
+**`POST /api/wedding/rsvp`**: Submit wedding RSVP – Body: `{ guestName, attending, plusOneName?, dietary?, email?, message? }` – requires Supabase **`wedding_rsvps`** table + service role
+
+**`GET /api/wedding/admin/rsvps`**: List RSVPs + summary counts – query `key` or header `x-admin-key` must match **`WEDDING_ADMIN_SECRET`**
+
 **`GET /api/tmr/admin/entries`**: Admin only; query `?key=TMR_ADMIN_SECRET`. Returns all study and sleep sessions.
 
 ## 💻 Coding Conventions & Patterns
@@ -422,6 +433,7 @@ src/
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (recommended): Bypasses RLS for daily-learn API; if unset, falls back to anon (subject to RLS)
 - `TMR_ADMIN_SECRET` (optional): secret for `/admin/tmr` and `GET /api/tmr/admin/entries`
+- `WEDDING_ADMIN_SECRET` (optional): secret for `/admin/wedding/madelyn-patrick` and `GET /api/wedding/admin/rsvps`
 - `DAILY_LEARN_ADMIN_SECRET` (optional): required for `GET /api/daily-learn/admin/keys`; if unset, endpoint returns 401
 - `HOME_COMING_SOON_EDIT_SECRET` (optional): if set, the home **Coming Soon** modal shows **Edit this message**; `POST /api/home/coming-soon` verifies the password and updates Supabase table `home_coming_soon_copy` ([`supabase/migrations/20260505120000_home_coming_soon_copy.sql`](supabase/migrations/20260505120000_home_coming_soon_copy.sql)). **`SUPABASE_SERVICE_ROLE_KEY` is required for Save** (anon cannot pass RLS on upsert). After creating the table, run [`supabase/migrations/20260505130000_home_coming_soon_copy_rls_policies.sql`](supabase/migrations/20260505130000_home_coming_soon_copy_rls_policies.sql) so `GET` can read the row when the server falls back to the anon client. If unset or the table is missing, `GET` returns built-in defaults from [`src/data/home-coming-soon-defaults.ts`](src/data/home-coming-soon-defaults.ts). **Production**: set this on Vercel (not only `.env.local`) and redeploy. **`.env.local`**: quote values that contain `#` (e.g. `HOME_COMING_SOON_EDIT_SECRET="pass#word"`).
 - **Web e-reader AI chapter hints** (`POST /api/reader/suggest-chapter-structure`): **`GEMINI_API_KEY`** or **`GOOGLE_GENERATIVE_AI_API_KEY`** (Google Gemini API, default model **`gemini-3.1-flash-lite-preview`**; override with **`READER_CHAPTER_GEMINI_MODEL`**; optional **`READER_CHAPTER_GEMINI_JSON_SCHEMA=0`** to skip structured JSON schema on Gemini). If no Gemini key, use **`READER_CHAPTER_LLM_KEY`** or **`OPENROUTER_API_KEY`** (OpenRouter; **`READER_CHAPTER_LLM_MODEL`** defaults to `openai/gpt-4o-mini`). **`READER_CHAPTER_LLM_PROVIDER`**: `google` \| `openrouter` to force one backend when both keys exist. Smoke: `npm run dev` then **`npm run smoke:reader-suggest-chapter`** (`SMOKE_BASE_URL` if not port 3000). Communal shelf inventory: **`npm run smoke:reader-communal-list`** (503 if communal DB not configured — local books stay in IndexedDB only).
@@ -486,6 +498,10 @@ src/
 ## 📜 Changelog
 
 Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
+
+**2026-06**
+
+- **Madelyn & Patrick wedding site**: Single-page site at **`/wedding/madelyn-patrick`** (editorial ivory/champagne theme — Cormorant Garamond + Montserrat labels, vertical timeline, countdown, sticky mobile RSVP). Sections: hero, details, Supabase RSVP, story, logistics/FAQ, Venmo registry, photo gallery. Copy in [`src/data/wedding/madelyn-patrick.ts`](src/data/wedding/madelyn-patrick.ts). **`wedding_rsvps`** table ([`supabase/migrations/20260602120000_wedding_rsvps.sql`](supabase/migrations/20260602120000_wedding_rsvps.sql)); admin at **`/admin/wedding/madelyn-patrick`**. **`npm run wedding:rsvp-qr`**. Redirect **`/Madelyn-Patrick`** → wedding page.
 
 **2026-05**
 
