@@ -2,6 +2,15 @@
 
 **For AI agents:** Jon-fun hosts **three distinct products**. Never mix env vars, Supabase projects, remotes, or deploy targets across them.
 
+## Canonical demo URL
+
+| URL | Product | Use |
+|-----|---------|-----|
+| **[sfjc.dev/veridian](https://sfjc.dev/veridian)** | Next.js whiteboard (`Jon-fun/Veridian/`) | **Default** — solo demo, no login, local-first, OpenRouter AI |
+| `www.veridian.fyi` / `veridian-student.vercel.app` | Expo EdTech (`Desktop/Veridian/`) | Legacy — redirects to sfjc.dev/veridian; classroom/Supabase path only |
+
+When the user says “Veridian whiteboard” or “my demo”, they mean **sfjc.dev/veridian**, not `veridian.fyi/document/default-algebra`.
+
 ## Three projects
 
 | Project | Path | Git | Deploy | Supabase |
@@ -41,9 +50,13 @@
 
 ## Which codebase for new work?
 
-- **Solo AI math whiteboard (Next.js, local-first):** `Jon-fun/Veridian/`
-- **Classrooms, teacher dashboard, student Expo app:** `Desktop/Veridian/` only
+- **Solo AI math whiteboard (Next.js, local-first):** `Jon-fun/Veridian/` → deploy **`sfjc.dev/veridian`**
+- **Classrooms, teacher dashboard, student Expo app:** `Desktop/Veridian/` only (not the public demo)
 - **Games, reader, wedding, party rooms:** parent Jon-fun `src/`
+
+## How sfjc.dev/veridian is wired
+
+Jon-fun `next.config.mjs` rewrites `/veridian` → `VERIDIAN_ORIGIN` (default `veridian-whiteboard.vercel.app`). The standalone app sets `basePath: '/veridian'` in `Veridian/next.config.mjs`. Home grid links to `/veridian` on [sfjc.dev](https://sfjc.dev).
 
 ## Cursor / agent workflow
 
@@ -52,6 +65,24 @@
 3. Update the **correct** README changelog (`Jon-fun/README.md` vs `Veridian/README.md` vs `Desktop/Veridian` docs).
 4. Run **`npm run build`** in the project you changed — not only the parent repo.
 5. Do **not** `git push` from `Jon-fun/Veridian/` to `sfjchen/Veridian` without reading [`REMOTES.md`](../Veridian/REMOTES.md).
+
+## Multi-agent / parallel Cursor chats
+
+Several chats may run at once (EdTech deploy, whiteboard refactor, Jon-fun hub). **Reconcile before editing:**
+
+| If the task mentions… | Work in… | Deploy target |
+|------------------------|----------|---------------|
+| Whiteboard, demo, sfjc.dev/veridian, no login | `Jon-fun/Veridian/` | `veridian-whiteboard` Vercel → sfjc.dev path |
+| Classrooms, teacher, Expo, Supabase, Render | `Desktop/Veridian/` | `www.veridian.fyi` (redirects to sfjc.dev/veridian for public demo) |
+| Games, reader, wedding, party rooms | Jon-fun parent `src/` | sfjc.dev root |
+
+**Common agent mistakes**
+
+- Wiring whiteboard to Render Flask — **not needed**; whiteboard AI is Vercel-only.
+- Adding Supabase/auth to whiteboard v1 — **out of scope** unless user explicitly requests v2.
+- Using Jon-fun ink/notebook design on whiteboard — user wants **original Veridian org** styling.
+- Pushing whiteboard commits to `sfjchen/Veridian` — use `sfjchen/veridian-whiteboard`.
+- Running Jon-fun `npm run build` and failing on nested Playwright — parent must exclude `Veridian/**` (see `tsconfig.json`, `eslint.config.mjs`).
 
 ## Related docs
 
