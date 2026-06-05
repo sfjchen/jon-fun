@@ -7,7 +7,7 @@
 | Project | Path | Git | Deploy | Supabase |
 |---------|------|-----|--------|----------|
 | **Jon-fun (Game Hub)** | `/Users/jchen04mac/Desktop/Jon-fun/` (parent) | `sfjchen/Jon-fun` | [sfjc.dev](https://sfjc.dev) (Vercel) | `nzviiorrlsdtwzvzodpg` (sfjchen personal) |
-| **Veridian Whiteboard v1** | `Jon-fun/Veridian/` (nested) | `sfjchen/veridian-whiteboard` | [veridian-whiteboard.vercel.app](https://veridian-whiteboard.vercel.app) (+ `veridian.sfjc.dev` after DNS) | **None** in v1 |
+| **Veridian Whiteboard v1** | `Jon-fun/Veridian/` (nested) | `sfjchen/veridian-whiteboard` | [sfjc.dev/veridian](https://sfjc.dev/veridian) (rewrite → `veridian-whiteboard` origin) | **None** in v1 |
 | **Veridian EdTech (legacy)** | `/Users/jchen04mac/Desktop/Veridian/` | `sfjchen/Veridian` → fork of `VeridianTH/Veridian` | Render (Flask) + Vercel (Expo web) | `tpqasmpieyteutvdntda` (Jchen04 org) |
 
 ## Boundaries in this repo (Jon-fun)
