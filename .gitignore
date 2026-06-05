@@ -58,4 +58,5 @@ node_modules
 
 # Optional large local-only e-reader E2E fixtures (keep minimal-reader-test.epub tracked or generate in CI)
 e2e/fixtures/*.pdf
+e2e/fixtures/*.epub
 e2e/fixtures/dokumen.pub*.epub

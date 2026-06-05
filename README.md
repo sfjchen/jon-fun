@@ -504,6 +504,7 @@ Running log of project work. Update this section when making significant changes
 
 **2026-06**
 
+- **theme2 routes restored** at `/theme2` (game mirrors + home grid); archived copies remain under `src/app/_archive/theme2`. **Leaderboards** page copy updated to “parked for now” while focus stays on deeper projects (Veridian, etc.).
 - **Veridian whiteboard (canonical demo)**: **[sfjc.dev/veridian](https://sfjc.dev/veridian)** — Next.js local-first app proxied from [`sfjchen/veridian-whiteboard`](https://github.com/sfjchen/veridian-whiteboard). Not `www.veridian.fyi` (legacy Expo EdTech; redirects here). Added multi-agent reconciliation table in **[docs/VERIDIAN_WORKSPACE.md](docs/VERIDIAN_WORKSPACE.md)** so parallel Cursor chats don't mix Render/Supabase/Expo with the Vercel-only whiteboard.
 - **Veridian build isolation**: Parent `tsconfig.json` + `eslint.config.mjs` exclude `Veridian/**` so `npm run build` on Jon-fun no longer typechecks the nested whiteboard. Added **[docs/VERIDIAN_WORKSPACE.md](docs/VERIDIAN_WORKSPACE.md)** (three projects, envs, Supabase IDs, ports), plus nested **`Veridian/WORKING.md`** and **`Veridian/REMOTES.md`** (do not push whiteboard to `sfjchen/Veridian` EdTech fork).
 - **Supabase migrations synced**: Repaired orphan remote-only version `20260603033211` (dashboard-applied duplicate of wedding RSVP DDL), then **`supabase db push`** applied `20260602120000_wedding_rsvps` — local/remote history now match. Helpers: **`npm run db:migrations`**, **`npm run db:push`** (`--yes`).
