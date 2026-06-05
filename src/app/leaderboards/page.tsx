@@ -3,11 +3,10 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-const features = [
-  'View global rankings for each game',
-  'Compare your scores with friends',
-  'Track your personal bests',
-  'Earn achievements and badges',
+const notes = [
+  'Global leaderboards are parked while sfjc.dev stays focused on a few deeper, lower-friction projects.',
+  'Most games already keep local history or room state, which fits the site better than a forced shared profile.',
+  'If leaderboards come back later, they should be opt-in and nickname-based instead of account-first.',
 ]
 
 export default function LeaderboardsPage() {
@@ -26,26 +25,26 @@ export default function LeaderboardsPage() {
           <Image src="/doodles/notebook/coming-soon.svg" alt="" width={64} height={64} className="h-16 w-16" />
         </div>
         <h2 className="mb-[30px] font-lora text-xl font-semibold" style={{ color: 'var(--ink-text)' }}>
-          Coming Soon!
+          Parked for now
         </h2>
         <p className="mb-[30px]" style={{ color: 'var(--ink-muted)' }}>
-          Leaderboards are currently in development. Soon you&apos;ll be able to:
+          This page is intentionally on ice while the site doubles down on a smaller set of stronger projects.
         </p>
         <ul className="mb-[30px] space-y-[30px]" style={{ color: 'var(--ink-text)' }}>
-          {features.map((feature, index) => (
+          {notes.map((note, index) => (
             <li key={index} className="flex items-center">
               <span className="mr-2" style={{ color: 'var(--ink-accent)' }}>✓</span>
-              {feature}
+              {note}
             </li>
           ))}
         </ul>
-        <Link href="/games/24">
+        <Link href="/">
           <button
             className="rounded-lg px-6 py-2 text-white transition-colors hover:opacity-95 flex items-center gap-2 justify-center"
             style={{ backgroundColor: 'var(--ink-accent)' }}
           >
-            <Image src="/doodles/notebook/game24.svg" alt="" width={20} height={20} className="h-5 w-5 invert" />
-            Play 24 Game
+            <Image src="/doodles/notebook/ereader.svg" alt="" width={20} height={20} className="h-5 w-5 invert" />
+            Back to sfjc.dev
           </button>
         </Link>
       </div>
