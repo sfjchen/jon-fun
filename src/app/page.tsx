@@ -10,6 +10,14 @@ const nb = '/doodles/notebook'
 /** Pear Navigator stays archived off home — see `@/data/notebook-home-games-archive` for the preserved card. */
 const items: GameCardGame[] = [
   {
+    id: 'veridian',
+    title: 'Veridian Whiteboard',
+    description: 'Draw math, analyze mistakes, Socratic chat — local-first AI whiteboard',
+    icon: '/doodles/study.svg',
+    href: '/veridian',
+    available: true,
+  },
+  {
     id: 'e-reader',
     title: 'Web E-Reader',
     description: 'Import text or PDF files into a chapterized reader with typography controls, bookmarks, TTS, and local progress',
