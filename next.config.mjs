@@ -27,6 +27,15 @@ const nextConfig = {
       { source: '/Madelyn-Patrick/:path*', destination: '/wedding/madelyn-patrick', permanent: true },
     ]
   },
+  async rewrites() {
+    const origin = process.env.VERIDIAN_ORIGIN ?? 'https://veridian-whiteboard.vercel.app'
+    return {
+      beforeFiles: [
+        { source: '/veridian', destination: `${origin}/veridian` },
+        { source: '/veridian/:path*', destination: `${origin}/veridian/:path*` },
+      ],
+    }
+  },
   experimental: {
     optimizePackageImports: ['@vercel/analytics'],
   },
