@@ -11,6 +11,10 @@
 
 When the user says “Veridian whiteboard” or “my demo”, they mean **sfjc.dev/veridian**, not `veridian.fyi/document/default-algebra`.
 
+**Grading video:** `Jon-fun/Veridian/docs/VIDEO_DEMO_RUBRIC.md` — Q1–Q4 script; live take at [sfjc.dev/veridian?demo=1](https://sfjc.dev/veridian?demo=1).
+
+**Agents:** After whiteboard code changes, always **push → `vercel --prod` → `npm run smoke:deploy`** in `Jon-fun/Veridian/` (see `Veridian/WORKING.md`).
+
 ## Three projects
 
 | Project | Path | Git | Deploy | Supabase |
@@ -73,8 +77,22 @@ Several chats may run at once (EdTech deploy, whiteboard refactor, Jon-fun hub).
 | If the task mentions… | Work in… | Deploy target |
 |------------------------|----------|---------------|
 | Whiteboard, demo, sfjc.dev/veridian, no login | `Jon-fun/Veridian/` | `veridian-whiteboard` Vercel → sfjc.dev path |
-| Classrooms, teacher, Expo, Supabase, Render | `Desktop/Veridian/` | `www.veridian.fyi` (redirects to sfjc.dev/veridian for public demo) |
+| Classrooms, teacher, Expo, Supabase, Render | `Desktop/Veridian/` | Legacy EdTech; **public demo redirects** to sfjc.dev/veridian |
 | Games, reader, wedding, party rooms | Jon-fun parent `src/` | sfjc.dev root |
+
+### Merged intent (Jun 2026 — reconcile parallel chats)
+
+| Topic | Canonical choice |
+|-------|------------------|
+| **Demo URL** | [sfjc.dev/veridian](https://sfjc.dev/veridian) — `www.veridian.fyi` redirects here |
+| **Whiteboard stack** | Next.js + Vercel API routes + OpenRouter — **no Render, no Supabase** |
+| **EdTech stack** | `Desktop/Veridian/` Expo + Flask + Render **kz5l** + Supabase `tpqasmpieyteutvdntda` |
+| **Git remotes** | Whiteboard → `sfjchen/veridian-whiteboard`; EdTech → `sfjchen/Veridian` |
+| **AI keys** | Whiteboard: OpenRouter on Vercel; EdTech: OpenRouter on Render |
+| **CTA** | **Analyze work** (rubric); demo URL `?demo=1` |
+| **Design** | Original Veridian org (green/forest) — not Jon-fun notebook |
+
+Parent chats: [whiteboard refactor](00724d07-e8db-4584-95ed-e8f3e08ee861), [EdTech deploy](49e1039d-1be7-483f-bb6a-491cadd90833), [separation + rubric](623283fa-7519-4152-bf9c-d7e69fa828ad).
 
 **Common agent mistakes**
 
