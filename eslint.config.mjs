@@ -25,6 +25,7 @@ const eslintConfig = [
       "TMR_audio/**",
       "playwright-report/**",
       "test-results/**",
+      "Veridian/**",
     ],
   },
   {
