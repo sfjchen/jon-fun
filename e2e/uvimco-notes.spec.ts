@@ -88,7 +88,7 @@ test.describe('Notes', () => {
 
   test('shorthand hints toggle', async ({ page }) => {
     await page.getByTestId('notes-shorthand-toggle').click()
-    await expect(page.getByText('AI lookup', { exact: true })).toBeVisible()
+    await expect(page.getByText(/AI lookup/)).toBeVisible()
     await page.getByTestId('notes-shorthand-toggle').click()
     await expect(page.getByText('Ctrl+B/I/U')).toBeVisible()
   })

@@ -112,6 +112,9 @@ function reducer(state: State, action: Action): State {
       return { ...state, streamText: action.text }
     case 'STREAM_DONE': {
       if (!state.currentLookup) return { ...state, isStreaming: false }
+      if (!action.assistantText.trim()) {
+        return { ...state, isStreaming: false }
+      }
       const lookup: Lookup = {
         ...state.currentLookup,
         conversation: [

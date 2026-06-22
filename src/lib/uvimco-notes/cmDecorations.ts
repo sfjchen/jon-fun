@@ -21,7 +21,7 @@ function buildDecorations(view: EditorView, activeQuery: string | null): Decorat
     else if (trimmed.startsWith('~')) builder.add(line.from, line.from, approxLine)
   }
 
-  const termRe = /(?:^|\s)(\?\[[^\]]+\]|\?\w+)/g
+  const termRe = /(?:^|\s)(\?\[[^\]]+\]|\?[\w][\w.-]*)/g
   let m: RegExpExecArray | null
   while ((m = termRe.exec(text)) !== null) {
     const full = m[1]!
@@ -79,7 +79,7 @@ export function triggerPlugin(
 }
 
 export const editorPlaceholder = placeholder(
-  'Start typing. ?term for AI lookup · line ending with ? · > todo · * highlight · paste screenshot',
+  'Start typing. ?term then space or Enter for AI · line ending with ? · > todo · * highlight',
 )
 
 export const uvimcoEditorTheme = EditorView.theme({
