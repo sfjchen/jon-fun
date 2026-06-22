@@ -18,12 +18,15 @@ type LookupBody = {
   screenshots?: Screenshot[]
   mode?: 'lookup' | 'followup' | 'decode'
   followUpQuestion?: string
+  glossaryBlock?: string
+  sourcesBlock?: string
+  relatedNotesBlock?: string
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as LookupBody
-    const type = body.type ?? 'word'
+    const type = body.type ?? 'line'
     const query = body.query?.trim()
     const context = body.context ?? ''
     const conversation = Array.isArray(body.conversation) ? body.conversation : []
@@ -44,8 +47,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const system = resolveSystem(mode)
-    const maxTokens = mode === 'decode' ? 800 : 280
+    const glossaryBlock = [body.glossaryBlock, body.relatedNotesBlock].filter(Boolean).join('\n')
+    const sourcesBlock = body.sourcesBlock ?? ''
+    const system = resolveSystem(mode, type, sourcesBlock, glossaryBlock)
+    const maxTokens = mode === 'decode' ? 800 : type === 'section' ? 400 : 280
     const userParts = buildLookupParts(type, query, context, screenshots, mode, body.followUpQuestion)
 
     return streamLookupWithFallback(mode, screenshots.length > 0, {

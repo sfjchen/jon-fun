@@ -32,17 +32,21 @@ const gKey = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_GENERATIVE_AI_API_
 
 type Case = { label: string; run: () => Promise<{ ok: boolean; detail: string }> }
 
-async function testDeployRoute(): Promise<{ ok: boolean; detail: string }> {
+async function testDeployRoute(mode: 'line' | 'section'): Promise<{ ok: boolean; detail: string }> {
+  const body =
+    mode === 'line'
+      ? { type: 'line', query: 'MOIC', context: 'fund returns MOIC?', conversation: [], mode: 'lookup' }
+      : {
+          type: 'section',
+          query: 'GP fee',
+          context: 'LP stakes\nGP fee structure',
+          conversation: [],
+          mode: 'lookup',
+        }
   const res = await fetch(`${base}/api/uvimco-notes/lookup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      type: 'word',
-      query: 'MOIC',
-      context: 'fund ?MOIC',
-      conversation: [],
-      mode: 'lookup',
-    }),
+    body: JSON.stringify(body),
   })
   if (!res.ok) {
     const err = await res.text()
@@ -51,6 +55,7 @@ async function testDeployRoute(): Promise<{ ok: boolean; detail: string }> {
   const text = await res.text()
   const tokens = [...text.matchAll(/"token":"([^"]*)"/g)].map((m) => m[1]).join('')
   if (tokens.length < 8) return { ok: false, detail: `stream too short (${tokens.length} chars)` }
+  if (mode === 'line' && tokens.length > 1200) return { ok: false, detail: `line mode too long (${tokens.length})` }
   return { ok: true, detail: tokens.slice(0, 80) + '…' }
 }
 
@@ -92,7 +97,8 @@ async function testGemini(model: string): Promise<{ ok: boolean; detail: string 
 }
 
 const cases: Case[] = [
-  { label: `deploy route ${base}`, run: testDeployRoute },
+  { label: `deploy route line ${base}`, run: () => testDeployRoute('line') },
+  { label: `deploy route section ${base}`, run: () => testDeployRoute('section') },
   { label: 'OpenRouter google/gemini-2.5-flash-lite', run: () => testOpenRouter('google/gemini-2.5-flash-lite') },
   { label: 'OpenRouter google/gemini-2.5-flash', run: () => testOpenRouter('google/gemini-2.5-flash') },
   { label: 'OpenRouter openai/gpt-4o-mini', run: () => testOpenRouter('openai/gpt-4o-mini') },

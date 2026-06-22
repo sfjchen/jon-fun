@@ -8,6 +8,9 @@ export async function streamLookup(params: {
   screenshots?: Screenshot[]
   mode?: 'lookup' | 'followup' | 'decode'
   followUpQuestion?: string
+  glossaryBlock?: string
+  sourcesBlock?: string
+  relatedNotesBlock?: string
   onToken: (token: string) => void
   onDone: () => void
   onError: (msg: string) => void
@@ -25,6 +28,9 @@ export async function streamLookup(params: {
       screenshots: params.screenshots ?? [],
       mode: params.mode ?? 'lookup',
       followUpQuestion: params.followUpQuestion,
+      glossaryBlock: params.glossaryBlock,
+      sourcesBlock: params.sourcesBlock,
+      relatedNotesBlock: params.relatedNotesBlock,
     }),
   })
 

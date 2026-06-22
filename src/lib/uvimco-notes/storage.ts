@@ -57,6 +57,8 @@ export function createEmptySession(title?: string): NoteSession {
     id: genUuid(),
     title: defaultTitle,
     notes: '',
+    tags: [],
+    metadata: { meetingAt: now },
     lookups: [],
     screenshots: {},
     startedAt: now,
@@ -64,8 +66,21 @@ export function createEmptySession(title?: string): NoteSession {
   }
 }
 
+function normalizeSession(s: NoteSession): NoteSession {
+  return {
+    ...s,
+    tags: Array.isArray(s.tags) ? s.tags : [],
+    metadata: s.metadata ?? { meetingAt: s.startedAt },
+    title: normalizeSessionTitle(s.title),
+    lookups: (s.lookups ?? []).map((lk) => ({
+      ...lk,
+      type: (lk.type as string) === 'section' ? 'section' : 'line',
+    })),
+  }
+}
+
 function withNormalizedTitles(sessions: NoteSession[]): NoteSession[] {
-  return sessions.map((s) => ({ ...s, title: normalizeSessionTitle(s.title) }))
+  return sessions.map(normalizeSession)
 }
 
 export function loadSessions(): NoteSession[] {
@@ -135,12 +150,31 @@ export function upsertSession(session: NoteSession): NoteSession {
   return updated
 }
 
-export async function fetchSessionsFromServer(): Promise<NoteSession[]> {
-  const userId = getEffectiveUserId()
+export async function restoreFromServer(userId: string): Promise<{ restored: number; error?: string }> {
+  if (typeof window === 'undefined') return { restored: 0 }
+  const key = userId.trim()
+  if (!key) return { restored: 0, error: 'Enter sync key or user ID' }
+  const remote = await fetchSessionsFromServerForUser(key)
+  if (remote.length === 0) {
+    const res = await fetch(`/api/uvimco-notes/sessions?userId=${encodeURIComponent(key)}`)
+    if (!res.ok) return { restored: 0, error: 'Failed to fetch' }
+    return { restored: 0, error: 'No notes found for that key' }
+  }
+  setSyncKey(key)
+  saveSessionsLocal(remote)
+  if (remote[0]) setActiveSessionId(remote[0].id)
+  return { restored: remote.length }
+}
+
+async function fetchSessionsFromServerForUser(userId: string): Promise<NoteSession[]> {
   const res = await fetch(`/api/uvimco-notes/sessions?userId=${encodeURIComponent(userId)}`)
   if (!res.ok) return []
   const data = (await res.json()) as { sessions?: NoteSession[] }
   return Array.isArray(data.sessions) ? withNormalizedTitles(data.sessions) : []
+}
+
+export async function fetchSessionsFromServer(): Promise<NoteSession[]> {
+  return fetchSessionsFromServerForUser(getEffectiveUserId())
 }
 
 async function pushWithRetry(sessions: NoteSession[]): Promise<boolean> {
@@ -193,7 +227,7 @@ export function exportSessionMarkdown(session: NoteSession): string {
     .map((l) => l.replace(/^\s*>\s?/, ''))
   const lookupLines = session.lookups.flatMap((lk) => {
     const ans = lk.conversation.find((m) => m.role === 'assistant')?.content ?? ''
-    const label = lk.type === 'word' ? `?${lk.query}` : `${lk.query}?`
+    const label = lk.type === 'section' ? `${lk.query}??` : `${lk.query}?`
     return ans ? [`**${label}** — ${ans}`] : []
   })
 
@@ -220,7 +254,7 @@ export function exportSessionMarkdown(session: NoteSession): string {
 }
 
 export type SessionPatch = Partial<
-  Pick<NoteSession, 'title' | 'notes' | 'lookups' | 'screenshots'>
+  Pick<NoteSession, 'title' | 'notes' | 'tags' | 'metadata' | 'lookups' | 'screenshots'>
 >
 
 export function patchSession(id: string, patch: SessionPatch): NoteSession {

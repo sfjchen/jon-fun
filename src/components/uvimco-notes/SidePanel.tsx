@@ -1,7 +1,13 @@
 'use client'
 
-import type { Lookup, NoteSession } from '@/lib/uvimco-notes/types'
+import { useCallback, useRef, useState } from 'react'
+import type { Lookup, NoteSession, Screenshot } from '@/lib/uvimco-notes/types'
+import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/uvimco-notes/prefs'
 import AnswerStream from './AnswerStream'
+import SyncPanel from './SyncPanel'
+import GlossaryPanel from './GlossaryPanel'
+import RollupPanel from './RollupPanel'
+import SourcesPanel from './SourcesPanel'
 
 function formatMeetingDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
@@ -17,6 +23,11 @@ function timeAgo(iso: string): string {
   return `${Math.floor(hrs / 24)}d`
 }
 
+function lookupLabel(lk: Lookup): string {
+  if (lk.type === 'section') return `${lk.query}??`
+  return `${lk.query}?`
+}
+
 type SidePanelProps = {
   isOpen: boolean
   sessions: NoteSession[]
@@ -28,14 +39,18 @@ type SidePanelProps = {
   streamError?: string | null
   notesListOpen: boolean
   aiListOpen: boolean
+  glossaryRefreshKey: number
   onNotesListOpenChange: (open: boolean) => void
   onAiListOpenChange: (open: boolean) => void
   onSelectMeeting: (session: NoteSession) => void
   onNewMeeting: () => void
   onDeleteMeeting: (sessionId: string) => void
-  onFollowUp: (q: string) => void
+  onFollowUp: (q: string, screenshots?: Screenshot[]) => void
   onSelectHistory: (lookup: Lookup) => void
   onClose: () => void
+  onSynced: () => void
+  onJumpTodo: (sessionId: string, lineIndex: number) => void
+  onSourcesChange: () => void
 }
 
 export default function SidePanel({
@@ -49,6 +64,7 @@ export default function SidePanel({
   streamError,
   notesListOpen,
   aiListOpen,
+  glossaryRefreshKey,
   onNotesListOpenChange,
   onAiListOpenChange,
   onSelectMeeting,
@@ -57,15 +73,57 @@ export default function SidePanel({
   onFollowUp,
   onSelectHistory,
   onClose,
+  onSynced,
+  onJumpTodo,
+  onSourcesChange,
 }: SidePanelProps) {
+  const defaultWidth = loadNotesUiPrefs().panelWidth ?? 300
+  const [width, setWidth] = useState(defaultWidth)
+  const dragRef = useRef<{ startX: number; startW: number } | null>(null)
+  const followShotsRef = useRef<Screenshot[]>([])
+
+  const onResizeStart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault()
+      dragRef.current = { startX: e.clientX, startW: width }
+      const onMove = (ev: MouseEvent) => {
+        if (!dragRef.current) return
+        const delta = dragRef.current.startX - ev.clientX
+        const next = Math.min(480, Math.max(240, dragRef.current.startW + delta))
+        setWidth(next)
+      }
+      const onUp = (ev: MouseEvent) => {
+        if (!dragRef.current) return
+        const delta = dragRef.current.startX - ev.clientX
+        const next = Math.min(480, Math.max(240, dragRef.current.startW + delta))
+        dragRef.current = null
+        setWidth(next)
+        saveNotesUiPrefs({ panelWidth: next })
+        window.removeEventListener('mousemove', onMove)
+        window.removeEventListener('mouseup', onUp)
+      }
+      window.addEventListener('mousemove', onMove)
+      window.addEventListener('mouseup', onUp)
+    },
+    [width],
+  )
+
   if (!isOpen) return null
 
   return (
     <aside
-      className="flex w-[min(100%,280px)] shrink-0 flex-col border-l border-[var(--uv-border)] bg-[var(--uv-bg-panel)] max-md:fixed max-md:inset-y-0 max-md:right-0 max-md:z-30 max-md:shadow-xl"
+      style={{ width }}
+      className="relative flex shrink-0 flex-col border-l border-[var(--uv-border)] bg-[var(--uv-bg-panel)] max-md:fixed max-md:inset-y-0 max-md:right-0 max-md:z-30 max-md:shadow-xl"
       data-testid="notes-side-panel"
       aria-label="Notes and AI panel"
     >
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        onMouseDown={onResizeStart}
+        className="absolute bottom-0 left-0 top-0 z-10 w-1 cursor-col-resize hover:bg-[var(--uv-accent-dim)] max-md:hidden"
+        data-testid="notes-panel-resize"
+      />
       <div className="flex items-center justify-between border-b border-[var(--uv-border)] px-3 py-2">
         <span className="text-xs font-semibold text-[var(--uv-text-secondary)]">Panel</span>
         <button
@@ -80,6 +138,8 @@ export default function SidePanel({
       </div>
 
       <div className="flex-1 overflow-y-auto">
+        <SyncPanel onSynced={onSynced} />
+
         <section data-testid="notes-meetings-section">
           <button
             type="button"
@@ -165,9 +225,7 @@ export default function SidePanel({
             <>
               {currentLookup ? (
                 <div className="mb-3">
-                  <p className="mb-1.5 text-[11px] text-[var(--uv-text-secondary)]">
-                    {currentLookup.type === 'word' ? `?${currentLookup.query}` : `${currentLookup.query}?`}
-                  </p>
+                  <p className="mb-1.5 text-[11px] text-[var(--uv-text-secondary)]">{lookupLabel(currentLookup)}</p>
                   <AnswerStream text={streamText} isStreaming={isStreaming} error={streamError ?? null} />
                 </div>
               ) : (
@@ -177,19 +235,42 @@ export default function SidePanel({
               {currentLookup && !isStreaming ? (
                 <form
                   className="mt-2"
+                  onPaste={(e) => {
+                    const items = e.clipboardData?.items
+                    if (!items) return
+                    for (const item of items) {
+                      if (!item.type.startsWith('image/')) continue
+                      e.preventDefault()
+                      const file = item.getAsFile()
+                      if (!file) return
+                      const reader = new FileReader()
+                      reader.onload = () => {
+                        const dataUrl = reader.result as string
+                        const base64 = dataUrl.split(',')[1] ?? ''
+                        followShotsRef.current.push({
+                          id: `follow-shot-${Date.now()}`,
+                          base64,
+                          mimeType: file.type,
+                        })
+                      }
+                      reader.readAsDataURL(file)
+                    }
+                  }}
                   onSubmit={(e) => {
                     e.preventDefault()
                     const fd = new FormData(e.currentTarget)
                     const q = String(fd.get('followup') ?? '').trim()
                     if (q) {
-                      onFollowUp(q)
+                      const shots = [...followShotsRef.current]
+                      followShotsRef.current = []
+                      onFollowUp(q, shots.length ? shots : undefined)
                       e.currentTarget.reset()
                     }
                   }}
                 >
                   <input
                     name="followup"
-                    placeholder="Follow-up ↵"
+                    placeholder="Follow-up ↵ (paste screenshot)"
                     data-testid="notes-followup-input"
                     className="w-full rounded border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] px-2 py-1.5 text-sm text-[var(--uv-text-primary)] placeholder:text-[var(--uv-text-muted)] focus:border-[var(--uv-accent)] focus:outline-none"
                   />
@@ -198,9 +279,7 @@ export default function SidePanel({
 
               {sessionHistory.length > 0 ? (
                 <div className="mt-4 border-t border-[var(--uv-border)] pt-2">
-                  <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">
-                    This note
-                  </p>
+                  <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">This note</p>
                   <ul className="space-y-0.5">
                     {sessionHistory.map((lk) => (
                       <li key={lk.id}>
@@ -209,7 +288,7 @@ export default function SidePanel({
                           onClick={() => onSelectHistory(lk)}
                           className="w-full rounded px-1.5 py-1 text-left text-[11px] text-[var(--uv-text-secondary)] hover:bg-[var(--uv-accent-dim)]"
                         >
-                          {lk.type === 'word' ? `?${lk.query}` : 'line?'} · {timeAgo(lk.triggeredAt)}
+                          {lookupLabel(lk)} · {timeAgo(lk.triggeredAt)}
                         </button>
                       </li>
                     ))}
@@ -219,6 +298,10 @@ export default function SidePanel({
             </>
           ) : null}
         </section>
+
+        <GlossaryPanel refreshKey={glossaryRefreshKey} />
+        <SourcesPanel onChange={onSourcesChange} />
+        <RollupPanel sessions={sessions} onJump={onJumpTodo} />
       </div>
     </aside>
   )

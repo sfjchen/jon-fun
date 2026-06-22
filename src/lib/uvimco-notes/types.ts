@@ -1,4 +1,11 @@
-export type TriggerType = 'word' | 'line'
+export type TriggerType = 'line' | 'section'
+
+export type NoteKind = 'IC' | 'GP' | 'internal' | 'other'
+
+export interface NoteMetadata {
+  meetingAt?: string
+  kind?: NoteKind
+}
 
 export interface Message {
   role: 'user' | 'assistant'
@@ -25,6 +32,8 @@ export interface NoteSession {
   id: string
   title: string
   notes: string
+  tags: string[]
+  metadata?: NoteMetadata
   lookups: Lookup[]
   screenshots: Record<string, Screenshot>
   startedAt: string
@@ -34,6 +43,46 @@ export interface NoteSession {
 export interface TriggerResult {
   type: TriggerType
   query: string
+  context: string
   matchStart: number
   matchEnd: number
+  fireKey: string
+}
+
+export interface GlossaryEntry {
+  term: string
+  definition: string
+  sourceNoteId: string
+  sourceLookupId: string
+  updatedAt: string
+  useCount: number
+}
+
+export interface NoteSource {
+  id: string
+  title: string
+  kind: 'paste' | 'upload' | 'url'
+  content: string
+  tags: string[]
+  includeInContext: boolean
+  createdAt: string
+  updatedAt: string
+  lastUsedAt?: string
+}
+
+export interface SearchHit {
+  sessionId: string
+  sessionTitle: string
+  facet: 'body' | 'todo' | 'term' | 'chat'
+  snippet: string
+  lineIndex?: number
+  score: number
+}
+
+export interface TodoRollupItem {
+  sessionId: string
+  sessionTitle: string
+  meetingAt: string
+  text: string
+  lineIndex: number
 }

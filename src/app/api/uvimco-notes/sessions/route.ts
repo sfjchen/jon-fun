@@ -6,15 +6,21 @@ function rowToSession(r: {
   session_id: string
   title: string
   notes: string
+  tags?: unknown
+  metadata?: unknown
   lookups: unknown
   screenshots: unknown
   started_at: string
   updated_at: string
 }): NoteSession {
+  const meta =
+    r.metadata && typeof r.metadata === 'object' ? (r.metadata as NoteSession['metadata']) : undefined
   return {
     id: r.session_id,
     title: r.title ?? '',
     notes: r.notes ?? '',
+    tags: Array.isArray(r.tags) ? (r.tags as string[]) : [],
+    ...(meta ? { metadata: meta } : {}),
     lookups: Array.isArray(r.lookups) ? (r.lookups as NoteSession['lookups']) : [],
     screenshots:
       r.screenshots && typeof r.screenshots === 'object'
@@ -32,7 +38,7 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabaseAdmin
       .from('uvimco_note_sessions')
-      .select('session_id, title, notes, lookups, screenshots, started_at, updated_at')
+      .select('session_id, title, notes, tags, metadata, lookups, screenshots, started_at, updated_at')
       .eq('user_id', userId)
       .order('updated_at', { ascending: false })
       .limit(200)
@@ -58,6 +64,8 @@ export async function POST(request: NextRequest) {
       session_id: s.id,
       title: s.title ?? '',
       notes: s.notes ?? '',
+      tags: s.tags ?? [],
+      metadata: s.metadata ?? {},
       lookups: s.lookups ?? [],
       screenshots: s.screenshots ?? {},
       started_at: s.startedAt,
