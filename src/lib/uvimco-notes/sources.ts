@@ -1,4 +1,5 @@
 import type { NoteSource } from './types'
+import { ensureBuiltinSources } from './knowledge/builtinSources'
 
 const SOURCES_KEY = 'notes_sources'
 const MS_PER_DAY = 86_400_000
@@ -7,11 +8,18 @@ export function loadSourcesLocal(): NoteSource[] {
   if (typeof window === 'undefined') return []
   try {
     const raw = localStorage.getItem(SOURCES_KEY)
-    if (!raw) return []
+    if (!raw) {
+      const seeded = ensureBuiltinSources([])
+      saveSourcesLocal(seeded)
+      return seeded
+    }
     const arr = JSON.parse(raw) as NoteSource[]
-    return Array.isArray(arr) ? arr : []
+    const list = Array.isArray(arr) ? arr : []
+    const merged = ensureBuiltinSources(list)
+    if (merged.length !== list.length) saveSourcesLocal(merged)
+    return merged
   } catch {
-    return []
+    return ensureBuiltinSources([])
   }
 }
 
@@ -32,7 +40,11 @@ export function deleteSourceLocal(id: string): void {
   saveSourcesLocal(loadSourcesLocal().filter((s) => s.id !== id))
 }
 
-export function formatSourcesForPrompt(sources: NoteSource[], query: string): string {
+export function formatSourcesForPrompt(
+  sources: NoteSource[],
+  query: string,
+  domainTagHints?: Set<string>,
+): string {
   const needle = query.toLowerCase()
   const ranked = sources
     .map((s) => {
@@ -41,6 +53,7 @@ export function formatSourcesForPrompt(sources: NoteSource[], query: string): st
       if (s.content.toLowerCase().includes(needle)) score += 8
       for (const t of s.tags) {
         if (needle.includes(t.toLowerCase())) score += 4
+        if (domainTagHints?.has(t.toLowerCase())) score += 6
       }
       const age = Date.now() - new Date(s.updatedAt).getTime()
       score += Math.max(0, 5 - age / (MS_PER_DAY * 30))

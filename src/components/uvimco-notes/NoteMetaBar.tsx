@@ -1,5 +1,7 @@
 'use client'
 
+import { listDomains } from '@/lib/uvimco-notes/knowledge/registry'
+import type { KnowledgeDomainId } from '@/lib/uvimco-notes/knowledge/registry'
 import type { NoteKind, NoteMetadata } from '@/lib/uvimco-notes/types'
 
 type NoteMetaBarProps = {
@@ -11,6 +13,8 @@ type NoteMetaBarProps = {
 
 const kindOptions: { value: NoteKind | ''; label: string }[] = [
   { value: '', label: 'Kind' },
+  { value: 'meeting', label: 'Meeting' },
+  { value: 'learning', label: 'Learning' },
   { value: 'IC', label: 'IC' },
   { value: 'GP', label: 'GP' },
   { value: 'internal', label: 'Internal' },
@@ -19,6 +23,7 @@ const kindOptions: { value: NoteKind | ''; label: string }[] = [
 
 export default function NoteMetaBar({ tags, metadata, onTagsChange, onMetadataChange }: NoteMetaBarProps) {
   const meetingAt = metadata?.meetingAt ?? ''
+  const domains = listDomains()
 
   function addTag(raw: string) {
     const t = raw.trim().replace(/^#/, '')
@@ -61,6 +66,26 @@ export default function NoteMetaBar({ tags, metadata, onTagsChange, onMetadataCh
           }}
         />
       </div>
+      <select
+        value={metadata?.domain ?? ''}
+        onChange={(e) => {
+          const val = e.target.value as KnowledgeDomainId | ''
+          const next: NoteMetadata = { ...metadata }
+          if (val) next.domain = val
+          else delete next.domain
+          onMetadataChange(next)
+        }}
+        data-testid="notes-domain-select"
+        className="max-w-[140px] rounded border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] px-2 py-0.5 text-[11px]"
+        title="AI knowledge domain (auto if blank)"
+      >
+        <option value="">Domain (auto)</option>
+        {domains.map((d) => (
+          <option key={d.id} value={d.id}>
+            {d.label}
+          </option>
+        ))}
+      </select>
       <input
         type="datetime-local"
         value={meetingAt ? meetingAt.slice(0, 16) : ''}

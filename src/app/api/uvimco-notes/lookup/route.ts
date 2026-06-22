@@ -6,6 +6,7 @@ import {
   resolveSystem,
   streamLookupWithFallback,
 } from '@/lib/uvimco-notes/llm'
+import type { KnowledgeDomainId } from '@/lib/uvimco-notes/knowledge/registry'
 import type { Message, Screenshot, TriggerType } from '@/lib/uvimco-notes/types'
 
 export const runtime = 'nodejs'
@@ -21,6 +22,9 @@ type LookupBody = {
   glossaryBlock?: string
   sourcesBlock?: string
   relatedNotesBlock?: string
+  noteTags?: string[]
+  noteDomain?: KnowledgeDomainId
+  fullNotes?: string
 }
 
 export async function POST(request: NextRequest) {
@@ -47,9 +51,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const glossaryBlock = [body.glossaryBlock, body.relatedNotesBlock].filter(Boolean).join('\n')
-    const sourcesBlock = body.sourcesBlock ?? ''
-    const system = resolveSystem(mode, type, sourcesBlock, glossaryBlock)
+    const promptCtx: import('@/lib/uvimco-notes/llm').PromptContext = {
+      sourcesBlock: body.sourcesBlock ?? '',
+      glossaryBlock: body.glossaryBlock ?? '',
+      relatedNotesBlock: body.relatedNotesBlock ?? '',
+    }
+    if (body.noteDomain) promptCtx.domainId = body.noteDomain
+    if (body.noteTags?.length) promptCtx.tags = body.noteTags
+    if (body.fullNotes) promptCtx.fullNotes = body.fullNotes
+
+    const system = resolveSystem(mode, type, promptCtx, query)
     const maxTokens = mode === 'decode' ? 800 : type === 'section' ? 400 : 280
     const userParts = buildLookupParts(type, query, context, screenshots, mode, body.followUpQuestion)
 

@@ -329,6 +329,9 @@ export default function UvimcoNotesApp() {
         glossaryBlock: ctx.glossaryBlock,
         sourcesBlock: ctx.sourcesBlock,
         relatedNotesBlock: ctx.relatedNotesBlock,
+        noteTags: ctx.noteTags,
+        noteDomain: sessionRef.current.metadata?.domain ?? ctx.domainId,
+        fullNotes: sessionRef.current.notes,
         ...(opts.mode ? { mode: opts.mode } : {}),
         ...(opts.followUpQuestion ? { followUpQuestion: opts.followUpQuestion } : {}),
         onToken: (token) => {

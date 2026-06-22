@@ -1,3 +1,4 @@
+import type { KnowledgeDomainId } from './knowledge/registry'
 import type { Message, Screenshot, TriggerType } from './types'
 
 export async function streamLookup(params: {
@@ -11,6 +12,9 @@ export async function streamLookup(params: {
   glossaryBlock?: string
   sourcesBlock?: string
   relatedNotesBlock?: string
+  noteTags?: string[]
+  noteDomain?: KnowledgeDomainId
+  fullNotes?: string
   onToken: (token: string) => void
   onDone: () => void
   onError: (msg: string) => void
@@ -31,6 +35,9 @@ export async function streamLookup(params: {
       glossaryBlock: params.glossaryBlock,
       sourcesBlock: params.sourcesBlock,
       relatedNotesBlock: params.relatedNotesBlock,
+      noteTags: params.noteTags,
+      noteDomain: params.noteDomain,
+      fullNotes: params.fullNotes,
     }),
   })
 
