@@ -145,7 +145,11 @@ export async function fetchSessionsFromServer(): Promise<NoteSession[]> {
 
 async function pushWithRetry(sessions: NoteSession[]): Promise<boolean> {
   const userId = getEffectiveUserId()
-  const body = JSON.stringify({ userId, sessions })
+  const slim = sessions.map((s) => ({
+    ...s,
+    screenshots: stripScreenshotsForSync(s.screenshots),
+  }))
+  const body = JSON.stringify({ userId, sessions: slim })
   for (let i = 0; i < PUSH_RETRIES; i++) {
     const res = await fetch('/api/uvimco-notes/sessions', {
       method: 'POST',

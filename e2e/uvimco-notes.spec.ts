@@ -75,6 +75,69 @@ test.describe('Notes', () => {
     await expect(page.getByText('E2E mock answer')).toBeVisible({ timeout: 15000 })
   })
 
+  test('?term + Enter opens panel and shows mock AI response', async ({ page }) => {
+    const editor = page.locator('.uvimco-cm .cm-content')
+    await editor.click()
+    await page.keyboard.type('review ?MOIC')
+    await page.keyboard.press('Enter')
+    await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('E2E mock answer')).toBeVisible({ timeout: 15000 })
+  })
+
+  test('hyphenated ?term + space triggers lookup', async ({ page }) => {
+    const editor = page.locator('.uvimco-cm .cm-content')
+    await editor.click()
+    await page.keyboard.type('?LP-GP ')
+    await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('E2E mock answer')).toBeVisible({ timeout: 15000 })
+  })
+
+  test('line ending with ? triggers on Enter', async ({ page }) => {
+    const editor = page.locator('.uvimco-cm .cm-content')
+    await editor.click()
+    await page.keyboard.type('LTP underweight this quarter?')
+    await page.keyboard.press('Enter')
+    await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('E2E mock answer')).toBeVisible({ timeout: 15000 })
+  })
+
+  test('follow-up question streams after first lookup', async ({ page }) => {
+    const editor = page.locator('.uvimco-cm .cm-content')
+    await editor.click()
+    await page.keyboard.type('?DPI ')
+    await expect(page.getByText('E2E mock answer')).toBeVisible({ timeout: 15000 })
+    await page.getByTestId('notes-followup-input').fill('How does it relate to TVPI?')
+    await page.getByTestId('notes-followup-input').press('Enter')
+    await expect(page.getByText('E2E mock answer')).toBeVisible({ timeout: 15000 })
+  })
+
+  test('cloud sync does not wipe in-flight lookup', async ({ page }) => {
+    await page.route('**/api/uvimco-notes/sessions**', async (route) => {
+      await new Promise((r) => setTimeout(r, 2500))
+      const method = route.request().method()
+      if (method === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ sessions: [] }),
+        })
+        return
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true }),
+      })
+    })
+
+    await page.goto('/games/uvimco-notes')
+    await page.waitForSelector('.uvimco-cm .cm-content', { timeout: 15000 })
+    const editor = page.locator('.uvimco-cm .cm-content')
+    await editor.click()
+    await page.keyboard.type('?DPI ')
+    await expect(page.getByText('E2E mock answer')).toBeVisible({ timeout: 20_000 })
+  })
+
   test('home link returns to root', async ({ page }) => {
     await page.getByTestId('notes-home-link').click()
     await expect(page).toHaveURL('/')

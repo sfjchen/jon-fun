@@ -95,11 +95,9 @@ const cases: Case[] = [
   { label: `deploy route ${base}`, run: testDeployRoute },
   { label: 'OpenRouter google/gemini-2.5-flash-lite', run: () => testOpenRouter('google/gemini-2.5-flash-lite') },
   { label: 'OpenRouter google/gemini-2.5-flash', run: () => testOpenRouter('google/gemini-2.5-flash') },
-  { label: 'OpenRouter google/gemini-2.0-flash-lite', run: () => testOpenRouter('google/gemini-2.0-flash-lite') },
   { label: 'OpenRouter openai/gpt-4o-mini', run: () => testOpenRouter('openai/gpt-4o-mini') },
   { label: 'Gemini direct gemini-2.5-flash-lite', run: () => testGemini('gemini-2.5-flash-lite') },
   { label: 'Gemini direct gemini-2.5-flash', run: () => testGemini('gemini-2.5-flash') },
-  { label: 'Gemini direct gemini-2.0-flash-lite', run: () => testGemini('gemini-2.0-flash-lite') },
 ]
 
 async function main() {
