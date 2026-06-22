@@ -22,7 +22,7 @@ export default function StatusBar({ chars, flags, actions, syncOk, saving, synci
       data-testid="notes-statusbar"
     >
       <span>{chars} chars</span>
-      <span>{flags} lookups</span>
+      <span>{flags} ? terms</span>
       <span>{actions} todos</span>
       {syncLabel ? (
         <span

@@ -54,7 +54,7 @@ type Action =
   | { type: 'SELECT_LOOKUP'; lookup: Lookup }
   | { type: 'SCREENSHOT'; shot: Screenshot }
   | { type: 'SYNC_OK'; ok: boolean }
-  | { type: 'LOAD_SESSION'; session: NoteSession }
+  | { type: 'LOAD_SESSION'; session: NoteSession; preserveAi?: boolean }
   | { type: 'CLEAR_LOOKUP' }
 
 function initState(): State {
@@ -151,15 +151,17 @@ function reducer(state: State, action: Action): State {
     }
     case 'SYNC_OK':
       return { ...state, syncOk: action.ok }
-    case 'LOAD_SESSION':
+    case 'LOAD_SESSION': {
+      const preserveAi = action.preserveAi && (state.isStreaming || state.currentLookup)
       return {
         ...state,
         session: action.session,
         sessionHistory: [...action.session.lookups].reverse(),
-        currentLookup: null,
-        streamText: '',
-        streamError: null,
+        currentLookup: preserveAi ? state.currentLookup : null,
+        streamText: preserveAi ? state.streamText : '',
+        streamError: preserveAi ? state.streamError : null,
       }
+    }
     case 'CLEAR_LOOKUP':
       return { ...state, currentLookup: null, streamText: '', streamError: null }
     default:
@@ -201,7 +203,9 @@ export default function UvimcoNotesApp() {
   const persistTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const streamingRef = useRef(false)
   const sessionRef = useRef(state.session)
+  const aiActiveRef = useRef(false)
   sessionRef.current = state.session
+  aiActiveRef.current = state.isStreaming || state.currentLookup !== null
 
   const persist = useCallback(async (session: NoteSession) => {
     const saved = upsertSession(session)
@@ -219,7 +223,11 @@ export default function UvimcoNotesApp() {
         const activeId = sessionRef.current.id
         const active = r.sessions.find((s) => s.id === activeId) ?? r.sessions[0]
         if (active) {
-          dispatch({ type: 'LOAD_SESSION', session: active })
+          dispatch({
+            type: 'LOAD_SESSION',
+            session: active,
+            preserveAi: aiActiveRef.current,
+          })
           setActiveSessionId(active.id)
         }
         dispatch({ type: 'SYNC_OK', ok: r.pushOk })
