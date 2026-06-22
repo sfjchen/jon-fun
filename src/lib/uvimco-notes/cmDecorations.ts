@@ -1,4 +1,4 @@
-import { Decoration, EditorView, ViewPlugin, type DecorationSet, type ViewUpdate } from '@codemirror/view'
+import { Decoration, EditorView, ViewPlugin, placeholder, type DecorationSet, type ViewUpdate } from '@codemirror/view'
 import { RangeSetBuilder } from '@codemirror/state'
 import { detectTriggers } from './triggerParser'
 
@@ -78,18 +78,23 @@ export function triggerPlugin(
   )
 }
 
+export const editorPlaceholder = placeholder(
+  'Start typing. ?term for AI lookup · line ending with ? · > todo · * highlight · paste screenshot',
+)
+
 export const uvimcoEditorTheme = EditorView.theme({
   '&': { backgroundColor: 'var(--uv-bg-elevated)', height: '100%' },
   '.cm-scroller': { overflow: 'auto', fontFamily: 'var(--font-lato), Lato, sans-serif' },
   '.cm-content': {
     fontFamily: 'var(--font-lato), Lato, sans-serif',
-    fontSize: '15px',
+    fontSize: '16px',
     lineHeight: '1.75',
     caretColor: 'var(--uv-text-primary)',
     color: 'var(--uv-text-primary)',
     padding: '12px 0',
   },
   '.cm-line': { padding: '0 16px' },
+  '.cm-placeholder': { color: 'var(--uv-text-muted)', fontStyle: 'normal' },
   '.cm-gutters': { display: 'none' },
   '&.cm-focused .cm-cursor': { borderLeftColor: 'var(--uv-accent)' },
   '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': {

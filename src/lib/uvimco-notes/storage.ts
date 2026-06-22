@@ -2,6 +2,7 @@
  * UVIMCO Notes — localStorage + Supabase sync (mirrors daily-learn pattern).
  */
 
+import { normalizeSessionTitle } from './prefs'
 import type { NoteSession, Screenshot } from './types'
 
 const USER_ID_KEY = 'uvimco_notes_user_id'
@@ -70,7 +71,9 @@ export function loadSessions(): NoteSession[] {
   try {
     const arr = JSON.parse(raw) as NoteSession[]
     if (!Array.isArray(arr)) return []
-    return arr.sort((a, b) => (b.updatedAt > a.updatedAt ? 1 : b.updatedAt < a.updatedAt ? -1 : 0))
+    return arr
+      .map((s) => ({ ...s, title: normalizeSessionTitle(s.title) }))
+      .sort((a, b) => (b.updatedAt > a.updatedAt ? 1 : b.updatedAt < a.updatedAt ? -1 : 0))
   } catch {
     return []
   }

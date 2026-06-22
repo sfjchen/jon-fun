@@ -40,7 +40,7 @@ const items: GameCardGame[] = [
     title: 'Notes',
     description: 'Meeting shorthand + ? AI lookups; notes live in collapsible side panel',
     icon: `${nb}/daily.svg`,
-    href: '/games/uvimco-notes',
+    href: '/games/notes',
     available: true,
   },
   { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: `${nb}/game24.svg`, href: '/games/24', available: true },
