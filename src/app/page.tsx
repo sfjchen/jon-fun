@@ -37,8 +37,8 @@ const items: GameCardGame[] = [
   { id: 'daily-log', title: '1 Sentence Everyday', description: 'One sentence per day; history, calendar, export', icon: `${nb}/daily.svg`, href: '/games/daily-log', available: true },
   {
     id: 'uvimco-notes',
-    title: 'UVIMCO Notes',
-    description: 'Meeting shorthand + ? AI lookups, multi-session history, Lato dark workspace',
+    title: 'Notes',
+    description: 'Meeting shorthand + ? AI lookups; notes live in collapsible side panel',
     icon: `${nb}/daily.svg`,
     href: '/games/uvimco-notes',
     available: true,
