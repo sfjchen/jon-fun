@@ -8,7 +8,7 @@ const isDeploy = process.env.PLAYWRIGHT_SKIP_WEBSERVER === '1'
 
 async function waitForLookupStream(page: import('@playwright/test').Page) {
   await page.waitForResponse(
-    (res) => res.url().includes('/api/uvimco-notes/lookup') && res.status() === 200,
+    (res) => res.url().includes('/api/notes/lookup') && res.status() === 200,
     { timeout: 45_000 },
   )
 }
@@ -20,9 +20,9 @@ test.describe('Notes AI lookup (deploy)', () => {
   test.beforeEach(async ({ page }) => {
     test.skip(!isDeploy, 'Set PLAYWRIGHT_SKIP_WEBSERVER=1')
     await page.addInitScript(() => {
-      localStorage.removeItem('uvimco_notes_sessions')
-      localStorage.removeItem('uvimco_notes_active_session_id')
-      localStorage.setItem('uvimco_notes_user_id', `e2e-lookup-${Date.now()}`)
+      localStorage.removeItem('notes_sessions')
+      localStorage.removeItem('notes_active_session_id')
+      localStorage.setItem('notes_user_id', `e2e-lookup-${Date.now()}`)
       localStorage.removeItem('notes_ui_prefs')
     })
     await page.goto('/games/notes')

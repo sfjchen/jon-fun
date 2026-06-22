@@ -11,7 +11,7 @@ test.describe('Notes visual', () => {
   test.use({ viewport: { width: 1280, height: 800 } })
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/games/uvimco-notes')
+    await page.goto('/games/notes')
     await page.waitForSelector('[data-testid="notes-editor"]', { timeout: 20_000 })
     await page.waitForSelector('.uvimco-cm .cm-content', { timeout: 20_000 })
   })
@@ -57,7 +57,7 @@ test.describe('Notes visual', () => {
   test('mobile layout screenshot', async ({ page }) => {
     test.skip(!isDeploy, 'Set PLAYWRIGHT_SKIP_WEBSERVER=1 to snapshot deployed sfjc.dev')
     await page.setViewportSize({ width: 390, height: 844 })
-    await page.goto('/games/uvimco-notes')
+    await page.goto('/games/notes')
     await page.waitForSelector('.uvimco-cm .cm-content', { timeout: 20_000 })
     const editorBox = await page.getByTestId('notes-editor').boundingBox()
     expect(editorBox?.height ?? 0).toBeGreaterThan(180)

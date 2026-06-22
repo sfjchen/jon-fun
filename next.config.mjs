@@ -25,7 +25,10 @@ const nextConfig = {
       { source: '/notebook/:path*', destination: '/:path*', permanent: true },
       { source: '/Madelyn-Patrick', destination: '/wedding/madelyn-patrick', permanent: true },
       { source: '/Madelyn-Patrick/:path*', destination: '/wedding/madelyn-patrick', permanent: true },
-      { source: '/games/notes', destination: '/games/uvimco-notes', permanent: false },
+      { source: '/games/uvimco-notes', destination: '/games/notes', permanent: true },
+      { source: '/games/uvimco-notes/:path*', destination: '/games/notes/:path*', permanent: true },
+      { source: '/api/uvimco-notes/:path*', destination: '/api/notes/:path*', permanent: true },
+      { source: '/admin/uvimco-notes', destination: '/admin/notes', permanent: true },
     ]
   },
   async rewrites() {

@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test'
 
 /** Stub Notes sync, lookup, glossary, and sources routes for offline E2E. */
 export async function mockUvimcoNotesApi(page: Page): Promise<void> {
-  await page.route('**/api/uvimco-notes/sessions**', async (route) => {
+  await page.route('**/api/notes/sessions**', async (route) => {
     const method = route.request().method()
     if (method === 'GET') {
       await route.fulfill({
@@ -23,7 +23,7 @@ export async function mockUvimcoNotesApi(page: Page): Promise<void> {
     await route.continue()
   })
 
-  await page.route('**/api/uvimco-notes/glossary**', async (route) => {
+  await page.route('**/api/notes/glossary**', async (route) => {
     const method = route.request().method()
     if (method === 'GET') {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ entries: [] }) })
@@ -32,7 +32,7 @@ export async function mockUvimcoNotesApi(page: Page): Promise<void> {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) })
   })
 
-  await page.route('**/api/uvimco-notes/sources**', async (route) => {
+  await page.route('**/api/notes/sources**', async (route) => {
     const method = route.request().method()
     if (method === 'GET') {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ sources: [] }) })
@@ -41,7 +41,7 @@ export async function mockUvimcoNotesApi(page: Page): Promise<void> {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) })
   })
 
-  await page.route('**/api/uvimco-notes/lookup', async (route) => {
+  await page.route('**/api/notes/lookup', async (route) => {
     const body = `
 data: ${JSON.stringify({ token: 'E2E mock answer for term lookup.' })}
 

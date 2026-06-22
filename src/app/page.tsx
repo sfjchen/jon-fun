@@ -36,7 +36,7 @@ const items: GameCardGame[] = [
   { id: 'tmr', title: 'TMR System', description: 'Targeted Memory Reactivation for learning and sleep', icon: `${nb}/tmr.svg`, href: '/games/tmr', available: true },
   { id: 'daily-log', title: '1 Sentence Everyday', description: 'One sentence per day; history, calendar, export', icon: `${nb}/daily.svg`, href: '/games/daily-log', available: true },
   {
-    id: 'uvimco-notes',
+    id: 'notes',
     title: 'Notes',
     description: 'Meeting shorthand + ? AI lookups; notes live in collapsible side panel',
     icon: `${nb}/daily.svg`,

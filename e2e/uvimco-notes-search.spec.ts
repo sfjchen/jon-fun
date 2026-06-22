@@ -16,12 +16,12 @@ test.describe('Notes search (local)', () => {
         startedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
-      localStorage.setItem('uvimco_notes_sessions', JSON.stringify([session]))
-      localStorage.setItem('uvimco_notes_active_session_id', session.id)
-      localStorage.setItem('uvimco_notes_user_id', `e2e-search-${Date.now()}`)
+      localStorage.setItem('notes_sessions', JSON.stringify([session]))
+      localStorage.setItem('notes_active_session_id', session.id)
+      localStorage.setItem('notes_user_id', `e2e-search-${Date.now()}`)
     })
 
-    await page.route('**/api/uvimco-notes/sessions**', async (route) => {
+    await page.route('**/api/notes/sessions**', async (route) => {
       if (route.request().method() === 'GET') {
         await route.fulfill({ json: { sessions: [] } })
       } else {

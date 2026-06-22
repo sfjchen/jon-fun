@@ -43,7 +43,7 @@ async function testDeployRoute(mode: 'line' | 'section'): Promise<{ ok: boolean;
           conversation: [],
           mode: 'lookup',
         }
-  const res = await fetch(`${base}/api/uvimco-notes/lookup`, {
+  const res = await fetch(`${base}/api/notes/lookup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),

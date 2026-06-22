@@ -2,7 +2,6 @@ export const runtime = 'nodejs'
 
 import { embedModel, geminiEmbedKey, rankExcerptsByQuery } from '@/lib/embed/gemini'
 
-/** Legacy path — same handler as /api/notes/embed */
 export async function POST(req: Request) {
   const key = geminiEmbedKey()
   if (!key) {
