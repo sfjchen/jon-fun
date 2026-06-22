@@ -39,11 +39,10 @@ Other shorthand unchanged: `>` todo, `*` highlight, `~` approx, screenshot paste
 
 ## AI response contract
 
-- **Intent guess** first (one short line)
-- **Dense, skimmable** — partial sentences OK; extra blank lines between blocks
-- **Labels** as plain text (`Meaning`, domain angle e.g. `Endowment relevance`, `Follow up if…`) — not markdown `#` headers in model output
-- Panel renders via markdown component (headings/lists styled, no raw `##`/`*` visible)
-- **Sources** and **glossary** injection points in prompt (Phase 2 fills them)
+- **Core meaning** — plain English + domain context (UVIMCO endowment when that domain is active); intuitive, direct; no "Intent" or separate "angle" block
+- **Typical ranges** — only for metrics/ratios/variables: common magnitudes and what they signal (omit for non-numeric terms)
+- Panel renders via markdown component (styled labels; no raw `#`/`*` from model)
+- **Sources** and **glossary** injection in prompt
 
 ## Context assembly (Phase 2)
 
@@ -88,3 +87,4 @@ Data lives on Supabase under `uvimco_note_sessions` (+ `notes_sources`, `notes_g
 - **2026-06-22**: Initial doc; Phase 1 implementation — `?`/`??` triggers, global search, sync restore, metadata/tags, structured AI panel, autoglossary, rollup, resizable panel.
 - **2026-06-22**: Phase 2 — sources/glossary tables, context assembler, Sources UI.
 - **2026-06-22**: Knowledge layer — domain packs, auto-sectioning, generalizable prompts ([NOTES-KNOWLEDGE.md](./NOTES-KNOWLEDGE.md)).
+- **2026-06-22**: AI response format — Core meaning + Typical ranges (removed Intent/angle/follow-up split).

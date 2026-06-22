@@ -5,13 +5,13 @@ test.describe('Notes sync restore (mock API)', () => {
 
   test('restore panel pulls sessions from server', async ({ page }) => {
     await page.addInitScript(() => {
-      localStorage.removeItem('uvimco_notes_sessions')
-      localStorage.removeItem('uvimco_notes_sync_key')
-      localStorage.setItem('uvimco_notes_user_id', 'device-only-id')
+      localStorage.removeItem('notes_sessions')
+      localStorage.removeItem('notes_sync_key')
+      localStorage.setItem('notes_user_id', 'device-only-id')
       localStorage.setItem('notes_ui_prefs', JSON.stringify({ panelOpen: true }))
     })
 
-    await page.route('**/api/uvimco-notes/sessions**', async (route) => {
+    await page.route('**/api/notes/sessions**', async (route) => {
       const url = route.request().url()
       if (route.request().method() === 'GET' && url.includes('userId=restore-key-123')) {
         await route.fulfill({
@@ -40,10 +40,10 @@ test.describe('Notes sync restore (mock API)', () => {
       await route.fulfill({ json: { ok: true } })
     })
 
-    await page.route('**/api/uvimco-notes/glossary**', async (route) => {
+    await page.route('**/api/notes/glossary**', async (route) => {
       await route.fulfill({ json: route.request().method() === 'GET' ? { entries: [] } : { ok: true } })
     })
-    await page.route('**/api/uvimco-notes/sources**', async (route) => {
+    await page.route('**/api/notes/sources**', async (route) => {
       await route.fulfill({ json: route.request().method() === 'GET' ? { sources: [] } : { ok: true } })
     })
 

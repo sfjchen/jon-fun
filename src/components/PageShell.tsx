@@ -11,7 +11,7 @@ type PageShellProps = {
 }
 
 function isUvimcoNotes(pathname: string): boolean {
-  return pathname.includes('/games/uvimco-notes')
+  return pathname.includes('/games/notes')
 }
 
 function isFullBleed(pathname: string, isChwaziMobile?: boolean): boolean {

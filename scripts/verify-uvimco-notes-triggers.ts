@@ -2,7 +2,7 @@
  * Verify Notes trigger detection (no browser).
  *   npm run verify:uvimco-notes-triggers
  */
-import { detectLineTriggers, countShorthandFlags } from '../src/lib/uvimco-notes/triggerParser'
+import { detectLineTriggers, countShorthandFlags } from '../src/lib/notes/triggerParser'
 
 type Case = {
   label: string

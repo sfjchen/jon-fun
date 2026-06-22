@@ -2,19 +2,19 @@ import { test, expect } from '@playwright/test'
 
 import { mockUvimcoNotesApi, waitForNotesTrigger } from './helpers/uvimco-notes-mock'
 
-const SESSIONS_KEY = 'uvimco_notes_sessions'
+const SESSIONS_KEY = 'notes_sessions'
 
 test.describe('Notes', () => {
   test.use({ viewport: { width: 1280, height: 800 } })
 
   test.beforeEach(async ({ page }) => {
     await mockUvimcoNotesApi(page)
-    await page.goto('/games/uvimco-notes')
+    await page.goto('/games/notes')
     await page.evaluate((key) => {
       try {
         localStorage.removeItem(key)
-        localStorage.removeItem('uvimco_notes_active_session_id')
-        localStorage.removeItem('uvimco_notes_user_id')
+        localStorage.removeItem('notes_active_session_id')
+        localStorage.removeItem('notes_user_id')
         localStorage.removeItem('notes_ui_prefs')
         localStorage.removeItem('notes_glossary')
         localStorage.removeItem('notes_sources')
@@ -103,7 +103,7 @@ test.describe('Notes', () => {
   })
 
   test('cloud sync does not wipe in-flight lookup', async ({ page }) => {
-    await page.route('**/api/uvimco-notes/sessions**', async (route) => {
+    await page.route('**/api/notes/sessions**', async (route) => {
       await new Promise((r) => setTimeout(r, 2500))
       const method = route.request().method()
       if (method === 'GET') {
@@ -121,7 +121,7 @@ test.describe('Notes', () => {
       })
     })
 
-    await page.goto('/games/uvimco-notes')
+    await page.goto('/games/notes')
     await page.waitForSelector('.uvimco-cm .cm-content', { timeout: 15000 })
     const editor = page.locator('.uvimco-cm .cm-content')
     await editor.click()
@@ -179,8 +179,8 @@ test.describe('Notes', () => {
         startedAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z',
       }
-      localStorage.setItem('uvimco_notes_sessions', JSON.stringify([session]))
-      localStorage.setItem('uvimco_notes_active_session_id', session.id)
+      localStorage.setItem('notes_sessions', JSON.stringify([session]))
+      localStorage.setItem('notes_active_session_id', session.id)
     })
     await page.reload()
     await expect(page.getByTestId('notes-meeting-title')).toHaveValue('Note Jan 1, 2026')

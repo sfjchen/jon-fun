@@ -17,13 +17,13 @@ test.describe('Notes cloud sync', () => {
     const noteText = `deploy sync ${Date.now()}`
 
     await page.addInitScript((id) => {
-      localStorage.setItem('uvimco_notes_user_id', id)
-      localStorage.removeItem('uvimco_notes_sessions')
-      localStorage.removeItem('uvimco_notes_active_session_id')
+      localStorage.setItem('notes_user_id', id)
+      localStorage.removeItem('notes_sessions')
+      localStorage.removeItem('notes_active_session_id')
       localStorage.removeItem('notes_ui_prefs')
     }, userId)
 
-    await page.route('**/api/uvimco-notes/lookup', async (route) => {
+    await page.route('**/api/notes/lookup', async (route) => {
       await route.fulfill({
         status: 200,
         headers: { 'Content-Type': 'text/event-stream' },
@@ -46,7 +46,7 @@ test.describe('Notes cloud sync', () => {
     await expect(editor).toContainText(noteText)
 
     const apiRes = await page.request.get(
-      `/api/uvimco-notes/sessions?userId=${encodeURIComponent(userId)}`,
+      `/api/notes/sessions?userId=${encodeURIComponent(userId)}`,
     )
     expect(apiRes.ok()).toBeTruthy()
     const body = (await apiRes.json()) as { sessions?: { notes?: string }[] }
@@ -67,12 +67,12 @@ test.describe('Notes cloud sync', () => {
         startedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
-      localStorage.setItem('uvimco_notes_sessions', JSON.stringify([session]))
-      localStorage.setItem('uvimco_notes_active_session_id', session.id)
-      localStorage.setItem('uvimco_notes_user_id', `e2e-legacy-${Date.now()}`)
+      localStorage.setItem('notes_sessions', JSON.stringify([session]))
+      localStorage.setItem('notes_active_session_id', session.id)
+      localStorage.setItem('notes_user_id', `e2e-legacy-${Date.now()}`)
     })
 
-    await page.goto('/games/uvimco-notes')
+    await page.goto('/games/notes')
     await expect(page.getByTestId('notes-meeting-title')).toHaveValue('Note Jun 22, 2026', {
       timeout: 15_000,
     })
