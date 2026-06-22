@@ -14,3 +14,5 @@ create table if not exists uvimco_note_sessions (
 
 create index if not exists idx_uvimco_note_sessions_user_updated
   on uvimco_note_sessions (user_id, updated_at desc);
+
+alter table uvimco_note_sessions enable row level security;
