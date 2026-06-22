@@ -26,6 +26,8 @@ test.describe('UVIMCO Notes', () => {
     await expect(page.getByTestId('uvimco-meetings-sidebar')).toBeVisible({ timeout: 10000 })
     await expect(page.getByTestId('uvimco-meeting-title')).toBeVisible()
     await expect(page.locator('.uvimco-cm .cm-content')).toBeVisible({ timeout: 15000 })
+    const editorBox = await page.getByTestId('uvimco-editor').boundingBox()
+    expect(editorBox?.height ?? 0).toBeGreaterThan(280)
     await expect(page.getByTestId('uvimco-ai-panel')).toBeVisible({ timeout: 5000 })
     await expect(page.getByText('Ctrl+B/I/U')).toBeVisible()
   })
