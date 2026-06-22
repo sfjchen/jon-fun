@@ -64,6 +64,10 @@ export function createEmptySession(title?: string): NoteSession {
   }
 }
 
+function withNormalizedTitles(sessions: NoteSession[]): NoteSession[] {
+  return sessions.map((s) => ({ ...s, title: normalizeSessionTitle(s.title) }))
+}
+
 export function loadSessions(): NoteSession[] {
   if (typeof window === 'undefined') return []
   const raw = localStorage.getItem(SESSIONS_KEY)
@@ -71,9 +75,10 @@ export function loadSessions(): NoteSession[] {
   try {
     const arr = JSON.parse(raw) as NoteSession[]
     if (!Array.isArray(arr)) return []
-    return arr
-      .map((s) => ({ ...s, title: normalizeSessionTitle(s.title) }))
-      .sort((a, b) => (b.updatedAt > a.updatedAt ? 1 : b.updatedAt < a.updatedAt ? -1 : 0))
+    const normalized = withNormalizedTitles(arr)
+    const normalizedJson = JSON.stringify(normalized)
+    if (raw !== normalizedJson) saveSessionsLocal(normalized)
+    return normalized.sort((a, b) => (b.updatedAt > a.updatedAt ? 1 : b.updatedAt < a.updatedAt ? -1 : 0))
   } catch {
     return []
   }
@@ -111,7 +116,7 @@ export function loadActiveSession(): NoteSession {
 
 function mergeSessions(local: NoteSession[], remote: NoteSession[]): NoteSession[] {
   const byId = new Map<string, NoteSession>()
-  for (const s of [...local, ...remote]) {
+  for (const s of withNormalizedTitles([...local, ...remote])) {
     const existing = byId.get(s.id)
     if (!existing || new Date(s.updatedAt) > new Date(existing.updatedAt)) {
       byId.set(s.id, s)
@@ -135,7 +140,7 @@ export async function fetchSessionsFromServer(): Promise<NoteSession[]> {
   const res = await fetch(`/api/uvimco-notes/sessions?userId=${encodeURIComponent(userId)}`)
   if (!res.ok) return []
   const data = (await res.json()) as { sessions?: NoteSession[] }
-  return Array.isArray(data.sessions) ? data.sessions : []
+  return Array.isArray(data.sessions) ? withNormalizedTitles(data.sessions) : []
 }
 
 async function pushWithRetry(sessions: NoteSession[]): Promise<boolean> {

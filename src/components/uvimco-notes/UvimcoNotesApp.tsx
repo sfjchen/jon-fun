@@ -175,6 +175,7 @@ function screenshotsInContext(notes: string, shots: Record<string, Screenshot>):
 export default function UvimcoNotesApp() {
   const [state, dispatch] = useReducer(reducer, undefined, initState)
   const [saving, setSaving] = useState(false)
+  const [syncing, setSyncing] = useState(true)
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 768px)')
@@ -208,16 +209,19 @@ export default function UvimcoNotesApp() {
   }, [])
 
   useEffect(() => {
-    syncWithServer().then((r) => {
-      dispatch({ type: 'SET_SESSIONS', sessions: r.sessions })
-      const activeId = sessionRef.current.id
-      const active = r.sessions.find((s) => s.id === activeId) ?? r.sessions[0]
-      if (active) {
-        dispatch({ type: 'LOAD_SESSION', session: active })
-        setActiveSessionId(active.id)
-      }
-      dispatch({ type: 'SYNC_OK', ok: r.pushOk })
-    })
+    setSyncing(true)
+    syncWithServer()
+      .then((r) => {
+        dispatch({ type: 'SET_SESSIONS', sessions: r.sessions })
+        const activeId = sessionRef.current.id
+        const active = r.sessions.find((s) => s.id === activeId) ?? r.sessions[0]
+        if (active) {
+          dispatch({ type: 'LOAD_SESSION', session: active })
+          setActiveSessionId(active.id)
+        }
+        dispatch({ type: 'SYNC_OK', ok: r.pushOk })
+      })
+      .finally(() => setSyncing(false))
   }, [])
 
   useEffect(() => {
@@ -475,6 +479,7 @@ export default function UvimcoNotesApp() {
         actions={counts.actions}
         syncOk={state.syncOk}
         saving={saving}
+        syncing={syncing}
       />
     </div>
   )
