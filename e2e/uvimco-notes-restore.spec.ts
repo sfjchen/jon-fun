@@ -1,0 +1,49 @@
+import { test, expect } from '@playwright/test'
+
+test.describe('Notes sync restore (mock API)', () => {
+  test.use({ viewport: { width: 1280, height: 800 } })
+
+  test('restore panel pulls sessions from server', async ({ page }) => {
+    const remoteSession = {
+      id: 'restored-session',
+      title: 'Restored Note',
+      notes: 'restored body text',
+      tags: [],
+      metadata: { meetingAt: new Date().toISOString() },
+      lookups: [],
+      screenshots: {},
+      startedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    await page.addInitScript(() => {
+      localStorage.removeItem('uvimco_notes_sessions')
+      localStorage.removeItem('uvimco_notes_sync_key')
+      localStorage.setItem('uvimco_notes_user_id', 'device-only-id')
+      localStorage.setItem('notes_ui_prefs', JSON.stringify({ panelOpen: true }))
+    })
+
+    await page.route('**/api/uvimco-notes/sessions**', async (route) => {
+      const url = route.request().url()
+      if (route.request().method() === 'GET' && url.includes('userId=restore-key-123')) {
+        await route.fulfill({ json: { sessions: [remoteSession] } })
+        return
+      }
+      if (route.request().method() === 'GET') {
+        await route.fulfill({ json: { sessions: [] } })
+        return
+      }
+      await route.fulfill({ json: { ok: true } })
+    })
+
+    await page.goto('/games/notes')
+    await page.getByTestId('notes-toggle-panel').click()
+    await expect(page.getByTestId('notes-sync-panel')).toBeVisible()
+
+    await page.getByTestId('notes-restore-key-input').fill('restore-key-123')
+    await page.getByTestId('notes-restore-btn').click()
+
+    await expect(page.getByTestId('notes-meeting-title')).toHaveValue('Restored Note', { timeout: 10_000 })
+    await expect(page.locator('.uvimco-cm .cm-content')).toContainText('restored body text')
+  })
+})

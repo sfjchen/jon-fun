@@ -4,6 +4,7 @@ export type NotesUiPrefs = {
   panelOpen?: boolean
   notesListOpen?: boolean
   shorthandOpen?: boolean
+  panelWidth?: number
 }
 
 const PREFS_KEY = 'notes_ui_prefs'

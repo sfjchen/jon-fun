@@ -1,4 +1,4 @@
-import { DECODE_ALL_SYSTEM, UVIMCO_SYSTEM } from './uvimcoContext'
+import { DECODE_ALL_SYSTEM, SECTION_SYSTEM, UVIMCO_SYSTEM, injectContextPlaceholders } from './uvimcoContext'
 import type { Message, Screenshot, TriggerType } from './types'
 
 export const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
@@ -45,10 +45,21 @@ export function buildUserText(
   if (mode === 'followup' && followUpQuestion) {
     return `Follow-up on "${query}":\n${followUpQuestion}\n\nNote context:\n${context}`
   }
-  if (type === 'word') {
-    return `In my UVIMCO meeting notes I encountered this term: "${query}"\n\nNote context (recent lines):\n${context}\n\nPlease explain "${query}" concisely in UVIMCO/endowment context.`
+  if (type === 'section') {
+    return `Section marked with ??:\n${context}\n\nUser focus line: "${query}"\n\nExplain this section — infer the question they likely have.`
   }
-  return `In my UVIMCO meeting notes I wrote this line and marked it for explanation:\n"${query}"\n\nNote context:\n${context}\n\nPlease explain what this means in UVIMCO context.`
+  return `Line marked with ?:\n"${query}"\n\nSurrounding context:\n${context}\n\nExplain what this means in UVIMCO context.`
+}
+
+export function resolveSystem(
+  mode: 'lookup' | 'followup' | 'decode',
+  type: TriggerType,
+  sourcesBlock = '',
+  glossaryBlock = '',
+): string {
+  if (mode === 'decode') return injectContextPlaceholders(DECODE_ALL_SYSTEM, sourcesBlock, glossaryBlock)
+  const base = type === 'section' ? SECTION_SYSTEM : UVIMCO_SYSTEM
+  return injectContextPlaceholders(base, sourcesBlock, glossaryBlock)
 }
 
 export function buildOpenRouterMessages(
@@ -267,14 +278,12 @@ export async function streamGemini(
   })
 }
 
-export function resolveSystem(mode: 'lookup' | 'followup' | 'decode'): string {
-  return mode === 'decode' ? DECODE_ALL_SYSTEM : UVIMCO_SYSTEM
-}
-
 export function resolveModel(mode: 'lookup' | 'followup' | 'decode', hasImages: boolean): string {
   if (mode === 'decode' || hasImages) return decodeModel()
   return lookupModel()
 }
+
+// resolveSystem exported above; removed duplicate
 
 function uniqueModels(models: string[]): string[] {
   return [...new Set(models.filter(Boolean))]
@@ -362,4 +371,4 @@ export async function streamLookupWithFallback(
   })
 }
 
-export { UVIMCO_SYSTEM, DECODE_ALL_SYSTEM }
+export { UVIMCO_SYSTEM, SECTION_SYSTEM, DECODE_ALL_SYSTEM }

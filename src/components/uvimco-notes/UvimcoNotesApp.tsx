@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
+import { assembleClientContext } from '@/lib/uvimco-notes/contextAssembler'
+import { upsertFromLookup } from '@/lib/uvimco-notes/glossary'
 import { countShorthandFlags } from '@/lib/uvimco-notes/triggerParser'
 import { streamLookup } from '@/lib/uvimco-notes/streamClient'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/uvimco-notes/prefs'
@@ -11,6 +13,7 @@ import {
   deleteSessionOnServer,
   exportSessionMarkdown,
   getEffectiveUserId,
+  getOrCreateUserId,
   loadActiveSession,
   loadSessions,
   saveSessionToServer,
@@ -18,12 +21,15 @@ import {
   syncWithServer,
   upsertSession,
 } from '@/lib/uvimco-notes/storage'
-import type { Lookup, NoteSession, Screenshot, TriggerType } from '@/lib/uvimco-notes/types'
+import type { Lookup, NoteMetadata, NoteSession, Screenshot, TriggerType } from '@/lib/uvimco-notes/types'
 import SidePanel from './SidePanel'
-import NoteEditor from './NoteEditor'
+import EditorShell from './EditorShell'
+import type { NoteEditorHandle } from './NoteEditor'
 import ShorthandBar from './ShorthandBar'
 import StatusBar from './StatusBar'
 import NotesHeader from './NotesHeader'
+import GlobalSearch from './GlobalSearch'
+import NoteMetaBar from './NoteMetaBar'
 
 type State = {
   session: NoteSession
@@ -37,12 +43,15 @@ type State = {
   streamText: string
   streamError: string | null
   syncOk: boolean | null
+  glossaryRefreshKey: number
 }
 
 type Action =
   | { type: 'SET_SESSIONS'; sessions: NoteSession[] }
   | { type: 'NOTES'; notes: string }
   | { type: 'TITLE'; title: string }
+  | { type: 'TAGS'; tags: string[] }
+  | { type: 'METADATA'; metadata: NoteMetadata }
   | { type: 'PANEL_TOGGLE' }
   | { type: 'PANEL'; open: boolean }
   | { type: 'NOTES_LIST'; open: boolean }
@@ -56,6 +65,7 @@ type Action =
   | { type: 'SYNC_OK'; ok: boolean }
   | { type: 'LOAD_SESSION'; session: NoteSession; preserveAi?: boolean }
   | { type: 'CLEAR_LOOKUP' }
+  | { type: 'GLOSSARY_BUMP' }
 
 function initState(): State {
   const prefs = typeof window !== 'undefined' ? loadNotesUiPrefs() : {}
@@ -73,6 +83,7 @@ function initState(): State {
     streamText: '',
     streamError: null,
     syncOk: null,
+    glossaryRefreshKey: 0,
   }
 }
 
@@ -87,6 +98,16 @@ function reducer(state: State, action: Action): State {
     }
     case 'TITLE': {
       const session = { ...state.session, title: action.title }
+      const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
+      return { ...state, session, sessions }
+    }
+    case 'TAGS': {
+      const session = { ...state.session, tags: action.tags }
+      const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
+      return { ...state, session, sessions }
+    }
+    case 'METADATA': {
+      const session = { ...state.session, metadata: action.metadata }
       const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
       return { ...state, session, sessions }
     }
@@ -112,9 +133,7 @@ function reducer(state: State, action: Action): State {
       return { ...state, streamText: action.text }
     case 'STREAM_DONE': {
       if (!state.currentLookup) return { ...state, isStreaming: false }
-      if (!action.assistantText.trim()) {
-        return { ...state, isStreaming: false }
-      }
+      if (!action.assistantText.trim()) return { ...state, isStreaming: false }
       const lookup: Lookup = {
         ...state.currentLookup,
         conversation: [
@@ -125,12 +144,14 @@ function reducer(state: State, action: Action): State {
       const lookups = [...state.session.lookups.filter((l) => l.id !== lookup.id), lookup]
       const sessionHistory = [lookup, ...state.sessionHistory.filter((l) => l.id !== lookup.id)]
       const session = { ...state.session, lookups }
+      upsertFromLookup(lookup, session.id)
       return {
         ...state,
         currentLookup: lookup,
         sessionHistory,
         session,
         isStreaming: false,
+        glossaryRefreshKey: state.glossaryRefreshKey + 1,
       }
     }
     case 'STREAM_ERROR':
@@ -164,6 +185,8 @@ function reducer(state: State, action: Action): State {
     }
     case 'CLEAR_LOOKUP':
       return { ...state, currentLookup: null, streamText: '', streamError: null }
+    case 'GLOSSARY_BUMP':
+      return { ...state, glossaryRefreshKey: state.glossaryRefreshKey + 1 }
     default:
       return state
   }
@@ -181,6 +204,12 @@ export default function UvimcoNotesApp() {
   const [state, dispatch] = useReducer(reducer, undefined, initState)
   const [saving, setSaving] = useState(false)
   const [syncing, setSyncing] = useState(true)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const editorRef = useRef<NoteEditorHandle>(null)
+
+  useEffect(() => {
+    getOrCreateUserId()
+  }, [])
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 768px)')
@@ -192,10 +221,7 @@ export default function UvimcoNotesApp() {
   }, [])
 
   useEffect(() => {
-    saveNotesUiPrefs({
-      panelOpen: state.panelOpen,
-      notesListOpen: state.notesListOpen,
-    })
+    saveNotesUiPrefs({ panelOpen: state.panelOpen, notesListOpen: state.notesListOpen })
   }, [state.panelOpen, state.notesListOpen])
 
   const streamBuf = useRef('')
@@ -203,9 +229,24 @@ export default function UvimcoNotesApp() {
   const persistTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const streamingRef = useRef(false)
   const sessionRef = useRef(state.session)
+  const sessionsRef = useRef(state.sessions)
   const aiActiveRef = useRef(false)
   sessionRef.current = state.session
+  sessionsRef.current = state.sessions
   aiActiveRef.current = state.isStreaming || state.currentLookup !== null
+
+  const refreshFromServer = useCallback(async () => {
+    const r = await syncWithServer()
+    dispatch({ type: 'SET_SESSIONS', sessions: r.sessions })
+    const activeId = sessionRef.current.id
+    const active = r.sessions.find((s) => s.id === activeId) ?? r.sessions[0]
+    if (active) {
+      dispatch({ type: 'LOAD_SESSION', session: active, preserveAi: aiActiveRef.current })
+      setActiveSessionId(active.id)
+    }
+    dispatch({ type: 'SYNC_OK', ok: r.pushOk })
+    return r
+  }, [])
 
   const persist = useCallback(async (session: NoteSession) => {
     const saved = upsertSession(session)
@@ -217,23 +258,8 @@ export default function UvimcoNotesApp() {
 
   useEffect(() => {
     setSyncing(true)
-    syncWithServer()
-      .then((r) => {
-        dispatch({ type: 'SET_SESSIONS', sessions: r.sessions })
-        const activeId = sessionRef.current.id
-        const active = r.sessions.find((s) => s.id === activeId) ?? r.sessions[0]
-        if (active) {
-          dispatch({
-            type: 'LOAD_SESSION',
-            session: active,
-            preserveAi: aiActiveRef.current,
-          })
-          setActiveSessionId(active.id)
-        }
-        dispatch({ type: 'SYNC_OK', ok: r.pushOk })
-      })
-      .finally(() => setSyncing(false))
-  }, [])
+    refreshFromServer().finally(() => setSyncing(false))
+  }, [refreshFromServer])
 
   useEffect(() => {
     setSaving(true)
@@ -252,6 +278,21 @@ export default function UvimcoNotesApp() {
     return () => window.removeEventListener('beforeunload', fn)
   }, [])
 
+  useEffect(() => {
+    const intervalMs = document.visibilityState === 'visible' ? 5 * 60_000 : 60 * 60_000
+    const id = window.setInterval(() => {
+      void refreshFromServer()
+    }, intervalMs)
+    const onVis = () => {
+      if (document.visibilityState === 'visible') void refreshFromServer()
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', onVis)
+    }
+  }, [refreshFromServer])
+
   const runStream = useCallback(
     async (opts: {
       type: TriggerType
@@ -260,17 +301,30 @@ export default function UvimcoNotesApp() {
       conversation: Lookup['conversation']
       mode?: 'lookup' | 'followup' | 'decode'
       followUpQuestion?: string
+      extraScreenshots?: Screenshot[]
     }) => {
       if (streamingRef.current) return
       streamingRef.current = true
       streamBuf.current = ''
+
+      const ctx = assembleClientContext({
+        query: opts.query,
+        activeSession: sessionRef.current,
+        allSessions: sessionsRef.current,
+      })
+
+      const noteShots = screenshotsInContext(sessionRef.current.notes, sessionRef.current.screenshots)
+      const screenshots = [...noteShots, ...(opts.extraScreenshots ?? [])]
 
       await streamLookup({
         type: opts.type,
         query: opts.query,
         context: opts.context,
         conversation: opts.conversation,
-        screenshots: screenshotsInContext(sessionRef.current.notes, sessionRef.current.screenshots),
+        screenshots,
+        glossaryBlock: ctx.glossaryBlock,
+        sourcesBlock: ctx.sourcesBlock,
+        relatedNotesBlock: ctx.relatedNotesBlock,
         ...(opts.mode ? { mode: opts.mode } : {}),
         ...(opts.followUpQuestion ? { followUpQuestion: opts.followUpQuestion } : {}),
         onToken: (token) => {
@@ -308,7 +362,7 @@ export default function UvimcoNotesApp() {
   )
 
   const handleFollowUp = useCallback(
-    (question: string) => {
+    (question: string, extraScreenshots?: Screenshot[]) => {
       const lk = state.currentLookup
       if (!lk || state.isStreaming) return
       const conversation = [...lk.conversation, { role: 'user' as const, content: question }]
@@ -321,6 +375,7 @@ export default function UvimcoNotesApp() {
         conversation: lk.conversation,
         mode: 'followup',
         followUpQuestion: question,
+        ...(extraScreenshots?.length ? { extraScreenshots } : {}),
       })
     },
     [state.currentLookup, state.isStreaming, runStream],
@@ -337,7 +392,7 @@ export default function UvimcoNotesApp() {
     URL.revokeObjectURL(url)
   }, [state.session])
 
-  const handleDecodeAll = useCallback(() => {
+  const handleSummarize = useCallback(() => {
     dispatch({ type: 'PANEL', open: true })
     const lookup: Lookup = {
       id: `decode-${Date.now()}`,
@@ -384,14 +439,28 @@ export default function UvimcoNotesApp() {
     if (next) dispatch({ type: 'LOAD_SESSION', session: next })
   }, [])
 
+  const handleJump = useCallback(
+    (sessionId: string, lineIndex?: number) => {
+      const target = state.sessions.find((s) => s.id === sessionId)
+      if (!target) return
+      if (target.id !== state.session.id) {
+        upsertSession(state.session)
+        setActiveSessionId(target.id)
+        dispatch({ type: 'LOAD_SESSION', session: target })
+      }
+      if (lineIndex != null) {
+        setTimeout(() => editorRef.current?.scrollToLine(lineIndex), 100)
+      }
+    },
+    [state.sessions, state.session],
+  )
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (state.panelOpen && !state.isStreaming) {
-          dispatch({ type: 'PANEL', open: false })
-        } else {
-          dispatch({ type: 'CLEAR_LOOKUP' })
-        }
+        if (searchOpen) setSearchOpen(false)
+        else if (state.panelOpen && !state.isStreaming) dispatch({ type: 'PANEL', open: false })
+        else dispatch({ type: 'CLEAR_LOOKUP' })
         return
       }
       if (!(e.ctrlKey || e.metaKey)) return
@@ -401,7 +470,7 @@ export default function UvimcoNotesApp() {
       }
       if (e.key === 'k') {
         e.preventDefault()
-        handleDecodeAll()
+        handleSummarize()
       }
       if (e.key === 's') {
         e.preventDefault()
@@ -411,13 +480,17 @@ export default function UvimcoNotesApp() {
         e.preventDefault()
         handleNewNote()
       }
+      if (e.shiftKey && e.key === 'F') {
+        e.preventDefault()
+        setSearchOpen(true)
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [handleDecodeAll, handleExport, handleNewNote, state.panelOpen, state.isStreaming])
+  }, [handleSummarize, handleExport, handleNewNote, state.panelOpen, state.isStreaming, searchOpen])
 
   const counts = countShorthandFlags(state.session.notes)
-  const activeQuery = state.currentLookup?.type === 'word' ? state.currentLookup.query : null
+  const activeQuery = state.currentLookup?.query ?? null
 
   return (
     <div className="uvimco-notes-root bg-[var(--uv-bg-base)] text-[var(--uv-text-primary)]">
@@ -425,8 +498,9 @@ export default function UvimcoNotesApp() {
         panelOpen={state.panelOpen}
         onTogglePanel={() => dispatch({ type: 'PANEL_TOGGLE' })}
         onExport={handleExport}
-        onDecodeAll={handleDecodeAll}
+        onSummarize={handleSummarize}
         onNewNote={handleNewNote}
+        onOpenSearch={() => setSearchOpen(true)}
         homeLink={
           <>
             <Link
@@ -440,6 +514,12 @@ export default function UvimcoNotesApp() {
           </>
         }
       />
+      <GlobalSearch
+        open={searchOpen}
+        sessions={state.sessions}
+        onClose={() => setSearchOpen(false)}
+        onJump={handleJump}
+      />
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <section className="uvimco-notes-editor-pane min-w-0 flex-1">
           <input
@@ -450,9 +530,16 @@ export default function UvimcoNotesApp() {
             aria-label="Note title"
             data-testid="notes-meeting-title"
           />
+          <NoteMetaBar
+            tags={state.session.tags ?? []}
+            {...(state.session.metadata ? { metadata: state.session.metadata } : {})}
+            onTagsChange={(tags) => dispatch({ type: 'TAGS', tags })}
+            onMetadataChange={(metadata) => dispatch({ type: 'METADATA', metadata })}
+          />
           <ShorthandBar />
           <div className="uvimco-notes-editor-body" data-testid="notes-editor">
-            <NoteEditor
+            <EditorShell
+              ref={editorRef}
               value={state.session.notes}
               onChange={(notes) => dispatch({ type: 'NOTES', notes })}
               onTrigger={handleTrigger}
@@ -474,6 +561,7 @@ export default function UvimcoNotesApp() {
           streamError={state.streamError}
           notesListOpen={state.notesListOpen}
           aiListOpen={state.aiListOpen}
+          glossaryRefreshKey={state.glossaryRefreshKey}
           onNotesListOpenChange={(open) => dispatch({ type: 'NOTES_LIST', open })}
           onAiListOpenChange={(open) => dispatch({ type: 'AI_LIST', open })}
           onSelectMeeting={handleSelectMeeting}
@@ -482,6 +570,9 @@ export default function UvimcoNotesApp() {
           onFollowUp={handleFollowUp}
           onSelectHistory={(lk) => dispatch({ type: 'SELECT_LOOKUP', lookup: lk })}
           onClose={() => dispatch({ type: 'PANEL', open: false })}
+          onSynced={() => void refreshFromServer()}
+          onJumpTodo={handleJump}
+          onSourcesChange={() => dispatch({ type: 'GLOSSARY_BUMP' })}
         />
       </div>
       <StatusBar

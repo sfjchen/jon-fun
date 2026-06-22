@@ -1,72 +1,58 @@
 /**
- * Verify UVIMCO Notes trigger detection (no browser).
+ * Verify Notes trigger detection (no browser).
  *   npm run verify:uvimco-notes-triggers
  */
-import { detectTriggers, countShorthandFlags } from '../src/lib/uvimco-notes/triggerParser'
+import { detectLineTriggers, countShorthandFlags } from '../src/lib/uvimco-notes/triggerParser'
 
 type Case = {
   label: string
   text: string
   pos: number
   last: string | null
-  expect: { type: 'word' | 'line'; query: string } | null
+  expect: { type: 'line' | 'section'; query: string } | null
 }
 
 const cases: Case[] = [
   {
-    label: 'space after ?term mid-line',
-    text: 'fund review ?DPI ',
-    pos: 17,
+    label: 'line ending with ?',
+    text: 'fund DPI ratio?',
+    pos: 15,
     last: null,
-    expect: { type: 'word', query: 'DPI' },
+    expect: { type: 'line', query: 'fund DPI ratio' },
   },
   {
-    label: 'Enter after ?term on previous line',
-    text: 'review ?MOIC\n',
-    pos: 13,
+    label: 'section ending with ??',
+    text: 'LP stakes\nGP fee??',
+    pos: 18,
     last: null,
-    expect: { type: 'word', query: 'MOIC' },
+    expect: { type: 'section', query: 'GP fee' },
   },
   {
-    label: 'hyphenated ?LP-GP + space',
-    text: '?LP-GP ',
-    pos: 7,
-    last: null,
-    expect: { type: 'word', query: 'LP-GP' },
-  },
-  {
-    label: 'bracket phrase ?[basis risk] + space',
-    text: 'flag ?[basis risk] ',
-    pos: 19,
-    last: null,
-    expect: { type: 'word', query: 'basis risk' },
-  },
-  {
-    label: 'line? on Enter',
-    text: 'LTP underweight this quarter?\n',
-    pos: 30,
-    last: null,
-    expect: { type: 'line', query: 'LTP underweight this quarter' },
-  },
-  {
-    label: 'dedupe same query',
-    text: 'review ?DPI ',
-    pos: 13,
-    last: 'DPI',
+    label: 'dedupe same fireKey',
+    text: 'fund DPI ratio?',
+    pos: 15,
+    last: 'line:fund DPI ratio:0',
     expect: null,
   },
   {
-    label: 'no trigger without delimiter',
-    text: 'review ?MOIC',
-    pos: 12,
+    label: 'no trigger mid-line without ?',
+    text: 'fund DPI ratio',
+    pos: 14,
     last: null,
     expect: null,
+  },
+  {
+    label: 'single ? not ?? for line mode',
+    text: 'what is MOIC?',
+    pos: 13,
+    last: null,
+    expect: { type: 'line', query: 'what is MOIC' },
   },
 ]
 
 let failed = 0
 for (const c of cases) {
-  const got = detectTriggers(c.text, c.pos, c.last)
+  const got = detectLineTriggers(c.text, c.pos, c.last)
   const ok =
     (c.expect === null && got === null) ||
     (c.expect !== null &&
@@ -82,7 +68,7 @@ for (const c of cases) {
   }
 }
 
-const flags = countShorthandFlags('boss ?DPI\n>todo\n*key')
+const flags = countShorthandFlags('boss line?\n>todo\n*key')
 if (flags.flags !== 1 || flags.actions !== 1) {
   failed++
   console.error('✗ countShorthandFlags', flags)

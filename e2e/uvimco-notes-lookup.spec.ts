@@ -29,39 +29,28 @@ test.describe('Notes AI lookup (deploy)', () => {
     await page.waitForSelector('.uvimco-cm .cm-content', { timeout: 20_000 })
   })
 
-  test('?term + space opens panel and streams answer', async ({ page }) => {
+  test('line ending with ? opens panel and streams answer', async ({ page }) => {
     const editor = page.locator('.uvimco-cm .cm-content')
     await editor.click()
     const stream = waitForLookupStream(page)
-    await page.keyboard.type('fund ?DPI ')
-    await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByTestId('notes-ai-toggle')).toBeVisible()
-    await stream
-    const panel = page.getByTestId('notes-side-panel')
-    await expect(panel).toContainText(/DPI|distribution|paid-in|capital/i, { timeout: 45_000 })
-  })
-
-  test('?term + Enter opens panel and streams answer', async ({ page }) => {
-    const editor = page.locator('.uvimco-cm .cm-content')
-    await editor.click()
-    const stream = waitForLookupStream(page)
-    await page.keyboard.type('review ?MOIC')
-    await page.keyboard.press('Enter')
+    await page.keyboard.type('fund DPI ratio?')
     await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 15_000 })
     await stream
-    await expect(page.getByTestId('notes-side-panel')).toContainText(/MOIC|multiple|capital/i, {
+    await expect(page.getByTestId('notes-side-panel')).toContainText(/DPI|distribution|paid-in|capital/i, {
       timeout: 45_000,
     })
   })
 
-  test('hyphenated ?term + space triggers lookup', async ({ page }) => {
+  test('section ending with ?? opens panel and streams answer', async ({ page }) => {
     const editor = page.locator('.uvimco-cm .cm-content')
     await editor.click()
     const stream = waitForLookupStream(page)
-    await page.keyboard.type('?LP-GP ')
+    await page.keyboard.type('LP stakes in fund')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('GP fee structure??')
     await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 15_000 })
     await stream
-    await expect(page.getByTestId('notes-side-panel')).toContainText(/LP|GP|general partner|limited partner/i, {
+    await expect(page.getByTestId('notes-side-panel')).toContainText(/LP|GP|fee|general partner/i, {
       timeout: 45_000,
     })
   })
