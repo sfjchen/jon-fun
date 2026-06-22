@@ -6,7 +6,10 @@ import { countShorthandFlags } from '@/lib/uvimco-notes/triggerParser'
 import { streamLookup } from '@/lib/uvimco-notes/streamClient'
 import {
   createEmptySession,
+  deleteSession,
+  deleteSessionOnServer,
   exportSessionMarkdown,
+  getEffectiveUserId,
   loadActiveSession,
   loadSessions,
   saveSessionToServer,
@@ -16,6 +19,7 @@ import {
 } from '@/lib/uvimco-notes/storage'
 import type { Lookup, NoteSession, Screenshot, TriggerType } from '@/lib/uvimco-notes/types'
 import AIPanel from './AIPanel'
+import MeetingsSidebar from './MeetingsSidebar'
 import NoteEditor from './NoteEditor'
 import ShorthandBar from './ShorthandBar'
 import StatusBar from './StatusBar'
@@ -33,7 +37,6 @@ type State = {
 }
 
 type Action =
-  | { type: 'SET_SESSION'; session: NoteSession }
   | { type: 'SET_SESSIONS'; sessions: NoteSession[] }
   | { type: 'NOTES'; notes: string }
   | { type: 'TITLE'; title: string }
@@ -46,23 +49,22 @@ type Action =
   | { type: 'SELECT_LOOKUP'; lookup: Lookup }
   | { type: 'SCREENSHOT'; shot: Screenshot }
   | { type: 'SYNC_OK'; ok: boolean }
-  | { type: 'NEW_SESSION' }
   | { type: 'LOAD_SESSION'; session: NoteSession }
   | { type: 'CLEAR_LOOKUP' }
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case 'SET_SESSION':
-      return { ...state, session: action.session }
     case 'SET_SESSIONS':
       return { ...state, sessions: action.sessions }
     case 'NOTES': {
       const session = { ...state.session, notes: action.notes }
-      return { ...state, session }
+      const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
+      return { ...state, session, sessions }
     }
     case 'TITLE': {
       const session = { ...state.session, title: action.title }
-      return { ...state, session }
+      const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
+      return { ...state, session, sessions }
     }
     case 'PANEL_TOGGLE':
       return { ...state, panelOpen: !state.panelOpen }
@@ -110,18 +112,6 @@ function reducer(state: State, action: Action): State {
     }
     case 'SYNC_OK':
       return { ...state, syncOk: action.ok }
-    case 'NEW_SESSION': {
-      const fresh = createEmptySession()
-      const sessions = [fresh, ...state.sessions]
-      return {
-        ...state,
-        session: fresh,
-        sessions,
-        sessionHistory: [],
-        currentLookup: null,
-        streamText: '',
-      }
-    }
     case 'LOAD_SESSION':
       return {
         ...state,
@@ -150,13 +140,23 @@ export default function UvimcoNotesApp() {
   const [state, dispatch] = useReducer(reducer, {
     session: initial,
     sessions: loadSessions(),
-    panelOpen: true,
+    panelOpen: false,
     currentLookup: null,
     sessionHistory: [...initial.lookups].reverse(),
     isStreaming: false,
     streamText: '',
     syncOk: null,
   })
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)')
+    if (mq.matches) dispatch({ type: 'PANEL', open: true })
+    const fn = () => {
+      if (!mq.matches) dispatch({ type: 'PANEL', open: false })
+    }
+    mq.addEventListener('change', fn)
+    return () => mq.removeEventListener('change', fn)
+  }, [])
 
   const streamBuf = useRef('')
   const rafRef = useRef<number | null>(null)
@@ -203,7 +203,6 @@ export default function UvimcoNotesApp() {
       conversation: Lookup['conversation']
       mode?: 'lookup' | 'followup' | 'decode'
       followUpQuestion?: string
-      lookupId?: string
     }) => {
       if (streamingRef.current) return
       streamingRef.current = true
@@ -247,7 +246,7 @@ export default function UvimcoNotesApp() {
         triggeredAt: new Date().toISOString(),
       }
       dispatch({ type: 'LOOKUP_START', lookup })
-      void runStream({ type, query, context, conversation: [], lookupId: lookup.id })
+      void runStream({ type, query, context, conversation: [] })
     },
     [runStream],
   )
@@ -304,38 +303,72 @@ export default function UvimcoNotesApp() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const mod = e.metaKey || e.ctrlKey
-      if (mod && e.key === '\\') {
+      if (e.key === 'Escape') {
+        dispatch({ type: 'CLEAR_LOOKUP' })
+        return
+      }
+      if (!(e.ctrlKey || e.metaKey)) return
+      if (e.key === '\\') {
         e.preventDefault()
         dispatch({ type: 'PANEL_TOGGLE' })
       }
-      if (mod && e.key === 'k') {
+      if (e.key === 'k') {
         e.preventDefault()
         handleDecodeAll()
       }
-      if (mod && e.key === 's') {
+      if (e.key === 's') {
         e.preventDefault()
         handleExport()
       }
-      if (e.key === 'Escape') dispatch({ type: 'CLEAR_LOOKUP' })
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [handleDecodeAll, handleExport])
+
+  const handleNewMeeting = useCallback(() => {
+    upsertSession(state.session)
+    const fresh = createEmptySession()
+    setActiveSessionId(fresh.id)
+    upsertSession(fresh)
+    dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+    dispatch({ type: 'LOAD_SESSION', session: fresh })
+  }, [state.session])
+
+  const handleSelectMeeting = useCallback(
+    (s: NoteSession) => {
+      if (s.id !== state.session.id) upsertSession(state.session)
+      setActiveSessionId(s.id)
+      dispatch({ type: 'LOAD_SESSION', session: s })
+    },
+    [state.session],
+  )
+
+  const handleDeleteMeeting = useCallback(
+    (sessionId: string) => {
+      void deleteSessionOnServer(getEffectiveUserId(), sessionId)
+      const next = deleteSession(sessionId)
+      dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+      if (next) dispatch({ type: 'LOAD_SESSION', session: next })
+    },
+    [],
+  )
 
   const counts = countShorthandFlags(state.session.notes)
   const activeQuery = state.currentLookup?.type === 'word' ? state.currentLookup.query : null
 
   return (
     <div className="uvimco-notes-root flex h-full min-h-0 flex-col bg-[var(--uv-bg-base)] text-[var(--uv-text-primary)]">
-      <div className="flex items-center justify-between border-b border-[var(--uv-border)] px-2 py-1">
-        <Link href="/" className="text-[10px] text-[var(--uv-text-muted)] hover:text-[var(--uv-accent)]">
+      <div className="flex items-center border-b border-[var(--uv-border)] px-3 py-1.5">
+        <Link
+          href="/"
+          className="text-xs text-[var(--uv-text-secondary)] hover:text-[var(--uv-accent)]"
+          data-testid="uvimco-home-link"
+        >
           ← sfjc.dev
         </Link>
+        <span className="ml-3 text-xs font-semibold text-[var(--uv-text-primary)]">UVIMCO Notes</span>
       </div>
       <UvimcoHeader
-        title={state.session.title}
-        onTitleChange={(title) => dispatch({ type: 'TITLE', title })}
         panelOpen={state.panelOpen}
         onTogglePanel={() => dispatch({ type: 'PANEL_TOGGLE' })}
         onExport={handleExport}
@@ -343,9 +376,24 @@ export default function UvimcoNotesApp() {
         syncOk={state.syncOk}
       />
       <div className="flex min-h-0 flex-1">
+        <MeetingsSidebar
+          sessions={state.sessions}
+          activeSessionId={state.session.id}
+          onSelect={handleSelectMeeting}
+          onNew={handleNewMeeting}
+          onDelete={handleDeleteMeeting}
+        />
         <section className="flex min-w-0 flex-1 flex-col">
+          <input
+            value={state.session.title}
+            onChange={(e) => dispatch({ type: 'TITLE', title: e.target.value })}
+            className="shrink-0 border-b border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-6 py-4 text-2xl font-semibold text-[var(--uv-text-primary)] placeholder:text-[var(--uv-text-muted)] focus:outline-none"
+            placeholder="Meeting title"
+            aria-label="Meeting title"
+            data-testid="uvimco-meeting-title"
+          />
           <ShorthandBar />
-          <div className="min-h-0 flex-1">
+          <div className="min-h-0 flex-1" data-testid="uvimco-editor">
             <NoteEditor
               value={state.session.notes}
               onChange={(notes) => dispatch({ type: 'NOTES', notes })}
@@ -361,23 +409,10 @@ export default function UvimcoNotesApp() {
           isOpen={state.panelOpen}
           currentLookup={state.currentLookup}
           sessionHistory={state.sessionHistory}
-          pastSessions={state.sessions}
-          activeSessionId={state.session.id}
           streamText={state.streamText}
           isStreaming={state.isStreaming}
           onFollowUp={handleFollowUp}
           onSelectHistory={(lk) => dispatch({ type: 'SELECT_LOOKUP', lookup: lk })}
-          onSelectSession={(s) => {
-            setActiveSessionId(s.id)
-            dispatch({ type: 'LOAD_SESSION', session: s })
-          }}
-          onNewSession={() => {
-            const fresh = createEmptySession()
-            setActiveSessionId(fresh.id)
-            upsertSession(fresh)
-            dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
-            dispatch({ type: 'LOAD_SESSION', session: fresh })
-          }}
           onClose={() => dispatch({ type: 'PANEL', open: false })}
         />
       </div>

@@ -47,11 +47,14 @@ export function getEffectiveUserId(): string {
   return sk || getOrCreateUserId()
 }
 
-export function createEmptySession(title = 'Untitled meeting'): NoteSession {
+export function createEmptySession(title?: string): NoteSession {
   const now = new Date().toISOString()
+  const defaultTitle =
+    title ??
+    `Meeting ${new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
   return {
     id: genUuid(),
-    title,
+    title: defaultTitle,
     notes: '',
     lookups: [],
     screenshots: {},
@@ -222,6 +225,25 @@ export function patchSession(id: string, patch: SessionPatch): NoteSession {
   else sessions.unshift(updated)
   saveSessionsLocal(sessions)
   return updated
+}
+
+export function deleteSession(sessionId: string): NoteSession | null {
+  if (typeof window === 'undefined') return null
+  const sessions = loadSessions().filter((s) => s.id !== sessionId)
+  saveSessionsLocal(sessions)
+  const next = sessions[0] ?? createEmptySession()
+  if (sessions.length === 0) saveSessionsLocal([next])
+  setActiveSessionId(next.id)
+  return next
+}
+
+export async function deleteSessionOnServer(userId: string, sessionId: string): Promise<boolean> {
+  const res = await fetch('/api/uvimco-notes/sessions', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, sessionId }),
+  })
+  return res.ok
 }
 
 export function stripScreenshotsForSync(screenshots: Record<string, Screenshot>): Record<string, Screenshot> {

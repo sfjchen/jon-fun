@@ -99,7 +99,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
 
   if (uvimcoNotes) {
     return (
-      <div className="flex h-dynamic flex-col overflow-hidden" style={{ backgroundColor: 'var(--uv-bg-base, #0d1117)' }}>
+      <div className="flex h-dynamic flex-col overflow-hidden" style={{ backgroundColor: 'var(--uv-bg-base, #ffffff)' }}>
         <main className="min-h-0 flex-1">{children}</main>
       </div>
     )
