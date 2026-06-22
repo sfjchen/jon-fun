@@ -22,8 +22,7 @@ export default function AnswerStream({ text, isStreaming, error }: AnswerStreamP
   if (!text && !isStreaming) {
     return (
       <p className="text-sm leading-relaxed text-[var(--uv-text-secondary)]">
-        Type <code className="text-[var(--uv-accent-strong)]">?term</code> or end a line with{' '}
-        <code className="text-[var(--uv-accent-strong)]">?</code> — answers appear here.
+        Type <code className="text-[var(--uv-accent-strong)]">?term</code> then space or Enter — answers appear here.
       </p>
     )
   }

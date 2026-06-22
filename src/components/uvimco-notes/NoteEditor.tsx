@@ -126,7 +126,8 @@ export default function NoteEditor({
       extensions={extensions}
       onChange={(v) => {
         onChange(v)
-        if (!v.includes('?')) lastFiredRef.current = null
+        const last = lastFiredRef.current
+        if (last && !v.includes(last)) lastFiredRef.current = null
       }}
       basicSetup={{ lineNumbers: false, foldGutter: false, highlightActiveLine: false }}
     />

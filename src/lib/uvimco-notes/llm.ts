@@ -276,4 +276,90 @@ export function resolveModel(mode: 'lookup' | 'followup' | 'decode', hasImages: 
   return lookupModel()
 }
 
+function uniqueModels(models: string[]): string[] {
+  return [...new Set(models.filter(Boolean))]
+}
+
+/** Ordered fallbacks when primary model is overloaded or unavailable. */
+export function modelFallbackChain(mode: 'lookup' | 'followup' | 'decode', hasImages: boolean): {
+  openRouter: string[]
+  gemini: string[]
+} {
+  const primary = resolveModel(mode, hasImages)
+  const geminiPrimary = primary.includes('/') ? primary.split('/').pop()! : primary
+  if (mode === 'decode' || hasImages) {
+    return {
+      openRouter: uniqueModels([primary, 'google/gemini-2.5-flash', 'google/gemini-2.5-flash-lite', 'openai/gpt-4o-mini']),
+      gemini: uniqueModels([geminiPrimary, 'gemini-2.5-flash', 'gemini-2.5-flash-lite']),
+    }
+  }
+  return {
+    openRouter: uniqueModels([primary, 'google/gemini-2.5-flash-lite', 'google/gemini-2.5-flash', 'openai/gpt-4o-mini']),
+    gemini: uniqueModels([geminiPrimary, 'gemini-2.5-flash-lite', 'gemini-2.5-flash']),
+  }
+}
+
+function isRetryableError(msg: string): boolean {
+  return /503|429|overload|high demand|try again|rate limit/i.test(msg)
+}
+
+type StreamArgs = {
+  system: string
+  conversation: Message[]
+  userParts: OpenRouterContentPart[]
+  maxTokens: number
+}
+
+/** Try Gemini and/or OpenRouter models with retries; returns first successful stream. */
+export async function streamLookupWithFallback(
+  mode: 'lookup' | 'followup' | 'decode',
+  hasImages: boolean,
+  args: StreamArgs,
+): Promise<Response> {
+  const gKey = geminiApiKey()
+  const orKey = openRouterApiKey()
+  const { openRouter, gemini } = modelFallbackChain(mode, hasImages)
+  const providerPref = (process.env.UVIMCO_NOTES_LLM_PROVIDER ?? '').toLowerCase()
+
+  type Backend = { kind: 'gemini' | 'openrouter'; models: string[] }
+  const backends: Backend[] = []
+  if (providerPref === 'google' && gKey) backends.push({ kind: 'gemini', models: gemini })
+  else if (providerPref === 'openrouter' && orKey) backends.push({ kind: 'openrouter', models: openRouter })
+  else {
+    if (gKey) backends.push({ kind: 'gemini', models: gemini })
+    if (orKey) backends.push({ kind: 'openrouter', models: openRouter })
+  }
+  if (orKey && !backends.some((b) => b.kind === 'openrouter')) {
+    backends.push({ kind: 'openrouter', models: openRouter })
+  }
+  if (gKey && !backends.some((b) => b.kind === 'gemini')) {
+    backends.push({ kind: 'gemini', models: gemini })
+  }
+
+  let lastError = 'All AI models failed. Try again in a moment.'
+
+  for (const backend of backends) {
+    for (const model of backend.models) {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const res =
+          backend.kind === 'gemini'
+            ? await streamGemini(gKey!, model, args.system, args.conversation, args.userParts, args.maxTokens)
+            : await streamOpenRouter(orKey!, model, args.system, args.conversation, args.userParts, args.maxTokens)
+
+        if (res.ok) return res
+
+        const errJson = (await res.json().catch(() => null)) as { error?: string } | null
+        lastError = errJson?.error ?? lastError
+        if (!isRetryableError(lastError) || attempt === 1) break
+        await new Promise((r) => setTimeout(r, 700 * (attempt + 1)))
+      }
+    }
+  }
+
+  return new Response(JSON.stringify({ error: lastError }), {
+    status: 502,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
 export { UVIMCO_SYSTEM, DECODE_ALL_SYSTEM }

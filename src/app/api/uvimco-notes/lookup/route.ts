@@ -3,10 +3,8 @@ import {
   buildLookupParts,
   geminiApiKey,
   openRouterApiKey,
-  resolveModel,
   resolveSystem,
-  streamGemini,
-  streamOpenRouter,
+  streamLookupWithFallback,
 } from '@/lib/uvimco-notes/llm'
 import type { Message, Screenshot, TriggerType } from '@/lib/uvimco-notes/types'
 
@@ -36,9 +34,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'query required' }, { status: 400 })
     }
 
-    const orKey = openRouterApiKey()
-    const gKey = geminiApiKey()
-    if (!orKey && !gKey) {
+    if (!openRouterApiKey() && !geminiApiKey()) {
       return NextResponse.json(
         {
           error:
@@ -49,22 +45,15 @@ export async function POST(request: NextRequest) {
     }
 
     const system = resolveSystem(mode)
-    const model = resolveModel(mode, screenshots.length > 0)
     const maxTokens = mode === 'decode' ? 800 : 280
     const userParts = buildLookupParts(type, query, context, screenshots, mode, body.followUpQuestion)
 
-    const provider = (process.env.UVIMCO_NOTES_LLM_PROVIDER ?? '').toLowerCase()
-    const preferGemini = provider === 'google' || (provider !== 'openrouter' && gKey && !orKey)
-
-    if (preferGemini && gKey) {
-      const geminiModel = model.includes('/') ? model.split('/').pop()! : model
-      return streamGemini(gKey, geminiModel, system, conversation, userParts, maxTokens)
-    }
-    if (orKey) {
-      return streamOpenRouter(orKey, model, system, conversation, userParts, maxTokens)
-    }
-    const geminiModel = model.includes('/') ? model.split('/').pop()! : model
-    return streamGemini(gKey!, geminiModel, system, conversation, userParts, maxTokens)
+    return streamLookupWithFallback(mode, screenshots.length > 0, {
+      system,
+      conversation,
+      userParts,
+      maxTokens,
+    })
   } catch {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }

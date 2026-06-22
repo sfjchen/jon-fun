@@ -12,6 +12,8 @@ export async function streamLookup(params: {
   onDone: () => void
   onError: (msg: string) => void
 }): Promise<void> {
+  let failed = false
+
   const res = await fetch('/api/uvimco-notes/lookup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -28,15 +30,15 @@ export async function streamLookup(params: {
 
   if (!res.ok) {
     const err = (await res.json().catch(() => null)) as { error?: string } | null
+    failed = true
     params.onError(err?.error ?? `Request failed (${res.status})`)
-    params.onDone()
     return
   }
 
   const reader = res.body?.getReader()
   if (!reader) {
+    failed = true
     params.onError('No response stream')
-    params.onDone()
     return
   }
 
@@ -56,7 +58,10 @@ export async function streamLookup(params: {
         if (payload === '[DONE]') continue
         try {
           const json = JSON.parse(payload) as { token?: string; error?: string }
-          if (json.error) params.onError(json.error)
+          if (json.error) {
+            failed = true
+            params.onError(json.error)
+          }
           if (json.token) params.onToken(json.token)
         } catch {
           /* skip */
@@ -64,5 +69,6 @@ export async function streamLookup(params: {
       }
     }
   }
-  params.onDone()
+
+  if (!failed) params.onDone()
 }

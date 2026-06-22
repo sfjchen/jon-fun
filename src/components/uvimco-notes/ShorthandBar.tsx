@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/uvimco-notes/prefs'
 
 const items = [
-  { sym: '?term', desc: 'AI lookup' },
-  { sym: 'line?', desc: 'explain line' },
+  { sym: '?term␣', desc: 'AI lookup (space or Enter after term)' },
+  { sym: 'line?', desc: 'explain line (Enter on next line)' },
   { sym: '>action', desc: 'todo' },
   { sym: '*key', desc: 'highlight' },
   { sym: '~approx', desc: 'estimate' },
@@ -40,7 +40,7 @@ export default function ShorthandBar() {
         </button>
         {!open ? (
           <span className="hidden truncate text-[11px] text-[var(--uv-text-muted)] sm:inline">
-            ?term · line? · Ctrl+B/I/U · Ctrl+\ panel
+            ?term + space/Enter · line? · Ctrl+B/I/U · Ctrl+\ panel
           </span>
         ) : null}
       </div>
