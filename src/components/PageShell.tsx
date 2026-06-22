@@ -10,12 +10,17 @@ type PageShellProps = {
   showBack?: boolean
 }
 
+function isUvimcoNotes(pathname: string): boolean {
+  return pathname.includes('/games/uvimco-notes')
+}
+
 function isFullBleed(pathname: string, isChwaziMobile?: boolean): boolean {
   if (isChwaziMobile) return true
   return (
     pathname === '/games/pear-navigator' ||
     pathname.startsWith('/games/poker/lobby/') ||
-    pathname.startsWith('/games/poker/table/')
+    pathname.startsWith('/games/poker/table/') ||
+    isUvimcoNotes(pathname)
   )
 }
 
@@ -34,11 +39,12 @@ function isWeddingPath(pathname: string): boolean {
 export function PageShell({ children, title, showBack }: PageShellProps) {
   const pathname = usePathname()
   const weddingPath = isWeddingPath(pathname ?? '')
+  const uvimcoNotes = isUvimcoNotes(pathname ?? '')
   const [isMobile, setIsMobile] = useState(false)
   const chwaziMobile = isChwaziPath(pathname ?? '') && isMobile
-  const isNotebook = !chwaziMobile
+  const isNotebook = !chwaziMobile && !uvimcoNotes
   const isHome = pathname === '/'
-  const showBackLink = showBack ?? !isHome
+  const showBackLink = showBack ?? (!isHome && !uvimcoNotes)
   const fullBleed = isFullBleed(pathname ?? '', chwaziMobile)
   const pearNav = isPearNavigator(pathname ?? '')
   const homeHref = '/'
@@ -87,6 +93,14 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
     return (
       <div data-theme="wedding" className="min-h-screen overflow-x-hidden">
         {children}
+      </div>
+    )
+  }
+
+  if (uvimcoNotes) {
+    return (
+      <div className="flex h-dynamic flex-col overflow-hidden" style={{ backgroundColor: 'var(--uv-bg-base, #0d1117)' }}>
+        <main className="min-h-0 flex-1">{children}</main>
       </div>
     )
   }
