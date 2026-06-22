@@ -13,7 +13,7 @@ export default function StatusBar({ chars, flags, actions, syncOk, saving, synci
   let syncLabel = ''
   if (syncing) syncLabel = 'Syncing…'
   else if (saving) syncLabel = 'Saving…'
-  else if (syncOk === false) syncLabel = 'Local only'
+  else if (syncOk === false) syncLabel = 'Sync failed — saved locally'
   else if (syncOk === true) syncLabel = 'Saved'
 
   return (
@@ -37,7 +37,7 @@ export default function StatusBar({ chars, flags, actions, syncOk, saving, synci
           {syncLabel}
         </span>
       ) : null}
-      <span className="ml-auto hidden sm:inline">Paste screenshot · Ctrl+K decode</span>
+      <span className="ml-auto hidden sm:inline">Paste screenshot · Ctrl+K summarize · Ctrl+Shift+F search</span>
     </footer>
   )
 }

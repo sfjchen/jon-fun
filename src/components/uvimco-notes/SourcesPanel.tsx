@@ -1,6 +1,8 @@
 'use client'
 
+import { useMemo } from 'react'
 import type { NoteSource } from '@/lib/uvimco-notes/types'
+import { deleteSourceOnServer } from '@/lib/uvimco-notes/memorySync'
 import {
   deleteSourceLocal,
   genSourceId,
@@ -9,11 +11,15 @@ import {
 } from '@/lib/uvimco-notes/sources'
 
 type SourcesPanelProps = {
+  refreshKey?: number
   onChange?: () => void
 }
 
-export default function SourcesPanel({ onChange }: SourcesPanelProps) {
-  const sources = loadSourcesLocal()
+export default function SourcesPanel({ refreshKey = 0, onChange }: SourcesPanelProps) {
+  const sources = useMemo(() => {
+    void refreshKey
+    return loadSourcesLocal()
+  }, [refreshKey])
 
   function addPaste() {
     const title = window.prompt('Source title')?.trim()
@@ -66,10 +72,10 @@ function SourceRow({ source, onChange }: { source: NoteSource; onChange?: () => 
   }
 
   function remove() {
-    if (window.confirm(`Delete "${source.title}"?`)) {
-      deleteSourceLocal(source.id)
-      onChange?.()
-    }
+    if (!window.confirm(`Delete "${source.title}"?`)) return
+    deleteSourceLocal(source.id)
+    void deleteSourceOnServer(source.id)
+    onChange?.()
   }
 
   return (

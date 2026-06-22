@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 
-/** Stub UVIMCO Notes sync + lookup routes for offline E2E. */
+/** Stub Notes sync, lookup, glossary, and sources routes for offline E2E. */
 export async function mockUvimcoNotesApi(page: Page): Promise<void> {
   await page.route('**/api/uvimco-notes/sessions**', async (route) => {
     const method = route.request().method()
@@ -23,6 +23,24 @@ export async function mockUvimcoNotesApi(page: Page): Promise<void> {
     await route.continue()
   })
 
+  await page.route('**/api/uvimco-notes/glossary**', async (route) => {
+    const method = route.request().method()
+    if (method === 'GET') {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ entries: [] }) })
+      return
+    }
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) })
+  })
+
+  await page.route('**/api/uvimco-notes/sources**', async (route) => {
+    const method = route.request().method()
+    if (method === 'GET') {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ sources: [] }) })
+      return
+    }
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) })
+  })
+
   await page.route('**/api/uvimco-notes/lookup', async (route) => {
     const body = `
 data: ${JSON.stringify({ token: 'E2E mock answer for term lookup.' })}
@@ -36,4 +54,9 @@ data: [DONE]
       body,
     })
   })
+}
+
+/** Wait for debounced line? / ?? trigger (~400ms). */
+export async function waitForNotesTrigger(page: Page): Promise<void> {
+  await page.waitForTimeout(500)
 }

@@ -1,16 +1,20 @@
 'use client'
 
+import { useMemo } from 'react'
 import { loadGlossary } from '@/lib/uvimco-notes/glossary'
 
 type GlossaryPanelProps = {
   refreshKey?: number
 }
 
-export default function GlossaryPanel({ refreshKey }: GlossaryPanelProps) {
-  const entries = loadGlossary().slice(0, 12)
+export default function GlossaryPanel({ refreshKey = 0 }: GlossaryPanelProps) {
+  const entries = useMemo(() => {
+    void refreshKey
+    return loadGlossary().slice(0, 12)
+  }, [refreshKey])
 
   return (
-    <section className="border-b border-[var(--uv-border)] px-3 py-2" data-testid="notes-glossary-panel">
+    <section className="border-b border-[var(--uv-border)] px-3 py-2" data-testid="notes-glossary-panel" key={refreshKey}>
       <p className="mb-2 text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">Glossary</p>
       {entries.length === 0 ? (
         <p className="text-[11px] text-[var(--uv-text-muted)]">Terms auto-collected from AI lookups.</p>

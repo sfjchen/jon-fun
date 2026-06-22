@@ -4,18 +4,6 @@ test.describe('Notes sync restore (mock API)', () => {
   test.use({ viewport: { width: 1280, height: 800 } })
 
   test('restore panel pulls sessions from server', async ({ page }) => {
-    const remoteSession = {
-      id: 'restored-session',
-      title: 'Restored Note',
-      notes: 'restored body text',
-      tags: [],
-      metadata: { meetingAt: new Date().toISOString() },
-      lookups: [],
-      screenshots: {},
-      startedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-
     await page.addInitScript(() => {
       localStorage.removeItem('uvimco_notes_sessions')
       localStorage.removeItem('uvimco_notes_sync_key')
@@ -26,7 +14,23 @@ test.describe('Notes sync restore (mock API)', () => {
     await page.route('**/api/uvimco-notes/sessions**', async (route) => {
       const url = route.request().url()
       if (route.request().method() === 'GET' && url.includes('userId=restore-key-123')) {
-        await route.fulfill({ json: { sessions: [remoteSession] } })
+        await route.fulfill({
+          json: {
+            sessions: [
+              {
+                id: 'restored-session',
+                title: 'Restored Note',
+                notes: 'restored body text',
+                tags: [],
+                metadata: { meetingAt: new Date().toISOString() },
+                lookups: [],
+                screenshots: {},
+                startedAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              },
+            ],
+          },
+        })
         return
       }
       if (route.request().method() === 'GET') {
@@ -36,8 +40,15 @@ test.describe('Notes sync restore (mock API)', () => {
       await route.fulfill({ json: { ok: true } })
     })
 
+    await page.route('**/api/uvimco-notes/glossary**', async (route) => {
+      await route.fulfill({ json: route.request().method() === 'GET' ? { entries: [] } : { ok: true } })
+    })
+    await page.route('**/api/uvimco-notes/sources**', async (route) => {
+      await route.fulfill({ json: route.request().method() === 'GET' ? { sources: [] } : { ok: true } })
+    })
+
     await page.goto('/games/notes')
-    await page.getByTestId('notes-toggle-panel').click()
+    await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 10_000 })
     await expect(page.getByTestId('notes-sync-panel')).toBeVisible()
 
     await page.getByTestId('notes-restore-key-input').fill('restore-key-123')

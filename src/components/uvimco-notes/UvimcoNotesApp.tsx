@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { assembleClientContext } from '@/lib/uvimco-notes/contextAssembler'
 import { upsertFromLookup } from '@/lib/uvimco-notes/glossary'
+import { pushGlossaryToServer, syncMemoryBank } from '@/lib/uvimco-notes/memorySync'
 import { countShorthandFlags } from '@/lib/uvimco-notes/triggerParser'
 import { streamLookup } from '@/lib/uvimco-notes/streamClient'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/uvimco-notes/prefs'
@@ -237,6 +238,8 @@ export default function UvimcoNotesApp() {
 
   const refreshFromServer = useCallback(async () => {
     const r = await syncWithServer()
+    const mem = await syncMemoryBank()
+    dispatch({ type: 'GLOSSARY_BUMP' })
     dispatch({ type: 'SET_SESSIONS', sessions: r.sessions })
     const activeId = sessionRef.current.id
     const active = r.sessions.find((s) => s.id === activeId) ?? r.sessions[0]
@@ -244,7 +247,8 @@ export default function UvimcoNotesApp() {
       dispatch({ type: 'LOAD_SESSION', session: active, preserveAi: aiActiveRef.current })
       setActiveSessionId(active.id)
     }
-    dispatch({ type: 'SYNC_OK', ok: r.pushOk })
+    const ok = r.pushOk && mem.glossaryOk && mem.sourcesOk
+    dispatch({ type: 'SYNC_OK', ok })
     return r
   }, [])
 
@@ -339,6 +343,7 @@ export default function UvimcoNotesApp() {
         onDone: () => {
           streamingRef.current = false
           dispatch({ type: 'STREAM_DONE', assistantText: streamBuf.current })
+          void pushGlossaryToServer()
         },
       })
     },
@@ -572,7 +577,10 @@ export default function UvimcoNotesApp() {
           onClose={() => dispatch({ type: 'PANEL', open: false })}
           onSynced={() => void refreshFromServer()}
           onJumpTodo={handleJump}
-          onSourcesChange={() => dispatch({ type: 'GLOSSARY_BUMP' })}
+          onSourcesChange={() => {
+            dispatch({ type: 'GLOSSARY_BUMP' })
+            void syncMemoryBank()
+          }}
         />
       </div>
       <StatusBar
