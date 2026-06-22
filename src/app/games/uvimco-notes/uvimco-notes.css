@@ -1,15 +1,25 @@
 .uvimco-notes-layout {
-  --uv-bg-base: #0d1117;
-  --uv-bg-elevated: #161b22;
-  --uv-bg-panel: #1c2128;
-  --uv-accent: #d4a017;
-  --uv-accent-dim: rgba(212, 160, 23, 0.12);
-  --uv-accent-strong: #f0c040;
-  --uv-text-primary: #e6edf3;
-  --uv-text-secondary: #8b949e;
-  --uv-text-muted: #484f58;
-  --uv-border: #30363d;
-  --uv-border-hover: #484f58;
+  height: 100dvh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  /* Notion-like light defaults — high-contrast body text */
+  --uv-bg-base: #ffffff;
+  --uv-bg-sidebar: #f7f6f3;
+  --uv-bg-elevated: #ffffff;
+  --uv-bg-panel: #fbfbfa;
+  --uv-bg-hover: #efefef;
+  --uv-accent: #2383e2;
+  --uv-accent-dim: rgba(35, 131, 226, 0.1);
+  --uv-accent-strong: #1a6fc9;
+  --uv-text-primary: #37352f;
+  --uv-text-secondary: #6f6e6b;
+  --uv-text-muted: #9b9a97;
+  --uv-border: #e9e9e7;
+  --uv-border-hover: #d3d3d1;
+  --uv-action: #37352f;
+  --uv-key: #37352f;
+  --uv-approx: #787774;
   font-family: var(--font-lato), 'Lato', sans-serif;
   color: var(--uv-text-primary);
   background: var(--uv-bg-base);
@@ -26,16 +36,16 @@
 }
 
 .uvimco-notes-root .cm-action-line {
-  color: var(--uv-accent);
+  color: var(--uv-action);
 }
 
 .uvimco-notes-root .cm-key-line {
-  color: var(--uv-text-primary);
+  color: var(--uv-key);
   font-weight: 700;
 }
 
 .uvimco-notes-root .cm-approx-line {
-  color: var(--uv-text-muted);
+  color: var(--uv-approx);
   font-style: italic;
 }
 
@@ -55,4 +65,9 @@
 
 .uvimco-cm .cm-scroller {
   min-height: 100%;
+}
+
+.uvimco-meeting-active {
+  background: var(--uv-bg-hover);
+  font-weight: 600;
 }

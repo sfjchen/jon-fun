@@ -83,8 +83,8 @@ export const uvimcoEditorTheme = EditorView.theme({
   '.cm-scroller': { overflow: 'auto', fontFamily: 'var(--font-lato), Lato, sans-serif' },
   '.cm-content': {
     fontFamily: 'var(--font-lato), Lato, sans-serif',
-    fontSize: '14px',
-    lineHeight: '1.8',
+    fontSize: '15px',
+    lineHeight: '1.75',
     caretColor: 'var(--uv-text-primary)',
     color: 'var(--uv-text-primary)',
     padding: '12px 0',
@@ -93,6 +93,6 @@ export const uvimcoEditorTheme = EditorView.theme({
   '.cm-gutters': { display: 'none' },
   '&.cm-focused .cm-cursor': { borderLeftColor: 'var(--uv-accent)' },
   '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': {
-    backgroundColor: 'rgba(212, 160, 23, 0.25) !important',
+    backgroundColor: 'rgba(35, 131, 226, 0.18) !important',
   },
 })
