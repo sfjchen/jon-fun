@@ -1,10 +1,14 @@
 export type TriggerType = 'line' | 'section'
 
-export type NoteKind = 'IC' | 'GP' | 'internal' | 'other'
+export type { KnowledgeDomainId } from './knowledge/registry'
+
+export type NoteKind = 'IC' | 'GP' | 'internal' | 'other' | 'learning' | 'meeting'
 
 export interface NoteMetadata {
   meetingAt?: string
   kind?: NoteKind
+  /** Override auto domain inference for AI context */
+  domain?: import('./knowledge/registry').KnowledgeDomainId
 }
 
 export interface Message {

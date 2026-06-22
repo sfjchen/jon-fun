@@ -7,10 +7,10 @@ Living design doc for **Notes** at `/games/notes`. Modeled after [READER-BENCHMA
 | | Notes | Notion | Obsidian |
 |---|-------|--------|----------|
 | **Primary job** | Live meeting capture + domain AI | Team wiki + databases | Personal linked vault |
-| **AI** | Trigger-native (`?` / `??`), UVIMCO-tuned | Slash commands, page AI | Plugins / Copilot |
+| **AI** | Trigger-native (`?` / `??`), domain packs (UVIMCO, APM, CFA L1) | Slash commands, page AI | Plugins / Copilot |
 | **Structure** | Unified vault: notes → lookups → glossary → sources | Pages + DBs | Files + graph |
 
-Notes is **not** a Notion database clone or Obsidian plugin host. It is a **durable intern workspace** that grows over time.
+Notes is **not** a Notion database clone or Obsidian plugin host. It is a **long-term personal knowledge vault** (finance, learning, meetings) — currently tuned for internship/endowment work via **domain packs** ([NOTES-KNOWLEDGE.md](./NOTES-KNOWLEDGE.md)).
 
 ## Unified vault
 
@@ -41,7 +41,7 @@ Other shorthand unchanged: `>` todo, `*` highlight, `~` approx, screenshot paste
 
 - **Intent guess** first (one short line)
 - **Dense, skimmable** — partial sentences OK; extra blank lines between blocks
-- **Labels** as plain text (`Meaning`, `UVIMCO angle`, `Follow up if…`) — not markdown `#` headers in model output
+- **Labels** as plain text (`Meaning`, domain angle e.g. `Endowment relevance`, `Follow up if…`) — not markdown `#` headers in model output
 - Panel renders via markdown component (headings/lists styled, no raw `##`/`*` visible)
 - **Sources** and **glossary** injection points in prompt (Phase 2 fills them)
 
@@ -87,4 +87,4 @@ Data lives on Supabase under `uvimco_note_sessions` (+ `notes_sources`, `notes_g
 
 - **2026-06-22**: Initial doc; Phase 1 implementation — `?`/`??` triggers, global search, sync restore, metadata/tags, structured AI panel, autoglossary, rollup, resizable panel.
 - **2026-06-22**: Phase 2 — sources/glossary tables, context assembler, Sources UI.
-- **2026-06-22**: Phase 3 — Tiptap WYSIWYG behind `NEXT_PUBLIC_NOTES_WYSIWYG=1`.
+- **2026-06-22**: Knowledge layer — domain packs, auto-sectioning, generalizable prompts ([NOTES-KNOWLEDGE.md](./NOTES-KNOWLEDGE.md)).

@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import type { NoteSource } from '@/lib/uvimco-notes/types'
 import { deleteSourceOnServer } from '@/lib/uvimco-notes/memorySync'
+import { isBuiltinSource } from '@/lib/uvimco-notes/knowledge/builtinSources'
 import {
   deleteSourceLocal,
   genSourceId,
@@ -72,6 +73,7 @@ function SourceRow({ source, onChange }: { source: NoteSource; onChange?: () => 
   }
 
   function remove() {
+    if (isBuiltinSource(source.id)) return
     if (!window.confirm(`Delete "${source.title}"?`)) return
     deleteSourceLocal(source.id)
     void deleteSourceOnServer(source.id)

@@ -1,5 +1,15 @@
-import { DECODE_ALL_SYSTEM, SECTION_SYSTEM, UVIMCO_SYSTEM, injectContextPlaceholders } from './uvimcoContext'
+import type { KnowledgeDomainId } from './knowledge/registry'
+import { resolveSystemPrompt } from './knowledge/prompts'
 import type { Message, Screenshot, TriggerType } from './types'
+
+export type PromptContext = {
+  domainId?: KnowledgeDomainId
+  tags?: string[]
+  fullNotes?: string
+  sourcesBlock?: string
+  glossaryBlock?: string
+  relatedNotesBlock?: string
+}
 
 export const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
@@ -48,18 +58,28 @@ export function buildUserText(
   if (type === 'section') {
     return `Section marked with ??:\n${context}\n\nUser focus line: "${query}"\n\nExplain this section — infer the question they likely have.`
   }
-  return `Line marked with ?:\n"${query}"\n\nSurrounding context:\n${context}\n\nExplain what this means in UVIMCO context.`
+  return `Line marked with ?:\n"${query}"\n\nSurrounding context:\n${context}\n\nExplain clearly in the active domain context.`
 }
 
 export function resolveSystem(
   mode: 'lookup' | 'followup' | 'decode',
   type: TriggerType,
-  sourcesBlock = '',
-  glossaryBlock = '',
+  promptCtx: PromptContext,
+  query = '',
 ): string {
-  if (mode === 'decode') return injectContextPlaceholders(DECODE_ALL_SYSTEM, sourcesBlock, glossaryBlock)
-  const base = type === 'section' ? SECTION_SYSTEM : UVIMCO_SYSTEM
-  return injectContextPlaceholders(base, sourcesBlock, glossaryBlock)
+  return resolveSystemPrompt(
+    mode,
+    type,
+    {
+      ...(promptCtx.domainId ? { domainId: promptCtx.domainId } : {}),
+      ...(promptCtx.tags?.length ? { tags: promptCtx.tags } : {}),
+      ...(promptCtx.fullNotes ? { notes: promptCtx.fullNotes } : {}),
+      ...(query ? { query } : {}),
+      ...(promptCtx.sourcesBlock ? { sourcesBlock: promptCtx.sourcesBlock } : {}),
+      ...(promptCtx.glossaryBlock ? { glossaryBlock: promptCtx.glossaryBlock } : {}),
+      ...(promptCtx.relatedNotesBlock ? { relatedNotesBlock: promptCtx.relatedNotesBlock } : {}),
+    },
+  )
 }
 
 export function buildOpenRouterMessages(
@@ -371,4 +391,4 @@ export async function streamLookupWithFallback(
   })
 }
 
-export { UVIMCO_SYSTEM, SECTION_SYSTEM, DECODE_ALL_SYSTEM }
+export { resolveSystemPrompt, buildLineSystemPrompt } from './knowledge/prompts'

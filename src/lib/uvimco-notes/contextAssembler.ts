@@ -1,4 +1,6 @@
 import { formatGlossaryForPrompt } from './glossary'
+import { resolveDomainOpts, resolveDomainsForNote } from './knowledge/registry'
+import { formatSectionsOutline, parseNoteSections } from './knowledge/sectioning'
 import { formatSourcesForPrompt, loadSourcesLocal } from './sources'
 import type { NoteSession } from './types'
 
@@ -14,10 +16,33 @@ export function assembleClientContext(opts: {
   activeSession: NoteSession
   allSessions: NoteSession[]
   maxNotes?: number
-}): { glossaryBlock: string; sourcesBlock: string; relatedNotesBlock: string } {
+}): {
+  glossaryBlock: string
+  sourcesBlock: string
+  relatedNotesBlock: string
+  sectionsOutline: string
+  domainId: ReturnType<typeof resolveDomainsForNote>['primary']['id']
+  noteTags: string[]
+} {
+  const domainOpts = resolveDomainOpts({
+    tags: opts.activeSession.tags,
+    notes: opts.activeSession.notes,
+    query: opts.query,
+    ...(opts.activeSession.metadata?.domain
+      ? { explicitDomain: opts.activeSession.metadata.domain }
+      : {}),
+    ...(opts.activeSession.metadata?.kind ? { kind: opts.activeSession.metadata.kind } : {}),
+  })
+
+  const { primary } = resolveDomainsForNote(domainOpts)
+
+  const sections = parseNoteSections(opts.activeSession.notes)
+  const sectionsOutline = formatSectionsOutline(sections)
+
   const glossaryBlock = formatGlossaryForPrompt(12)
   const sources = loadSourcesLocal().filter((s) => s.includeInContext)
-  const sourcesBlock = formatSourcesForPrompt(sources, opts.query)
+  const domainTags = new Set(primary.tagHints.map((t) => t.toLowerCase()))
+  const sourcesBlock = formatSourcesForPrompt(sources, opts.query, domainTags)
 
   const tagSet = new Set(opts.activeSession.tags.map((t) => t.toLowerCase()))
   const related = opts.allSessions
@@ -27,6 +52,7 @@ export function assembleClientContext(opts: {
       for (const t of s.tags) {
         if (tagSet.has(t.toLowerCase())) score += 15
       }
+      if (s.metadata?.domain === primary.id) score += 10
       if (s.notes.toLowerCase().includes(opts.query.toLowerCase().slice(0, 20))) score += 8
       for (const lk of s.lookups) {
         if (lk.query.toLowerCase().includes(opts.query.toLowerCase().slice(0, 12))) score += 5
@@ -38,12 +64,18 @@ export function assembleClientContext(opts: {
     .slice(0, opts.maxNotes ?? 3)
 
   const relatedNotesBlock = related
-    .map(({ s }) => `- ${s.title} (${s.updatedAt.slice(0, 10)}): ${s.notes.slice(0, 200).replace(/\n/g, ' ')}…`)
+    .map(({ s }) => {
+      const outline = formatSectionsOutline(parseNoteSections(s.notes), 3)
+      return `- ${s.title} (${s.updatedAt.slice(0, 10)}): ${outline}`
+    })
     .join('\n')
 
   return {
     glossaryBlock,
     sourcesBlock,
     relatedNotesBlock: relatedNotesBlock || '(none)',
+    sectionsOutline,
+    domainId: primary.id,
+    noteTags: opts.activeSession.tags,
   }
 }
