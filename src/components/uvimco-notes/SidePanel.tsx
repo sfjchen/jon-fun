@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import type { Lookup, NoteSession } from '@/lib/uvimco-notes/types'
 import AnswerStream from './AnswerStream'
 
@@ -26,6 +25,11 @@ type SidePanelProps = {
   sessionHistory: Lookup[]
   streamText: string
   isStreaming: boolean
+  streamError?: string | null
+  notesListOpen: boolean
+  aiListOpen: boolean
+  onNotesListOpenChange: (open: boolean) => void
+  onAiListOpenChange: (open: boolean) => void
   onSelectMeeting: (session: NoteSession) => void
   onNewMeeting: () => void
   onDeleteMeeting: (sessionId: string) => void
@@ -42,6 +46,11 @@ export default function SidePanel({
   sessionHistory,
   streamText,
   isStreaming,
+  streamError,
+  notesListOpen,
+  aiListOpen,
+  onNotesListOpenChange,
+  onAiListOpenChange,
   onSelectMeeting,
   onNewMeeting,
   onDeleteMeeting,
@@ -49,9 +58,6 @@ export default function SidePanel({
   onSelectHistory,
   onClose,
 }: SidePanelProps) {
-  const [notesOpen, setNotesOpen] = useState(false)
-  const [aiOpen, setAiOpen] = useState(true)
-
   if (!isOpen) return null
 
   return (
@@ -74,23 +80,22 @@ export default function SidePanel({
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {/* Notes — collapsed by default */}
         <section data-testid="notes-meetings-section">
           <button
             type="button"
-            onClick={() => setNotesOpen((v) => !v)}
+            onClick={() => onNotesListOpenChange(!notesListOpen)}
             className="flex w-full items-center justify-between px-3 py-2 text-left hover:bg-[var(--uv-bg-hover)]"
-            aria-expanded={notesOpen}
+            aria-expanded={notesListOpen}
             data-testid="notes-meetings-toggle"
           >
             <span className="text-xs font-medium text-[var(--uv-text-primary)]">
               Notes
               <span className="ml-1.5 font-normal text-[var(--uv-text-muted)]">({sessions.length})</span>
             </span>
-            <span className="text-[10px] text-[var(--uv-text-muted)]">{notesOpen ? '▾' : '▸'}</span>
+            <span className="text-[10px] text-[var(--uv-text-muted)]">{notesListOpen ? '▾' : '▸'}</span>
           </button>
 
-          {notesOpen ? (
+          {notesListOpen ? (
             <div className="border-b border-[var(--uv-border)] px-2 pb-2">
               <div className="mb-1 flex justify-end">
                 <button
@@ -144,30 +149,29 @@ export default function SidePanel({
           ) : null}
         </section>
 
-        {/* AI lookup — collapsible */}
         <section className="px-3 py-2">
           <button
             type="button"
-            onClick={() => setAiOpen((v) => !v)}
+            onClick={() => onAiListOpenChange(!aiListOpen)}
             className="mb-2 flex w-full items-center justify-between text-left"
-            aria-expanded={aiOpen}
+            aria-expanded={aiListOpen}
             data-testid="notes-ai-toggle"
           >
             <span className="text-xs font-medium text-[var(--uv-text-primary)]">AI lookup</span>
-            <span className="text-[10px] text-[var(--uv-text-muted)]">{aiOpen ? '▾' : '▸'}</span>
+            <span className="text-[10px] text-[var(--uv-text-muted)]">{aiListOpen ? '▾' : '▸'}</span>
           </button>
 
-          {aiOpen ? (
+          {aiListOpen ? (
             <>
               {currentLookup ? (
                 <div className="mb-3">
                   <p className="mb-1.5 text-[11px] text-[var(--uv-text-secondary)]">
                     {currentLookup.type === 'word' ? `?${currentLookup.query}` : `${currentLookup.query}?`}
                   </p>
-                  <AnswerStream text={streamText} isStreaming={isStreaming} />
+                  <AnswerStream text={streamText} isStreaming={isStreaming} error={streamError ?? null} />
                 </div>
               ) : (
-                <AnswerStream text="" isStreaming={false} />
+                <AnswerStream text="" isStreaming={false} error={streamError ?? null} />
               )}
 
               {currentLookup && !isStreaming ? (

@@ -15,6 +15,7 @@ test.describe('Notes', () => {
         localStorage.removeItem(key)
         localStorage.removeItem('uvimco_notes_active_session_id')
         localStorage.removeItem('uvimco_notes_user_id')
+        localStorage.removeItem('notes_ui_prefs')
       } catch {
         /* ignore */
       }
@@ -77,5 +78,27 @@ test.describe('Notes', () => {
   test('home link returns to root', async ({ page }) => {
     await page.getByTestId('notes-home-link').click()
     await expect(page).toHaveURL('/')
+  })
+
+  test('/games/notes redirects to app', async ({ page }) => {
+    await page.goto('/games/notes')
+    await expect(page).toHaveURL(/\/games\/uvimco-notes/)
+    await expect(page.getByTestId('notes-editor')).toBeVisible({ timeout: 15000 })
+  })
+
+  test('shorthand hints toggle', async ({ page }) => {
+    await page.getByTestId('notes-shorthand-toggle').click()
+    await expect(page.getByText('AI lookup', { exact: true })).toBeVisible()
+    await page.getByTestId('notes-shorthand-toggle').click()
+    await expect(page.getByText('Ctrl+B/I/U')).toBeVisible()
+  })
+
+  test('Ctrl+Shift+N creates new note', async ({ page }) => {
+    await page.getByTestId('notes-toggle-panel').click()
+    await page.getByTestId('notes-meetings-toggle').click()
+    await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(1)
+    await page.keyboard.press('Control+Shift+N')
+    await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(2)
+    await expect(page.getByTestId('notes-side-panel')).toBeVisible()
   })
 })

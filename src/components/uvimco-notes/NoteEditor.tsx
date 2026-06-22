@@ -6,7 +6,7 @@ import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
 import { type Extension } from '@codemirror/state'
 import { EditorView, keymap } from '@codemirror/view'
-import { decorationPlugin, triggerPlugin, uvimcoEditorTheme } from '@/lib/uvimco-notes/cmDecorations'
+import { decorationPlugin, editorPlaceholder, triggerPlugin, uvimcoEditorTheme } from '@/lib/uvimco-notes/cmDecorations'
 
 const CodeMirror = dynamic(() => import('@uiw/react-codemirror').then((m) => m.default), { ssr: false })
 
@@ -85,6 +85,7 @@ export default function NoteEditor({
       history(),
       markdown({ base: markdownLanguage }),
       uvimcoEditorTheme,
+      editorPlaceholder,
       decorationPlugin(activeTriggerQuery),
       triggerPlugin(onTriggerStable, lastFiredRef),
       docsKeymap,

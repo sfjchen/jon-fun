@@ -1,25 +1,63 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/uvimco-notes/prefs'
+
+const items = [
+  { sym: '?term', desc: 'AI lookup' },
+  { sym: 'line?', desc: 'explain line' },
+  { sym: '>action', desc: 'todo' },
+  { sym: '*key', desc: 'highlight' },
+  { sym: '~approx', desc: 'estimate' },
+]
+
 export default function ShorthandBar() {
-  const items = [
-    { sym: '?term', desc: 'lookup' },
-    { sym: 'line?', desc: 'explain line' },
-    { sym: '>action', desc: 'todo' },
-    { sym: '*key', desc: 'highlight' },
-    { sym: '~approx', desc: 'estimate' },
-  ]
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    setOpen(loadNotesUiPrefs().shorthandOpen ?? false)
+  }, [])
+
+  function toggle() {
+    setOpen((v) => {
+      const next = !v
+      saveNotesUiPrefs({ shorthandOpen: next })
+      return next
+    })
+  }
 
   return (
-    <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-b border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-4 py-1.5 text-[10px] text-[var(--uv-text-secondary)]">
-      {items.map((it) => (
-        <span key={it.sym}>
-          <code className="font-medium text-[var(--uv-accent-strong)]">{it.sym}</code>
-          <span className="ml-1">{it.desc}</span>
-        </span>
-      ))}
-      <span className="ml-auto hidden md:inline">
-        Ctrl+B/I/U · Ctrl+S export · Ctrl+K decode · Ctrl+\ panel
-      </span>
+    <div className="shrink-0 border-b border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-4 py-1">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={toggle}
+          data-testid="notes-shorthand-toggle"
+          className="rounded px-1.5 py-0.5 text-[11px] text-[var(--uv-text-secondary)] hover:bg-[var(--uv-bg-hover)] hover:text-[var(--uv-text-primary)]"
+          aria-expanded={open}
+        >
+          {open ? 'Hide hints' : 'Hints'}
+        </button>
+        {!open ? (
+          <span className="hidden truncate text-[11px] text-[var(--uv-text-muted)] sm:inline">
+            ?term · line? · Ctrl+B/I/U · Ctrl+\ panel
+          </span>
+        ) : null}
+      </div>
+      {open ? (
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 pb-1 text-[11px] text-[var(--uv-text-secondary)]">
+          {items.map((it) => (
+            <span key={it.sym}>
+              <code className="font-semibold text-[var(--uv-accent-strong)]">{it.sym}</code>
+              <span className="ml-1">{it.desc}</span>
+            </span>
+          ))}
+          <span className="ml-auto hidden lg:inline">
+            Ctrl+B/I/U bold/italic/underline · Ctrl+Shift+8 bullet · Ctrl+S export · Ctrl+K decode · Ctrl+\ panel ·
+            Ctrl+Shift+N new note
+          </span>
+        </div>
+      ) : null}
     </div>
   )
 }
