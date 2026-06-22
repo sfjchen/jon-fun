@@ -101,4 +101,22 @@ test.describe('Notes', () => {
     await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(2)
     await expect(page.getByTestId('notes-side-panel')).toBeVisible()
   })
+
+  test('Meeting title normalizes to Note in localStorage', async ({ page }) => {
+    await page.addInitScript(() => {
+      const session = {
+        id: 'local-legacy-title',
+        title: 'Meeting Jan 1, 2026',
+        notes: '',
+        lookups: [],
+        screenshots: {},
+        startedAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      }
+      localStorage.setItem('uvimco_notes_sessions', JSON.stringify([session]))
+      localStorage.setItem('uvimco_notes_active_session_id', session.id)
+    })
+    await page.reload()
+    await expect(page.getByTestId('notes-meeting-title')).toHaveValue('Note Jan 1, 2026')
+  })
 })

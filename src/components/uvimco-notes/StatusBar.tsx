@@ -6,12 +6,14 @@ type StatusBarProps = {
   actions: number
   syncOk: boolean | null
   saving: boolean
+  syncing?: boolean
 }
 
-export default function StatusBar({ chars, flags, actions, syncOk, saving }: StatusBarProps) {
+export default function StatusBar({ chars, flags, actions, syncOk, saving, syncing }: StatusBarProps) {
   let syncLabel = ''
-  if (saving) syncLabel = 'Saving…'
-  else if (syncOk === false) syncLabel = 'Local only (cloud sync off)'
+  if (syncing) syncLabel = 'Syncing…'
+  else if (saving) syncLabel = 'Saving…'
+  else if (syncOk === false) syncLabel = 'Local only'
   else if (syncOk === true) syncLabel = 'Saved'
 
   return (
@@ -24,8 +26,13 @@ export default function StatusBar({ chars, flags, actions, syncOk, saving }: Sta
       <span>{actions} todos</span>
       {syncLabel ? (
         <span
-          className={syncOk === false ? 'text-amber-800' : 'text-[var(--uv-text-muted)]'}
-          title={syncOk === false ? 'Notes stay on this device until Supabase migration is applied' : undefined}
+          data-testid="notes-sync-label"
+          className={syncOk === false && !syncing ? 'text-amber-800' : 'text-[var(--uv-text-muted)]'}
+          title={
+            syncOk === false && !syncing
+              ? 'Cloud sync failed — notes are still saved on this device'
+              : undefined
+          }
         >
           {syncLabel}
         </span>
