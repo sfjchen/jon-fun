@@ -23,7 +23,7 @@ export default function MeetingsSidebar({
 }: MeetingsSidebarProps) {
   return (
     <aside
-      className="flex w-[220px] shrink-0 flex-col border-r border-[var(--uv-border)] bg-[var(--uv-bg-sidebar)] max-md:w-[150px] md:relative"
+      className="flex w-[220px] shrink-0 flex-col overflow-hidden border-r border-[var(--uv-border)] bg-[var(--uv-bg-sidebar)] max-md:w-[150px]"
       data-testid="uvimco-meetings-sidebar"
       aria-label="Meeting notes"
     >

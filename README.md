@@ -453,7 +453,7 @@ src/
 - **Playwright** in `e2e/` — tests in `e2e/*.spec.ts`
 - **Coverage**: Home, navigation (all games on the main grid), Game24 (practice), Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Mental Obstacle Course, party games (Quip Clash, Fib It, Enough About You), **Connections** ([`e2e/connections.spec.ts`](e2e/connections.spec.ts) + in-memory [`e2e/helpers/connections-mock.ts`](e2e/helpers/connections-mock.ts)), Leaderboards, **Coming Soon API** ([`e2e/home-coming-soon-api.spec.ts`](e2e/home-coming-soon-api.spec.ts)). **Local**: Chromium + Mobile Chrome. **`CI=1` / `npm run test:e2e:ci`**: Chromium only (faster, less memory).
 - **Dev server**: Playwright starts `next dev` on **port 3001** by default (`PLAYWRIGHT_WEB_PORT`, `PLAYWRIGHT_BASE_URL` to override).
-- **Deployment-only E2E**: `npm run test:e2e:deployment` sets **`PLAYWRIGHT_SKIP_WEBSERVER=1`** + **`CI=1`** and hits **`https://sfjc.dev`** (override with **`PLAYWRIGHT_BASE_URL=https://your-preview.vercel.app`**). No local `next dev`; use after Vercel finishes deploying.
+- **Deployment-only E2E**: `npm run test:e2e:deployment` sets **`PLAYWRIGHT_SKIP_WEBSERVER=1`** + **`CI=1`** and hits **`https://sfjc.dev`** (override with **`PLAYWRIGHT_BASE_URL=https://your-preview.vercel.app`**). No local `next dev`; use after Vercel finishes deploying. **UVIMCO Notes layout/visual**: **`npm run test:e2e:uvimco-visual`** — editor height + screenshots on live deploy (no API mocks; catches collapsed-editor regressions).
 - **Agent**: Use `/e2e-reviewer` when Playwright E2E tests are needed to confirm site functionality, fix failing tests, or iterate on improvements. Prefer Composer 1.5 for interactive sessions.
 
 ### MCP Servers

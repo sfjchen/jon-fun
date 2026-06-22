@@ -137,9 +137,10 @@ function screenshotsInContext(notes: string, shots: Record<string, Screenshot>):
 
 export default function UvimcoNotesApp() {
   const initial = loadActiveSession()
+  const bootSessions = loadSessions()
   const [state, dispatch] = useReducer(reducer, {
     session: initial,
-    sessions: loadSessions(),
+    sessions: bootSessions.length > 0 ? bootSessions : [initial],
     panelOpen: false,
     currentLookup: null,
     sessionHistory: [...initial.lookups].reverse(),
@@ -357,25 +358,27 @@ export default function UvimcoNotesApp() {
   const activeQuery = state.currentLookup?.type === 'word' ? state.currentLookup.query : null
 
   return (
-    <div className="uvimco-notes-root flex h-full min-h-0 flex-col bg-[var(--uv-bg-base)] text-[var(--uv-text-primary)]">
-      <div className="flex items-center border-b border-[var(--uv-border)] px-3 py-1.5">
-        <Link
-          href="/"
-          className="text-xs text-[var(--uv-text-secondary)] hover:text-[var(--uv-accent)]"
-          data-testid="uvimco-home-link"
-        >
-          ← sfjc.dev
-        </Link>
-        <span className="ml-3 text-xs font-semibold text-[var(--uv-text-primary)]">UVIMCO Notes</span>
-      </div>
+    <div className="uvimco-notes-root bg-[var(--uv-bg-base)] text-[var(--uv-text-primary)]">
       <UvimcoHeader
         panelOpen={state.panelOpen}
         onTogglePanel={() => dispatch({ type: 'PANEL_TOGGLE' })}
         onExport={handleExport}
         onDecodeAll={handleDecodeAll}
         syncOk={state.syncOk}
+        homeLink={
+          <>
+            <Link
+              href="/"
+              className="text-xs text-[var(--uv-text-secondary)] hover:text-[var(--uv-accent)]"
+              data-testid="uvimco-home-link"
+            >
+              ← sfjc.dev
+            </Link>
+            <span className="text-xs font-semibold text-[var(--uv-text-primary)]">UVIMCO Notes</span>
+          </>
+        }
       />
-      <div className="flex min-h-0 flex-1">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         <MeetingsSidebar
           sessions={state.sessions}
           activeSessionId={state.session.id}
@@ -383,17 +386,17 @@ export default function UvimcoNotesApp() {
           onNew={handleNewMeeting}
           onDelete={handleDeleteMeeting}
         />
-        <section className="flex min-w-0 flex-1 flex-col">
+        <section className="uvimco-notes-editor-pane min-w-0 flex-1">
           <input
             value={state.session.title}
             onChange={(e) => dispatch({ type: 'TITLE', title: e.target.value })}
-            className="shrink-0 border-b border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-6 py-4 text-2xl font-semibold text-[var(--uv-text-primary)] placeholder:text-[var(--uv-text-muted)] focus:outline-none"
+            className="shrink-0 border-b border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-5 py-3 text-xl font-semibold text-[var(--uv-text-primary)] placeholder:text-[var(--uv-text-muted)] focus:outline-none sm:px-6 sm:text-2xl"
             placeholder="Meeting title"
             aria-label="Meeting title"
             data-testid="uvimco-meeting-title"
           />
           <ShorthandBar />
-          <div className="min-h-0 flex-1" data-testid="uvimco-editor">
+          <div className="uvimco-notes-editor-body" data-testid="uvimco-editor">
             <NoteEditor
               value={state.session.notes}
               onChange={(notes) => dispatch({ type: 'NOTES', notes })}

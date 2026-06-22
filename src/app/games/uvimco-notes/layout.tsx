@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function UvimcoNotesLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`${lato.variable} uvimco-notes-layout min-h-0 flex-1 font-[family-name:var(--font-lato)]`}>
+    <div className={`${lato.variable} uvimco-notes-layout font-[family-name:var(--font-lato)]`}>
       {children}
     </div>
   )
