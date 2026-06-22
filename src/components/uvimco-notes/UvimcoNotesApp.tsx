@@ -18,12 +18,11 @@ import {
   upsertSession,
 } from '@/lib/uvimco-notes/storage'
 import type { Lookup, NoteSession, Screenshot, TriggerType } from '@/lib/uvimco-notes/types'
-import AIPanel from './AIPanel'
-import MeetingsSidebar from './MeetingsSidebar'
+import SidePanel from './SidePanel'
 import NoteEditor from './NoteEditor'
 import ShorthandBar from './ShorthandBar'
 import StatusBar from './StatusBar'
-import UvimcoHeader from './UvimcoHeader'
+import NotesHeader from './NotesHeader'
 
 type State = {
   session: NoteSession
@@ -151,7 +150,6 @@ export default function UvimcoNotesApp() {
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 768px)')
-    if (mq.matches) dispatch({ type: 'PANEL', open: true })
     const fn = () => {
       if (!mq.matches) dispatch({ type: 'PANEL', open: false })
     }
@@ -277,7 +275,7 @@ export default function UvimcoNotesApp() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `uvimco-notes-${state.session.title.replace(/\s+/g, '-').slice(0, 40) || 'session'}.md`
+    a.download = `notes-${state.session.title.replace(/\s+/g, '-').slice(0, 40) || 'session'}.md`
     a.click()
     URL.revokeObjectURL(url)
   }, [state.session])
@@ -359,7 +357,7 @@ export default function UvimcoNotesApp() {
 
   return (
     <div className="uvimco-notes-root bg-[var(--uv-bg-base)] text-[var(--uv-text-primary)]">
-      <UvimcoHeader
+      <NotesHeader
         panelOpen={state.panelOpen}
         onTogglePanel={() => dispatch({ type: 'PANEL_TOGGLE' })}
         onExport={handleExport}
@@ -370,33 +368,26 @@ export default function UvimcoNotesApp() {
             <Link
               href="/"
               className="text-xs text-[var(--uv-text-secondary)] hover:text-[var(--uv-accent)]"
-              data-testid="uvimco-home-link"
+              data-testid="notes-home-link"
             >
               ← sfjc.dev
             </Link>
-            <span className="text-xs font-semibold text-[var(--uv-text-primary)]">UVIMCO Notes</span>
+            <span className="text-xs font-semibold text-[var(--uv-text-primary)]">Notes</span>
           </>
         }
       />
       <div className="flex min-h-0 flex-1 overflow-hidden">
-        <MeetingsSidebar
-          sessions={state.sessions}
-          activeSessionId={state.session.id}
-          onSelect={handleSelectMeeting}
-          onNew={handleNewMeeting}
-          onDelete={handleDeleteMeeting}
-        />
         <section className="uvimco-notes-editor-pane min-w-0 flex-1">
           <input
             value={state.session.title}
             onChange={(e) => dispatch({ type: 'TITLE', title: e.target.value })}
             className="shrink-0 border-b border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-5 py-3 text-xl font-semibold text-[var(--uv-text-primary)] placeholder:text-[var(--uv-text-muted)] focus:outline-none sm:px-6 sm:text-2xl"
-            placeholder="Meeting title"
-            aria-label="Meeting title"
-            data-testid="uvimco-meeting-title"
+            placeholder="Note title"
+            aria-label="Note title"
+            data-testid="notes-meeting-title"
           />
           <ShorthandBar />
-          <div className="uvimco-notes-editor-body" data-testid="uvimco-editor">
+          <div className="uvimco-notes-editor-body" data-testid="notes-editor">
             <NoteEditor
               value={state.session.notes}
               onChange={(notes) => dispatch({ type: 'NOTES', notes })}
@@ -408,12 +399,17 @@ export default function UvimcoNotesApp() {
             />
           </div>
         </section>
-        <AIPanel
+        <SidePanel
           isOpen={state.panelOpen}
+          sessions={state.sessions}
+          activeSessionId={state.session.id}
           currentLookup={state.currentLookup}
           sessionHistory={state.sessionHistory}
           streamText={state.streamText}
           isStreaming={state.isStreaming}
+          onSelectMeeting={handleSelectMeeting}
+          onNewMeeting={handleNewMeeting}
+          onDeleteMeeting={handleDeleteMeeting}
           onFollowUp={handleFollowUp}
           onSelectHistory={(lk) => dispatch({ type: 'SELECT_LOOKUP', lookup: lk })}
           onClose={() => dispatch({ type: 'PANEL', open: false })}

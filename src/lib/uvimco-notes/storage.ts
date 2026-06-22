@@ -51,7 +51,7 @@ export function createEmptySession(title?: string): NoteSession {
   const now = new Date().toISOString()
   const defaultTitle =
     title ??
-    `Meeting ${new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
+    `Note ${new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
   return {
     id: genUuid(),
     title: defaultTitle,
@@ -186,7 +186,7 @@ export function exportSessionMarkdown(session: NoteSession): string {
   })
 
   return [
-    `# Meeting Notes — UVIMCO`,
+    `# Notes`,
     `Date: ${date}`,
     `Session: ${session.title}`,
     '',

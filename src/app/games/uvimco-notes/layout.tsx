@@ -10,8 +10,8 @@ const lato = Lato({
 })
 
 export const metadata: Metadata = {
-  title: 'UVIMCO Notes',
-  description: 'AI note companion for UVIMCO meetings — shorthand, ? lookups, session history',
+  title: 'Notes',
+  description: 'AI note companion — shorthand, ? lookups, multi-session history',
 }
 
 export default function UvimcoNotesLayout({ children }: { children: React.ReactNode }) {

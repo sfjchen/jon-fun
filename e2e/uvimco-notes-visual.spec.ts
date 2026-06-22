@@ -1,30 +1,24 @@
 import { test, expect } from '@playwright/test'
 
 /**
- * Visual / layout checks — run against **deployed** sfjc.dev (what a human tester sees).
+ * Visual / layout checks on **deployed** sfjc.dev.
  *
- *   PLAYWRIGHT_SKIP_WEBSERVER=1 npx playwright test e2e/uvimco-notes-visual.spec.ts --project=chromium
- *
- * Snapshots live in e2e/uvimco-notes-visual.spec.ts-snapshots/
- * Update baselines after intentional UI changes: `--update-snapshots`
+ *   npm run test:e2e:uvimco-visual
  */
 const isDeploy = process.env.PLAYWRIGHT_SKIP_WEBSERVER === '1'
 
-test.describe('UVIMCO Notes visual', () => {
+test.describe('Notes visual', () => {
   test.use({ viewport: { width: 1280, height: 800 } })
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/games/uvimco-notes')
-    await page.waitForSelector('[data-testid="uvimco-meetings-sidebar"]', { timeout: 20_000 })
+    await page.waitForSelector('[data-testid="notes-editor"]', { timeout: 20_000 })
     await page.waitForSelector('.uvimco-cm .cm-content', { timeout: 20_000 })
   })
 
   test('editor pane is tall enough to type (layout regression)', async ({ page }) => {
-    const editor = page.getByTestId('uvimco-editor')
+    const editor = page.getByTestId('notes-editor')
     const cm = page.locator('.uvimco-cm .cm-editor')
-    await expect(editor).toBeVisible()
-    await expect(cm).toBeVisible()
-
     const editorBox = await editor.boundingBox()
     const cmBox = await cm.boundingBox()
     expect(editorBox?.height ?? 0).toBeGreaterThan(280)
@@ -35,14 +29,26 @@ test.describe('UVIMCO Notes visual', () => {
     await expect(page.locator('.uvimco-cm .cm-content')).toContainText('Visual E2E')
   })
 
-  test('meetings sidebar lists active meeting on first paint', async ({ page }) => {
-    await expect(page.getByTestId('uvimco-meetings-sidebar')).toContainText(/Meeting|Untitled/)
-    await expect(page.locator('[data-testid^="uvimco-meeting-item-"]')).toHaveCount(1, { timeout: 5000 })
+  test('full-width editor when panel closed', async ({ page }) => {
+    await expect(page.getByTestId('notes-side-panel')).toBeHidden()
+    const editor = page.getByTestId('notes-editor')
+    const box = await editor.boundingBox()
+    expect(box?.width ?? 0).toBeGreaterThan(900)
   })
 
   test('desktop layout screenshot', async ({ page }) => {
     test.skip(!isDeploy, 'Set PLAYWRIGHT_SKIP_WEBSERVER=1 to snapshot deployed sfjc.dev')
-    await expect(page).toHaveScreenshot('uvimco-notes-desktop.png', {
+    await expect(page).toHaveScreenshot('notes-desktop.png', {
+      fullPage: false,
+      maxDiffPixelRatio: 0.08,
+    })
+  })
+
+  test('panel open screenshot', async ({ page }) => {
+    test.skip(!isDeploy, 'Set PLAYWRIGHT_SKIP_WEBSERVER=1 to snapshot deployed sfjc.dev')
+    await page.getByTestId('notes-toggle-panel').click()
+    await expect(page.getByTestId('notes-side-panel')).toBeVisible()
+    await expect(page).toHaveScreenshot('notes-panel-open.png', {
       fullPage: false,
       maxDiffPixelRatio: 0.08,
     })
@@ -53,9 +59,9 @@ test.describe('UVIMCO Notes visual', () => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/games/uvimco-notes')
     await page.waitForSelector('.uvimco-cm .cm-content', { timeout: 20_000 })
-    const editorBox = await page.getByTestId('uvimco-editor').boundingBox()
+    const editorBox = await page.getByTestId('notes-editor').boundingBox()
     expect(editorBox?.height ?? 0).toBeGreaterThan(180)
-    await expect(page).toHaveScreenshot('uvimco-notes-mobile.png', {
+    await expect(page).toHaveScreenshot('notes-mobile.png', {
       fullPage: false,
       maxDiffPixelRatio: 0.1,
     })

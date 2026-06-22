@@ -68,7 +68,7 @@ export default function UvimcoNotesAdminPage() {
           ← Home
         </Link>
       </p>
-      <h1 className="mb-6 font-lora text-2xl font-semibold">UVIMCO Notes — Admin</h1>
+      <h1 className="mb-6 font-lora text-2xl font-semibold">Notes — Admin</h1>
 
       {!authorized ? (
         <form
