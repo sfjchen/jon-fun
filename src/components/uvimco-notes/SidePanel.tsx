@@ -300,7 +300,7 @@ export default function SidePanel({
         </section>
 
         <GlossaryPanel refreshKey={glossaryRefreshKey} />
-        <SourcesPanel onChange={onSourcesChange} />
+        <SourcesPanel refreshKey={glossaryRefreshKey} onChange={onSourcesChange} />
         <RollupPanel sessions={sessions} onJump={onJumpTodo} />
       </div>
     </aside>

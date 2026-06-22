@@ -1,0 +1,29 @@
+---
+description: Apply Supabase schema changes via MCP/CLI — never tell the user to run migrations manually
+alwaysApply: true
+---
+
+# Supabase migrations (this repo)
+
+This project has the **Supabase Cursor plugin** (MCP server `plugin-supabase-supabase`) and linked project **sfjchen's Project** (`nzviiorrlsdtwzvzodpg`).
+
+## Agent must do
+
+- **Apply remote DDL yourself** using Supabase MCP `apply_migration` (preferred for committed SQL in `supabase/migrations/`) or `execute_sql` for verification.
+- **Verify** with `list_migrations`, `list_tables`, or a test query — do not assume success.
+- **Commit migration files** in `supabase/migrations/` when adding schema; MCP applies to remote, the file is source of truth for the repo.
+
+## Agent must not do
+
+- **Do not** end a task with "you need to apply the Supabase migration" unless MCP auth failed after retry.
+- **Do not** only paste SQL and stop — run it via MCP unless the user explicitly wants manual control.
+- **Do not** use `apply_migration` for throwaway local iteration (Supabase skill); use `execute_sql` to probe, then `apply_migration` once with the final SQL from `supabase/migrations/`.
+
+## MCP tool order
+
+1. `list_projects` → confirm `nzviiorrlsdtwzvzodpg`
+2. `list_migrations` → check if already applied
+3. `apply_migration` with `name` (snake_case) + SQL from migration file
+4. `list_tables` / `execute_sql` → verify columns/tables exist
+
+If MCP tools are missing or return auth errors: call `mcp_auth` for Supabase once, then retry. Only then ask the user to authenticate.

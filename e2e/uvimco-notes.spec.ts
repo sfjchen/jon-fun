@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-import { mockUvimcoNotesApi } from './helpers/uvimco-notes-mock'
+import { mockUvimcoNotesApi, waitForNotesTrigger } from './helpers/uvimco-notes-mock'
 
 const SESSIONS_KEY = 'uvimco_notes_sessions'
 
@@ -16,6 +16,8 @@ test.describe('Notes', () => {
         localStorage.removeItem('uvimco_notes_active_session_id')
         localStorage.removeItem('uvimco_notes_user_id')
         localStorage.removeItem('notes_ui_prefs')
+        localStorage.removeItem('notes_glossary')
+        localStorage.removeItem('notes_sources')
       } catch {
         /* ignore */
       }
@@ -37,6 +39,7 @@ test.describe('Notes', () => {
     await expect(page.getByTestId('notes-side-panel')).toBeVisible()
     await expect(page.getByTestId('notes-meetings-section')).toBeVisible()
     await expect(page.getByTestId('notes-ai-toggle')).toBeVisible()
+    await expect(page.getByTestId('notes-sync-panel')).toBeVisible()
     await page.getByTestId('notes-meetings-toggle').click()
     await expect(page.getByTestId('notes-new-meeting')).toBeVisible()
     await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(1)
@@ -54,7 +57,8 @@ test.describe('Notes', () => {
 
     const editor = page.locator('.uvimco-cm .cm-content')
     await editor.click()
-    await page.keyboard.type('boss flagged ?DPI gap')
+    await page.keyboard.type('boss flagged DPI gap?')
+    await waitForNotesTrigger(page)
 
     await page.getByTestId('notes-new-meeting').click()
     await expect(title).not.toHaveValue('IC standup')
@@ -63,52 +67,39 @@ test.describe('Notes', () => {
     await expect(meetings).toHaveCount(2)
     await meetings.nth(1).click()
     await expect(title).toHaveValue('IC standup')
-    await expect(editor).toContainText('?DPI')
+    await expect(editor).toContainText('DPI gap?')
   })
 
-  test('?term trigger opens panel and shows mock AI response', async ({ page }) => {
+  test('line? trigger opens panel and shows mock AI response', async ({ page }) => {
     const editor = page.locator('.uvimco-cm .cm-content')
     await expect(editor).toBeVisible({ timeout: 15000 })
     await editor.click()
-    await page.keyboard.type('review ?DPI ')
+    await page.keyboard.type('review DPI?')
+    await waitForNotesTrigger(page)
     await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 5000 })
-    await expect(page.getByText('E2E mock answer')).toBeVisible({ timeout: 15000 })
+    await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15000 })
   })
 
-  test('?term + Enter opens panel and shows mock AI response', async ({ page }) => {
+  test('section ?? trigger opens panel and shows mock AI response', async ({ page }) => {
     const editor = page.locator('.uvimco-cm .cm-content')
     await editor.click()
-    await page.keyboard.type('review ?MOIC')
+    await page.keyboard.type('LP stakes')
     await page.keyboard.press('Enter')
+    await page.keyboard.type('GP fee??')
+    await waitForNotesTrigger(page)
     await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 5000 })
-    await expect(page.getByText('E2E mock answer')).toBeVisible({ timeout: 15000 })
-  })
-
-  test('hyphenated ?term + space triggers lookup', async ({ page }) => {
-    const editor = page.locator('.uvimco-cm .cm-content')
-    await editor.click()
-    await page.keyboard.type('?LP-GP ')
-    await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 5000 })
-    await expect(page.getByText('E2E mock answer')).toBeVisible({ timeout: 15000 })
-  })
-
-  test('line ending with ? triggers on Enter', async ({ page }) => {
-    const editor = page.locator('.uvimco-cm .cm-content')
-    await editor.click()
-    await page.keyboard.type('LTP underweight this quarter?')
-    await page.keyboard.press('Enter')
-    await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 5000 })
-    await expect(page.getByText('E2E mock answer')).toBeVisible({ timeout: 15000 })
+    await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15000 })
   })
 
   test('follow-up question streams after first lookup', async ({ page }) => {
     const editor = page.locator('.uvimco-cm .cm-content')
     await editor.click()
-    await page.keyboard.type('?DPI ')
-    await expect(page.getByText('E2E mock answer')).toBeVisible({ timeout: 15000 })
+    await page.keyboard.type('fund DPI?')
+    await waitForNotesTrigger(page)
+    await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15000 })
     await page.getByTestId('notes-followup-input').fill('How does it relate to TVPI?')
     await page.getByTestId('notes-followup-input').press('Enter')
-    await expect(page.getByText('E2E mock answer')).toBeVisible({ timeout: 15000 })
+    await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15000 })
   })
 
   test('cloud sync does not wipe in-flight lookup', async ({ page }) => {
@@ -134,8 +125,19 @@ test.describe('Notes', () => {
     await page.waitForSelector('.uvimco-cm .cm-content', { timeout: 15000 })
     const editor = page.locator('.uvimco-cm .cm-content')
     await editor.click()
-    await page.keyboard.type('?DPI ')
-    await expect(page.getByText('E2E mock answer')).toBeVisible({ timeout: 20_000 })
+    await page.keyboard.type('fund DPI?')
+    await waitForNotesTrigger(page)
+    await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 20_000 })
+  })
+
+  test('global search opens with Ctrl+Shift+F', async ({ page }) => {
+    const editor = page.locator('.uvimco-cm .cm-content')
+    await editor.click()
+    await page.keyboard.type('> follow up MOIC')
+    await page.keyboard.press('Control+Shift+F')
+    await expect(page.getByTestId('notes-global-search')).toBeVisible()
+    await page.getByTestId('notes-search-input').fill('MOIC')
+    await expect(page.getByTestId('notes-search-hit').first()).toBeVisible()
   })
 
   test('home link returns to root', async ({ page }) => {
@@ -151,9 +153,9 @@ test.describe('Notes', () => {
 
   test('shorthand hints toggle', async ({ page }) => {
     await page.getByTestId('notes-shorthand-toggle').click()
-    await expect(page.getByText(/AI lookup/)).toBeVisible()
+    await expect(page.getByText('AI explain line')).toBeVisible()
     await page.getByTestId('notes-shorthand-toggle').click()
-    await expect(page.getByText('Ctrl+B/I/U')).toBeVisible()
+    await expect(page.getByTestId('notes-shorthand-toggle')).toHaveText('Hints')
   })
 
   test('Ctrl+Shift+N creates new note', async ({ page }) => {
@@ -171,6 +173,7 @@ test.describe('Notes', () => {
         id: 'local-legacy-title',
         title: 'Meeting Jan 1, 2026',
         notes: '',
+        tags: [],
         lookups: [],
         screenshots: {},
         startedAt: '2026-01-01T00:00:00.000Z',
