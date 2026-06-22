@@ -1,0 +1,23 @@
+import type { Metadata } from 'next'
+import { Lato } from 'next/font/google'
+import './uvimco-notes.css'
+
+const lato = Lato({
+  subsets: ['latin'],
+  weight: ['300', '400', '700'],
+  variable: '--font-lato',
+  display: 'swap',
+})
+
+export const metadata: Metadata = {
+  title: 'UVIMCO Notes',
+  description: 'AI note companion for UVIMCO meetings — shorthand, ? lookups, session history',
+}
+
+export default function UvimcoNotesLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className={`${lato.variable} uvimco-notes-layout h-full min-h-0 font-[family-name:var(--font-lato)]`}>
+      {children}
+    </div>
+  )
+}

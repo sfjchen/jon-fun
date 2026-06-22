@@ -35,6 +35,14 @@ const items: GameCardGame[] = [
   },
   { id: 'tmr', title: 'TMR System', description: 'Targeted Memory Reactivation for learning and sleep', icon: `${nb}/tmr.svg`, href: '/games/tmr', available: true },
   { id: 'daily-log', title: '1 Sentence Everyday', description: 'One sentence per day; history, calendar, export', icon: `${nb}/daily.svg`, href: '/games/daily-log', available: true },
+  {
+    id: 'uvimco-notes',
+    title: 'UVIMCO Notes',
+    description: 'Meeting shorthand + ? AI lookups, multi-session history, Lato dark workspace',
+    icon: `${nb}/daily.svg`,
+    href: '/games/uvimco-notes',
+    available: true,
+  },
   { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: `${nb}/game24.svg`, href: '/games/24', available: true },
   { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom boards locally', icon: `${nb}/jeopardy.svg`, href: '/games/jeopardy', available: true },
   {

@@ -1,0 +1,58 @@
+.uvimco-notes-layout {
+  --uv-bg-base: #0d1117;
+  --uv-bg-elevated: #161b22;
+  --uv-bg-panel: #1c2128;
+  --uv-accent: #d4a017;
+  --uv-accent-dim: rgba(212, 160, 23, 0.12);
+  --uv-accent-strong: #f0c040;
+  --uv-text-primary: #e6edf3;
+  --uv-text-secondary: #8b949e;
+  --uv-text-muted: #484f58;
+  --uv-border: #30363d;
+  --uv-border-hover: #484f58;
+  font-family: var(--font-lato), 'Lato', sans-serif;
+  color: var(--uv-text-primary);
+  background: var(--uv-bg-base);
+}
+
+.uvimco-notes-root .cm-trigger-term {
+  border-bottom: 2px solid var(--uv-accent);
+  color: var(--uv-accent-strong);
+}
+
+.uvimco-notes-root .cm-trigger-active {
+  background: var(--uv-accent-dim);
+  border-radius: 3px;
+}
+
+.uvimco-notes-root .cm-action-line {
+  color: var(--uv-accent);
+}
+
+.uvimco-notes-root .cm-key-line {
+  color: var(--uv-text-primary);
+  font-weight: 700;
+}
+
+.uvimco-notes-root .cm-approx-line {
+  color: var(--uv-text-muted);
+  font-style: italic;
+}
+
+.uvimco-notes-root ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.uvimco-notes-root ::-webkit-scrollbar-thumb {
+  background: var(--uv-border-hover);
+  border-radius: 3px;
+}
+
+.uvimco-cm .cm-editor {
+  height: 100% !important;
+}
+
+.uvimco-cm .cm-scroller {
+  min-height: 100%;
+}
