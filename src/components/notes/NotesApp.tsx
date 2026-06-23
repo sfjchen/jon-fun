@@ -12,6 +12,7 @@ import {
 } from '@/lib/notes/lookupStreams'
 import { pushGlossaryToServer, syncMemoryBank } from '@/lib/notes/memorySync'
 import { countShorthandFlags } from '@/lib/notes/shorthand'
+import { parsePanelLookupQuery } from '@/lib/notes/triggerParser'
 import { appendNoteHistory, lastHistoryEntry } from '@/lib/notes/noteHistory'
 import { addToTagCatalog } from '@/lib/notes/tagRegistry'
 import { streamLookup } from '@/lib/notes/streamClient'
@@ -528,6 +529,19 @@ export default function NotesApp() {
     [runStream, saveWithHistory],
   )
 
+  const handlePanelLookup = useCallback(
+    (raw: string) => {
+      const parsed = parsePanelLookupQuery(raw)
+      if (!parsed) return
+      const context =
+        parsed.type === 'section'
+          ? state.session.notes
+          : state.session.notes.split('\n').slice(-15).join('\n')
+      handleTrigger(parsed.type, parsed.query, context)
+    },
+    [handleTrigger, state.session.notes],
+  )
+
   const handleFollowUp = useCallback(
     (question: string) => {
       const lk = state.currentLookup
@@ -750,6 +764,7 @@ export default function NotesApp() {
           onNewMeeting={handleNewNote}
           onDeleteMeeting={handleDeleteMeeting}
           onDeleteLookup={handleDeleteLookup}
+          onPanelLookup={handlePanelLookup}
           onFollowUp={handleFollowUp}
           onSelectHistory={(lk) => dispatch({ type: 'SELECT_LOOKUP', lookup: lk })}
           onClose={() => dispatch({ type: 'PANEL', open: false })}

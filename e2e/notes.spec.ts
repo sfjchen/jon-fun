@@ -38,7 +38,7 @@ test.describe('Notes', () => {
     const editorBox = await page.getByTestId('notes-editor').boundingBox()
     expect(editorBox?.height ?? 0).toBeGreaterThan(280)
     await expect(page.getByTestId('notes-side-panel')).toBeHidden()
-    await expect(page.getByText('Notes', { exact: true }).first()).toBeVisible()
+    await expect(page.getByTestId('notes-meeting-title')).toHaveAttribute('placeholder', 'Untitled')
   })
 
   test('panel opens with collapsible notes + AI sections', async ({ page }) => {
@@ -95,6 +95,15 @@ test.describe('Notes', () => {
     await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 5000 })
     await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15000 })
     await expect(page.getByTestId('notes-side-panel')).toContainText(/Core meaning/i)
+  })
+
+  test('panel lookup input runs AI without typing in editor', async ({ page }) => {
+    await page.getByTestId('notes-toggle-panel').click()
+    await expect(page.getByTestId('notes-lookup-input')).toBeVisible()
+    await page.getByTestId('notes-lookup-input').fill('fund TVPI ratio')
+    await page.getByTestId('notes-lookup-input').press('Enter')
+    await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15_000 })
+    await expect(page.getByTestId('notes-chat-thread')).toContainText('fund TVPI ratio')
   })
 
   test('section ?? trigger opens panel and shows mock AI response', async ({ page }) => {

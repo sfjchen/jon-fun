@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useRef, useState } from 'react'
-import type { Lookup, NoteHistoryEntry, NoteSession, Screenshot } from '@/lib/notes/types'
+import type { Lookup, NoteHistoryEntry, NoteSession } from '@/lib/notes/types'
 import { isLookupStreaming, type LookupStreamMap } from '@/lib/notes/lookupStreams'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
 import LookupConversation from './LookupConversation'
@@ -10,6 +10,7 @@ import SyncPanel from './SyncPanel'
 import GlossaryPanel from './GlossaryPanel'
 import RollupPanel from './RollupPanel'
 import FollowUpComposer from './FollowUpComposer'
+import LookupComposer from './LookupComposer'
 import SourcesPanel from './SourcesPanel'
 import NoteHistoryPanel from './NoteHistoryPanel'
 
@@ -60,7 +61,9 @@ type SidePanelProps = {
   onSelectMeeting: (session: NoteSession) => void
   onNewMeeting: () => void
   onDeleteMeeting: (sessionId: string) => void
-  onFollowUp: (q: string, screenshots?: Screenshot[]) => void
+  onDeleteLookup: (lookupId: string) => void
+  onPanelLookup: (query: string) => void
+  onFollowUp: (q: string) => void
   onSelectHistory: (lookup: Lookup) => void
   onClose: () => void
   onSynced: (opts?: { skipPersist?: boolean }) => void
@@ -96,6 +99,8 @@ export default function SidePanel({
   onSelectMeeting,
   onNewMeeting,
   onDeleteMeeting,
+  onDeleteLookup,
+  onPanelLookup,
   onFollowUp,
   onSelectHistory,
   onClose,
@@ -180,11 +185,24 @@ export default function SidePanel({
 
           {aiListOpen ? (
             <>
+              <LookupComposer onSubmit={onPanelLookup} />
+
               {focusedLookup ? (
                 <div className="mb-3 flex min-h-0 flex-col">
-                  <p className="mb-1.5 shrink-0 text-[11px] text-[var(--uv-text-secondary)]">
-                    {lookupLabel(focusedLookup)}
-                  </p>
+                  <div className="mb-1.5 flex shrink-0 items-center gap-1">
+                    <p className="min-w-0 flex-1 text-[11px] text-[var(--uv-text-secondary)]">
+                      {lookupLabel(focusedLookup)}
+                    </p>
+                    <button
+                      type="button"
+                      aria-label="Delete this lookup"
+                      data-testid="notes-delete-lookup-active"
+                      onClick={() => onDeleteLookup(focusedLookup.id)}
+                      className="shrink-0 rounded px-1 text-[var(--uv-text-muted)] hover:text-red-600"
+                    >
+                      Delete
+                    </button>
+                  </div>
                   <LookupConversation
                     lookup={focusedLookup}
                     streamText={streamText}
@@ -209,11 +227,11 @@ export default function SidePanel({
                     {sessionHistory.map((lk) => {
                       const streaming = isLookupStreaming(streamByLookupId, lk.id)
                       return (
-                        <li key={lk.id}>
+                        <li key={lk.id} className="group flex items-center gap-0.5">
                           <button
                             type="button"
                             onClick={() => onSelectHistory(lk)}
-                            className="flex w-full items-center gap-1 rounded px-1.5 py-1 text-left text-[11px] text-[var(--uv-text-secondary)] hover:bg-[var(--uv-accent-dim)]"
+                            className="flex min-w-0 flex-1 items-center gap-1 rounded px-1.5 py-1 text-left text-[11px] text-[var(--uv-text-secondary)] hover:bg-[var(--uv-accent-dim)]"
                           >
                             <span className="min-w-0 flex-1 truncate">
                               {lookupLabel(lk)} · {timeAgo(lk.triggeredAt)}
@@ -221,6 +239,15 @@ export default function SidePanel({
                             {streaming ? (
                               <span className="shrink-0 text-[10px] text-[var(--uv-accent)]">…</span>
                             ) : null}
+                          </button>
+                          <button
+                            type="button"
+                            aria-label={`Delete ${lookupLabel(lk)}`}
+                            data-testid={`notes-delete-lookup-${lk.id}`}
+                            onClick={() => onDeleteLookup(lk.id)}
+                            className="shrink-0 rounded px-1 text-[10px] text-[var(--uv-text-muted)] hover:text-red-600"
+                          >
+                            ×
                           </button>
                         </li>
                       )
@@ -273,19 +300,18 @@ export default function SidePanel({
                         {formatMeetingDate(s.updatedAt)}
                       </span>
                     </button>
-                    {sessions.length > 1 ? (
-                      <button
-                        type="button"
-                        aria-label={`Delete ${s.title || 'note'}`}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          if (window.confirm('Delete this note?')) onDeleteMeeting(s.id)
-                        }}
-                        className="hidden shrink-0 rounded px-1 text-[var(--uv-text-muted)] hover:text-red-600 group-hover:inline"
-                      >
-                        ×
-                      </button>
-                    ) : null}
+                    <button
+                      type="button"
+                      aria-label={`Delete ${s.title || 'note'}`}
+                      data-testid={`notes-delete-meeting-${s.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onDeleteMeeting(s.id)
+                      }}
+                      className="shrink-0 rounded px-1 text-[10px] text-[var(--uv-text-muted)] hover:text-red-600"
+                    >
+                      ×
+                    </button>
                   </li>
                 )
               })}
