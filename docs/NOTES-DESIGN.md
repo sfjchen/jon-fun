@@ -77,6 +77,7 @@ Data lives on Supabase under `note_sessions` (+ `notes_sources`, `notes_glossary
 - Notion-like light theme, Lato; Ctrl `\` panel, `Shift+F` search, `K` summarize, Export button, `Shift+N` new note, **Ctrl+S** save+sync
 - **Top bar:** sfjc.dev · Notes · title · tags · created date
 - **Bottom bar:** stats · action buttons + hotkey badges · Hints toggle · paste screenshot hint
+- **Panel lookup:** text field at top of AI section — ask without typing `?` in the note (optional trailing `?` / `??`)
 - **Editor:** Tiptap + `@tiptap/markdown` ([`EditorShell`](../../src/components/notes/EditorShell.tsx) → [`TiptapNoteEditor`](../../src/components/notes/TiptapNoteEditor.tsx)); markdown stored in `NoteSession.notes`
 - **Screenshots:** paste/drop/📷 Attach → inline image node; stored as `[📷 id]` in markdown + base64 in `session.screenshots`; follow-up composer shows thumbnails and sends images to lookup API
 - **Models (Jun 2026):** lookup `google/gemini-2.5-flash-lite`; decode/follow-up/images `gemini-2.5-flash`; embed `gemini-embedding-001`
