@@ -71,7 +71,7 @@ Data lives on Supabase under `note_sessions` (+ `notes_sources`, `notes_glossary
 ## UI principles
 
 - **Editor-first** — full-width Tiptap WYSIWYG; panel for AI + vault utilities
-- **Panel order (top→bottom):** AI lookup → Notes list → Glossary → Sources → Rollup → Sync & backup (collapsed)
+- **Panel order (top→bottom):** Todos → AI lookup → Notes list → Glossary → Sources → History → Sync & backup (collapsed)
 - **Parallel AI** — multiple `?`/`??` triggers run concurrently; status bar shows active count; history shows streaming dots
 - **Sync rare** — collapsed under “Sync & backup”; expand only when setting key or restore
 - Notion-like light theme, Lato; Ctrl `\` panel, `Shift+F` search, `K` summarize, Export button, `Shift+N` new note, **Ctrl+S** save+sync

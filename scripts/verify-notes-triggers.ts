@@ -5,6 +5,7 @@
 import { detectLineTriggers, countShorthandFlags } from '../src/lib/notes/triggerParser'
 import { postprocessTodoMarkdown, preprocessTodoMarkdown, mergeTodoLinesIntoMarkdown } from '../src/lib/notes/tiptap/editorCoords'
 import { collectTodos } from '../src/lib/notes/rollup'
+import { termsFromLookup } from '../src/lib/notes/glossary'
 import type { NoteSession } from '../src/lib/notes/types'
 
 type Case = {
@@ -148,6 +149,36 @@ if (todos.length !== 1 || todos[0]!.text !== 'follow up IC memo') {
   console.error('✗ collectTodos from > line', todos)
 } else {
   console.log('✓ collectTodos from > line')
+}
+
+const vsTerms = termsFromLookup({
+  id: 'x',
+  type: 'line',
+  query: 'mv vs dan',
+  context: '',
+  conversation: [],
+  triggeredAt: new Date().toISOString(),
+})
+if (vsTerms.length !== 2 || vsTerms[0] !== 'mv' || vsTerms[1] !== 'dan') {
+  failed++
+  console.error('✗ termsFromLookup splits vs', vsTerms)
+} else {
+  console.log('✓ termsFromLookup splits vs')
+}
+
+const skipTerms = termsFromLookup({
+  id: 'y',
+  type: 'line',
+  query: 'stored test',
+  context: '',
+  conversation: [],
+  triggeredAt: new Date().toISOString(),
+})
+if (skipTerms.length !== 0) {
+  failed++
+  console.error('✗ termsFromLookup skips test noise', skipTerms)
+} else {
+  console.log('✓ termsFromLookup skips test noise')
 }
 
 if (failed > 0) {

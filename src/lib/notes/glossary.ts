@@ -2,13 +2,48 @@ import type { GlossaryEntry, Lookup } from './types'
 
 const GLOSSARY_KEY = 'notes_glossary'
 
+const SKIP_TERM_RE = /^(stored\s+test|test(\s|$)|e2e(\s|$)|mock)/i
+
+function isSkippedTerm(term: string): boolean {
+  const t = term.trim()
+  if (t.length < 2) return true
+  return SKIP_TERM_RE.test(t)
+}
+
+/** Split "mv vs dan" into ["mv", "dan"]; pass through normal terms. */
+function expandTermLabel(term: string): string[] {
+  const t = term.trim()
+  const vs = t.match(/^(.+?)\s+vs\.?\s+(.+)$/i)
+  if (vs) {
+    return [vs[1]!.trim(), vs[2]!.trim()].filter((p) => p.length >= 2 && !isSkippedTerm(p))
+  }
+  if (isSkippedTerm(t)) return []
+  return [t]
+}
+
+function sanitizeEntries(entries: GlossaryEntry[]): GlossaryEntry[] {
+  const byTerm = new Map<string, GlossaryEntry>()
+  for (const e of entries) {
+    for (const label of expandTermLabel(e.term)) {
+      const key = label.toLowerCase()
+      const next: GlossaryEntry = { ...e, term: label }
+      const existing = byTerm.get(key)
+      if (!existing || next.updatedAt > existing.updatedAt) byTerm.set(key, next)
+    }
+  }
+  return [...byTerm.values()].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+}
+
 export function loadGlossary(): GlossaryEntry[] {
   if (typeof window === 'undefined') return []
   try {
     const raw = localStorage.getItem(GLOSSARY_KEY)
     if (!raw) return []
     const arr = JSON.parse(raw) as GlossaryEntry[]
-    return Array.isArray(arr) ? arr : []
+    if (!Array.isArray(arr)) return []
+    const clean = sanitizeEntries(arr)
+    if (JSON.stringify(clean) !== JSON.stringify(arr)) saveGlossary(clean)
+    return clean
   } catch {
     return []
   }
@@ -16,37 +51,50 @@ export function loadGlossary(): GlossaryEntry[] {
 
 export function saveGlossary(entries: GlossaryEntry[]): void {
   if (typeof window === 'undefined') return
-  localStorage.setItem(GLOSSARY_KEY, JSON.stringify(entries))
+  localStorage.setItem(GLOSSARY_KEY, JSON.stringify(sanitizeEntries(entries)))
 }
 
-function termFromLookup(lookup: Lookup): string {
-  const q = lookup.query.trim()
+function primaryTermFromQuery(q: string): string {
   const acr = q.match(/\b([A-Z]{2,}(?:-[A-Z]+)?)\b/)
   if (acr) return acr[1]!
   const words = q.split(/\s+/).filter(Boolean)
   return words.slice(0, 3).join(' ').slice(0, 48) || q.slice(0, 48)
 }
 
+/** Terms to store from a lookup query (splits "X vs Y", skips test noise). */
+export function termsFromLookup(lookup: Lookup): string[] {
+  const q = lookup.query.trim()
+  if (!q) return []
+  const expanded = expandTermLabel(q)
+  if (expanded.length > 1) return expanded
+  const single = primaryTermFromQuery(q)
+  return expandTermLabel(single)
+}
+
 export function upsertFromLookup(lookup: Lookup, noteId: string): GlossaryEntry | null {
   const ans = lookup.conversation.find((m) => m.role === 'assistant')?.content?.trim()
   if (!ans) return null
-  const term = termFromLookup(lookup)
-  if (!term || term.length < 2) return null
+  const terms = termsFromLookup(lookup)
+  if (!terms.length) return null
 
   const entries = loadGlossary()
-  const idx = entries.findIndex((e) => e.term.toLowerCase() === term.toLowerCase())
-  const entry: GlossaryEntry = {
-    term,
-    definition: ans.slice(0, 600),
-    sourceNoteId: noteId,
-    sourceLookupId: lookup.id,
-    updatedAt: new Date().toISOString(),
-    useCount: (idx >= 0 ? entries[idx]!.useCount : 0) + 1,
+  let last: GlossaryEntry | null = null
+  for (const term of terms) {
+    const idx = entries.findIndex((e) => e.term.toLowerCase() === term.toLowerCase())
+    const entry: GlossaryEntry = {
+      term,
+      definition: ans.slice(0, 600),
+      sourceNoteId: noteId,
+      sourceLookupId: lookup.id,
+      updatedAt: new Date().toISOString(),
+      useCount: (idx >= 0 ? entries[idx]!.useCount : 0) + 1,
+    }
+    if (idx >= 0) entries[idx] = entry
+    else entries.unshift(entry)
+    last = entry
   }
-  if (idx >= 0) entries[idx] = entry
-  else entries.unshift(entry)
   saveGlossary(entries.slice(0, 500))
-  return entry
+  return last
 }
 
 export function formatGlossaryForPrompt(maxEntries = 12): string {
@@ -66,10 +114,5 @@ export function searchGlossary(q: string): GlossaryEntry[] {
 
 export function mergeGlossaryFromServer(remote: GlossaryEntry[]): void {
   const local = loadGlossary()
-  const byTerm = new Map<string, GlossaryEntry>()
-  for (const e of [...local, ...remote]) {
-    const existing = byTerm.get(e.term.toLowerCase())
-    if (!existing || e.updatedAt > existing.updatedAt) byTerm.set(e.term.toLowerCase(), e)
-  }
-  saveGlossary([...byTerm.values()].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)))
+  saveGlossary(sanitizeEntries([...local, ...remote]))
 }

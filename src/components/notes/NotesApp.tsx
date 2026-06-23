@@ -49,6 +49,7 @@ type State = {
   glossaryOpen: boolean
   sourcesOpen: boolean
   historyOpen: boolean
+  rollupOpen: boolean
   focusedLookupId: string | null
   currentLookup: Lookup | null
   sessionHistory: Lookup[]
@@ -72,6 +73,7 @@ type Action =
   | { type: 'GLOSSARY_OPEN'; open: boolean }
   | { type: 'SOURCES_OPEN'; open: boolean }
   | { type: 'HISTORY_OPEN'; open: boolean }
+  | { type: 'ROLLUP_OPEN'; open: boolean }
   | { type: 'LOOKUP_START'; lookup: Lookup }
   | { type: 'STREAM'; lookupId: string; text: string }
   | { type: 'STREAM_DONE'; lookupId: string; assistantText: string }
@@ -97,6 +99,7 @@ function initState(): State {
     glossaryOpen: false,
     sourcesOpen: false,
     historyOpen: false,
+    rollupOpen: prefs.rollupOpen ?? true,
     focusedLookupId: null,
     currentLookup: null,
     sessionHistory: [...initial.lookups].reverse(),
@@ -163,6 +166,8 @@ function reducer(state: State, action: Action): State {
       return { ...state, sourcesOpen: action.open }
     case 'HISTORY_OPEN':
       return { ...state, historyOpen: action.open }
+    case 'ROLLUP_OPEN':
+      return { ...state, rollupOpen: action.open }
     case 'LOOKUP_START': {
       const session = upsertLookupInSession(state.session, action.lookup)
       const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
@@ -321,9 +326,10 @@ export default function NotesApp() {
     saveNotesUiPrefs({
       panelOpen: state.panelOpen,
       notesListOpen: state.notesListOpen,
+      rollupOpen: state.rollupOpen,
       syncOpen: state.syncOpen,
     })
-  }, [state.panelOpen, state.notesListOpen, state.syncOpen])
+  }, [state.panelOpen, state.notesListOpen, state.rollupOpen, state.syncOpen])
 
   const sessionRef = useRef(state.session)
   const sessionsRef = useRef(state.sessions)
@@ -752,6 +758,7 @@ export default function NotesApp() {
           glossaryOpen={state.glossaryOpen}
           sourcesOpen={state.sourcesOpen}
           historyOpen={state.historyOpen}
+          rollupOpen={state.rollupOpen}
           noteHistory={state.session.history ?? []}
           glossaryRefreshKey={state.glossaryRefreshKey}
           onNotesListOpenChange={(open) => dispatch({ type: 'NOTES_LIST', open })}
@@ -760,6 +767,7 @@ export default function NotesApp() {
           onGlossaryOpenChange={(open) => dispatch({ type: 'GLOSSARY_OPEN', open })}
           onSourcesOpenChange={(open) => dispatch({ type: 'SOURCES_OPEN', open })}
           onHistoryOpenChange={(open) => dispatch({ type: 'HISTORY_OPEN', open })}
+          onRollupOpenChange={(open) => dispatch({ type: 'ROLLUP_OPEN', open })}
           onSelectMeeting={handleSelectMeeting}
           onNewMeeting={handleNewNote}
           onDeleteMeeting={handleDeleteMeeting}

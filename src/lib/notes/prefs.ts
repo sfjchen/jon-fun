@@ -3,6 +3,7 @@
 export type NotesUiPrefs = {
   panelOpen?: boolean
   notesListOpen?: boolean
+  rollupOpen?: boolean
   syncOpen?: boolean
   shorthandOpen?: boolean
   panelWidth?: number
