@@ -13,7 +13,8 @@ import {
 test.describe('Notes', () => {
   test.use({ viewport: { width: 1280, height: 800 } })
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
     await mockNotesApi(page)
     await page.goto('/games/notes', { waitUntil: 'load' })
     await page.evaluate((key) => {
@@ -397,5 +398,38 @@ test.describe('Notes', () => {
     await page.keyboard.type('- ')
     await page.keyboard.press('Backspace')
     await expect(editor.locator('.notes-dash-line')).toHaveCount(0, { timeout: 5000 })
+  })
+
+  test('typing * with selection wraps highlight shorthand', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.keyboard.type('wrap me')
+    await page.keyboard.press('ControlOrMeta+a')
+    await page.keyboard.press('Shift+8')
+    await expect(editor.locator('.tiptap-highlight-span')).toContainText('wrap me', { timeout: 5000 })
+  })
+
+  test('Tab indents line; Shift+Tab outdents', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.keyboard.type('indented')
+    await page.keyboard.press('ControlOrMeta+a')
+    await page.keyboard.press('Tab')
+    await expect(editor).toHaveText('  indented')
+    await editor.click()
+    await page.keyboard.press('ControlOrMeta+a')
+    await page.keyboard.press('Shift+Tab')
+    await expect(editor).toHaveText('indented')
+  })
+
+  test('Ctrl+Shift+V pastes plain text without rich formatting', async ({ page }) => {
+    const editor = notesEditor(page)
+    await page.evaluate(async () => {
+      await navigator.clipboard.writeText('plain **not bold**')
+    })
+    await editor.click()
+    await page.keyboard.press('Control+Shift+V')
+    await expect(editor).toContainText('plain **not bold**', { timeout: 5000 })
+    await expect(editor.locator('strong')).toHaveCount(0)
   })
 })
