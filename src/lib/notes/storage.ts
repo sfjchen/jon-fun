@@ -51,9 +51,7 @@ export function getEffectiveUserId(): string {
 
 export function createEmptySession(title?: string): NoteSession {
   const now = new Date().toISOString()
-  const defaultTitle =
-    title ??
-    `Note ${new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
+  const defaultTitle = title ?? ''
   return {
     id: genUuid(),
     title: defaultTitle,
@@ -64,7 +62,7 @@ export function createEmptySession(title?: string): NoteSession {
     screenshots: {},
     startedAt: now,
     updatedAt: now,
-    history: [{ kind: 'created', at: now, detail: defaultTitle }],
+    history: [{ kind: 'created', at: now, detail: defaultTitle || 'Untitled' }],
   }
 }
 

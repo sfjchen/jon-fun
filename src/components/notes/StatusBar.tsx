@@ -101,7 +101,6 @@ export default function StatusBar({
         >
           {hintsOpen ? 'Hide hints' : 'Hints'}
         </button>
-        <span className="hidden text-[var(--uv-text-muted)] md:inline">· paste screenshot</span>
       </div>
     </footer>
   )

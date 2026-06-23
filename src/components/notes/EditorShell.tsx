@@ -12,7 +12,6 @@ type EditorShellProps = {
   screenshots: Record<string, import('@/lib/notes/types').Screenshot>
   onChange: (val: string) => void
   onTrigger: (type: TriggerType, query: string, context: string) => void
-  onScreenshotPaste: (id: string, base64: string, mimeType: string) => void
   activeTriggerQuery: string | null
 }
 

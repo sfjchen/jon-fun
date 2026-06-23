@@ -1,4 +1,4 @@
-import type { TriggerResult } from './types'
+import type { TriggerResult, TriggerType } from './types'
 import { countShorthandFlags } from './shorthand'
 
 export { countShorthandFlags }
@@ -77,3 +77,18 @@ export function getContext(fullText: string, cursorPos: number, lineCount = 15):
 }
 
 export { DEBOUNCE_MS }
+
+/** Parse manual lookup from panel textbox; optional trailing ? / ?? like editor triggers. */
+export function parsePanelLookupQuery(raw: string): { type: TriggerType; query: string } | null {
+  const trimmed = raw.trim()
+  if (!trimmed) return null
+  if (/\?\?$/.test(trimmed)) {
+    const query = trimmed.replace(/\?\?+\s*$/, '').trim()
+    return query ? { type: 'section', query } : null
+  }
+  if (/\?$/.test(trimmed)) {
+    const query = trimmed.replace(/\?+\s*$/, '').trim()
+    return query ? { type: 'line', query } : null
+  }
+  return { type: 'line', query: trimmed }
+}

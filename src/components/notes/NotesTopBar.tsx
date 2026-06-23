@@ -66,14 +66,13 @@ export default function NotesTopBar({
         >
           ← sfjc.dev
         </Link>
-        <span className="shrink-0 text-[11px] font-semibold text-[var(--uv-text-muted)]">Notes</span>
       </div>
 
       <input
         value={title}
         onChange={(e) => onTitleChange(e.target.value)}
-        className="min-w-[120px] flex-1 bg-transparent text-base font-semibold text-[var(--uv-text-primary)] placeholder:text-[var(--uv-text-muted)] focus:outline-none sm:text-lg"
-        placeholder="Note title"
+        className="min-w-[120px] flex-1 bg-transparent text-base font-semibold text-[var(--uv-text-primary)] placeholder:font-normal placeholder:italic placeholder:text-[var(--uv-text-muted)] focus:outline-none sm:text-lg"
+        placeholder="Untitled"
         aria-label="Note title"
         data-testid="notes-meeting-title"
       />
