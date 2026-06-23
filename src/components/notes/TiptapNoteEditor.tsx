@@ -1,8 +1,13 @@
 'use client'
 
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, type Editor } from '@tiptap/react'
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
+import {
+  imageFileFromClipboard,
+  imageFilesFromDataTransfer,
+} from '@/lib/notes/attachments'
 import { buildNotesExtensions, NOTES_EDITOR_PLACEHOLDER } from '@/lib/notes/tiptap/extensions'
+import type { NoteAttachmentStorage } from '@/lib/notes/tiptap/noteAttachment'
 import {
   markdownFromEditor,
   mergeTodoLinesIntoMarkdown,
@@ -11,9 +16,10 @@ import {
   preprocessTodoMarkdown,
   scrollToLineIndex,
 } from '@/lib/notes/tiptap/editorCoords'
+import { insertNoteAttachmentsFromFiles } from '@/lib/notes/tiptap/pasteImages'
 import { refreshShorthandDecorations } from '@/lib/notes/tiptap/shorthandDecorations'
 import { scheduleTriggerCheck } from '@/lib/notes/tiptap/triggerPlugin'
-import type { TriggerType } from '@/lib/notes/types'
+import type { Screenshot, TriggerType } from '@/lib/notes/types'
 import NotesBubbleMenu from './NotesBubbleMenu'
 
 export type NoteEditorHandle = {
@@ -22,6 +28,7 @@ export type NoteEditorHandle = {
 
 type TiptapNoteEditorProps = {
   value: string
+  screenshots: Record<string, Screenshot>
   onChange: (val: string) => void
   onTrigger: (type: TriggerType, query: string, context: string) => void
   onScreenshotPaste: (id: string, base64: string, mimeType: string) => void
@@ -29,16 +36,19 @@ type TiptapNoteEditorProps = {
 }
 
 const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(function TiptapNoteEditor(
-  { value, onChange, onTrigger, onScreenshotPaste, activeTriggerQuery },
+  { value, screenshots, onChange, onTrigger, onScreenshotPaste, activeTriggerQuery },
   ref,
 ) {
   const lastFiredRef = useRef<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const onTriggerStable = useCallback(onTrigger, [onTrigger])
   const pasteHandlerRef = useRef(onScreenshotPaste)
   pasteHandlerRef.current = onScreenshotPaste
   const activeQueryRef = useRef(activeTriggerQuery)
   activeQueryRef.current = activeTriggerQuery
+  const screenshotsRef = useRef(screenshots)
+  screenshotsRef.current = screenshots
 
   const extensions = useMemo(
     () =>
@@ -48,6 +58,13 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
       }),
     [],
   )
+
+  const handleImageFiles = useCallback(async (files: File[], ed: Editor | null) => {
+    if (!ed) return
+    await insertNoteAttachmentsFromFiles(ed, files, (id, base64, mimeType) =>
+      pasteHandlerRef.current(id, base64, mimeType),
+    )
+  }, [])
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -66,25 +83,18 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
         class: 'tiptap notes-tiptap min-h-full px-4 py-3 text-base leading-relaxed focus:outline-none',
       },
       handlePaste(_view, event) {
-        const items = event.clipboardData?.items
-        if (!items) return false
-        for (const item of items) {
-          if (!item.type.startsWith('image/')) continue
-          event.preventDefault()
-          const file = item.getAsFile()
-          if (!file) return true
-          const reader = new FileReader()
-          reader.onload = () => {
-            const dataUrl = reader.result as string
-            const base64 = dataUrl.split(',')[1] ?? ''
-            const id = `screenshot-${Date.now()}`
-            pasteHandlerRef.current(id, base64, file.type)
-            editor?.chain().focus().insertContent(`[📷 ${id}]\n`).run()
-          }
-          reader.readAsDataURL(file)
-          return true
-        }
-        return false
+        const file = imageFileFromClipboard(event)
+        if (!file || !editor) return false
+        event.preventDefault()
+        void handleImageFiles([file], editor)
+        return true
+      },
+      handleDrop(_view, event) {
+        const files = imageFilesFromDataTransfer(event.dataTransfer)
+        if (!files.length || !editor) return false
+        event.preventDefault()
+        void handleImageFiles(files, editor)
+        return true
       },
     },
   })
@@ -95,6 +105,13 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
       scrollToLineIndex(editor, lineIndex)
     },
   }))
+
+  useEffect(() => {
+    if (!editor) return
+    const storage = editor.storage.noteAttachment as NoteAttachmentStorage
+    storage.screenshots = screenshotsRef.current
+    editor.view.dispatch(editor.state.tr)
+  }, [editor, screenshots])
 
   useEffect(() => {
     if (!editor) return
@@ -115,8 +132,9 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
   }, [activeTriggerQuery, editor])
 
   useEffect(() => {
+    const debounce = debounceRef
     return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
+      if (debounce.current) clearTimeout(debounce.current)
     }
   }, [])
 
@@ -125,8 +143,33 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
       className="notes-tiptap-wrap h-full min-h-0 flex-1 overflow-auto bg-[var(--uv-bg-elevated)]"
       data-testid="notes-tiptap-editor"
     >
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        data-testid="notes-attach-file-input"
+        onChange={(e) => {
+          const files = e.target.files ? [...e.target.files] : []
+          e.target.value = ''
+          if (files.length && editor) void handleImageFiles(files, editor)
+        }}
+      />
+      <div className="notes-editor-toolbar flex shrink-0 items-center gap-1 border-b border-[var(--uv-border)] px-2 py-1">
+        <button
+          type="button"
+          title="Attach image"
+          data-testid="notes-attach-file-btn"
+          className="rounded px-2 py-0.5 text-[11px] text-[var(--uv-text-secondary)] hover:bg-[var(--uv-bg-hover)]"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          📷 Attach
+        </button>
+        <span className="text-[10px] text-[var(--uv-text-muted)]">Paste or drop screenshots</span>
+      </div>
       <NotesBubbleMenu editor={editor} />
-      <EditorContent editor={editor} className="h-full" />
+      <EditorContent editor={editor} className="h-full min-h-0 flex-1" />
     </div>
   )
 })

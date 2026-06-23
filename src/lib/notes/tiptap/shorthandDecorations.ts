@@ -1,5 +1,6 @@
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import type { Node as PmNode } from '@tiptap/pm/model'
+import { highlightRanges, parseTodoLine } from '../shorthand'
 
 function buildDecorations(doc: PmNode, activeQuery: string | null): DecorationSet {
   const decos: Decoration[] = []
@@ -10,12 +11,8 @@ function buildDecorations(doc: PmNode, activeQuery: string | null): DecorationSe
     const lineText = node.textContent
     const trimmed = lineText.trimStart()
 
-    if (trimmed.startsWith('>')) {
+    if (parseTodoLine(lineText)) {
       decos.push(Decoration.node(pos, pos + node.nodeSize, { class: 'tiptap-action-line' }))
-    } else if (trimmed.startsWith('*')) {
-      decos.push(Decoration.node(pos, pos + node.nodeSize, { class: 'tiptap-key-line' }))
-    } else if (trimmed.startsWith('~')) {
-      decos.push(Decoration.node(pos, pos + node.nodeSize, { class: 'tiptap-approx-line' }))
     }
 
     const endMatch = trimmed.match(/(\?\?|\?)$/)
@@ -28,6 +25,11 @@ function buildDecorations(doc: PmNode, activeQuery: string | null): DecorationSe
       decos.push(Decoration.inline(start, end, { class: cls }))
     }
   })
+
+  const full = doc.textContent
+  for (const { from, to } of highlightRanges(full)) {
+    decos.push(Decoration.inline(from + 1, to + 1, { class: 'tiptap-highlight-span' }))
+  }
 
   return DecorationSet.create(doc, decos)
 }
@@ -50,10 +52,7 @@ export function createShorthandDecorationsExtension(getActiveQuery: () => string
             init(_, { doc }) {
               return buildDecorations(doc, getActiveQuery())
             },
-            apply(tr, _old, _oldState, newState) {
-              if (tr.docChanged || tr.getMeta('refreshDecorations')) {
-                return buildDecorations(newState.doc, getActiveQuery())
-              }
+            apply(_tr, _old, _oldState, newState) {
               return buildDecorations(newState.doc, getActiveQuery())
             },
           },

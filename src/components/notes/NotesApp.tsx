@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { assembleClientContextAsync } from '@/lib/notes/contextAssembler'
 import { upsertFromLookup } from '@/lib/notes/glossary'
@@ -13,7 +12,9 @@ import {
   type LookupStreamMap,
 } from '@/lib/notes/lookupStreams'
 import { pushGlossaryToServer, syncMemoryBank } from '@/lib/notes/memorySync'
-import { countShorthandFlags } from '@/lib/notes/triggerParser'
+import { countShorthandFlags } from '@/lib/notes/shorthand'
+import { appendNoteHistory, lastHistoryEntry } from '@/lib/notes/noteHistory'
+import { addToTagCatalog } from '@/lib/notes/tagRegistry'
 import { streamLookup } from '@/lib/notes/streamClient'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
 import {
@@ -30,15 +31,13 @@ import {
   syncWithServer,
   upsertSession,
 } from '@/lib/notes/storage'
-import type { Lookup, NoteMetadata, NoteSession, Screenshot, TriggerType } from '@/lib/notes/types'
 import SidePanel from './SidePanel'
 import EditorShell from './EditorShell'
 import type { NoteEditorHandle } from './EditorShell'
-import ShorthandBar from './ShorthandBar'
 import StatusBar from './StatusBar'
-import NotesHeader from './NotesHeader'
+import NotesTopBar, { loadHintsOpen, persistHintsOpen } from './NotesTopBar'
 import GlobalSearch from './GlobalSearch'
-import NoteMetaBar from './NoteMetaBar'
+import type { Lookup, NoteHistoryKind, NoteSession, Screenshot, TriggerType } from '@/lib/notes/types'
 
 type State = {
   session: NoteSession
@@ -49,6 +48,7 @@ type State = {
   syncOpen: boolean
   glossaryOpen: boolean
   sourcesOpen: boolean
+  historyOpen: boolean
   focusedLookupId: string | null
   currentLookup: Lookup | null
   sessionHistory: Lookup[]
@@ -61,8 +61,9 @@ type Action =
   | { type: 'SET_SESSIONS'; sessions: NoteSession[] }
   | { type: 'NOTES'; notes: string }
   | { type: 'TITLE'; title: string }
-  | { type: 'TAGS'; tags: string[] }
-  | { type: 'METADATA'; metadata: NoteMetadata }
+  | { type: 'TAGS'; tags: string[]; recordHistory?: boolean }
+  | { type: 'METADATA'; metadata: NoteSession['metadata'] }
+  | { type: 'PATCH_SESSION'; session: NoteSession }
   | { type: 'PANEL_TOGGLE' }
   | { type: 'PANEL'; open: boolean }
   | { type: 'NOTES_LIST'; open: boolean }
@@ -70,6 +71,7 @@ type Action =
   | { type: 'SYNC_OPEN'; open: boolean }
   | { type: 'GLOSSARY_OPEN'; open: boolean }
   | { type: 'SOURCES_OPEN'; open: boolean }
+  | { type: 'HISTORY_OPEN'; open: boolean }
   | { type: 'LOOKUP_START'; lookup: Lookup }
   | { type: 'STREAM'; lookupId: string; text: string }
   | { type: 'STREAM_DONE'; lookupId: string; assistantText: string }
@@ -94,6 +96,7 @@ function initState(): State {
     syncOpen: prefs.syncOpen ?? false,
     glossaryOpen: false,
     sourcesOpen: false,
+    historyOpen: false,
     focusedLookupId: null,
     currentLookup: null,
     sessionHistory: [...initial.lookups].reverse(),
@@ -123,14 +126,22 @@ function reducer(state: State, action: Action): State {
       return { ...state, session, sessions }
     }
     case 'TAGS': {
-      const session = { ...state.session, tags: action.tags }
+      let session = { ...state.session, tags: action.tags }
+      if (action.recordHistory) {
+        session = appendNoteHistory(session, { kind: 'tags', detail: action.tags.join(', ') })
+      }
+      for (const t of action.tags) addToTagCatalog(t)
       const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
       return { ...state, session, sessions }
     }
     case 'METADATA': {
-      const session = { ...state.session, metadata: action.metadata }
+      const session: NoteSession = { ...state.session, metadata: action.metadata ?? {} }
       const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
       return { ...state, session, sessions }
+    }
+    case 'PATCH_SESSION': {
+      const sessions = state.sessions.map((s) => (s.id === action.session.id ? action.session : s))
+      return { ...state, session: action.session, sessions }
     }
     case 'PANEL_TOGGLE':
       return { ...state, panelOpen: !state.panelOpen }
@@ -146,6 +157,8 @@ function reducer(state: State, action: Action): State {
       return { ...state, glossaryOpen: action.open }
     case 'SOURCES_OPEN':
       return { ...state, sourcesOpen: action.open }
+    case 'HISTORY_OPEN':
+      return { ...state, historyOpen: action.open }
     case 'LOOKUP_START': {
       const session = upsertLookupInSession(state.session, action.lookup)
       const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
@@ -266,6 +279,7 @@ export default function NotesApp() {
   const [saving, setSaving] = useState(false)
   const [syncing, setSyncing] = useState(true)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [hintsOpen, setHintsOpen] = useState(false)
   const editorRef = useRef<NoteEditorHandle>(null)
 
   const streamBufs = useRef<Record<string, string>>({})
@@ -273,6 +287,7 @@ export default function NotesApp() {
 
   useEffect(() => {
     getOrCreateUserId()
+    setHintsOpen(loadHintsOpen())
   }, [])
 
   useEffect(() => {
@@ -310,6 +325,28 @@ export default function NotesApp() {
     dispatch({ type: 'SYNC_OK', ok })
     return ok
   }, [])
+
+  const commitSession = useCallback((session: NoteSession) => {
+    upsertSession(session)
+    dispatch({ type: 'PATCH_SESSION', session })
+    dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+  }, [])
+
+  const saveWithHistory = useCallback(
+    async (kind: NoteHistoryKind, detail?: string, doSync = false) => {
+      let session = appendNoteHistory(sessionRef.current, { kind, ...(detail ? { detail } : {}) })
+      commitSession(session)
+      if (!doSync) return
+      setSaving(true)
+      const ok = await pushToServer(session)
+      if (ok) {
+        session = appendNoteHistory(session, { kind: 'synced' })
+        commitSession(session)
+      }
+      setSaving(false)
+    },
+    [commitSession, pushToServer],
+  )
 
   const refreshFromServer = useCallback(async (opts?: { skipPersist?: boolean }) => {
     if (!opts?.skipPersist) persistLocal(sessionRef.current)
@@ -357,10 +394,20 @@ export default function NotesApp() {
   }, [state.session, pushToServer])
 
   useEffect(() => {
-    const fn = () => upsertSession(sessionRef.current)
+    const fn = () => {
+      const session = appendNoteHistory(sessionRef.current, { kind: 'saved', detail: 'tab close' })
+      upsertSession(session)
+    }
+    const onHide = () => {
+      if (document.visibilityState === 'hidden') void saveWithHistory('saved', 'tab hidden', true)
+    }
     window.addEventListener('beforeunload', fn)
-    return () => window.removeEventListener('beforeunload', fn)
-  }, [])
+    document.addEventListener('visibilitychange', onHide)
+    return () => {
+      window.removeEventListener('beforeunload', fn)
+      document.removeEventListener('visibilitychange', onHide)
+    }
+  }, [saveWithHistory])
 
   useEffect(() => {
     const intervalMs = document.visibilityState === 'visible' ? 5 * 60_000 : 60 * 60_000
@@ -394,7 +441,13 @@ export default function NotesApp() {
         allSessions: sessionsRef.current,
       })
 
-      const noteShots = screenshotsInContext(sessionRef.current.notes, sessionRef.current.screenshots)
+      const withDomain: NoteSession = {
+        ...sessionRef.current,
+        metadata: { ...sessionRef.current.metadata, inferredDomain: ctx.domainId },
+      }
+      commitSession(withDomain)
+
+      const noteShots = screenshotsInContext(withDomain.notes, withDomain.screenshots)
       const screenshots = [...noteShots, ...(opts.extraScreenshots ?? [])]
 
       await streamLookup({
@@ -407,8 +460,8 @@ export default function NotesApp() {
         sourcesBlock: ctx.sourcesBlock,
         relatedNotesBlock: ctx.relatedNotesBlock,
         noteTags: ctx.noteTags,
-        noteDomain: sessionRef.current.metadata?.domain ?? ctx.domainId,
-        fullNotes: sessionRef.current.notes,
+        noteDomain: ctx.domainId,
+        fullNotes: withDomain.notes,
         ...(opts.mode ? { mode: opts.mode } : {}),
         ...(opts.followUpQuestion ? { followUpQuestion: opts.followUpQuestion } : {}),
         onToken: (token) => {
@@ -438,7 +491,7 @@ export default function NotesApp() {
         },
       })
     },
-    [],
+    [commitSession],
   )
 
   const handleTrigger = useCallback(
@@ -452,9 +505,10 @@ export default function NotesApp() {
         triggeredAt: new Date().toISOString(),
       }
       dispatch({ type: 'LOOKUP_START', lookup })
+      void saveWithHistory('lookup', query)
       void runStream({ lookupId: lookup.id, type, query, context, conversation: [] })
     },
-    [runStream],
+    [runStream, saveWithHistory],
   )
 
   const handleFollowUp = useCallback(
@@ -511,7 +565,7 @@ export default function NotesApp() {
   }, [state.session.notes, runStream])
 
   const handleNewNote = useCallback(() => {
-    upsertSession(state.session)
+    void saveWithHistory('saved', 'before new note', true)
     const fresh = createEmptySession()
     setActiveSessionId(fresh.id)
     upsertSession(fresh)
@@ -519,15 +573,20 @@ export default function NotesApp() {
     dispatch({ type: 'LOAD_SESSION', session: fresh })
     dispatch({ type: 'PANEL', open: true })
     dispatch({ type: 'NOTES_LIST', open: true })
-  }, [state.session])
+  }, [saveWithHistory])
 
   const handleSelectMeeting = useCallback(
     (s: NoteSession) => {
-      if (s.id !== state.session.id) upsertSession(state.session)
-      setActiveSessionId(s.id)
-      dispatch({ type: 'LOAD_SESSION', session: s })
+      if (s.id === state.session.id) return
+      void saveWithHistory('saved', undefined, true)
+      const switched = appendNoteHistory(s, { kind: 'switch', detail: s.title })
+      upsertSession(state.session)
+      setActiveSessionId(switched.id)
+      upsertSession(switched)
+      dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+      dispatch({ type: 'LOAD_SESSION', session: switched })
     },
-    [state.session],
+    [state.session, saveWithHistory],
   )
 
   const handleDeleteMeeting = useCallback((sessionId: string) => {
@@ -575,7 +634,7 @@ export default function NotesApp() {
       }
       if (e.key === 's') {
         e.preventDefault()
-        handleExport()
+        void saveWithHistory('saved', 'Ctrl+S', true)
       }
       if (e.shiftKey && e.key === 'N') {
         e.preventDefault()
@@ -588,7 +647,7 @@ export default function NotesApp() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [handleSummarize, handleExport, handleNewNote, state.panelOpen, aiBusy, searchOpen])
+  }, [handleSummarize, saveWithHistory, handleNewNote, state.panelOpen, aiBusy, searchOpen])
 
   const focusedId = state.focusedLookupId ?? state.currentLookup?.id ?? null
   const focusedLookup =
@@ -602,28 +661,24 @@ export default function NotesApp() {
 
   const counts = countShorthandFlags(state.session.notes)
   const activeQuery = focusedLookup?.query ?? null
+  const lastHist = lastHistoryEntry(state.session)
 
   return (
     <div className="uvimco-notes-root bg-[var(--uv-bg-base)] text-[var(--uv-text-primary)]">
-      <NotesHeader
-        panelOpen={state.panelOpen}
-        onTogglePanel={() => dispatch({ type: 'PANEL_TOGGLE' })}
-        onExport={handleExport}
-        onSummarize={handleSummarize}
-        onNewNote={handleNewNote}
-        onOpenSearch={() => setSearchOpen(true)}
-        homeLink={
-          <>
-            <Link
-              href="/"
-              className="text-xs text-[var(--uv-text-secondary)] hover:text-[var(--uv-accent)]"
-              data-testid="notes-home-link"
-            >
-              ← sfjc.dev
-            </Link>
-            <span className="text-xs font-semibold text-[var(--uv-text-primary)]">Notes</span>
-          </>
-        }
+      <NotesTopBar
+        title={state.session.title}
+        startedAt={state.session.startedAt}
+        tags={state.session.tags ?? []}
+        sessions={state.sessions}
+        hintsOpen={hintsOpen}
+        onTitleChange={(title) => dispatch({ type: 'TITLE', title })}
+        onTagsChange={(tags) => dispatch({ type: 'TAGS', tags, recordHistory: true })}
+        onHintsToggle={() => {
+          setHintsOpen((v) => {
+            persistHintsOpen(!v)
+            return !v
+          })
+        }}
       />
       <GlobalSearch
         open={searchOpen}
@@ -633,25 +688,11 @@ export default function NotesApp() {
       />
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <section className="uvimco-notes-editor-pane min-w-0 flex-1">
-          <input
-            value={state.session.title}
-            onChange={(e) => dispatch({ type: 'TITLE', title: e.target.value })}
-            className="shrink-0 border-b border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-5 py-3 text-xl font-semibold text-[var(--uv-text-primary)] placeholder:text-[var(--uv-text-muted)] focus:outline-none sm:px-6 sm:text-2xl"
-            placeholder="Note title"
-            aria-label="Note title"
-            data-testid="notes-meeting-title"
-          />
-          <NoteMetaBar
-            tags={state.session.tags ?? []}
-            {...(state.session.metadata ? { metadata: state.session.metadata } : {})}
-            onTagsChange={(tags) => dispatch({ type: 'TAGS', tags })}
-            onMetadataChange={(metadata) => dispatch({ type: 'METADATA', metadata })}
-          />
-          <ShorthandBar />
           <div className="uvimco-notes-editor-body" data-testid="notes-editor">
             <EditorShell
               ref={editorRef}
               value={state.session.notes}
+              screenshots={state.session.screenshots}
               onChange={(notes) => dispatch({ type: 'NOTES', notes })}
               onTrigger={handleTrigger}
               onScreenshotPaste={(id, base64, mimeType) =>
@@ -677,12 +718,15 @@ export default function NotesApp() {
           syncOpen={state.syncOpen}
           glossaryOpen={state.glossaryOpen}
           sourcesOpen={state.sourcesOpen}
+          historyOpen={state.historyOpen}
+          noteHistory={state.session.history ?? []}
           glossaryRefreshKey={state.glossaryRefreshKey}
           onNotesListOpenChange={(open) => dispatch({ type: 'NOTES_LIST', open })}
           onAiListOpenChange={(open) => dispatch({ type: 'AI_LIST', open })}
           onSyncOpenChange={(open) => dispatch({ type: 'SYNC_OPEN', open })}
           onGlossaryOpenChange={(open) => dispatch({ type: 'GLOSSARY_OPEN', open })}
           onSourcesOpenChange={(open) => dispatch({ type: 'SOURCES_OPEN', open })}
+          onHistoryOpenChange={(open) => dispatch({ type: 'HISTORY_OPEN', open })}
           onSelectMeeting={handleSelectMeeting}
           onNewMeeting={handleNewNote}
           onDeleteMeeting={handleDeleteMeeting}
@@ -705,6 +749,14 @@ export default function NotesApp() {
         saving={saving}
         syncing={syncing}
         aiActiveCount={aiActiveCount}
+        lastHistory={lastHist}
+        hintsOpen={hintsOpen}
+        panelOpen={state.panelOpen}
+        onSearch={() => setSearchOpen(true)}
+        onNewNote={handleNewNote}
+        onExport={handleExport}
+        onSummarize={handleSummarize}
+        onTogglePanel={() => dispatch({ type: 'PANEL_TOGGLE' })}
       />
     </div>
   )

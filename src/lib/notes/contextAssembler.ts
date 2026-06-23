@@ -27,9 +27,6 @@ function baseContext(opts: {
     tags: opts.activeSession.tags,
     notes: opts.activeSession.notes,
     query: opts.query,
-    ...(opts.activeSession.metadata?.domain
-      ? { explicitDomain: opts.activeSession.metadata.domain }
-      : {}),
     ...(opts.activeSession.metadata?.kind ? { kind: opts.activeSession.metadata.kind } : {}),
   })
 
@@ -48,7 +45,7 @@ function baseContext(opts: {
       for (const t of s.tags) {
         if (tagSet.has(t.toLowerCase())) score += 15
       }
-      if (s.metadata?.domain === primary.id) score += 10
+      if (s.metadata?.inferredDomain === primary.id) score += 10
       if (s.notes.toLowerCase().includes(opts.query.toLowerCase().slice(0, 20))) score += 8
       for (const lk of s.lookups) {
         if (lk.query.toLowerCase().includes(opts.query.toLowerCase().slice(0, 12))) score += 5

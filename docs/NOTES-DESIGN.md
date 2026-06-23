@@ -69,12 +69,13 @@ Data lives on Supabase under `note_sessions` (+ `notes_sources`, `notes_glossary
 
 ## UI principles
 
-- **Editor-first** — full-width CodeMirror default; panel for AI + vault utilities
+- **Editor-first** — full-width Tiptap WYSIWYG; panel for AI + vault utilities
 - **Panel order (top→bottom):** AI lookup → Notes list → Glossary → Sources → Rollup → Sync & backup (collapsed)
 - **Parallel AI** — multiple `?`/`??` triggers run concurrently; status bar shows active count; history shows streaming dots
 - **Sync rare** — collapsed under “Sync & backup”; expand only when setting key or restore
 - Notion-like light theme, Lato; Ctrl `\` panel, `Shift+F` search, `K` summarize, `S` export, `Shift+N` new note
-- **Editor:** CodeMirror default ([`EditorShell`](../../src/components/notes/EditorShell.tsx)); Tiptap WYSIWYG (What You See Is What You Get) opt-in via `NEXT_PUBLIC_NOTES_WYSIWYG=1` — faster plain-text capture vs rich formatting when needed
+- **Editor:** Tiptap + `@tiptap/markdown` ([`EditorShell`](../../src/components/notes/EditorShell.tsx) → [`TiptapNoteEditor`](../../src/components/notes/TiptapNoteEditor.tsx)); markdown stored in `NoteSession.notes`
+- **Screenshots:** paste/drop/📷 Attach → inline image node; stored as `[📷 id]` in markdown + base64 in `session.screenshots`; follow-up composer shows thumbnails and sends images to lookup API
 - **Models (Jun 2026):** lookup `google/gemini-2.5-flash-lite`; decode/follow-up/images `gemini-2.5-flash`; embed `gemini-embedding-001`
 
 ## E2E test matrix
@@ -84,6 +85,7 @@ Data lives on Supabase under `note_sessions` (+ `notes_sources`, `notes_glossary
 | `e2e/notes.spec.ts` | Local (mock API) | Editor, triggers `?`/`??`, follow-up, search, sync key, legacy URL + localStorage migration, builtin packs |
 | `e2e/notes-search.spec.ts` | Local | Ctrl+Shift+F search hits |
 | `e2e/notes-restore.spec.ts` | Local mock | Restore by sync key |
+| `e2e/notes-attachments.spec.ts` | Local (mock API) | Image attach in editor, marker restore, follow-up screenshot → lookup API |
 | `e2e/notes-lookup.spec.ts` | **Deploy** (`PLAYWRIGHT_SKIP_WEBSERVER=1`) | Real Gemini lookup + Core meaning format |
 | `e2e/notes-sync.spec.ts` | **Deploy** | Supabase session push + title migration |
 | `e2e/notes-visual.spec.ts` | Local layout + deploy snapshots | Editor height, panel layout |
@@ -98,7 +100,7 @@ Mock helper: `e2e/helpers/notes-mock.ts` — stubs `/api/notes/*` including embe
 |-------|-------|-----------|
 | **1** | Triggers, search, sync UI, metadata, render, glossary, rollup, panel resize | E2E + deploy lookup/sync pass |
 | **2** | Sources memory bank, context assembler, RAG, Supabase glossary/sources | Sources in AI context; search finds chats |
-| **3** | Tiptap WYSIWYG (feature flag) | Bold without `****`; triggers work; markdown round-trip; E2E green |
+| **3** | Tiptap WYSIWYG (default editor) | Bold/lists; triggers; markdown round-trip; attachments; E2E green |
 
 ## Changelog
 
@@ -107,4 +109,4 @@ Mock helper: `e2e/helpers/notes-mock.ts` — stubs `/api/notes/*` including embe
 - **2026-06-22**: Knowledge layer — domain packs, auto-sectioning, generalizable prompts ([NOTES-KNOWLEDGE.md](./NOTES-KNOWLEDGE.md)).
 - **2026-06-22**: AI response format — Core meaning + Typical ranges (removed Intent/angle/follow-up split).
 - **2026-06-23**: Parallel AI lookups; panel UX reorder; sync/glossary/sources collapsed; restore no longer overwritten by stale in-memory session; SSE `[DONE]` completes streams in mock E2E.
-- **2026-06-23**: Editor — CodeMirror default; Tiptap opt-in (`NEXT_PUBLIC_NOTES_WYSIWYG=1`); dual-path E2E helpers.
+- **2026-06-23**: Phase 3 complete — Tiptap-only; `noteAttachment` screenshots; FollowUpComposer previews; agent doc [`NOTES-AGENT.md`](./NOTES-AGENT.md).

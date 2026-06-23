@@ -1,4 +1,4 @@
-import { expect, type Page, type Locator } from '@playwright/test'
+import { expect, type Page, Locator } from '@playwright/test'
 
 /** Tiptap ProseMirror content area. */
 export function notesEditor(page: Page): Locator {
@@ -84,28 +84,12 @@ export async function mockNotesApi(page: Page): Promise<void> {
 /** @deprecated use mockNotesApi */
 export const mockUvimcoNotesApi = mockNotesApi
 
-/** Type into Tiptap (insertText fires ProseMirror input events). */
+/** Type into the active notes editor (fires ProseMirror onUpdate). */
 export async function typeInNotesEditor(page: Page, text: string): Promise<void> {
   await waitForNotesEditor(page)
-  await notesEditor(page).click()
-  await page.evaluate((t) => {
-    const el = document.querySelector('[data-testid="notes-tiptap-editor"] .ProseMirror') as HTMLElement | null
-    if (!el) return
-    el.focus()
-    document.execCommand('insertText', false, t)
-  }, text)
-}
-
-/** Wait until session notes in localStorage contain substring. */
-export async function waitForNotesPersisted(page: Page, substring: string): Promise<void> {
-  await expect
-    .poll(async () =>
-      page.evaluate((sub) => {
-        const raw = localStorage.getItem('notes_sessions') ?? '[]'
-        return raw.includes(sub)
-      }, substring),
-    )
-    .toBe(true)
+  const editor = notesEditor(page)
+  await editor.click()
+  await page.keyboard.type(text)
 }
 
 /** Wait for debounced line? / ?? trigger (~400ms). */

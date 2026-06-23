@@ -3,6 +3,7 @@
  */
 
 import { normalizeSessionTitle } from './prefs'
+import { parseTodoLine } from './shorthand'
 import type { NoteSession, Screenshot } from './types'
 
 const LEGACY_USER_ID = 'uvimco_notes_user_id'
@@ -80,11 +81,12 @@ export function createEmptySession(title?: string): NoteSession {
     title: defaultTitle,
     notes: '',
     tags: [],
-    metadata: { meetingAt: now },
+    metadata: {},
     lookups: [],
     screenshots: {},
     startedAt: now,
     updatedAt: now,
+    history: [{ kind: 'created', at: now, detail: defaultTitle }],
   }
 }
 
@@ -92,7 +94,8 @@ function normalizeSession(s: NoteSession): NoteSession {
   return {
     ...s,
     tags: Array.isArray(s.tags) ? s.tags : [],
-    metadata: s.metadata ?? { meetingAt: s.startedAt },
+    metadata: s.metadata ?? {},
+    history: Array.isArray(s.history) ? s.history : [],
     title: normalizeSessionTitle(s.title),
     lookups: (s.lookups ?? []).map((lk) => ({
       ...lk,
@@ -249,8 +252,8 @@ export function exportSessionMarkdown(session: NoteSession): string {
   })
   const actions = session.notes
     .split('\n')
-    .filter((l) => /^\s*>/.test(l))
-    .map((l) => l.replace(/^\s*>\s?/, ''))
+    .map((l) => parseTodoLine(l))
+    .filter((t): t is string => Boolean(t))
   const lookupLines = session.lookups.flatMap((lk) => {
     const ans = lk.conversation.find((m) => m.role === 'assistant')?.content ?? ''
     const label = lk.type === 'section' ? `${lk.query}??` : `${lk.query}?`

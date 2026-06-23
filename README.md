@@ -12,7 +12,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **Chwazi Finger Chooser** (`/games/chwazi`): Place fingers on screen to randomly select a winner
 - **TMR System** (`/games/tmr`): Targeted Memory Reactivation for learning and sleep
 - **1 Sentence Everyday** (`/games/daily-log`): One sentence per day, history, calendar, export (text / JSON / RFC 4180 CSV) + CSV merge import (`updatedAt` wins per date), cross-device sync (localStorage + Supabase)
-- **Notes** (`/games/notes`): Long-term **personal knowledge vault** — CodeMirror editor (Tiptap WYSIWYG opt-in via `NEXT_PUBLIC_NOTES_WYSIWYG=1`), domain packs (UVIMCO default, portfolio quant, CFA L1); parallel AI lookups; auto-sectioning; `line?`/`??` AI; search/sync/glossary/sources/RAG. See **`docs/NOTES-KNOWLEDGE.md`** and **`docs/NOTES-DESIGN.md`** (E2E matrix).
+- **Notes** (`/games/notes`): Personal knowledge vault — **Tiptap** editor, domain packs (UVIMCO, portfolio quant, CFA L1); parallel AI (`line?`/`??`); screenshot attachments; search/sync/glossary/sources/RAG. Agent ref: **`docs/NOTES-AGENT.md`** · design: **`docs/NOTES-DESIGN.md`** · E2E: **`npm run test:e2e:notes`**.
 - **Pear Navigator** (`/games/pear-navigator`): PearPad tablet simulator—Procreate, Notion, Figma guides; tap UI elements to advance; MS&E 165 demo; A/B test results at `/games/pear-navigator/results`
 - **Mental Obstacle Course** (`/games/mental-obstacle-course`): Six-round playful benchmark (reaction, arithmetic, patterns, digit memory, words, trivia) with a radar chart by domain; scores and history in **localStorage** only (no accounts)
 - **UBI × AI** (`/games/ubi-ai`): Interactive **R**-backed scenario model — universal basic income (UBI) social utility under AI job-security sliders; literature-calibrated parameters (IMF, Goldman Sachs, pilot RCTs); exports [`analysis/ubi-ai/output/`](analysis/ubi-ai/output/) — rebuild with **`npm run build:ubi-ai`**
@@ -21,6 +21,23 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **Enough About You** (`/games/enough-about-you`): Intake questions, subject rounds (reputation bonus), final truth-vs-lie vote per player; 3–8 players; `party_eay_*` session keys
 - **Connections** (`/games/connections`): NYT (New York Times)-style **16-word / 4-group** puzzle; **author-assigned** yellow/green/blue/purple tiers; **public shelf** via Supabase (`connections_puzzles`) when service env is set; **fingerprint + display name** for ownership (no login); JSON import/export; theme2 mirror under `/theme2/games/connections`
 - **Madelyn & Patrick wedding** (`/wedding/madelyn-patrick`): Unlisted single-page wedding site — details, story, logistics/FAQ, cash registry (Venmo), photo gallery, **Supabase RSVP** form; admin at `/admin/wedding/madelyn-patrick` (secret **`WEDDING_ADMIN_SECRET`**). Edit copy in [`src/data/wedding/madelyn-patrick.ts`](src/data/wedding/madelyn-patrick.ts). RSVP QR: **`npm run wedding:rsvp-qr`**. Short URL redirect: **`/Madelyn-Patrick`** → wedding page.
+
+## 🤖 AI agents — start here
+
+| Task | Read first | Verify |
+|------|------------|--------|
+| **Notes** (editor, AI, sync, attachments) | [`docs/NOTES-AGENT.md`](docs/NOTES-AGENT.md) → [`docs/NOTES-DESIGN.md`](docs/NOTES-DESIGN.md) | `verify:notes-*` → `test:e2e:notes` (3 cycles after substantive edits) |
+| Supabase schema | `.cursor/rules/supabase-migrations.mdc` | MCP `apply_migration` + `list_tables` |
+| Design / UX | **Core design principles** below + [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) | Visual specs in `e2e/*-visual.spec.ts` |
+| Deploy | Vercel on push to `main` | `npm run build` locally; check sfjc.dev |
+
+**Notes verify loop (3 cycles):** (1) `npm run verify:notes-triggers && npm run verify:notes-attachments && npm run type-check` (2) `lsof -ti:3001 \| xargs kill -9`; `npm run test:e2e:notes` — if `.next` corrupt: `rm -rf .next && npm run build` (3) re-run E2E until green; optional `test:e2e:notes-deploy` + `smoke:notes-llm`.
+
+**Do not:** resurrect CodeMirror / `NEXT_PUBLIC_NOTES_WYSIWYG`; tell user to run migrations manually (use Supabase MCP); commit unless asked.
+
+**Always update:** README changelog + `docs/NOTES-DESIGN.md` changelog for Notes changes; [`docs/NOTES-AGENT.md`](docs/NOTES-AGENT.md) if agent paths/commands change.
+
+---
 
 ## 🚀 Quick Start
 
@@ -479,6 +496,7 @@ src/
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
 - `npm run type-check` - Run TypeScript type checking
+- **Notes**: `npm run verify:notes-triggers` · `npm run verify:notes-attachments` · `npm run test:e2e:notes` (local mock) · `npm run test:e2e:notes-deploy` · `npm run smoke:notes-llm` — see [`docs/NOTES-AGENT.md`](docs/NOTES-AGENT.md)
 - `npm run test:e2e` - Run Playwright E2E tests (starts dev server if needed)
 - `npm run test:e2e:ci` - Same with `CI=1` (Chromium-only projects, stricter `forbidOnly`, retries)
 - `npm run test:e2e:deployment` - E2E against live deployment (`https://sfjc.dev` by default; set `PLAYWRIGHT_BASE_URL` for a preview URL); does not start local dev
@@ -504,8 +522,7 @@ src/
 
 Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
 
-**2026-06**
-
+- **2026-06**: **Notes app UX overhaul** — tags replace kind/domain pickers (editable catalog, toggle chips in top bar); auto domain inference; read-only created date + per-note history (save/sync/lookup); unified top + bottom bars; todo suffix `>`/`<` + `*highlight*`; Ctrl+S save/sync. See [docs/NOTES-DESIGN.md](docs/NOTES-DESIGN.md).
 - **theme2 routes restored** at `/theme2` (game mirrors + home grid); archived copies remain under `src/app/_archive/theme2`. **Leaderboards** page copy updated to “parked for now” while focus stays on deeper projects (Veridian, etc.).
 - **Veridian whiteboard (canonical demo)**: **[sfjc.dev/veridian](https://sfjc.dev/veridian)** — Next.js local-first app proxied from [`sfjchen/veridian-whiteboard`](https://github.com/sfjchen/veridian-whiteboard). Not `www.veridian.fyi` (legacy Expo EdTech; redirects here). Added multi-agent reconciliation table in **[docs/VERIDIAN_WORKSPACE.md](docs/VERIDIAN_WORKSPACE.md)** so parallel Cursor chats don't mix Render/Supabase/Expo with the Vercel-only whiteboard.
 - **Veridian build isolation**: Parent `tsconfig.json` + `eslint.config.mjs` exclude `Veridian/**` so `npm run build` on Jon-fun no longer typechecks the nested whiteboard. Added **[docs/VERIDIAN_WORKSPACE.md](docs/VERIDIAN_WORKSPACE.md)** (three projects, envs, Supabase IDs, ports), plus nested **`Veridian/WORKING.md`** and **`Veridian/REMOTES.md`** (do not push whiteboard to `sfjchen/Veridian` EdTech fork).
@@ -580,7 +597,8 @@ Running log of project work. Update this section when making significant changes
 - **5 Can Sorting (hint + shift mode)**: **Hint** picks slots for one step on a shortest path to the hidden order (BFS on legal moves); **Shift** mode adds **Insert | Swap** so insertion moves and swaps are both available (`hintFirstMoveOnShortestPath` in `five-can-game.ts`).
 - **5 Can Sorting copy**: Parody can labels match doodle body colors (id order) — Cola (red), Pepsy (blue), Dr. Prepper (maroon), Spritz (green), Fantuh (orange) (`CAN_BRAND_NAMES` ↔ `FiveCanDoodle`).
 - **Notes knowledge layer**: Domain packs (UVIMCO, portfolio quant/Grinold-Kahn, CFA L1); auto-sectioning; dynamic prompts; builtin Sources packs; **Domain (auto)** picker — see **`docs/NOTES-KNOWLEDGE.md`**.
-- **Notes parallel AI + panel UX (2026-06-23)**: Multiple concurrent lookup streams; panel order AI→Notes→Glossary→Sources→Rollup→Sync (collapsed); CodeMirror default + Tiptap flag; localStorage flush before cloud sync — see **`docs/NOTES-DESIGN.md`**.
+- **Notes screenshot attachments (2026-06-23)**: Tiptap `noteAttachment` node renders pasted/dropped images inline (markdown `[📷 id]` markers); 📷 Attach toolbar + follow-up composer previews; screenshots sent to AI lookup API — E2E `e2e/notes-attachments.spec.ts`.
+- **Notes parallel AI + panel UX (2026-06-23)**: Multiple concurrent lookup streams; panel order AI→Notes→Glossary→Sources→Rollup→Sync (collapsed); Tiptap-only editor; localStorage flush before cloud sync — see **`docs/NOTES-DESIGN.md`**.
 
 - **OpenClaw local-only channel cleanup (ops)**: Removed email/cloud bridge settings from active OpenClaw runtime by dropping `hooks` and `channels.telegram` from `~/.openclaw/openclaw.json`; retained only BlueBubbles (iMessage) + WhatsApp channels. Tightened BlueBubbles allowlists to self-number thread identifiers only to prevent unintended chat activation.
 - **OpenClaw env local simplification (ops)**: Reduced `openclaw-hybrid/config/env.cloud` to local essentials only (`OPENCLAW_*`, `OPENROUTER_API_KEY`, `BLUEBUBBLES_*`), removing Outlook Graph, Power Automate, bridge relay, Telegram fallback, and Twilio escalation variables.
@@ -694,7 +712,7 @@ Running log of project work. Update this section when making significant changes
 
 ## 📋 README Maintenance Guidelines
 
-**For AI Agents**: When making changes to the project, update this README if: adding a game, DB tables/columns, API routes, architectural changes, or tech stack changes. Add entries to the Changelog section above for significant changes. **Supabase:** This repo has the Supabase Cursor plugin — **apply migrations yourself** via MCP `apply_migration` (project `nzviiorrlsdtwzvzodpg`); see `.cursor/rules/supabase-migrations.mdc`. Do not tell the user to run migrations manually unless MCP auth failed. **Product and UX:** Follow **Core design principles** in this README (audience, minimal UI, flat nav, `PageShell` behavior, local-first + optional sync). **Visual tokens / palette:** [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md) + `globals.css`—keep them in sync when colors or typography change.
+**For AI Agents**: See **🤖 AI agents — start here** (top of README) and game-specific docs (e.g. [`docs/NOTES-AGENT.md`](docs/NOTES-AGENT.md)). Update README changelog + design doc changelogs when shipping features. **Supabase:** apply migrations via MCP (`nzviiorrlsdtwzvzodpg`); see `.cursor/rules/supabase-migrations.mdc`. **Product/UX:** Core design principles + [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md). **Notes edits:** run 3-cycle verify (unit → E2E → E2E again until green).
 
 **Deployments (sfjc.dev on Vercel):** After `git add` / `commit` / `push`, the agent should confirm the Vercel deployment succeeds (e.g. run `npm run build` locally to match CI, and check the latest deployment in the Vercel dashboard or `vercel` CLI). If the deployment fails, diagnose and fix the build (or config) before stopping—not only push and assume green.
 

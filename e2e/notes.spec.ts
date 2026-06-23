@@ -238,7 +238,7 @@ test.describe('Notes', () => {
 
   test('shorthand hints toggle', async ({ page }) => {
     await page.getByTestId('notes-shorthand-toggle').click()
-    await expect(page.getByText('AI explain line')).toBeVisible()
+    await expect(page.getByTestId('notes-statusbar')).toContainText('AI line')
     await page.getByTestId('notes-shorthand-toggle').click()
     await expect(page.getByTestId('notes-shorthand-toggle')).toHaveText('Hints')
   })

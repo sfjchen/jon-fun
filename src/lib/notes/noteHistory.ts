@@ -1,0 +1,48 @@
+import type { NoteHistoryEntry, NoteSession } from './types'
+
+const MAX_ENTRIES = 120
+
+export function appendNoteHistory(
+  session: NoteSession,
+  entry: Omit<NoteHistoryEntry, 'at'> & { at?: string },
+): NoteSession {
+  const row: NoteHistoryEntry = {
+    ...entry,
+    at: entry.at ?? new Date().toISOString(),
+  }
+  const history = [...(session.history ?? []), row].slice(-MAX_ENTRIES)
+  return { ...session, history, updatedAt: row.at }
+}
+
+export function lastHistoryEntry(
+  session: NoteSession,
+  kind?: NoteHistoryEntry['kind'],
+): NoteHistoryEntry | null {
+  const hist = session.history ?? []
+  if (!kind) return hist[hist.length - 1] ?? null
+  for (let i = hist.length - 1; i >= 0; i--) {
+    if (hist[i]!.kind === kind) return hist[i]!
+  }
+  return null
+}
+
+export function formatHistoryLine(entry: NoteHistoryEntry): string {
+  const t = new Date(entry.at).toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
+  const labels: Record<NoteHistoryEntry['kind'], string> = {
+    created: 'Created',
+    saved: 'Saved locally',
+    synced: 'Synced',
+    lookup: 'AI lookup',
+    title: 'Title edited',
+    tags: 'Tags updated',
+    switch: 'Opened note',
+  }
+  let label = labels[entry.kind] ?? entry.kind
+  if (entry.detail) label += ` · ${entry.detail}`
+  return `${t} — ${label}`
+}

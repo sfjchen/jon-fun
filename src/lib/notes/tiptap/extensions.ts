@@ -6,6 +6,7 @@ import Link from '@tiptap/extension-link'
 import { Markdown } from '@tiptap/markdown'
 import { notesKeymap } from './keymap'
 import { createShorthandDecorationsExtension } from './shorthandDecorations'
+import { NoteAttachment } from './noteAttachment'
 
 export type NotesExtensionOpts = {
   placeholder: string
@@ -24,6 +25,7 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
       autolink: true,
       linkOnPaste: true,
     }),
+    NoteAttachment,
     Markdown,
     Placeholder.configure({ placeholder: opts.placeholder }),
     notesKeymap,
