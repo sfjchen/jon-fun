@@ -741,7 +741,6 @@ export default function NotesApp() {
   )
 
   const handleDeleteMeeting = useCallback((sessionId: string) => {
-    if (!window.confirm('Delete this note?')) return
     void deleteSessionOnServer(getEffectiveUserId(), sessionId)
     const next = deleteSession(sessionId)
     dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
@@ -750,7 +749,6 @@ export default function NotesApp() {
 
   const handleDeleteLookup = useCallback(
     (lookupId: string) => {
-      if (!window.confirm('Delete this AI lookup?')) return
       const lookups = state.session.lookups.filter((l) => l.id !== lookupId)
       const session = { ...state.session, lookups }
       upsertSession(session)
