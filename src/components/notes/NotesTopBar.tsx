@@ -11,10 +11,8 @@ type NotesTopBarProps = {
   startedAt: string
   tags: string[]
   sessions: NoteSession[]
-  hintsOpen: boolean
   onTitleChange: (title: string) => void
   onTagsChange: (tags: string[]) => void
-  onHintsToggle: () => void
 }
 
 function formatCreated(iso: string): string {
@@ -32,10 +30,8 @@ export default function NotesTopBar({
   startedAt,
   tags,
   sessions,
-  hintsOpen,
   onTitleChange,
   onTagsChange,
-  onHintsToggle,
 }: NotesTopBarProps) {
   const [draft, setDraft] = useState('')
   const knownTags = useMemo(() => listKnownTags(sessions), [sessions])
@@ -123,15 +119,6 @@ export default function NotesTopBar({
             if (draft.trim()) commitDraft(draft)
           }}
         />
-        <button
-          type="button"
-          onClick={onHintsToggle}
-          data-testid="notes-shorthand-toggle"
-          className="rounded px-1.5 py-0.5 text-[10px] text-[var(--uv-text-secondary)] hover:bg-[var(--uv-bg-hover)]"
-          aria-expanded={hintsOpen}
-        >
-          {hintsOpen ? 'Hide hints' : 'Hints'}
-        </button>
       </div>
     </header>
   )

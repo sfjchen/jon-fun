@@ -5,9 +5,14 @@ export function notesEditor(page: Page): Locator {
   return page.locator('[data-testid="notes-tiptap-editor"] .ProseMirror')
 }
 
-/** Wait for Tiptap editor to mount. */
+/** Wait for Tiptap editor to mount (retries once after reload on slow dev compiles). */
 export async function waitForNotesEditor(page: Page): Promise<void> {
-  await page.waitForSelector('[data-testid="notes-tiptap-editor"] .ProseMirror', { timeout: 25_000 })
+  try {
+    await page.waitForSelector('[data-testid="notes-tiptap-editor"] .ProseMirror', { timeout: 25_000 })
+  } catch {
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await page.waitForSelector('[data-testid="notes-tiptap-editor"] .ProseMirror', { timeout: 25_000 })
+  }
 }
 
 /** Stub Notes sync, lookup, embed, glossary, and sources routes for offline E2E. */

@@ -78,6 +78,7 @@ npm run smoke:notes-llm
 4. **E2E editor selector** — `[data-testid="notes-tiptap-editor"] .ProseMirror` only (not `.uvimco-cm`).
 5. **Supabase migrations** — apply via MCP `apply_migration`; project `nzviiorrlsdtwzvzodpg`.
 6. **Large screenshots** — `stripScreenshotsForSync` drops base64 >200KB from cloud push (local kept).
+7. **E2E flake** — kill `:3001`; if 500/`routes-manifest.json` missing: `rm -rf .next && npm run build`; `waitForNotesEditor` auto-reloads once.
 
 ## API routes
 

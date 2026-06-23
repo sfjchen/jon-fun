@@ -104,6 +104,33 @@ if (!merged.startsWith('> follow up IC')) {
   console.log('✓ mergeTodoLinesIntoMarkdown')
 }
 
+const mergedSuffix = mergeTodoLinesIntoMarkdown('follow up IC memo>', 'follow up IC memo')
+if (mergedSuffix !== 'follow up IC memo>') {
+  failed++
+  console.error('✗ mergeTodoLinesIntoMarkdown suffix todo', mergedSuffix)
+} else {
+  console.log('✓ mergeTodoLinesIntoMarkdown suffix todo')
+}
+
+const suffixTodos = collectTodos([
+  {
+    id: '2',
+    title: 'Suffix',
+    notes: 'follow up IC memo>',
+    tags: [],
+    lookups: [],
+    screenshots: {},
+    startedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  } satisfies NoteSession,
+])
+if (suffixTodos.length !== 1 || suffixTodos[0]!.text !== 'follow up IC memo') {
+  failed++
+  console.error('✗ collectTodos from suffix > line', suffixTodos)
+} else {
+  console.log('✓ collectTodos from suffix > line')
+}
+
 const todos = collectTodos([
   {
     id: '1',

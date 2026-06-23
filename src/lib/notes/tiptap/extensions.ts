@@ -17,6 +17,7 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
   return [
     StarterKit.configure({
       blockquote: false,
+      italic: false,
       heading: { levels: [1, 2, 3] },
     }),
     Underline,
@@ -34,4 +35,4 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
 }
 
 export const NOTES_EDITOR_PLACEHOLDER =
-  'Start typing. End a line with ? for AI · ?? for section · > todo · * highlight'
+  'Start typing. Line? for AI · Line?? for section · text> todo · *highlight*'
