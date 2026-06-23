@@ -76,7 +76,7 @@ type Action =
   | { type: 'STREAM_DONE'; lookupId: string; assistantText: string }
   | { type: 'STREAM_ERROR'; lookupId: string; message: string }
   | { type: 'SELECT_LOOKUP'; lookup: Lookup }
-  | { type: 'SCREENSHOT'; shot: Screenshot }
+  | { type: 'DELETE_LOOKUP'; lookupId: string }
   | { type: 'SYNC_OK'; ok: boolean }
   | { type: 'LOAD_SESSION'; session: NoteSession; preserveAi?: boolean }
   | { type: 'CLEAR_LOOKUP' }
@@ -110,17 +110,21 @@ function upsertLookupInSession(session: NoteSession, lookup: Lookup): NoteSessio
   return { ...session, lookups }
 }
 
+function touchSession(session: NoteSession): NoteSession {
+  return { ...session, updatedAt: new Date().toISOString() }
+}
+
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case 'SET_SESSIONS':
       return { ...state, sessions: action.sessions }
     case 'NOTES': {
-      const session = { ...state.session, notes: action.notes }
+      const session = touchSession({ ...state.session, notes: action.notes })
       const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
       return { ...state, session, sessions }
     }
     case 'TITLE': {
-      const session = { ...state.session, title: action.title }
+      const session = touchSession({ ...state.session, title: action.title })
       const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
       return { ...state, session, sessions }
     }
@@ -206,7 +210,7 @@ function reducer(state: State, action: Action): State {
         ...base,
         conversation: [...base.conversation, { role: 'assistant', content: action.assistantText }],
       }
-      const session = upsertLookupInSession(state.session, lookup)
+      const session = touchSession(upsertLookupInSession(state.session, lookup))
       upsertFromLookup(lookup, session.id)
       const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
       const sessionHistory = [lookup, ...state.sessionHistory.filter((l) => l.id !== lookup.id)]
@@ -239,9 +243,23 @@ function reducer(state: State, action: Action): State {
         focusedLookupId: action.lookup.id,
       }
     }
-    case 'SCREENSHOT': {
-      const screenshots = { ...state.session.screenshots, [action.shot.id]: action.shot }
-      return { ...state, session: { ...state.session, screenshots } }
+    case 'DELETE_LOOKUP': {
+      const lookups = state.session.lookups.filter((l) => l.id !== action.lookupId)
+      const session = { ...state.session, lookups }
+      const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
+      const sessionHistory = state.sessionHistory.filter((l) => l.id !== action.lookupId)
+      const nextMap = { ...state.streamByLookupId }
+      delete nextMap[action.lookupId]
+      const clearedFocus = state.focusedLookupId === action.lookupId
+      return {
+        ...state,
+        session,
+        sessions,
+        sessionHistory,
+        streamByLookupId: nextMap,
+        currentLookup: clearedFocus ? null : state.currentLookup,
+        focusedLookupId: clearedFocus ? null : state.focusedLookupId,
+      }
     }
     case 'SYNC_OK':
       return { ...state, syncOk: action.ok }
@@ -511,7 +529,7 @@ export default function NotesApp() {
   )
 
   const handleFollowUp = useCallback(
-    (question: string, extraScreenshots?: Screenshot[]) => {
+    (question: string) => {
       const lk = state.currentLookup
       if (!lk || isLookupStreaming(state.streamByLookupId, lk.id)) return
       const conversation = [...lk.conversation, { role: 'user' as const, content: question }]
@@ -525,7 +543,6 @@ export default function NotesApp() {
         conversation,
         mode: 'followup',
         followUpQuestion: question,
-        ...(extraScreenshots?.length ? { extraScreenshots } : {}),
       })
     },
     [state.currentLookup, state.streamByLookupId, runStream],
@@ -589,11 +606,24 @@ export default function NotesApp() {
   )
 
   const handleDeleteMeeting = useCallback((sessionId: string) => {
+    if (!window.confirm('Delete this note?')) return
     void deleteSessionOnServer(getEffectiveUserId(), sessionId)
     const next = deleteSession(sessionId)
     dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
     if (next) dispatch({ type: 'LOAD_SESSION', session: next })
   }, [])
+
+  const handleDeleteLookup = useCallback(
+    (lookupId: string) => {
+      if (!window.confirm('Delete this AI lookup?')) return
+      const lookups = state.session.lookups.filter((l) => l.id !== lookupId)
+      const session = { ...state.session, lookups }
+      upsertSession(session)
+      dispatch({ type: 'DELETE_LOOKUP', lookupId })
+      void saveSessionToServer(session)
+    },
+    [state.session],
+  )
 
   const handleJump = useCallback(
     (sessionId: string, lineIndex?: number) => {
@@ -665,10 +695,12 @@ export default function NotesApp() {
       <NotesTopBar
         title={state.session.title}
         startedAt={state.session.startedAt}
+        updatedAt={state.session.updatedAt}
         tags={state.session.tags ?? []}
         sessions={state.sessions}
         onTitleChange={(title) => dispatch({ type: 'TITLE', title })}
         onTagsChange={(tags) => dispatch({ type: 'TAGS', tags, recordHistory: true })}
+        onDeleteNote={() => handleDeleteMeeting(state.session.id)}
       />
       <GlobalSearch
         open={searchOpen}
@@ -685,9 +717,6 @@ export default function NotesApp() {
               screenshots={state.session.screenshots}
               onChange={(notes) => dispatch({ type: 'NOTES', notes })}
               onTrigger={handleTrigger}
-              onScreenshotPaste={(id, base64, mimeType) =>
-                dispatch({ type: 'SCREENSHOT', shot: { id, base64, mimeType } })
-              }
               activeTriggerQuery={activeQuery}
             />
           </div>
@@ -720,6 +749,7 @@ export default function NotesApp() {
           onSelectMeeting={handleSelectMeeting}
           onNewMeeting={handleNewNote}
           onDeleteMeeting={handleDeleteMeeting}
+          onDeleteLookup={handleDeleteLookup}
           onFollowUp={handleFollowUp}
           onSelectHistory={(lk) => dispatch({ type: 'SELECT_LOOKUP', lookup: lk })}
           onClose={() => dispatch({ type: 'PANEL', open: false })}
