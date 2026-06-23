@@ -12,10 +12,12 @@ import {
   preprocessTodoMarkdown,
   scrollToLineIndex,
 } from '@/lib/notes/tiptap/editorCoords'
+import { normalizeNotesMarkdown } from '@/lib/notes/tiptap/markdownNormalize'
 import { refreshShorthandDecorations } from '@/lib/notes/tiptap/shorthandDecorations'
 import { scheduleTriggerCheck } from '@/lib/notes/tiptap/triggerPlugin'
 import type { Screenshot, TriggerType } from '@/lib/notes/types'
 import NotesBubbleMenu from './NotesBubbleMenu'
+import NotesEditorToolbar from './NotesEditorToolbar'
 
 export type NoteEditorHandle = {
   scrollToLine: (lineIndex: number) => void
@@ -29,12 +31,17 @@ type TiptapNoteEditorProps = {
   activeTriggerQuery: string | null
 }
 
+function editorMarkdown(ed: import('@tiptap/core').Editor): string {
+  return normalizeNotesMarkdown(postprocessTodoMarkdown(markdownFromEditor(ed)))
+}
+
 const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(function TiptapNoteEditor(
   { value, screenshots, onChange, onTrigger, activeTriggerQuery },
   ref,
 ) {
   const lastFiredRef = useRef<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const emittedMarkdownRef = useRef<string | null>(null)
   const onTriggerStable = useCallback(onTrigger, [onTrigger])
   const activeQueryRef = useRef(activeTriggerQuery)
   activeQueryRef.current = activeTriggerQuery
@@ -59,7 +66,9 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
     onUpdate: ({ editor: ed }) => {
       const plain = plainTextFromEditor(ed)
       const md = postprocessTodoMarkdown(markdownFromEditor(ed))
-      onChange(mergeTodoLinesIntoMarkdown(plain, md))
+      const merged = mergeTodoLinesIntoMarkdown(plain, md)
+      emittedMarkdownRef.current = normalizeNotesMarkdown(merged)
+      onChange(merged)
       scheduleTriggerCheck(ed, debounceRef, onTriggerStable, lastFiredRef)
     },
     editorProps: {
@@ -85,15 +94,25 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
 
   useEffect(() => {
     if (!editor) return
-    const norm = (s: string) => s.replace(/\r\n/g, '\n').trimEnd()
-    const current = norm(postprocessTodoMarkdown(markdownFromEditor(editor)))
-    const next = norm(value)
-    if (current !== next) {
-      editor.commands.setContent(preprocessTodoMarkdown(value), {
-        contentType: 'markdown',
-        emitUpdate: false,
-      })
+    const next = normalizeNotesMarkdown(value)
+    if (emittedMarkdownRef.current !== null && emittedMarkdownRef.current === next) return
+
+    const current = editorMarkdown(editor)
+    if (current === next) {
+      emittedMarkdownRef.current = next
+      return
     }
+
+    const { from, to } = editor.state.selection
+    emittedMarkdownRef.current = next
+    editor.commands.setContent(preprocessTodoMarkdown(value), {
+      contentType: 'markdown',
+      emitUpdate: false,
+    })
+    const docSize = editor.state.doc.content.size
+    const safeFrom = Math.min(from, docSize)
+    const safeTo = Math.min(to, docSize)
+    editor.commands.setTextSelection({ from: safeFrom, to: safeTo })
   }, [value, editor])
 
   useEffect(() => {
@@ -110,11 +129,12 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
 
   return (
     <div
-      className="notes-tiptap-wrap h-full min-h-0 flex-1 overflow-auto bg-[var(--uv-bg-elevated)]"
+      className="notes-tiptap-wrap flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[var(--uv-bg-elevated)]"
       data-testid="notes-tiptap-editor"
     >
+      <NotesEditorToolbar editor={editor} />
       <NotesBubbleMenu editor={editor} />
-      <EditorContent editor={editor} className="h-full min-h-0 flex-1" />
+      <EditorContent editor={editor} className="min-h-0 flex-1 overflow-auto" />
     </div>
   )
 })
