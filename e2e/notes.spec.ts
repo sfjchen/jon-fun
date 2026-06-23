@@ -354,8 +354,6 @@ test.describe('Notes', () => {
     await editor.click()
     await page.keyboard.type('large text')
     await page.keyboard.press('ControlOrMeta+a')
-    await editor.click()
-    await page.keyboard.press('ControlOrMeta+a')
     await page.getByTestId('notes-font-size').selectOption('24px')
     const sized = editor.locator('span[style*="font-size"]')
     await expect(sized).toContainText('large text', { timeout: 5000 })

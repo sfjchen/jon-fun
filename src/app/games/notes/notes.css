@@ -132,6 +132,28 @@
   margin: 0.1em 0;
 }
 
+/* Markdown-style "- " lines: indent only, keep literal dash in text */
+.notes-tiptap-wrap .tiptap .notes-dash-line {
+  margin-left: 0;
+  padding-left: 1.5em;
+}
+
+.notes-tiptap-wrap .tiptap .notes-dash-line[data-dash-indent='2'] {
+  padding-left: 3em;
+}
+
+.notes-tiptap-wrap .tiptap .notes-dash-line[data-dash-indent='3'] {
+  padding-left: 4.5em;
+}
+
+.notes-tiptap-wrap .tiptap .notes-dash-line[data-dash-indent='4'] {
+  padding-left: 6em;
+}
+
+.notes-tiptap-wrap .tiptap span[style*='font-size'] {
+  line-height: 1.5;
+}
+
 .notes-tiptap-wrap .tiptap a {
   color: var(--uv-accent);
   text-decoration: underline;

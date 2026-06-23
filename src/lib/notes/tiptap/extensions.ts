@@ -3,10 +3,13 @@ import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Underline from '@tiptap/extension-underline'
 import Link from '@tiptap/extension-link'
+import { FontSize, TextStyle } from '@tiptap/extension-text-style'
 import { Markdown } from '@tiptap/markdown'
 import { notesKeymap } from './keymap'
 import { createShorthandDecorationsExtension } from './shorthandDecorations'
 import { NoteAttachment } from './noteAttachment'
+import { dashListExtension } from './dashList'
+import { NotesItalic } from './notesItalic'
 
 export type NotesExtensionOpts = {
   placeholder: string
@@ -17,9 +20,15 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
   return [
     StarterKit.configure({
       blockquote: false,
+      bulletList: false,
+      orderedList: false,
+      listItem: false,
       italic: false,
       heading: { levels: [1, 2, 3] },
     }),
+    NotesItalic,
+    TextStyle,
+    FontSize,
     Underline,
     Link.configure({
       openOnClick: false,
@@ -30,9 +39,13 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
     Markdown,
     Placeholder.configure({ placeholder: opts.placeholder }),
     notesKeymap,
+    dashListExtension,
     createShorthandDecorationsExtension(opts.getActiveQuery),
   ]
 }
+
+/** Preset font sizes for the bubble menu (px). */
+export const NOTES_FONT_SIZES = ['12px', '14px', '16px', '18px', '20px', '24px'] as const
 
 export const NOTES_EDITOR_PLACEHOLDER =
   'Start typing. Line? for AI · Line?? for section · text> todo · *highlight*'
