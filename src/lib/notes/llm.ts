@@ -6,6 +6,7 @@ export type PromptContext = {
   domainId?: KnowledgeDomainId
   tags?: string[]
   fullNotes?: string
+  title?: string
   sourcesBlock?: string
   glossaryBlock?: string
   relatedNotesBlock?: string
@@ -58,14 +59,17 @@ export function buildUserText(
   type: TriggerType,
   query: string,
   context: string,
-  mode: 'lookup' | 'followup' | 'decode',
+  mode: 'lookup' | 'followup' | 'decode' | 'agent',
   followUpQuestion?: string,
 ): string {
+  if (mode === 'agent' || mode === 'followup') {
+    if (followUpQuestion) {
+      return `Follow-up:\n${followUpQuestion}\n\nSurrounding note context:\n${context}`
+    }
+    return `User request:\n${query}\n\nNote context:\n${context}`
+  }
   if (mode === 'decode') {
     return `Full session notes:\n\n${query}\n\nSummarize per instructions.`
-  }
-  if (mode === 'followup' && followUpQuestion) {
-    return `Follow-up on "${query}":\n${followUpQuestion}\n\nNote context:\n${context}`
   }
   if (type === 'section') {
     return `Section marked with ??:\n${context}\n\nUser focus line: "${query}"\n\nExplain this section — infer the question they likely have.`
@@ -74,7 +78,7 @@ export function buildUserText(
 }
 
 export function resolveSystem(
-  mode: 'lookup' | 'followup' | 'decode',
+  mode: 'lookup' | 'followup' | 'decode' | 'agent',
   type: TriggerType,
   promptCtx: PromptContext,
   query = '',
@@ -86,6 +90,7 @@ export function resolveSystem(
       ...(promptCtx.domainId ? { domainId: promptCtx.domainId } : {}),
       ...(promptCtx.tags?.length ? { tags: promptCtx.tags } : {}),
       ...(promptCtx.fullNotes ? { notes: promptCtx.fullNotes } : {}),
+      ...(promptCtx.title ? { title: promptCtx.title } : {}),
       ...(query ? { query } : {}),
       ...(promptCtx.sourcesBlock ? { sourcesBlock: promptCtx.sourcesBlock } : {}),
       ...(promptCtx.glossaryBlock ? { glossaryBlock: promptCtx.glossaryBlock } : {}),
@@ -121,7 +126,7 @@ export function buildLookupParts(
   query: string,
   context: string,
   screenshots: Screenshot[],
-  mode: 'lookup' | 'followup' | 'decode',
+  mode: 'lookup' | 'followup' | 'decode' | 'agent',
   followUpQuestion?: string,
 ): OpenRouterContentPart[] {
   const parts: OpenRouterContentPart[] = [...screenshotParts(screenshots)]
@@ -310,8 +315,8 @@ export async function streamGemini(
   })
 }
 
-export function resolveModel(mode: 'lookup' | 'followup' | 'decode', hasImages: boolean): string {
-  if (mode === 'decode' || hasImages) return decodeModel()
+export function resolveModel(mode: 'lookup' | 'followup' | 'decode' | 'agent', hasImages: boolean): string {
+  if (mode === 'decode' || mode === 'agent' || mode === 'followup' || hasImages) return decodeModel()
   return lookupModel()
 }
 
@@ -322,13 +327,13 @@ function uniqueModels(models: string[]): string[] {
 }
 
 /** Ordered fallbacks when primary model is overloaded or unavailable. */
-export function modelFallbackChain(mode: 'lookup' | 'followup' | 'decode', hasImages: boolean): {
+export function modelFallbackChain(mode: 'lookup' | 'followup' | 'decode' | 'agent', hasImages: boolean): {
   openRouter: string[]
   gemini: string[]
 } {
   const primary = resolveModel(mode, hasImages)
   const geminiPrimary = primary.includes('/') ? primary.split('/').pop()! : primary
-  if (mode === 'decode' || hasImages) {
+  if (mode === 'decode' || mode === 'agent' || mode === 'followup' || hasImages) {
     return {
       openRouter: uniqueModels([primary, 'google/gemini-2.5-flash', 'google/gemini-2.5-flash-lite', 'openai/gpt-4o-mini']),
       gemini: uniqueModels([geminiPrimary, 'gemini-2.5-flash', 'gemini-2.5-flash-lite']),
@@ -353,7 +358,7 @@ type StreamArgs = {
 
 /** Try Gemini and/or OpenRouter models with retries; returns first successful stream. */
 export async function streamLookupWithFallback(
-  mode: 'lookup' | 'followup' | 'decode',
+  mode: 'lookup' | 'followup' | 'decode' | 'agent',
   hasImages: boolean,
   args: StreamArgs,
 ): Promise<Response> {

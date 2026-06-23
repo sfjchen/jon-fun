@@ -7,8 +7,9 @@ export async function streamLookup(params: {
   context: string
   conversation?: Message[]
   screenshots?: Screenshot[]
-  mode?: 'lookup' | 'followup' | 'decode'
+  mode?: 'lookup' | 'followup' | 'decode' | 'agent'
   followUpQuestion?: string
+  title?: string
   glossaryBlock?: string
   sourcesBlock?: string
   relatedNotesBlock?: string
@@ -69,6 +70,7 @@ export async function streamLookup(params: {
       noteTags: params.noteTags,
       noteDomain: params.noteDomain,
       fullNotes: params.fullNotes,
+      title: params.title,
     }),
   })
 

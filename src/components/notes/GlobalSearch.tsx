@@ -17,7 +17,7 @@ const facets: { id: Facet; label: string }[] = [
   { id: 'all', label: 'All' },
   { id: 'body', label: 'Body' },
   { id: 'todo', label: 'Todos' },
-  { id: 'term', label: 'Terms' },
+  { id: 'term', label: 'Dictionary' },
   { id: 'chat', label: 'Chats' },
 ]
 

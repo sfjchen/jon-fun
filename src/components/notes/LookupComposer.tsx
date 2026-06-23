@@ -22,7 +22,7 @@ export default function LookupComposer({ onSubmit, disabled }: LookupComposerPro
     >
       <input
         name="lookup"
-        placeholder="Lookup term or question ↵"
+        placeholder="Ask AI anything ↵"
         data-testid="notes-lookup-input"
         disabled={disabled}
         className="w-full rounded border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] px-2 py-1.5 text-sm text-[var(--uv-text-primary)] placeholder:text-[var(--uv-text-muted)] focus:border-[var(--uv-accent)] focus:outline-none disabled:opacity-50"

@@ -5,6 +5,7 @@ import {
   type KnowledgeDomainId,
 } from './registry'
 import { formatSectionsOutline, parseNoteSections } from './sectioning'
+import { AGENT_ACTIONS_FOOTER } from '../agentActions'
 
 export type { KnowledgeDomainId } from './registry'
 export { DEFAULT_ACTIVE_DOMAIN_ID, FALLBACK_DOMAIN_ID, KNOWLEDGE_DOMAINS, getDomain, listDomains, resolveDomainsForNote } from './registry'
@@ -71,7 +72,7 @@ ${opts.sectionsOutline ?? '(not provided)'}
 REFERENCE DOCS (user sources + packs):
 ${opts.sources?.trim() || '(none yet)'}
 
-RUNNING GLOSSARY:
+RUNNING DICTIONARY:
 ${opts.glossary?.trim() || '(none yet)'}
 
 RELATED NOTES:
@@ -165,14 +166,70 @@ ${opts.sectionsOutline ?? '(none)'}
 Under 400 words. Direct, professional.`
 }
 
+/** Agent chat — Cursor-like assistant with mutation access to note + dictionary. */
+export function buildAgentSystemPrompt(opts: {
+  domainId?: KnowledgeDomainId
+  tags?: string[]
+  notes?: string
+  title?: string
+  query?: string
+  sources?: string
+  glossary?: string
+  relatedNotes?: string
+  sectionsOutline?: string
+}): string {
+  const { primary } = resolveDomainsForNote(
+    resolveDomainOpts({
+      ...(opts.domainId ? { explicitDomain: opts.domainId } : {}),
+      ...(opts.tags?.length ? { tags: opts.tags } : {}),
+      ...(opts.notes ? { notes: opts.notes } : {}),
+      ...(opts.query ? { query: opts.query } : {}),
+    }),
+  )
+
+  return `You are an embedded AI assistant inside a personal Notes app (like Cursor chat for this vault). The user can ask about concepts, features, their notes, or request edits.
+
+ACTIVE DOMAIN: ${primary.label}
+${primary.coreContext}
+
+CURRENT NOTE:
+Title: ${opts.title?.trim() || 'Untitled'}
+Tags: ${opts.tags?.length ? opts.tags.join(', ') : '(none)'}
+
+NOTE STRUCTURE:
+${opts.sectionsOutline ?? '(not provided)'}
+
+FULL NOTE BODY:
+${opts.notes?.trim() || '(empty)'}
+
+REFERENCE DOCS:
+${opts.sources?.trim() || '(none yet)'}
+
+DICTIONARY (editable term → definition):
+${opts.glossary?.trim() || '(none yet)'}
+
+RELATED NOTES:
+${opts.relatedNotes?.trim() || '(none)'}
+
+Behavior:
+- Answer naturally in plain text — explain, plan, or execute changes when asked.
+- For finance/metric questions you may use Core meaning / Typical ranges blocks (no markdown # headers).
+- When the user asks to store a definition, fix note text, rename the note, or change tags — use the ACTIONS block below.
+- Confirm what you changed in your visible reply.
+- You can discuss app features and suggest workflows; you have full read access to the note above.
+
+${AGENT_ACTIONS_FOOTER}`
+}
+
 /** Legacy exports — resolve prompts dynamically from note context. */
 export function resolveSystemPrompt(
-  mode: 'lookup' | 'followup' | 'decode',
+  mode: 'lookup' | 'followup' | 'decode' | 'agent',
   triggerType: 'line' | 'section',
   ctx: {
     domainId?: KnowledgeDomainId
     tags?: string[]
     notes?: string
+    title?: string
     query?: string
     sourcesBlock?: string
     glossaryBlock?: string
@@ -184,6 +241,7 @@ export function resolveSystemPrompt(
     ...(ctx.domainId ? { domainId: ctx.domainId } : {}),
     ...(ctx.tags?.length ? { tags: ctx.tags } : {}),
     ...(ctx.notes ? { notes: ctx.notes } : {}),
+    ...(ctx.title ? { title: ctx.title } : {}),
     ...(ctx.query ? { query: ctx.query } : {}),
     ...(ctx.sourcesBlock ? { sources: ctx.sourcesBlock } : {}),
     ...(ctx.glossaryBlock ? { glossary: ctx.glossaryBlock } : {}),
@@ -191,7 +249,9 @@ export function resolveSystemPrompt(
     ...(sectionsOutline ? { sectionsOutline } : {}),
   }
 
+  if (mode === 'agent') return buildAgentSystemPrompt(base)
   if (mode === 'decode') return buildSummarizeSystemPrompt(base)
+  if (mode === 'followup') return buildAgentSystemPrompt(base)
   if (triggerType === 'section') return buildSectionSystemPrompt(base)
   return buildLineSystemPrompt(base)
 }
