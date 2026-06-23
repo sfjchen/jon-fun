@@ -19,7 +19,7 @@ export function geminiEmbedKey(): string | undefined {
 }
 
 export function embedModel(): string {
-  return process.env.NOTES_EMBED_GEMINI_MODEL ?? process.env.READER_EMBED_GEMINI_MODEL ?? 'text-embedding-004'
+  return process.env.NOTES_EMBED_GEMINI_MODEL ?? process.env.READER_EMBED_GEMINI_MODEL ?? 'gemini-embedding-001'
 }
 
 export async function embedText(apiKey: string, text: string, model = embedModel()): Promise<number[]> {
