@@ -1,4 +1,5 @@
 import type { Editor } from '@tiptap/core'
+import { parseTodoLine } from '../shorthand'
 
 /** Plain text with newline between blocks — used for trigger detection. */
 export function plainTextFromEditor(editor: Editor): string {
@@ -89,7 +90,7 @@ export function postprocessTodoMarkdown(md: string): string {
   return md.replace(/^(\s*)\\>/gm, '$1>')
 }
 
-/** Keep `> todo` lines from plain text when markdown serializer drops the prefix. */
+/** Keep todo lines from plain text when markdown serializer drops markers. */
 export function mergeTodoLinesIntoMarkdown(plain: string, md: string): string {
   const plainLines = plain.split('\n')
   const mdLines = md.split('\n')
@@ -98,8 +99,9 @@ export function mergeTodoLinesIntoMarkdown(plain: string, md: string): string {
   for (let i = 0; i < max; i++) {
     const p = plainLines[i] ?? ''
     const m = mdLines[i] ?? ''
-    if (/^\s*>/.test(p) && !/^\s*>/.test(m)) out.push(p)
-    else out.push(m || p)
+    const merged = m || p
+    if (parseTodoLine(p) && !parseTodoLine(merged)) out.push(p)
+    else out.push(merged)
   }
   return out.join('\n')
 }

@@ -4,11 +4,28 @@ export type { KnowledgeDomainId } from './knowledge/registry'
 
 export type NoteKind = 'IC' | 'GP' | 'internal' | 'other' | 'learning' | 'meeting'
 
+export type NoteHistoryKind =
+  | 'created'
+  | 'saved'
+  | 'synced'
+  | 'lookup'
+  | 'title'
+  | 'tags'
+  | 'switch'
+
+export interface NoteHistoryEntry {
+  kind: NoteHistoryKind
+  at: string
+  detail?: string
+}
+
 export interface NoteMetadata {
+  /** @deprecated use startedAt; kept for legacy sessions */
   meetingAt?: string
+  /** @deprecated kind merged into tags */
   kind?: NoteKind
-  /** Override auto domain inference for AI context */
-  domain?: import('./knowledge/registry').KnowledgeDomainId
+  /** Auto-inferred domain id (never user-picked) */
+  inferredDomain?: import('./knowledge/registry').KnowledgeDomainId
 }
 
 export interface Message {
@@ -42,6 +59,7 @@ export interface NoteSession {
   screenshots: Record<string, Screenshot>
   startedAt: string
   updatedAt: string
+  history?: NoteHistoryEntry[]
 }
 
 export interface TriggerResult {

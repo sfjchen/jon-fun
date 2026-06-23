@@ -1,5 +1,8 @@
 'use client'
 
+import { formatHistoryLine } from '@/lib/notes/noteHistory'
+import type { NoteHistoryEntry } from '@/lib/notes/types'
+
 type StatusBarProps = {
   chars: number
   flags: number
@@ -8,7 +11,22 @@ type StatusBarProps = {
   saving: boolean
   syncing?: boolean
   aiActiveCount?: number
+  lastHistory?: NoteHistoryEntry | null
+  hintsOpen: boolean
+  panelOpen: boolean
+  onSearch: () => void
+  onNewNote: () => void
+  onExport: () => void
+  onSummarize: () => void
+  onTogglePanel: () => void
 }
+
+const HINT_ITEMS = [
+  { sym: 'line?', desc: 'AI line' },
+  { sym: 'line??', desc: 'AI section' },
+  { sym: 'text>', desc: 'todo' },
+  { sym: '*text*', desc: 'highlight' },
+]
 
 export default function StatusBar({
   chars,
@@ -18,6 +36,14 @@ export default function StatusBar({
   saving,
   syncing,
   aiActiveCount = 0,
+  lastHistory,
+  hintsOpen,
+  panelOpen,
+  onSearch,
+  onNewNote,
+  onExport,
+  onSummarize,
+  onTogglePanel,
 }: StatusBarProps) {
   let syncLabel = ''
   if (syncing) syncLabel = 'Syncing…'
@@ -27,11 +53,11 @@ export default function StatusBar({
 
   return (
     <footer
-      className="flex h-7 shrink-0 items-center gap-3 border-t border-[var(--uv-border)] bg-[var(--uv-bg-sidebar)] px-4 text-[11px] text-[var(--uv-text-secondary)]"
+      className="flex min-h-7 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-t border-[var(--uv-border)] bg-[var(--uv-bg-sidebar)] px-3 py-1 text-[10px] text-[var(--uv-text-secondary)] sm:px-4"
       data-testid="notes-statusbar"
     >
       <span>{chars} chars</span>
-      <span>{flags} ? terms</span>
+      <span>{flags} ?</span>
       <span>{actions} todos</span>
       {aiActiveCount > 0 ? (
         <span className="text-[var(--uv-accent)]" data-testid="notes-ai-active-count">
@@ -42,16 +68,56 @@ export default function StatusBar({
         <span
           data-testid="notes-sync-label"
           className={syncOk === false && !syncing ? 'text-amber-800' : 'text-[var(--uv-text-muted)]'}
-          title={
-            syncOk === false && !syncing
-              ? 'Cloud sync failed — notes are still saved on this device'
-              : undefined
-          }
+          title={lastHistory ? formatHistoryLine(lastHistory) : undefined}
         >
           {syncLabel}
         </span>
       ) : null}
-      <span className="ml-auto hidden sm:inline">Paste screenshot · Ctrl+K summarize · Ctrl+Shift+F search</span>
+
+      <div className="ml-auto flex flex-wrap items-center gap-1">
+        {hintsOpen ? (
+          <span className="hidden items-center gap-2 border-r border-[var(--uv-border)] pr-2 lg:flex">
+            {HINT_ITEMS.map((it) => (
+              <span key={it.sym}>
+                <code className="text-[var(--uv-accent-strong)]">{it.sym}</code>
+                <span className="ml-0.5 text-[var(--uv-text-muted)]">{it.desc}</span>
+              </span>
+            ))}
+          </span>
+        ) : null}
+        <ActionBtn testId="notes-search-btn" label="Search" keys="⇧F" onClick={onSearch} />
+        <ActionBtn testId="notes-header-new" label="New" keys="⇧N" onClick={onNewNote} className="hidden sm:inline-flex" />
+        <ActionBtn label="Export" keys="" onClick={onExport} />
+        <ActionBtn testId="notes-summarize-btn" label="Summarize" keys="K" onClick={onSummarize} className="hidden sm:inline-flex" />
+        <ActionBtn testId="notes-toggle-panel" label={panelOpen ? 'Hide panel' : 'Panel'} keys="\\" onClick={onTogglePanel} />
+        <span className="hidden text-[var(--uv-text-muted)] md:inline">· paste screenshot</span>
+      </div>
     </footer>
+  )
+}
+
+function ActionBtn({
+  label,
+  keys,
+  onClick,
+  testId,
+  className = '',
+}: {
+  label: string
+  keys: string
+  onClick: () => void
+  testId?: string
+  className?: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      {...(testId ? { 'data-testid': testId } : {})}
+      className={`inline-flex items-center gap-1 rounded border border-[var(--uv-border)] px-1.5 py-0.5 hover:bg-[var(--uv-bg-hover)] hover:text-[var(--uv-text-primary)] ${className}`}
+    >
+      {label}
+      {keys ? <kbd className="text-[9px] text-[var(--uv-text-muted)]">⌃{keys}</kbd> : null}
+    </button>
   )
 }

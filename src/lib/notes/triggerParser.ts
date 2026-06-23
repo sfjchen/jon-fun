@@ -1,4 +1,7 @@
 import type { TriggerResult } from './types'
+import { countShorthandFlags } from './shorthand'
+
+export { countShorthandFlags }
 
 const DEBOUNCE_MS = 400
 
@@ -71,17 +74,6 @@ export function detectLineTriggers(
 export function getContext(fullText: string, cursorPos: number, lineCount = 15): string {
   const allLines = fullText.slice(0, cursorPos).split('\n')
   return allLines.slice(-lineCount).join('\n')
-}
-
-export function countShorthandFlags(text: string): { flags: number; actions: number; chars: number } {
-  const lines = text.split('\n')
-  let flags = 0
-  let actions = 0
-  for (const line of lines) {
-    if (/\?\?|\?(?:\s|$)/.test(line)) flags++
-    if (/^\s*>/.test(line)) actions++
-  }
-  return { flags, actions, chars: text.length }
 }
 
 export { DEBOUNCE_MS }

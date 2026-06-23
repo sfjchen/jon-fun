@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useRef, useState } from 'react'
-import type { Lookup, NoteSession, Screenshot } from '@/lib/notes/types'
+import type { Lookup, NoteHistoryEntry, NoteSession, Screenshot } from '@/lib/notes/types'
 import { isLookupStreaming, type LookupStreamMap } from '@/lib/notes/lookupStreams'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
 import AnswerStream from './AnswerStream'
@@ -9,7 +9,9 @@ import CollapsibleSection from './CollapsibleSection'
 import SyncPanel from './SyncPanel'
 import GlossaryPanel from './GlossaryPanel'
 import RollupPanel from './RollupPanel'
+import FollowUpComposer from './FollowUpComposer'
 import SourcesPanel from './SourcesPanel'
+import NoteHistoryPanel from './NoteHistoryPanel'
 
 function formatMeetingDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
@@ -46,12 +48,15 @@ type SidePanelProps = {
   syncOpen: boolean
   glossaryOpen: boolean
   sourcesOpen: boolean
+  historyOpen: boolean
+  noteHistory: NoteHistoryEntry[]
   glossaryRefreshKey: number
   onNotesListOpenChange: (open: boolean) => void
   onAiListOpenChange: (open: boolean) => void
   onSyncOpenChange: (open: boolean) => void
   onGlossaryOpenChange: (open: boolean) => void
   onSourcesOpenChange: (open: boolean) => void
+  onHistoryOpenChange: (open: boolean) => void
   onSelectMeeting: (session: NoteSession) => void
   onNewMeeting: () => void
   onDeleteMeeting: (sessionId: string) => void
@@ -79,12 +84,15 @@ export default function SidePanel({
   syncOpen,
   glossaryOpen,
   sourcesOpen,
+  historyOpen,
+  noteHistory,
   glossaryRefreshKey,
   onNotesListOpenChange,
   onAiListOpenChange,
   onSyncOpenChange,
   onGlossaryOpenChange,
   onSourcesOpenChange,
+  onHistoryOpenChange,
   onSelectMeeting,
   onNewMeeting,
   onDeleteMeeting,
@@ -98,7 +106,6 @@ export default function SidePanel({
   const defaultWidth = loadNotesUiPrefs().panelWidth ?? 300
   const [width, setWidth] = useState(defaultWidth)
   const dragRef = useRef<{ startX: number; startW: number } | null>(null)
-  const followShotsRef = useRef<Screenshot[]>([])
 
   const onResizeStart = useCallback(
     (e: React.MouseEvent) => {
@@ -185,48 +192,7 @@ export default function SidePanel({
               )}
 
               {focusedLookup && !displayStreaming ? (
-                <form
-                  className="mt-2"
-                  onPaste={(e) => {
-                    const items = e.clipboardData?.items
-                    if (!items) return
-                    for (const item of items) {
-                      if (!item.type.startsWith('image/')) continue
-                      e.preventDefault()
-                      const file = item.getAsFile()
-                      if (!file) return
-                      const reader = new FileReader()
-                      reader.onload = () => {
-                        const dataUrl = reader.result as string
-                        const base64 = dataUrl.split(',')[1] ?? ''
-                        followShotsRef.current.push({
-                          id: `follow-shot-${Date.now()}`,
-                          base64,
-                          mimeType: file.type,
-                        })
-                      }
-                      reader.readAsDataURL(file)
-                    }
-                  }}
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    const fd = new FormData(e.currentTarget)
-                    const q = String(fd.get('followup') ?? '').trim()
-                    if (q) {
-                      const shots = [...followShotsRef.current]
-                      followShotsRef.current = []
-                      onFollowUp(q, shots.length ? shots : undefined)
-                      e.currentTarget.reset()
-                    }
-                  }}
-                >
-                  <input
-                    name="followup"
-                    placeholder="Follow-up ↵ (paste screenshot)"
-                    data-testid="notes-followup-input"
-                    className="w-full rounded border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] px-2 py-1.5 text-sm text-[var(--uv-text-primary)] placeholder:text-[var(--uv-text-muted)] focus:border-[var(--uv-accent)] focus:outline-none"
-                  />
-                </form>
+                <FollowUpComposer onSubmit={onFollowUp} />
               ) : null}
 
               {sessionHistory.length > 0 ? (
@@ -343,6 +309,17 @@ export default function SidePanel({
         </CollapsibleSection>
 
         <RollupPanel sessions={sessions} onJump={onJumpTodo} />
+
+        <CollapsibleSection
+          title="History"
+          {...(noteHistory.length ? { badge: String(noteHistory.length) } : {})}
+          open={historyOpen}
+          onToggle={() => onHistoryOpenChange(!historyOpen)}
+          testId="notes-history-section"
+          toggleTestId="notes-history-toggle"
+        >
+          <NoteHistoryPanel history={noteHistory} />
+        </CollapsibleSection>
 
         {/* Sync — infrequent; bottom, collapsed by default */}
         <CollapsibleSection

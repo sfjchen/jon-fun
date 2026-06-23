@@ -1,4 +1,5 @@
 import { loadGlossary } from './glossary'
+import { isTodoLine } from './shorthand'
 import type { NoteSession, SearchHit } from './types'
 
 function scoreMatch(text: string, q: string): number {
@@ -54,7 +55,7 @@ export function searchNotes(
 
     if (facet === 'all' || facet === 'todo') {
       s.notes.split('\n').forEach((line, lineIndex) => {
-        if (!/^\s*>/.test(line)) return
+        if (!isTodoLine(line)) return
         const sc = scoreMatch(line, q)
         if (sc > 0) {
           hits.push({
