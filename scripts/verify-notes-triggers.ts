@@ -1,6 +1,6 @@
 /**
  * Verify Notes trigger detection (no browser).
- *   npm run verify:uvimco-notes-triggers
+ *   npm run verify:notes-triggers
  */
 import { detectLineTriggers, countShorthandFlags } from '../src/lib/notes/triggerParser'
 

@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 /**
  * Real Supabase sync on **deployed** sfjc.dev (no session API mocks).
  *
- *   PLAYWRIGHT_SKIP_WEBSERVER=1 npx playwright test e2e/uvimco-notes-sync.spec.ts
+ *   PLAYWRIGHT_SKIP_WEBSERVER=1 npx playwright test e2e/notes-sync.spec.ts
  */
 const isDeploy = process.env.PLAYWRIGHT_SKIP_WEBSERVER === '1'
 

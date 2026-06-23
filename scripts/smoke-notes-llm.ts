@@ -1,8 +1,8 @@
 /**
  * Smoke-test Notes LLM backends/models. Never prints API keys.
  *
- *   npx tsx scripts/smoke-uvimco-notes-llm.ts
- *   SMOKE_BASE_URL=https://sfjc.dev npx tsx scripts/smoke-uvimco-notes-llm.ts
+ *   npx tsx scripts/smoke-notes-llm.ts
+ *   SMOKE_BASE_URL=https://sfjc.dev npx tsx scripts/smoke-notes-llm.ts
  */
 import { readFileSync, existsSync } from 'fs'
 import { join } from 'path'

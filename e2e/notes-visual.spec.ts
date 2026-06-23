@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 /**
  * Visual / layout checks on **deployed** sfjc.dev.
  *
- *   npm run test:e2e:uvimco-visual
+ *   npm run test:e2e:notes-visual
  */
 const isDeploy = process.env.PLAYWRIGHT_SKIP_WEBSERVER === '1'
 

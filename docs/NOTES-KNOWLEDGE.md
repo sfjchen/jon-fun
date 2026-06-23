@@ -6,8 +6,8 @@ How **Notes** stays **general** (5–10 year vault) while tuning AI for **curren
 
 | Principle | Implementation |
 |-----------|----------------|
-| **General product, specific packs** | UI = "Notes"; code folder `uvimco-notes` is legacy internal name only |
-| **Domain packs, not hardcoded prompts** | `src/lib/uvimco-notes/knowledge/registry.ts` |
+| **General product, specific packs** | UI = "Notes"; code under `src/lib/notes` |
+| **Domain packs, not hardcoded prompts** | `src/lib/notes/knowledge/registry.ts` |
 | **Auto domain inference** | Tags + kind + body keywords → primary domain; override via metadata.domain |
 | **Auto sectioning** | Blank-line blocks → outline in every AI call (`sectioning.ts`) |
 | **Layered context** | Built-in packs → user Sources → glossary → related notes |
@@ -16,7 +16,7 @@ How **Notes** stays **general** (5–10 year vault) while tuning AI for **curren
 ## Folder map
 
 ```
-src/lib/uvimco-notes/knowledge/
+src/lib/notes/knowledge/
   registry.ts       # Domain definitions + resolveDomainsForNote()
   sectioning.ts     # parseNoteSections(), formatSectionsOutline()
   builtinSources.ts # Seed [Pack] sources into Sources panel
@@ -65,15 +65,13 @@ Add your own via **+ Paste doc** (IPS, memos, book notes). Prefer short, structu
 3. Add tag hints users can apply to notes  
 4. No route renames required
 
-## What stays UVIMCO-named (legacy, safe to ignore)
+## Legacy redirects (2026-06-23)
 
-- `/games/uvimco-notes` route (alias: `/games/notes`)  
-- Supabase `uvimco_note_sessions` table  
-- API `/api/uvimco-notes/*`  
-- localStorage keys `uvimco_notes_*`
-
-Renaming these is optional; behavior is domain-driven.
+- `/games/uvimco-notes` → `/games/notes`
+- `/api/uvimco-notes/*` → `/api/notes/*`
+- Supabase table: `note_sessions` (was `uvimco_note_sessions`)
+- localStorage: `notes_*` keys; `uvimco_notes_*` auto-migrate on load
 
 ## Changelog
 
-- **2026-06-22**: Initial knowledge layer — domains, sectioning, builtin packs, dynamic prompts.
+- **2026-06-23**: Paths renamed to `notes/*`; enriched pack content; all packs on by default; RAG via `/api/notes/embed`.
