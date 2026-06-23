@@ -16,7 +16,7 @@ test.describe('Notes', () => {
 
   test.beforeEach(async ({ page }) => {
     await mockNotesApi(page)
-    await page.goto('/games/notes')
+    await page.goto('/games/notes', { waitUntil: 'load' })
     await page.evaluate((key) => {
       try {
         localStorage.removeItem(key)
@@ -33,7 +33,7 @@ test.describe('Notes', () => {
         /* ignore */
       }
     }, SESSIONS_KEY)
-    await page.reload()
+    await page.reload({ waitUntil: 'domcontentloaded' })
     await waitForNotesEditor(page)
   })
 
@@ -167,7 +167,9 @@ test.describe('Notes', () => {
     })
 
     await page.goto('/games/notes')
+    await waitForNotesEditor(page)
     await page.getByTestId('notes-toggle-panel').click()
+    await expect(page.getByTestId('notes-sync-section')).toBeVisible()
     await page.getByTestId('notes-sync-toggle').click()
     await page.getByTestId('notes-sync-key-input').fill('my-sync-key-99')
     await page.getByTestId('notes-sync-save').click()
@@ -253,7 +255,7 @@ test.describe('Notes', () => {
   })
 
   test('Meeting title normalizes to Note in localStorage', async ({ page }) => {
-    await page.addInitScript(() => {
+    await page.evaluate(() => {
       const session = {
         id: 'local-legacy-title',
         title: 'Meeting Jan 1, 2026',
@@ -267,7 +269,8 @@ test.describe('Notes', () => {
       localStorage.setItem('notes_sessions', JSON.stringify([session]))
       localStorage.setItem('notes_active_session_id', session.id)
     })
-    await page.reload()
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await waitForNotesEditor(page)
     await expect(page.getByTestId('notes-meeting-title')).toHaveValue('Note Jan 1, 2026')
   })
 
@@ -301,5 +304,54 @@ test.describe('Notes', () => {
     await expect(page.getByTestId('notes-statusbar')).toContainText('1 todos', { timeout: 8000 })
     await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-rollup-panel')).toContainText('follow up IC memo', { timeout: 8000 })
+  })
+
+  test('tag chips toggle on note and persist in localStorage', async ({ page }) => {
+    await expect(page.getByTestId('notes-tag-chip-IC')).toBeVisible()
+    await page.getByTestId('notes-tag-chip-IC').click()
+    await expect(page.getByTestId('notes-tag-chip-IC')).toHaveClass(/bg-\[var\(--uv-accent\)\]/)
+
+    await page.getByTestId('notes-tag-input').fill('custom-tag')
+    await page.getByTestId('notes-tag-input').press('Enter')
+    await expect(page.getByTestId('notes-tag-chip-custom-tag')).toBeVisible()
+
+    const stored = await page.evaluate(() => {
+      const raw = localStorage.getItem('notes_sessions') ?? '[]'
+      const sessions = JSON.parse(raw) as { tags: string[] }[]
+      return sessions[0]?.tags ?? []
+    })
+    expect(stored).toContain('IC')
+    expect(stored).toContain('custom-tag')
+  })
+
+  test('Ctrl+S saves and shows Saved in status bar', async ({ page }) => {
+    await typeInNotesEditor(page, 'autosave check')
+    await page.keyboard.press('Control+s')
+    await expect(page.getByTestId('notes-sync-label')).toContainText('Saved', { timeout: 10_000 })
+  })
+
+  test('note history records lookup and save events', async ({ page }) => {
+    await typeInNotesEditor(page, 'fund DPI?')
+    await waitForNotesTrigger(page)
+    await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15_000 })
+
+    await page.keyboard.press('Control+s')
+    await expect(page.getByTestId('notes-sync-label')).toContainText('Saved', { timeout: 10_000 })
+
+    await page.getByTestId('notes-history-toggle').click()
+    const hist = page.getByTestId('notes-history-panel')
+    await expect(hist).toContainText('AI lookup', { timeout: 5000 })
+    await expect(hist).toContainText(/Saved locally|Synced/)
+  })
+
+  test('*highlight* span gets decoration class', async ({ page }) => {
+    await typeInNotesEditor(page, '*key term* in line')
+    await expect(notesEditor(page).locator('.tiptap-highlight-span')).toContainText('key term', { timeout: 5000 })
+  })
+
+  test('no manual domain or kind pickers in UI', async ({ page }) => {
+    await expect(page.getByTestId('notes-top-bar')).toBeVisible()
+    await expect(page.locator('[data-testid*="domain"]')).toHaveCount(0)
+    await expect(page.locator('[data-testid*="kind"]')).toHaveCount(0)
   })
 })

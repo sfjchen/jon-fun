@@ -15,6 +15,12 @@ function buildDecorations(doc: PmNode, activeQuery: string | null): DecorationSe
       decos.push(Decoration.node(pos, pos + node.nodeSize, { class: 'tiptap-action-line' }))
     }
 
+    for (const { from, to } of highlightRanges(lineText)) {
+      decos.push(
+        Decoration.inline(pos + 1 + from, pos + 1 + to, { class: 'tiptap-highlight-span' }),
+      )
+    }
+
     const endMatch = trimmed.match(/(\?\?|\?)$/)
     if (endMatch) {
       const query = trimmed.slice(0, -endMatch[0]!.length).trim()
@@ -25,11 +31,6 @@ function buildDecorations(doc: PmNode, activeQuery: string | null): DecorationSe
       decos.push(Decoration.inline(start, end, { class: cls }))
     }
   })
-
-  const full = doc.textContent
-  for (const { from, to } of highlightRanges(full)) {
-    decos.push(Decoration.inline(from + 1, to + 1, { class: 'tiptap-highlight-span' }))
-  }
 
   return DecorationSet.create(doc, decos)
 }

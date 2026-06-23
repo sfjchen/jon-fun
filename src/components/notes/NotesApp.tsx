@@ -670,15 +670,8 @@ export default function NotesApp() {
         startedAt={state.session.startedAt}
         tags={state.session.tags ?? []}
         sessions={state.sessions}
-        hintsOpen={hintsOpen}
         onTitleChange={(title) => dispatch({ type: 'TITLE', title })}
         onTagsChange={(tags) => dispatch({ type: 'TAGS', tags, recordHistory: true })}
-        onHintsToggle={() => {
-          setHintsOpen((v) => {
-            persistHintsOpen(!v)
-            return !v
-          })
-        }}
       />
       <GlobalSearch
         open={searchOpen}
@@ -757,6 +750,12 @@ export default function NotesApp() {
         onExport={handleExport}
         onSummarize={handleSummarize}
         onTogglePanel={() => dispatch({ type: 'PANEL_TOGGLE' })}
+        onHintsToggle={() => {
+          setHintsOpen((v) => {
+            persistHintsOpen(!v)
+            return !v
+          })
+        }}
       />
     </div>
   )

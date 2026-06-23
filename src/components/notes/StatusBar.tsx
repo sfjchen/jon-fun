@@ -19,6 +19,7 @@ type StatusBarProps = {
   onExport: () => void
   onSummarize: () => void
   onTogglePanel: () => void
+  onHintsToggle: () => void
 }
 
 const HINT_ITEMS = [
@@ -44,6 +45,7 @@ export default function StatusBar({
   onExport,
   onSummarize,
   onTogglePanel,
+  onHintsToggle,
 }: StatusBarProps) {
   let syncLabel = ''
   if (syncing) syncLabel = 'Syncing…'
@@ -90,6 +92,15 @@ export default function StatusBar({
         <ActionBtn label="Export" keys="" onClick={onExport} />
         <ActionBtn testId="notes-summarize-btn" label="Summarize" keys="K" onClick={onSummarize} className="hidden sm:inline-flex" />
         <ActionBtn testId="notes-toggle-panel" label={panelOpen ? 'Hide panel' : 'Panel'} keys="\\" onClick={onTogglePanel} />
+        <button
+          type="button"
+          onClick={onHintsToggle}
+          data-testid="notes-shorthand-toggle"
+          className="rounded border border-[var(--uv-border)] px-1.5 py-0.5 hover:bg-[var(--uv-bg-hover)] hover:text-[var(--uv-text-primary)]"
+          aria-expanded={hintsOpen}
+        >
+          {hintsOpen ? 'Hide hints' : 'Hints'}
+        </button>
         <span className="hidden text-[var(--uv-text-muted)] md:inline">· paste screenshot</span>
       </div>
     </footer>
