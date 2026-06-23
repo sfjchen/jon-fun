@@ -9,6 +9,7 @@ import { notesKeymap } from './keymap'
 import { createShorthandDecorationsExtension } from './shorthandDecorations'
 import { NoteAttachment } from './noteAttachment'
 import { dashListExtension } from './dashList'
+import { notesEditingExtension } from './notesEditing'
 import { NotesItalic } from './notesItalic'
 
 export type NotesExtensionOpts = {
@@ -39,6 +40,7 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
     Markdown,
     Placeholder.configure({ placeholder: opts.placeholder }),
     notesKeymap,
+    notesEditingExtension,
     dashListExtension,
     createShorthandDecorationsExtension(opts.getActiveQuery),
   ]

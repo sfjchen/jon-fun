@@ -29,6 +29,7 @@
     "verify:notes-attachments": "tsx scripts/verify-notes-attachments.ts",
     "verify:notes-agent-actions": "tsx scripts/verify-notes-agent-actions.ts",
     "verify:notes-export": "tsx scripts/verify-notes-export.ts",
+    "verify:notes-editor": "tsx scripts/verify-notes-editor.ts",
     "wedding:rsvp-qr": "tsx scripts/generate-wedding-rsvp-qr.ts",
     "test:e2e": "playwright test",
     "test:e2e:ci": "CI=1 playwright test",

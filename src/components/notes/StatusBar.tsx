@@ -31,6 +31,9 @@ const HINT_ITEMS = [
   { sym: 'line??', desc: 'AI section' },
   { sym: 'text>', desc: 'todo' },
   { sym: '*text*', desc: 'highlight' },
+  { sym: 'sel+*', desc: 'wrap highlight' },
+  { sym: 'Tab', desc: 'indent' },
+  { sym: 'Ctrl+Shift+V', desc: 'paste plain' },
 ]
 
 export default function StatusBar({
