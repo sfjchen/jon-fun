@@ -103,7 +103,7 @@ test.describe('Notes', () => {
     await page.getByTestId('notes-lookup-input').fill('fund TVPI ratio')
     await page.getByTestId('notes-lookup-input').press('Enter')
     await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15_000 })
-    await expect(page.getByTestId('notes-chat-thread')).toContainText('fund TVPI ratio')
+    await expect(page.getByTestId('notes-side-panel')).toContainText('fund TVPI ratio?')
   })
 
   test('section ?? trigger opens panel and shows mock AI response', async ({ page }) => {
