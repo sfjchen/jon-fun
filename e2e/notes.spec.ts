@@ -1,14 +1,17 @@
 import { test, expect } from '@playwright/test'
 
-import { mockUvimcoNotesApi, waitForNotesTrigger } from './helpers/uvimco-notes-mock'
-
-const SESSIONS_KEY = 'notes_sessions'
+import {
+  LEGACY_SESSIONS_KEY,
+  mockNotesApi,
+  SESSIONS_KEY,
+  waitForNotesTrigger,
+} from './helpers/notes-mock'
 
 test.describe('Notes', () => {
   test.use({ viewport: { width: 1280, height: 800 } })
 
   test.beforeEach(async ({ page }) => {
-    await mockUvimcoNotesApi(page)
+    await mockNotesApi(page)
     await page.goto('/games/notes')
     await page.evaluate((key) => {
       try {
@@ -18,6 +21,10 @@ test.describe('Notes', () => {
         localStorage.removeItem('notes_ui_prefs')
         localStorage.removeItem('notes_glossary')
         localStorage.removeItem('notes_sources')
+        localStorage.removeItem('uvimco_notes_sessions')
+        localStorage.removeItem('uvimco_notes_active_session_id')
+        localStorage.removeItem('uvimco_notes_user_id')
+        localStorage.removeItem('uvimco_notes_sync_key')
       } catch {
         /* ignore */
       }
@@ -43,6 +50,13 @@ test.describe('Notes', () => {
     await page.getByTestId('notes-meetings-toggle').click()
     await expect(page.getByTestId('notes-new-meeting')).toBeVisible()
     await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(1)
+  })
+
+  test('builtin domain packs seed in Sources panel', async ({ page }) => {
+    await page.getByTestId('notes-toggle-panel').click()
+    await expect(page.getByTestId('notes-sources-panel')).toBeVisible()
+    await expect(page.getByTestId('notes-sources-panel')).toContainText('[Pack] UVIMCO endowment')
+    await expect(page.getByTestId('notes-sources-panel')).toContainText('[Pack] CFA Level I')
   })
 
   test('creates a second note and switches between them', async ({ page }) => {
@@ -78,6 +92,7 @@ test.describe('Notes', () => {
     await waitForNotesTrigger(page)
     await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 5000 })
     await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15000 })
+    await expect(page.getByTestId('notes-side-panel')).toContainText(/Core meaning/i)
   })
 
   test('section ?? trigger opens panel and shows mock AI response', async ({ page }) => {
@@ -130,6 +145,28 @@ test.describe('Notes', () => {
     await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 20_000 })
   })
 
+  test('sync key uses shared userId on save', async ({ page }) => {
+    let postedUserId = ''
+    await page.route('**/api/notes/sessions**', async (route) => {
+      if (route.request().method() === 'POST') {
+        const body = route.request().postDataJSON() as { userId?: string }
+        postedUserId = body.userId ?? ''
+      }
+      if (route.request().method() === 'GET') {
+        await route.fulfill({ json: { sessions: [] } })
+        return
+      }
+      await route.fulfill({ json: { ok: true } })
+    })
+
+    await page.goto('/games/notes')
+    await page.getByTestId('notes-toggle-panel').click()
+    await page.getByTestId('notes-sync-key-input').fill('my-sync-key-99')
+    await page.getByTestId('notes-sync-save').click()
+    await expect(page.getByText('Synced', { exact: false })).toBeVisible({ timeout: 10_000 })
+    expect(postedUserId).toBe('my-sync-key-99')
+  })
+
   test('global search opens with Ctrl+Shift+F', async ({ page }) => {
     const editor = page.locator('.uvimco-cm .cm-content')
     await editor.click()
@@ -145,10 +182,37 @@ test.describe('Notes', () => {
     await expect(page).toHaveURL('/')
   })
 
-  test('/games/notes redirects to app', async ({ page }) => {
-    await page.goto('/games/notes')
-    await expect(page).toHaveURL(/\/games\/uvimco-notes/)
+  test('/games/uvimco-notes redirects to /games/notes', async ({ page }) => {
+    await page.goto('/games/uvimco-notes')
+    await expect(page).toHaveURL(/\/games\/notes/)
     await expect(page.getByTestId('notes-editor')).toBeVisible({ timeout: 15000 })
+  })
+
+  test('legacy localStorage keys migrate on load', async ({ page }) => {
+    await page.addInitScript(({ legacyKey, legacyActive, title }) => {
+      localStorage.removeItem('notes_sessions')
+      localStorage.removeItem('notes_active_session_id')
+      localStorage.removeItem('notes_user_id')
+      const session = {
+        id: 'legacy-migrate',
+        title,
+        notes: 'legacy body',
+        tags: [],
+        lookups: [],
+        screenshots: {},
+        startedAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      }
+      localStorage.setItem(legacyKey, JSON.stringify([session]))
+      localStorage.setItem(legacyActive, session.id)
+    }, { legacyKey: LEGACY_SESSIONS_KEY, legacyActive: 'uvimco_notes_active_session_id', title: 'Note Jan 1, 2026' })
+
+    await page.goto('/games/notes')
+    await expect(page.getByTestId('notes-meeting-title')).toHaveValue('Note Jan 1, 2026')
+    await expect(page.locator('.uvimco-cm .cm-content')).toContainText('legacy body')
+
+    const migrated = await page.evaluate((key) => localStorage.getItem(key), SESSIONS_KEY)
+    expect(migrated).toContain('legacy-migrate')
   })
 
   test('shorthand hints toggle', async ({ page }) => {

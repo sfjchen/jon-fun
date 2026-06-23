@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 /**
  * Real AI lookup on deployed sfjc.dev (no lookup API mock).
- *   PLAYWRIGHT_SKIP_WEBSERVER=1 npx playwright test e2e/uvimco-notes-lookup.spec.ts
+ *   PLAYWRIGHT_SKIP_WEBSERVER=1 npx playwright test e2e/notes-lookup.spec.ts
  */
 const isDeploy = process.env.PLAYWRIGHT_SKIP_WEBSERVER === '1'
 
@@ -39,6 +39,7 @@ test.describe('Notes AI lookup (deploy)', () => {
     await expect(page.getByTestId('notes-side-panel')).toContainText(/DPI|distribution|paid-in|capital/i, {
       timeout: 45_000,
     })
+    await expect(page.getByTestId('notes-side-panel')).toContainText(/Core meaning/i, { timeout: 5000 })
   })
 
   test('section ending with ?? opens panel and streams answer', async ({ page }) => {

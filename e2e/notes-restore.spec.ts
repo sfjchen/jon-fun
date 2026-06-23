@@ -56,5 +56,8 @@ test.describe('Notes sync restore (mock API)', () => {
 
     await expect(page.getByTestId('notes-meeting-title')).toHaveValue('Restored Note', { timeout: 10_000 })
     await expect(page.locator('.uvimco-cm .cm-content')).toContainText('restored body text')
+
+    const syncKey = await page.evaluate(() => localStorage.getItem('notes_sync_key'))
+    expect(syncKey).toBe('restore-key-123')
   })
 })

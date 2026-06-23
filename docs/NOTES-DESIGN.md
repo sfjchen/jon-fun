@@ -74,6 +74,21 @@ Data lives on Supabase under `uvimco_note_sessions` (+ `notes_sources`, `notes_g
 - Ctrl shortcuts (Windows): `\` panel, `Shift+F` search, `K` summarize, `S` export, `Shift+N` new note
 - Mobile: panel overlays; editor stays primary
 
+## E2E test matrix
+
+| Spec | Mode | What it covers |
+|------|------|----------------|
+| `e2e/notes.spec.ts` | Local (mock API) | Editor, triggers `?`/`??`, follow-up, search, sync key, legacy URL + localStorage migration, builtin packs |
+| `e2e/notes-search.spec.ts` | Local | Ctrl+Shift+F search hits |
+| `e2e/notes-restore.spec.ts` | Local mock | Restore by sync key |
+| `e2e/notes-lookup.spec.ts` | **Deploy** (`PLAYWRIGHT_SKIP_WEBSERVER=1`) | Real Gemini lookup + Core meaning format |
+| `e2e/notes-sync.spec.ts` | **Deploy** | Supabase session push + title migration |
+| `e2e/notes-visual.spec.ts` | Local layout + deploy snapshots | Editor height, panel layout |
+
+**Commands:** `npm run test:e2e:notes` (local CI) · `npm run test:e2e:notes-deploy` (sfjc.dev) · `npm run smoke:notes-llm`
+
+Mock helper: `e2e/helpers/notes-mock.ts` — stubs `/api/notes/*` including embed RAG.
+
 ## Phased roadmap rubric
 
 | Phase | Scope | Pass when |
@@ -88,3 +103,4 @@ Data lives on Supabase under `uvimco_note_sessions` (+ `notes_sources`, `notes_g
 - **2026-06-22**: Phase 2 — sources/glossary tables, context assembler, Sources UI.
 - **2026-06-22**: Knowledge layer — domain packs, auto-sectioning, generalizable prompts ([NOTES-KNOWLEDGE.md](./NOTES-KNOWLEDGE.md)).
 - **2026-06-22**: AI response format — Core meaning + Typical ranges (removed Intent/angle/follow-up split).
+- **2026-06-23**: Rename to `notes/*` routes; RAG embed; E2E renamed (`e2e/notes*.spec.ts`), legacy redirect + storage migration tests.
