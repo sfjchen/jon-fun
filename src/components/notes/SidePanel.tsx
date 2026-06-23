@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from 'react'
 import type { Lookup, NoteHistoryEntry, NoteSession } from '@/lib/notes/types'
 import { isLookupStreaming, type LookupStreamMap } from '@/lib/notes/lookupStreams'
+import { collectTodos } from '@/lib/notes/rollup'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
 import LookupConversation from './LookupConversation'
 import CollapsibleSection from './CollapsibleSection'
@@ -50,6 +51,7 @@ type SidePanelProps = {
   glossaryOpen: boolean
   sourcesOpen: boolean
   historyOpen: boolean
+  rollupOpen: boolean
   noteHistory: NoteHistoryEntry[]
   glossaryRefreshKey: number
   onNotesListOpenChange: (open: boolean) => void
@@ -58,6 +60,7 @@ type SidePanelProps = {
   onGlossaryOpenChange: (open: boolean) => void
   onSourcesOpenChange: (open: boolean) => void
   onHistoryOpenChange: (open: boolean) => void
+  onRollupOpenChange: (open: boolean) => void
   onSelectMeeting: (session: NoteSession) => void
   onNewMeeting: () => void
   onDeleteMeeting: (sessionId: string) => void
@@ -88,6 +91,7 @@ export default function SidePanel({
   glossaryOpen,
   sourcesOpen,
   historyOpen,
+  rollupOpen,
   noteHistory,
   glossaryRefreshKey,
   onNotesListOpenChange,
@@ -96,6 +100,7 @@ export default function SidePanel({
   onGlossaryOpenChange,
   onSourcesOpenChange,
   onHistoryOpenChange,
+  onRollupOpenChange,
   onSelectMeeting,
   onNewMeeting,
   onDeleteMeeting,
@@ -142,6 +147,8 @@ export default function SidePanel({
   const aiTitle =
     aiActiveCount > 1 ? `AI lookup · ${aiActiveCount} active` : 'AI lookup'
 
+  const todoCount = collectTodos(sessions).length
+
   return (
     <aside
       style={{ width }}
@@ -170,6 +177,17 @@ export default function SidePanel({
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <CollapsibleSection
+          title="Todos"
+          {...(todoCount ? { badge: String(todoCount) } : {})}
+          open={rollupOpen}
+          onToggle={() => onRollupOpenChange(!rollupOpen)}
+          testId="notes-rollup-section"
+          toggleTestId="notes-rollup-toggle"
+        >
+          <RollupPanel sessions={sessions} onJump={onJumpTodo} embedded />
+        </CollapsibleSection>
+
         {/* Primary: AI answers (panel opens for this) */}
         <section className="border-b border-[var(--uv-border)] px-3 py-2" data-testid="notes-ai-section">
           <button
@@ -338,8 +356,6 @@ export default function SidePanel({
         >
           <SourcesPanel refreshKey={glossaryRefreshKey} onChange={onSourcesChange} embedded />
         </CollapsibleSection>
-
-        <RollupPanel sessions={sessions} onJump={onJumpTodo} />
 
         <CollapsibleSection
           title="History"
