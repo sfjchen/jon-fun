@@ -9,13 +9,15 @@ import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
 type NotesTopBarProps = {
   title: string
   startedAt: string
+  updatedAt: string
   tags: string[]
   sessions: NoteSession[]
   onTitleChange: (title: string) => void
   onTagsChange: (tags: string[]) => void
+  onDeleteNote: () => void
 }
 
-function formatCreated(iso: string): string {
+function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
     month: 'short',
     day: 'numeric',
@@ -28,10 +30,12 @@ function formatCreated(iso: string): string {
 export default function NotesTopBar({
   title,
   startedAt,
+  updatedAt,
   tags,
   sessions,
   onTitleChange,
   onTagsChange,
+  onDeleteNote,
 }: NotesTopBarProps) {
   const [draft, setDraft] = useState('')
   const knownTags = useMemo(() => listKnownTags(sessions), [sessions])
@@ -74,16 +78,31 @@ export default function NotesTopBar({
         data-testid="notes-meeting-title"
       />
 
+      <button
+        type="button"
+        onClick={onDeleteNote}
+        data-testid="notes-delete-note"
+        title="Delete note"
+        className="shrink-0 rounded px-2 py-0.5 text-[11px] text-[var(--uv-text-muted)] hover:bg-red-50 hover:text-red-600"
+      >
+        Delete
+      </button>
+
       <div
         className="flex min-w-0 max-w-full flex-wrap items-center justify-end gap-1 sm:max-w-[55%]"
         data-testid="notes-meta-bar"
       >
         <span
-          className="hidden text-[10px] text-[var(--uv-text-muted)] xl:inline"
-          title={`Created ${formatCreated(startedAt)}`}
-          data-testid="notes-created-at"
+          className="hidden shrink-0 text-[10px] text-[var(--uv-text-muted)] xl:inline"
+          data-testid="notes-dates"
         >
-          {formatCreated(startedAt)}
+          <span title={`Created ${formatDateTime(startedAt)}`} data-testid="notes-created-at">
+            Created {formatDateTime(startedAt)}
+          </span>
+          <span className="mx-1.5 text-[var(--uv-border)]">·</span>
+          <span title={`Last modified ${formatDateTime(updatedAt)}`} data-testid="notes-modified-at">
+            Modified {formatDateTime(updatedAt)}
+          </span>
         </span>
         {knownTags.map((t) => {
           const on = tags.includes(t)
@@ -99,7 +118,7 @@ export default function NotesTopBar({
                   : 'rounded-full border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] px-2 py-0.5 text-[10px] text-[var(--uv-text-secondary)] hover:border-[var(--uv-accent)]'
               }
             >
-              #{t}
+              {t}
             </button>
           )
         })}
