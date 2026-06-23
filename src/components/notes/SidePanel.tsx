@@ -2,8 +2,10 @@
 
 import { useCallback, useRef, useState } from 'react'
 import type { Lookup, NoteSession, Screenshot } from '@/lib/notes/types'
+import { isLookupStreaming, type LookupStreamMap } from '@/lib/notes/lookupStreams'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
 import AnswerStream from './AnswerStream'
+import CollapsibleSection from './CollapsibleSection'
 import SyncPanel from './SyncPanel'
 import GlossaryPanel from './GlossaryPanel'
 import RollupPanel from './RollupPanel'
@@ -32,23 +34,31 @@ type SidePanelProps = {
   isOpen: boolean
   sessions: NoteSession[]
   activeSessionId: string
-  currentLookup: Lookup | null
+  focusedLookup: Lookup | null
   sessionHistory: Lookup[]
-  streamText: string
-  isStreaming: boolean
-  streamError?: string | null
+  streamByLookupId: LookupStreamMap
+  displayText: string
+  displayStreaming: boolean
+  displayError: string | null
+  aiActiveCount: number
   notesListOpen: boolean
   aiListOpen: boolean
+  syncOpen: boolean
+  glossaryOpen: boolean
+  sourcesOpen: boolean
   glossaryRefreshKey: number
   onNotesListOpenChange: (open: boolean) => void
   onAiListOpenChange: (open: boolean) => void
+  onSyncOpenChange: (open: boolean) => void
+  onGlossaryOpenChange: (open: boolean) => void
+  onSourcesOpenChange: (open: boolean) => void
   onSelectMeeting: (session: NoteSession) => void
   onNewMeeting: () => void
   onDeleteMeeting: (sessionId: string) => void
   onFollowUp: (q: string, screenshots?: Screenshot[]) => void
   onSelectHistory: (lookup: Lookup) => void
   onClose: () => void
-  onSynced: () => void
+  onSynced: (opts?: { skipPersist?: boolean }) => void
   onJumpTodo: (sessionId: string, lineIndex: number) => void
   onSourcesChange: () => void
 }
@@ -57,16 +67,24 @@ export default function SidePanel({
   isOpen,
   sessions,
   activeSessionId,
-  currentLookup,
+  focusedLookup,
   sessionHistory,
-  streamText,
-  isStreaming,
-  streamError,
+  streamByLookupId,
+  displayText,
+  displayStreaming,
+  displayError,
+  aiActiveCount,
   notesListOpen,
   aiListOpen,
+  syncOpen,
+  glossaryOpen,
+  sourcesOpen,
   glossaryRefreshKey,
   onNotesListOpenChange,
   onAiListOpenChange,
+  onSyncOpenChange,
+  onGlossaryOpenChange,
+  onSourcesOpenChange,
   onSelectMeeting,
   onNewMeeting,
   onDeleteMeeting,
@@ -89,8 +107,7 @@ export default function SidePanel({
       const onMove = (ev: MouseEvent) => {
         if (!dragRef.current) return
         const delta = dragRef.current.startX - ev.clientX
-        const next = Math.min(480, Math.max(240, dragRef.current.startW + delta))
-        setWidth(next)
+        setWidth(Math.min(480, Math.max(240, dragRef.current.startW + delta)))
       }
       const onUp = (ev: MouseEvent) => {
         if (!dragRef.current) return
@@ -109,6 +126,9 @@ export default function SidePanel({
   )
 
   if (!isOpen) return null
+
+  const aiTitle =
+    aiActiveCount > 1 ? `AI lookup · ${aiActiveCount} active` : 'AI lookup'
 
   return (
     <aside
@@ -137,79 +157,9 @@ export default function SidePanel({
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        <SyncPanel onSynced={onSynced} />
-
-        <section data-testid="notes-meetings-section">
-          <button
-            type="button"
-            onClick={() => onNotesListOpenChange(!notesListOpen)}
-            className="flex w-full items-center justify-between px-3 py-2 text-left hover:bg-[var(--uv-bg-hover)]"
-            aria-expanded={notesListOpen}
-            data-testid="notes-meetings-toggle"
-          >
-            <span className="text-xs font-medium text-[var(--uv-text-primary)]">
-              Notes
-              <span className="ml-1.5 font-normal text-[var(--uv-text-muted)]">({sessions.length})</span>
-            </span>
-            <span className="text-[10px] text-[var(--uv-text-muted)]">{notesListOpen ? '▾' : '▸'}</span>
-          </button>
-
-          {notesListOpen ? (
-            <div className="border-b border-[var(--uv-border)] px-2 pb-2">
-              <div className="mb-1 flex justify-end">
-                <button
-                  type="button"
-                  onClick={onNewMeeting}
-                  data-testid="notes-new-meeting"
-                  className="rounded px-2 py-0.5 text-[11px] font-medium text-[var(--uv-accent)] hover:bg-[var(--uv-accent-dim)]"
-                >
-                  + New note
-                </button>
-              </div>
-              <ul className="max-h-48 space-y-0.5 overflow-y-auto">
-                {sessions.map((s) => {
-                  const active = s.id === activeSessionId
-                  return (
-                    <li key={s.id} className="group flex items-center gap-0.5">
-                      <button
-                        type="button"
-                        data-testid={`notes-meeting-item-${s.id}`}
-                        data-active={active ? 'true' : 'false'}
-                        onClick={() => onSelectMeeting(s)}
-                        className={`min-w-0 flex-1 truncate rounded px-2 py-1.5 text-left text-xs ${
-                          active
-                            ? 'uvimco-meeting-active text-[var(--uv-text-primary)]'
-                            : 'text-[var(--uv-text-secondary)] hover:bg-[var(--uv-bg-hover)]'
-                        }`}
-                      >
-                        <span className="block truncate">{s.title || 'Untitled'}</span>
-                        <span className="text-[10px] text-[var(--uv-text-muted)]">
-                          {formatMeetingDate(s.updatedAt)}
-                        </span>
-                      </button>
-                      {sessions.length > 1 ? (
-                        <button
-                          type="button"
-                          aria-label={`Delete ${s.title || 'note'}`}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            if (window.confirm('Delete this note?')) onDeleteMeeting(s.id)
-                          }}
-                          className="hidden shrink-0 rounded px-1 text-[var(--uv-text-muted)] hover:text-red-600 group-hover:inline"
-                        >
-                          ×
-                        </button>
-                      ) : null}
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-          ) : null}
-        </section>
-
-        <section className="px-3 py-2">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        {/* Primary: AI answers (panel opens for this) */}
+        <section className="border-b border-[var(--uv-border)] px-3 py-2" data-testid="notes-ai-section">
           <button
             type="button"
             onClick={() => onAiListOpenChange(!aiListOpen)}
@@ -217,22 +167,24 @@ export default function SidePanel({
             aria-expanded={aiListOpen}
             data-testid="notes-ai-toggle"
           >
-            <span className="text-xs font-medium text-[var(--uv-text-primary)]">AI lookup</span>
+            <span className="text-xs font-medium text-[var(--uv-text-primary)]">{aiTitle}</span>
             <span className="text-[10px] text-[var(--uv-text-muted)]">{aiListOpen ? '▾' : '▸'}</span>
           </button>
 
           {aiListOpen ? (
             <>
-              {currentLookup ? (
+              {focusedLookup ? (
                 <div className="mb-3">
-                  <p className="mb-1.5 text-[11px] text-[var(--uv-text-secondary)]">{lookupLabel(currentLookup)}</p>
-                  <AnswerStream text={streamText} isStreaming={isStreaming} error={streamError ?? null} />
+                  <p className="mb-1.5 text-[11px] text-[var(--uv-text-secondary)]">
+                    {lookupLabel(focusedLookup)}
+                  </p>
+                  <AnswerStream text={displayText} isStreaming={displayStreaming} error={displayError} />
                 </div>
               ) : (
-                <AnswerStream text="" isStreaming={false} error={streamError ?? null} />
+                <AnswerStream text="" isStreaming={false} error={displayError} />
               )}
 
-              {currentLookup && !isStreaming ? (
+              {focusedLookup && !displayStreaming ? (
                 <form
                   className="mt-2"
                   onPaste={(e) => {
@@ -279,19 +231,29 @@ export default function SidePanel({
 
               {sessionHistory.length > 0 ? (
                 <div className="mt-4 border-t border-[var(--uv-border)] pt-2">
-                  <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">This note</p>
+                  <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">
+                    This note
+                  </p>
                   <ul className="space-y-0.5">
-                    {sessionHistory.map((lk) => (
-                      <li key={lk.id}>
-                        <button
-                          type="button"
-                          onClick={() => onSelectHistory(lk)}
-                          className="w-full rounded px-1.5 py-1 text-left text-[11px] text-[var(--uv-text-secondary)] hover:bg-[var(--uv-accent-dim)]"
-                        >
-                          {lookupLabel(lk)} · {timeAgo(lk.triggeredAt)}
-                        </button>
-                      </li>
-                    ))}
+                    {sessionHistory.map((lk) => {
+                      const streaming = isLookupStreaming(streamByLookupId, lk.id)
+                      return (
+                        <li key={lk.id}>
+                          <button
+                            type="button"
+                            onClick={() => onSelectHistory(lk)}
+                            className="flex w-full items-center gap-1 rounded px-1.5 py-1 text-left text-[11px] text-[var(--uv-text-secondary)] hover:bg-[var(--uv-accent-dim)]"
+                          >
+                            <span className="min-w-0 flex-1 truncate">
+                              {lookupLabel(lk)} · {timeAgo(lk.triggeredAt)}
+                            </span>
+                            {streaming ? (
+                              <span className="shrink-0 text-[10px] text-[var(--uv-accent)]">…</span>
+                            ) : null}
+                          </button>
+                        </li>
+                      )
+                    })}
                   </ul>
                 </div>
               ) : null}
@@ -299,9 +261,100 @@ export default function SidePanel({
           ) : null}
         </section>
 
-        <GlossaryPanel refreshKey={glossaryRefreshKey} />
-        <SourcesPanel refreshKey={glossaryRefreshKey} onChange={onSourcesChange} />
+        {/* Notes list — secondary */}
+        <CollapsibleSection
+          title="Notes"
+          badge={String(sessions.length)}
+          open={notesListOpen}
+          onToggle={() => onNotesListOpenChange(!notesListOpen)}
+          testId="notes-meetings-section"
+          toggleTestId="notes-meetings-toggle"
+        >
+          <div className="px-2 pb-2">
+            <div className="mb-1 flex justify-end">
+              <button
+                type="button"
+                onClick={onNewMeeting}
+                data-testid="notes-new-meeting"
+                className="rounded px-2 py-0.5 text-[11px] font-medium text-[var(--uv-accent)] hover:bg-[var(--uv-accent-dim)]"
+              >
+                + New note
+              </button>
+            </div>
+            <ul className="max-h-40 space-y-0.5 overflow-y-auto">
+              {sessions.map((s) => {
+                const active = s.id === activeSessionId
+                return (
+                  <li key={s.id} className="group flex items-center gap-0.5">
+                    <button
+                      type="button"
+                      data-testid={`notes-meeting-item-${s.id}`}
+                      data-active={active ? 'true' : 'false'}
+                      onClick={() => onSelectMeeting(s)}
+                      className={`min-w-0 flex-1 truncate rounded px-2 py-1.5 text-left text-xs ${
+                        active
+                          ? 'uvimco-meeting-active text-[var(--uv-text-primary)]'
+                          : 'text-[var(--uv-text-secondary)] hover:bg-[var(--uv-bg-hover)]'
+                      }`}
+                    >
+                      <span className="block truncate">{s.title || 'Untitled'}</span>
+                      <span className="text-[10px] text-[var(--uv-text-muted)]">
+                        {formatMeetingDate(s.updatedAt)}
+                      </span>
+                    </button>
+                    {sessions.length > 1 ? (
+                      <button
+                        type="button"
+                        aria-label={`Delete ${s.title || 'note'}`}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (window.confirm('Delete this note?')) onDeleteMeeting(s.id)
+                        }}
+                        className="hidden shrink-0 rounded px-1 text-[var(--uv-text-muted)] hover:text-red-600 group-hover:inline"
+                      >
+                        ×
+                      </button>
+                    ) : null}
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="Glossary"
+          open={glossaryOpen}
+          onToggle={() => onGlossaryOpenChange(!glossaryOpen)}
+          testId="notes-glossary-section"
+          toggleTestId="notes-glossary-toggle"
+        >
+          <GlossaryPanel refreshKey={glossaryRefreshKey} embedded />
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="Sources"
+          open={sourcesOpen}
+          onToggle={() => onSourcesOpenChange(!sourcesOpen)}
+          testId="notes-sources-section"
+          toggleTestId="notes-sources-toggle"
+        >
+          <SourcesPanel refreshKey={glossaryRefreshKey} onChange={onSourcesChange} embedded />
+        </CollapsibleSection>
+
         <RollupPanel sessions={sessions} onJump={onJumpTodo} />
+
+        {/* Sync — infrequent; bottom, collapsed by default */}
+        <CollapsibleSection
+          title="Sync & backup"
+          open={syncOpen}
+          onToggle={() => onSyncOpenChange(!syncOpen)}
+          testId="notes-sync-section"
+          toggleTestId="notes-sync-toggle"
+          borderBottom={false}
+        >
+          <SyncPanel onSynced={onSynced} />
+        </CollapsibleSection>
       </div>
     </aside>
   )

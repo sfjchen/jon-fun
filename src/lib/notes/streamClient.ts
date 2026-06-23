@@ -20,6 +20,37 @@ export async function streamLookup(params: {
   onError: (msg: string) => void
 }): Promise<void> {
   let failed = false
+  let finished = false
+
+  const finish = () => {
+    if (finished || failed) return
+    finished = true
+    params.onDone()
+  }
+
+  const parseChunk = (chunk: string) => {
+    for (const part of chunk.split('\n\n')) {
+      if (!part.trim()) continue
+      for (const line of part.split('\n')) {
+        if (!line.startsWith('data:')) continue
+        const payload = line.slice(5).trim()
+        if (payload === '[DONE]') {
+          finish()
+          continue
+        }
+        try {
+          const json = JSON.parse(payload) as { token?: string; error?: string }
+          if (json.error) {
+            failed = true
+            params.onError(json.error)
+          }
+          if (json.token) params.onToken(json.token)
+        } catch {
+          /* skip */
+        }
+      }
+    }
+  }
 
   const res = await fetch('/api/notes/lookup', {
     method: 'POST',
@@ -42,8 +73,8 @@ export async function streamLookup(params: {
   })
 
   if (!res.ok) {
-    const err = (await res.json().catch(() => null)) as { error?: string } | null
     failed = true
+    const err = (await res.json().catch(() => null)) as { error?: string } | null
     params.onError(err?.error ?? `Request failed (${res.status})`)
     return
   }
@@ -60,28 +91,17 @@ export async function streamLookup(params: {
 
   while (true) {
     const { done, value } = await reader.read()
-    if (done) break
-    buffer += decoder.decode(value, { stream: true })
-    const parts = buffer.split('\n\n')
-    buffer = parts.pop() ?? ''
-    for (const part of parts) {
-      for (const line of part.split('\n')) {
-        if (!line.startsWith('data:')) continue
-        const payload = line.slice(5).trim()
-        if (payload === '[DONE]') continue
-        try {
-          const json = JSON.parse(payload) as { token?: string; error?: string }
-          if (json.error) {
-            failed = true
-            params.onError(json.error)
-          }
-          if (json.token) params.onToken(json.token)
-        } catch {
-          /* skip */
-        }
-      }
+    if (value) buffer += decoder.decode(value, { stream: !done })
+    if (buffer) {
+      const parts = buffer.split('\n\n')
+      buffer = done ? '' : (parts.pop() ?? '')
+      parseChunk(parts.join('\n\n'))
+    }
+    if (done) {
+      if (buffer.trim()) parseChunk(buffer)
+      break
     }
   }
 
-  if (!failed) params.onDone()
+  finish()
 }

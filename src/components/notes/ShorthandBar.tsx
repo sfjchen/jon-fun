@@ -40,7 +40,7 @@ export default function ShorthandBar() {
         </button>
         {!open ? (
           <span className="hidden truncate text-[11px] text-[var(--uv-text-muted)] sm:inline">
-            line? / line?? · Ctrl+Shift+F search · Ctrl+B/I/U · Ctrl+\ panel
+            line? / line?? · Ctrl+Shift+F search · Ctrl+B bold (WYSIWYG) · Ctrl+\ panel
           </span>
         ) : null}
       </div>

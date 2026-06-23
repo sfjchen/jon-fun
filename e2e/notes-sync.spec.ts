@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { notesEditor, waitForNotesEditor } from './helpers/notes-mock'
 
 /**
  * Real Supabase sync on **deployed** sfjc.dev (no session API mocks).
@@ -32,12 +33,12 @@ test.describe('Notes cloud sync', () => {
     })
 
     await page.goto('/games/notes')
-    await page.waitForSelector('.uvimco-cm .cm-content', { timeout: 20_000 })
+    await waitForNotesEditor(page)
 
     const statusBar = page.getByTestId('notes-statusbar')
     await expect(statusBar).toContainText('Saved', { timeout: 15_000 })
 
-    const editor = page.locator('.uvimco-cm .cm-content')
+    const editor = notesEditor(page)
     await editor.click()
     await page.keyboard.type(noteText)
 

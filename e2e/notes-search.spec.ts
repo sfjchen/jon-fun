@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { notesEditor, waitForNotesEditor } from './helpers/notes-mock'
 
 test.describe('Notes search (local)', () => {
   test.use({ viewport: { width: 1280, height: 800 } })
@@ -29,8 +30,16 @@ test.describe('Notes search (local)', () => {
       }
     })
 
+    await page.route('**/api/notes/glossary**', async (route) => {
+      await route.fulfill({ json: route.request().method() === 'GET' ? { entries: [] } : { ok: true } })
+    })
+
+    await page.route('**/api/notes/sources**', async (route) => {
+      await route.fulfill({ json: route.request().method() === 'GET' ? { sources: [] } : { ok: true } })
+    })
+
     await page.goto('/games/notes')
-    await page.waitForSelector('.uvimco-cm .cm-content', { timeout: 20_000 })
+    await waitForNotesEditor(page)
   })
 
   test('Ctrl+Shift+F opens search and finds todo', async ({ page }) => {

@@ -1,56 +1,71 @@
 'use client'
 
 import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Placeholder from '@tiptap/extension-placeholder'
-import { useCallback, useEffect, useRef } from 'react'
-import { DEBOUNCE_MS, detectLineTriggers } from '@/lib/notes/triggerParser'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
+import { buildNotesExtensions, NOTES_EDITOR_PLACEHOLDER } from '@/lib/notes/tiptap/extensions'
+import {
+  markdownFromEditor,
+  mergeTodoLinesIntoMarkdown,
+  plainTextFromEditor,
+  postprocessTodoMarkdown,
+  preprocessTodoMarkdown,
+  scrollToLineIndex,
+} from '@/lib/notes/tiptap/editorCoords'
+import { refreshShorthandDecorations } from '@/lib/notes/tiptap/shorthandDecorations'
+import { scheduleTriggerCheck } from '@/lib/notes/tiptap/triggerPlugin'
 import type { TriggerType } from '@/lib/notes/types'
+import NotesBubbleMenu from './NotesBubbleMenu'
+
+export type NoteEditorHandle = {
+  scrollToLine: (lineIndex: number) => void
+}
 
 type TiptapNoteEditorProps = {
   value: string
   onChange: (val: string) => void
   onTrigger: (type: TriggerType, query: string, context: string) => void
   onScreenshotPaste: (id: string, base64: string, mimeType: string) => void
+  activeTriggerQuery: string | null
 }
 
-/** Plain text from Tiptap doc for trigger detection + storage. */
-function docToPlainText(editor: ReturnType<typeof useEditor>): string {
-  if (!editor) return ''
-  return editor.getText({ blockSeparator: '\n' })
-}
-
-export default function TiptapNoteEditor({ value, onChange, onTrigger, onScreenshotPaste }: TiptapNoteEditorProps) {
+const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(function TiptapNoteEditor(
+  { value, onChange, onTrigger, onScreenshotPaste, activeTriggerQuery },
+  ref,
+) {
   const lastFiredRef = useRef<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const onTriggerStable = useCallback(onTrigger, [onTrigger])
+  const pasteHandlerRef = useRef(onScreenshotPaste)
+  pasteHandlerRef.current = onScreenshotPaste
+  const activeQueryRef = useRef(activeTriggerQuery)
+  activeQueryRef.current = activeTriggerQuery
+
+  const extensions = useMemo(
+    () =>
+      buildNotesExtensions({
+        placeholder: NOTES_EDITOR_PLACEHOLDER,
+        getActiveQuery: () => activeQueryRef.current,
+      }),
+    [],
+  )
 
   const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Placeholder.configure({
-        placeholder: 'Start typing. End a line with ? or ?? for AI · > todo · * highlight',
-      }),
-    ],
-    content: value ? `<p>${value.split('\n').join('</p><p>')}</p>` : '',
+    immediatelyRender: false,
+    shouldRerenderOnTransaction: false,
+    extensions,
+    content: preprocessTodoMarkdown(value),
+    contentType: 'markdown',
     onUpdate: ({ editor: ed }) => {
-      const plain = docToPlainText(ed)
-      onChange(plain)
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-      debounceRef.current = setTimeout(() => {
-        const pos = ed.state.selection.anchor
-        const result = detectLineTriggers(plain, pos, lastFiredRef.current)
-        if (result) {
-          lastFiredRef.current = result.fireKey
-          onTriggerStable(result.type, result.query, result.context)
-        }
-      }, DEBOUNCE_MS)
+      const plain = plainTextFromEditor(ed)
+      const md = postprocessTodoMarkdown(markdownFromEditor(ed))
+      onChange(mergeTodoLinesIntoMarkdown(plain, md))
+      scheduleTriggerCheck(ed, debounceRef, onTriggerStable, lastFiredRef)
     },
     editorProps: {
       attributes: {
-        class: 'uvimco-tiptap min-h-full px-4 py-3 text-base leading-relaxed focus:outline-none',
+        class: 'tiptap notes-tiptap min-h-full px-4 py-3 text-base leading-relaxed focus:outline-none',
       },
-      handlePaste(view, event) {
+      handlePaste(_view, event) {
         const items = event.clipboardData?.items
         if (!items) return false
         for (const item of items) {
@@ -63,8 +78,8 @@ export default function TiptapNoteEditor({ value, onChange, onTrigger, onScreens
             const dataUrl = reader.result as string
             const base64 = dataUrl.split(',')[1] ?? ''
             const id = `screenshot-${Date.now()}`
-            onScreenshotPaste(id, base64, file.type)
-            view.dispatch(view.state.tr.insertText(`[📷 ${id}]\n`))
+            pasteHandlerRef.current(id, base64, file.type)
+            editor?.chain().focus().insertContent(`[📷 ${id}]\n`).run()
           }
           reader.readAsDataURL(file)
           return true
@@ -74,15 +89,30 @@ export default function TiptapNoteEditor({ value, onChange, onTrigger, onScreens
     },
   })
 
+  useImperativeHandle(ref, () => ({
+    scrollToLine(lineIndex: number) {
+      if (!editor) return
+      scrollToLineIndex(editor, lineIndex)
+    },
+  }))
+
   useEffect(() => {
     if (!editor) return
-    const plain = docToPlainText(editor)
-    if (plain !== value) {
-      editor.commands.setContent(value ? `<p>${value.split('\n').join('</p><p>')}</p>` : '', {
+    const norm = (s: string) => s.replace(/\r\n/g, '\n').trimEnd()
+    const current = norm(postprocessTodoMarkdown(markdownFromEditor(editor)))
+    const next = norm(value)
+    if (current !== next) {
+      editor.commands.setContent(preprocessTodoMarkdown(value), {
+        contentType: 'markdown',
         emitUpdate: false,
       })
     }
   }, [value, editor])
+
+  useEffect(() => {
+    if (!editor) return
+    refreshShorthandDecorations(editor)
+  }, [activeTriggerQuery, editor])
 
   useEffect(() => {
     return () => {
@@ -91,8 +121,14 @@ export default function TiptapNoteEditor({ value, onChange, onTrigger, onScreens
   }, [])
 
   return (
-    <div className="uvimco-tiptap-wrap h-full min-h-0 flex-1 overflow-auto bg-[var(--uv-bg-elevated)]" data-testid="notes-tiptap-editor">
+    <div
+      className="notes-tiptap-wrap h-full min-h-0 flex-1 overflow-auto bg-[var(--uv-bg-elevated)]"
+      data-testid="notes-tiptap-editor"
+    >
+      <NotesBubbleMenu editor={editor} />
       <EditorContent editor={editor} className="h-full" />
     </div>
   )
-}
+})
+
+export default TiptapNoteEditor

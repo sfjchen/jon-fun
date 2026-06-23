@@ -11,9 +11,10 @@ import {
 } from '@/lib/notes/storage'
 
 type SyncPanelProps = {
-  onSynced: () => void
+  onSynced: (opts?: { skipPersist?: boolean }) => void
 }
 
+/** Sync / restore controls — shown inside collapsed "Sync & backup" section. */
 export default function SyncPanel({ onSynced }: SyncPanelProps) {
   const [syncKeyInput, setSyncKeyInput] = useState(() => getSyncKey())
   const [restoreKey, setRestoreKey] = useState('')
@@ -39,7 +40,7 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
     else if (restored > 0) {
       setSyncKeyInput(restoreKey.trim())
       setStatus(`Restored ${restored} note(s)`)
-      onSynced()
+      onSynced({ skipPersist: true })
     } else setStatus('No notes found')
   }
 
@@ -49,10 +50,9 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
   }
 
   return (
-    <section className="border-b border-[var(--uv-border)] px-3 py-2" data-testid="notes-sync-panel">
-      <p className="mb-2 text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">Sync</p>
+    <div className="px-3 pb-3" data-testid="notes-sync-panel">
       <p className="mb-2 text-[11px] text-[var(--uv-text-secondary)]">
-        Same sync key on all devices merges notes. Lost data? Restore from server.
+        Same sync key on all devices merges notes. Restore if you cleared browser data.
       </p>
       <label className="mb-1 block text-[10px] text-[var(--uv-text-muted)]">Sync key</label>
       <div className="mb-2 flex gap-1">
@@ -101,6 +101,6 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
         Copy device ID ({getEffectiveUserId().slice(0, 8)}…)
       </button>
       {status ? <p className="mt-2 text-[11px] text-[var(--uv-text-secondary)]">{status}</p> : null}
-    </section>
+    </div>
   )
 }

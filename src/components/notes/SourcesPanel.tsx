@@ -14,9 +14,10 @@ import {
 type SourcesPanelProps = {
   refreshKey?: number
   onChange?: () => void
+  embedded?: boolean
 }
 
-export default function SourcesPanel({ refreshKey = 0, onChange }: SourcesPanelProps) {
+export default function SourcesPanel({ refreshKey = 0, onChange, embedded }: SourcesPanelProps) {
   const sources = useMemo(() => {
     void refreshKey
     return loadSourcesLocal()
@@ -42,9 +43,16 @@ export default function SourcesPanel({ refreshKey = 0, onChange }: SourcesPanelP
   }
 
   return (
-    <section className="border-b border-[var(--uv-border)] px-3 py-2" data-testid="notes-sources-panel">
+    <section
+      className={embedded ? 'px-3 pb-2' : 'border-b border-[var(--uv-border)] px-3 py-2'}
+      data-testid="notes-sources-panel"
+    >
       <div className="mb-2 flex items-center justify-between">
-        <p className="text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">Sources</p>
+        {!embedded ? (
+          <p className="text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">Sources</p>
+        ) : (
+          <span className="text-[10px] text-[var(--uv-text-muted)]">Reference docs for AI</span>
+        )}
         <button
           type="button"
           onClick={addPaste}
