@@ -1,6 +1,7 @@
 'use client'
 
 import { formatHistoryLine } from '@/lib/notes/noteHistory'
+import { NOTES_SHORTCUTS } from '@/lib/notes/shortcuts'
 import type { NoteHistoryEntry } from '@/lib/notes/types'
 
 type StatusBarProps = {
@@ -87,19 +88,37 @@ export default function StatusBar({
             ))}
           </span>
         ) : null}
-        <ActionBtn testId="notes-search-btn" label="Search" keys="⇧F" onClick={onSearch} />
-        <ActionBtn testId="notes-header-new" label="New" keys="⇧N" onClick={onNewNote} className="hidden sm:inline-flex" />
-        <ActionBtn label="Export" keys="" onClick={onExport} />
-        <ActionBtn testId="notes-summarize-btn" label="Summarize" keys="K" onClick={onSummarize} className="hidden sm:inline-flex" />
-        <ActionBtn testId="notes-toggle-panel" label={panelOpen ? 'Hide panel' : 'Panel'} keys="\\" onClick={onTogglePanel} />
+        <ActionBtn testId="notes-search-btn" label="Search" keys={NOTES_SHORTCUTS.search} onClick={onSearch} />
+        <ActionBtn
+          testId="notes-header-new"
+          label="New"
+          keys={NOTES_SHORTCUTS.newNote}
+          onClick={onNewNote}
+          className="hidden sm:inline-flex"
+        />
+        <ActionBtn label="Export" keys={NOTES_SHORTCUTS.export} onClick={onExport} />
+        <ActionBtn
+          testId="notes-summarize-btn"
+          label="Summarize"
+          keys={NOTES_SHORTCUTS.summarize}
+          onClick={onSummarize}
+          className="hidden sm:inline-flex"
+        />
+        <ActionBtn
+          testId="notes-toggle-panel"
+          label={panelOpen ? 'Hide panel' : 'Panel'}
+          keys={NOTES_SHORTCUTS.panel}
+          onClick={onTogglePanel}
+        />
         <button
           type="button"
           onClick={onHintsToggle}
           data-testid="notes-shorthand-toggle"
-          className="rounded border border-[var(--uv-border)] px-1.5 py-0.5 hover:bg-[var(--uv-bg-hover)] hover:text-[var(--uv-text-primary)]"
+          className="inline-flex items-center gap-1 rounded border border-[var(--uv-border)] px-1.5 py-0.5 hover:bg-[var(--uv-bg-hover)] hover:text-[var(--uv-text-primary)]"
           aria-expanded={hintsOpen}
         >
           {hintsOpen ? 'Hide hints' : 'Hints'}
+          <kbd className="text-[9px] text-[var(--uv-text-muted)]">{NOTES_SHORTCUTS.hints}</kbd>
         </button>
       </div>
     </footer>
@@ -114,7 +133,7 @@ function ActionBtn({
   className = '',
 }: {
   label: string
-  keys: string
+  keys?: string
   onClick: () => void
   testId?: string
   className?: string
@@ -127,7 +146,7 @@ function ActionBtn({
       className={`inline-flex items-center gap-1 rounded border border-[var(--uv-border)] px-1.5 py-0.5 hover:bg-[var(--uv-bg-hover)] hover:text-[var(--uv-text-primary)] ${className}`}
     >
       {label}
-      {keys ? <kbd className="text-[9px] text-[var(--uv-text-muted)]">⌃{keys}</kbd> : null}
+      {keys ? <kbd className="text-[9px] text-[var(--uv-text-muted)]">{keys}</kbd> : null}
     </button>
   )
 }

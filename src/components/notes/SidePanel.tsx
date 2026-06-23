@@ -190,94 +190,86 @@ export default function SidePanel({
           <RollupPanel sessions={sessions} onJump={onJumpTodo} embedded />
         </CollapsibleSection>
 
-        {/* Primary: AI answers (panel opens for this) */}
-        <section className="border-b border-[var(--uv-border)] px-3 py-2" data-testid="notes-ai-section">
-          <button
-            type="button"
-            onClick={() => onAiListOpenChange(!aiListOpen)}
-            className="mb-2 flex w-full items-center justify-between text-left"
-            aria-expanded={aiListOpen}
-            data-testid="notes-ai-toggle"
-          >
-            <span className="text-xs font-medium text-[var(--uv-text-primary)]">{aiTitle}</span>
-            <span className="text-[10px] text-[var(--uv-text-muted)]">{aiListOpen ? '▾' : '▸'}</span>
-          </button>
+        <CollapsibleSection
+          title={aiTitle}
+          open={aiListOpen}
+          onToggle={() => onAiListOpenChange(!aiListOpen)}
+          testId="notes-ai-section"
+          toggleTestId="notes-ai-toggle"
+        >
+          <div className="px-3 pb-2">
+            <LookupComposer onSubmit={onPanelLookup} />
 
-          {aiListOpen ? (
-            <>
-              <LookupComposer onSubmit={onPanelLookup} />
-
-              {focusedLookup ? (
-                <div className="mb-3 flex min-h-0 flex-col">
-                  <div className="mb-1.5 flex shrink-0 items-center gap-1">
-                    <p className="min-w-0 flex-1 text-[11px] text-[var(--uv-text-secondary)]">
-                      {lookupLabel(focusedLookup)}
-                    </p>
-                    <button
-                      type="button"
-                      aria-label="Delete this lookup"
-                      data-testid="notes-delete-lookup-active"
-                      onClick={() => onDeleteLookup(focusedLookup.id)}
-                      className="shrink-0 rounded px-1 text-[var(--uv-text-muted)] hover:text-red-600"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                  <LookupConversation
-                    lookup={focusedLookup}
-                    streamText={streamText}
-                    isStreaming={displayStreaming}
-                    error={displayError}
-                  />
-                </div>
-              ) : (
-                <LookupConversation lookup={null} streamText="" isStreaming={false} error={displayError} />
-              )}
-
-              {focusedLookup && !displayStreaming ? (
-                <FollowUpComposer onSubmit={onFollowUp} />
-              ) : null}
-
-              {sessionHistory.length > 0 ? (
-                <div className="mt-4 border-t border-[var(--uv-border)] pt-2">
-                  <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">
-                    This note
+            {focusedLookup ? (
+              <div className="mb-3 flex min-h-0 flex-col">
+                <div className="mb-1.5 flex shrink-0 items-center gap-1">
+                  <p className="min-w-0 flex-1 text-[11px] text-[var(--uv-text-secondary)]">
+                    {lookupLabel(focusedLookup)}
                   </p>
-                  <ul className="space-y-0.5">
-                    {sessionHistory.map((lk) => {
-                      const streaming = isLookupStreaming(streamByLookupId, lk.id)
-                      return (
-                        <li key={lk.id} className="group flex items-center gap-0.5">
-                          <button
-                            type="button"
-                            onClick={() => onSelectHistory(lk)}
-                            className="flex min-w-0 flex-1 items-center gap-1 rounded px-1.5 py-1 text-left text-[11px] text-[var(--uv-text-secondary)] hover:bg-[var(--uv-accent-dim)]"
-                          >
-                            <span className="min-w-0 flex-1 truncate">
-                              {lookupLabel(lk)} · {timeAgo(lk.triggeredAt)}
-                            </span>
-                            {streaming ? (
-                              <span className="shrink-0 text-[10px] text-[var(--uv-accent)]">…</span>
-                            ) : null}
-                          </button>
-                          <button
-                            type="button"
-                            aria-label={`Delete ${lookupLabel(lk)}`}
-                            data-testid={`notes-delete-lookup-${lk.id}`}
-                            onClick={() => onDeleteLookup(lk.id)}
-                            className="shrink-0 rounded px-1 text-[10px] text-[var(--uv-text-muted)] hover:text-red-600"
-                          >
-                            ×
-                          </button>
-                        </li>
-                      )
-                    })}
-                  </ul>
+                  <button
+                    type="button"
+                    aria-label="Delete this lookup"
+                    data-testid="notes-delete-lookup-active"
+                    onClick={() => onDeleteLookup(focusedLookup.id)}
+                    className="shrink-0 rounded px-1 text-[var(--uv-text-muted)] hover:text-red-600"
+                  >
+                    Delete
+                  </button>
                 </div>
-              ) : null}
-            </>
-          ) : null}
-        </section>
+                <LookupConversation
+                  lookup={focusedLookup}
+                  streamText={streamText}
+                  isStreaming={displayStreaming}
+                  error={displayError}
+                />
+              </div>
+            ) : (
+              <LookupConversation lookup={null} streamText="" isStreaming={false} error={displayError} />
+            )}
+
+            {focusedLookup && !displayStreaming ? (
+              <FollowUpComposer onSubmit={onFollowUp} />
+            ) : null}
+
+            {sessionHistory.length > 0 ? (
+              <div className="mt-4 border-t border-[var(--uv-border)] pt-2">
+                <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">
+                  This note
+                </p>
+                <ul className="space-y-0.5">
+                  {sessionHistory.map((lk) => {
+                    const streaming = isLookupStreaming(streamByLookupId, lk.id)
+                    return (
+                      <li key={lk.id} className="group flex items-center gap-0.5">
+                        <button
+                          type="button"
+                          onClick={() => onSelectHistory(lk)}
+                          className="flex min-w-0 flex-1 items-center gap-1 rounded px-1.5 py-1 text-left text-[11px] text-[var(--uv-text-secondary)] hover:bg-[var(--uv-accent-dim)]"
+                        >
+                          <span className="min-w-0 flex-1 truncate">
+                            {lookupLabel(lk)} · {timeAgo(lk.triggeredAt)}
+                          </span>
+                          {streaming ? (
+                            <span className="shrink-0 text-[10px] text-[var(--uv-accent)]">…</span>
+                          ) : null}
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`Delete ${lookupLabel(lk)}`}
+                          data-testid={`notes-delete-lookup-${lk.id}`}
+                          onClick={() => onDeleteLookup(lk.id)}
+                          className="shrink-0 rounded px-1 text-[10px] text-[var(--uv-text-muted)] hover:text-red-600"
+                        >
+                          ×
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        </CollapsibleSection>
 
         {/* Notes list — secondary */}
         <CollapsibleSection

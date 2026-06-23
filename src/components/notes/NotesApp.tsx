@@ -15,6 +15,7 @@ import { pushGlossaryToServer, syncMemoryBank } from '@/lib/notes/memorySync'
 import { countShorthandFlags } from '@/lib/notes/shorthand'
 import { appendNoteHistory, lastHistoryEntry } from '@/lib/notes/noteHistory'
 import { addToTagCatalog } from '@/lib/notes/tagRegistry'
+import { isNotesTextFieldTarget } from '@/lib/notes/shortcuts'
 import { streamLookup } from '@/lib/notes/streamClient'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
 import {
@@ -715,31 +716,61 @@ export default function NotesApp() {
         else dispatch({ type: 'CLEAR_LOOKUP' })
         return
       }
-      if (!(e.ctrlKey || e.metaKey)) return
-      if (e.key === '\\') {
+
+      if (!e.ctrlKey) return
+
+      const key = e.key.toLowerCase()
+      const inField = isNotesTextFieldTarget(e.target)
+
+      if (inField) {
+        if (key === 's') {
+          e.preventDefault()
+          void saveWithHistory('saved', 'Ctrl+S', true)
+        }
+        return
+      }
+
+      if (key === '\\' || key === '|') {
         e.preventDefault()
         dispatch({ type: 'PANEL_TOGGLE' })
+        return
       }
-      if (e.key === 'k') {
+      if (key === 'k') {
         e.preventDefault()
         handleSummarize()
+        return
       }
-      if (e.key === 's') {
+      if (key === 's') {
         e.preventDefault()
         void saveWithHistory('saved', 'Ctrl+S', true)
+        return
       }
-      if (e.shiftKey && e.key === 'N') {
+      if (key === 'e') {
+        e.preventDefault()
+        handleExport()
+        return
+      }
+      if (e.shiftKey && key === 'n') {
         e.preventDefault()
         handleNewNote()
+        return
       }
-      if (e.shiftKey && e.key === 'F') {
+      if (e.shiftKey && key === 'f') {
         e.preventDefault()
         setSearchOpen(true)
+        return
+      }
+      if (e.shiftKey && key === 'h') {
+        e.preventDefault()
+        setHintsOpen((v) => {
+          persistHintsOpen(!v)
+          return !v
+        })
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [handleSummarize, saveWithHistory, handleNewNote, state.panelOpen, aiBusy, searchOpen])
+  }, [handleSummarize, handleExport, saveWithHistory, handleNewNote, state.panelOpen, aiBusy, searchOpen])
 
   const focusedId = state.focusedLookupId ?? state.currentLookup?.id ?? null
   const focusedLookup =
