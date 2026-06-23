@@ -358,7 +358,7 @@ src/
 
 **`POST /api/reader/extract-pdf`**: Multipart form field `file` (PDF, max ~12 MB) — returns `{ text, notes, extractMeta }` (`pageCount`, `totalChars`, `avgCharsPerPage`, `scannedLikely`) for the web e-reader import. Used so PDF text extraction runs reliably on the server (file is not persisted); saved books remain in IndexedDB on the client.
 
-**`POST /api/reader/embed`**: JSON `{ query, excerpts[] }` — returns `{ scores[] }` (cosine vs query) using **`GEMINI_API_KEY`** and **`READER_EMBED_GEMINI_MODEL`** (default **`text-embedding-004`**). Optional client feature flag **`NEXT_PUBLIC_READER_SEMANTIC_SEARCH=1`** re-ranks in-book search hits.
+**`POST /api/reader/embed`** / **`POST /api/notes/embed`**: JSON `{ query, excerpts[] }` — returns `{ scores[] }` (cosine vs query) using **`GEMINI_API_KEY`** and **`READER_EMBED_GEMINI_MODEL`** / **`NOTES_EMBED_GEMINI_MODEL`** (default **`gemini-embedding-001`**). Optional client feature flag **`NEXT_PUBLIC_READER_SEMANTIC_SEARCH=1`** re-ranks in-book search hits; Notes lookups use the same embed API for source/related-note RAG when configured.
 
 **`GET` / `PATCH /api/reader/communal/[id]/reading-state`**: Read/update **`reading_state`** JSON for communal shelf sync (503 if Supabase not configured).
 
