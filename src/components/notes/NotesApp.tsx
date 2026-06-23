@@ -664,7 +664,7 @@ export default function NotesApp() {
   const lastHist = lastHistoryEntry(state.session)
 
   return (
-    <div className="uvimco-notes-root bg-[var(--uv-bg-base)] text-[var(--uv-text-primary)]">
+    <div className="notes-root bg-[var(--uv-bg-base)] text-[var(--uv-text-primary)]">
       <NotesTopBar
         title={state.session.title}
         startedAt={state.session.startedAt}
@@ -680,8 +680,8 @@ export default function NotesApp() {
         onJump={handleJump}
       />
       <div className="flex min-h-0 flex-1 overflow-hidden">
-        <section className="uvimco-notes-editor-pane min-w-0 flex-1">
-          <div className="uvimco-notes-editor-body" data-testid="notes-editor">
+        <section className="notes-editor-pane min-w-0 flex-1">
+          <div className="notes-editor-body" data-testid="notes-editor">
             <EditorShell
               ref={editorRef}
               value={state.session.notes}

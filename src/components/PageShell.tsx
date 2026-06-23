@@ -10,7 +10,7 @@ type PageShellProps = {
   showBack?: boolean
 }
 
-function isUvimcoNotes(pathname: string): boolean {
+function isNotesPage(pathname: string): boolean {
   return pathname.includes('/games/notes')
 }
 
@@ -20,7 +20,7 @@ function isFullBleed(pathname: string, isChwaziMobile?: boolean): boolean {
     pathname === '/games/pear-navigator' ||
     pathname.startsWith('/games/poker/lobby/') ||
     pathname.startsWith('/games/poker/table/') ||
-    isUvimcoNotes(pathname)
+    isNotesPage(pathname)
   )
 }
 
@@ -39,12 +39,12 @@ function isWeddingPath(pathname: string): boolean {
 export function PageShell({ children, title, showBack }: PageShellProps) {
   const pathname = usePathname()
   const weddingPath = isWeddingPath(pathname ?? '')
-  const uvimcoNotes = isUvimcoNotes(pathname ?? '')
+  const notesPage = isNotesPage(pathname ?? '')
   const [isMobile, setIsMobile] = useState(false)
   const chwaziMobile = isChwaziPath(pathname ?? '') && isMobile
-  const isNotebook = !chwaziMobile && !uvimcoNotes
+  const isNotebook = !chwaziMobile && !notesPage
   const isHome = pathname === '/'
-  const showBackLink = showBack ?? (!isHome && !uvimcoNotes)
+  const showBackLink = showBack ?? (!isHome && !notesPage)
   const fullBleed = isFullBleed(pathname ?? '', chwaziMobile)
   const pearNav = isPearNavigator(pathname ?? '')
   const homeHref = '/'
@@ -97,7 +97,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
     )
   }
 
-  if (uvimcoNotes) {
+  if (notesPage) {
     return (
       <div
         className="flex h-dvh flex-col overflow-hidden"

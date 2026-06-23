@@ -257,7 +257,7 @@ src/
 - `score_awarded` (integer)
 - `submitted_at` (timestamptz)
 
-**Party games** (shared `party_rooms` + `party_players`; per-game tables — see `supabase-migration-party-games.sql`)
+**Party games** (shared `party_rooms` + `party_players`; per-game tables — see [`supabase/archive/legacy/supabase-migration-party-games.sql`](supabase/archive/legacy/supabase-migration-party-games.sql))
 
 - **`party_rooms`**: `pin`, `host_id`, `game_kind` (`quiplash` | `fibbage` | `eay`), `phase`, `round_index`, `step_index`, `deadline_at`, `settings` (jsonb), `version`, `max_players`, `last_activity`
 - **`party_players`**: `room_pin`, `player_id`, `name`, `score`, `joined_at`
@@ -470,7 +470,7 @@ src/
 - **Playwright** in `e2e/` — tests in `e2e/*.spec.ts`
 - **Coverage**: Home, navigation (all games on the main grid), Game24 (practice), Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Mental Obstacle Course, party games (Quip Clash, Fib It, Enough About You), **Connections** ([`e2e/connections.spec.ts`](e2e/connections.spec.ts) + in-memory [`e2e/helpers/connections-mock.ts`](e2e/helpers/connections-mock.ts)), Leaderboards, **Coming Soon API** ([`e2e/home-coming-soon-api.spec.ts`](e2e/home-coming-soon-api.spec.ts)). **Local**: Chromium + Mobile Chrome. **`CI=1` / `npm run test:e2e:ci`**: Chromium only (faster, less memory).
 - **Dev server**: Playwright starts `next dev` on **port 3001** by default (`PLAYWRIGHT_WEB_PORT`, `PLAYWRIGHT_BASE_URL` to override).
-- **Deployment-only E2E**: `npm run test:e2e:deployment` … **Notes layout/visual**: **`npm run test:e2e:uvimco-visual`**
+- **Deployment-only E2E**: `npm run test:e2e:deployment` … **Notes layout/visual**: **`npm run test:e2e:notes-visual`**
 - **Agent**: Use `/e2e-reviewer` when Playwright E2E tests are needed to confirm site functionality, fix failing tests, or iterate on improvements. Prefer Composer 1.5 for interactive sessions.
 
 ### MCP Servers
@@ -485,7 +485,7 @@ src/
 - Changes not live? Check Vercel build logs and confirm changes are on `main`.
 - Supabase issues? Verify `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local` and Vercel.
 - Two Supabase projects (personal vs class)? See [docs/SUPABASE_TWO_PROJECTS.md](docs/SUPABASE_TWO_PROJECTS.md).
-- **`supabase db push`** fails with “Remote migration versions not found in local migrations directory”? Run `supabase migration list --linked`. Versions **Remote-only** (not present in `supabase/migrations/`) block the push; mark them **`reverted`** only if they are obsolete vs this repo: `supabase migration repair --status reverted <version> ... --linked --yes`, then `supabase db push --linked --yes`. Root-level `supabase-migration-*.sql` files are **not** applied by `db push` (copy into `supabase/migrations/` or run in SQL Editor).
+- **`supabase db push`** fails with “Remote migration versions not found in local migrations directory”? Run `supabase migration list --linked`. Versions **Remote-only** block the push; mark them **`reverted`** if obsolete vs this repo, then repair **`applied`** for matching local versions — see [`supabase/README.md`](supabase/README.md). Legacy one-off SQL lives in **`supabase/archive/legacy/`** (not applied by `db push`).
 - Home **Coming Soon** “Save” errors about **`home_coming_soon_copy`** / schema cache / **row-level security**? Create the table from [`supabase/migrations/20260505120000_home_coming_soon_copy.sql`](supabase/migrations/20260505120000_home_coming_soon_copy.sql), then run [`supabase/migrations/20260505130000_home_coming_soon_copy_rls_policies.sql`](supabase/migrations/20260505130000_home_coming_soon_copy_rls_policies.sql). Set **`SUPABASE_SERVICE_ROLE_KEY`** on the server for **Save** (Vercel + `.env.local`). Use the same Supabase project as your URL/keys.
 - Still stale? Hard refresh cache (Cmd+Shift+R).
 
@@ -522,7 +522,9 @@ src/
 
 Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
 
-- **2026-06**: **Notes E2E hardening** — 3 QA cycles; tags/history/Ctrl+S/suffix-todo/highlight coverage; hints moved to bottom bar; `*highlight*` decorations fixed; italic disabled so `*` stays literal shorthand. — tags replace kind/domain pickers (editable catalog, toggle chips in top bar); auto domain inference; read-only created date + per-note history (save/sync/lookup); unified top + bottom bars; todo suffix `>`/`<` + `*highlight*`; Ctrl+S save/sync. See [docs/NOTES-DESIGN.md](docs/NOTES-DESIGN.md).
+- **2026-06**: **Notes legacy cleanup** — removed uvimco redirects, localStorage migration, npm script aliases, CodeMirror CSS classes; CSS renamed to `notes-*`; admin key `notes_admin_ok`.
+- **2026-06**: **Supabase layout** — legacy root `supabase-migration-*.sql` → [`supabase/archive/legacy/`](supabase/archive/legacy/); [`supabase/README.md`](supabase/README.md); Notes migration history repaired (local/remote aligned).
+- **2026-06**: **Notes E2E hardening** — 3 QA cycles; tags/history/Ctrl+S/suffix-todo/highlight coverage; hints in bottom bar; deploy E2E green on sfjc.dev. See [docs/NOTES-DESIGN.md](docs/NOTES-DESIGN.md).
 - **theme2 routes restored** at `/theme2` (game mirrors + home grid); archived copies remain under `src/app/_archive/theme2`. **Leaderboards** page copy updated to “parked for now” while focus stays on deeper projects (Veridian, etc.).
 - **Veridian whiteboard (canonical demo)**: **[sfjc.dev/veridian](https://sfjc.dev/veridian)** — Next.js local-first app proxied from [`sfjchen/veridian-whiteboard`](https://github.com/sfjchen/veridian-whiteboard). Not `www.veridian.fyi` (legacy Expo EdTech; redirects here). Added multi-agent reconciliation table in **[docs/VERIDIAN_WORKSPACE.md](docs/VERIDIAN_WORKSPACE.md)** so parallel Cursor chats don't mix Render/Supabase/Expo with the Vercel-only whiteboard.
 - **Veridian build isolation**: Parent `tsconfig.json` + `eslint.config.mjs` exclude `Veridian/**` so `npm run build` on Jon-fun no longer typechecks the nested whiteboard. Added **[docs/VERIDIAN_WORKSPACE.md](docs/VERIDIAN_WORKSPACE.md)** (three projects, envs, Supabase IDs, ports), plus nested **`Veridian/WORKING.md`** and **`Veridian/REMOTES.md`** (do not push whiteboard to `sfjchen/Veridian` EdTech fork).
