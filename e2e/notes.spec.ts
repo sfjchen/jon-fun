@@ -114,9 +114,13 @@ test.describe('Notes', () => {
     await page.keyboard.type('fund DPI?')
     await waitForNotesTrigger(page)
     await waitForLookupComplete(page)
+    await expect(page.getByTestId('notes-chat-thread')).toContainText('E2E mock answer', { timeout: 15_000 })
+
     await page.getByTestId('notes-followup-input').fill('How does it relate to TVPI?')
     await page.getByTestId('notes-followup-input').press('Enter')
-    await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15000 })
+    await expect(page.getByTestId('notes-chat-user')).toContainText('TVPI', { timeout: 5000 })
+    await expect(page.getByTestId('notes-chat-thread')).toContainText('E2E mock answer', { timeout: 15_000 })
+    await expect(page.getByTestId('notes-chat-assistant')).toHaveCount(2, { timeout: 15_000 })
   })
 
   test('cloud sync does not wipe in-flight lookup', async ({ page }) => {

@@ -3,12 +3,7 @@
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useEffect, useRef } from 'react'
-
-type AnswerStreamProps = {
-  text: string
-  isStreaming: boolean
-  error?: string | null
-}
+import type { Lookup, Message } from '@/lib/notes/types'
 
 const mdComponents = {
   h1: ({ children }: { children?: React.ReactNode }) => (
@@ -40,18 +35,54 @@ const mdComponents = {
   ),
 }
 
-export default function AnswerStream({ text, isStreaming, error }: AnswerStreamProps) {
+function AssistantBubble({ content, streaming }: { content: string; streaming?: boolean }) {
+  return (
+    <div className="mb-3 text-sm leading-relaxed text-[var(--uv-text-primary)]" data-testid="notes-chat-assistant">
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
+        {content}
+      </ReactMarkdown>
+      {streaming ? <span className="ml-0.5 inline-block animate-pulse text-[var(--uv-accent)]">▌</span> : null}
+    </div>
+  )
+}
+
+function UserBubble({ content }: { content: string }) {
+  return (
+    <div
+      className="mb-2 ml-4 rounded-lg border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] px-2.5 py-1.5 text-[11px] leading-relaxed text-[var(--uv-text-secondary)]"
+      data-testid="notes-chat-user"
+    >
+      {content}
+    </div>
+  )
+}
+
+type LookupConversationProps = {
+  lookup: Lookup | null
+  streamText: string
+  isStreaming: boolean
+  error?: string | null
+}
+
+export default function LookupConversation({
+  lookup,
+  streamText,
+  isStreaming,
+  error,
+}: LookupConversationProps) {
   const ref = useRef<HTMLDivElement>(null)
+  const messages = lookup?.conversation ?? []
 
   useEffect(() => {
-    ref.current?.scrollTo({ top: ref.current.scrollHeight })
-  }, [text])
+    ref.current?.scrollTo({ top: ref.current.scrollHeight, behavior: 'smooth' })
+  }, [messages.length, streamText, isStreaming])
 
   if (error) {
     return <p className="text-sm text-amber-900">{error}</p>
   }
 
-  if (!text && !isStreaming) {
+  const empty = messages.length === 0 && !isStreaming && !streamText
+  if (empty) {
     return (
       <p className="text-sm leading-relaxed text-[var(--uv-text-secondary)]">
         End a line with <code className="text-[var(--uv-accent-strong)]">?</code> or{' '}
@@ -61,11 +92,19 @@ export default function AnswerStream({ text, isStreaming, error }: AnswerStreamP
   }
 
   return (
-    <div ref={ref} className="max-h-72 overflow-y-auto text-sm leading-relaxed text-[var(--uv-text-primary)]">
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
-        {text}
-      </ReactMarkdown>
-      {isStreaming ? <span className="ml-0.5 inline-block animate-pulse text-[var(--uv-accent)]">▌</span> : null}
+    <div
+      ref={ref}
+      className="max-h-[min(50vh,28rem)] min-h-[4rem] overflow-y-auto"
+      data-testid="notes-chat-thread"
+    >
+      {messages.map((m: Message, i) =>
+        m.role === 'user' ? (
+          <UserBubble key={`u-${i}`} content={m.content} />
+        ) : (
+          <AssistantBubble key={`a-${i}`} content={m.content} />
+        ),
+      )}
+      {isStreaming ? <AssistantBubble content={streamText} streaming /> : null}
     </div>
   )
 }
