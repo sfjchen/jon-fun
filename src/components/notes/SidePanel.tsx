@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from 'react'
 import type { Lookup, NoteHistoryEntry, NoteSession, Screenshot } from '@/lib/notes/types'
 import { isLookupStreaming, type LookupStreamMap } from '@/lib/notes/lookupStreams'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
-import AnswerStream from './AnswerStream'
+import LookupConversation from './LookupConversation'
 import CollapsibleSection from './CollapsibleSection'
 import SyncPanel from './SyncPanel'
 import GlossaryPanel from './GlossaryPanel'
@@ -39,7 +39,7 @@ type SidePanelProps = {
   focusedLookup: Lookup | null
   sessionHistory: Lookup[]
   streamByLookupId: LookupStreamMap
-  displayText: string
+  streamText: string
   displayStreaming: boolean
   displayError: string | null
   aiActiveCount: number
@@ -75,7 +75,7 @@ export default function SidePanel({
   focusedLookup,
   sessionHistory,
   streamByLookupId,
-  displayText,
+  streamText,
   displayStreaming,
   displayError,
   aiActiveCount,
@@ -181,14 +181,19 @@ export default function SidePanel({
           {aiListOpen ? (
             <>
               {focusedLookup ? (
-                <div className="mb-3">
-                  <p className="mb-1.5 text-[11px] text-[var(--uv-text-secondary)]">
+                <div className="mb-3 flex min-h-0 flex-col">
+                  <p className="mb-1.5 shrink-0 text-[11px] text-[var(--uv-text-secondary)]">
                     {lookupLabel(focusedLookup)}
                   </p>
-                  <AnswerStream text={displayText} isStreaming={displayStreaming} error={displayError} />
+                  <LookupConversation
+                    lookup={focusedLookup}
+                    streamText={streamText}
+                    isStreaming={displayStreaming}
+                    error={displayError}
+                  />
                 </div>
               ) : (
-                <AnswerStream text="" isStreaming={false} error={displayError} />
+                <LookupConversation lookup={null} streamText="" isStreaming={false} error={displayError} />
               )}
 
               {focusedLookup && !displayStreaming ? (

@@ -8,7 +8,6 @@ import {
   anyStreaming,
   emptyStream,
   isLookupStreaming,
-  streamTextFor,
   type LookupStreamMap,
 } from '@/lib/notes/lookupStreams'
 import { pushGlossaryToServer, syncMemoryBank } from '@/lib/notes/memorySync'
@@ -653,9 +652,7 @@ export default function NotesApp() {
   const focusedLookup =
     state.currentLookup ??
     (focusedId ? state.sessionHistory.find((l) => l.id === focusedId) ?? null : null)
-  const convAns =
-    [...(focusedLookup?.conversation ?? [])].reverse().find((m) => m.role === 'assistant')?.content ?? ''
-  const displayText = streamTextFor(state.streamByLookupId, focusedId, convAns)
+  const streamText = focusedId ? (state.streamByLookupId[focusedId]?.text ?? '') : ''
   const displayStreaming = focusedId ? isLookupStreaming(state.streamByLookupId, focusedId) : false
   const displayError = focusedId ? (state.streamByLookupId[focusedId]?.error ?? null) : null
 
@@ -702,7 +699,7 @@ export default function NotesApp() {
           focusedLookup={focusedLookup}
           sessionHistory={state.sessionHistory}
           streamByLookupId={state.streamByLookupId}
-          displayText={displayText}
+          streamText={streamText}
           displayStreaming={displayStreaming}
           displayError={displayError}
           aiActiveCount={aiActiveCount}

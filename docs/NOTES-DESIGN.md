@@ -41,6 +41,7 @@ Other shorthand: suffix `>` / `<` todo (or legacy prefix `>`), `*highlight*` spa
 
 - **Core meaning** — plain English + domain context (UVIMCO endowment when that domain is active); intuitive, direct; no "Intent" or separate "angle" block
 - **Typical ranges** — only for metrics/ratios/variables: common magnitudes and what they signal (omit for non-numeric terms)
+- Panel renders full **conversation thread** (user follow-ups + assistant replies stack downward; streaming appends at bottom)
 - Panel renders via markdown component (styled labels; no raw `#`/`*` from model)
 - **Sources** and **glossary** injection in prompt
 
