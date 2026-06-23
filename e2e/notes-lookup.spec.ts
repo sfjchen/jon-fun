@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { notesEditor, waitForNotesEditor } from './helpers/notes-mock'
+import { notesEditor, waitForNotesEditor, waitForNotesTrigger } from './helpers/notes-mock'
 
 /**
  * Real AI lookup on deployed sfjc.dev (no lookup API mock).
@@ -35,12 +35,13 @@ test.describe('Notes AI lookup (deploy)', () => {
     await editor.click()
     const stream = waitForLookupStream(page)
     await page.keyboard.type('fund DPI ratio?')
+    await waitForNotesTrigger(page)
     await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 15_000 })
     await stream
     await expect(page.getByTestId('notes-side-panel')).toContainText(/DPI|distribution|paid-in|capital/i, {
       timeout: 45_000,
     })
-    await expect(page.getByTestId('notes-side-panel')).toContainText(/Core meaning/i, { timeout: 5000 })
+    await expect(page.getByTestId('notes-side-panel')).toContainText(/Core meaning/i, { timeout: 45_000 })
   })
 
   test('section ending with ?? opens panel and streams answer', async ({ page }) => {

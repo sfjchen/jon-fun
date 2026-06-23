@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 
-const ADMIN_KEY = 'uvimco_notes_admin_ok'
+const ADMIN_KEY = 'notes_admin_ok'
 
 type SessionRow = {
   user_id: string

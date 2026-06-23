@@ -1,6 +1,6 @@
 import { Extension } from '@tiptap/core'
 
-/** Google Docs-style shortcuts matching legacy CodeMirror editor. */
+/** Google Docs-style shortcuts for the Notes editor. */
 export const notesKeymap = Extension.create({
   name: 'notesKeymap',
   addKeyboardShortcuts() {

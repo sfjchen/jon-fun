@@ -111,4 +111,3 @@ export async function waitForLookupComplete(page: Page): Promise<void> {
 }
 
 export const SESSIONS_KEY = 'notes_sessions'
-export const LEGACY_SESSIONS_KEY = 'uvimco_notes_sessions'

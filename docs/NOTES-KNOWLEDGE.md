@@ -65,13 +65,6 @@ Add your own via **+ Paste doc** (IPS, memos, book notes). Prefer short, structu
 3. Add tag hints users can apply to notes  
 4. No route renames required
 
-## Legacy redirects (2026-06-23)
-
-- `/games/uvimco-notes` → `/games/notes`
-- `/api/uvimco-notes/*` → `/api/notes/*`
-- Supabase table: `note_sessions` (was `uvimco_note_sessions`)
-- localStorage: `notes_*` keys; `uvimco_notes_*` auto-migrate on load
-
 ## Changelog
 
 - **2026-06-23**: Paths renamed to `notes/*`; enriched pack content; all packs on by default; RAG via `/api/notes/embed`.

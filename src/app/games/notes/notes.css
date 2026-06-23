@@ -1,4 +1,4 @@
-.uvimco-notes-layout {
+.notes-layout {
   height: 100%;
   min-height: 0;
   flex: 1 1 auto;
@@ -26,7 +26,7 @@
   background: var(--uv-bg-base);
 }
 
-.uvimco-notes-root {
+.notes-root {
   height: 100%;
   min-height: 0;
   flex: 1 1 auto;
@@ -34,51 +34,46 @@
   flex-direction: column;
 }
 
-.uvimco-notes-root .tiptap-trigger-line {
+.notes-root .tiptap-trigger-line {
   border-bottom: 2px solid var(--uv-accent);
   color: var(--uv-accent-strong);
   font-weight: 500;
 }
 
-.uvimco-notes-root .tiptap-trigger-active {
+.notes-root .tiptap-trigger-active {
   background: var(--uv-accent-dim);
   border-radius: 3px;
 }
 
-.uvimco-notes-root .tiptap-action-line {
+.notes-root .tiptap-action-line {
   border-left: 2px solid var(--uv-accent);
   padding-left: 0.35rem;
 }
 
-.uvimco-notes-root .tiptap-highlight-span,
-.uvimco-notes-root .cm-highlight-span {
+.notes-root .tiptap-highlight-span {
   background: var(--uv-accent-dim);
   font-weight: 500;
   border-radius: 2px;
 }
 
-.uvimco-notes-root .cm-action-line {
-  border-left: 2px solid var(--uv-accent);
-}
-
-.uvimco-notes-root ::-webkit-scrollbar {
+.notes-root ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
-.uvimco-notes-root ::-webkit-scrollbar-thumb {
+.notes-root ::-webkit-scrollbar-thumb {
   background: var(--uv-border-hover);
   border-radius: 3px;
 }
 
-.uvimco-notes-editor-pane {
+.notes-editor-pane {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
   min-height: 0;
 }
 
-.uvimco-notes-editor-body {
+.notes-editor-body {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -205,7 +200,7 @@
   background: var(--uv-bg-sidebar);
 }
 
-.uvimco-meeting-active {
+.notes-meeting-active {
   background: var(--uv-bg-hover);
   font-weight: 600;
 }

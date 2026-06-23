@@ -259,7 +259,7 @@ export default function SidePanel({
                       onClick={() => onSelectMeeting(s)}
                       className={`min-w-0 flex-1 truncate rounded px-2 py-1.5 text-left text-xs ${
                         active
-                          ? 'uvimco-meeting-active text-[var(--uv-text-primary)]'
+                          ? 'notes-meeting-active text-[var(--uv-text-primary)]'
                           : 'text-[var(--uv-text-secondary)] hover:bg-[var(--uv-bg-hover)]'
                       }`}
                     >

@@ -42,8 +42,6 @@ e2e/helpers/notes-mock.ts     mock API + editor helpers
 | `notes_ui_prefs` | Panel width, open sections |
 | `notes_glossary` / `notes_sources` | Memory bank (local) |
 
-Legacy `uvimco_notes_*` keys migrate on load.
-
 ## Verify loop (run after Notes changes)
 
 **Cycle A — unit (fast):**
@@ -75,7 +73,7 @@ npm run smoke:notes-llm
 1. **Reintroducing CodeMirror** — `NoteEditor.tsx` / `cmDecorations.ts` are deleted; editor is Tiptap-only.
 2. **Restore overwrite** — `SyncPanel` calls `onSynced({ skipPersist: true })`; `refreshFromServer` must use `loadActiveSession()` not in-memory id only.
 3. **Screenshot paste = text only** — must insert `noteAttachment` node + `SCREENSHOT` reducer action.
-4. **E2E editor selector** — `[data-testid="notes-tiptap-editor"] .ProseMirror` only (not `.uvimco-cm`).
+4. **E2E editor selector** — `[data-testid="notes-tiptap-editor"] .ProseMirror` only.
 5. **Supabase migrations** — apply via MCP `apply_migration`; project `nzviiorrlsdtwzvzodpg`.
 6. **Large screenshots** — `stripScreenshotsForSync` drops base64 >200KB from cloud push (local kept).
 7. **E2E flake** — kill `:3001`; if 500/`routes-manifest.json` missing: `rm -rf .next && npm run build`; `waitForNotesEditor` auto-reloads once.

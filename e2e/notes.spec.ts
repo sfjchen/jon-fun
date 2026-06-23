@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test'
 
 import {
-  LEGACY_SESSIONS_KEY,
   mockNotesApi,
   notesEditor,
   SESSIONS_KEY,
@@ -25,10 +24,6 @@ test.describe('Notes', () => {
         localStorage.removeItem('notes_ui_prefs')
         localStorage.removeItem('notes_glossary')
         localStorage.removeItem('notes_sources')
-        localStorage.removeItem('uvimco_notes_sessions')
-        localStorage.removeItem('uvimco_notes_active_session_id')
-        localStorage.removeItem('uvimco_notes_user_id')
-        localStorage.removeItem('uvimco_notes_sync_key')
       } catch {
         /* ignore */
       }
@@ -203,39 +198,6 @@ test.describe('Notes', () => {
     await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 5000 })
     await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15000 })
     await expect(page.getByTestId('notes-ai-section')).toContainText(/MOIC|TVPI/)
-  })
-
-  test('/games/uvimco-notes redirects to /games/notes', async ({ page }) => {
-    await page.goto('/games/uvimco-notes')
-    await expect(page).toHaveURL(/\/games\/notes/)
-    await expect(page.getByTestId('notes-editor')).toBeVisible({ timeout: 15000 })
-  })
-
-  test('legacy localStorage keys migrate on load', async ({ page }) => {
-    await page.addInitScript(({ legacyKey, legacyActive, title }) => {
-      localStorage.removeItem('notes_sessions')
-      localStorage.removeItem('notes_active_session_id')
-      localStorage.removeItem('notes_user_id')
-      const session = {
-        id: 'legacy-migrate',
-        title,
-        notes: 'legacy body',
-        tags: [],
-        lookups: [],
-        screenshots: {},
-        startedAt: '2026-01-01T00:00:00.000Z',
-        updatedAt: '2026-01-01T00:00:00.000Z',
-      }
-      localStorage.setItem(legacyKey, JSON.stringify([session]))
-      localStorage.setItem(legacyActive, session.id)
-    }, { legacyKey: LEGACY_SESSIONS_KEY, legacyActive: 'uvimco_notes_active_session_id', title: 'Note Jan 1, 2026' })
-
-    await page.goto('/games/notes')
-    await expect(page.getByTestId('notes-meeting-title')).toHaveValue('Note Jan 1, 2026')
-    await expect(notesEditor(page)).toContainText('legacy body')
-
-    const migrated = await page.evaluate((key) => localStorage.getItem(key), SESSIONS_KEY)
-    expect(migrated).toContain('legacy-migrate')
   })
 
   test('shorthand hints toggle', async ({ page }) => {

@@ -6,11 +6,6 @@ import { normalizeSessionTitle } from './prefs'
 import { parseTodoLine } from './shorthand'
 import type { NoteSession, Screenshot } from './types'
 
-const LEGACY_USER_ID = 'uvimco_notes_user_id'
-const LEGACY_SYNC_KEY = 'uvimco_notes_sync_key'
-const LEGACY_SESSIONS = 'uvimco_notes_sessions'
-const LEGACY_ACTIVE = 'uvimco_notes_active_session_id'
-
 const USER_ID_KEY = 'notes_user_id'
 const SYNC_KEY = 'notes_sync_key'
 export const SESSIONS_KEY = 'notes_sessions'
@@ -18,20 +13,6 @@ const ACTIVE_SESSION_KEY = 'notes_active_session_id'
 
 const PUSH_RETRIES = 3
 const RETRY_DELAY_MS = 500
-
-function migrateLegacyKeys(): void {
-  if (typeof window === 'undefined') return
-  const pairs: [string, string][] = [
-    [LEGACY_USER_ID, USER_ID_KEY],
-    [LEGACY_SYNC_KEY, SYNC_KEY],
-    [LEGACY_SESSIONS, SESSIONS_KEY],
-    [LEGACY_ACTIVE, ACTIVE_SESSION_KEY],
-  ]
-  for (const [oldK, newK] of pairs) {
-    const v = localStorage.getItem(oldK)
-    if (v && !localStorage.getItem(newK)) localStorage.setItem(newK, v)
-  }
-}
 
 function genUuid(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
@@ -44,7 +25,6 @@ function genUuid(): string {
 
 export function getOrCreateUserId(): string {
   if (typeof window === 'undefined') return ''
-  migrateLegacyKeys()
   let id = localStorage.getItem(USER_ID_KEY)
   if (!id) {
     id = genUuid()
@@ -55,13 +35,11 @@ export function getOrCreateUserId(): string {
 
 export function getSyncKey(): string {
   if (typeof window === 'undefined') return ''
-  migrateLegacyKeys()
   return localStorage.getItem(SYNC_KEY) ?? ''
 }
 
 export function setSyncKey(key: string): void {
   if (typeof window === 'undefined') return
-  migrateLegacyKeys()
   if (key.trim()) localStorage.setItem(SYNC_KEY, key.trim())
   else localStorage.removeItem(SYNC_KEY)
 }
@@ -110,7 +88,6 @@ function withNormalizedTitles(sessions: NoteSession[]): NoteSession[] {
 
 export function loadSessions(): NoteSession[] {
   if (typeof window === 'undefined') return []
-  migrateLegacyKeys()
   const raw = localStorage.getItem(SESSIONS_KEY)
   if (!raw) return []
   try {
@@ -127,19 +104,16 @@ export function loadSessions(): NoteSession[] {
 
 export function saveSessionsLocal(sessions: NoteSession[]): void {
   if (typeof window === 'undefined') return
-  migrateLegacyKeys()
   localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions))
 }
 
 export function getActiveSessionId(): string | null {
   if (typeof window === 'undefined') return null
-  migrateLegacyKeys()
   return localStorage.getItem(ACTIVE_SESSION_KEY)
 }
 
 export function setActiveSessionId(id: string): void {
   if (typeof window === 'undefined') return
-  migrateLegacyKeys()
   localStorage.setItem(ACTIVE_SESSION_KEY, id)
 }
 
