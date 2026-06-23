@@ -3,8 +3,16 @@
  */
 
 import { normalizeSessionTitle } from './prefs'
+import {
+  FOLDERS_VAULT_SESSION_ID,
+  foldersToVaultNotes,
+  loadFolders,
+  mergeFolders,
+  parseFoldersFromVaultNotes,
+  saveFolders,
+} from './folders'
 import { parseTodoLine } from './shorthand'
-import type { NoteSession, Screenshot } from './types'
+import type { NoteFolder, NoteSession, Screenshot } from './types'
 
 const USER_ID_KEY = 'notes_user_id'
 const SYNC_KEY = 'notes_sync_key'
@@ -49,7 +57,7 @@ export function getEffectiveUserId(): string {
   return sk || getOrCreateUserId()
 }
 
-export function createEmptySession(title?: string): NoteSession {
+export function createEmptySession(title?: string, folderId?: string | null): NoteSession {
   const now = new Date().toISOString()
   const defaultTitle = title ?? ''
   return {
@@ -57,7 +65,7 @@ export function createEmptySession(title?: string): NoteSession {
     title: defaultTitle,
     notes: '',
     tags: [],
-    metadata: {},
+    metadata: folderId ? { folderId } : {},
     lookups: [],
     screenshots: {},
     startedAt: now,
@@ -80,8 +88,45 @@ function normalizeSession(s: NoteSession): NoteSession {
   }
 }
 
+function stripVaultRows(sessions: NoteSession[]): NoteSession[] {
+  return sessions.filter((s) => s.id !== FOLDERS_VAULT_SESSION_ID)
+}
+
+function vaultRowFromFolders(folders: NoteFolder[]): NoteSession {
+  const now = new Date().toISOString()
+  return {
+    id: FOLDERS_VAULT_SESSION_ID,
+    title: '',
+    notes: foldersToVaultNotes(folders),
+    tags: [],
+    metadata: {},
+    lookups: [],
+    screenshots: {},
+    startedAt: now,
+    updatedAt: now,
+  }
+}
+
+function foldersFromSessions(sessions: NoteSession[]): NoteFolder[] {
+  const row = sessions.find((s) => s.id === FOLDERS_VAULT_SESSION_ID)
+  return row ? parseFoldersFromVaultNotes(row.notes) : []
+}
+
+export function syncFoldersFromSessions(sessions: NoteSession[]): NoteFolder[] {
+  const remote = foldersFromSessions(sessions)
+  const local = loadFolders()
+  const merged = mergeFolders(local, remote)
+  saveFolders(merged)
+  return merged
+}
+
+export function sessionsForPush(sessions: NoteSession[]): NoteSession[] {
+  const folders = loadFolders()
+  return [...stripVaultRows(sessions), vaultRowFromFolders(folders)]
+}
+
 function withNormalizedTitles(sessions: NoteSession[]): NoteSession[] {
-  return sessions.map(normalizeSession)
+  return stripVaultRows(sessions.map(normalizeSession))
 }
 
 export function loadSessions(): NoteSession[] {
@@ -155,7 +200,9 @@ export async function restoreFromServer(userId: string): Promise<{ restored: num
   if (typeof window === 'undefined') return { restored: 0 }
   const key = userId.trim()
   if (!key) return { restored: 0, error: 'Enter sync key or user ID' }
-  const remote = await fetchSessionsFromServerForUser(key)
+  const remoteRaw = await fetchRawSessionsFromServer(key)
+  syncFoldersFromSessions(remoteRaw)
+  const remote = withNormalizedTitles(remoteRaw)
   if (remote.length === 0) {
     const res = await fetch(`/api/notes/sessions?userId=${encodeURIComponent(key)}`)
     if (!res.ok) return { restored: 0, error: 'Failed to fetch' }
@@ -167,20 +214,21 @@ export async function restoreFromServer(userId: string): Promise<{ restored: num
   return { restored: remote.length }
 }
 
-async function fetchSessionsFromServerForUser(userId: string): Promise<NoteSession[]> {
+async function fetchRawSessionsFromServer(userId: string): Promise<NoteSession[]> {
   const res = await fetch(`/api/notes/sessions?userId=${encodeURIComponent(userId)}`)
   if (!res.ok) return []
   const data = (await res.json()) as { sessions?: NoteSession[] }
-  return Array.isArray(data.sessions) ? withNormalizedTitles(data.sessions) : []
+  return Array.isArray(data.sessions) ? data.sessions.map(normalizeSession) : []
 }
 
 export async function fetchSessionsFromServer(): Promise<NoteSession[]> {
-  return fetchSessionsFromServerForUser(getEffectiveUserId())
+  return withNormalizedTitles(await fetchRawSessionsFromServer(getEffectiveUserId()))
 }
 
 async function pushWithRetry(sessions: NoteSession[]): Promise<boolean> {
   const userId = getEffectiveUserId()
-  const slim = sessions.map((s) => ({
+  const toSend = sessionsForPush(sessions)
+  const slim = toSend.map((s) => ({
     ...s,
     screenshots: stripScreenshotsForSync(s.screenshots),
   }))
@@ -197,11 +245,16 @@ async function pushWithRetry(sessions: NoteSession[]): Promise<boolean> {
   return false
 }
 
+export async function pushAllToServer(): Promise<boolean> {
+  return pushWithRetry(loadSessions())
+}
+
 export async function syncWithServer(): Promise<{ sessions: NoteSession[]; pushOk: boolean }> {
   if (typeof window === 'undefined') return { sessions: loadSessions(), pushOk: true }
   const local = loadSessions()
-  const remote = await fetchSessionsFromServer()
-  const merged = mergeSessions(local, remote)
+  const remoteRaw = await fetchRawSessionsFromServer(getEffectiveUserId())
+  syncFoldersFromSessions([...local, ...remoteRaw])
+  const merged = mergeSessions(local, remoteRaw)
   const mergedJson = JSON.stringify(merged)
   if (localStorage.getItem(SESSIONS_KEY) !== mergedJson) {
     saveSessionsLocal(merged)

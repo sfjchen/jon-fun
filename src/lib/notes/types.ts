@@ -26,6 +26,16 @@ export interface NoteMetadata {
   kind?: NoteKind
   /** Auto-inferred domain id (never user-picked) */
   inferredDomain?: import('./knowledge/registry').KnowledgeDomainId
+  /** Vault folder id; omit = Inbox */
+  folderId?: string | null
+}
+
+export interface NoteFolder {
+  id: string
+  name: string
+  parentId: string | null
+  sortOrder: number
+  createdAt: string
 }
 
 export interface Message {
