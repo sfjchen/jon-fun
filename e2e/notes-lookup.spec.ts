@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { notesEditor, waitForNotesEditor } from './helpers/notes-mock'
 
 /**
  * Real AI lookup on deployed sfjc.dev (no lookup API mock).
@@ -26,11 +27,11 @@ test.describe('Notes AI lookup (deploy)', () => {
       localStorage.removeItem('notes_ui_prefs')
     })
     await page.goto('/games/notes')
-    await page.waitForSelector('.uvimco-cm .cm-content', { timeout: 20_000 })
+    await waitForNotesEditor(page)
   })
 
   test('line ending with ? opens panel and streams answer', async ({ page }) => {
-    const editor = page.locator('.uvimco-cm .cm-content')
+    const editor = notesEditor(page)
     await editor.click()
     const stream = waitForLookupStream(page)
     await page.keyboard.type('fund DPI ratio?')
@@ -43,7 +44,7 @@ test.describe('Notes AI lookup (deploy)', () => {
   })
 
   test('section ending with ?? opens panel and streams answer', async ({ page }) => {
-    const editor = page.locator('.uvimco-cm .cm-content')
+    const editor = notesEditor(page)
     await editor.click()
     const stream = waitForLookupStream(page)
     await page.keyboard.type('LP stakes in fund')

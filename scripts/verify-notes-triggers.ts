@@ -3,6 +3,9 @@
  *   npm run verify:notes-triggers
  */
 import { detectLineTriggers, countShorthandFlags } from '../src/lib/notes/triggerParser'
+import { postprocessTodoMarkdown, preprocessTodoMarkdown, mergeTodoLinesIntoMarkdown } from '../src/lib/notes/tiptap/editorCoords'
+import { collectTodos } from '../src/lib/notes/rollup'
+import type { NoteSession } from '../src/lib/notes/types'
 
 type Case = {
   label: string
@@ -74,6 +77,50 @@ if (flags.flags !== 1 || flags.actions !== 1) {
   console.error('✗ countShorthandFlags', flags)
 } else {
   console.log('✓ countShorthandFlags')
+}
+
+const todoMd = '> follow up IC\nplain line'
+const escaped = preprocessTodoMarkdown(todoMd)
+if (!escaped.includes('\\>')) {
+  failed++
+  console.error('✗ preprocessTodoMarkdown should escape >')
+} else {
+  console.log('✓ preprocessTodoMarkdown')
+}
+
+const restored = postprocessTodoMarkdown(escaped)
+if (restored !== todoMd) {
+  failed++
+  console.error('✗ postprocessTodoMarkdown round-trip', restored)
+} else {
+  console.log('✓ postprocessTodoMarkdown round-trip')
+}
+
+const merged = mergeTodoLinesIntoMarkdown('> follow up IC\nplain', 'follow up IC\nplain')
+if (!merged.startsWith('> follow up IC')) {
+  failed++
+  console.error('✗ mergeTodoLinesIntoMarkdown', merged)
+} else {
+  console.log('✓ mergeTodoLinesIntoMarkdown')
+}
+
+const todos = collectTodos([
+  {
+    id: '1',
+    title: 'Test',
+    notes: '> follow up IC memo',
+    tags: [],
+    lookups: [],
+    screenshots: {},
+    startedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  } satisfies NoteSession,
+])
+if (todos.length !== 1 || todos[0]!.text !== 'follow up IC memo') {
+  failed++
+  console.error('✗ collectTodos from > line', todos)
+} else {
+  console.log('✓ collectTodos from > line')
 }
 
 if (failed > 0) {

@@ -65,14 +65,17 @@ Same model as **One Sentence Everyday** / daily-learn:
 - **Restore** after cache clear: enter sync key or device ID → pull from server
 - Push on load, debounced save, periodic sync (5m / 1h), visibility sync
 
-Data lives on Supabase under `uvimco_note_sessions` (+ `notes_sources`, `notes_glossary` in Phase 2).
+Data lives on Supabase under `note_sessions` (+ `notes_sources`, `notes_glossary`).
 
 ## UI principles
 
-- Notion-like light theme, Lato, high contrast body text
-- Full-width editor default; **resizable** right panel
-- Ctrl shortcuts (Windows): `\` panel, `Shift+F` search, `K` summarize, `S` export, `Shift+N` new note
-- Mobile: panel overlays; editor stays primary
+- **Editor-first** — full-width CodeMirror default; panel for AI + vault utilities
+- **Panel order (top→bottom):** AI lookup → Notes list → Glossary → Sources → Rollup → Sync & backup (collapsed)
+- **Parallel AI** — multiple `?`/`??` triggers run concurrently; status bar shows active count; history shows streaming dots
+- **Sync rare** — collapsed under “Sync & backup”; expand only when setting key or restore
+- Notion-like light theme, Lato; Ctrl `\` panel, `Shift+F` search, `K` summarize, `S` export, `Shift+N` new note
+- **Editor:** CodeMirror default ([`EditorShell`](../../src/components/notes/EditorShell.tsx)); Tiptap WYSIWYG (What You See Is What You Get) opt-in via `NEXT_PUBLIC_NOTES_WYSIWYG=1` — faster plain-text capture vs rich formatting when needed
+- **Models (Jun 2026):** lookup `google/gemini-2.5-flash-lite`; decode/follow-up/images `gemini-2.5-flash`; embed `gemini-embedding-001`
 
 ## E2E test matrix
 
@@ -95,7 +98,7 @@ Mock helper: `e2e/helpers/notes-mock.ts` — stubs `/api/notes/*` including embe
 |-------|-------|-----------|
 | **1** | Triggers, search, sync UI, metadata, render, glossary, rollup, panel resize | E2E + deploy lookup/sync pass |
 | **2** | Sources memory bank, context assembler, RAG, Supabase glossary/sources | Sources in AI context; search finds chats |
-| **3** | Tiptap WYSIWYG (feature flag) | Bold without `****`; triggers work in rich text |
+| **3** | Tiptap WYSIWYG (feature flag) | Bold without `****`; triggers work; markdown round-trip; E2E green |
 
 ## Changelog
 
@@ -103,4 +106,5 @@ Mock helper: `e2e/helpers/notes-mock.ts` — stubs `/api/notes/*` including embe
 - **2026-06-22**: Phase 2 — sources/glossary tables, context assembler, Sources UI.
 - **2026-06-22**: Knowledge layer — domain packs, auto-sectioning, generalizable prompts ([NOTES-KNOWLEDGE.md](./NOTES-KNOWLEDGE.md)).
 - **2026-06-22**: AI response format — Core meaning + Typical ranges (removed Intent/angle/follow-up split).
-- **2026-06-23**: Rename to `notes/*` routes; RAG embed; E2E renamed (`e2e/notes*.spec.ts`), legacy redirect + storage migration tests.
+- **2026-06-23**: Parallel AI lookups; panel UX reorder; sync/glossary/sources collapsed; restore no longer overwritten by stale in-memory session; SSE `[DONE]` completes streams in mock E2E.
+- **2026-06-23**: Editor — CodeMirror default; Tiptap opt-in (`NEXT_PUBLIC_NOTES_WYSIWYG=1`); dual-path E2E helpers.

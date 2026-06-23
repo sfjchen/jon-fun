@@ -1,8 +1,9 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { forwardRef } from 'react'
-import type { NoteEditorHandle } from './NoteEditor'
+import { forwardRef, type Ref } from 'react'
+import type { NoteEditorHandle as CmHandle } from './NoteEditor'
+import type { NoteEditorHandle as TiptapHandle } from './TiptapNoteEditor'
 import type { TriggerType } from '@/lib/notes/types'
 
 const CodeMirrorEditor = dynamic(() => import('./NoteEditor'), { ssr: false })
@@ -18,18 +19,13 @@ type EditorShellProps = {
   activeTriggerQuery: string | null
 }
 
+export type NoteEditorHandle = CmHandle | TiptapHandle
+
 const EditorShell = forwardRef<NoteEditorHandle, EditorShellProps>(function EditorShell(props, ref) {
   if (useWysiwyg) {
-    return (
-      <TiptapEditor
-        value={props.value}
-        onChange={props.onChange}
-        onTrigger={props.onTrigger}
-        onScreenshotPaste={props.onScreenshotPaste}
-      />
-    )
+    return <TiptapEditor ref={ref as Ref<TiptapHandle>} {...props} />
   }
-  return <CodeMirrorEditor ref={ref} {...props} />
+  return <CodeMirrorEditor ref={ref as Ref<CmHandle>} {...props} />
 })
 
 export default EditorShell

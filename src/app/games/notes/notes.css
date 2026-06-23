@@ -34,26 +34,27 @@
   flex-direction: column;
 }
 
-.uvimco-notes-root .cm-trigger-term {
+.uvimco-notes-root .tiptap-trigger-line {
   border-bottom: 2px solid var(--uv-accent);
   color: var(--uv-accent-strong);
+  font-weight: 500;
 }
 
-.uvimco-notes-root .cm-trigger-active {
+.uvimco-notes-root .tiptap-trigger-active {
   background: var(--uv-accent-dim);
   border-radius: 3px;
 }
 
-.uvimco-notes-root .cm-action-line {
+.uvimco-notes-root .tiptap-action-line {
   color: var(--uv-action);
 }
 
-.uvimco-notes-root .cm-key-line {
+.uvimco-notes-root .tiptap-key-line {
   color: var(--uv-key);
   font-weight: 700;
 }
 
-.uvimco-notes-root .cm-approx-line {
+.uvimco-notes-root .tiptap-approx-line {
   color: var(--uv-approx);
   font-style: italic;
 }
@@ -82,22 +83,78 @@
   min-height: 0;
 }
 
-.uvimco-cm {
+.notes-tiptap-wrap {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
-.uvimco-cm .cm-editor {
+.notes-tiptap-wrap .tiptap {
   flex: 1 1 auto;
-  height: 100% !important;
   min-height: 12rem;
+  outline: none;
+  font-family: var(--font-lato), 'Lato', sans-serif;
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--uv-text-primary);
+  caret-color: var(--uv-text-primary);
 }
 
-.uvimco-cm .cm-scroller {
-  flex: 1 1 auto;
-  min-height: 12rem;
+.notes-tiptap-wrap .tiptap p {
+  margin: 0.15em 0;
+}
+
+.notes-tiptap-wrap .tiptap h1 {
+  font-size: 1.75em;
+  font-weight: 700;
+  margin: 0.6em 0 0.25em;
+  line-height: 1.3;
+}
+
+.notes-tiptap-wrap .tiptap h2 {
+  font-size: 1.35em;
+  font-weight: 600;
+  margin: 0.5em 0 0.2em;
+  line-height: 1.35;
+}
+
+.notes-tiptap-wrap .tiptap h3 {
+  font-size: 1.15em;
+  font-weight: 600;
+  margin: 0.4em 0 0.15em;
+}
+
+.notes-tiptap-wrap .tiptap ul,
+.notes-tiptap-wrap .tiptap ol {
+  padding-left: 1.5em;
+  margin: 0.25em 0;
+}
+
+.notes-tiptap-wrap .tiptap li {
+  margin: 0.1em 0;
+}
+
+.notes-tiptap-wrap .tiptap a {
+  color: var(--uv-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.notes-tiptap-wrap .tiptap p.is-editor-empty:first-child::before {
+  color: var(--uv-text-muted);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.notes-tiptap-wrap .ProseMirror-selectednode {
+  outline: none;
+}
+
+.notes-tiptap-wrap .ProseMirror ::selection {
+  background: rgba(35, 131, 226, 0.18);
 }
 
 .uvimco-meeting-active {

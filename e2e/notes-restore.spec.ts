@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { notesEditor, waitForNotesEditor } from './helpers/notes-mock'
 
 test.describe('Notes sync restore (mock API)', () => {
   test.use({ viewport: { width: 1280, height: 800 } })
@@ -49,13 +50,15 @@ test.describe('Notes sync restore (mock API)', () => {
 
     await page.goto('/games/notes')
     await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 10_000 })
+    await page.getByTestId('notes-sync-toggle').click()
     await expect(page.getByTestId('notes-sync-panel')).toBeVisible()
 
     await page.getByTestId('notes-restore-key-input').fill('restore-key-123')
     await page.getByTestId('notes-restore-btn').click()
 
     await expect(page.getByTestId('notes-meeting-title')).toHaveValue('Restored Note', { timeout: 10_000 })
-    await expect(page.locator('.uvimco-cm .cm-content')).toContainText('restored body text')
+    await waitForNotesEditor(page)
+    await expect(notesEditor(page)).toContainText('restored body text', { timeout: 10_000 })
 
     const syncKey = await page.evaluate(() => localStorage.getItem('notes_sync_key'))
     expect(syncKey).toBe('restore-key-123')

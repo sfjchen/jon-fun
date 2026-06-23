@@ -4,6 +4,14 @@ import Link from 'next/link'
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { assembleClientContextAsync } from '@/lib/notes/contextAssembler'
 import { upsertFromLookup } from '@/lib/notes/glossary'
+import {
+  activeStreamCount,
+  anyStreaming,
+  emptyStream,
+  isLookupStreaming,
+  streamTextFor,
+  type LookupStreamMap,
+} from '@/lib/notes/lookupStreams'
 import { pushGlossaryToServer, syncMemoryBank } from '@/lib/notes/memorySync'
 import { countShorthandFlags } from '@/lib/notes/triggerParser'
 import { streamLookup } from '@/lib/notes/streamClient'
@@ -25,7 +33,7 @@ import {
 import type { Lookup, NoteMetadata, NoteSession, Screenshot, TriggerType } from '@/lib/notes/types'
 import SidePanel from './SidePanel'
 import EditorShell from './EditorShell'
-import type { NoteEditorHandle } from './NoteEditor'
+import type { NoteEditorHandle } from './EditorShell'
 import ShorthandBar from './ShorthandBar'
 import StatusBar from './StatusBar'
 import NotesHeader from './NotesHeader'
@@ -38,11 +46,13 @@ type State = {
   panelOpen: boolean
   notesListOpen: boolean
   aiListOpen: boolean
+  syncOpen: boolean
+  glossaryOpen: boolean
+  sourcesOpen: boolean
+  focusedLookupId: string | null
   currentLookup: Lookup | null
   sessionHistory: Lookup[]
-  isStreaming: boolean
-  streamText: string
-  streamError: string | null
+  streamByLookupId: LookupStreamMap
   syncOk: boolean | null
   glossaryRefreshKey: number
 }
@@ -57,10 +67,13 @@ type Action =
   | { type: 'PANEL'; open: boolean }
   | { type: 'NOTES_LIST'; open: boolean }
   | { type: 'AI_LIST'; open: boolean }
+  | { type: 'SYNC_OPEN'; open: boolean }
+  | { type: 'GLOSSARY_OPEN'; open: boolean }
+  | { type: 'SOURCES_OPEN'; open: boolean }
   | { type: 'LOOKUP_START'; lookup: Lookup }
-  | { type: 'STREAM'; text: string }
-  | { type: 'STREAM_DONE'; assistantText: string }
-  | { type: 'STREAM_ERROR'; message: string }
+  | { type: 'STREAM'; lookupId: string; text: string }
+  | { type: 'STREAM_DONE'; lookupId: string; assistantText: string }
+  | { type: 'STREAM_ERROR'; lookupId: string; message: string }
   | { type: 'SELECT_LOOKUP'; lookup: Lookup }
   | { type: 'SCREENSHOT'; shot: Screenshot }
   | { type: 'SYNC_OK'; ok: boolean }
@@ -78,14 +91,21 @@ function initState(): State {
     panelOpen: prefs.panelOpen ?? false,
     notesListOpen: prefs.notesListOpen ?? false,
     aiListOpen: true,
+    syncOpen: prefs.syncOpen ?? false,
+    glossaryOpen: false,
+    sourcesOpen: false,
+    focusedLookupId: null,
     currentLookup: null,
     sessionHistory: [...initial.lookups].reverse(),
-    isStreaming: false,
-    streamText: '',
-    streamError: null,
+    streamByLookupId: {},
     syncOk: null,
     glossaryRefreshKey: 0,
   }
+}
+
+function upsertLookupInSession(session: NoteSession, lookup: Lookup): NoteSession {
+  const lookups = [...session.lookups.filter((l) => l.id !== lookup.id), lookup]
+  return { ...session, lookups }
 }
 
 function reducer(state: State, action: Action): State {
@@ -120,51 +140,91 @@ function reducer(state: State, action: Action): State {
       return { ...state, notesListOpen: action.open }
     case 'AI_LIST':
       return { ...state, aiListOpen: action.open }
-    case 'LOOKUP_START':
+    case 'SYNC_OPEN':
+      return { ...state, syncOpen: action.open }
+    case 'GLOSSARY_OPEN':
+      return { ...state, glossaryOpen: action.open }
+    case 'SOURCES_OPEN':
+      return { ...state, sourcesOpen: action.open }
+    case 'LOOKUP_START': {
+      const session = upsertLookupInSession(state.session, action.lookup)
+      const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
+      const sessionHistory = [
+        action.lookup,
+        ...state.sessionHistory.filter((l) => l.id !== action.lookup.id),
+      ]
       return {
         ...state,
+        session,
+        sessions,
+        sessionHistory,
         currentLookup: action.lookup,
-        isStreaming: true,
-        streamText: '',
-        streamError: null,
+        focusedLookupId: action.lookup.id,
+        streamByLookupId: {
+          ...state.streamByLookupId,
+          [action.lookup.id]: { text: '', isStreaming: true, error: null },
+        },
         panelOpen: true,
         aiListOpen: true,
       }
+    }
     case 'STREAM':
-      return { ...state, streamText: action.text }
-    case 'STREAM_DONE': {
-      if (!state.currentLookup) return { ...state, isStreaming: false }
-      if (!action.assistantText.trim()) return { ...state, isStreaming: false }
-      const lookup: Lookup = {
-        ...state.currentLookup,
-        conversation: [
-          ...state.currentLookup.conversation,
-          { role: 'assistant', content: action.assistantText },
-        ],
-      }
-      const lookups = [...state.session.lookups.filter((l) => l.id !== lookup.id), lookup]
-      const sessionHistory = [lookup, ...state.sessionHistory.filter((l) => l.id !== lookup.id)]
-      const session = { ...state.session, lookups }
-      upsertFromLookup(lookup, session.id)
       return {
         ...state,
-        currentLookup: lookup,
+        streamByLookupId: {
+          ...state.streamByLookupId,
+          [action.lookupId]: {
+            ...(state.streamByLookupId[action.lookupId] ?? emptyStream()),
+            text: action.text,
+            isStreaming: true,
+          },
+        },
+      }
+    case 'STREAM_DONE': {
+      const base =
+        state.currentLookup?.id === action.lookupId
+          ? state.currentLookup
+          : state.session.lookups.find((l) => l.id === action.lookupId)
+      if (!base || !action.assistantText.trim()) {
+        const nextMap = { ...state.streamByLookupId }
+        if (nextMap[action.lookupId]) nextMap[action.lookupId] = { ...nextMap[action.lookupId]!, isStreaming: false }
+        return { ...state, streamByLookupId: nextMap }
+      }
+      const lookup: Lookup = {
+        ...base,
+        conversation: [...base.conversation, { role: 'assistant', content: action.assistantText }],
+      }
+      const session = upsertLookupInSession(state.session, lookup)
+      upsertFromLookup(lookup, session.id)
+      const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
+      const sessionHistory = [lookup, ...state.sessionHistory.filter((l) => l.id !== lookup.id)]
+      const nextMap = { ...state.streamByLookupId }
+      nextMap[action.lookupId] = { text: action.assistantText, isStreaming: false, error: null }
+      return {
+        ...state,
+        currentLookup: state.focusedLookupId === action.lookupId ? lookup : state.currentLookup,
         sessionHistory,
         session,
-        isStreaming: false,
+        sessions,
+        streamByLookupId: nextMap,
         glossaryRefreshKey: state.glossaryRefreshKey + 1,
       }
     }
-    case 'STREAM_ERROR':
-      return { ...state, isStreaming: false, streamError: action.message }
+    case 'STREAM_ERROR': {
+      const prev = state.streamByLookupId[action.lookupId] ?? emptyStream()
+      return {
+        ...state,
+        streamByLookupId: {
+          ...state.streamByLookupId,
+          [action.lookupId]: { ...prev, isStreaming: false, error: action.message },
+        },
+      }
+    }
     case 'SELECT_LOOKUP': {
-      const ans = action.lookup.conversation.find((m) => m.role === 'assistant')?.content ?? ''
       return {
         ...state,
         currentLookup: action.lookup,
-        streamText: ans,
-        isStreaming: false,
-        streamError: null,
+        focusedLookupId: action.lookup.id,
       }
     }
     case 'SCREENSHOT': {
@@ -174,18 +234,18 @@ function reducer(state: State, action: Action): State {
     case 'SYNC_OK':
       return { ...state, syncOk: action.ok }
     case 'LOAD_SESSION': {
-      const preserveAi = action.preserveAi && (state.isStreaming || state.currentLookup)
+      const preserveAi = action.preserveAi && anyStreaming(state.streamByLookupId)
       return {
         ...state,
         session: action.session,
         sessionHistory: [...action.session.lookups].reverse(),
         currentLookup: preserveAi ? state.currentLookup : null,
-        streamText: preserveAi ? state.streamText : '',
-        streamError: preserveAi ? state.streamError : null,
+        focusedLookupId: preserveAi ? state.focusedLookupId : null,
+        streamByLookupId: preserveAi ? state.streamByLookupId : {},
       }
     }
     case 'CLEAR_LOOKUP':
-      return { ...state, currentLookup: null, streamText: '', streamError: null }
+      return { ...state, currentLookup: null, focusedLookupId: null }
     case 'GLOSSARY_BUMP':
       return { ...state, glossaryRefreshKey: state.glossaryRefreshKey + 1 }
     default:
@@ -208,6 +268,9 @@ export default function NotesApp() {
   const [searchOpen, setSearchOpen] = useState(false)
   const editorRef = useRef<NoteEditorHandle>(null)
 
+  const streamBufs = useRef<Record<string, string>>({})
+  const rafByLookup = useRef<Record<string, number>>({})
+
   useEffect(() => {
     getOrCreateUserId()
   }, [])
@@ -222,43 +285,59 @@ export default function NotesApp() {
   }, [])
 
   useEffect(() => {
-    saveNotesUiPrefs({ panelOpen: state.panelOpen, notesListOpen: state.notesListOpen })
-  }, [state.panelOpen, state.notesListOpen])
+    saveNotesUiPrefs({
+      panelOpen: state.panelOpen,
+      notesListOpen: state.notesListOpen,
+      syncOpen: state.syncOpen,
+    })
+  }, [state.panelOpen, state.notesListOpen, state.syncOpen])
 
-  const streamBuf = useRef('')
-  const rafRef = useRef<number | null>(null)
-  const persistTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const streamingRef = useRef(false)
   const sessionRef = useRef(state.session)
   const sessionsRef = useRef(state.sessions)
-  const aiActiveRef = useRef(false)
+  const streamRef = useRef(state.streamByLookupId)
   sessionRef.current = state.session
   sessionsRef.current = state.sessions
-  aiActiveRef.current = state.isStreaming || state.currentLookup !== null
+  streamRef.current = state.streamByLookupId
 
-  const refreshFromServer = useCallback(async () => {
+  const persistLocal = useCallback((session: NoteSession) => {
+    upsertSession(session)
+    const sessions = loadSessions()
+    dispatch({ type: 'SET_SESSIONS', sessions })
+  }, [])
+
+  const pushToServer = useCallback(async (session: NoteSession) => {
+    const ok = await saveSessionToServer(session)
+    dispatch({ type: 'SYNC_OK', ok })
+    return ok
+  }, [])
+
+  const refreshFromServer = useCallback(async (opts?: { skipPersist?: boolean }) => {
+    if (!opts?.skipPersist) persistLocal(sessionRef.current)
     const r = await syncWithServer()
     const mem = await syncMemoryBank()
     dispatch({ type: 'GLOSSARY_BUMP' })
     dispatch({ type: 'SET_SESSIONS', sessions: r.sessions })
-    const activeId = sessionRef.current.id
-    const active = r.sessions.find((s) => s.id === activeId) ?? r.sessions[0]
-    if (active) {
-      dispatch({ type: 'LOAD_SESSION', session: active, preserveAi: aiActiveRef.current })
-      setActiveSessionId(active.id)
+    const active = loadActiveSession()
+    const mergedActive = r.sessions.find((s) => s.id === active.id) ?? active
+    const inMem = sessionRef.current
+    const preserveAi = anyStreaming(streamRef.current)
+    const storageNewer =
+      mergedActive.id !== inMem.id ||
+      mergedActive.notes !== inMem.notes ||
+      mergedActive.title !== inMem.title ||
+      new Date(mergedActive.updatedAt).getTime() > new Date(inMem.updatedAt).getTime()
+    if (storageNewer || preserveAi) {
+      dispatch({
+        type: 'LOAD_SESSION',
+        session: mergedActive,
+        preserveAi,
+      })
+      setActiveSessionId(mergedActive.id)
     }
     const ok = r.pushOk && mem.glossaryOk && mem.sourcesOk
     dispatch({ type: 'SYNC_OK', ok })
     return r
-  }, [])
-
-  const persist = useCallback(async (session: NoteSession) => {
-    const saved = upsertSession(session)
-    const sessions = loadSessions()
-    dispatch({ type: 'SET_SESSIONS', sessions })
-    const ok = await saveSessionToServer(saved)
-    dispatch({ type: 'SYNC_OK', ok })
-  }, [])
+  }, [persistLocal])
 
   useEffect(() => {
     setSyncing(true)
@@ -266,15 +345,16 @@ export default function NotesApp() {
   }, [refreshFromServer])
 
   useEffect(() => {
+    persistLocal(state.session)
+  }, [state.session, persistLocal])
+
+  useEffect(() => {
     setSaving(true)
-    if (persistTimer.current) clearTimeout(persistTimer.current)
-    persistTimer.current = setTimeout(() => {
-      void persist(state.session).finally(() => setSaving(false))
+    const t = setTimeout(() => {
+      void pushToServer(state.session).finally(() => setSaving(false))
     }, 800)
-    return () => {
-      if (persistTimer.current) clearTimeout(persistTimer.current)
-    }
-  }, [state.session, persist])
+    return () => clearTimeout(t)
+  }, [state.session, pushToServer])
 
   useEffect(() => {
     const fn = () => upsertSession(sessionRef.current)
@@ -284,9 +364,7 @@ export default function NotesApp() {
 
   useEffect(() => {
     const intervalMs = document.visibilityState === 'visible' ? 5 * 60_000 : 60 * 60_000
-    const id = window.setInterval(() => {
-      void refreshFromServer()
-    }, intervalMs)
+    const id = window.setInterval(() => void refreshFromServer(), intervalMs)
     const onVis = () => {
       if (document.visibilityState === 'visible') void refreshFromServer()
     }
@@ -299,6 +377,7 @@ export default function NotesApp() {
 
   const runStream = useCallback(
     async (opts: {
+      lookupId: string
       type: TriggerType
       query: string
       context: string
@@ -307,9 +386,7 @@ export default function NotesApp() {
       followUpQuestion?: string
       extraScreenshots?: Screenshot[]
     }) => {
-      if (streamingRef.current) return
-      streamingRef.current = true
-      streamBuf.current = ''
+      streamBufs.current[opts.lookupId] = ''
 
       const ctx = await assembleClientContextAsync({
         query: opts.query,
@@ -335,17 +412,28 @@ export default function NotesApp() {
         ...(opts.mode ? { mode: opts.mode } : {}),
         ...(opts.followUpQuestion ? { followUpQuestion: opts.followUpQuestion } : {}),
         onToken: (token) => {
-          streamBuf.current += token
-          if (rafRef.current) return
-          rafRef.current = requestAnimationFrame(() => {
-            dispatch({ type: 'STREAM', text: streamBuf.current })
-            rafRef.current = null
+          streamBufs.current[opts.lookupId] = (streamBufs.current[opts.lookupId] ?? '') + token
+          if (rafByLookup.current[opts.lookupId]) return
+          rafByLookup.current[opts.lookupId] = requestAnimationFrame(() => {
+            dispatch({
+              type: 'STREAM',
+              lookupId: opts.lookupId,
+              text: streamBufs.current[opts.lookupId] ?? '',
+            })
+            delete rafByLookup.current[opts.lookupId]
           })
         },
-        onError: (msg) => dispatch({ type: 'STREAM_ERROR', message: msg }),
+        onError: (msg) => dispatch({ type: 'STREAM_ERROR', lookupId: opts.lookupId, message: msg }),
         onDone: () => {
-          streamingRef.current = false
-          dispatch({ type: 'STREAM_DONE', assistantText: streamBuf.current })
+          if (rafByLookup.current[opts.lookupId]) {
+            cancelAnimationFrame(rafByLookup.current[opts.lookupId]!)
+            delete rafByLookup.current[opts.lookupId]
+          }
+          dispatch({
+            type: 'STREAM_DONE',
+            lookupId: opts.lookupId,
+            assistantText: streamBufs.current[opts.lookupId] ?? '',
+          })
           void pushGlossaryToServer()
         },
       })
@@ -356,7 +444,7 @@ export default function NotesApp() {
   const handleTrigger = useCallback(
     (type: TriggerType, query: string, context: string) => {
       const lookup: Lookup = {
-        id: `lk-${Date.now()}`,
+        id: `lk-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type,
         query,
         context,
@@ -364,7 +452,7 @@ export default function NotesApp() {
         triggeredAt: new Date().toISOString(),
       }
       dispatch({ type: 'LOOKUP_START', lookup })
-      void runStream({ type, query, context, conversation: [] })
+      void runStream({ lookupId: lookup.id, type, query, context, conversation: [] })
     },
     [runStream],
   )
@@ -372,21 +460,22 @@ export default function NotesApp() {
   const handleFollowUp = useCallback(
     (question: string, extraScreenshots?: Screenshot[]) => {
       const lk = state.currentLookup
-      if (!lk || state.isStreaming) return
+      if (!lk || isLookupStreaming(state.streamByLookupId, lk.id)) return
       const conversation = [...lk.conversation, { role: 'user' as const, content: question }]
       const updated = { ...lk, conversation }
       dispatch({ type: 'LOOKUP_START', lookup: updated })
       void runStream({
+        lookupId: lk.id,
         type: lk.type,
         query: lk.query,
         context: lk.context,
-        conversation: lk.conversation,
+        conversation,
         mode: 'followup',
         followUpQuestion: question,
         ...(extraScreenshots?.length ? { extraScreenshots } : {}),
       })
     },
-    [state.currentLookup, state.isStreaming, runStream],
+    [state.currentLookup, state.streamByLookupId, runStream],
   )
 
   const handleExport = useCallback(() => {
@@ -412,6 +501,7 @@ export default function NotesApp() {
     }
     dispatch({ type: 'LOOKUP_START', lookup })
     void runStream({
+      lookupId: lookup.id,
       type: 'line',
       query: state.session.notes,
       context: state.session.notes,
@@ -463,11 +553,14 @@ export default function NotesApp() {
     [state.sessions, state.session],
   )
 
+  const aiBusy = anyStreaming(state.streamByLookupId)
+  const aiActiveCount = activeStreamCount(state.streamByLookupId)
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         if (searchOpen) setSearchOpen(false)
-        else if (state.panelOpen && !state.isStreaming) dispatch({ type: 'PANEL', open: false })
+        else if (state.panelOpen && !aiBusy) dispatch({ type: 'PANEL', open: false })
         else dispatch({ type: 'CLEAR_LOOKUP' })
         return
       }
@@ -495,10 +588,20 @@ export default function NotesApp() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [handleSummarize, handleExport, handleNewNote, state.panelOpen, state.isStreaming, searchOpen])
+  }, [handleSummarize, handleExport, handleNewNote, state.panelOpen, aiBusy, searchOpen])
+
+  const focusedId = state.focusedLookupId ?? state.currentLookup?.id ?? null
+  const focusedLookup =
+    state.currentLookup ??
+    (focusedId ? state.sessionHistory.find((l) => l.id === focusedId) ?? null : null)
+  const convAns =
+    [...(focusedLookup?.conversation ?? [])].reverse().find((m) => m.role === 'assistant')?.content ?? ''
+  const displayText = streamTextFor(state.streamByLookupId, focusedId, convAns)
+  const displayStreaming = focusedId ? isLookupStreaming(state.streamByLookupId, focusedId) : false
+  const displayError = focusedId ? (state.streamByLookupId[focusedId]?.error ?? null) : null
 
   const counts = countShorthandFlags(state.session.notes)
-  const activeQuery = state.currentLookup?.query ?? null
+  const activeQuery = focusedLookup?.query ?? null
 
   return (
     <div className="uvimco-notes-root bg-[var(--uv-bg-base)] text-[var(--uv-text-primary)]">
@@ -562,23 +665,31 @@ export default function NotesApp() {
           isOpen={state.panelOpen}
           sessions={state.sessions}
           activeSessionId={state.session.id}
-          currentLookup={state.currentLookup}
+          focusedLookup={focusedLookup}
           sessionHistory={state.sessionHistory}
-          streamText={state.streamText}
-          isStreaming={state.isStreaming}
-          streamError={state.streamError}
+          streamByLookupId={state.streamByLookupId}
+          displayText={displayText}
+          displayStreaming={displayStreaming}
+          displayError={displayError}
+          aiActiveCount={aiActiveCount}
           notesListOpen={state.notesListOpen}
           aiListOpen={state.aiListOpen}
+          syncOpen={state.syncOpen}
+          glossaryOpen={state.glossaryOpen}
+          sourcesOpen={state.sourcesOpen}
           glossaryRefreshKey={state.glossaryRefreshKey}
           onNotesListOpenChange={(open) => dispatch({ type: 'NOTES_LIST', open })}
           onAiListOpenChange={(open) => dispatch({ type: 'AI_LIST', open })}
+          onSyncOpenChange={(open) => dispatch({ type: 'SYNC_OPEN', open })}
+          onGlossaryOpenChange={(open) => dispatch({ type: 'GLOSSARY_OPEN', open })}
+          onSourcesOpenChange={(open) => dispatch({ type: 'SOURCES_OPEN', open })}
           onSelectMeeting={handleSelectMeeting}
           onNewMeeting={handleNewNote}
           onDeleteMeeting={handleDeleteMeeting}
           onFollowUp={handleFollowUp}
           onSelectHistory={(lk) => dispatch({ type: 'SELECT_LOOKUP', lookup: lk })}
           onClose={() => dispatch({ type: 'PANEL', open: false })}
-          onSynced={() => void refreshFromServer()}
+          onSynced={(opts) => void refreshFromServer(opts)}
           onJumpTodo={handleJump}
           onSourcesChange={() => {
             dispatch({ type: 'GLOSSARY_BUMP' })
@@ -593,6 +704,7 @@ export default function NotesApp() {
         syncOk={state.syncOk}
         saving={saving}
         syncing={syncing}
+        aiActiveCount={aiActiveCount}
       />
     </div>
   )

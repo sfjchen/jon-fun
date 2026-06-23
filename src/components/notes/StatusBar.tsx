@@ -7,9 +7,18 @@ type StatusBarProps = {
   syncOk: boolean | null
   saving: boolean
   syncing?: boolean
+  aiActiveCount?: number
 }
 
-export default function StatusBar({ chars, flags, actions, syncOk, saving, syncing }: StatusBarProps) {
+export default function StatusBar({
+  chars,
+  flags,
+  actions,
+  syncOk,
+  saving,
+  syncing,
+  aiActiveCount = 0,
+}: StatusBarProps) {
   let syncLabel = ''
   if (syncing) syncLabel = 'Syncing…'
   else if (saving) syncLabel = 'Saving…'
@@ -24,6 +33,11 @@ export default function StatusBar({ chars, flags, actions, syncOk, saving, synci
       <span>{chars} chars</span>
       <span>{flags} ? terms</span>
       <span>{actions} todos</span>
+      {aiActiveCount > 0 ? (
+        <span className="text-[var(--uv-accent)]" data-testid="notes-ai-active-count">
+          {aiActiveCount} AI…
+        </span>
+      ) : null}
       {syncLabel ? (
         <span
           data-testid="notes-sync-label"

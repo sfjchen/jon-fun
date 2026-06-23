@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { notesEditor, waitForNotesEditor } from './helpers/notes-mock'
 
 /**
  * Visual / layout checks on **deployed** sfjc.dev.
@@ -13,20 +14,20 @@ test.describe('Notes visual', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/games/notes')
     await page.waitForSelector('[data-testid="notes-editor"]', { timeout: 20_000 })
-    await page.waitForSelector('.uvimco-cm .cm-content', { timeout: 20_000 })
+    await waitForNotesEditor(page)
   })
 
   test('editor pane is tall enough to type (layout regression)', async ({ page }) => {
     const editor = page.getByTestId('notes-editor')
-    const cm = page.locator('.uvimco-cm .cm-editor')
+    const tiptap = page.locator('[data-testid="notes-tiptap-editor"]')
     const editorBox = await editor.boundingBox()
-    const cmBox = await cm.boundingBox()
+    const tiptapBox = await tiptap.boundingBox()
     expect(editorBox?.height ?? 0).toBeGreaterThan(280)
-    expect(cmBox?.height ?? 0).toBeGreaterThan(200)
+    expect(tiptapBox?.height ?? 0).toBeGreaterThan(200)
 
-    await editor.click()
+    await notesEditor(page).click()
     await page.keyboard.type('Visual E2E — editor height check.')
-    await expect(page.locator('.uvimco-cm .cm-content')).toContainText('Visual E2E')
+    await expect(notesEditor(page)).toContainText('Visual E2E')
   })
 
   test('full-width editor when panel closed', async ({ page }) => {
@@ -58,7 +59,7 @@ test.describe('Notes visual', () => {
     test.skip(!isDeploy, 'Set PLAYWRIGHT_SKIP_WEBSERVER=1 to snapshot deployed sfjc.dev')
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/games/notes')
-    await page.waitForSelector('.uvimco-cm .cm-content', { timeout: 20_000 })
+    await waitForNotesEditor(page)
     const editorBox = await page.getByTestId('notes-editor').boundingBox()
     expect(editorBox?.height ?? 0).toBeGreaterThan(180)
     await expect(page).toHaveScreenshot('notes-mobile.png', {
