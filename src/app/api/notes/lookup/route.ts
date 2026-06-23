@@ -17,8 +17,9 @@ type LookupBody = {
   context?: string
   conversation?: Message[]
   screenshots?: Screenshot[]
-  mode?: 'lookup' | 'followup' | 'decode'
+  mode?: 'lookup' | 'followup' | 'decode' | 'agent'
   followUpQuestion?: string
+  title?: string
   glossaryBlock?: string
   sourcesBlock?: string
   relatedNotesBlock?: string
@@ -59,9 +60,11 @@ export async function POST(request: NextRequest) {
     if (body.noteDomain) promptCtx.domainId = body.noteDomain
     if (body.noteTags?.length) promptCtx.tags = body.noteTags
     if (body.fullNotes) promptCtx.fullNotes = body.fullNotes
+    if (body.title) promptCtx.title = body.title
 
     const system = resolveSystem(mode, type, promptCtx, query)
-    const maxTokens = mode === 'decode' ? 800 : type === 'section' ? 400 : 280
+    const maxTokens =
+      mode === 'decode' ? 800 : mode === 'agent' || mode === 'followup' ? 1200 : type === 'section' ? 400 : 280
     const userParts = buildLookupParts(type, query, context, screenshots, mode, body.followUpQuestion)
 
     return streamLookupWithFallback(mode, screenshots.length > 0, {

@@ -54,6 +54,41 @@ export function saveGlossary(entries: GlossaryEntry[]): void {
   localStorage.setItem(GLOSSARY_KEY, JSON.stringify(sanitizeEntries(entries)))
 }
 
+/** Manual dictionary edit (user or AI agent). */
+export function upsertManualEntry(
+  term: string,
+  definition: string,
+  noteId: string,
+  lookupId = 'manual',
+): GlossaryEntry {
+  const label = term.trim()
+  const def = definition.trim().slice(0, 600)
+  const entries = loadGlossary()
+  const idx = entries.findIndex((e) => e.term.toLowerCase() === label.toLowerCase())
+  const entry: GlossaryEntry = {
+    term: label,
+    definition: def,
+    sourceNoteId: noteId,
+    sourceLookupId: lookupId,
+    updatedAt: new Date().toISOString(),
+    useCount: (idx >= 0 ? entries[idx]!.useCount : 0) + 1,
+  }
+  if (idx >= 0) entries[idx] = entry
+  else entries.unshift(entry)
+  saveGlossary(entries.slice(0, 500))
+  return entry
+}
+
+export function deleteDictionaryEntry(term: string): boolean {
+  const label = term.trim()
+  if (!label) return false
+  const entries = loadGlossary()
+  const next = entries.filter((e) => e.term.toLowerCase() !== label.toLowerCase())
+  if (next.length === entries.length) return false
+  saveGlossary(next)
+  return true
+}
+
 function primaryTermFromQuery(q: string): string {
   const acr = q.match(/\b([A-Z]{2,}(?:-[A-Z]+)?)\b/)
   if (acr) return acr[1]!

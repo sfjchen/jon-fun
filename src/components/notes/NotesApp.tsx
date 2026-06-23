@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { assembleClientContextAsync } from '@/lib/notes/contextAssembler'
-import { upsertFromLookup } from '@/lib/notes/glossary'
+import { applyAgentActions, parseAgentResponse } from '@/lib/notes/agentActions'
+import { formatGlossaryForPrompt, upsertFromLookup } from '@/lib/notes/glossary'
 import {
   activeStreamCount,
   anyStreaming,
@@ -12,7 +13,6 @@ import {
 } from '@/lib/notes/lookupStreams'
 import { pushGlossaryToServer, syncMemoryBank } from '@/lib/notes/memorySync'
 import { countShorthandFlags } from '@/lib/notes/shorthand'
-import { parsePanelLookupQuery } from '@/lib/notes/triggerParser'
 import { appendNoteHistory, lastHistoryEntry } from '@/lib/notes/noteHistory'
 import { addToTagCatalog } from '@/lib/notes/tagRegistry'
 import { streamLookup } from '@/lib/notes/streamClient'
@@ -76,7 +76,7 @@ type Action =
   | { type: 'ROLLUP_OPEN'; open: boolean }
   | { type: 'LOOKUP_START'; lookup: Lookup }
   | { type: 'STREAM'; lookupId: string; text: string }
-  | { type: 'STREAM_DONE'; lookupId: string; assistantText: string }
+  | { type: 'STREAM_DONE'; lookupId: string; assistantText: string; skipGlossaryAuto?: boolean }
   | { type: 'STREAM_ERROR'; lookupId: string; message: string }
   | { type: 'SELECT_LOOKUP'; lookup: Lookup }
   | { type: 'DELETE_LOOKUP'; lookupId: string }
@@ -217,7 +217,7 @@ function reducer(state: State, action: Action): State {
         conversation: [...base.conversation, { role: 'assistant', content: action.assistantText }],
       }
       const session = touchSession(upsertLookupInSession(state.session, lookup))
-      upsertFromLookup(lookup, session.id)
+      if (!action.skipGlossaryAuto) upsertFromLookup(lookup, session.id)
       const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
       const sessionHistory = [lookup, ...state.sessionHistory.filter((l) => l.id !== lookup.id)]
       const nextMap = { ...state.streamByLookupId }
@@ -453,7 +453,7 @@ export default function NotesApp() {
       query: string
       context: string
       conversation: Lookup['conversation']
-      mode?: 'lookup' | 'followup' | 'decode'
+      mode?: 'lookup' | 'followup' | 'decode' | 'agent'
       followUpQuestion?: string
       extraScreenshots?: Screenshot[]
     }) => {
@@ -464,6 +464,9 @@ export default function NotesApp() {
         activeSession: sessionRef.current,
         allSessions: sessionsRef.current,
       })
+
+      const agentMode = opts.mode === 'agent' || opts.mode === 'followup'
+      const glossaryBlock = agentMode ? formatGlossaryForPrompt(40) : ctx.glossaryBlock
 
       const withDomain: NoteSession = {
         ...sessionRef.current,
@@ -480,12 +483,13 @@ export default function NotesApp() {
         context: opts.context,
         conversation: opts.conversation,
         screenshots,
-        glossaryBlock: ctx.glossaryBlock,
+        glossaryBlock,
         sourcesBlock: ctx.sourcesBlock,
         relatedNotesBlock: ctx.relatedNotesBlock,
         noteTags: ctx.noteTags,
         noteDomain: ctx.domainId,
         fullNotes: withDomain.notes,
+        title: withDomain.title,
         ...(opts.mode ? { mode: opts.mode } : {}),
         ...(opts.followUpQuestion ? { followUpQuestion: opts.followUpQuestion } : {}),
         onToken: (token) => {
@@ -506,12 +510,32 @@ export default function NotesApp() {
             cancelAnimationFrame(rafByLookup.current[opts.lookupId]!)
             delete rafByLookup.current[opts.lookupId]
           }
+          const raw = streamBufs.current[opts.lookupId] ?? ''
+          const { displayText, actions } = parseAgentResponse(raw)
+          let skipGlossaryAuto = agentMode
+
+          if (actions.length) {
+            const applied = applyAgentActions(actions, sessionRef.current, opts.lookupId)
+            if (applied.session) {
+              commitSession(applied.session)
+              dispatch({ type: 'PATCH_SESSION', session: applied.session })
+              void saveSessionToServer(applied.session)
+            }
+            if (applied.dictionaryChanged) {
+              skipGlossaryAuto = true
+              dispatch({ type: 'GLOSSARY_BUMP' })
+              void pushGlossaryToServer()
+            }
+          }
+
+          const assistantText = agentMode ? displayText || raw.trim() : raw
           dispatch({
             type: 'STREAM_DONE',
             lookupId: opts.lookupId,
-            assistantText: streamBufs.current[opts.lookupId] ?? '',
+            assistantText,
+            skipGlossaryAuto,
           })
-          void pushGlossaryToServer()
+          if (!skipGlossaryAuto) void pushGlossaryToServer()
         },
       })
     },
@@ -537,15 +561,29 @@ export default function NotesApp() {
 
   const handlePanelLookup = useCallback(
     (raw: string) => {
-      const parsed = parsePanelLookupQuery(raw)
-      if (!parsed) return
-      const context =
-        parsed.type === 'section'
-          ? state.session.notes
-          : state.session.notes.split('\n').slice(-15).join('\n')
-      handleTrigger(parsed.type, parsed.query, context)
+      const query = raw.trim()
+      if (!query) return
+      const lookup: Lookup = {
+        id: `lk-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        type: 'line',
+        query,
+        context: state.session.notes,
+        conversation: [],
+        triggeredAt: new Date().toISOString(),
+      }
+      dispatch({ type: 'LOOKUP_START', lookup })
+      dispatch({ type: 'PANEL', open: true })
+      void saveWithHistory('lookup', query)
+      void runStream({
+        lookupId: lookup.id,
+        type: 'line',
+        query,
+        context: state.session.notes,
+        conversation: [],
+        mode: 'agent',
+      })
     },
-    [handleTrigger, state.session.notes],
+    [runStream, saveWithHistory, state.session.notes],
   )
 
   const handleFollowUp = useCallback(
@@ -561,12 +599,17 @@ export default function NotesApp() {
         query: lk.query,
         context: lk.context,
         conversation,
-        mode: 'followup',
+        mode: 'agent',
         followUpQuestion: question,
       })
     },
     [state.currentLookup, state.streamByLookupId, runStream],
   )
+
+  const handleDictionaryChange = useCallback(() => {
+    dispatch({ type: 'GLOSSARY_BUMP' })
+    void pushGlossaryToServer()
+  }, [])
 
   const handleExport = useCallback(() => {
     const md = exportSessionMarkdown(state.session)
@@ -782,6 +825,7 @@ export default function NotesApp() {
             dispatch({ type: 'GLOSSARY_BUMP' })
             void syncMemoryBank()
           }}
+          onDictionaryChange={handleDictionaryChange}
         />
       </div>
       <StatusBar

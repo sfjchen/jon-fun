@@ -8,7 +8,7 @@ import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
 import LookupConversation from './LookupConversation'
 import CollapsibleSection from './CollapsibleSection'
 import SyncPanel from './SyncPanel'
-import GlossaryPanel from './GlossaryPanel'
+import DictionaryPanel from './DictionaryPanel'
 import RollupPanel from './RollupPanel'
 import FollowUpComposer from './FollowUpComposer'
 import LookupComposer from './LookupComposer'
@@ -72,6 +72,7 @@ type SidePanelProps = {
   onSynced: (opts?: { skipPersist?: boolean }) => void
   onJumpTodo: (sessionId: string, lineIndex: number) => void
   onSourcesChange: () => void
+  onDictionaryChange: () => void
 }
 
 export default function SidePanel({
@@ -112,6 +113,7 @@ export default function SidePanel({
   onSynced,
   onJumpTodo,
   onSourcesChange,
+  onDictionaryChange,
 }: SidePanelProps) {
   const defaultWidth = loadNotesUiPrefs().panelWidth ?? 300
   const [width, setWidth] = useState(defaultWidth)
@@ -338,13 +340,18 @@ export default function SidePanel({
         </CollapsibleSection>
 
         <CollapsibleSection
-          title="Glossary"
+          title="Dictionary"
           open={glossaryOpen}
           onToggle={() => onGlossaryOpenChange(!glossaryOpen)}
           testId="notes-glossary-section"
           toggleTestId="notes-glossary-toggle"
         >
-          <GlossaryPanel refreshKey={glossaryRefreshKey} embedded />
+          <DictionaryPanel
+            refreshKey={glossaryRefreshKey}
+            noteId={activeSessionId}
+            onChange={onDictionaryChange}
+            embedded
+          />
         </CollapsibleSection>
 
         <CollapsibleSection

@@ -71,7 +71,7 @@ Data lives on Supabase under `note_sessions` (+ `notes_sources`, `notes_glossary
 ## UI principles
 
 - **Editor-first** — full-width Tiptap WYSIWYG; panel for AI + vault utilities
-- **Panel order (top→bottom):** Todos → AI lookup → Notes list → Glossary → Sources → History → Sync & backup (collapsed)
+- **Panel order (top→bottom):** Notes vault (folders + Inbox) → Todos → AI lookup → Glossary → Sources → History → Sync & backup (collapsed)
 - **Parallel AI** — multiple `?`/`??` triggers run concurrently; status bar shows active count; history shows streaming dots
 - **Sync rare** — collapsed under “Sync & backup”; expand only when setting key or restore
 - Notion-like light theme, Lato; Ctrl `\` panel, `Shift+F` search, `K` summarize, Export button, `Shift+N` new note, **Ctrl+S** save+sync
@@ -115,3 +115,4 @@ Mock helper: `e2e/helpers/notes-mock.ts` — stubs `/api/notes/*` including embe
 - **2026-06-23**: Parallel AI lookups; panel UX reorder; sync/glossary/sources collapsed; restore no longer overwritten by stale in-memory session; SSE `[DONE]` completes streams in mock E2E.
 - **2026-06-23**: Unified top/bottom bars; tags replace kind/domain; auto domain; note history; todo suffix + `*highlight*`; Ctrl+S save/sync; hints in bottom bar.
 - **2026-06-23**: Phase 3 complete — Tiptap-only; `noteAttachment` screenshots; FollowUpComposer previews; agent doc [`NOTES-AGENT.md`](./NOTES-AGENT.md).
+- **2026-06-22**: Notes vault — folders + Inbox tree as top panel section; `metadata.folderId`; folder sync via vault session row.

@@ -27,6 +27,7 @@
     "verify:jeopardy-buzzer": "tsx scripts/verify-jeopardy-buzzer.ts",
     "verify:notes-triggers": "tsx scripts/verify-notes-triggers.ts",
     "verify:notes-attachments": "tsx scripts/verify-notes-attachments.ts",
+    "verify:notes-agent-actions": "tsx scripts/verify-notes-agent-actions.ts",
     "wedding:rsvp-qr": "tsx scripts/generate-wedding-rsvp-qr.ts",
     "test:e2e": "playwright test",
     "test:e2e:ci": "CI=1 playwright test",
