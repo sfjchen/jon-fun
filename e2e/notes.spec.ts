@@ -48,9 +48,22 @@ test.describe('Notes', () => {
     await expect(page.getByTestId('notes-ai-toggle')).toBeVisible()
     await expect(page.getByTestId('notes-sync-section')).toBeVisible()
     await expect(page.getByTestId('notes-sync-panel')).toBeHidden()
-    await page.getByTestId('notes-meetings-toggle').click()
     await expect(page.getByTestId('notes-new-meeting')).toBeVisible()
+    await expect(page.getByTestId('notes-vault-panel')).toBeVisible()
+    await expect(page.getByTestId('notes-folder-inbox')).toBeVisible()
     await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(1)
+  })
+
+  test('creates folder and nests note', async ({ page }) => {
+    await page.getByTestId('notes-toggle-panel').click()
+    await page.getByTestId('notes-new-folder').click()
+    await page.getByTestId('notes-new-folder-input').fill('Work')
+    await page.getByTestId('notes-new-folder-input').press('Enter')
+    const workToggle = page.locator('button[data-testid^="notes-folder-toggle-"]').filter({ hasText: 'Work' })
+    await expect(workToggle).toBeVisible({ timeout: 5000 })
+    await workToggle.click()
+    await page.locator('button[title="New note in folder"]').click()
+    await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(2)
   })
 
   test('builtin domain packs seed in Sources panel', async ({ page }) => {
@@ -63,7 +76,6 @@ test.describe('Notes', () => {
 
   test('creates a second note and switches between them', async ({ page }) => {
     await page.getByTestId('notes-toggle-panel').click()
-    await page.getByTestId('notes-meetings-toggle').click()
 
     const title = page.getByTestId('notes-meeting-title')
     await title.click()
@@ -217,12 +229,11 @@ test.describe('Notes', () => {
     await page.getByTestId('notes-shorthand-toggle').click()
     await expect(page.getByTestId('notes-statusbar')).toContainText('AI line')
     await page.getByTestId('notes-shorthand-toggle').click()
-    await expect(page.getByTestId('notes-shorthand-toggle')).toHaveText('Hints')
+    await expect(page.getByTestId('notes-shorthand-toggle')).toContainText('Hints')
   })
 
   test('Ctrl+Shift+N creates new note', async ({ page }) => {
     await page.getByTestId('notes-toggle-panel').click()
-    await page.getByTestId('notes-meetings-toggle').click()
     await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(1)
     await page.keyboard.press('Control+Shift+N')
     await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(2)
@@ -258,7 +269,6 @@ test.describe('Notes', () => {
     await expect(editor.locator('strong')).toContainText('important term')
 
     await page.getByTestId('notes-toggle-panel').click()
-    await page.getByTestId('notes-meetings-toggle').click()
     await page.getByTestId('notes-new-meeting').click()
     const meetings = page.locator('[data-testid^="notes-meeting-item-"]')
     await expect(meetings).toHaveCount(2)
@@ -328,5 +338,66 @@ test.describe('Notes', () => {
     await expect(page.getByTestId('notes-top-bar')).toBeVisible()
     await expect(page.locator('[data-testid*="domain"]')).toHaveCount(0)
     await expect(page.locator('[data-testid*="kind"]')).toHaveCount(0)
+  })
+
+  test('italic toggle via Ctrl+I', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.keyboard.type('emphasis')
+    await page.keyboard.press('ControlOrMeta+a')
+    await page.keyboard.press('ControlOrMeta+i')
+    await expect(editor.locator('em')).toContainText('emphasis')
+  })
+
+  test('font size applies to selection', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.keyboard.type('large text')
+    await page.keyboard.press('ControlOrMeta+a')
+    await editor.click()
+    await page.keyboard.press('ControlOrMeta+a')
+    await page.getByTestId('notes-font-size').selectOption('24px')
+    const sized = editor.locator('span[style*="font-size"]')
+    await expect(sized).toContainText('large text', { timeout: 5000 })
+    await expect(sized).toHaveAttribute('style', /font-size:\s*24px/i)
+  })
+
+  test('- dash lines indent without bullet glyphs', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.keyboard.type('- first item')
+    await expect(editor.locator('.notes-dash-line')).toHaveCount(1, { timeout: 5000 })
+    await expect(editor).toContainText('- first item')
+    await expect(editor.locator('ul li')).toHaveCount(0)
+  })
+
+  test('Enter continues dash list on next line', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.keyboard.type('- one')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('two')
+    await expect(editor.locator('.notes-dash-line')).toHaveCount(2, { timeout: 5000 })
+    await expect(editor).toContainText('- two')
+  })
+
+  test('backspace deletes characters without cursor jump', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.keyboard.type('abcdef')
+    await expect(editor).toContainText('abcdef')
+    for (let i = 0; i < 3; i++) await page.keyboard.press('Backspace')
+    await expect(editor).toContainText('abc')
+    await expect(editor).not.toContainText('def')
+    await page.keyboard.type('xyz')
+    await expect(editor).toContainText('abcxyz')
+  })
+
+  test('backspace on empty dash prefix removes marker', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.keyboard.type('- ')
+    await page.keyboard.press('Backspace')
+    await expect(editor.locator('.notes-dash-line')).toHaveCount(0, { timeout: 5000 })
   })
 })

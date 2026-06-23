@@ -15,6 +15,12 @@ import { pushGlossaryToServer, syncMemoryBank } from '@/lib/notes/memorySync'
 import { countShorthandFlags } from '@/lib/notes/shorthand'
 import { appendNoteHistory, lastHistoryEntry } from '@/lib/notes/noteHistory'
 import { addToTagCatalog } from '@/lib/notes/tagRegistry'
+import {
+  createFolder,
+  deleteFolder,
+  loadFolders,
+  moveSessionToFolder,
+} from '@/lib/notes/folders'
 import { isNotesTextFieldTarget } from '@/lib/notes/shortcuts'
 import { streamLookup } from '@/lib/notes/streamClient'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
@@ -27,7 +33,9 @@ import {
   getOrCreateUserId,
   loadActiveSession,
   loadSessions,
+  pushAllToServer,
   saveSessionToServer,
+  saveSessionsLocal,
   setActiveSessionId,
   syncWithServer,
   upsertSession,
@@ -38,7 +46,7 @@ import type { NoteEditorHandle } from './EditorShell'
 import StatusBar from './StatusBar'
 import NotesTopBar, { loadHintsOpen, persistHintsOpen } from './NotesTopBar'
 import GlobalSearch from './GlobalSearch'
-import type { Lookup, NoteHistoryKind, NoteSession, Screenshot, TriggerType } from '@/lib/notes/types'
+import type { Lookup, NoteFolder, NoteHistoryKind, NoteSession, Screenshot, TriggerType } from '@/lib/notes/types'
 
 type State = {
   session: NoteSession
@@ -94,7 +102,7 @@ function initState(): State {
     session: initial,
     sessions: bootSessions.length > 0 ? bootSessions : [initial],
     panelOpen: prefs.panelOpen ?? false,
-    notesListOpen: prefs.notesListOpen ?? false,
+    notesListOpen: prefs.notesListOpen ?? true,
     aiListOpen: true,
     syncOpen: prefs.syncOpen ?? false,
     glossaryOpen: false,
@@ -304,6 +312,13 @@ export default function NotesApp() {
   const [syncing, setSyncing] = useState(true)
   const [searchOpen, setSearchOpen] = useState(false)
   const [hintsOpen, setHintsOpen] = useState(false)
+  const [folders, setFolders] = useState<NoteFolder[]>(() =>
+    typeof window !== 'undefined' ? loadFolders() : [],
+  )
+  const [expandedFolderIds, setExpandedFolderIds] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return ['__inbox__']
+    return loadNotesUiPrefs().expandedFolderIds ?? ['__inbox__']
+  })
   const editorRef = useRef<NoteEditorHandle>(null)
 
   const streamBufs = useRef<Record<string, string>>({})
@@ -379,6 +394,7 @@ export default function NotesApp() {
     const mem = await syncMemoryBank()
     dispatch({ type: 'GLOSSARY_BUMP' })
     dispatch({ type: 'SET_SESSIONS', sessions: r.sessions })
+    setFolders(loadFolders())
     const active = loadActiveSession()
     const mergedActive = r.sessions.find((s) => s.id === active.id) ?? active
     const inMem = sessionRef.current
@@ -644,16 +660,71 @@ export default function NotesApp() {
     })
   }, [state.session.notes, runStream])
 
-  const handleNewNote = useCallback(() => {
-    void saveWithHistory('saved', 'before new note', true)
-    const fresh = createEmptySession()
-    setActiveSessionId(fresh.id)
-    upsertSession(fresh)
-    dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
-    dispatch({ type: 'LOAD_SESSION', session: fresh })
-    dispatch({ type: 'PANEL', open: true })
-    dispatch({ type: 'NOTES_LIST', open: true })
-  }, [saveWithHistory])
+  const handleNewNote = useCallback(
+    (folderId: string | null = null) => {
+      void saveWithHistory('saved', 'before new note', true)
+      const fresh = createEmptySession(undefined, folderId)
+      setActiveSessionId(fresh.id)
+      upsertSession(fresh)
+      dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+      dispatch({ type: 'LOAD_SESSION', session: fresh })
+      dispatch({ type: 'PANEL', open: true })
+      dispatch({ type: 'NOTES_LIST', open: true })
+      if (folderId) {
+        setExpandedFolderIds((prev) => {
+          if (prev.includes(folderId)) return prev
+          const next = [...prev, folderId]
+          saveNotesUiPrefs({ expandedFolderIds: next })
+          return next
+        })
+      }
+    },
+    [saveWithHistory],
+  )
+
+  const handleNewFolder = useCallback((parentId: string | null, name: string) => {
+    const folder = createFolder(name, parentId)
+    setFolders(loadFolders())
+    setExpandedFolderIds((prev) => {
+      const next = [...new Set([...prev, folder.id, '__inbox__', ...(parentId ? [parentId] : [])])]
+      saveNotesUiPrefs({ expandedFolderIds: next })
+      return next
+    })
+    void pushAllToServer()
+  }, [])
+
+  const handleDeleteFolder = useCallback((folderId: string) => {
+    if (!window.confirm('Delete folder? Notes move to Inbox.')) return
+    const { folders: nextFolders, sessions: nextSessions } = deleteFolder(folderId, loadSessions())
+    saveSessionsLocal(nextSessions)
+    setFolders(nextFolders)
+    dispatch({ type: 'SET_SESSIONS', sessions: nextSessions })
+    dispatch({ type: 'LOAD_SESSION', session: loadActiveSession() })
+    void pushAllToServer()
+  }, [])
+
+  const handleMoveNote = useCallback(
+    (sessionId: string, folderId: string | null) => {
+      const s = loadSessions().find((x) => x.id === sessionId)
+      if (!s) return
+      const updated = moveSessionToFolder(s, folderId)
+      upsertSession(updated)
+      dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+      if (sessionId === state.session.id) {
+        dispatch({ type: 'METADATA', metadata: updated.metadata ?? {} })
+      }
+      void saveSessionToServer(updated)
+    },
+    [state.session.id],
+  )
+
+  const handleToggleFolder = useCallback((folderId: string) => {
+    setExpandedFolderIds((prev) => {
+      const next = prev.includes(folderId) ? prev.filter((id) => id !== folderId) : [...prev, folderId]
+      saveNotesUiPrefs({ expandedFolderIds: next })
+      return next
+    })
+  }, [])
 
   const handleSelectMeeting = useCallback(
     (s: NoteSession) => {
@@ -818,6 +889,8 @@ export default function NotesApp() {
         <SidePanel
           isOpen={state.panelOpen}
           sessions={state.sessions}
+          folders={folders}
+          expandedFolderIds={expandedFolderIds}
           activeSessionId={state.session.id}
           focusedLookup={focusedLookup}
           sessionHistory={state.sessionHistory}
@@ -843,7 +916,11 @@ export default function NotesApp() {
           onHistoryOpenChange={(open) => dispatch({ type: 'HISTORY_OPEN', open })}
           onRollupOpenChange={(open) => dispatch({ type: 'ROLLUP_OPEN', open })}
           onSelectMeeting={handleSelectMeeting}
-          onNewMeeting={handleNewNote}
+          onNewNote={handleNewNote}
+          onNewFolder={handleNewFolder}
+          onDeleteFolder={handleDeleteFolder}
+          onMoveNote={handleMoveNote}
+          onToggleFolder={handleToggleFolder}
           onDeleteMeeting={handleDeleteMeeting}
           onDeleteLookup={handleDeleteLookup}
           onPanelLookup={handlePanelLookup}

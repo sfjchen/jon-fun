@@ -7,6 +7,7 @@ export type NotesUiPrefs = {
   syncOpen?: boolean
   shorthandOpen?: boolean
   panelWidth?: number
+  expandedFolderIds?: string[]
 }
 
 const PREFS_KEY = 'notes_ui_prefs'

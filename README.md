@@ -522,6 +522,7 @@ src/
 
 Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
 
+- **2026-06**: **Notes vault folders** — Notes panel section moved above Todos; Inbox + nested folders; `metadata.folderId`; folder tree syncs via vault session row. See [docs/NOTES-DESIGN.md](docs/NOTES-DESIGN.md).
 - **2026-06**: **Notes legacy cleanup** — removed uvimco redirects, localStorage migration, npm script aliases, CodeMirror CSS classes; CSS renamed to `notes-*`; admin key `notes_admin_ok`.
 - **2026-06**: **Supabase layout** — legacy root `supabase-migration-*.sql` → [`supabase/archive/legacy/`](supabase/archive/legacy/); [`supabase/README.md`](supabase/README.md); Notes migration history repaired (local/remote aligned).
 - **2026-06**: **Notes E2E hardening** — 3 QA cycles; tags/history/Ctrl+S/suffix-todo/highlight coverage; hints in bottom bar; deploy E2E green on sfjc.dev. See [docs/NOTES-DESIGN.md](docs/NOTES-DESIGN.md).

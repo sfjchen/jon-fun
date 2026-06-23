@@ -14,10 +14,8 @@ import FollowUpComposer from './FollowUpComposer'
 import LookupComposer from './LookupComposer'
 import SourcesPanel from './SourcesPanel'
 import NoteHistoryPanel from './NoteHistoryPanel'
-
-function formatMeetingDate(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-}
+import NotesVaultPanel from './NotesVaultPanel'
+import type { NoteFolder } from '@/lib/notes/types'
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
@@ -37,6 +35,8 @@ function lookupLabel(lk: Lookup): string {
 type SidePanelProps = {
   isOpen: boolean
   sessions: NoteSession[]
+  folders: NoteFolder[]
+  expandedFolderIds: string[]
   activeSessionId: string
   focusedLookup: Lookup | null
   sessionHistory: Lookup[]
@@ -62,7 +62,11 @@ type SidePanelProps = {
   onHistoryOpenChange: (open: boolean) => void
   onRollupOpenChange: (open: boolean) => void
   onSelectMeeting: (session: NoteSession) => void
-  onNewMeeting: () => void
+  onNewNote: (folderId: string | null) => void
+  onNewFolder: (parentId: string | null, name: string) => void
+  onDeleteFolder: (folderId: string) => void
+  onMoveNote: (sessionId: string, folderId: string | null) => void
+  onToggleFolder: (folderId: string) => void
   onDeleteMeeting: (sessionId: string) => void
   onDeleteLookup: (lookupId: string) => void
   onPanelLookup: (query: string) => void
@@ -78,6 +82,8 @@ type SidePanelProps = {
 export default function SidePanel({
   isOpen,
   sessions,
+  folders,
+  expandedFolderIds,
   activeSessionId,
   focusedLookup,
   sessionHistory,
@@ -103,7 +109,11 @@ export default function SidePanel({
   onHistoryOpenChange,
   onRollupOpenChange,
   onSelectMeeting,
-  onNewMeeting,
+  onNewNote,
+  onNewFolder,
+  onDeleteFolder,
+  onMoveNote,
+  onToggleFolder,
   onDeleteMeeting,
   onDeleteLookup,
   onPanelLookup,
@@ -179,6 +189,29 @@ export default function SidePanel({
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <CollapsibleSection
+          title="Notes"
+          badge={String(sessions.length)}
+          open={notesListOpen}
+          onToggle={() => onNotesListOpenChange(!notesListOpen)}
+          testId="notes-meetings-section"
+          toggleTestId="notes-meetings-toggle"
+        >
+          <NotesVaultPanel
+            sessions={sessions}
+            folders={folders}
+            activeSessionId={activeSessionId}
+            expandedFolderIds={expandedFolderIds}
+            onSelectMeeting={onSelectMeeting}
+            onNewNote={onNewNote}
+            onNewFolder={onNewFolder}
+            onDeleteFolder={onDeleteFolder}
+            onMoveNote={onMoveNote}
+            onDeleteMeeting={onDeleteMeeting}
+            onToggleFolder={onToggleFolder}
+          />
+        </CollapsibleSection>
+
         <CollapsibleSection
           title="Todos"
           {...(todoCount ? { badge: String(todoCount) } : {})}
@@ -268,66 +301,6 @@ export default function SidePanel({
                 </ul>
               </div>
             ) : null}
-          </div>
-        </CollapsibleSection>
-
-        {/* Notes list — secondary */}
-        <CollapsibleSection
-          title="Notes"
-          badge={String(sessions.length)}
-          open={notesListOpen}
-          onToggle={() => onNotesListOpenChange(!notesListOpen)}
-          testId="notes-meetings-section"
-          toggleTestId="notes-meetings-toggle"
-        >
-          <div className="px-2 pb-2">
-            <div className="mb-1 flex justify-end">
-              <button
-                type="button"
-                onClick={onNewMeeting}
-                data-testid="notes-new-meeting"
-                className="rounded px-2 py-0.5 text-[11px] font-medium text-[var(--uv-accent)] hover:bg-[var(--uv-accent-dim)]"
-              >
-                + New note
-              </button>
-            </div>
-            <ul className="max-h-40 space-y-0.5 overflow-y-auto">
-              {sessions.map((s) => {
-                const active = s.id === activeSessionId
-                return (
-                  <li key={s.id} className="group flex items-center gap-0.5">
-                    <button
-                      type="button"
-                      data-testid={`notes-meeting-item-${s.id}`}
-                      data-active={active ? 'true' : 'false'}
-                      onClick={() => onSelectMeeting(s)}
-                      className={`min-w-0 flex-1 truncate rounded px-2 py-1.5 text-left text-xs ${
-                        active
-                          ? 'notes-meeting-active text-[var(--uv-text-primary)]'
-                          : 'text-[var(--uv-text-secondary)] hover:bg-[var(--uv-bg-hover)]'
-                      }`}
-                    >
-                      <span className="block truncate">{s.title || 'Untitled'}</span>
-                      <span className="text-[10px] text-[var(--uv-text-muted)]">
-                        {formatMeetingDate(s.updatedAt)}
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={`Delete ${s.title || 'note'}`}
-                      data-testid={`notes-delete-meeting-${s.id}`}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onDeleteMeeting(s.id)
-                      }}
-                      className="shrink-0 rounded px-1 text-[10px] text-[var(--uv-text-muted)] hover:text-red-600"
-                    >
-                      ×
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
           </div>
         </CollapsibleSection>
 

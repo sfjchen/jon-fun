@@ -1,0 +1,98 @@
+import type { NoteFolder, NoteSession } from './types'
+
+export const FOLDERS_KEY = 'notes_folders'
+export const FOLDERS_VAULT_SESSION_ID = '__notes_folders__'
+
+export function loadFolders(): NoteFolder[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(FOLDERS_KEY)
+    if (!raw) return []
+    const arr = JSON.parse(raw) as NoteFolder[]
+    return Array.isArray(arr) ? arr.sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name)) : []
+  } catch {
+    return []
+  }
+}
+
+export function saveFolders(folders: NoteFolder[]): void {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(FOLDERS_KEY, JSON.stringify(folders))
+}
+
+export function createFolder(name: string, parentId: string | null = null): NoteFolder {
+  const folders = loadFolders()
+  const now = new Date().toISOString()
+  const siblings = folders.filter((f) => f.parentId === parentId)
+  const folder: NoteFolder = {
+    id: `fld-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    name: name.trim() || 'New folder',
+    parentId,
+    sortOrder: siblings.length,
+    createdAt: now,
+  }
+  saveFolders([...folders, folder])
+  return folder
+}
+
+export function deleteFolder(id: string, sessions: NoteSession[]): { folders: NoteFolder[]; sessions: NoteSession[] } {
+  const toRemove = new Set<string>([id])
+  const folders = loadFolders()
+  let changed = true
+  while (changed) {
+    changed = false
+    for (const f of folders) {
+      if (f.parentId && toRemove.has(f.parentId) && !toRemove.has(f.id)) {
+        toRemove.add(f.id)
+        changed = true
+      }
+    }
+  }
+  const nextFolders = folders.filter((f) => !toRemove.has(f.id))
+  const nextSessions = sessions.map((s) => {
+    const fid = s.metadata?.folderId
+    if (!fid || !toRemove.has(fid)) return s
+    const metadata = { ...s.metadata }
+    delete metadata.folderId
+    return { ...s, metadata }
+  })
+  saveFolders(nextFolders)
+  return { folders: nextFolders, sessions: nextSessions }
+}
+
+export function moveSessionToFolder(session: NoteSession, folderId: string | null): NoteSession {
+  const metadata = { ...session.metadata }
+  if (folderId) metadata.folderId = folderId
+  else delete metadata.folderId
+  return { ...session, metadata }
+}
+
+export function sessionsInFolder(sessions: NoteSession[], folderId: string | null): NoteSession[] {
+  return sessions.filter((s) => (s.metadata?.folderId ?? null) === folderId)
+}
+
+export function childFolders(folders: NoteFolder[], parentId: string | null): NoteFolder[] {
+  return folders.filter((f) => f.parentId === parentId).sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
+}
+
+export function parseFoldersFromVaultNotes(notes: string): NoteFolder[] {
+  try {
+    const arr = JSON.parse(notes) as NoteFolder[]
+    return Array.isArray(arr) ? arr : []
+  } catch {
+    return []
+  }
+}
+
+export function foldersToVaultNotes(folders: NoteFolder[]): string {
+  return JSON.stringify(folders)
+}
+
+export function mergeFolders(local: NoteFolder[], remote: NoteFolder[]): NoteFolder[] {
+  const byId = new Map<string, NoteFolder>()
+  for (const f of [...local, ...remote]) {
+    const existing = byId.get(f.id)
+    if (!existing || f.createdAt >= existing.createdAt) byId.set(f.id, f)
+  }
+  return [...byId.values()].sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
+}
