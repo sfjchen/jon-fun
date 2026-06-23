@@ -3,6 +3,7 @@
 import { formatHistoryLine } from '@/lib/notes/noteHistory'
 import { NOTES_SHORTCUTS } from '@/lib/notes/shortcuts'
 import type { NoteHistoryEntry } from '@/lib/notes/types'
+import ExportMenu from './ExportMenu'
 
 type StatusBarProps = {
   chars: number
@@ -15,9 +16,11 @@ type StatusBarProps = {
   lastHistory?: NoteHistoryEntry | null
   hintsOpen: boolean
   panelOpen: boolean
+  pdfExportBusy?: boolean
   onSearch: () => void
   onNewNote: () => void
-  onExport: () => void
+  onExportMd: () => void
+  onExportPdf: () => Promise<void>
   onSummarize: () => void
   onTogglePanel: () => void
   onHintsToggle: () => void
@@ -43,7 +46,9 @@ export default function StatusBar({
   panelOpen,
   onSearch,
   onNewNote,
-  onExport,
+  onExportMd,
+  onExportPdf,
+  pdfExportBusy,
   onSummarize,
   onTogglePanel,
   onHintsToggle,
@@ -96,7 +101,11 @@ export default function StatusBar({
           onClick={onNewNote}
           className="hidden sm:inline-flex"
         />
-        <ActionBtn label="Export" keys={NOTES_SHORTCUTS.export} onClick={onExport} />
+        <ExportMenu
+          onExportMd={onExportMd}
+          onExportPdf={onExportPdf}
+          {...(pdfExportBusy ? { pdfBusy: true } : {})}
+        />
         <ActionBtn
           testId="notes-summarize-btn"
           label="Summarize"

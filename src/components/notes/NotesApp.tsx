@@ -24,11 +24,11 @@ import {
 import { isNotesTextFieldTarget } from '@/lib/notes/shortcuts'
 import { streamLookup } from '@/lib/notes/streamClient'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
+import { downloadSessionMarkdown, downloadSessionPdf } from '@/lib/notes/export'
 import {
   createEmptySession,
   deleteSession,
   deleteSessionOnServer,
-  exportSessionMarkdown,
   getEffectiveUserId,
   getOrCreateUserId,
   loadActiveSession,
@@ -319,6 +319,7 @@ export default function NotesApp() {
     if (typeof window === 'undefined') return ['__inbox__']
     return loadNotesUiPrefs().expandedFolderIds ?? ['__inbox__']
   })
+  const [pdfExportBusy, setPdfExportBusy] = useState(false)
   const editorRef = useRef<NoteEditorHandle>(null)
 
   const streamBufs = useRef<Record<string, string>>({})
@@ -628,15 +629,17 @@ export default function NotesApp() {
     void pushGlossaryToServer()
   }, [])
 
-  const handleExport = useCallback(() => {
-    const md = exportSessionMarkdown(state.session)
-    const blob = new Blob([md], { type: 'text/markdown' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `notes-${state.session.title.replace(/\s+/g, '-').slice(0, 40) || 'session'}.md`
-    a.click()
-    URL.revokeObjectURL(url)
+  const handleExportMd = useCallback(() => {
+    downloadSessionMarkdown(state.session)
+  }, [state.session])
+
+  const handleExportPdf = useCallback(async () => {
+    setPdfExportBusy(true)
+    try {
+      await downloadSessionPdf(state.session)
+    } finally {
+      setPdfExportBusy(false)
+    }
   }, [state.session])
 
   const handleSummarize = useCallback(() => {
@@ -816,7 +819,7 @@ export default function NotesApp() {
       }
       if (key === 'e') {
         e.preventDefault()
-        handleExport()
+        handleExportMd()
         return
       }
       if (e.shiftKey && key === 'n') {
@@ -839,7 +842,7 @@ export default function NotesApp() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [handleSummarize, handleExport, saveWithHistory, handleNewNote, state.panelOpen, aiBusy, searchOpen])
+  }, [handleSummarize, handleExportMd, saveWithHistory, handleNewNote, state.panelOpen, aiBusy, searchOpen])
 
   const focusedId = state.focusedLookupId ?? state.currentLookup?.id ?? null
   const focusedLookup =
@@ -945,9 +948,11 @@ export default function NotesApp() {
         lastHistory={lastHist}
         hintsOpen={hintsOpen}
         panelOpen={state.panelOpen}
+        pdfExportBusy={pdfExportBusy}
         onSearch={() => setSearchOpen(true)}
         onNewNote={handleNewNote}
-        onExport={handleExport}
+        onExportMd={handleExportMd}
+        onExportPdf={handleExportPdf}
         onSummarize={handleSummarize}
         onTogglePanel={() => dispatch({ type: 'PANEL_TOGGLE' })}
         onHintsToggle={() => {

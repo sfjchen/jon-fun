@@ -74,7 +74,7 @@ Data lives on Supabase under `note_sessions` (+ `notes_sources`, `notes_glossary
 - **Panel order (top→bottom):** Notes vault (folders + Inbox) → Todos → AI lookup → Glossary → Sources → History → Sync & backup (collapsed)
 - **Parallel AI** — multiple `?`/`??` triggers run concurrently; status bar shows active count; history shows streaming dots
 - **Sync rare** — collapsed under “Sync & backup”; expand only when setting key or restore
-- Notion-like light theme, Lato; Ctrl `\` panel, `Shift+F` search, `K` summarize, Export button, `Shift+N` new note, **Ctrl+S** save+sync
+- Notion-like light theme, Lato; Ctrl `\` panel, `Shift+F` search, `K` summarize, **Export menu** (Markdown / PDF), `Shift+N` new note, **Ctrl+S** save+sync, **Ctrl+E** quick MD export
 - **Top bar:** sfjc.dev · Notes · title · tags · created date
 - **Bottom bar:** stats · action buttons + hotkey badges · Hints toggle · paste screenshot hint
 - **Panel lookup:** text field at top of AI section — ask without typing `?` in the note (optional trailing `?` / `??`)
@@ -116,3 +116,4 @@ Mock helper: `e2e/helpers/notes-mock.ts` — stubs `/api/notes/*` including embe
 - **2026-06-23**: Unified top/bottom bars; tags replace kind/domain; auto domain; note history; todo suffix + `*highlight*`; Ctrl+S save/sync; hints in bottom bar.
 - **2026-06-23**: Phase 3 complete — Tiptap-only; `noteAttachment` screenshots; FollowUpComposer previews; agent doc [`NOTES-AGENT.md`](./NOTES-AGENT.md).
 - **2026-06-22**: Notes vault — folders + Inbox tree as top panel section; `metadata.folderId`; folder sync via vault session row.
+- **2026-06-22**: Export menu — Markdown (.md) + formatted PDF; metadata/tags, full lookup threads, action items; Ctrl+E → MD.

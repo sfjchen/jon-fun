@@ -11,8 +11,9 @@ import {
   parseFoldersFromVaultNotes,
   saveFolders,
 } from './folders'
-import { parseTodoLine } from './shorthand'
 import type { NoteFolder, NoteSession, Screenshot } from './types'
+
+export { buildSessionMarkdown, exportSessionMarkdown } from './export'
 
 const USER_ID_KEY = 'notes_user_id'
 const SYNC_KEY = 'notes_sync_key'
@@ -266,45 +267,6 @@ export async function syncWithServer(): Promise<{ sessions: NoteSession[]; pushO
 export async function saveSessionToServer(session: NoteSession): Promise<boolean> {
   upsertSession(session)
   return pushWithRetry(loadSessions())
-}
-
-export function exportSessionMarkdown(session: NoteSession): string {
-  const date = new Date(session.startedAt).toLocaleDateString(undefined, {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-  const actions = session.notes
-    .split('\n')
-    .map((l) => parseTodoLine(l))
-    .filter((t): t is string => Boolean(t))
-  const lookupLines = session.lookups.flatMap((lk) => {
-    const ans = lk.conversation.find((m) => m.role === 'assistant')?.content ?? ''
-    const label = lk.type === 'section' ? `${lk.query}??` : `${lk.query}?`
-    return ans ? [`**${label}** — ${ans}`] : []
-  })
-
-  return [
-    `# Notes`,
-    `Date: ${date}`,
-    `Session: ${session.title}`,
-    '',
-    '---',
-    '',
-    '## Raw Notes',
-    session.notes,
-    '',
-    '---',
-    '',
-    '## AI Lookups',
-    lookupLines.length ? lookupLines.join('\n\n') : '_None_',
-    '',
-    '---',
-    '',
-    '## Action Items',
-    actions.length ? actions.map((a) => `- ${a}`).join('\n') : '_None_',
-  ].join('\n')
 }
 
 export type SessionPatch = Partial<
