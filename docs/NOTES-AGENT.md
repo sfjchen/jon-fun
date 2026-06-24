@@ -30,6 +30,7 @@ e2e/helpers/notes-mock.ts     mock API + editor helpers
 - `> text` — todo (rollup)
 - `*text*` — highlight decoration
 - Paste/drop/📷 — screenshot attachment node
+- **Inline tables** — Tiptap TableKit; toolbar ▦ or `Ctrl+Alt+T`; paste Excel TSV/CSV as table; bubble menu for rows/cols/merge/align/copy CSV
 
 ## localStorage keys
 
@@ -49,6 +50,7 @@ e2e/helpers/notes-mock.ts     mock API + editor helpers
 ```bash
 npm run verify:notes-triggers
 npm run verify:notes-attachments
+npm run verify:notes-tables
 npm run type-check
 ```
 

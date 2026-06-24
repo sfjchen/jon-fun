@@ -132,6 +132,8 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
     const w = window as Window & {
       __notesE2eInsertCsv?: (csv: string, filename?: string) => Promise<boolean>
       __notesE2eSelectAttachment?: (attachmentId: string) => boolean
+      __notesE2eEditor?: () => typeof editor
+      __notesE2eGetMarkdown?: () => string
     }
     w.__notesE2eInsertCsv = async (csv, filename = 'e2e.csv') => {
       const storage = editor.storage.noteAttachment as NoteAttachmentStorage
@@ -152,9 +154,13 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
       editor.chain().focus().setNodeSelection(targetPos).run()
       return true
     }
+    w.__notesE2eEditor = () => editor
+    w.__notesE2eGetMarkdown = () => editor.getMarkdown()
     return () => {
       delete w.__notesE2eInsertCsv
       delete w.__notesE2eSelectAttachment
+      delete w.__notesE2eEditor
+      delete w.__notesE2eGetMarkdown
     }
   }, [editor])
 

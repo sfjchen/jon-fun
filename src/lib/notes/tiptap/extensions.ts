@@ -12,7 +12,8 @@ import { NoteAttachment } from './noteAttachment'
 import { dashListExtension } from './dashList'
 import { notesEditingExtension } from './notesEditing'
 import { NotesItalic } from './notesItalic'
-import { notesTableExtensions } from './tableConfig'
+import { notesTableKit } from './tableConfig'
+import { tableKeymap } from './tableKeymap'
 import { tablePasteExtension } from './tablePaste'
 
 export type NotesExtensionOpts = {
@@ -40,10 +41,11 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
       linkOnPaste: true,
     }),
     NoteAttachment,
-    ...notesTableExtensions,
+    notesTableKit,
     Markdown,
     Placeholder.configure({ placeholder: opts.placeholder }),
     notesKeymap,
+    tableKeymap,
     notesEditingExtension,
     dashListExtension,
     attachmentPasteExtension,

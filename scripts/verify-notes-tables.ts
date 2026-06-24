@@ -1,4 +1,5 @@
 import {
+  gridToCsv,
   gridToMarkdownTable,
   looksLikeTabularText,
   parseTabularText,
@@ -38,6 +39,17 @@ ok('markdown has data row', md.includes('| AAPL | 190 |'))
 const roundGrid = parseTabularText(csv)
 const md2 = gridToMarkdownTable(roundGrid, true)
 ok('csv grid to md', md2.includes('MSFT'))
+
+const csvOut = gridToCsv([
+  ['Name', 'Value'],
+  ['Alpha', '1.2'],
+  ['Beta', '0,5'],
+])
+ok('csv export basic', csvOut.includes('Name,Value'))
+ok('csv export quotes comma', csvOut.includes('"0,5"'))
+
+const quoted = gridToCsv([['say "hi"', 'ok']])
+ok('csv escape quotes', quoted.includes('"say ""hi"""'))
 
 if (failed > 0) {
   console.error(`\n${failed} check(s) failed.`)

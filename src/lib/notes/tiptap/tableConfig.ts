@@ -1,14 +1,12 @@
-import { Table } from '@tiptap/extension-table'
-import { TableCell } from '@tiptap/extension-table-cell'
-import { TableHeader } from '@tiptap/extension-table-header'
-import { TableRow } from '@tiptap/extension-table-row'
+import { TableKit } from '@tiptap/extension-table/kit'
 
-export const notesTableExtensions = [
-  Table.configure({
+/** Tiptap TableKit — resizable tables with markdown round-trip. */
+export const notesTableKit = TableKit.configure({
+  table: {
     resizable: true,
     lastColumnResizable: true,
-  }),
-  TableRow,
-  TableHeader,
-  TableCell,
-]
+    renderWrapper: true,
+    cellMinWidth: 48,
+    allowTableNodeSelection: true,
+  },
+})
