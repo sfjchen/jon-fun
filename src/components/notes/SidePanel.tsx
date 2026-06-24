@@ -183,17 +183,6 @@ export default function SidePanel({
       />
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         <CollapsibleSection
-          title="Todos"
-          {...(todoCount ? { badge: String(todoCount) } : {})}
-          open={rollupOpen}
-          onToggle={() => onRollupOpenChange(!rollupOpen)}
-          testId="notes-rollup-section"
-          toggleTestId="notes-rollup-toggle"
-        >
-          <RollupPanel sessions={sessions} onJump={onJumpTodo} embedded />
-        </CollapsibleSection>
-
-        <CollapsibleSection
           title="Notes"
           badge={String(sessions.length)}
           open={notesListOpen}
@@ -215,6 +204,17 @@ export default function SidePanel({
             onDeleteMeeting={onDeleteMeeting}
             onToggleFolder={onToggleFolder}
           />
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="Todos"
+          {...(todoCount ? { badge: String(todoCount) } : {})}
+          open={rollupOpen}
+          onToggle={() => onRollupOpenChange(!rollupOpen)}
+          testId="notes-rollup-section"
+          toggleTestId="notes-rollup-toggle"
+        >
+          <RollupPanel sessions={sessions} onJump={onJumpTodo} embedded />
         </CollapsibleSection>
 
         <CollapsibleSection
