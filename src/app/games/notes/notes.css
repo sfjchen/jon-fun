@@ -462,7 +462,8 @@
     -webkit-text-size-adjust: 100%;
   }
 
-  [data-testid^='notes-folder-drag-'] {
+  [data-testid^='notes-folder-drag-'],
+  [data-testid^='notes-note-drag-'] {
     display: inline-flex;
     min-width: 2rem;
     min-height: 2rem;
@@ -474,5 +475,6 @@
 
   [data-testid^='notes-note-row-'] {
     min-height: 2.25rem;
+    padding-left: 0.25rem;
   }
 }

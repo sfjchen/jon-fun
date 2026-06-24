@@ -11,6 +11,7 @@ type StatusBarProps = {
   flags: number
   actions: number
   syncOk: boolean | null
+  syncKind?: 'saved' | 'synced' | null
   saving: boolean
   syncing?: boolean
   aiActiveCount?: number
@@ -43,6 +44,7 @@ export default function StatusBar({
   flags,
   actions,
   syncOk,
+  syncKind,
   saving,
   syncing,
   aiActiveCount = 0,
@@ -63,19 +65,19 @@ export default function StatusBar({
   if (syncing) syncLabel = 'Syncing…'
   else if (saving) syncLabel = 'Saving…'
   else if (syncOk === false) syncLabel = 'Sync failed — saved locally'
-  else if (syncOk === true) syncLabel = 'Saved'
+  else if (syncOk === true) syncLabel = syncKind === 'synced' ? 'Synced' : 'Saved'
 
   return (
     <footer
       className="notes-statusbar-mobile flex min-h-7 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-t border-[var(--uv-border)] bg-[var(--uv-bg-sidebar)] px-3 py-1 text-[10px] text-[var(--uv-text-secondary)] sm:px-4"
       data-testid="notes-statusbar"
     >
-      <span>{chars} chars</span>
-      <span>{flags} ?</span>
-      <span>{actions} todos</span>
+      <span title="Character count">{chars} chars</span>
+      <span title="Lines with ? or ?? AI triggers">{flags} ?</span>
+      <span title="Todo lines (suffix &gt;)">{actions} todos</span>
       {aiActiveCount > 0 ? (
         <span className="text-[var(--uv-accent)]" data-testid="notes-ai-active-count">
-          {aiActiveCount} AI…
+          {aiActiveCount} AI active
         </span>
       ) : null}
       {syncLabel ? (
@@ -129,7 +131,7 @@ export default function StatusBar({
         />
         <ActionBtn
           testId="notes-toggle-panel"
-          label={panelOpen ? 'Hide panel' : 'Panel'}
+          label={panelOpen ? 'Hide panel' : isMobile ? 'Notes' : 'Panel'}
           keys={notesShortcutLabel('panel')}
           hideKeys={isMobile}
           onClick={onTogglePanel}

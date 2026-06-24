@@ -51,6 +51,9 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
 
   return (
     <div className="px-3 pb-3" data-testid="notes-sync-panel">
+      <p className="mb-2 text-[11px] leading-snug text-[var(--uv-text-muted)]">
+        Sync password links devices — Save &amp; Sync pulls notes from your other devices.
+      </p>
       <label className="mb-1 block text-[10px] text-[var(--uv-text-muted)]">Sync password</label>
       <div className="mb-2 flex gap-1">
         <input

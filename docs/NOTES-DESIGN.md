@@ -132,3 +132,4 @@ Mock helper: `e2e/helpers/notes-mock.ts` — stubs `/api/notes/*` including embe
 - **2026-06-22**: Notes vault — folders + Inbox tree as top panel section; `metadata.folderId`; folder sync via vault session row.
 - **2026-06-22**: Export menu — Markdown (.md) + formatted PDF; metadata/tags, full lookup threads, action items; Ctrl+E → MD.
 - **2026-06-24**: Device tiers — phone overlay panel, desktop default-open + resize, Mac Cmd labels, mobile-safe shortcuts.
+- **2026-06-24**: UX polish — status bar Saved/Synced distinction, sync panel hint, vault empty inbox, AI empty hint, note drag grips, mobile Notes panel button.
