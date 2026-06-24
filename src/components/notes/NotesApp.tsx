@@ -69,6 +69,7 @@ type State = {
   sessionHistory: Lookup[]
   streamByLookupId: LookupStreamMap
   syncOk: boolean | null
+  syncKind: 'saved' | 'synced' | null
   glossaryRefreshKey: number
 }
 
@@ -94,7 +95,7 @@ type Action =
   | { type: 'STREAM_ERROR'; lookupId: string; message: string }
   | { type: 'SELECT_LOOKUP'; lookup: Lookup }
   | { type: 'DELETE_LOOKUP'; lookupId: string }
-  | { type: 'SYNC_OK'; ok: boolean }
+  | { type: 'SYNC_OK'; ok: boolean; kind?: 'saved' | 'synced' }
   | { type: 'LOAD_SESSION'; session: NoteSession; preserveAi?: boolean }
   | { type: 'CLEAR_LOOKUP' }
   | { type: 'GLOSSARY_BUMP' }
@@ -121,6 +122,7 @@ function initState(): State {
     sessionHistory: [...initial.lookups].reverse(),
     streamByLookupId: {},
     syncOk: null,
+    syncKind: null,
     glossaryRefreshKey: 0,
   }
 }
@@ -286,7 +288,11 @@ function reducer(state: State, action: Action): State {
       }
     }
     case 'SYNC_OK':
-      return { ...state, syncOk: action.ok }
+      return {
+        ...state,
+        syncOk: action.ok,
+        syncKind: action.ok ? (action.kind ?? 'saved') : null,
+      }
     case 'LOAD_SESSION': {
       const preserveAi = action.preserveAi && anyStreaming(state.streamByLookupId)
       return {
@@ -411,7 +417,7 @@ export default function NotesApp() {
       setActiveSessionId(mergedActive.id)
     }
     const ok = r.pushOk && mem.glossaryOk && mem.sourcesOk
-    dispatch({ type: 'SYNC_OK', ok })
+    dispatch({ type: 'SYNC_OK', ok, kind: 'synced' })
     return r
   }, [persistLocal])
 
@@ -447,7 +453,7 @@ export default function NotesApp() {
         return refreshFromServer(pullOpts)
       }
       const ok = await saveSessionToServer(session)
-      dispatch({ type: 'SYNC_OK', ok })
+      dispatch({ type: 'SYNC_OK', ok, kind: 'saved' })
       return { sessions: loadSessions(), pushOk: ok }
     },
     [refreshFromServer, shouldBackgroundPull],
@@ -462,7 +468,7 @@ export default function NotesApp() {
         return refreshFromServer(pullOpts)
       }
       const ok = await pushAllToServer()
-      dispatch({ type: 'SYNC_OK', ok })
+      dispatch({ type: 'SYNC_OK', ok, kind: 'saved' })
       return { sessions: loadSessions(), pushOk: ok }
     },
     [persistLocal, refreshFromServer, shouldBackgroundPull],
@@ -1125,6 +1131,7 @@ export default function NotesApp() {
         flags={counts.flags}
         actions={counts.actions}
         syncOk={state.syncOk}
+        syncKind={state.syncKind}
         saving={saving}
         syncing={syncing}
         aiActiveCount={aiActiveCount}

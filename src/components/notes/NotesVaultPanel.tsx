@@ -50,7 +50,7 @@ function NoteRow({
 }) {
   return (
     <li
-      className="group flex items-center gap-0.5 pl-4"
+      className="group flex items-center gap-0.5 pl-2"
       draggable
       data-testid={`notes-note-row-${session.id}`}
       onDragStart={(e) => {
@@ -59,6 +59,14 @@ function NoteRow({
         e.dataTransfer.effectAllowed = 'move'
       }}
     >
+      <span
+        title="Drag to folder"
+        aria-hidden
+        className="cursor-grab shrink-0 rounded px-0.5 text-[10px] text-[var(--uv-text-muted)] opacity-60 hover:opacity-100 active:cursor-grabbing"
+        data-testid={`notes-note-drag-${session.id}`}
+      >
+        ⠿
+      </span>
       <button
         type="button"
         data-testid={`notes-meeting-item-${session.id}`}
@@ -466,17 +474,26 @@ export default function NotesVaultPanel({
             <InboxHeader open={inboxOpen} count={inboxNotes.length} onToggle={() => onToggleFolder('__inbox__')} />
             {inboxOpen ? (
               <div className="min-h-6 py-0.5" data-testid="notes-folder-body-inbox">
-                <ul className="space-y-0">
-                  {inboxNotes.map((s) => (
-                    <NoteRow
-                      key={s.id}
-                      session={s}
-                      active={s.id === activeSessionId}
-                      onSelect={() => onSelectMeeting(s)}
-                      onDelete={() => onDeleteMeeting(s.id)}
-                    />
-                  ))}
-                </ul>
+                {inboxNotes.length === 0 ? (
+                  <p
+                    className="px-2 py-1 text-[11px] text-[var(--uv-text-muted)]"
+                    data-testid="notes-inbox-empty"
+                  >
+                    Inbox empty — tap + Note or start typing.
+                  </p>
+                ) : (
+                  <ul className="space-y-0">
+                    {inboxNotes.map((s) => (
+                      <NoteRow
+                        key={s.id}
+                        session={s}
+                        active={s.id === activeSessionId}
+                        onSelect={() => onSelectMeeting(s)}
+                        onDelete={() => onDeleteMeeting(s.id)}
+                      />
+                    ))}
+                  </ul>
+                )}
               </div>
             ) : null}
           </FolderDropZone>

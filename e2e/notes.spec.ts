@@ -477,7 +477,7 @@ test.describe('Notes', () => {
   test('Ctrl+S saves and shows Saved in status bar', async ({ page }) => {
     await typeInNotesEditor(page, 'autosave check')
     await page.keyboard.press('Control+s')
-    await expect(page.getByTestId('notes-sync-label')).toContainText('Saved', { timeout: 10_000 })
+    await expect(page.getByTestId('notes-sync-label')).toContainText(/Saved|Synced/, { timeout: 10_000 })
   })
 
   test('note history records lookup and save events', async ({ page }) => {
@@ -486,7 +486,7 @@ test.describe('Notes', () => {
     await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15_000 })
 
     await page.keyboard.press('Control+s')
-    await expect(page.getByTestId('notes-sync-label')).toContainText('Saved', { timeout: 10_000 })
+    await expect(page.getByTestId('notes-sync-label')).toContainText(/Saved|Synced/, { timeout: 10_000 })
 
     await page.getByTestId('notes-history-toggle').click()
     const hist = page.getByTestId('notes-history-panel')

@@ -272,6 +272,17 @@ export default function SidePanel({
             ) : (
               <>
                 <LookupComposer onSubmit={onPanelLookup} />
+                {sessionHistory.length === 0 ? (
+                  <p
+                    className="mb-2 text-[11px] leading-snug text-[var(--uv-text-muted)]"
+                    data-testid="notes-ai-empty-hint"
+                  >
+                    Type{' '}
+                    <code className="text-[var(--uv-accent-strong)]">?</code> or{' '}
+                    <code className="text-[var(--uv-accent-strong)]">??</code> in the note, or ask
+                    above.
+                  </p>
+                ) : null}
                 <LookupConversation lookup={null} streamText="" isStreaming={false} error={displayError} />
               </>
             )}
