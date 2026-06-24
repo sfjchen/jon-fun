@@ -76,7 +76,7 @@ type SidePanelProps = {
   onSelectHistory: (lookup: Lookup) => void
   onClearLookup: () => void
   onClose: () => void
-  onSynced: (opts?: { skipPersist?: boolean }) => void
+  onSynced: (opts?: { skipPersist?: boolean; force?: boolean }) => void
   onJumpTodo: (sessionId: string, lineIndex: number) => void
   onToggleSourceForNote: (sourceId: string, enabled: boolean) => void
   onSourcesChange: () => void
@@ -183,19 +183,16 @@ export default function SidePanel({
         className="absolute bottom-0 left-0 top-0 z-10 w-1 cursor-col-resize hover:bg-[var(--uv-accent-dim)] max-md:hidden"
         data-testid="notes-panel-resize"
       />
-      <div className="flex shrink-0 items-center justify-between border-b border-[var(--uv-border)] bg-[var(--uv-bg-panel)] px-3 py-2 max-md:sticky max-md:top-0 max-md:z-10">
-        <span className="text-xs font-semibold text-[var(--uv-text-secondary)]">Panel</span>
-        <button
-          type="button"
-          onClick={onClose}
-          className="min-h-9 min-w-9 rounded px-1.5 text-lg leading-none text-[var(--uv-text-muted)] hover:text-[var(--uv-text-primary)] md:hidden"
-          aria-label="Close panel"
-          data-testid="notes-panel-close"
-        >
-          ×
-        </button>
-      </div>
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute right-2 top-2 z-20 flex min-h-8 min-w-8 items-center justify-center rounded-full border border-[var(--uv-border)] bg-[var(--uv-bg-panel)] text-lg leading-none text-[var(--uv-text-muted)] shadow-sm hover:text-[var(--uv-text-primary)] md:hidden"
+        aria-label="Close panel"
+        data-testid="notes-panel-close"
+      >
+        ×
+      </button>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto max-md:pt-2">
         <CollapsibleSection
           title="Notes"
           badge={String(sessions.length)}

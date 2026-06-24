@@ -64,7 +64,9 @@ Same model as **One Sentence Everyday** / daily-learn:
 - Device UUID in `localStorage` → `user_id` on Supabase
 - Optional **sync password** links devices (shared string)
 - **Restore** after cache clear: enter sync password or device ID → pull from server
-- Push on load, debounced save, periodic sync (5m / 1h), visibility sync
+- **Bidirectional merge** on pull: per-session winner = newest `updatedAt`; then push merged set
+- **Pull triggers:** page load (always); tab visible again (if ≥30s since last pull *or* tab hidden ≥30s); periodic (5m visible / 1h hidden); explicit save (Ctrl+S, tab hide, Save & Sync); debounced typing save pulls at most every 30s (otherwise push-only)
+- **Cross-device:** device B picks up device A saves via the above polling — no Supabase Realtime yet (`note_sessions` has RLS but no anon read policy / publication entry; API-only sync keeps sync-password model simple)
 
 Data lives on Supabase under `note_sessions` (+ `notes_sources`, `notes_glossary`).
 
@@ -81,6 +83,18 @@ Data lives on Supabase under `note_sessions` (+ `notes_sources`, `notes_glossary
 - **Editor:** Tiptap + `@tiptap/markdown` ([`EditorShell`](../../src/components/notes/EditorShell.tsx) → [`TiptapNoteEditor`](../../src/components/notes/TiptapNoteEditor.tsx)); markdown stored in `NoteSession.notes`
 - **Screenshots:** paste/drop/📷 Attach → inline image node; stored as `[📷 id]` in markdown + base64 in `session.screenshots`; follow-up composer shows thumbnails and sends images to lookup API
 - **Models (Jun 2026):** lookup `google/gemini-2.5-flash-lite`; decode/follow-up/images `gemini-2.5-flash`; embed `gemini-embedding-001`
+
+## Device tiers (Jun 2026)
+
+Breakpoint **`768px`** (`md`) — helpers in [`device.ts`](../../src/lib/notes/device.ts), hook [`useNotesDevice`](../../src/lib/notes/useNotesDevice.ts).
+
+| Tier | Detect | Panel | Shortcuts | Chrome |
+|------|--------|-------|-----------|--------|
+| **Phone** | ≤767px / touch viewport | Overlay + backdrop dismiss; no “Panel” header; optional floating ×; closed by default | Status bar buttons only (no kbd badges); **no** Ctrl/Cmd panel/search/summarize handlers except **save** in fields | Safe-area insets; 44px tap targets; horizontal toolbar scroll; summarize runs AI without opening panel |
+| **Laptop / desktop** | ≥768px pointer | Side-by-side; resizable handle; **open by default** (persisted in `notes_ui_prefs`) | Full keyboard map — **Cmd** labels on Mac, **Ctrl** on Windows/Linux; metaKey + ctrlKey both accepted | Hints row in status bar; summarize opens panel |
+| **Mac-specific** | `navigator.platform` / `userAgentData` | Same as desktop | UI badges use **Cmd+…**; handlers accept ⌘ | — |
+
+Shared: `?` / `??` triggers always open panel (phone included); Escape closes search → panel → clears lookup focus.
 
 ## E2E test matrix
 
@@ -117,3 +131,4 @@ Mock helper: `e2e/helpers/notes-mock.ts` — stubs `/api/notes/*` including embe
 - **2026-06-23**: Phase 3 complete — Tiptap-only; `noteAttachment` screenshots; FollowUpComposer previews; agent doc [`NOTES-AGENT.md`](./NOTES-AGENT.md).
 - **2026-06-22**: Notes vault — folders + Inbox tree as top panel section; `metadata.folderId`; folder sync via vault session row.
 - **2026-06-22**: Export menu — Markdown (.md) + formatted PDF; metadata/tags, full lookup threads, action items; Ctrl+E → MD.
+- **2026-06-24**: Device tiers — phone overlay panel, desktop default-open + resize, Mac Cmd labels, mobile-safe shortcuts.
