@@ -1,3 +1,5 @@
+import type { JSONContent } from '@tiptap/core'
+
 /** Tabular clipboard / CSV helpers for inline markdown tables. */
 
 export const DEFAULT_TABLE_ROWS = 3
@@ -78,8 +80,8 @@ function escapeCell(value: string): string {
   return value.replace(/\|/g, '\\|').replace(/\n/g, ' ')
 }
 
-/** Build GFM pipe table markdown from a 2D grid (first row = header). */
-export function gridToMarkdownTable(grid: string[][], withHeaderRow = true): string {
+/** Build GFM pipe table markdown from a 2D grid (optional first row = header). */
+export function gridToMarkdownTable(grid: string[][], withHeaderRow = false): string {
   if (!grid.length) return ''
   const cols = Math.max(...grid.map((r) => r.length), 1)
   const pad = (row: string[]) => {
@@ -103,4 +105,29 @@ export function gridToMarkdownTable(grid: string[][], withHeaderRow = true): str
   const rows = grid.map(pad)
   const sep = Array.from({ length: cols }, () => '---')
   return [`| ${sep.join(' | ')} |`, ...rows.map((r) => `| ${r.join(' | ')} |`)].join('\n')
+}
+
+/** Build Tiptap table JSON from a 2D grid (optional first row = header). */
+export function gridToTableContent(grid: string[][], withHeaderRow = false): JSONContent {
+  const cols = Math.max(...grid.map((r) => r.length), 1)
+  const pad = (row: string[]) => {
+    const out = [...row]
+    while (out.length < cols) out.push('')
+    return out
+  }
+
+  const cellNode = (text: string, header: boolean): JSONContent => ({
+    type: header ? 'tableHeader' : 'tableCell',
+    content: text
+      ? [{ type: 'paragraph', content: [{ type: 'text', text }] }]
+      : [{ type: 'paragraph' }],
+  })
+
+  return {
+    type: 'table',
+    content: grid.map((row, rowIndex) => ({
+      type: 'tableRow',
+      content: pad(row).map((text) => cellNode(text, withHeaderRow && rowIndex === 0)),
+    })),
+  }
 }

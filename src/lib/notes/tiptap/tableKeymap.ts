@@ -13,7 +13,7 @@ export const tableKeymap = Extension.create({
           .insertTable({
             rows: DEFAULT_TABLE_ROWS,
             cols: DEFAULT_TABLE_COLS,
-            withHeaderRow: true,
+            withHeaderRow: false,
           })
           .run(),
       'Mod-Alt-T': () =>
@@ -23,7 +23,7 @@ export const tableKeymap = Extension.create({
           .insertTable({
             rows: DEFAULT_TABLE_ROWS,
             cols: DEFAULT_TABLE_COLS,
-            withHeaderRow: true,
+            withHeaderRow: false,
           })
           .run(),
     }

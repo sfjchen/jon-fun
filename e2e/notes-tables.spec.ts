@@ -26,14 +26,15 @@ test.describe('Notes inline markdown tables', () => {
     await waitForNotesEditor(page)
   })
 
-  test('toolbar inserts editable table with header row', async ({ page }) => {
+  test('toolbar inserts editable table without header row by default', async ({ page }) => {
     await insertTable(page)
 
     const table = notesEditor(page).locator('table')
-    await expect(table.locator('th')).toHaveCount(3)
+    await expect(table.locator('th')).toHaveCount(0)
+    await expect(table.locator('td')).toHaveCount(9)
     await expect(table.locator('tr')).toHaveCount(3)
 
-    const firstCell = table.locator('th').first()
+    const firstCell = table.locator('td').first()
     await firstCell.click()
     await page.keyboard.type('Metric')
     await expect(firstCell).toContainText('Metric')
@@ -44,13 +45,14 @@ test.describe('Notes inline markdown tables', () => {
     await page.keyboard.press(process.platform === 'darwin' ? 'Meta+Alt+t' : 'Control+Alt+t')
 
     await expect(notesEditor(page).locator('table')).toBeVisible({ timeout: 10_000 })
-    await expect(notesEditor(page).locator('table th')).toHaveCount(3)
+    await expect(notesEditor(page).locator('table th')).toHaveCount(0)
+    await expect(notesEditor(page).locator('table td')).toHaveCount(9)
   })
 
   test('Tab moves between table cells', async ({ page }) => {
     await insertTable(page, '2', '2')
     const table = notesEditor(page).locator('table')
-    await table.locator('th').first().click()
+    await table.locator('td').first().click()
     await page.keyboard.type('A')
     await page.keyboard.press('Tab')
     await page.keyboard.type('B')
@@ -79,7 +81,7 @@ test.describe('Notes inline markdown tables', () => {
     await expect(page.getByTestId('notes-table-menu')).toBeVisible()
 
     await page.getByTestId('notes-table-menu').getByRole('button', { name: 'H col' }).click()
-    await expect(notesEditor(page).locator('table th')).toHaveCount(3)
+    await expect(notesEditor(page).locator('table th')).toHaveCount(2)
 
     await notesEditor(page).locator('table td').first().click()
     await page.getByTestId('notes-table-menu').getByRole('button', { name: '➡' }).click()
@@ -93,11 +95,7 @@ test.describe('Notes inline markdown tables', () => {
   })
 
   test('merge cells via shift-click and menu', async ({ page }) => {
-    await page.getByTestId('notes-table-insert-btn').click()
-    await page.getByTestId('notes-table-header-checkbox').uncheck()
-    await page.getByTestId('notes-table-rows-input').fill('2')
-    await page.getByTestId('notes-table-cols-input').fill('2')
-    await page.getByTestId('notes-table-insert-confirm').click()
+    await insertTable(page, '2', '2')
 
     const table = notesEditor(page).locator('table')
     await expect(table).toBeVisible({ timeout: 10_000 })
@@ -122,6 +120,7 @@ test.describe('Notes inline markdown tables', () => {
 
     const table = notesEditor(page).locator('table')
     await expect(table).toBeVisible({ timeout: 10_000 })
+    await expect(table.locator('th')).toHaveCount(0)
     await expect(table).toContainText('AAPL')
     await expect(table).toContainText('Ticker')
   })
@@ -156,7 +155,7 @@ test.describe('Notes inline markdown tables', () => {
   test('cell edits persist as markdown pipe table', async ({ page }) => {
     await insertTable(page, '2', '2')
 
-    const cell = notesEditor(page).locator('table th').first()
+    const cell = notesEditor(page).locator('table td').first()
     await cell.click()
     await page.keyboard.type('Revenue')
     await page.waitForTimeout(400)
@@ -192,9 +191,9 @@ test.describe('Notes inline markdown tables', () => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write'])
     await insertTable(page, '2', '2')
 
-    await notesEditor(page).locator('table th').first().click()
-    await page.keyboard.type('X')
     await notesEditor(page).locator('table td').first().click()
+    await page.keyboard.type('X')
+    await notesEditor(page).locator('table td').nth(1).click()
     await page.keyboard.type('Y')
 
     await expect(page.getByTestId('notes-table-menu')).toBeVisible()
