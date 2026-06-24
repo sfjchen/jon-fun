@@ -1024,6 +1024,7 @@ export default function NotesApp() {
           onPanelLookup={handlePanelLookup}
           onFollowUp={handleFollowUp}
           onSelectHistory={(lk) => dispatch({ type: 'SELECT_LOOKUP', lookup: lk })}
+          onClose={() => dispatch({ type: 'PANEL', open: false })}
           onClearLookup={() => dispatch({ type: 'CLEAR_LOOKUP' })}
           onSynced={(opts) => void refreshFromServer(opts)}
           onJumpTodo={handleJump}
