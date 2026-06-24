@@ -629,6 +629,43 @@ export default function NotesApp() {
     void pushGlossaryToServer()
   }, [])
 
+  const handleAttachmentAdd = useCallback(
+    (attachment: Screenshot) => {
+      const session = {
+        ...state.session,
+        screenshots: { ...state.session.screenshots, [attachment.id]: attachment },
+      }
+      upsertSession(session)
+      dispatch({ type: 'PATCH_SESSION', session })
+    },
+    [state.session],
+  )
+
+  const handleAttachmentUpdate = useCallback(
+    (id: string, patch: Partial<Screenshot>) => {
+      const existing = state.session.screenshots[id]
+      if (!existing) return
+      let display = existing.display
+      if (patch.display) {
+        display = { ...existing.display, ...patch.display }
+        if ('crop' in patch.display && patch.display.crop === undefined) {
+          const d = { ...display }
+          delete d.crop
+          display = d
+        }
+      }
+      const merged: Screenshot = { ...existing, ...patch, ...(display ? { display } : {}) }
+      if (patch.preview) merged.preview = patch.preview
+      const session = {
+        ...state.session,
+        screenshots: { ...state.session.screenshots, [id]: merged },
+      }
+      upsertSession(session)
+      dispatch({ type: 'PATCH_SESSION', session })
+    },
+    [state.session],
+  )
+
   const handleExportMd = useCallback(() => {
     downloadSessionMarkdown(state.session)
   }, [state.session])
@@ -884,6 +921,8 @@ export default function NotesApp() {
               onChange={(notes) => dispatch({ type: 'NOTES', notes })}
               onTrigger={handleTrigger}
               activeTriggerQuery={activeQuery}
+              onAttachmentAdd={handleAttachmentAdd}
+              onAttachmentUpdate={handleAttachmentUpdate}
             />
           </div>
         </section>

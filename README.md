@@ -12,7 +12,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **Chwazi Finger Chooser** (`/games/chwazi`): Place fingers on screen to randomly select a winner
 - **TMR System** (`/games/tmr`): Targeted Memory Reactivation for learning and sleep
 - **1 Sentence Everyday** (`/games/daily-log`): One sentence per day, history, calendar, export (text / JSON / RFC 4180 CSV) + CSV merge import (`updatedAt` wins per date), cross-device sync (localStorage + Supabase)
-- **Notes** (`/games/notes`): Personal knowledge vault — **Tiptap** editor, domain packs (UVIMCO, portfolio quant, CFA L1); parallel AI (`line?`/`??`); screenshot attachments; search/sync/glossary/sources/RAG. Agent ref: **`docs/NOTES-AGENT.md`** · design: **`docs/NOTES-DESIGN.md`** · E2E: **`npm run test:e2e:notes`**.
+- **Notes** (`/games/notes`): Personal knowledge vault — **Tiptap** editor, domain packs (UVIMCO, portfolio quant, CFA L1); parallel AI (`line?`/`??`); paste/drop **file attachments** (images, Excel/CSV, PDF); search/sync/glossary/sources/RAG. Agent ref: **`docs/NOTES-AGENT.md`** · design: **`docs/NOTES-DESIGN.md`** · E2E: **`npm run test:e2e:notes`**.
 - **Pear Navigator** (`/games/pear-navigator`): PearPad tablet simulator—Procreate, Notion, Figma guides; tap UI elements to advance; MS&E 165 demo; A/B test results at `/games/pear-navigator/results`
 - **Mental Obstacle Course** (`/games/mental-obstacle-course`): Six-round playful benchmark (reaction, arithmetic, patterns, digit memory, words, trivia) with a radar chart by domain; scores and history in **localStorage** only (no accounts)
 - **UBI × AI** (`/games/ubi-ai`): Interactive **R**-backed scenario model — universal basic income (UBI) social utility under AI job-security sliders; literature-calibrated parameters (IMF, Goldman Sachs, pilot RCTs); exports [`analysis/ubi-ai/output/`](analysis/ubi-ai/output/) — rebuild with **`npm run build:ubi-ai`**
@@ -522,7 +522,7 @@ src/
 
 Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
 
-- **2026-06**: **Notes export** — Export menu: structured Markdown (.md) or print-formatted PDF; full lookup threads + action items; `npm run verify:notes-export` + `e2e/notes-export.spec.ts`.
+- **2026-06**: **Notes file attachments** — paste/drop images, Excel/CSV (editable table preview), PDF/docs; drag-resize frames; image crop view; AI lookup gets spreadsheet text context.
 - **2026-06**: **Notes legacy cleanup** — removed uvimco redirects, localStorage migration, npm script aliases, CodeMirror CSS classes; CSS renamed to `notes-*`; admin key `notes_admin_ok`.
 - **2026-06**: **Supabase layout** — legacy root `supabase-migration-*.sql` → [`supabase/archive/legacy/`](supabase/archive/legacy/); [`supabase/README.md`](supabase/README.md); Notes migration history repaired (local/remote aligned).
 - **2026-06**: **Notes E2E hardening** — 3 QA cycles; tags/history/Ctrl+S/suffix-todo/highlight coverage; hints in bottom bar; deploy E2E green on sfjc.dev. See [docs/NOTES-DESIGN.md](docs/NOTES-DESIGN.md).
