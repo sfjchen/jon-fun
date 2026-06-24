@@ -105,6 +105,11 @@ test.describe('Notes', () => {
     const panel = page.getByTestId('notes-sources-panel')
     await expect(panel).toBeVisible()
 
+    const title = page.getByTestId('notes-meeting-title')
+    await title.click()
+    await title.fill('')
+    await page.keyboard.type('Source note A')
+
     const packCheckbox = panel.locator('[data-testid^="notes-source-check-builtin-pack-"]').first()
     await expect(packCheckbox).toBeChecked()
 
@@ -115,7 +120,9 @@ test.describe('Notes', () => {
     const packCheckboxNote2 = panel.locator('[data-testid^="notes-source-check-builtin-pack-"]').first()
     await expect(packCheckboxNote2).toBeChecked()
 
-    await page.locator('[data-testid^="notes-meeting-item-"]').first().click()
+    const meetings = page.locator('[data-testid^="notes-meeting-item-"]')
+    await expect(meetings).toHaveCount(2)
+    await meetings.filter({ hasText: 'Source note A' }).click()
     await expect(packCheckbox).not.toBeChecked()
 
     await page.getByTestId('notes-sources-attach').click()
