@@ -59,5 +59,4 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
 /** Preset font sizes for the bubble menu (px). */
 export const NOTES_FONT_SIZES = ['12px', '14px', '16px', '18px', '20px', '24px'] as const
 
-export const NOTES_EDITOR_PLACEHOLDER =
-  'Start typing. Line? for AI · Line?? for section · text> todo · *highlight* · ▦ table · paste Excel as table'
+export const NOTES_EDITOR_PLACEHOLDER = 'Start typing…'
