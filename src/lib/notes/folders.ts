@@ -94,7 +94,10 @@ export function moveFolder(folderId: string, newParentId: string | null): NoteFo
   if (newParentId === folderId) return null
   if (newParentId && isFolderDescendant(folders, folderId, newParentId)) return null
 
-  const next = folders.map((f) => (f.id === folderId ? { ...f, parentId: newParentId } : f))
+  const siblingCount = folders.filter((f) => f.parentId === newParentId && f.id !== folderId).length
+  const next = folders.map((f) =>
+    f.id === folderId ? { ...f, parentId: newParentId, sortOrder: siblingCount } : f,
+  )
   saveFolders(next)
   return next
 }

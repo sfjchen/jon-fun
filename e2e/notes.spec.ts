@@ -71,11 +71,30 @@ test.describe('Notes', () => {
     await expect(page.locator('button[data-testid^="notes-folder-toggle-"]').filter({ hasText: 'IC' })).toBeVisible()
 
     const noteRow = page.locator('[data-testid^="notes-note-row-"]').first()
-    const icDrop = page.locator('[data-testid^="notes-folder-drop-"]').filter({ hasText: 'IC' })
-    await noteRow.dragTo(icDrop)
+    const icBody = page.locator('[data-testid^="notes-folder-body-"]').last()
+    await noteRow.dragTo(icBody)
 
     await expect(page.getByTestId('notes-folder-toggle-__inbox__')).toContainText('(0)')
     await expect(page.locator('button[data-testid^="notes-folder-toggle-"]').filter({ hasText: 'IC' })).toContainText('(1)')
+  })
+
+  test('drags folder into another folder to nest it', async ({ page }) => {
+    await page.getByTestId('notes-toggle-panel').click()
+    await page.getByTestId('notes-new-folder').click()
+    await page.getByTestId('notes-new-folder-input').fill('Work')
+    await page.getByTestId('notes-new-folder-input').press('Enter')
+    await page.getByTestId('notes-new-folder').click()
+    await page.getByTestId('notes-new-folder-input').fill('Archive')
+    await page.getByTestId('notes-new-folder-input').press('Enter')
+
+    const archiveRow = page.locator('[data-testid^="notes-folder-drop-"]').filter({ hasText: 'Archive' })
+    const archiveDrag = archiveRow.locator('[data-testid^="notes-folder-drag-"]')
+    const workDrop = page.locator('[data-testid^="notes-folder-drop-"]').filter({ hasText: 'Work' })
+    await archiveDrag.dragTo(workDrop)
+
+    await expect(page.locator('button[data-testid^="notes-folder-toggle-"]').filter({ hasText: 'Archive' })).toBeVisible({
+      timeout: 5000,
+    })
   })
 
   test('creates folder and nests note', async ({ page }) => {
