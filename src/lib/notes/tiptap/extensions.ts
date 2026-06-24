@@ -29,6 +29,8 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
       orderedList: false,
       listItem: false,
       italic: false,
+      link: false,
+      underline: false,
       heading: { levels: [1, 2, 3] },
     }),
     NotesItalic,

@@ -175,6 +175,40 @@ test.describe('Notes', () => {
     await page.getByTestId('notes-lookup-input').press('Enter')
     await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15_000 })
     await expect(page.getByTestId('notes-side-panel')).toContainText('fund TVPI ratio?')
+    await expect(page.getByTestId('notes-lookup-input')).toBeHidden()
+    await expect(page.getByTestId('notes-followup-input')).toBeVisible()
+  })
+
+  test('switches between lookup chats with one composer visible', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.keyboard.type('first topic?')
+    await waitForNotesTrigger(page)
+    await waitForLookupComplete(page)
+
+    await editor.click()
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('second topic?')
+    await waitForNotesTrigger(page)
+    await waitForLookupComplete(page)
+
+    await expect(page.getByTestId('notes-lookup-input')).toBeHidden()
+    await expect(page.getByTestId('notes-followup-input')).toBeVisible()
+
+    const historyButtons = page.locator('[data-testid^="notes-lookup-history-"]')
+    await expect(historyButtons).toHaveCount(2)
+    await historyButtons.nth(1).click()
+    await expect(historyButtons.nth(1)).toHaveAttribute('data-active', 'true')
+    await expect(page.getByTestId('notes-side-panel')).toContainText('first topic?')
+
+    await historyButtons.first().click()
+    await expect(historyButtons.first()).toHaveAttribute('data-active', 'true')
+    await expect(page.getByTestId('notes-side-panel')).toContainText('second topic?')
+    await expect(page.getByTestId('notes-lookup-input')).toBeHidden()
+
+    await page.getByTestId('notes-clear-lookup').click()
+    await expect(page.getByTestId('notes-lookup-input')).toBeVisible()
+    await expect(page.getByTestId('notes-followup-input')).toBeHidden()
   })
 
   test('section ?? trigger opens panel and shows mock AI response', async ({ page }) => {

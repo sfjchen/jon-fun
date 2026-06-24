@@ -36,7 +36,7 @@
     "test:e2e:ci": "CI=1 playwright test",
     "test:e2e:deployment": "PLAYWRIGHT_SKIP_WEBSERVER=1 CI=1 playwright test",
     "test:e2e:notes": "CI=1 playwright test e2e/notes.spec.ts e2e/notes-comprehensive.spec.ts e2e/notes-export.spec.ts e2e/notes-search.spec.ts e2e/notes-restore.spec.ts e2e/notes-attachments.spec.ts e2e/notes-tables.spec.ts e2e/notes-visual.spec.ts --project=chromium --grep-invert screenshot",
-    "test:e2e:notes-comprehensive": "CI=1 playwright test e2e/notes-comprehensive.spec.ts --project=chromium",
+    "test:e2e:notes-mobile": "CI=1 playwright test e2e/notes-comprehensive.spec.ts e2e/notes.spec.ts --project='Mobile Chrome' --grep-invert screenshot",
     "test:e2e:notes-visual": "PLAYWRIGHT_SKIP_WEBSERVER=1 CI=1 playwright test e2e/notes-visual.spec.ts --project=chromium",
     "test:e2e:notes-sync": "PLAYWRIGHT_SKIP_WEBSERVER=1 CI=1 playwright test e2e/notes-sync.spec.ts --project=chromium",
     "test:e2e:notes-lookup": "PLAYWRIGHT_SKIP_WEBSERVER=1 CI=1 playwright test e2e/notes-lookup.spec.ts --project=chromium",
