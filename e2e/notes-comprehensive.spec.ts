@@ -119,7 +119,7 @@ test.describe('Notes comprehensive', () => {
     await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-side-panel')).toBeVisible()
     await expect(page.getByTestId('notes-panel-backdrop')).toBeVisible()
-    await page.getByTestId('notes-panel-backdrop').click()
+    await page.getByTestId('notes-panel-close').click()
     await expect(page.getByTestId('notes-side-panel')).toBeHidden()
   })
 })
