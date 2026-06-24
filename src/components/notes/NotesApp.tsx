@@ -863,7 +863,7 @@ export default function NotesApp() {
         setTimeout(() => editorRef.current?.scrollToLine(lineIndex), 100)
       }
     },
-    [state.sessions, handleSelectMeeting],
+    [state.sessions, state.session.id, handleSelectMeeting],
   )
 
   const aiBusy = anyStreaming(state.streamByLookupId)
