@@ -47,7 +47,7 @@ function currentFontSize(editor: Editor): string {
 function TableInsertPopover({ editor, onClose }: { editor: Editor; onClose: () => void }) {
   const [rows, setRows] = useState(DEFAULT_TABLE_ROWS)
   const [cols, setCols] = useState(DEFAULT_TABLE_COLS)
-  const [header, setHeader] = useState(true)
+  const [header, setHeader] = useState(false)
 
   const insert = () => {
     editor

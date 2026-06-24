@@ -2,12 +2,11 @@ import type { Editor } from '@tiptap/core'
 import { Extension } from '@tiptap/core'
 import { Plugin } from '@tiptap/pm/state'
 import { filesFromClipboard } from '../attachments'
-import { gridToMarkdownTable, looksLikeTabularText, parseTabularText } from './tableUtils'
+import { gridToTableContent, looksLikeTabularText, parseTabularText } from './tableUtils'
 
-export function insertTableFromGrid(editor: Editor, grid: string[][], withHeaderRow = true): boolean {
+export function insertTableFromGrid(editor: Editor, grid: string[][], withHeaderRow = false): boolean {
   if (!grid.length) return false
-  const md = gridToMarkdownTable(grid, withHeaderRow)
-  return editor.chain().focus().insertContent(md, { contentType: 'markdown' }).run()
+  return editor.chain().focus().insertContent(gridToTableContent(grid, withHeaderRow)).run()
 }
 
 /** Paste tab-separated / CSV clipboard text as an inline table (Excel copy). */
@@ -26,7 +25,7 @@ export const tablePasteExtension = Extension.create({
 
             event.preventDefault()
             const grid = parseTabularText(text)
-            insertTableFromGrid(editor, grid, true)
+            insertTableFromGrid(editor, grid, false)
             return true
           },
         },
