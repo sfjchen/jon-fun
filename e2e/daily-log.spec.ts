@@ -122,7 +122,7 @@ test.describe('1 Sentence Everyday', () => {
 
   test('sync tab restore handles empty server response', async ({ page }) => {
     await sectionsNav(page).getByRole('button', { name: 'sync' }).click()
-    await page.getByPlaceholder(/sync key or user ID/i).fill('e2e-empty-user')
+    await page.getByPlaceholder(/sync password or device ID/i).fill('e2e-empty-user')
     await page.getByRole('button', { name: 'Restore' }).click()
     await expect(page.getByText(/No entries found/i)).toBeVisible({ timeout: 15000 })
   })

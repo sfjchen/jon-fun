@@ -1,4 +1,5 @@
 import type { KnowledgeDomainId } from './knowledge/registry'
+import { notesSyncCredentials } from './syncCredentials'
 import type { Message, Screenshot, TriggerType } from './types'
 
 export async function streamLookup(params: {
@@ -53,6 +54,7 @@ export async function streamLookup(params: {
     }
   }
 
+  const creds = notesSyncCredentials()
   const res = await fetch('/api/notes/lookup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -71,6 +73,8 @@ export async function streamLookup(params: {
       noteDomain: params.noteDomain,
       fullNotes: params.fullNotes,
       title: params.title,
+      syncPassword: creds.syncPassword,
+      deviceUserId: creds.deviceUserId,
     }),
   })
 

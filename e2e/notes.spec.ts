@@ -173,7 +173,7 @@ test.describe('Notes', () => {
     await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 20_000 })
   })
 
-  test('sync key uses shared userId on save', async ({ page }) => {
+  test('sync password uses shared userId on save', async ({ page }) => {
     let postedUserId = ''
     await page.route('**/api/notes/sessions**', async (route) => {
       if (route.request().method() === 'POST') {
@@ -192,10 +192,10 @@ test.describe('Notes', () => {
     await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-sync-section')).toBeVisible()
     await page.getByTestId('notes-sync-toggle').click()
-    await page.getByTestId('notes-sync-key-input').fill('my-sync-key-99')
+    await page.getByTestId('notes-sync-password-input').fill('my-sync-password-99')
     await page.getByTestId('notes-sync-save').click()
     await expect(page.getByText('Synced', { exact: false })).toBeVisible({ timeout: 10_000 })
-    expect(postedUserId).toBe('my-sync-key-99')
+    expect(postedUserId).toBe('my-sync-password-99')
   })
 
   test('global search opens with Ctrl+Shift+F', async ({ page }) => {

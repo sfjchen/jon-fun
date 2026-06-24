@@ -4,6 +4,7 @@
  */
 
 import type { NoteSession, NoteSource } from './types'
+import { notesSyncCredentials } from './syncCredentials'
 import { formatSectionsOutline, parseNoteSections } from './knowledge/sectioning'
 
 type Ranked<T> = { item: T; score: number }
@@ -11,10 +12,11 @@ type Ranked<T> = { item: T; score: number }
 async function fetchEmbedScores(query: string, excerpts: string[]): Promise<number[] | null> {
   if (!excerpts.length) return []
   try {
+    const creds = notesSyncCredentials()
     const res = await fetch('/api/notes/embed', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query, excerpts }),
+      body: JSON.stringify({ query, excerpts, ...creds }),
     })
     if (!res.ok) return null
     const data = (await res.json()) as { scores?: number[] }

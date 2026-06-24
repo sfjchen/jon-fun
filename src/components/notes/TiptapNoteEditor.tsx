@@ -17,7 +17,6 @@ import { refreshShorthandDecorations } from '@/lib/notes/tiptap/shorthandDecorat
 import { scheduleTriggerCheck } from '@/lib/notes/tiptap/triggerPlugin'
 import { insertNoteAttachmentsFromFiles } from '@/lib/notes/tiptap/pasteFiles'
 import type { Screenshot, TriggerType } from '@/lib/notes/types'
-import NotesBubbleMenu from './NotesBubbleMenu'
 import NotesEditorToolbar from './NotesEditorToolbar'
 import NotesTableMenu from './NotesTableMenu'
 
@@ -182,7 +181,6 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
       data-testid="notes-tiptap-editor"
     >
       <NotesEditorToolbar editor={editor} />
-      <NotesBubbleMenu editor={editor} />
       <NotesTableMenu editor={editor} />
       <EditorContent editor={editor} className="min-h-0 flex-1 overflow-auto" />
     </div>

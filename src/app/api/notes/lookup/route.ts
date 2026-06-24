@@ -7,6 +7,7 @@ import {
   streamLookupWithFallback,
 } from '@/lib/notes/llm'
 import type { KnowledgeDomainId } from '@/lib/notes/knowledge/registry'
+import { assertNotesAiAccess } from '@/lib/sfjc-sync-auth'
 import type { Message, Screenshot, TriggerType } from '@/lib/notes/types'
 
 export const runtime = 'nodejs'
@@ -26,6 +27,8 @@ type LookupBody = {
   noteTags?: string[]
   noteDomain?: KnowledgeDomainId
   fullNotes?: string
+  syncPassword?: string
+  deviceUserId?: string
 }
 
 export async function POST(request: NextRequest) {
@@ -40,6 +43,11 @@ export async function POST(request: NextRequest) {
 
     if (!query) {
       return NextResponse.json({ error: 'query required' }, { status: 400 })
+    }
+
+    const denied = assertNotesAiAccess(body.syncPassword)
+    if (denied) {
+      return NextResponse.json({ error: denied }, { status: 403 })
     }
 
     if (!openRouterApiKey() && !geminiApiKey()) {
