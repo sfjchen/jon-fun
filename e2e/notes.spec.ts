@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 import {
+  ensureNotesPanelOpen,
   mockNotesApi,
   notesEditor,
   SESSIONS_KEY,
@@ -33,17 +34,16 @@ test.describe('Notes', () => {
     await waitForNotesEditor(page)
   })
 
-  test('loads full-width editor; panel hidden by default', async ({ page }) => {
+  test('loads full-width editor; panel open by default on desktop', async ({ page }) => {
     await expect(page.getByTestId('notes-meeting-title')).toBeVisible({ timeout: 10000 })
     await expect(notesEditor(page)).toBeVisible({ timeout: 15000 })
     const editorBox = await page.getByTestId('notes-editor').boundingBox()
     expect(editorBox?.height ?? 0).toBeGreaterThan(280)
-    await expect(page.getByTestId('notes-side-panel')).toBeHidden()
+    await expect(page.getByTestId('notes-side-panel')).toBeVisible()
     await expect(page.getByTestId('notes-meeting-title')).toHaveAttribute('placeholder', 'Untitled')
   })
 
   test('panel opens with collapsible notes + AI sections', async ({ page }) => {
-    await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-side-panel')).toBeVisible()
     await expect(page.getByTestId('notes-meetings-section')).toBeVisible()
     await expect(page.getByTestId('notes-ai-toggle')).toBeVisible()
@@ -56,7 +56,6 @@ test.describe('Notes', () => {
   })
 
   test('creates nested subfolder and moves note via drag and drop', async ({ page }) => {
-    await page.getByTestId('notes-toggle-panel').click()
     await page.getByTestId('notes-new-folder').click()
     await page.getByTestId('notes-new-folder-input').fill('Work')
     await page.getByTestId('notes-new-folder-input').press('Enter')
@@ -79,7 +78,6 @@ test.describe('Notes', () => {
   })
 
   test('drags folder into another folder to nest it', async ({ page }) => {
-    await page.getByTestId('notes-toggle-panel').click()
     await page.getByTestId('notes-new-folder').click()
     await page.getByTestId('notes-new-folder-input').fill('Work')
     await page.getByTestId('notes-new-folder-input').press('Enter')
@@ -98,7 +96,6 @@ test.describe('Notes', () => {
   })
 
   test('creates folder and nests note', async ({ page }) => {
-    await page.getByTestId('notes-toggle-panel').click()
     await page.getByTestId('notes-new-folder').click()
     await page.getByTestId('notes-new-folder-input').fill('Work')
     await page.getByTestId('notes-new-folder-input').press('Enter')
@@ -110,7 +107,6 @@ test.describe('Notes', () => {
   })
 
   test('builtin domain packs seed in Sources panel', async ({ page }) => {
-    await page.getByTestId('notes-toggle-panel').click()
     await page.getByTestId('notes-sources-toggle').click()
     await expect(page.getByTestId('notes-sources-panel')).toBeVisible()
     await expect(page.getByTestId('notes-sources-panel')).toContainText('[Pack] UVIMCO endowment')
@@ -118,7 +114,6 @@ test.describe('Notes', () => {
   })
 
   test('source checkboxes are per-note and attach file works', async ({ page }) => {
-    await page.getByTestId('notes-toggle-panel').click()
     await page.getByTestId('notes-sources-toggle').click()
 
     const panel = page.getByTestId('notes-sources-panel')
@@ -155,7 +150,6 @@ test.describe('Notes', () => {
   })
 
   test('creates a second note and switches between them', async ({ page }) => {
-    await page.getByTestId('notes-toggle-panel').click()
 
     const title = page.getByTestId('notes-meeting-title')
     await title.click()
@@ -179,7 +173,6 @@ test.describe('Notes', () => {
   })
 
   test('switching notes does not reorder vault by last opened', async ({ page }) => {
-    await page.getByTestId('notes-toggle-panel').click()
 
     const title = page.getByTestId('notes-meeting-title')
     await title.click()
@@ -206,7 +199,6 @@ test.describe('Notes', () => {
   })
 
   test('switch stays on selected note after save sync completes', async ({ page }) => {
-    await page.getByTestId('notes-toggle-panel').click()
 
     const title = page.getByTestId('notes-meeting-title')
     await title.click()
@@ -252,7 +244,6 @@ test.describe('Notes', () => {
   })
 
   test('panel lookup input runs AI without typing in editor', async ({ page }) => {
-    await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-lookup-input')).toBeVisible()
     await page.getByTestId('notes-lookup-input').fill('fund TVPI ratio')
     await page.getByTestId('notes-lookup-input').press('Enter')
@@ -364,7 +355,7 @@ test.describe('Notes', () => {
 
     await page.goto('/games/notes')
     await waitForNotesEditor(page)
-    await page.getByTestId('notes-toggle-panel').click()
+    await ensureNotesPanelOpen(page)
     await expect(page.getByTestId('notes-sync-section')).toBeVisible()
     await page.getByTestId('notes-sync-toggle').click()
     await page.getByTestId('notes-sync-password-input').fill('my-sync-password-99')
@@ -409,7 +400,7 @@ test.describe('Notes', () => {
   })
 
   test('Ctrl+Shift+N creates new note', async ({ page }) => {
-    await page.getByTestId('notes-toggle-panel').click()
+    await ensureNotesPanelOpen(page)
     await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(1)
     await page.keyboard.press('Control+Shift+N')
     await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(2)
@@ -444,7 +435,6 @@ test.describe('Notes', () => {
     await page.keyboard.press('ControlOrMeta+b')
     await expect(editor.locator('strong')).toContainText('important term')
 
-    await page.getByTestId('notes-toggle-panel').click()
     await page.getByTestId('notes-new-meeting').click()
     const meetings = page.locator('[data-testid^="notes-meeting-item-"]')
     await expect(meetings).toHaveCount(2)
@@ -463,7 +453,6 @@ test.describe('Notes', () => {
   test('todo line appears in rollup panel', async ({ page }) => {
     await typeInNotesEditor(page, '> follow up IC memo')
     await expect(page.getByTestId('notes-statusbar')).toContainText('1 todos', { timeout: 8000 })
-    await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-rollup-panel')).toContainText('follow up IC memo', { timeout: 8000 })
   })
 
@@ -606,5 +595,15 @@ test.describe('Notes', () => {
     await page.keyboard.press('Control+Shift+V')
     await expect(editor).toContainText('plain **not bold**', { timeout: 5000 })
     await expect(editor.locator('strong')).toHaveCount(0)
+  })
+
+  test('status bar shows Cmd labels when Mac platform is detected', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'platform', { get: () => 'MacIntel' })
+    })
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await waitForNotesEditor(page)
+    await expect(page.getByTestId('notes-toggle-panel').locator('kbd')).toContainText('Cmd+\\')
+    await expect(page.getByTestId('notes-search-btn').locator('kbd')).toContainText('Cmd+Shift+F')
   })
 })

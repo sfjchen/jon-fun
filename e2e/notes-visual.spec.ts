@@ -31,6 +31,7 @@ test.describe('Notes visual', () => {
   })
 
   test('full-width editor when panel closed', async ({ page }) => {
+    await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-side-panel')).toBeHidden()
     const editor = page.getByTestId('notes-editor')
     const box = await editor.boundingBox()
@@ -47,7 +48,6 @@ test.describe('Notes visual', () => {
 
   test('panel open screenshot', async ({ page }) => {
     test.skip(!isDeploy, 'Set PLAYWRIGHT_SKIP_WEBSERVER=1 to snapshot deployed sfjc.dev')
-    await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-side-panel')).toBeVisible()
     await expect(page).toHaveScreenshot('notes-panel-open.png', {
       fullPage: false,

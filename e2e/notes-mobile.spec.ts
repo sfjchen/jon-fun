@@ -138,4 +138,36 @@ test.describe('Notes mobile', () => {
     await expect(page.getByTestId('notes-side-panel')).toBeVisible()
     await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(2)
   })
+
+  test('summarize runs AI without opening panel overlay', async ({ page }) => {
+    await typeInNotesEditor(page, 'mobile summarize body')
+    await page.evaluate(() => {
+      document.querySelector<HTMLButtonElement>('[data-testid="notes-summarize-btn"]')?.click()
+    })
+    await expect(page.getByTestId('notes-side-panel')).toBeHidden()
+    await expect(page.getByTestId('notes-ai-active-count')).toBeVisible({ timeout: 10_000 })
+  })
+
+  test('desktop-only keyboard shortcuts ignored on mobile viewport', async ({ page }) => {
+    await page.keyboard.press('Control+\\')
+    await expect(page.getByTestId('notes-side-panel')).toBeHidden()
+    await page.keyboard.press('Control+Shift+F')
+    await expect(page.getByTestId('notes-global-search')).toBeHidden()
+    await typeInNotesEditor(page, 'shortcut guard')
+    await page.keyboard.press('Control+k')
+    await expect(page.getByTestId('notes-side-panel')).toBeHidden()
+  })
+
+  test('status bar hides shortcut badges on mobile', async ({ page }) => {
+    const panelBtn = page.getByTestId('notes-toggle-panel')
+    await expect(panelBtn).toBeVisible()
+    await expect(panelBtn.locator('kbd')).toHaveCount(0)
+    await expect(page.getByTestId('notes-search-btn').locator('kbd')).toHaveCount(0)
+  })
+
+  test('mobile panel has no Panel header title', async ({ page }) => {
+    await page.getByTestId('notes-toggle-panel').click()
+    await expect(page.getByTestId('notes-side-panel')).toBeVisible()
+    await expect(page.getByTestId('notes-side-panel')).not.toContainText(/^Panel$/m)
+  })
 })

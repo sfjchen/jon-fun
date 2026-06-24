@@ -1,7 +1,8 @@
 'use client'
 
 import { formatHistoryLine } from '@/lib/notes/noteHistory'
-import { NOTES_SHORTCUTS } from '@/lib/notes/shortcuts'
+import { notesShortcutLabel } from '@/lib/notes/shortcuts'
+import { useNotesDevice } from '@/lib/notes/useNotesDevice'
 import type { NoteHistoryEntry } from '@/lib/notes/types'
 import ExportMenu from './ExportMenu'
 
@@ -26,14 +27,14 @@ type StatusBarProps = {
   onHintsToggle: () => void
 }
 
-const HINT_ITEMS = [
+const HINT_ITEMS = (modKey: 'Cmd' | 'Ctrl') => [
   { sym: 'line?', desc: 'AI line' },
   { sym: 'line??', desc: 'AI section' },
   { sym: 'text>', desc: 'todo' },
   { sym: '*text*', desc: 'highlight' },
   { sym: 'sel+*', desc: 'wrap highlight' },
   { sym: 'Tab', desc: 'indent' },
-  { sym: 'Ctrl+Shift+V', desc: 'paste plain' },
+  { sym: `${modKey}+Shift+V`, desc: 'paste plain' },
   { sym: 'paste/drop', desc: 'files' },
 ]
 
@@ -57,6 +58,7 @@ export default function StatusBar({
   onTogglePanel,
   onHintsToggle,
 }: StatusBarProps) {
+  const { isMobile, modKey } = useNotesDevice()
   let syncLabel = ''
   if (syncing) syncLabel = 'Syncing…'
   else if (saving) syncLabel = 'Saving…'
@@ -89,7 +91,7 @@ export default function StatusBar({
       <div className="ml-auto flex flex-wrap items-center gap-1">
         {hintsOpen ? (
           <span className="hidden items-center gap-2 border-r border-[var(--uv-border)] pr-2 lg:flex">
-            {HINT_ITEMS.map((it) => (
+            {HINT_ITEMS(modKey).map((it) => (
               <span key={it.sym}>
                 <code className="text-[var(--uv-accent-strong)]">{it.sym}</code>
                 <span className="ml-0.5 text-[var(--uv-text-muted)]">{it.desc}</span>
@@ -97,40 +99,52 @@ export default function StatusBar({
             ))}
           </span>
         ) : null}
-        <ActionBtn testId="notes-search-btn" label="Search" keys={NOTES_SHORTCUTS.search} onClick={onSearch} />
+        <ActionBtn
+          testId="notes-search-btn"
+          label="Search"
+          keys={notesShortcutLabel('search')}
+          hideKeys={isMobile}
+          onClick={onSearch}
+        />
         <ActionBtn
           testId="notes-header-new"
           label="New"
-          keys={NOTES_SHORTCUTS.newNote}
+          keys={notesShortcutLabel('newNote')}
+          hideKeys={isMobile}
           onClick={onNewNote}
         />
         <ExportMenu
           onExportMd={onExportMd}
           onExportPdf={onExportPdf}
+          hideShortcut={isMobile}
           {...(pdfExportBusy ? { pdfBusy: true } : {})}
         />
         <ActionBtn
           testId="notes-summarize-btn"
           label="Summarize"
-          keys={NOTES_SHORTCUTS.summarize}
+          keys={notesShortcutLabel('summarize')}
+          hideKeys={isMobile}
           onClick={onSummarize}
           className="hidden sm:inline-flex"
         />
         <ActionBtn
           testId="notes-toggle-panel"
           label={panelOpen ? 'Hide panel' : 'Panel'}
-          keys={NOTES_SHORTCUTS.panel}
+          keys={notesShortcutLabel('panel')}
+          hideKeys={isMobile}
           onClick={onTogglePanel}
         />
         <button
           type="button"
           onClick={onHintsToggle}
           data-testid="notes-shorthand-toggle"
-          className="inline-flex items-center gap-1 rounded border border-[var(--uv-border)] px-1.5 py-0.5 hover:bg-[var(--uv-bg-hover)] hover:text-[var(--uv-text-primary)]"
+          className="inline-flex min-h-9 items-center gap-1 rounded border border-[var(--uv-border)] px-1.5 py-0.5 hover:bg-[var(--uv-bg-hover)] hover:text-[var(--uv-text-primary)] md:min-h-0"
           aria-expanded={hintsOpen}
         >
           {hintsOpen ? 'Hide hints' : 'Hints'}
-          <kbd className="text-[9px] text-[var(--uv-text-muted)]">{NOTES_SHORTCUTS.hints}</kbd>
+          {!isMobile ? (
+            <kbd className="text-[9px] text-[var(--uv-text-muted)]">{notesShortcutLabel('hints')}</kbd>
+          ) : null}
         </button>
       </div>
     </footer>
@@ -140,12 +154,14 @@ export default function StatusBar({
 function ActionBtn({
   label,
   keys,
+  hideKeys,
   onClick,
   testId,
   className = '',
 }: {
   label: string
   keys?: string
+  hideKeys?: boolean
   onClick: () => void
   testId?: string
   className?: string
@@ -155,10 +171,10 @@ function ActionBtn({
       type="button"
       onClick={() => onClick()}
       {...(testId ? { 'data-testid': testId } : {})}
-      className={`inline-flex items-center gap-1 rounded border border-[var(--uv-border)] px-1.5 py-0.5 hover:bg-[var(--uv-bg-hover)] hover:text-[var(--uv-text-primary)] ${className}`}
+      className={`inline-flex min-h-9 items-center gap-1 rounded border border-[var(--uv-border)] px-1.5 py-0.5 hover:bg-[var(--uv-bg-hover)] hover:text-[var(--uv-text-primary)] md:min-h-0 ${className}`}
     >
       {label}
-      {keys ? <kbd className="text-[9px] text-[var(--uv-text-muted)]">{keys}</kbd> : null}
+      {keys && !hideKeys ? <kbd className="text-[9px] text-[var(--uv-text-muted)]">{keys}</kbd> : null}
     </button>
   )
 }

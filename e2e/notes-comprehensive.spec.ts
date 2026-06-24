@@ -27,11 +27,11 @@ test.describe('Notes comprehensive', () => {
   })
 
   test('Ctrl+\\ toggles side panel', async ({ page }) => {
-    await expect(page.getByTestId('notes-side-panel')).toBeHidden()
-    await page.keyboard.press('Control+\\')
     await expect(page.getByTestId('notes-side-panel')).toBeVisible()
     await page.keyboard.press('Control+\\')
     await expect(page.getByTestId('notes-side-panel')).toBeHidden()
+    await page.keyboard.press('Control+\\')
+    await expect(page.getByTestId('notes-side-panel')).toBeVisible()
   })
 
   test('Ctrl+Shift+H toggles shorthand hints', async ({ page }) => {
@@ -57,19 +57,24 @@ test.describe('Notes comprehensive', () => {
   })
 
   test('panel closes via backdrop on mobile and status bar toggle', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await waitForNotesEditor(page)
     await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-side-panel')).toBeVisible()
+    await expect(page.getByTestId('notes-panel-backdrop')).toBeVisible()
     await page.getByTestId('notes-panel-backdrop').click({ position: { x: 8, y: 200 } })
     await expect(page.getByTestId('notes-side-panel')).toBeHidden()
 
-    await page.getByTestId('notes-toggle-panel').click()
+    await page.setViewportSize({ width: 1280, height: 800 })
+    await waitForNotesEditor(page)
     await expect(page.getByTestId('notes-side-panel')).toBeVisible()
     await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-side-panel')).toBeHidden()
+    await page.getByTestId('notes-toggle-panel').click()
+    await expect(page.getByTestId('notes-side-panel')).toBeVisible()
   })
 
   test('dictionary add term persists in localStorage', async ({ page }) => {
-    await page.getByTestId('notes-toggle-panel').click()
     await page.getByTestId('notes-glossary-toggle').click()
     await page.getByTestId('notes-dictionary-add').click()
     await page.getByTestId('notes-dictionary-term-input').fill('DPI')
@@ -87,7 +92,6 @@ test.describe('Notes comprehensive', () => {
   test('delete note from top bar removes session', async ({ page }) => {
     await page.getByTestId('notes-meeting-title').fill('To delete')
     await typeInNotesEditor(page, 'body')
-    await page.getByTestId('notes-toggle-panel').click()
     await page.getByTestId('notes-new-meeting').click()
     await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(2)
 
