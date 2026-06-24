@@ -191,14 +191,32 @@ function mergeSessions(local: NoteSession[], remote: NoteSession[]): NoteSession
   return [...byId.values()].sort((a, b) => (b.updatedAt > a.updatedAt ? 1 : b.updatedAt < a.updatedAt ? -1 : 0))
 }
 
+export function touchSession(session: NoteSession): NoteSession {
+  return { ...session, updatedAt: new Date().toISOString() }
+}
+
+/** True when in-memory session differs from persisted copy (content only — not history). */
+export function isSessionDirty(session: NoteSession, baseline?: NoteSession): boolean {
+  const stored = baseline ?? loadSessions().find((s) => s.id === session.id)
+  if (!stored) return true
+  return (
+    stored.notes !== session.notes ||
+    stored.title !== session.title ||
+    JSON.stringify(stored.tags) !== JSON.stringify(session.tags) ||
+    JSON.stringify(stored.metadata) !== JSON.stringify(session.metadata) ||
+    JSON.stringify(stored.lookups) !== JSON.stringify(session.lookups) ||
+    JSON.stringify(stored.screenshots) !== JSON.stringify(session.screenshots)
+  )
+}
+
+/** Persist session as-is — preserves updatedAt unless caller already bumped it. */
 export function upsertSession(session: NoteSession): NoteSession {
-  const updated = { ...session, updatedAt: new Date().toISOString() }
   const sessions = loadSessions()
-  const idx = sessions.findIndex((s) => s.id === updated.id)
-  if (idx >= 0) sessions[idx] = updated
-  else sessions.unshift(updated)
+  const idx = sessions.findIndex((s) => s.id === session.id)
+  if (idx >= 0) sessions[idx] = session
+  else sessions.unshift(session)
   saveSessionsLocal(sessions)
-  return updated
+  return session
 }
 
 export async function restoreFromServer(userId: string): Promise<{ restored: number; error?: string }> {
