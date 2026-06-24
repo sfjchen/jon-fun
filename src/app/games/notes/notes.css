@@ -184,12 +184,6 @@
   position: relative;
 }
 
-.notes-tiptap-wrap .tiptap th {
-  background: var(--uv-bg-sidebar);
-  font-weight: 600;
-  text-align: left;
-}
-
 .notes-tiptap-wrap .tiptap .selectedCell {
   background: var(--uv-accent-dim);
 }
