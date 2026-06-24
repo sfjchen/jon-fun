@@ -1,14 +1,16 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { notesShortcutLabel } from '@/lib/notes/shortcuts'
 
 type ExportMenuProps = {
   onExportMd: () => void
   onExportPdf: () => Promise<void>
   pdfBusy?: boolean | undefined
+  hideShortcut?: boolean
 }
 
-export default function ExportMenu({ onExportMd, onExportPdf, pdfBusy }: ExportMenuProps) {
+export default function ExportMenu({ onExportMd, onExportPdf, pdfBusy, hideShortcut }: ExportMenuProps) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
 
@@ -41,7 +43,9 @@ export default function ExportMenu({ onExportMd, onExportPdf, pdfBusy }: ExportM
         className="inline-flex items-center gap-1 rounded border border-[var(--uv-border)] px-1.5 py-0.5 hover:bg-[var(--uv-bg-hover)] hover:text-[var(--uv-text-primary)]"
       >
         Export
-        <kbd className="text-[9px] text-[var(--uv-text-muted)]">Ctrl+E</kbd>
+        {!hideShortcut ? (
+          <kbd className="text-[9px] text-[var(--uv-text-muted)]">{notesShortcutLabel('export')}</kbd>
+        ) : null}
         <span className="text-[9px] text-[var(--uv-text-muted)]">{open ? '▴' : '▾'}</span>
       </button>
       {open ? (
