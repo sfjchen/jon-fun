@@ -28,6 +28,8 @@ export interface NoteMetadata {
   inferredDomain?: import('./knowledge/registry').KnowledgeDomainId
   /** Vault folder id; omit = Inbox */
   folderId?: string | null
+  /** Source ids excluded from AI context for this note (default: all included) */
+  excludedSourceIds?: string[]
 }
 
 export interface NoteFolder {
@@ -118,6 +120,8 @@ export interface NoteSource {
   content: string
   tags: string[]
   includeInContext: boolean
+  /** When true, built-in pack body is not overwritten by registry refresh */
+  userEdited?: boolean
   createdAt: string
   updatedAt: string
   lastUsedAt?: string

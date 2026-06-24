@@ -28,7 +28,7 @@ async function fetchEmbedScores(query: string, excerpts: string[]): Promise<numb
 
 function keywordSourceScore(s: NoteSource, query: string, domainTags?: Set<string>): number {
   const needle = query.toLowerCase()
-  let score = s.includeInContext ? 5 : 0
+  let score = 5
   if (s.title.toLowerCase().includes(needle)) score += 10
   if (s.content.toLowerCase().includes(needle)) score += 8
   for (const t of s.tags) {
@@ -44,7 +44,7 @@ export async function rankSourcesForQuery(
   domainTagHints?: Set<string>,
   limit = 4,
 ): Promise<NoteSource[]> {
-  const candidates = sources.filter((s) => s.includeInContext)
+  const candidates = sources
   if (!candidates.length) return []
 
   const excerpts = candidates.map((s) => `${s.title}\n${s.content.slice(0, 1500)}`)

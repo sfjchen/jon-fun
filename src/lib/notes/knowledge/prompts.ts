@@ -19,26 +19,26 @@ const BASE_RULES = `Rules:
 - Do NOT label blocks Intent, Follow up, or a separate "angle" section — one integrated answer only
 - If screenshot attached, reference it naturally`
 
-/** Line ? lookup — core meaning + optional typical ranges for metrics. */
+/** Line ? lookup — term + concise definition (no section labels). */
 function responseFormatLine(): string {
-  return `Use these plain-text labels only (no # markdown). One blank line between blocks.
+  return `Plain text only (no markdown # headers, no labels like "Core meaning" or "Typical ranges"):
 
-Core meaning
-What it means in plain English, with active-domain context woven in so it clicks intuitively — 2-4 dense partial sentences. Answer the question directly; no meta "intent" line.
+Line 1: the term or phrase in canonical form (e.g. TVPI)
+Line 2: blank
+Line 3+: 1-3 concise sentences — plain-English definition with active-domain context when helpful. Answer directly.
 
-Typical ranges
-Include ONLY when the query is a metric, ratio, rate, or variable (e.g. DPI, TVPI, IR, MOIC, Sharpe, duration, tracking error): 2-3 short lines on common magnitudes in practice and what they signal (early vs mature fund, good vs weak, order-of-magnitude). Use "X ~0.5–1.0" style, not tables. Omit this entire block for concepts, processes, or org terms with no numeric benchmark.`
+For metrics/ratios only: after the definition, one blank line, then 2-3 short lines on typical magnitudes (e.g. "Early fund ~0.2–0.4; mature ~1.0+") — still no section label. Omit for non-numeric concepts.`
 }
 
-/** Section ?? lookup — same philosophy, slightly more room. */
+/** Section ?? lookup — same shape, slightly more room. */
 function sectionResponseFormat(): string {
-  return `Use these plain-text labels only (no # markdown). One blank line between blocks.
+  return `Plain text only (no markdown # headers, no labels like "Core meaning" or "Typical ranges"):
 
-Core meaning
-What this section is about in plain English, with domain context — 3-5 dense partial sentences across the block theme. Infer the question they likely have; no separate intent line.
+Line 1: the main topic or term for this section block
+Line 2: blank
+Line 3+: 2-4 concise sentences on what this section is about — domain context woven in; infer the likely question.
 
-Typical ranges
-Same rules as line mode: only for metrics/variables in the section; 2-4 short lines on common values and interpretation. Omit if not applicable.`
+For metrics in the section: optional blank line + 2-4 short typical-magnitude lines (no label). Omit if not applicable.`
 }
 
 export function buildLineSystemPrompt(opts: {
@@ -82,7 +82,7 @@ RESPONSE FORMAT — follow exactly:
 ${responseFormatLine()}
 
 ${BASE_RULES}
-- Max ~90 words for line mode (Typical ranges block can add ~40 words when needed)`
+- Max ~90 words for line mode (optional magnitude lines can add ~40 words when needed)`
 }
 
 export function buildSectionSystemPrompt(opts: {
@@ -125,7 +125,7 @@ RESPONSE FORMAT:
 ${sectionResponseFormat()}
 
 ${BASE_RULES}
-- Under ~140 words unless section is complex or Typical ranges applies`
+- Under ~140 words unless section is complex or magnitude lines apply`
 }
 
 export function buildSummarizeSystemPrompt(opts: {
@@ -213,7 +213,8 @@ ${opts.relatedNotes?.trim() || '(none)'}
 
 Behavior:
 - Answer naturally in plain text — explain, plan, or execute changes when asked.
-- For finance/metric questions you may use Core meaning / Typical ranges blocks (no markdown # headers).
+- For finance/metric questions: term on its own line, blank line, concise definition — no section labels.
+- dictionary.set definitions must be plain concise text only (term is separate); never include "Core meaning" or similar labels.
 - When the user asks to store a definition, fix note text, rename the note, or change tags — use the ACTIONS block below.
 - Confirm what you changed in your visible reply.
 - You can discuss app features and suggest workflows; you have full read access to the note above.

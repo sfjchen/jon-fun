@@ -82,14 +82,7 @@ export default function LookupConversation({
   }
 
   const empty = messages.length === 0 && !isStreaming && !streamText
-  if (empty) {
-    return (
-      <p className="text-sm leading-relaxed text-[var(--uv-text-secondary)]">
-        End a line with <code className="text-[var(--uv-accent-strong)]">?</code> or{' '}
-        <code className="text-[var(--uv-accent-strong)]">??</code> — answers appear here.
-      </p>
-    )
-  }
+  if (empty) return null
 
   return (
     <div

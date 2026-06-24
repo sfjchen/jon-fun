@@ -42,10 +42,7 @@ test.describe('Notes AI lookup (deploy)', () => {
     await expect(page.getByTestId('notes-side-panel')).toContainText(/DPI|distribution|paid-in|capital/i, {
       timeout: 45_000,
     })
-    const panel = page.getByTestId('notes-side-panel')
-    const hasCore = await panel.getByText(/Core meaning/i).isVisible().catch(() => false)
-    const hasBody = await panel.locator('p, li, div').filter({ hasText: /\w{20,}/ }).first().isVisible().catch(() => false)
-    expect(hasCore || hasBody).toBe(true)
+    await expect(page.getByTestId('notes-side-panel')).not.toContainText(/Core meaning/i)
   })
 
   test('section ending with ?? opens panel and streams answer', async ({ page }) => {

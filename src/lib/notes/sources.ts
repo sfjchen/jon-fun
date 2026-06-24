@@ -48,7 +48,7 @@ export function formatSourcesForPrompt(
   const needle = query.toLowerCase()
   const ranked = sources
     .map((s) => {
-      let score = s.includeInContext ? 5 : 0
+      let score = 5
       if (s.title.toLowerCase().includes(needle)) score += 10
       if (s.content.toLowerCase().includes(needle)) score += 8
       for (const t of s.tags) {
@@ -59,7 +59,7 @@ export function formatSourcesForPrompt(
       score += Math.max(0, 5 - age / (MS_PER_DAY * 30))
       return { s, score }
     })
-    .filter((x) => x.score > 0 || x.s.includeInContext)
+    .filter((x) => x.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 4)
 
@@ -71,4 +71,12 @@ export function formatSourcesForPrompt(
 export function genSourceId(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
   return `src-${Date.now()}`
+}
+
+const MAX_SOURCE_CHARS = 500_000
+
+export async function readSourceFile(file: File): Promise<{ title: string; content: string }> {
+  const content = (await file.text()).slice(0, MAX_SOURCE_CHARS)
+  const base = file.name.replace(/\.[^.]+$/, '').trim()
+  return { title: base || file.name, content }
 }

@@ -5,7 +5,8 @@
 import { detectLineTriggers, countShorthandFlags } from '../src/lib/notes/triggerParser'
 import { postprocessTodoMarkdown, preprocessTodoMarkdown, mergeTodoLinesIntoMarkdown } from '../src/lib/notes/tiptap/editorCoords'
 import { collectTodos } from '../src/lib/notes/rollup'
-import { termsFromLookup } from '../src/lib/notes/glossary'
+import { termsFromLookup, extractDefinitionFromAssistant } from '../src/lib/notes/glossary'
+import { filterSourcesForNote, isSourceEnabledForNote, toggleSourceForNote } from '../src/lib/notes/sourceSelection'
 import type { NoteSession } from '../src/lib/notes/types'
 
 type Case = {
@@ -179,6 +180,60 @@ if (skipTerms.length !== 0) {
   console.error('✗ termsFromLookup skips test noise', skipTerms)
 } else {
   console.log('✓ termsFromLookup skips test noise')
+}
+
+const def = extractDefinitionFromAssistant('Core meaning\nRatio of distributions to paid-in capital.', 'DPI')
+if (def.includes('Core meaning') || !def.includes('distributions')) {
+  failed++
+  console.error('✗ extractDefinitionFromAssistant strips labels', def)
+} else {
+  console.log('✓ extractDefinitionFromAssistant strips labels')
+}
+
+const defTerm = extractDefinitionFromAssistant('TVPI\n\nTotal value to paid-in capital.', 'TVPI')
+if (defTerm.startsWith('TVPI') || !defTerm.includes('Total value')) {
+  failed++
+  console.error('✗ extractDefinitionFromAssistant drops term line', defTerm)
+} else {
+  console.log('✓ extractDefinitionFromAssistant drops term line')
+}
+
+const sess = {
+  id: 'n1',
+  title: 'T',
+  notes: '',
+  tags: [],
+  metadata: { excludedSourceIds: ['src-a'] },
+  lookups: [],
+  screenshots: {},
+  startedAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+} satisfies NoteSession
+if (isSourceEnabledForNote(sess, 'src-a') || !isSourceEnabledForNote(sess, 'src-b')) {
+  failed++
+  console.error('✗ isSourceEnabledForNote')
+} else {
+  console.log('✓ isSourceEnabledForNote')
+}
+const toggled = toggleSourceForNote(sess.metadata, 'src-a', true)
+if (toggled.excludedSourceIds?.includes('src-a')) {
+  failed++
+  console.error('✗ toggleSourceForNote enable', toggled)
+} else {
+  console.log('✓ toggleSourceForNote enable')
+}
+const filtered = filterSourcesForNote(
+  [
+    { id: 'src-a', title: 'A', kind: 'paste', content: 'a', tags: [], includeInContext: true, createdAt: '', updatedAt: '' },
+    { id: 'src-b', title: 'B', kind: 'paste', content: 'b', tags: [], includeInContext: true, createdAt: '', updatedAt: '' },
+  ],
+  sess,
+)
+if (filtered.length !== 1 || filtered[0]!.id !== 'src-b') {
+  failed++
+  console.error('✗ filterSourcesForNote', filtered)
+} else {
+  console.log('✓ filterSourcesForNote')
 }
 
 if (failed > 0) {

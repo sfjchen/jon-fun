@@ -1,27 +1,47 @@
 'use client'
 
-import { useMemo } from 'react'
-import type { NoteSource } from '@/lib/notes/types'
-import { deleteSourceOnServer } from '@/lib/notes/memorySync'
-import { isBuiltinSource } from '@/lib/notes/knowledge/builtinSources'
+import { useMemo, useRef, useState } from 'react'
+import type { NoteSession, NoteSource } from '@/lib/notes/types'
+import { deleteSourceOnServer, pushSourcesToServer } from '@/lib/notes/memorySync'
+import { buildBuiltinSources, isBuiltinSource } from '@/lib/notes/knowledge/builtinSources'
+import { isSourceEnabledForNote } from '@/lib/notes/sourceSelection'
 import {
   deleteSourceLocal,
   genSourceId,
   loadSourcesLocal,
+  readSourceFile,
   upsertSourceLocal,
 } from '@/lib/notes/sources'
 
 type SourcesPanelProps = {
   refreshKey?: number
+  session: NoteSession
+  onToggleSourceForNote: (sourceId: string, enabled: boolean) => void
   onChange?: () => void
   embedded?: boolean
 }
 
-export default function SourcesPanel({ refreshKey = 0, onChange, embedded }: SourcesPanelProps) {
+export default function SourcesPanel({
+  refreshKey = 0,
+  session,
+  onToggleSourceForNote,
+  onChange,
+  embedded,
+}: SourcesPanelProps) {
   const sources = useMemo(() => {
     void refreshKey
     return loadSourcesLocal()
   }, [refreshKey])
+
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [draftTitle, setDraftTitle] = useState('')
+  const [draftContent, setDraftContent] = useState('')
+
+  function syncLibrary() {
+    onChange?.()
+    void pushSourcesToServer()
+  }
 
   function addPaste() {
     const title = window.prompt('Source title')?.trim()
@@ -39,34 +59,193 @@ export default function SourcesPanel({ refreshKey = 0, onChange, embedded }: Sou
       createdAt: now,
       updatedAt: now,
     })
-    onChange?.()
+    syncLibrary()
   }
+
+  async function onFileSelected(file: File | undefined) {
+    if (!file) return
+    try {
+      const { title, content } = await readSourceFile(file)
+      if (!content.trim()) {
+        window.alert('File is empty or could not be read as text.')
+        return
+      }
+      const now = new Date().toISOString()
+      upsertSourceLocal({
+        id: genSourceId(),
+        title,
+        kind: 'upload',
+        content,
+        tags: [],
+        includeInContext: true,
+        createdAt: now,
+        updatedAt: now,
+      })
+      syncLibrary()
+    } catch {
+      window.alert('Could not read file.')
+    } finally {
+      if (fileRef.current) fileRef.current.value = ''
+    }
+  }
+
+  function startEdit(source: NoteSource) {
+    setEditingId(source.id)
+    setDraftTitle(source.title)
+    setDraftContent(source.content)
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setDraftTitle('')
+    setDraftContent('')
+  }
+
+  function saveEdit(source: NoteSource) {
+    const title = draftTitle.trim()
+    const content = draftContent.trim()
+    if (!title || !content) return
+    upsertSourceLocal({
+      ...source,
+      title,
+      content,
+      userEdited: true,
+      updatedAt: new Date().toISOString(),
+    })
+    cancelEdit()
+    syncLibrary()
+  }
+
+  function resetPack(source: NoteSource) {
+    if (!isBuiltinSource(source.id)) return
+    const fresh = buildBuiltinSources().find((s) => s.id === source.id)
+    if (!fresh) return
+    upsertSourceLocal({ ...fresh, includeInContext: source.includeInContext })
+    cancelEdit()
+    syncLibrary()
+  }
+
+  function removeSource(source: NoteSource) {
+    if (isBuiltinSource(source.id)) return
+    if (!window.confirm(`Delete source "${source.title}" from your library?`)) return
+    deleteSourceLocal(source.id)
+    void deleteSourceOnServer(source.id)
+    if (editingId === source.id) cancelEdit()
+    syncLibrary()
+  }
+
+  const editing = editingId ? sources.find((s) => s.id === editingId) : null
 
   return (
     <section
       className={embedded ? 'px-3 pb-2' : 'border-b border-[var(--uv-border)] px-3 py-2'}
       data-testid="notes-sources-panel"
     >
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-1">
         {!embedded ? (
           <p className="text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">Sources</p>
         ) : (
-          <span className="text-[10px] text-[var(--uv-text-muted)]">Reference docs for AI</span>
+          <span className="text-[10px] text-[var(--uv-text-muted)]">Per-note reference docs for AI</span>
         )}
-        <button
-          type="button"
-          onClick={addPaste}
-          className="text-[11px] text-[var(--uv-accent)] hover:underline"
-        >
-          + Paste doc
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={addPaste}
+            data-testid="notes-sources-paste"
+            className="text-[11px] text-[var(--uv-accent)] hover:underline"
+          >
+            + Paste
+          </button>
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            data-testid="notes-sources-attach"
+            className="text-[11px] text-[var(--uv-accent)] hover:underline"
+          >
+            + Attach file
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            className="hidden"
+            data-testid="notes-sources-file-input"
+            accept=".txt,.md,.markdown,.csv,.json,.html,.xml,.tsv,text/plain,text/markdown,text/csv,text/html,application/json"
+            onChange={(e) => void onFileSelected(e.target.files?.[0])}
+          />
+        </div>
       </div>
+
+      {editing ? (
+        <div
+          className="mb-2 rounded border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] p-2"
+          data-testid="notes-source-editor"
+        >
+          <input
+            value={draftTitle}
+            onChange={(e) => setDraftTitle(e.target.value)}
+            data-testid="notes-source-title-input"
+            placeholder="Title"
+            className="mb-2 w-full rounded border border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-2 py-1 text-[11px] text-[var(--uv-text-primary)]"
+          />
+          <textarea
+            value={draftContent}
+            onChange={(e) => setDraftContent(e.target.value)}
+            data-testid="notes-source-content-input"
+            rows={8}
+            placeholder="Content"
+            className="mb-2 w-full resize-y rounded border border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-2 py-1 font-mono text-[10px] leading-relaxed text-[var(--uv-text-primary)]"
+          />
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => saveEdit(editing)}
+              data-testid="notes-source-save"
+              className="rounded bg-[var(--uv-accent-dim)] px-2 py-0.5 text-[10px] text-[var(--uv-text-primary)]"
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="rounded px-2 py-0.5 text-[10px] text-[var(--uv-text-muted)] hover:text-[var(--uv-text-primary)]"
+            >
+              Cancel
+            </button>
+            {isBuiltinSource(editing.id) ? (
+              <button
+                type="button"
+                onClick={() => resetPack(editing)}
+                data-testid="notes-source-reset-pack"
+                className="rounded px-2 py-0.5 text-[10px] text-[var(--uv-text-muted)] hover:text-[var(--uv-text-primary)]"
+              >
+                Reset pack
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => removeSource(editing)}
+                data-testid="notes-source-delete"
+                className="rounded px-2 py-0.5 text-[10px] text-red-600 hover:underline"
+              >
+                Delete source
+              </button>
+            )}
+          </div>
+        </div>
+      ) : null}
+
       {sources.length === 0 ? (
-        <p className="text-[11px] text-[var(--uv-text-muted)]">No sources — paste IPS, memos, glossaries.</p>
+        <p className="text-[11px] text-[var(--uv-text-muted)]">No sources — paste or attach IPS, memos, glossaries.</p>
       ) : (
-        <ul className="max-h-32 space-y-1 overflow-y-auto">
+        <ul className="max-h-40 space-y-1 overflow-y-auto">
           {sources.map((s) => (
-            <SourceRow key={s.id} source={s} {...(onChange ? { onChange } : {})} />
+            <SourceRow
+              key={s.id}
+              source={s}
+              enabled={isSourceEnabledForNote(session, s.id)}
+              onToggle={(enabled) => onToggleSourceForNote(s.id, enabled)}
+              onEdit={() => startEdit(s)}
+            />
           ))}
         </ul>
       )}
@@ -74,34 +253,40 @@ export default function SourcesPanel({ refreshKey = 0, onChange, embedded }: Sou
   )
 }
 
-function SourceRow({ source, onChange }: { source: NoteSource; onChange?: () => void }) {
-  function toggleInclude() {
-    upsertSourceLocal({ ...source, includeInContext: !source.includeInContext, updatedAt: new Date().toISOString() })
-    onChange?.()
-  }
-
-  function remove() {
-    if (isBuiltinSource(source.id)) return
-    if (!window.confirm(`Delete "${source.title}"?`)) return
-    deleteSourceLocal(source.id)
-    void deleteSourceOnServer(source.id)
-    onChange?.()
-  }
-
+function SourceRow({
+  source,
+  enabled,
+  onToggle,
+  onEdit,
+}: {
+  source: NoteSource
+  enabled: boolean
+  onToggle: (enabled: boolean) => void
+  onEdit: () => void
+}) {
   return (
-    <li className="flex items-center gap-1 text-[11px]">
+    <li className="flex items-center gap-1.5 text-[11px]">
+      <input
+        type="checkbox"
+        checked={enabled}
+        onChange={(e) => onToggle(e.target.checked)}
+        data-testid={`notes-source-check-${source.id}`}
+        aria-label={`Include ${source.title} for this note`}
+        className="shrink-0 accent-[var(--uv-accent)]"
+      />
       <button
         type="button"
-        onClick={toggleInclude}
-        title={source.includeInContext ? 'Included in AI context' : 'Excluded'}
-        className={source.includeInContext ? 'text-[var(--uv-accent)]' : 'text-[var(--uv-text-muted)]'}
+        onClick={onEdit}
+        data-testid={`notes-source-open-${source.id}`}
+        className={`min-w-0 flex-1 truncate text-left hover:underline ${
+          enabled ? 'text-[var(--uv-text-primary)]' : 'text-[var(--uv-text-muted)]'
+        }`}
+        title="View or edit source"
       >
-        {source.includeInContext ? '●' : '○'}
+        {source.title}
+        {source.userEdited ? <span className="ml-1 text-[9px] text-[var(--uv-text-muted)]">(edited)</span> : null}
       </button>
-      <span className="min-w-0 flex-1 truncate text-[var(--uv-text-secondary)]">{source.title}</span>
-      <button type="button" onClick={remove} className="text-[var(--uv-text-muted)] hover:text-red-600">
-        ×
-      </button>
+      <span className="shrink-0 text-[9px] uppercase text-[var(--uv-text-muted)]">{source.kind}</span>
     </li>
   )
 }
