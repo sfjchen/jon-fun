@@ -75,6 +75,28 @@ export function childFolders(folders: NoteFolder[], parentId: string | null): No
   return folders.filter((f) => f.parentId === parentId).sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
 }
 
+/** True when `maybeDescendantId` is `ancestorId` or nested under it. */
+export function isFolderDescendant(folders: NoteFolder[], ancestorId: string, maybeDescendantId: string): boolean {
+  if (ancestorId === maybeDescendantId) return true
+  const byId = new Map(folders.map((f) => [f.id, f]))
+  let cur: string | null = maybeDescendantId
+  while (cur) {
+    if (cur === ancestorId) return true
+    cur = byId.get(cur)?.parentId ?? null
+  }
+  return false
+}
+
+export function moveFolder(folderId: string, newParentId: string | null): NoteFolder[] | null {
+  const folders = loadFolders()
+  if (newParentId === folderId) return null
+  if (newParentId && isFolderDescendant(folders, folderId, newParentId)) return null
+
+  const next = folders.map((f) => (f.id === folderId ? { ...f, parentId: newParentId } : f))
+  saveFolders(next)
+  return next
+}
+
 export function parseFoldersFromVaultNotes(notes: string): NoteFolder[] {
   try {
     const arr = JSON.parse(notes) as NoteFolder[]

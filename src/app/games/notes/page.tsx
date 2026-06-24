@@ -1,5 +1,5 @@
-import NotesApp from '@/components/notes/NotesApp'
+import NotesAppLoader from './NotesAppLoader'
 
 export default function NotesPage() {
-  return <NotesApp />
+  return <NotesAppLoader />
 }
