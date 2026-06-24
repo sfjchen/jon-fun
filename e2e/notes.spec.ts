@@ -144,7 +144,7 @@ test.describe('Notes', () => {
     await expect(meetings).toHaveCount(2)
 
     await page.keyboard.press('Control+s')
-    await meetings.nth(1).click()
+    await meetings.filter({ hasText: 'Note Alpha' }).click()
     await expect(title).toHaveValue('Note Alpha')
     await expect(editor).toContainText('alpha body')
 
@@ -152,7 +152,7 @@ test.describe('Notes', () => {
     await expect(title).toHaveValue('Note Alpha')
     await expect(editor).toContainText('alpha body')
 
-    await meetings.first().click()
+    await meetings.filter({ hasText: 'Note Beta' }).click()
     await expect(title).toHaveValue('Note Beta')
     await expect(editor).toContainText('beta body')
   })

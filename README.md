@@ -525,7 +525,7 @@ src/
 
 Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
 
-- **2026-06**: **Notes file attachments** — paste/drop images, Excel/CSV (editable table preview), PDF/docs; drag-resize frames; image crop view; AI lookup gets spreadsheet text context.
+- **2026-06**: **Notes mobile** — dedicated `test:e2e:notes-mobile` (390×844); panel overlay + backdrop; scrollable tag row + toolbar; vault sort stable on note switch (switch history no longer bumps `updatedAt`).
 - **2026-06**: **Notes legacy cleanup** — removed uvimco redirects, localStorage migration, npm script aliases, CodeMirror CSS classes; CSS renamed to `notes-*`; admin key `notes_admin_ok`.
 - **2026-06**: **Supabase layout** — legacy root `supabase-migration-*.sql` → [`supabase/archive/legacy/`](supabase/archive/legacy/); [`supabase/README.md`](supabase/README.md); Notes migration history repaired (local/remote aligned).
 - **2026-06**: **Git workflow** — coalesced into [`.cursor/skills/gh-git-github-workflow/SKILL.md`](.cursor/skills/gh-git-github-workflow/SKILL.md); [`.cursor/rules/git-workflow.mdc`](.cursor/rules/git-workflow.mdc) is thin always-on mandate only.

@@ -55,6 +55,11 @@ export default defineConfig({
   projects: process.env.CI
     ? [
         { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: /theme2-(visual|connections-states|modals)\.spec\.ts$/ },
+        {
+          name: 'mobile-chromium',
+          use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
+          testMatch: /notes-mobile\.spec\.ts$/,
+        },
         { name: 'visual-desktop', testMatch: /theme2-(visual|connections-states|modals)\.spec\.ts$/, use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 } },
         { name: 'visual-tablet', testMatch: /theme2-(visual|connections-states|modals)\.spec\.ts$/, use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 }, deviceScaleFactor: 1 } },
         { name: 'visual-mobile', testMatch: /theme2-(visual|connections-states|modals)\.spec\.ts$/, use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 } },
@@ -62,6 +67,11 @@ export default defineConfig({
     : [
         { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: /theme2-(visual|connections-states|modals)\.spec\.ts$/ },
         { name: 'Mobile Chrome', use: { ...devices['Pixel 5'] }, testIgnore: /theme2-(visual|connections-states|modals)\.spec\.ts$/ },
+        {
+          name: 'mobile-chromium',
+          use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
+          testMatch: /notes-mobile\.spec\.ts$/,
+        },
         { name: 'visual-desktop', testMatch: /theme2-(visual|connections-states|modals)\.spec\.ts$/, use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 } },
         { name: 'visual-tablet', testMatch: /theme2-(visual|connections-states|modals)\.spec\.ts$/, use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 }, deviceScaleFactor: 1 } },
         { name: 'visual-mobile', testMatch: /theme2-(visual|connections-states|modals)\.spec\.ts$/, use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 } },

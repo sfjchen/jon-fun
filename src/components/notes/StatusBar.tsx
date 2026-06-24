@@ -103,7 +103,6 @@ export default function StatusBar({
           label="New"
           keys={NOTES_SHORTCUTS.newNote}
           onClick={onNewNote}
-          className="hidden sm:inline-flex"
         />
         <ExportMenu
           onExportMd={onExportMd}
@@ -154,7 +153,7 @@ function ActionBtn({
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={() => onClick()}
       {...(testId ? { 'data-testid': testId } : {})}
       className={`inline-flex items-center gap-1 rounded border border-[var(--uv-border)] px-1.5 py-0.5 hover:bg-[var(--uv-bg-hover)] hover:text-[var(--uv-text-primary)] ${className}`}
     >

@@ -68,7 +68,9 @@ export function moveSessionToFolder(session: NoteSession, folderId: string | nul
 }
 
 export function sessionsInFolder(sessions: NoteSession[], folderId: string | null): NoteSession[] {
-  return sessions.filter((s) => (s.metadata?.folderId ?? null) === folderId)
+  return sessions
+    .filter((s) => (s.metadata?.folderId ?? null) === folderId)
+    .sort((a, b) => (b.updatedAt > a.updatedAt ? 1 : b.updatedAt < a.updatedAt ? -1 : 0))
 }
 
 export function childFolders(folders: NoteFolder[], parentId: string | null): NoteFolder[] {

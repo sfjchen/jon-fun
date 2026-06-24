@@ -2,6 +2,17 @@ import type { NoteHistoryEntry, NoteSession } from './types'
 
 const MAX_ENTRIES = 120
 
+/** Switch-only history must not bump updatedAt — vault sort stays stable when browsing notes. */
+const BUMP_UPDATED_AT: Record<NoteHistoryEntry['kind'], boolean> = {
+  created: true,
+  saved: true,
+  synced: true,
+  lookup: true,
+  title: true,
+  tags: true,
+  switch: false,
+}
+
 export function appendNoteHistory(
   session: NoteSession,
   entry: Omit<NoteHistoryEntry, 'at'> & { at?: string },
@@ -11,7 +22,9 @@ export function appendNoteHistory(
     at: entry.at ?? new Date().toISOString(),
   }
   const history = [...(session.history ?? []), row].slice(-MAX_ENTRIES)
-  return { ...session, history, updatedAt: row.at }
+  return BUMP_UPDATED_AT[entry.kind]
+    ? { ...session, history, updatedAt: row.at }
+    : { ...session, history }
 }
 
 export function lastHistoryEntry(
