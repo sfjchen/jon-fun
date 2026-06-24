@@ -127,7 +127,7 @@ ${ACTIONS_START}
 ${ACTIONS_END}
 
 Allowed ops:
-- dictionary.set {term, definition}
+- dictionary.set {term, definition} — definition is 1-3 concise sentences only; no labels like "Core meaning"
 - dictionary.delete {term}
 - note.set_title {title}
 - note.set_body {body} — full markdown/plain note text

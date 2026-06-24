@@ -8,6 +8,7 @@ import {
 import { resolveDomainOpts, resolveDomainsForNote } from './knowledge/registry'
 import { formatSectionsOutline, parseNoteSections } from './knowledge/sectioning'
 import { formatSourcesForPrompt, loadSourcesLocal } from './sources'
+import { filterSourcesForNote } from './sourceSelection'
 import type { NoteSession } from './types'
 
 const MS_PER_DAY = 86_400_000
@@ -34,7 +35,7 @@ function baseContext(opts: {
   const sections = parseNoteSections(opts.activeSession.notes)
   const sectionsOutline = formatSectionsOutline(sections)
   const glossaryBlock = formatGlossaryForPrompt(12)
-  const sources = loadSourcesLocal().filter((s) => s.includeInContext)
+  const sources = filterSourcesForNote(loadSourcesLocal(), opts.activeSession)
   const domainTags = new Set(primary.tagHints.map((t) => t.toLowerCase()))
 
   const tagSet = new Set(opts.activeSession.tags.map((t) => t.toLowerCase()))

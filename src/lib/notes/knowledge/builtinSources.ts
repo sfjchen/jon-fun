@@ -45,12 +45,16 @@ export function ensureBuiltinSources(existing: NoteSource[]): NoteSource[] {
       byId.set(pack.id, pack)
       continue
     }
+    if (prev.userEdited) {
+      byId.set(pack.id, { ...prev, tags: pack.tags })
+      continue
+    }
     byId.set(pack.id, {
       ...prev,
       title: pack.title,
       content: pack.content,
       tags: pack.tags,
-      includeInContext: true,
+      includeInContext: prev.includeInContext ?? true,
       updatedAt: pack.updatedAt,
     })
   }

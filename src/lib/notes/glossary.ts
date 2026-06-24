@@ -4,6 +4,44 @@ const GLOSSARY_KEY = 'notes_glossary'
 
 const SKIP_TERM_RE = /^(stored\s+test|test(\s|$)|e2e(\s|$)|mock)/i
 
+const DEFINITION_LABEL_RE = /^(core meaning|typical ranges)\s*:?\s*$/i
+
+/** Strip section labels and return concise definition text for dictionary storage. */
+export function extractDefinitionFromAssistant(content: string, term?: string): string {
+  const lines = content.trim().split('\n')
+  const kept: string[] = []
+  for (const raw of lines) {
+    const line = raw.trim()
+    if (!line) {
+      if (kept.length && kept[kept.length - 1] !== '') kept.push('')
+      continue
+    }
+    if (DEFINITION_LABEL_RE.test(line)) continue
+    kept.push(line)
+  }
+
+  let text = kept.join('\n').trim()
+  if (!text) return content.trim().slice(0, 600)
+
+  const blocks = text.split(/\n\n+/).map((b) => b.trim()).filter(Boolean)
+  if (!blocks.length) return text.slice(0, 600)
+
+  let startIdx = 0
+  if (term && blocks[0]) {
+    const first = blocks[0]!
+    const termLower = term.toLowerCase()
+    if (
+      first.toLowerCase() === termLower ||
+      (first.length <= term.length + 8 && first.toLowerCase().includes(termLower))
+    ) {
+      startIdx = 1
+    }
+  }
+
+  const defBlock = blocks[startIdx] ?? blocks[0]!
+  return defBlock.replace(/\n{2,}/g, '\n').trim().slice(0, 600)
+}
+
 function isSkippedTerm(term: string): boolean {
   const t = term.trim()
   if (t.length < 2) return true
@@ -62,7 +100,7 @@ export function upsertManualEntry(
   lookupId = 'manual',
 ): GlossaryEntry {
   const label = term.trim()
-  const def = definition.trim().slice(0, 600)
+  const def = extractDefinitionFromAssistant(definition, label).slice(0, 600)
   const entries = loadGlossary()
   const idx = entries.findIndex((e) => e.term.toLowerCase() === label.toLowerCase())
   const entry: GlossaryEntry = {
@@ -116,9 +154,10 @@ export function upsertFromLookup(lookup: Lookup, noteId: string): GlossaryEntry 
   let last: GlossaryEntry | null = null
   for (const term of terms) {
     const idx = entries.findIndex((e) => e.term.toLowerCase() === term.toLowerCase())
+    const definition = extractDefinitionFromAssistant(ans, term)
     const entry: GlossaryEntry = {
       term,
-      definition: ans.slice(0, 600),
+      definition,
       sourceNoteId: noteId,
       sourceLookupId: lookup.id,
       updatedAt: new Date().toISOString(),

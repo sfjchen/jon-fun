@@ -78,7 +78,7 @@ export async function mockNotesApi(page: Page): Promise<void> {
 
   await page.route('**/api/notes/lookup', async (route) => {
     const sse =
-      'data: {"token":"Core meaning\\nE2E mock answer for term lookup."}\n\n' +
+      'data: {"token":"TVPI\\n\\nTotal value to paid-in — ratio of current NAV plus distributions to capital called. E2E mock answer."}\n\n' +
       'data: [DONE]\n\n'
     await route.fulfill({
       status: 200,
