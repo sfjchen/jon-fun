@@ -12,6 +12,8 @@ import { NoteAttachment } from './noteAttachment'
 import { dashListExtension } from './dashList'
 import { notesEditingExtension } from './notesEditing'
 import { NotesItalic } from './notesItalic'
+import { notesTableExtensions } from './tableConfig'
+import { tablePasteExtension } from './tablePaste'
 
 export type NotesExtensionOpts = {
   placeholder: string
@@ -38,12 +40,14 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
       linkOnPaste: true,
     }),
     NoteAttachment,
+    ...notesTableExtensions,
     Markdown,
     Placeholder.configure({ placeholder: opts.placeholder }),
     notesKeymap,
     notesEditingExtension,
     dashListExtension,
     attachmentPasteExtension,
+    tablePasteExtension,
     createShorthandDecorationsExtension(opts.getActiveQuery),
   ]
 }
@@ -52,4 +56,4 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
 export const NOTES_FONT_SIZES = ['12px', '14px', '16px', '18px', '20px', '24px'] as const
 
 export const NOTES_EDITOR_PLACEHOLDER =
-  'Start typing. Line? for AI · Line?? for section · text> todo · *highlight*'
+  'Start typing. Line? for AI · Line?? for section · text> todo · *highlight* · ▦ table · paste Excel as table'

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { HomeLink } from '@/components/HomeLink'
 import { useRouter } from 'next/navigation'
 import { ReaderBody } from '@/components/reader/ReaderBody'
 import { ReaderChapterEndNav } from '@/components/reader/ReaderChapterEndNav'
@@ -891,9 +892,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
 
         <div className="e-reader-chrome-muted mb-3 hidden flex-wrap items-center justify-between gap-3 text-sm md:flex">
           <nav className="flex flex-wrap items-center gap-2" aria-label="Breadcrumb">
-            <Link href="/" className="reader-focus rounded-md hover:underline">
-              Home
-            </Link>
+            <HomeLink className="reader-focus" />
             <span aria-hidden>/</span>
             <Link href={routeBase} className="reader-focus rounded-md hover:underline">
               Reader

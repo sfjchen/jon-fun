@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { HomeLink } from '@/components/HomeLink'
 
 type PageShellProps = {
   children: React.ReactNode
@@ -125,15 +126,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
             sfjc.dev
           </Link>
           <div className="flex flex-1 items-center justify-end gap-4">
-            {showBackLink && (
-              <Link
-                href={homeHref}
-                className="text-sm hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded"
-                style={{ color: 'var(--ink-accent)' }}
-              >
-                ← Home
-              </Link>
-            )}
+            {showBackLink && <HomeLink />}
           </div>
         </div>
       </header>

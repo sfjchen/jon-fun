@@ -1,0 +1,43 @@
+---
+description: Playwright CLI vs Cursor Playwright plugin — default CLI for QA; plugin for human-like UI checks
+alwaysApply: true
+---
+
+# Playwright testing (agents)
+
+## Default: Playwright CLI (`@playwright/test`)
+
+Use the **CLI** for regression, bug fixes, and “did we break anything?” after code changes.
+
+- Specs live in `e2e/*.spec.ts`; config in `playwright.config.ts`
+- **Notes**: `npm run test:e2e:notes` (local mock + starts dev on :3001)
+- **Notes prod**: `PLAYWRIGHT_SKIP_WEBSERVER=1 npm run test:e2e:notes` or `npm run test:e2e:notes-deploy`
+- Prefer **mock routes** (`e2e/helpers/*-mock.ts`) for AI/sync — deploy specs only when testing real APIs
+- Do **not** use `PLAYWRIGHT_SKIP_WEBSERVER=1` against `127.0.0.1:3001` unless `npm run dev -- -p 3001` is already running
+- After substantive Notes edits: `verify:notes-*` → `test:e2e:notes` until green; add/extend specs for new behavior
+
+## When to use Cursor Playwright plugin (MCP `plugin-playwright-playwright`)
+
+Use the **plugin** only when CLI is insufficient — same Playwright APIs, **not** a replacement for the test suite.
+
+**Use plugin for:**
+- “Try this flow and tell me what you see” (human QA you’d do manually)
+- Visual/layout sanity on **https://sfjc.dev** (toolbar, panel, mobile viewport)
+- Reproducing a **subjective** bug (cursor jump, wrong spacing, console errors)
+- Quick smoke before/after a fix when writing a full spec isn’t worth it yet
+
+**Plugin tools:** `browser_navigate`, `browser_snapshot`, `browser_run_code_unsafe` (ad-hoc `page` scripts)
+
+**Do not use plugin for:**
+- CI-style regression (no parallel suite, no `page.route` mocks, no HTML report/traces)
+- Proving a fix — always confirm with CLI after
+
+## Workflow
+
+1. **Implement fix** → run relevant **CLI** tests
+2. If user reports “feels wrong on the site” → **plugin** smoke on prod → capture snapshot/console → then **CLI** test if reproducible
+3. Promote repeated plugin checks into **`e2e/*.spec.ts`**
+
+## Cross-browser (Playwright CLI only)
+
+Use Playwright **projects** in `playwright.config.ts` (`chromium`, `Mobile Chrome`, `visual-*`). For prod smoke: `npm run test:e2e:notes-deploy` (targets **https://sfjc.dev**). For local full suite: `npm run test:e2e:notes`.

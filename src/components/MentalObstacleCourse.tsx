@@ -1,8 +1,8 @@
 'use client'
 
-import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { HomeLink } from '@/components/HomeLink'
 import {
   DOMAIN_LABELS,
   DOMAIN_ORDER,
@@ -658,7 +658,6 @@ const ROUND_PREP: Record<MentalDomain, RoundPrep> = {
 export default function MentalObstacleCourse() {
   const searchParams = useSearchParams()
   const quickE2e = searchParams.get(MOC_E2E_QUERY) === '1'
-  const base = ''
   const [screen, setScreen] = useState<Screen>('intro')
   const [clientReady, setClientReady] = useState(false)
   const [inputMode, setInputMode] = useState<InputMode>('mixed')
@@ -930,13 +929,7 @@ export default function MentalObstacleCourse() {
             >
               Run again
             </button>
-            <Link
-              href={`${base}/`}
-              className="rounded-lg border px-5 py-2 text-sm"
-              style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-accent)' }}
-            >
-              Home
-            </Link>
+            <HomeLink />
           </div>
         </div>
       )}

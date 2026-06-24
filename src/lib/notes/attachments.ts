@@ -172,8 +172,18 @@ export function filesFromClipboard(event: { clipboardData: DataTransfer | null }
 }
 
 export function filesFromDataTransfer(dt: DataTransfer | null): File[] {
-  if (!dt?.files?.length) return []
-  return [...dt.files]
+  if (!dt) return []
+  if (dt.files?.length) return [...dt.files]
+  const out: File[] = []
+  if (dt.items) {
+    for (const item of dt.items) {
+      if (item.kind === 'file') {
+        const file = item.getAsFile()
+        if (file) out.push(file)
+      }
+    }
+  }
+  return out
 }
 
 /** @deprecated */

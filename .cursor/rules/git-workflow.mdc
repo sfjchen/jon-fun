@@ -1,0 +1,31 @@
+---
+description: After agent code/doc edits — commit and push to main unless user opts out
+alwaysApply: true
+---
+
+# Git workflow (agents)
+
+## After every substantive edit session
+
+1. **`git add`** relevant files (not secrets, not `log/`, not `.DS_Store`)
+2. **`git commit`** with a clear message (HEREDOC)
+3. **`git push origin HEAD`** so Vercel deploys sfjc.dev
+
+Use one step when convenient: `git acp -m "message"` if the repo alias exists; otherwise add → commit → push.
+
+## When to skip commit
+
+- User explicitly says **do not commit** / review only / ask mode
+- No file changes
+- Only exploratory read-only work
+
+## Do not
+
+- Force-push `main`
+- Commit `.env`, credentials, or `log/usage.log`
+- Amend pushed commits unless user requests and rules allow
+
+## Also update when relevant
+
+- README changelog for significant changes
+- Feature agent docs (e.g. `docs/NOTES-AGENT.md`) when commands/paths change

@@ -160,6 +160,56 @@
   cursor: pointer;
 }
 
+/* Inline markdown tables */
+.notes-tiptap-wrap .tiptap table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  font-size: 0.875rem;
+  table-layout: auto;
+}
+
+.notes-tiptap-wrap .tiptap th,
+.notes-tiptap-wrap .tiptap td {
+  border: 1px solid var(--uv-border);
+  padding: 6px 10px;
+  vertical-align: top;
+  min-width: 3rem;
+  position: relative;
+}
+
+.notes-tiptap-wrap .tiptap th {
+  background: var(--uv-bg-sidebar);
+  font-weight: 600;
+  text-align: left;
+}
+
+.notes-tiptap-wrap .tiptap .selectedCell {
+  background: var(--uv-accent-dim);
+}
+
+.notes-tiptap-wrap .tiptap .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--uv-accent);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.notes-tiptap-wrap .tiptap.resize-cursor {
+  cursor: col-resize;
+}
+
+.notes-tiptap-wrap .tiptap table:hover .column-resize-handle,
+.notes-tiptap-wrap .tiptap th:hover .column-resize-handle,
+.notes-tiptap-wrap .tiptap td:hover .column-resize-handle {
+  opacity: 0.6;
+}
+
 .notes-tiptap-wrap .tiptap p.is-editor-empty:first-child::before {
   color: var(--uv-text-muted);
   content: attr(data-placeholder);

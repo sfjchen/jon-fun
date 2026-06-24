@@ -15,9 +15,11 @@ import {
 import { normalizeNotesMarkdown } from '@/lib/notes/tiptap/markdownNormalize'
 import { refreshShorthandDecorations } from '@/lib/notes/tiptap/shorthandDecorations'
 import { scheduleTriggerCheck } from '@/lib/notes/tiptap/triggerPlugin'
+import { insertNoteAttachmentsFromFiles } from '@/lib/notes/tiptap/pasteFiles'
 import type { Screenshot, TriggerType } from '@/lib/notes/types'
 import NotesBubbleMenu from './NotesBubbleMenu'
 import NotesEditorToolbar from './NotesEditorToolbar'
+import NotesTableMenu from './NotesTableMenu'
 
 export type NoteEditorHandle = {
   scrollToLine: (lineIndex: number) => void
@@ -125,6 +127,38 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
   }, [value, editor])
 
   useEffect(() => {
+    if (!editor || typeof window === 'undefined') return
+    if (new URLSearchParams(window.location.search).get('notesE2e') !== '1') return
+    const w = window as Window & {
+      __notesE2eInsertCsv?: (csv: string, filename?: string) => Promise<boolean>
+      __notesE2eSelectAttachment?: (attachmentId: string) => boolean
+    }
+    w.__notesE2eInsertCsv = async (csv, filename = 'e2e.csv') => {
+      const storage = editor.storage.noteAttachment as NoteAttachmentStorage
+      if (!storage.onAdd) return false
+      const file = new File([csv], filename, { type: 'text/csv' })
+      const ids = await insertNoteAttachmentsFromFiles(editor, [file], storage.onAdd)
+      return ids.length > 0
+    }
+    w.__notesE2eSelectAttachment = (attachmentId) => {
+      let targetPos: number | null = null
+      editor.state.doc.descendants((node, pos) => {
+        if (node.type.name === 'noteAttachment' && node.attrs.attachmentId === attachmentId) {
+          targetPos = pos
+          return false
+        }
+      })
+      if (targetPos == null) return false
+      editor.chain().focus().setNodeSelection(targetPos).run()
+      return true
+    }
+    return () => {
+      delete w.__notesE2eInsertCsv
+      delete w.__notesE2eSelectAttachment
+    }
+  }, [editor])
+
+  useEffect(() => {
     if (!editor) return
     refreshShorthandDecorations(editor)
   }, [activeTriggerQuery, editor])
@@ -143,6 +177,7 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
     >
       <NotesEditorToolbar editor={editor} />
       <NotesBubbleMenu editor={editor} />
+      <NotesTableMenu editor={editor} />
       <EditorContent editor={editor} className="min-h-0 flex-1 overflow-auto" />
     </div>
   )
