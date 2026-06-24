@@ -5,6 +5,8 @@ import NoteAttachmentView from '@/components/notes/NoteAttachmentView'
 
 export type NoteAttachmentStorage = {
   screenshots: Record<string, Screenshot>
+  onAdd?: (attachment: Screenshot) => void
+  onUpdate?: (id: string, patch: Partial<Screenshot>) => void
 }
 
 declare module '@tiptap/core' {
@@ -46,17 +48,17 @@ export const NoteAttachment = Node.create<Record<string, never>, NoteAttachmentS
   parseMarkdown: (token, helpers) =>
     helpers.createNode('noteAttachment', { attachmentId: token.attachmentId }),
 
-  renderMarkdown: (node) => `[📷 ${node.attrs?.attachmentId ?? ''}]`,
+  renderMarkdown: (node) => `[📎 ${node.attrs?.attachmentId ?? ''}]`,
 
   markdownTokenizer: {
     name: 'noteAttachment',
     level: 'block',
     start(src) {
-      const idx = src.search(/^\[📷/)
+      const idx = src.search(/^\[(?:📎|📷)/)
       return idx === -1 ? -1 : idx
     },
     tokenize(src) {
-      const match = /^\[📷\s*([^\]]+)\]\s*(?:\n|$)?/.exec(src)
+      const match = /^\[(?:📎|📷)\s*([^\]]+)\]\s*(?:\n|$)?/.exec(src)
       if (!match) return undefined
       return {
         type: 'noteAttachment',

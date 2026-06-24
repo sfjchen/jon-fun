@@ -7,6 +7,7 @@ import { FontSize, TextStyle } from '@tiptap/extension-text-style'
 import { Markdown } from '@tiptap/markdown'
 import { notesKeymap } from './keymap'
 import { createShorthandDecorationsExtension } from './shorthandDecorations'
+import { attachmentPasteExtension } from './attachmentPaste'
 import { NoteAttachment } from './noteAttachment'
 import { dashListExtension } from './dashList'
 import { notesEditingExtension } from './notesEditing'
@@ -42,6 +43,7 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
     notesKeymap,
     notesEditingExtension,
     dashListExtension,
+    attachmentPasteExtension,
     createShorthandDecorationsExtension(opts.getActiveQuery),
   ]
 }

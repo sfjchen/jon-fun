@@ -1,6 +1,7 @@
 import type { KnowledgeDomainId } from './knowledge/registry'
 import { resolveSystemPrompt } from './knowledge/prompts'
 import type { Message, Screenshot, TriggerType } from './types'
+import { attachmentDataUrl, spreadsheetPreviewText } from './attachments'
 
 export type PromptContext = {
   domainId?: KnowledgeDomainId
@@ -115,10 +116,26 @@ export function buildOpenRouterMessages(
 }
 
 export function screenshotParts(screenshots: Screenshot[]): OpenRouterContentPart[] {
-  return screenshots.map((s) => ({
-    type: 'image_url' as const,
-    image_url: { url: `data:${s.mimeType};base64,${s.base64}` },
-  }))
+  return attachmentParts(screenshots).filter((p) => p.type === 'image_url')
+}
+
+export function attachmentParts(attachments: Screenshot[]): OpenRouterContentPart[] {
+  const parts: OpenRouterContentPart[] = []
+  for (const s of attachments) {
+    const kind = s.kind ?? (s.mimeType.startsWith('image/') ? 'image' : 'file')
+    if (kind === 'image') {
+      parts.push({
+        type: 'image_url' as const,
+        image_url: { url: attachmentDataUrl(s) },
+      })
+    } else if (kind === 'spreadsheet' && s.preview) {
+      parts.push({ type: 'text', text: spreadsheetPreviewText(s.preview) })
+    } else {
+      const label = s.filename ?? s.id
+      parts.push({ type: 'text', text: `[Attached file: ${label} (${s.mimeType})]` })
+    }
+  }
+  return parts
 }
 
 export function buildLookupParts(
@@ -129,7 +146,7 @@ export function buildLookupParts(
   mode: 'lookup' | 'followup' | 'decode' | 'agent',
   followUpQuestion?: string,
 ): OpenRouterContentPart[] {
-  const parts: OpenRouterContentPart[] = [...screenshotParts(screenshots)]
+  const parts: OpenRouterContentPart[] = [...attachmentParts(screenshots)]
   parts.push({
     type: 'text',
     text: buildUserText(type, query, context, mode, followUpQuestion),

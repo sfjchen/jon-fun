@@ -29,6 +29,8 @@ type TiptapNoteEditorProps = {
   onChange: (val: string) => void
   onTrigger: (type: TriggerType, query: string, context: string) => void
   activeTriggerQuery: string | null
+  onAttachmentAdd: (attachment: Screenshot) => void
+  onAttachmentUpdate: (id: string, patch: Partial<Screenshot>) => void
 }
 
 function editorMarkdown(ed: import('@tiptap/core').Editor): string {
@@ -36,7 +38,7 @@ function editorMarkdown(ed: import('@tiptap/core').Editor): string {
 }
 
 const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(function TiptapNoteEditor(
-  { value, screenshots, onChange, onTrigger, activeTriggerQuery },
+  { value, screenshots, onChange, onTrigger, activeTriggerQuery, onAttachmentAdd, onAttachmentUpdate },
   ref,
 ) {
   const lastFiredRef = useRef<string | null>(null)
@@ -47,6 +49,11 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
   activeQueryRef.current = activeTriggerQuery
   const screenshotsRef = useRef(screenshots)
   screenshotsRef.current = screenshots
+
+  const onAttachmentAddRef = useRef(onAttachmentAdd)
+  const onAttachmentUpdateRef = useRef(onAttachmentUpdate)
+  onAttachmentAddRef.current = onAttachmentAdd
+  onAttachmentUpdateRef.current = onAttachmentUpdate
 
   const extensions = useMemo(
     () =>
@@ -89,8 +96,10 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
     if (!editor) return
     const storage = editor.storage.noteAttachment as NoteAttachmentStorage
     storage.screenshots = screenshotsRef.current
+    storage.onAdd = (a) => onAttachmentAddRef.current(a)
+    storage.onUpdate = (id, patch) => onAttachmentUpdateRef.current(id, patch)
     editor.view.dispatch(editor.state.tr)
-  }, [editor, screenshots])
+  }, [editor, screenshots, onAttachmentAdd, onAttachmentUpdate])
 
   useEffect(() => {
     if (!editor) return

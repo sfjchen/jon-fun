@@ -13,6 +13,8 @@ type EditorShellProps = {
   onChange: (val: string) => void
   onTrigger: (type: TriggerType, query: string, context: string) => void
   activeTriggerQuery: string | null
+  onAttachmentAdd: (attachment: import('@/lib/notes/types').Screenshot) => void
+  onAttachmentUpdate: (id: string, patch: Partial<import('@/lib/notes/types').Screenshot>) => void
 }
 
 const EditorShell = forwardRef<NoteEditorHandle, EditorShellProps>(function EditorShell(props, ref) {

@@ -34,6 +34,7 @@ const HINT_ITEMS = [
   { sym: 'sel+*', desc: 'wrap highlight' },
   { sym: 'Tab', desc: 'indent' },
   { sym: 'Ctrl+Shift+V', desc: 'paste plain' },
+  { sym: 'paste/drop', desc: 'files' },
 ]
 
 export default function StatusBar({

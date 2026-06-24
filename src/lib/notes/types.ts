@@ -43,10 +43,31 @@ export interface Message {
   content: string
 }
 
+export interface AttachmentDisplay {
+  widthPx?: number
+  heightPx?: number
+  /** Normalized crop rect for images (0–1). */
+  crop?: { x: number; y: number; w: number; h: number }
+}
+
+export interface SpreadsheetPreview {
+  sheetName: string
+  headers: string[]
+  rows: string[][]
+  totalRows: number
+  totalCols: number
+}
+
+export type AttachmentKind = 'image' | 'spreadsheet' | 'document' | 'file'
+
 export interface Screenshot {
   id: string
   base64: string
   mimeType: string
+  filename?: string
+  kind?: AttachmentKind
+  preview?: SpreadsheetPreview
+  display?: AttachmentDisplay
 }
 
 export interface Lookup {
