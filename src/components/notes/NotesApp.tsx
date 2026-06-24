@@ -712,6 +712,7 @@ export default function NotesApp() {
   }, [state.session.notes, runStream])
 
   const handleNewNote = useCallback((folderId: string | null = null) => {
+    const fid = typeof folderId === 'string' ? folderId : null
     const prev = sessionRef.current
     upsertSession(prev)
     void (async () => {
@@ -721,17 +722,17 @@ export default function NotesApp() {
       dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
     })()
 
-    const fresh = createEmptySession(undefined, folderId)
+    const fresh = createEmptySession(undefined, fid)
     setActiveSessionId(fresh.id)
     upsertSession(fresh)
     dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
     dispatch({ type: 'LOAD_SESSION', session: fresh })
     dispatch({ type: 'PANEL', open: true })
     dispatch({ type: 'NOTES_LIST', open: true })
-    if (folderId) {
+    if (fid) {
       setExpandedFolderIds((prevIds) => {
-        if (prevIds.includes(folderId)) return prevIds
-        const next = [...prevIds, folderId]
+        if (prevIds.includes(fid)) return prevIds
+        const next = [...prevIds, fid]
         saveNotesUiPrefs({ expandedFolderIds: next })
         return next
       })

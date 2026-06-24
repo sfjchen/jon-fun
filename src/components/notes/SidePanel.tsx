@@ -168,7 +168,7 @@ export default function SidePanel({
   return (
     <aside
       style={{ width }}
-      className="notes-side-panel-mobile relative flex shrink-0 flex-col border-l border-[var(--uv-border)] bg-[var(--uv-bg-panel)] max-md:fixed max-md:inset-y-0 max-md:right-0 max-md:z-30 max-md:shadow-xl"
+      className="notes-side-panel-mobile relative flex shrink-0 flex-col border-l border-[var(--uv-border)] bg-[var(--uv-bg-panel)] max-md:fixed max-md:inset-y-0 max-md:right-0 max-md:z-30 max-md:shadow-xl max-md:pt-[env(safe-area-inset-top)] max-md:pb-[env(safe-area-inset-bottom)]"
       data-testid="notes-side-panel"
       aria-label="Notes and AI panel"
     >

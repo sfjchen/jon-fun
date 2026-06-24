@@ -11,6 +11,7 @@ Use the **CLI** for regression, bug fixes, and “did we break anything?” afte
 
 - Specs live in `e2e/*.spec.ts`; config in `playwright.config.ts`
 - **Notes**: `npm run test:e2e:notes` (local mock + starts dev on :3001)
+- **Notes mobile**: `npm run test:e2e:notes-mobile` (390×844 touch viewport, `e2e/notes-mobile.spec.ts`)
 - **Notes prod**: `PLAYWRIGHT_SKIP_WEBSERVER=1 npm run test:e2e:notes` or `npm run test:e2e:notes-deploy`
 - Prefer **mock routes** (`e2e/helpers/*-mock.ts`) for AI/sync — deploy specs only when testing real APIs
 - Do **not** use `PLAYWRIGHT_SKIP_WEBSERVER=1` against `127.0.0.1:3001` unless `npm run dev -- -p 3001` is already running

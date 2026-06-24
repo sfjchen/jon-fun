@@ -411,6 +411,28 @@
   background: var(--uv-bg-sidebar);
 }
 
+@media (max-width: 767px) {
+  .notes-editor-toolbar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .notes-editor-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .notes-tag-row-mobile {
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .notes-tag-row-mobile::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 .notes-meeting-active {
   background: var(--uv-bg-hover);
   font-weight: 600;

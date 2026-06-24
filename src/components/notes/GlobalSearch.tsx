@@ -55,7 +55,7 @@ export default function GlobalSearch({ open, sessions, onClose, onJump }: Global
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 pt-[12vh]"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 px-3 pt-[max(12vh,env(safe-area-inset-top))]"
       data-testid="notes-global-search"
       onClick={onClose}
     >
