@@ -1,0 +1,15 @@
+---
+description: Jon's sfjc.dev sync password, admin devices, and AI access rules
+alwaysApply: true
+---
+
+# sfjc.dev owner sync
+
+- UI: **sync password** (never "sync key" in user-facing copy)
+- Owner sync password user id: `MLpnko#12` (see `docs/SFJC-ADMIN.md`)
+- Server env: `SFJC_SYNC_PASSWORD` — required in production for Notes AI
+- Admin device UUIDs: `src/data/sfjc-admin-devices.ts` (iPhone, Macbook Air, Work Laptop)
+- Notes AI (`/api/notes/lookup`, `/api/notes/embed`): gated by sync password when env is set
+- localStorage keys stay `notes_sync_key` / `daily_learn_sync_key` for backward compatibility
+
+When adding owner-only features, prefer validating sync password server-side and referencing admin device ids from `sfjc-admin-devices.ts`.

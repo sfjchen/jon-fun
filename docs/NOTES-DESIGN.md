@@ -62,8 +62,8 @@ Token budget ~8k; overflow summarized with flash-lite.
 Same model as **One Sentence Everyday** / daily-learn:
 
 - Device UUID in `localStorage` → `user_id` on Supabase
-- Optional **sync key** links devices (shared string)
-- **Restore** after cache clear: enter sync key or device ID → pull from server
+- Optional **sync password** links devices (shared string)
+- **Restore** after cache clear: enter sync password or device ID → pull from server
 - Push on load, debounced save, periodic sync (5m / 1h), visibility sync
 
 Data lives on Supabase under `note_sessions` (+ `notes_sources`, `notes_glossary`).
@@ -86,9 +86,9 @@ Data lives on Supabase under `note_sessions` (+ `notes_sources`, `notes_glossary
 
 | Spec | Mode | What it covers |
 |------|------|----------------|
-| `e2e/notes.spec.ts` | Local (mock API) | Editor, triggers `?`/`??`, follow-up, search, sync key, tags, history, Ctrl+S, suffix todos, highlights, legacy URL + localStorage migration, builtin packs |
+| `e2e/notes.spec.ts` | Local (mock API) | Editor, triggers `?`/`??`, follow-up, search, sync password, tags, history, Ctrl+S, suffix todos, highlights, legacy URL + localStorage migration, builtin packs |
 | `e2e/notes-search.spec.ts` | Local | Ctrl+Shift+F search hits |
-| `e2e/notes-restore.spec.ts` | Local mock | Restore by sync key |
+| `e2e/notes-restore.spec.ts` | Local mock | Restore by sync password |
 | `e2e/notes-attachments.spec.ts` | Local (mock API) | Image attach in editor, marker restore, follow-up screenshot → lookup API |
 | `e2e/notes-lookup.spec.ts` | **Deploy** (`PLAYWRIGHT_SKIP_WEBSERVER=1`) | Real Gemini lookup + Core meaning format |
 | `e2e/notes-sync.spec.ts` | **Deploy** | Supabase session push + title migration |

@@ -74,7 +74,7 @@ export function getOrCreateUserId(): string {
   return id
 }
 
-/** Sync key links devices; when set, both use same user_id for Supabase. */
+/** Sync password links devices; when set, both use same user_id for Supabase. */
 export function getSyncKey(): string {
   if (typeof window === 'undefined') return ''
   return localStorage.getItem(SYNC_KEY) ?? ''
@@ -86,7 +86,10 @@ export function setSyncKey(key: string): void {
   else localStorage.removeItem(SYNC_KEY)
 }
 
-/** Effective user_id for API: sync key if set, else device user_id. */
+export const getSyncPassword = getSyncKey
+export const setSyncPassword = setSyncKey
+
+/** Effective user_id for API: sync password if set, else device user_id. */
 export function getEffectiveUserId(): string {
   const sk = getSyncKey()
   return sk ? sk : getOrCreateUserId()
@@ -163,11 +166,11 @@ export async function pushEntriesToServer(entries: DailyLearnEntry[]): Promise<b
   return res.ok
 }
 
-/** Restore from server by userId (sync key or device user_id). Replaces local storage. */
+/** Restore from server by userId (sync password or device user_id). Replaces local storage. */
 export async function restoreFromServer(userId: string): Promise<{ restored: number; error?: string }> {
   if (typeof window === 'undefined') return { restored: 0 }
   const key = userId.trim()
-  if (!key) return { restored: 0, error: 'Enter sync key or user ID' }
+  if (!key) return { restored: 0, error: 'Enter sync password or device ID' }
   const res = await fetch(`/api/daily-learn/entries?userId=${encodeURIComponent(key)}`)
   if (!res.ok) return { restored: 0, error: 'Failed to fetch' }
   const data = (await res.json()) as { entries?: DailyLearnEntry[] }

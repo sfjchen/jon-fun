@@ -24,6 +24,7 @@ test.describe('Notes AI lookup (deploy)', () => {
       localStorage.removeItem('notes_sessions')
       localStorage.removeItem('notes_active_session_id')
       localStorage.setItem('notes_user_id', `e2e-lookup-${Date.now()}`)
+      localStorage.setItem('notes_sync_key', 'MLpnko#12')
       localStorage.removeItem('notes_ui_prefs')
     })
     await page.goto('/games/notes')

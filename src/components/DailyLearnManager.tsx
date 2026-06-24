@@ -263,7 +263,7 @@ export default function DailyLearnManager() {
           <div className="rounded-lg border p-4 mb-4" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
             <p className="font-medium" style={{ color: 'var(--ink-text)' }}>Restore your logs</p>
             <p className="text-sm mt-1" style={{ color: 'var(--ink-muted)' }}>
-              Go to <button type="button" onClick={() => setView('sync')} className="underline" style={{ color: 'var(--ink-accent)' }}>Sync</button> tab → enter your sync key → Restore. Do this on each device.
+              Go to <button type="button" onClick={() => setView('sync')} className="underline" style={{ color: 'var(--ink-accent)' }}>Sync</button> tab → enter your sync password → Restore. Do this on each device.
             </p>
           </div>
         )}
@@ -442,14 +442,14 @@ export default function DailyLearnManager() {
         <div className="rounded-lg border shadow-sm p-4 mb-4" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
           <h2 className="text-2xl font-bold font-lora mb-3" style={{ color: 'var(--ink-text)' }}>Restore from Server</h2>
           <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>
-            Lost data after clearing site? Enter your sync key or user ID and click Restore to pull entries from the server.
+            Lost data after clearing site? Enter your sync password or device ID and click Restore to pull entries from the server.
           </p>
           <div className="flex gap-2 mb-4">
             <input
               type="text"
               value={restoreKey}
               onChange={(e) => { setRestoreKey(e.target.value); setRestoreResult(null) }}
-              placeholder="Sync key or user ID"
+              placeholder="Sync password or device ID"
               className="flex-1 px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
               style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
             />
@@ -482,7 +482,7 @@ export default function DailyLearnManager() {
         <div className="rounded-lg border shadow-sm p-4 mb-4" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
           <h2 className="text-2xl font-bold font-lora mb-3" style={{ color: 'var(--ink-text)' }}>Cross-Device Sync</h2>
           <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>
-            Set the same sync key on both devices to merge your history. Sync runs on page load and on every save.
+            Set the same sync password on all devices to merge your history. Sync runs on page load and on every save.
           </p>
           <div className="flex gap-2 mb-4">
             <input
@@ -510,7 +510,7 @@ export default function DailyLearnManager() {
             </button>
           </div>
           {getSyncKey() && (
-            <p className="text-green-600 text-sm">Synced. Use this key on your other device.</p>
+            <p className="text-green-600 text-sm">Synced. Use this password on your other devices.</p>
           )}
         </div>
         <button onClick={() => setView('log')} className="px-4 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>

@@ -53,6 +53,10 @@ export function setSyncKey(key: string): void {
   else localStorage.removeItem(SYNC_KEY)
 }
 
+/** Alias — UI uses "sync password". */
+export const getSyncPassword = getSyncKey
+export const setSyncPassword = setSyncKey
+
 export function getEffectiveUserId(): string {
   const sk = getSyncKey()
   return sk || getOrCreateUserId()
@@ -200,7 +204,7 @@ export function upsertSession(session: NoteSession): NoteSession {
 export async function restoreFromServer(userId: string): Promise<{ restored: number; error?: string }> {
   if (typeof window === 'undefined') return { restored: 0 }
   const key = userId.trim()
-  if (!key) return { restored: 0, error: 'Enter sync key or user ID' }
+  if (!key) return { restored: 0, error: 'Enter sync password or device ID' }
   const remoteRaw = await fetchRawSessionsFromServer(key)
   syncFoldersFromSessions(remoteRaw)
   const remote = withNormalizedTitles(remoteRaw)

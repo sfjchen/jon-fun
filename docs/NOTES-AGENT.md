@@ -31,6 +31,7 @@ e2e/helpers/notes-mock.ts     mock API + editor helpers
 - `*text*` — highlight decoration
 - Paste/drop/📷 — screenshot attachment node
 - **Inline tables** — Tiptap TableKit; toolbar ▦ or `Ctrl+Alt+T`; paste Excel TSV/CSV as table; bubble menu for rows/cols/merge/align/copy CSV
+- **AI access** — `/api/notes/lookup` + `/api/notes/embed` require owner sync password when `SFJC_SYNC_PASSWORD` env is set. See `docs/SFJC-ADMIN.md`.
 
 ## localStorage keys
 
@@ -38,7 +39,7 @@ e2e/helpers/notes-mock.ts     mock API + editor helpers
 |-----|---------|
 | `notes_sessions` | All `NoteSession[]` |
 | `notes_active_session_id` | Active note id |
-| `notes_sync_key` | Cross-device merge key |
+| `notes_sync_key` | Cross-device sync password (localStorage key unchanged) |
 | `notes_user_id` | Device UUID for Supabase |
 | `notes_ui_prefs` | Panel width, open sections |
 | `notes_glossary` / `notes_sources` | Memory bank (local) |

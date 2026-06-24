@@ -33,15 +33,24 @@ const gKey = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_GENERATIVE_AI_API_
 type Case = { label: string; run: () => Promise<{ ok: boolean; detail: string }> }
 
 async function testDeployRoute(mode: 'line' | 'section'): Promise<{ ok: boolean; detail: string }> {
+  const syncPassword = process.env.SFJC_SYNC_PASSWORD ?? ''
   const body =
     mode === 'line'
-      ? { type: 'line', query: 'MOIC', context: 'fund returns MOIC?', conversation: [], mode: 'lookup' }
+      ? {
+          type: 'line',
+          query: 'MOIC',
+          context: 'fund returns MOIC?',
+          conversation: [],
+          mode: 'lookup',
+          syncPassword,
+        }
       : {
           type: 'section',
           query: 'GP fee',
           context: 'LP stakes\nGP fee structure',
           conversation: [],
           mode: 'lookup',
+          syncPassword,
         }
   const res = await fetch(`${base}/api/notes/lookup`, {
     method: 'POST',
