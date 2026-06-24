@@ -22,7 +22,8 @@ import {
   moveFolder,
   moveSessionToFolder,
 } from '@/lib/notes/folders'
-import { isNotesTextFieldTarget } from '@/lib/notes/shortcuts'
+import { NOTES_DESKTOP_MIN_MQ, isNotesMobileViewport } from '@/lib/notes/device'
+import { isNotesEditorTarget, isNotesTextFieldTarget } from '@/lib/notes/shortcuts'
 import { streamLookup } from '@/lib/notes/streamClient'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
 import { downloadSessionMarkdown, downloadSessionPdf } from '@/lib/notes/export'
@@ -87,7 +88,7 @@ type Action =
   | { type: 'SOURCES_OPEN'; open: boolean }
   | { type: 'HISTORY_OPEN'; open: boolean }
   | { type: 'ROLLUP_OPEN'; open: boolean }
-  | { type: 'LOOKUP_START'; lookup: Lookup }
+  | { type: 'LOOKUP_START'; lookup: Lookup; openPanel?: boolean }
   | { type: 'STREAM'; lookupId: string; text: string }
   | { type: 'STREAM_DONE'; lookupId: string; assistantText: string; skipGlossaryAuto?: boolean }
   | { type: 'STREAM_ERROR'; lookupId: string; message: string }
@@ -100,12 +101,14 @@ type Action =
 
 function initState(): State {
   const prefs = typeof window !== 'undefined' ? loadNotesUiPrefs() : {}
+  const desktop =
+    typeof window !== 'undefined' && window.matchMedia(NOTES_DESKTOP_MIN_MQ).matches
   const initial = loadActiveSession()
   const bootSessions = loadSessions()
   return {
     session: initial,
     sessions: bootSessions.length > 0 ? bootSessions : [initial],
-    panelOpen: prefs.panelOpen ?? false,
+    panelOpen: prefs.panelOpen ?? desktop,
     notesListOpen: prefs.notesListOpen ?? true,
     aiListOpen: true,
     syncOpen: prefs.syncOpen ?? false,
@@ -199,7 +202,7 @@ function reducer(state: State, action: Action): State {
           ...state.streamByLookupId,
           [action.lookup.id]: { text: '', isStreaming: true, error: null },
         },
-        panelOpen: true,
+        panelOpen: action.openPanel !== false ? true : state.panelOpen,
         aiListOpen: true,
       }
     }
@@ -337,7 +340,7 @@ export default function NotesApp() {
   }, [])
 
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 768px)')
+    const mq = window.matchMedia(NOTES_DESKTOP_MIN_MQ)
     const fn = () => {
       if (!mq.matches) dispatch({ type: 'PANEL', open: false })
     }
@@ -357,9 +360,13 @@ export default function NotesApp() {
   const sessionRef = useRef(state.session)
   const sessionsRef = useRef(state.sessions)
   const streamRef = useRef(state.streamByLookupId)
-  /** Min ms between server pulls on autosave paths (debounced typing, folder ops). */
-  const PULL_MIN_INTERVAL_MS = 60_000
+  /** Min ms between background server pulls (visibility, periodic, debounced save). */
+  const BACKGROUND_PULL_MIN_MS = 30_000
+  const PERIODIC_VISIBLE_MS = 5 * 60_000
+  const PERIODIC_HIDDEN_MS = 60 * 60_000
   const lastPullAtRef = useRef(0)
+  const hiddenAtRef = useRef<number | null>(null)
+  const pullingRef = useRef(false)
   sessionRef.current = state.session
   sessionsRef.current = state.sessions
   streamRef.current = state.streamByLookupId
@@ -408,32 +415,57 @@ export default function NotesApp() {
     return r
   }, [persistLocal])
 
-  const refreshFromServer = applyServerSync
+  const shouldBackgroundPull = useCallback((force?: boolean) => {
+    if (force) return true
+    const now = Date.now()
+    if (now - lastPullAtRef.current >= BACKGROUND_PULL_MIN_MS) return true
+    const hiddenAt = hiddenAtRef.current
+    return hiddenAt != null && now - hiddenAt >= BACKGROUND_PULL_MIN_MS
+  }, [])
+
+  const refreshFromServer = useCallback(
+    async (opts?: { skipPersist?: boolean; force?: boolean }) => {
+      if (!shouldBackgroundPull(opts?.force)) return undefined
+      if (pullingRef.current) return undefined
+      pullingRef.current = true
+      try {
+        const syncOpts = opts?.skipPersist ? { skipPersist: true as const } : undefined
+        return await applyServerSync(syncOpts)
+      } finally {
+        pullingRef.current = false
+      }
+    },
+    [applyServerSync, shouldBackgroundPull],
+  )
 
   const syncToServer = useCallback(
     async (session: NoteSession, opts?: { forcePull?: boolean }) => {
       upsertSession(session)
-      const shouldPull =
-        opts?.forcePull || Date.now() - lastPullAtRef.current >= PULL_MIN_INTERVAL_MS
-      if (shouldPull) return applyServerSync({ skipPersist: true })
+      if (shouldBackgroundPull(opts?.forcePull)) {
+        const pullOpts: { skipPersist: true; force?: true } = { skipPersist: true }
+        if (opts?.forcePull) pullOpts.force = true
+        return refreshFromServer(pullOpts)
+      }
       const ok = await saveSessionToServer(session)
       dispatch({ type: 'SYNC_OK', ok })
       return { sessions: loadSessions(), pushOk: ok }
     },
-    [applyServerSync],
+    [refreshFromServer, shouldBackgroundPull],
   )
 
   const syncAllToServer = useCallback(
     async (opts?: { forcePull?: boolean }) => {
       persistLocal(sessionRef.current)
-      const shouldPull =
-        opts?.forcePull ?? Date.now() - lastPullAtRef.current >= PULL_MIN_INTERVAL_MS
-      if (shouldPull) return applyServerSync({ skipPersist: true })
+      if (shouldBackgroundPull(opts?.forcePull)) {
+        const pullOpts: { skipPersist: true; force?: true } = { skipPersist: true }
+        if (opts?.forcePull) pullOpts.force = true
+        return refreshFromServer(pullOpts)
+      }
       const ok = await pushAllToServer()
       dispatch({ type: 'SYNC_OK', ok })
       return { sessions: loadSessions(), pushOk: ok }
     },
-    [applyServerSync, persistLocal],
+    [persistLocal, refreshFromServer, shouldBackgroundPull],
   )
 
   const saveWithHistory = useCallback(
@@ -443,7 +475,7 @@ export default function NotesApp() {
       if (!doSync) return
       setSaving(true)
       const r = await syncToServer(session, { forcePull: true })
-      if (r.pushOk) {
+      if (r?.pushOk) {
         session = appendNoteHistory(session, { kind: 'synced' })
         commitSession(session)
       }
@@ -454,7 +486,7 @@ export default function NotesApp() {
 
   useEffect(() => {
     setSyncing(true)
-    refreshFromServer().finally(() => setSyncing(false))
+    refreshFromServer({ force: true }).finally(() => setSyncing(false))
   }, [refreshFromServer])
 
   useEffect(() => {
@@ -486,14 +518,25 @@ export default function NotesApp() {
   }, [saveWithHistory])
 
   useEffect(() => {
-    const intervalMs = document.visibilityState === 'visible' ? 5 * 60_000 : 60 * 60_000
-    const id = window.setInterval(() => void refreshFromServer(), intervalMs)
-    const onVis = () => {
-      if (document.visibilityState === 'visible') void refreshFromServer()
+    let id: number | undefined
+    const schedule = () => {
+      if (id != null) clearInterval(id)
+      const ms =
+        document.visibilityState === 'visible' ? PERIODIC_VISIBLE_MS : PERIODIC_HIDDEN_MS
+      id = window.setInterval(() => void refreshFromServer(), ms)
     }
+    const onVis = () => {
+      if (document.visibilityState === 'hidden') {
+        hiddenAtRef.current = Date.now()
+        return
+      }
+      void refreshFromServer()
+      schedule()
+    }
+    schedule()
     document.addEventListener('visibilitychange', onVis)
     return () => {
-      clearInterval(id)
+      if (id != null) clearInterval(id)
       document.removeEventListener('visibilitychange', onVis)
     }
   }, [refreshFromServer])
@@ -716,7 +759,8 @@ export default function NotesApp() {
   }, [state.session])
 
   const handleSummarize = useCallback(() => {
-    dispatch({ type: 'PANEL', open: true })
+    const mobile = isNotesMobileViewport()
+    if (!mobile) dispatch({ type: 'PANEL', open: true })
     const lookup: Lookup = {
       id: `decode-${Date.now()}`,
       type: 'line',
@@ -725,7 +769,7 @@ export default function NotesApp() {
       conversation: [],
       triggeredAt: new Date().toISOString(),
     }
-    dispatch({ type: 'LOOKUP_START', lookup })
+    dispatch({ type: 'LOOKUP_START', lookup, openPanel: !mobile })
     void runStream({
       lookupId: lookup.id,
       type: 'line',
@@ -897,6 +941,9 @@ export default function NotesApp() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      const mobile = isNotesMobileViewport()
+      const inPanelField = isNotesTextFieldTarget(e.target) && !isNotesEditorTarget(e.target)
+
       if (e.key === 'Escape') {
         if (searchOpen) setSearchOpen(false)
         else if (state.panelOpen && !aiBusy) dispatch({ type: 'PANEL', open: false })
@@ -908,9 +955,8 @@ export default function NotesApp() {
 
       const key = e.key.toLowerCase()
       const mod = e.ctrlKey || e.metaKey
-      const inField = isNotesTextFieldTarget(e.target)
 
-      if (inField) {
+      if (inPanelField) {
         if (mod && key === 's') {
           e.preventDefault()
           void saveWithHistory('saved', 'Ctrl+S', true)
@@ -920,6 +966,14 @@ export default function NotesApp() {
 
       if (!mod) return
 
+      if (mod && key === 's') {
+        e.preventDefault()
+        void saveWithHistory('saved', 'Ctrl+S', true)
+        return
+      }
+
+      if (mobile) return
+
       if (key === '\\' || key === '|') {
         e.preventDefault()
         dispatch({ type: 'PANEL_TOGGLE' })
@@ -928,11 +982,6 @@ export default function NotesApp() {
       if (key === 'k') {
         e.preventDefault()
         handleSummarize()
-        return
-      }
-      if (key === 's') {
-        e.preventDefault()
-        void saveWithHistory('saved', 'Ctrl+S', true)
         return
       }
       if (key === 'e') {

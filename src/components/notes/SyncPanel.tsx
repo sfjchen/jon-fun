@@ -11,7 +11,7 @@ import {
 } from '@/lib/notes/storage'
 
 type SyncPanelProps = {
-  onSynced: (opts?: { skipPersist?: boolean }) => void
+  onSynced: (opts?: { skipPersist?: boolean; force?: boolean }) => void
 }
 
 /** Sync / restore controls — shown inside collapsed "Sync & backup" section. */
@@ -28,7 +28,7 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
     const r = await syncWithServer()
     setBusy(false)
     setStatus(r.pushOk ? 'Synced' : 'Sync failed — saved locally')
-    onSynced()
+    onSynced({ force: true })
   }
 
   async function handleRestore() {
@@ -40,7 +40,7 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
     else if (restored > 0) {
       setSyncPasswordInput(restoreKey.trim())
       setStatus(`Restored ${restored} note(s)`)
-      onSynced({ skipPersist: true })
+      onSynced({ skipPersist: true, force: true })
     } else setStatus('No notes found')
   }
 
