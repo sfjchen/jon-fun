@@ -357,6 +357,9 @@ export default function NotesApp() {
   const sessionRef = useRef(state.session)
   const sessionsRef = useRef(state.sessions)
   const streamRef = useRef(state.streamByLookupId)
+  /** Min ms between server pulls on autosave paths (debounced typing, folder ops). */
+  const PULL_MIN_INTERVAL_MS = 60_000
+  const lastPullAtRef = useRef(0)
   sessionRef.current = state.session
   sessionsRef.current = state.sessions
   streamRef.current = state.streamByLookupId
@@ -367,12 +370,6 @@ export default function NotesApp() {
     dispatch({ type: 'SET_SESSIONS', sessions })
   }, [])
 
-  const pushToServer = useCallback(async (session: NoteSession) => {
-    const ok = await saveSessionToServer(session)
-    dispatch({ type: 'SYNC_OK', ok })
-    return ok
-  }, [])
-
   const commitSession = useCallback((session: NoteSession) => {
     upsertSession(session)
     dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
@@ -381,25 +378,10 @@ export default function NotesApp() {
     }
   }, [])
 
-  const saveWithHistory = useCallback(
-    async (kind: NoteHistoryKind, detail?: string, doSync = false) => {
-      let session = appendNoteHistory(sessionRef.current, { kind, ...(detail ? { detail } : {}) })
-      commitSession(session)
-      if (!doSync) return
-      setSaving(true)
-      const ok = await pushToServer(session)
-      if (ok) {
-        session = appendNoteHistory(session, { kind: 'synced' })
-        commitSession(session)
-      }
-      setSaving(false)
-    },
-    [commitSession, pushToServer],
-  )
-
-  const refreshFromServer = useCallback(async (opts?: { skipPersist?: boolean }) => {
+  const applyServerSync = useCallback(async (opts?: { skipPersist?: boolean }) => {
     if (!opts?.skipPersist) persistLocal(sessionRef.current)
     const r = await syncWithServer()
+    lastPullAtRef.current = Date.now()
     const mem = await syncMemoryBank()
     dispatch({ type: 'GLOSSARY_BUMP' })
     dispatch({ type: 'SET_SESSIONS', sessions: r.sessions })
@@ -426,6 +408,50 @@ export default function NotesApp() {
     return r
   }, [persistLocal])
 
+  const refreshFromServer = applyServerSync
+
+  const syncToServer = useCallback(
+    async (session: NoteSession, opts?: { forcePull?: boolean }) => {
+      upsertSession(session)
+      const shouldPull =
+        opts?.forcePull || Date.now() - lastPullAtRef.current >= PULL_MIN_INTERVAL_MS
+      if (shouldPull) return applyServerSync({ skipPersist: true })
+      const ok = await saveSessionToServer(session)
+      dispatch({ type: 'SYNC_OK', ok })
+      return { sessions: loadSessions(), pushOk: ok }
+    },
+    [applyServerSync],
+  )
+
+  const syncAllToServer = useCallback(
+    async (opts?: { forcePull?: boolean }) => {
+      persistLocal(sessionRef.current)
+      const shouldPull =
+        opts?.forcePull ?? Date.now() - lastPullAtRef.current >= PULL_MIN_INTERVAL_MS
+      if (shouldPull) return applyServerSync({ skipPersist: true })
+      const ok = await pushAllToServer()
+      dispatch({ type: 'SYNC_OK', ok })
+      return { sessions: loadSessions(), pushOk: ok }
+    },
+    [applyServerSync, persistLocal],
+  )
+
+  const saveWithHistory = useCallback(
+    async (kind: NoteHistoryKind, detail?: string, doSync = false) => {
+      let session = appendNoteHistory(sessionRef.current, { kind, ...(detail ? { detail } : {}) })
+      commitSession(session)
+      if (!doSync) return
+      setSaving(true)
+      const r = await syncToServer(session, { forcePull: true })
+      if (r.pushOk) {
+        session = appendNoteHistory(session, { kind: 'synced' })
+        commitSession(session)
+      }
+      setSaving(false)
+    },
+    [commitSession, syncToServer],
+  )
+
   useEffect(() => {
     setSyncing(true)
     refreshFromServer().finally(() => setSyncing(false))
@@ -438,10 +464,10 @@ export default function NotesApp() {
   useEffect(() => {
     setSaving(true)
     const t = setTimeout(() => {
-      void pushToServer(state.session).finally(() => setSaving(false))
+      void syncToServer(state.session).finally(() => setSaving(false))
     }, 800)
     return () => clearTimeout(t)
-  }, [state.session, pushToServer])
+  }, [state.session, syncToServer])
 
   useEffect(() => {
     const fn = () => {
@@ -545,7 +571,7 @@ export default function NotesApp() {
             if (applied.session) {
               commitSession(applied.session)
               dispatch({ type: 'PATCH_SESSION', session: applied.session })
-              void saveSessionToServer(applied.session)
+              void syncToServer(applied.session)
             }
             if (applied.dictionaryChanged) {
               skipGlossaryAuto = true
@@ -718,7 +744,7 @@ export default function NotesApp() {
       const saved = appendNoteHistory(prev, { kind: 'saved', detail: 'before new note' })
       upsertSession(saved)
       void (async () => {
-        await saveSessionToServer(saved)
+        await syncToServer(saved)
         dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
       })()
     }
@@ -738,7 +764,7 @@ export default function NotesApp() {
         return next
       })
     }
-  }, [])
+  }, [syncToServer])
 
   const handleNewFolder = useCallback((parentId: string | null, name: string) => {
     const folder = createFolder(name, parentId)
@@ -748,8 +774,8 @@ export default function NotesApp() {
       saveNotesUiPrefs({ expandedFolderIds: next })
       return next
     })
-    void pushAllToServer()
-  }, [])
+    void syncAllToServer()
+  }, [syncAllToServer])
 
   const handleDeleteFolder = useCallback((folderId: string) => {
     if (!window.confirm('Delete folder? Notes move to Inbox.')) return
@@ -758,8 +784,8 @@ export default function NotesApp() {
     setFolders(nextFolders)
     dispatch({ type: 'SET_SESSIONS', sessions: nextSessions })
     dispatch({ type: 'LOAD_SESSION', session: loadActiveSession() })
-    void pushAllToServer()
-  }, [])
+    void syncAllToServer()
+  }, [syncAllToServer])
 
   const handleToggleSourceForNote = useCallback((sourceId: string, enabled: boolean) => {
     const metadata = toggleSourceForNote(sessionRef.current.metadata, sourceId, enabled)
@@ -777,7 +803,7 @@ export default function NotesApp() {
       if (sessionId === state.session.id) {
         dispatch({ type: 'METADATA', metadata: updated.metadata ?? {} })
       }
-      void saveSessionToServer(updated)
+      void syncToServer(updated)
       if (folderId) {
         setExpandedFolderIds((prev) => {
           if (prev.includes(folderId)) return prev
@@ -787,7 +813,7 @@ export default function NotesApp() {
         })
       }
     },
-    [state.session.id],
+    [state.session.id, syncToServer],
   )
 
   const handleMoveFolder = useCallback((folderId: string, parentId: string | null) => {
@@ -799,8 +825,8 @@ export default function NotesApp() {
       saveNotesUiPrefs({ expandedFolderIds: nextExpanded })
       return nextExpanded
     })
-    void pushAllToServer()
-  }, [])
+    void syncAllToServer()
+  }, [syncAllToServer])
 
   const handleToggleFolder = useCallback((folderId: string) => {
     setExpandedFolderIds((prev) => {
@@ -819,7 +845,7 @@ export default function NotesApp() {
       const saved = appendNoteHistory(prev, { kind: 'saved' })
       upsertSession(saved)
       void (async () => {
-        await saveSessionToServer(saved)
+        await syncToServer(saved)
         dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
         if (sessionRef.current.id === prev.id) {
           dispatch({ type: 'PATCH_SESSION', session: saved })
@@ -832,7 +858,7 @@ export default function NotesApp() {
     upsertSession(switched)
     dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
     dispatch({ type: 'LOAD_SESSION', session: switched })
-  }, [])
+  }, [syncToServer])
 
   const handleDeleteMeeting = useCallback((sessionId: string) => {
     void deleteSessionOnServer(getEffectiveUserId(), sessionId)
@@ -847,9 +873,9 @@ export default function NotesApp() {
       const session = touchSession({ ...state.session, lookups })
       upsertSession(session)
       dispatch({ type: 'DELETE_LOOKUP', lookupId })
-      void saveSessionToServer(session)
+      void syncToServer(session)
     },
-    [state.session],
+    [state.session, syncToServer],
   )
 
   const handleJump = useCallback(
