@@ -171,3 +171,21 @@ export async function seedSpreadsheetAttachmentSession(page: Page): Promise<void
     localStorage.setItem('notes_active_session_id', session.id)
   })
 }
+
+/** Side-panel content (vault rows, sync) only mounts when the panel is open. */
+export async function ensureNotesPanelOpen(page: Page): Promise<void> {
+  const panel = page.getByTestId('notes-side-panel')
+  if (!(await panel.isVisible())) {
+    await page.getByTestId('notes-toggle-panel').click()
+  }
+  await expect(panel).toBeVisible()
+}
+
+/** Fail when the page body scrolls horizontally (layout overflow). */
+export async function assertNoHorizontalOverflow(page: Page): Promise<void> {
+  const overflow = await page.evaluate(() => {
+    const doc = document.documentElement
+    return doc.scrollWidth - doc.clientWidth
+  })
+  expect(overflow).toBeLessThanOrEqual(2)
+}
