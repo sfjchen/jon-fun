@@ -19,6 +19,7 @@ import {
   createFolder,
   deleteFolder,
   loadFolders,
+  moveFolder,
   moveSessionToFolder,
 } from '@/lib/notes/folders'
 import { isNotesTextFieldTarget } from '@/lib/notes/shortcuts'
@@ -157,7 +158,11 @@ function reducer(state: State, action: Action): State {
     }
     case 'PATCH_SESSION': {
       const sessions = state.sessions.map((s) => (s.id === action.session.id ? action.session : s))
-      return { ...state, session: action.session, sessions }
+      return {
+        ...state,
+        session: state.session.id === action.session.id ? action.session : state.session,
+        sessions,
+      }
     }
     case 'PANEL_TOGGLE':
       return { ...state, panelOpen: !state.panelOpen }
@@ -369,8 +374,10 @@ export default function NotesApp() {
 
   const commitSession = useCallback((session: NoteSession) => {
     upsertSession(session)
-    dispatch({ type: 'PATCH_SESSION', session })
     dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+    if (session.id === sessionRef.current.id) {
+      dispatch({ type: 'PATCH_SESSION', session })
+    }
   }, [])
 
   const saveWithHistory = useCallback(
@@ -700,27 +707,32 @@ export default function NotesApp() {
     })
   }, [state.session.notes, runStream])
 
-  const handleNewNote = useCallback(
-    (folderId: string | null = null) => {
-      void saveWithHistory('saved', 'before new note', true)
-      const fresh = createEmptySession(undefined, folderId)
-      setActiveSessionId(fresh.id)
-      upsertSession(fresh)
+  const handleNewNote = useCallback((folderId: string | null = null) => {
+    const prev = sessionRef.current
+    upsertSession(prev)
+    void (async () => {
+      const saved = appendNoteHistory(prev, { kind: 'saved', detail: 'before new note' })
+      upsertSession(saved)
+      await saveSessionToServer(saved)
       dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
-      dispatch({ type: 'LOAD_SESSION', session: fresh })
-      dispatch({ type: 'PANEL', open: true })
-      dispatch({ type: 'NOTES_LIST', open: true })
-      if (folderId) {
-        setExpandedFolderIds((prev) => {
-          if (prev.includes(folderId)) return prev
-          const next = [...prev, folderId]
-          saveNotesUiPrefs({ expandedFolderIds: next })
-          return next
-        })
-      }
-    },
-    [saveWithHistory],
-  )
+    })()
+
+    const fresh = createEmptySession(undefined, folderId)
+    setActiveSessionId(fresh.id)
+    upsertSession(fresh)
+    dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+    dispatch({ type: 'LOAD_SESSION', session: fresh })
+    dispatch({ type: 'PANEL', open: true })
+    dispatch({ type: 'NOTES_LIST', open: true })
+    if (folderId) {
+      setExpandedFolderIds((prevIds) => {
+        if (prevIds.includes(folderId)) return prevIds
+        const next = [...prevIds, folderId]
+        saveNotesUiPrefs({ expandedFolderIds: next })
+        return next
+      })
+    }
+  }, [])
 
   const handleNewFolder = useCallback((parentId: string | null, name: string) => {
     const folder = createFolder(name, parentId)
@@ -754,9 +766,29 @@ export default function NotesApp() {
         dispatch({ type: 'METADATA', metadata: updated.metadata ?? {} })
       }
       void saveSessionToServer(updated)
+      if (folderId) {
+        setExpandedFolderIds((prev) => {
+          if (prev.includes(folderId)) return prev
+          const next = [...prev, folderId, '__inbox__']
+          saveNotesUiPrefs({ expandedFolderIds: next })
+          return next
+        })
+      }
     },
     [state.session.id],
   )
+
+  const handleMoveFolder = useCallback((folderId: string, parentId: string | null) => {
+    const next = moveFolder(folderId, parentId)
+    if (!next) return
+    setFolders(next)
+    setExpandedFolderIds((prev) => {
+      const nextExpanded = [...new Set([...prev, folderId, ...(parentId ? [parentId] : []), '__inbox__'])]
+      saveNotesUiPrefs({ expandedFolderIds: nextExpanded })
+      return nextExpanded
+    })
+    void pushAllToServer()
+  }, [])
 
   const handleToggleFolder = useCallback((folderId: string) => {
     setExpandedFolderIds((prev) => {
@@ -766,19 +798,27 @@ export default function NotesApp() {
     })
   }, [])
 
-  const handleSelectMeeting = useCallback(
-    (s: NoteSession) => {
-      if (s.id === state.session.id) return
-      void saveWithHistory('saved', undefined, true)
-      const switched = appendNoteHistory(s, { kind: 'switch', detail: s.title })
-      upsertSession(state.session)
-      setActiveSessionId(switched.id)
-      upsertSession(switched)
+  const handleSelectMeeting = useCallback((s: NoteSession) => {
+    if (s.id === sessionRef.current.id) return
+
+    const prev = sessionRef.current
+    upsertSession(prev)
+    void (async () => {
+      const saved = appendNoteHistory(prev, { kind: 'saved' })
+      upsertSession(saved)
+      await saveSessionToServer(saved)
       dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
-      dispatch({ type: 'LOAD_SESSION', session: switched })
-    },
-    [state.session, saveWithHistory],
-  )
+      if (sessionRef.current.id === prev.id) {
+        dispatch({ type: 'PATCH_SESSION', session: saved })
+      }
+    })()
+
+    const switched = appendNoteHistory(s, { kind: 'switch', detail: s.title })
+    setActiveSessionId(switched.id)
+    upsertSession(switched)
+    dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+    dispatch({ type: 'LOAD_SESSION', session: switched })
+  }, [])
 
   const handleDeleteMeeting = useCallback((sessionId: string) => {
     void deleteSessionOnServer(getEffectiveUserId(), sessionId)
@@ -826,18 +866,21 @@ export default function NotesApp() {
         return
       }
 
-      if (!e.ctrlKey) return
+      if (!e.ctrlKey && !e.metaKey) return
 
       const key = e.key.toLowerCase()
+      const mod = e.ctrlKey || e.metaKey
       const inField = isNotesTextFieldTarget(e.target)
 
       if (inField) {
-        if (key === 's') {
+        if (mod && key === 's') {
           e.preventDefault()
           void saveWithHistory('saved', 'Ctrl+S', true)
         }
         return
       }
+
+      if (!mod) return
 
       if (key === '\\' || key === '|') {
         e.preventDefault()
@@ -912,9 +955,19 @@ export default function NotesApp() {
         onJump={handleJump}
       />
       <div className="flex min-h-0 flex-1 overflow-hidden">
+        {state.panelOpen ? (
+          <button
+            type="button"
+            className="notes-panel-backdrop md:hidden"
+            aria-label="Close panel"
+            data-testid="notes-panel-backdrop"
+            onClick={() => dispatch({ type: 'PANEL', open: false })}
+          />
+        ) : null}
         <section className="notes-editor-pane min-w-0 flex-1">
           <div className="notes-editor-body" data-testid="notes-editor">
             <EditorShell
+              key={state.session.id}
               ref={editorRef}
               value={state.session.notes}
               screenshots={state.session.screenshots}
@@ -960,6 +1013,7 @@ export default function NotesApp() {
           onNewFolder={handleNewFolder}
           onDeleteFolder={handleDeleteFolder}
           onMoveNote={handleMoveNote}
+          onMoveFolder={handleMoveFolder}
           onToggleFolder={handleToggleFolder}
           onDeleteMeeting={handleDeleteMeeting}
           onDeleteLookup={handleDeleteLookup}

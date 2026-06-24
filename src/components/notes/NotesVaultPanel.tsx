@@ -4,6 +4,9 @@ import { useCallback, useState } from 'react'
 import type { NoteFolder, NoteSession } from '@/lib/notes/types'
 import { childFolders, sessionsInFolder } from '@/lib/notes/folders'
 
+const NOTE_DRAG = 'application/x-notes-session-id'
+const FOLDER_DRAG = 'application/x-notes-folder-id'
+
 function formatMeetingDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
@@ -18,6 +21,7 @@ type NotesVaultPanelProps = {
   onNewFolder: (parentId: string | null, name: string) => void
   onDeleteFolder: (folderId: string) => void
   onMoveNote: (sessionId: string, folderId: string | null) => void
+  onMoveFolder: (folderId: string, parentId: string | null) => void
   onDeleteMeeting: (sessionId: string) => void
   onToggleFolder: (folderId: string) => void
 }
@@ -25,51 +29,40 @@ type NotesVaultPanelProps = {
 function NoteRow({
   session,
   active,
-  folders,
   onSelect,
-  onMove,
   onDelete,
 }: {
   session: NoteSession
   active: boolean
-  folders: NoteFolder[]
   onSelect: () => void
-  onMove: (folderId: string | null) => void
   onDelete: () => void
 }) {
   return (
-    <li className="group flex items-center gap-0.5 pl-4">
+    <li
+      className="group flex items-center gap-0.5 pl-4"
+      draggable
+      data-testid={`notes-note-row-${session.id}`}
+      onDragStart={(e) => {
+        e.dataTransfer.setData(NOTE_DRAG, session.id)
+        e.dataTransfer.effectAllowed = 'move'
+      }}
+    >
       <button
         type="button"
         data-testid={`notes-meeting-item-${session.id}`}
         data-active={active ? 'true' : 'false'}
         onClick={onSelect}
-        className={`min-w-0 flex-1 truncate rounded px-2 py-1 text-left text-xs ${
+        className={`flex min-w-0 flex-1 items-center gap-2 rounded px-2 py-0.5 text-left text-xs ${
           active
             ? 'notes-meeting-active text-[var(--uv-text-primary)]'
             : 'text-[var(--uv-text-secondary)] hover:bg-[var(--uv-bg-hover)]'
         }`}
       >
-        <span className="block truncate">{session.title || 'Untitled'}</span>
-        <span className="text-[10px] text-[var(--uv-text-muted)]">{formatMeetingDate(session.updatedAt)}</span>
+        <span className="min-w-0 flex-1 truncate">{session.title || 'Untitled'}</span>
+        <span className="shrink-0 text-[10px] tabular-nums text-[var(--uv-text-muted)]">
+          {formatMeetingDate(session.updatedAt)}
+        </span>
       </button>
-      {folders.length > 0 ? (
-        <select
-          aria-label="Move to folder"
-          data-testid={`notes-move-folder-${session.id}`}
-          className="max-w-[4.5rem] shrink-0 rounded border border-transparent bg-transparent text-[9px] text-[var(--uv-text-muted)] opacity-0 group-hover:opacity-100 focus:border-[var(--uv-border)] focus:opacity-100"
-          value={session.metadata?.folderId ?? ''}
-          onChange={(e) => onMove(e.target.value || null)}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <option value="">Inbox</option>
-          {folders.map((f) => (
-            <option key={f.id} value={f.id}>
-              {f.name}
-            </option>
-          ))}
-        </select>
-      ) : null}
       <button
         type="button"
         aria-label={`Delete ${session.title || 'note'}`}
@@ -78,11 +71,94 @@ function NoteRow({
           e.stopPropagation()
           onDelete()
         }}
-        className="shrink-0 rounded px-1 text-[10px] text-[var(--uv-text-muted)] opacity-0 hover:text-red-600 group-hover:opacity-100"
+        className="shrink-0 rounded px-1 text-[10px] leading-none text-[var(--uv-text-muted)] opacity-0 hover:text-red-600 group-hover:opacity-100"
       >
         ×
       </button>
     </li>
+  )
+}
+
+function FolderDropHeader({
+  folderId,
+  dropTestId,
+  depth,
+  open,
+  label,
+  count,
+  draggableFolderId,
+  onToggle,
+  onDropNote,
+  onDropFolder,
+  children,
+}: {
+  folderId: string | null
+  dropTestId: string
+  depth: number
+  open: boolean
+  label: string
+  count: number
+  draggableFolderId?: string
+  onToggle: () => void
+  onDropNote: (sessionId: string) => void
+  onDropFolder: (folderId: string) => void
+  children?: React.ReactNode
+}) {
+  const [over, setOver] = useState(false)
+  const pad = { paddingLeft: `${8 + depth * 10}px` }
+
+  const onDragOver = useCallback((e: React.DragEvent) => {
+    const types = e.dataTransfer.types
+    if (types.includes(NOTE_DRAG) || types.includes(FOLDER_DRAG)) {
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'move'
+      setOver(true)
+    }
+  }, [])
+
+  const onDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      setOver(false)
+      const noteId = e.dataTransfer.getData(NOTE_DRAG)
+      const fldId = e.dataTransfer.getData(FOLDER_DRAG)
+      if (noteId) onDropNote(noteId)
+      else if (fldId) onDropFolder(fldId)
+    },
+    [onDropNote, onDropFolder],
+  )
+
+  return (
+    <div
+      className={`group flex items-center gap-0.5 rounded ${over ? 'bg-[var(--uv-accent-dim)] ring-1 ring-[var(--uv-accent)]' : ''}`}
+      style={pad}
+      data-testid={dropTestId}
+      onDragOver={onDragOver}
+      onDragLeave={() => setOver(false)}
+      onDrop={onDrop}
+    >
+      <button
+        type="button"
+        draggable={Boolean(draggableFolderId)}
+        onDragStart={
+          draggableFolderId
+            ? (e) => {
+                e.dataTransfer.setData(FOLDER_DRAG, draggableFolderId)
+                e.dataTransfer.effectAllowed = 'move'
+                e.stopPropagation()
+              }
+            : undefined
+        }
+        onClick={onToggle}
+        className="flex min-w-0 flex-1 items-center gap-1 rounded px-1 py-0.5 text-left text-[11px] font-medium text-[var(--uv-text-primary)] hover:bg-[var(--uv-bg-hover)]"
+        data-testid={folderId ? `notes-folder-toggle-${folderId}` : 'notes-folder-toggle-__inbox__'}
+      >
+        <span className="text-[10px] text-[var(--uv-text-muted)]">{open ? '▾' : '▸'}</span>
+        <span className="truncate">{label}</span>
+        <span className="text-[10px] font-normal text-[var(--uv-text-muted)]">({count})</span>
+      </button>
+      {children}
+    </div>
   )
 }
 
@@ -98,6 +174,7 @@ function FolderBranch({
   onOpenNewFolderForm,
   onDeleteFolder,
   onMoveNote,
+  onMoveFolder,
   onDeleteMeeting,
   onToggleFolder,
 }: {
@@ -112,27 +189,38 @@ function FolderBranch({
   onOpenNewFolderForm: (parentId: string | null) => void
   onDeleteFolder: (folderId: string) => void
   onMoveNote: (sessionId: string, folderId: string | null) => void
+  onMoveFolder: (folderId: string, parentId: string | null) => void
   onDeleteMeeting: (sessionId: string) => void
   onToggleFolder: (folderId: string) => void
 }) {
   const open = expandedFolderIds.includes(folder.id)
   const notes = sessionsInFolder(sessions, folder.id)
   const subfolders = childFolders(folders, folder.id)
-  const pad = { paddingLeft: `${8 + depth * 10}px` }
+
+  const handleDropNote = useCallback(
+    (sessionId: string) => onMoveNote(sessionId, folder.id),
+    [folder.id, onMoveNote],
+  )
+
+  const handleDropFolder = useCallback(
+    (folderId: string) => onMoveFolder(folderId, folder.id),
+    [folder.id, onMoveFolder],
+  )
 
   return (
     <li data-testid={`notes-folder-${folder.id}`}>
-      <div className="group flex items-center gap-0.5" style={pad}>
-        <button
-          type="button"
-          onClick={() => onToggleFolder(folder.id)}
-          className="flex min-w-0 flex-1 items-center gap-1 rounded px-1 py-1 text-left text-[11px] font-medium text-[var(--uv-text-primary)] hover:bg-[var(--uv-bg-hover)]"
-          data-testid={`notes-folder-toggle-${folder.id}`}
-        >
-          <span className="text-[10px] text-[var(--uv-text-muted)]">{open ? '▾' : '▸'}</span>
-          <span className="truncate">{folder.name}</span>
-          <span className="text-[10px] font-normal text-[var(--uv-text-muted)]">({notes.length})</span>
-        </button>
+      <FolderDropHeader
+        folderId={folder.id}
+        dropTestId={`notes-folder-drop-${folder.id}`}
+        depth={depth}
+        open={open}
+        label={folder.name}
+        count={notes.length}
+        draggableFolderId={folder.id}
+        onToggle={() => onToggleFolder(folder.id)}
+        onDropNote={handleDropNote}
+        onDropFolder={handleDropFolder}
+      >
         <button
           type="button"
           title="New note in folder"
@@ -158,18 +246,16 @@ function FolderBranch({
         >
           ×
         </button>
-      </div>
+      </FolderDropHeader>
       {open ? (
         <>
-          <ul className="space-y-0.5">
+          <ul className="space-y-0">
             {notes.map((s) => (
               <NoteRow
                 key={s.id}
                 session={s}
                 active={s.id === activeSessionId}
-                folders={folders}
                 onSelect={() => onSelectMeeting(s)}
-                onMove={(fid) => onMoveNote(s.id, fid)}
                 onDelete={() => onDeleteMeeting(s.id)}
               />
             ))}
@@ -188,6 +274,7 @@ function FolderBranch({
                 onOpenNewFolderForm={onOpenNewFolderForm}
                 onDeleteFolder={onDeleteFolder}
                 onMoveNote={onMoveNote}
+                onMoveFolder={onMoveFolder}
                 onDeleteMeeting={onDeleteMeeting}
                 onToggleFolder={onToggleFolder}
               />
@@ -209,6 +296,7 @@ export default function NotesVaultPanel({
   onNewFolder,
   onDeleteFolder,
   onMoveNote,
+  onMoveFolder,
   onDeleteMeeting,
   onToggleFolder,
 }: NotesVaultPanelProps) {
@@ -247,6 +335,8 @@ export default function NotesVaultPanel({
         </button>
       </div>
 
+      <p className="mb-1.5 text-[10px] text-[var(--uv-text-muted)]">Drag notes or folders to organize.</p>
+
       {newFolderParent !== undefined ? (
         <form
           className="mb-2 flex gap-1"
@@ -267,30 +357,27 @@ export default function NotesVaultPanel({
         </form>
       ) : null}
 
-      <ul className="max-h-52 space-y-0.5 overflow-y-auto">
+      <ul className="max-h-60 space-y-0 overflow-y-auto">
         <li data-testid="notes-folder-inbox">
-          <div className="flex items-center gap-1 px-1 py-1">
-            <button
-              type="button"
-              onClick={() => onToggleFolder('__inbox__')}
-              className="flex min-w-0 flex-1 items-center gap-1 text-left text-[11px] font-medium text-[var(--uv-text-primary)] hover:bg-[var(--uv-bg-hover)]"
-              data-testid="notes-folder-toggle-__inbox__"
-            >
-              <span className="text-[10px] text-[var(--uv-text-muted)]">{inboxOpen ? '▾' : '▸'}</span>
-              <span>Inbox</span>
-              <span className="text-[10px] font-normal text-[var(--uv-text-muted)]">({inboxNotes.length})</span>
-            </button>
-          </div>
+          <FolderDropHeader
+            folderId={null}
+            dropTestId="notes-folder-drop-inbox"
+            depth={0}
+            open={inboxOpen}
+            label="Inbox"
+            count={inboxNotes.length}
+            onToggle={() => onToggleFolder('__inbox__')}
+            onDropNote={(sessionId) => onMoveNote(sessionId, null)}
+            onDropFolder={(folderId) => onMoveFolder(folderId, null)}
+          />
           {inboxOpen ? (
-            <ul className="space-y-0.5">
+            <ul className="space-y-0">
               {inboxNotes.map((s) => (
                 <NoteRow
                   key={s.id}
                   session={s}
                   active={s.id === activeSessionId}
-                  folders={folders}
                   onSelect={() => onSelectMeeting(s)}
-                  onMove={(fid) => onMoveNote(s.id, fid)}
                   onDelete={() => onDeleteMeeting(s.id)}
                 />
               ))}
@@ -312,6 +399,7 @@ export default function NotesVaultPanel({
             onOpenNewFolderForm={setNewFolderParent}
             onDeleteFolder={onDeleteFolder}
             onMoveNote={onMoveNote}
+            onMoveFolder={onMoveFolder}
             onDeleteMeeting={onDeleteMeeting}
             onToggleFolder={onToggleFolder}
           />

@@ -55,6 +55,29 @@ test.describe('Notes', () => {
     await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(1)
   })
 
+  test('creates nested subfolder and moves note via drag and drop', async ({ page }) => {
+    await page.getByTestId('notes-toggle-panel').click()
+    await page.getByTestId('notes-new-folder').click()
+    await page.getByTestId('notes-new-folder-input').fill('Work')
+    await page.getByTestId('notes-new-folder-input').press('Enter')
+
+    const workToggle = page.locator('button[data-testid^="notes-folder-toggle-"]').filter({ hasText: 'Work' })
+    await expect(workToggle).toBeVisible({ timeout: 5000 })
+    await workToggle.click()
+
+    await page.locator('button[title="New subfolder"]').click()
+    await page.getByTestId('notes-new-folder-input').fill('IC')
+    await page.getByTestId('notes-new-folder-input').press('Enter')
+    await expect(page.locator('button[data-testid^="notes-folder-toggle-"]').filter({ hasText: 'IC' })).toBeVisible()
+
+    const noteRow = page.locator('[data-testid^="notes-note-row-"]').first()
+    const icDrop = page.locator('[data-testid^="notes-folder-drop-"]').filter({ hasText: 'IC' })
+    await noteRow.dragTo(icDrop)
+
+    await expect(page.getByTestId('notes-folder-toggle-__inbox__')).toContainText('(0)')
+    await expect(page.locator('button[data-testid^="notes-folder-toggle-"]').filter({ hasText: 'IC' })).toContainText('(1)')
+  })
+
   test('creates folder and nests note', async ({ page }) => {
     await page.getByTestId('notes-toggle-panel').click()
     await page.getByTestId('notes-new-folder').click()
@@ -97,6 +120,41 @@ test.describe('Notes', () => {
     await meetings.nth(1).click()
     await expect(title).toHaveValue('IC standup')
     await expect(editor).toContainText('DPI gap?')
+  })
+
+  test('switch stays on selected note after save sync completes', async ({ page }) => {
+    await page.getByTestId('notes-toggle-panel').click()
+
+    const title = page.getByTestId('notes-meeting-title')
+    await title.click()
+    await title.fill('')
+    await page.keyboard.type('Note Alpha')
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.keyboard.type('alpha body')
+
+    await page.getByTestId('notes-new-meeting').click()
+    await title.click()
+    await title.fill('')
+    await page.keyboard.type('Note Beta')
+    await editor.click()
+    await page.keyboard.type('beta body')
+
+    const meetings = page.locator('[data-testid^="notes-meeting-item-"]')
+    await expect(meetings).toHaveCount(2)
+
+    await page.keyboard.press('Control+s')
+    await meetings.nth(1).click()
+    await expect(title).toHaveValue('Note Alpha')
+    await expect(editor).toContainText('alpha body')
+
+    await page.waitForTimeout(1200)
+    await expect(title).toHaveValue('Note Alpha')
+    await expect(editor).toContainText('alpha body')
+
+    await meetings.first().click()
+    await expect(title).toHaveValue('Note Beta')
+    await expect(editor).toContainText('beta body')
   })
 
   test('line? trigger opens panel and shows mock AI response', async ({ page }) => {

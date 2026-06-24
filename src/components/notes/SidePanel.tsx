@@ -66,6 +66,7 @@ type SidePanelProps = {
   onNewFolder: (parentId: string | null, name: string) => void
   onDeleteFolder: (folderId: string) => void
   onMoveNote: (sessionId: string, folderId: string | null) => void
+  onMoveFolder: (folderId: string, parentId: string | null) => void
   onToggleFolder: (folderId: string) => void
   onDeleteMeeting: (sessionId: string) => void
   onDeleteLookup: (lookupId: string) => void
@@ -113,6 +114,7 @@ export default function SidePanel({
   onNewFolder,
   onDeleteFolder,
   onMoveNote,
+  onMoveFolder,
   onToggleFolder,
   onDeleteMeeting,
   onDeleteLookup,
@@ -164,7 +166,7 @@ export default function SidePanel({
   return (
     <aside
       style={{ width }}
-      className="relative flex shrink-0 flex-col border-l border-[var(--uv-border)] bg-[var(--uv-bg-panel)] max-md:fixed max-md:inset-y-0 max-md:right-0 max-md:z-30 max-md:shadow-xl"
+      className="notes-side-panel-mobile relative flex shrink-0 flex-col border-l border-[var(--uv-border)] bg-[var(--uv-bg-panel)] max-md:fixed max-md:inset-y-0 max-md:right-0 max-md:z-30 max-md:shadow-xl"
       data-testid="notes-side-panel"
       aria-label="Notes and AI panel"
     >
@@ -207,6 +209,7 @@ export default function SidePanel({
             onNewFolder={onNewFolder}
             onDeleteFolder={onDeleteFolder}
             onMoveNote={onMoveNote}
+            onMoveFolder={onMoveFolder}
             onDeleteMeeting={onDeleteMeeting}
             onToggleFolder={onToggleFolder}
           />
