@@ -46,7 +46,8 @@ test.describe('Notes mobile', () => {
     await expect(page.getByTestId('notes-side-panel')).toBeHidden()
 
     await page.getByTestId('notes-toggle-panel').click()
-    await page.getByTestId('notes-toggle-panel').click()
+    await expect(page.getByTestId('notes-side-panel')).toBeVisible()
+    await page.getByTestId('notes-panel-close').click()
     await expect(page.getByTestId('notes-side-panel')).toBeHidden()
   })
 
