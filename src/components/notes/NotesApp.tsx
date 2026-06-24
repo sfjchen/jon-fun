@@ -39,8 +39,11 @@ import {
   saveSessionsLocal,
   setActiveSessionId,
   syncWithServer,
+  isSessionDirty,
+  touchSession,
   upsertSession,
 } from '@/lib/notes/storage'
+import { toggleSourceForNote } from '@/lib/notes/sourceSelection'
 import SidePanel from './SidePanel'
 import EditorShell from './EditorShell'
 import type { NoteEditorHandle } from './EditorShell'
@@ -122,10 +125,6 @@ function initState(): State {
 function upsertLookupInSession(session: NoteSession, lookup: Lookup): NoteSession {
   const lookups = [...session.lookups.filter((l) => l.id !== lookup.id), lookup]
   return { ...session, lookups }
-}
-
-function touchSession(session: NoteSession): NoteSession {
-  return { ...session, updatedAt: new Date().toISOString() }
 }
 
 function reducer(state: State, action: Action): State {
@@ -642,10 +641,10 @@ export default function NotesApp() {
 
   const handleAttachmentAdd = useCallback(
     (attachment: Screenshot) => {
-      const session = {
+      const session = touchSession({
         ...state.session,
         screenshots: { ...state.session.screenshots, [attachment.id]: attachment },
-      }
+      })
       upsertSession(session)
       dispatch({ type: 'PATCH_SESSION', session })
     },
@@ -667,10 +666,10 @@ export default function NotesApp() {
       }
       const merged: Screenshot = { ...existing, ...patch, ...(display ? { display } : {}) }
       if (patch.preview) merged.preview = patch.preview
-      const session = {
+      const session = touchSession({
         ...state.session,
         screenshots: { ...state.session.screenshots, [id]: merged },
-      }
+      })
       upsertSession(session)
       dispatch({ type: 'PATCH_SESSION', session })
     },
@@ -714,13 +713,15 @@ export default function NotesApp() {
   const handleNewNote = useCallback((folderId: string | null = null) => {
     const fid = typeof folderId === 'string' ? folderId : null
     const prev = sessionRef.current
-    upsertSession(prev)
-    void (async () => {
+    const storedPrev = sessionsRef.current.find((x) => x.id === prev.id)
+    if (isSessionDirty(prev, storedPrev)) {
       const saved = appendNoteHistory(prev, { kind: 'saved', detail: 'before new note' })
       upsertSession(saved)
-      await saveSessionToServer(saved)
-      dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
-    })()
+      void (async () => {
+        await saveSessionToServer(saved)
+        dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+      })()
+    }
 
     const fresh = createEmptySession(undefined, fid)
     setActiveSessionId(fresh.id)
@@ -758,6 +759,12 @@ export default function NotesApp() {
     dispatch({ type: 'SET_SESSIONS', sessions: nextSessions })
     dispatch({ type: 'LOAD_SESSION', session: loadActiveSession() })
     void pushAllToServer()
+  }, [])
+
+  const handleToggleSourceForNote = useCallback((sourceId: string, enabled: boolean) => {
+    const metadata = toggleSourceForNote(sessionRef.current.metadata, sourceId, enabled)
+    dispatch({ type: 'METADATA', metadata })
+    upsertSession({ ...sessionRef.current, metadata })
   }, [])
 
   const handleMoveNote = useCallback(
@@ -807,18 +814,20 @@ export default function NotesApp() {
     if (s.id === sessionRef.current.id) return
 
     const prev = sessionRef.current
-    upsertSession(prev)
-    void (async () => {
+    const storedPrev = sessionsRef.current.find((x) => x.id === prev.id)
+    if (isSessionDirty(prev, storedPrev)) {
       const saved = appendNoteHistory(prev, { kind: 'saved' })
       upsertSession(saved)
-      await saveSessionToServer(saved)
-      dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
-      if (sessionRef.current.id === prev.id) {
-        dispatch({ type: 'PATCH_SESSION', session: saved })
-      }
-    })()
+      void (async () => {
+        await saveSessionToServer(saved)
+        dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+        if (sessionRef.current.id === prev.id) {
+          dispatch({ type: 'PATCH_SESSION', session: saved })
+        }
+      })()
+    }
 
-    const switched = appendNoteHistory(s, { kind: 'switch', detail: s.title })
+    const switched = appendNoteHistory(s, { kind: 'switch', detail: s.title || 'Untitled' })
     setActiveSessionId(switched.id)
     upsertSession(switched)
     dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
@@ -835,7 +844,7 @@ export default function NotesApp() {
   const handleDeleteLookup = useCallback(
     (lookupId: string) => {
       const lookups = state.session.lookups.filter((l) => l.id !== lookupId)
-      const session = { ...state.session, lookups }
+      const session = touchSession({ ...state.session, lookups })
       upsertSession(session)
       dispatch({ type: 'DELETE_LOOKUP', lookupId })
       void saveSessionToServer(session)
@@ -848,15 +857,13 @@ export default function NotesApp() {
       const target = state.sessions.find((s) => s.id === sessionId)
       if (!target) return
       if (target.id !== state.session.id) {
-        upsertSession(state.session)
-        setActiveSessionId(target.id)
-        dispatch({ type: 'LOAD_SESSION', session: target })
+        handleSelectMeeting(target)
       }
       if (lineIndex != null) {
         setTimeout(() => editorRef.current?.scrollToLine(lineIndex), 100)
       }
     },
-    [state.sessions, state.session],
+    [state.sessions, handleSelectMeeting],
   )
 
   const aiBusy = anyStreaming(state.streamByLookupId)
@@ -990,6 +997,7 @@ export default function NotesApp() {
           folders={folders}
           expandedFolderIds={expandedFolderIds}
           activeSessionId={state.session.id}
+          activeSession={state.session}
           focusedLookup={focusedLookup}
           sessionHistory={state.sessionHistory}
           streamByLookupId={state.streamByLookupId}
@@ -1029,6 +1037,7 @@ export default function NotesApp() {
           onClearLookup={() => dispatch({ type: 'CLEAR_LOOKUP' })}
           onSynced={(opts) => void refreshFromServer(opts)}
           onJumpTodo={handleJump}
+          onToggleSourceForNote={handleToggleSourceForNote}
           onSourcesChange={() => {
             dispatch({ type: 'GLOSSARY_BUMP' })
             void syncMemoryBank()

@@ -98,6 +98,36 @@ test.describe('Notes', () => {
     await expect(page.getByTestId('notes-sources-panel')).toContainText('[Pack] CFA Level I')
   })
 
+  test('source checkboxes are per-note and attach file works', async ({ page }) => {
+    await page.getByTestId('notes-toggle-panel').click()
+    await page.getByTestId('notes-sources-toggle').click()
+
+    const panel = page.getByTestId('notes-sources-panel')
+    await expect(panel).toBeVisible()
+
+    const packCheckbox = panel.locator('[data-testid^="notes-source-check-builtin-pack-"]').first()
+    await expect(packCheckbox).toBeChecked()
+
+    await packCheckbox.uncheck()
+    await expect(packCheckbox).not.toBeChecked()
+
+    await page.getByTestId('notes-new-meeting').click()
+    const packCheckboxNote2 = panel.locator('[data-testid^="notes-source-check-builtin-pack-"]').first()
+    await expect(packCheckboxNote2).toBeChecked()
+
+    await page.locator('[data-testid^="notes-meeting-item-"]').first().click()
+    await expect(packCheckbox).not.toBeChecked()
+
+    await page.getByTestId('notes-sources-attach').click()
+    await page.getByTestId('notes-sources-file-input').setInputFiles({
+      name: 'memo.txt',
+      mimeType: 'text/plain',
+      buffer: Buffer.from('Custom IPS excerpt for E2E.'),
+    })
+    await expect(panel).toContainText('memo')
+    await packCheckbox.check()
+  })
+
   test('creates a second note and switches between them', async ({ page }) => {
     await page.getByTestId('notes-toggle-panel').click()
 
@@ -120,6 +150,33 @@ test.describe('Notes', () => {
     await meetings.nth(1).click()
     await expect(title).toHaveValue('IC standup')
     await expect(editor).toContainText('DPI gap?')
+  })
+
+  test('switching notes does not reorder vault by last opened', async ({ page }) => {
+    await page.getByTestId('notes-toggle-panel').click()
+
+    const title = page.getByTestId('notes-meeting-title')
+    await title.click()
+    await title.fill('')
+    await page.keyboard.type('Note Alpha')
+
+    await page.getByTestId('notes-new-meeting').click()
+    await title.click()
+    await title.fill('')
+    await page.keyboard.type('Note Beta')
+
+    const noteLabels = () =>
+      page.locator('[data-testid^="notes-meeting-item-"] .truncate').allTextContents()
+
+    await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(2)
+    const orderBefore = await noteLabels()
+    expect(orderBefore[0]).toContain('Note Beta')
+
+    await page.locator('[data-testid^="notes-meeting-item-"]').filter({ hasText: 'Note Alpha' }).click()
+    await expect(title).toHaveValue('Note Alpha')
+
+    const orderAfter = await noteLabels()
+    expect(orderAfter).toEqual(orderBefore)
   })
 
   test('switch stays on selected note after save sync completes', async ({ page }) => {
@@ -165,7 +222,7 @@ test.describe('Notes', () => {
     await waitForNotesTrigger(page)
     await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 5000 })
     await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15000 })
-    await expect(page.getByTestId('notes-side-panel')).toContainText(/Core meaning/i)
+    await expect(page.getByTestId('notes-side-panel')).not.toContainText(/Core meaning/i)
   })
 
   test('panel lookup input runs AI without typing in editor', async ({ page }) => {
