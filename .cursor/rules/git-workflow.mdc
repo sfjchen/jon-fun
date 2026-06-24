@@ -1,31 +1,10 @@
 ---
-description: After agent code/doc edits — commit and push to main unless user opts out
+description: After agent edits — commit and push; full git/gh protocol in gh-git-github-workflow skill
 alwaysApply: true
 ---
 
-# Git workflow (agents)
+# Git (agents)
 
-## After every substantive edit session
+After **substantive edits**: **commit + push to `main`** before ending the response (unless user says not to).
 
-1. **`git add`** relevant files (not secrets, not `log/`, not `.DS_Store`)
-2. **`git commit`** with a clear message (HEREDOC)
-3. **`git push origin HEAD`** so Vercel deploys sfjc.dev
-
-Use one step when convenient: `git acp -m "message"` if the repo alias exists; otherwise add → commit → push.
-
-## When to skip commit
-
-- User explicitly says **do not commit** / review only / ask mode
-- No file changes
-- Only exploratory read-only work
-
-## Do not
-
-- Force-push `main`
-- Commit `.env`, credentials, or `log/usage.log`
-- Amend pushed commits unless user requests and rules allow
-
-## Also update when relevant
-
-- README changelog for significant changes
-- Feature agent docs (e.g. `docs/NOTES-AGENT.md`) when commands/paths change
+Full protocol (HEREDOC commits, safety, `gh` PRs, changelog): **[`.cursor/skills/gh-git-github-workflow/SKILL.md`](../skills/gh-git-github-workflow/SKILL.md)**

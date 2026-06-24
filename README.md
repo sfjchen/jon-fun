@@ -35,7 +35,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 
 **Do not:** resurrect CodeMirror / `NEXT_PUBLIC_NOTES_WYSIWYG`; tell user to run migrations manually (use Supabase MCP).
 
-**After agent edits:** commit + push to `main` (see [`.cursor/rules/git-workflow.mdc`](.cursor/rules/git-workflow.mdc) and **Workflow & Deployment** below).
+**After agent edits:** commit + push to `main` — [`.cursor/rules/git-workflow.mdc`](.cursor/rules/git-workflow.mdc) (mandate) + [`.cursor/skills/gh-git-github-workflow/SKILL.md`](.cursor/skills/gh-git-github-workflow/SKILL.md) (full protocol).
 
 **Always update:** README changelog + `docs/NOTES-DESIGN.md` changelog for Notes changes; [`docs/NOTES-AGENT.md`](docs/NOTES-AGENT.md) if agent paths/commands change.
 
@@ -441,7 +441,7 @@ src/
 
 - **Work directly on `main` branch** (no feature branches)
 - **Optional**: `npm run dev` to smoke-test locally before pushing
-- **Use `git acp -m "message"`** to add/commit/push in one step
+- **Use `git acp -m "message"`** to add/commit/push in one step (see [`.cursor/skills/gh-git-github-workflow/SKILL.md`](.cursor/skills/gh-git-github-workflow/SKILL.md))
 - **Vercel auto-deploys** on push (1-3 minutes); verify via Vercel dashboard or https://sfjc.dev and redeploy latest if env vars change
 
 ### ⚠️ IMPORTANT: After Making Changes
@@ -528,7 +528,7 @@ Running log of project work. Update this section when making significant changes
 - **2026-06**: **Notes file attachments** — paste/drop images, Excel/CSV (editable table preview), PDF/docs; drag-resize frames; image crop view; AI lookup gets spreadsheet text context.
 - **2026-06**: **Notes legacy cleanup** — removed uvimco redirects, localStorage migration, npm script aliases, CodeMirror CSS classes; CSS renamed to `notes-*`; admin key `notes_admin_ok`.
 - **2026-06**: **Supabase layout** — legacy root `supabase-migration-*.sql` → [`supabase/archive/legacy/`](supabase/archive/legacy/); [`supabase/README.md`](supabase/README.md); Notes migration history repaired (local/remote aligned).
-- **2026-06**: **Playwright QA guidance** — [`.cursor/rules/playwright-testing.mdc`](.cursor/rules/playwright-testing.mdc): default **CLI** for regression; **Cursor Playwright plugin** for human-like UI verification on sfjc.dev.
+- **2026-06**: **Git workflow** — coalesced into [`.cursor/skills/gh-git-github-workflow/SKILL.md`](.cursor/skills/gh-git-github-workflow/SKILL.md); [`.cursor/rules/git-workflow.mdc`](.cursor/rules/git-workflow.mdc) is thin always-on mandate only.
 - **theme2 routes restored** at `/theme2` (game mirrors + home grid); archived copies remain under `src/app/_archive/theme2`. **Leaderboards** page copy updated to “parked for now” while focus stays on deeper projects (Veridian, etc.).
 - **Veridian whiteboard (canonical demo)**: **[sfjc.dev/veridian](https://sfjc.dev/veridian)** — Next.js local-first app proxied from [`sfjchen/veridian-whiteboard`](https://github.com/sfjchen/veridian-whiteboard). Not `www.veridian.fyi` (legacy Expo EdTech; redirects here). Added multi-agent reconciliation table in **[docs/VERIDIAN_WORKSPACE.md](docs/VERIDIAN_WORKSPACE.md)** so parallel Cursor chats don't mix Render/Supabase/Expo with the Vercel-only whiteboard.
 - **Veridian build isolation**: Parent `tsconfig.json` + `eslint.config.mjs` exclude `Veridian/**` so `npm run build` on Jon-fun no longer typechecks the nested whiteboard. Added **[docs/VERIDIAN_WORKSPACE.md](docs/VERIDIAN_WORKSPACE.md)** (three projects, envs, Supabase IDs, ports), plus nested **`Veridian/WORKING.md`** and **`Veridian/REMOTES.md`** (do not push whiteboard to `sfjchen/Veridian` EdTech fork).

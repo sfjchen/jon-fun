@@ -1,14 +1,57 @@
 ---
 name: gh-git-github-workflow
-description: Use git and GitHub CLI (gh) for repos, issues, PRs, comments, releases, gists, Actions, secrets, wiki, and API access. Use when working with git, GitHub, pull requests, issues, gh commands, or GitHub workflows.
+description: >-
+  Git commit/push after agent edits, and GitHub CLI (gh) for repos, issues, PRs,
+  releases, Actions. Use when committing, pushing, deploying, or any git/GitHub work.
 ---
-# Git & GitHub CLI Workflow
+# Git & GitHub workflow (this repo + gh)
 
-## Quick Start
+## Agent workflow — after substantive edits
 
-**Auth**: `gh auth login` or set `GITHUB_TOKEN` / `GH_TOKEN` for automation.
+**Default:** add → commit → push to `main` before ending the response (Vercel deploys sfjc.dev).
 
-**Repo context**: Run commands inside a git repo, or use `-R owner/repo` / `GH_REPO=owner/repo`.
+1. `git status` + `git diff` — review what changed
+2. `git add` relevant files only (no `.env`, credentials, `log/`, `.DS_Store`)
+3. `git commit` with HEREDOC message (why, not just what)
+4. `git push origin HEAD`
+
+One-liner if alias exists: `git acp -m "message"`.
+
+**Skip commit when:** user says do not commit; ask/read-only mode; no file changes.
+
+**Do not:** force-push `main`; commit secrets; amend pushed commits unless user requests and rules allow.
+
+**Also update when relevant:** README changelog; feature agent docs (e.g. `docs/NOTES-AGENT.md`) when commands/paths change.
+
+### Commit message (this repo)
+
+- Work on **`main`** directly (no feature branches unless user asks)
+- 1–2 sentences, focus on **why**
+- After push: `npm run build` if unsure; confirm Vercel deploy if user cares
+
+### Commit protocol (detailed)
+
+```bash
+git status --short
+git diff --stat
+git add <paths>
+git commit -m "$(cat <<'EOF'
+Your message here.
+
+EOF
+)"
+git push origin HEAD
+```
+
+For PRs (when user asks): use `gh pr create` — see below.
+
+---
+
+## Quick Start (gh)
+
+**Auth**: `gh auth login` or set `GITHUB_TOKEN` / `GH_TOKEN`.
+
+**Repo context**: Run inside git repo, or `-R owner/repo` / `GH_REPO=owner/repo`.
 
 ## Core Commands by Domain
 
@@ -27,95 +70,30 @@ description: Use git and GitHub CLI (gh) for repos, issues, PRs, comments, relea
 
 ## Git + gh Best Practices
 
-1. **Checkout PRs locally**: `gh pr checkout 123` (works for forks too)
-2. **Create PR/issue with flags**: `gh pr create --title "..." --body "..."` or `--fill` to use commits
-3. **Filter lists**: `gh pr list --state closed --assignee @me`; `gh issue list --label bug`
-4. **Status overview**: `gh pr status`, `gh issue status`
-5. **Use `--web`** when you need the browser: `gh pr create --web`, `gh issue view 5 -w`
+1. **Checkout PRs locally**: `gh pr checkout 123`
+2. **Create PR/issue**: `gh pr create --title "..." --body "..."` or `--fill`
+3. **Filter lists**: `gh pr list --state closed --assignee @me`
+4. **Status**: `gh pr status`, `gh issue status`
+5. **Browser**: `gh pr create --web`, `gh issue view 5 -w`
 
 ## Output Formatting
 
 - **JSON**: `gh pr list --json number,title,state`
-- **jq filter**: `gh pr list --json number,title --jq '.[] | "\(.number): \(.title)"'`
-- **Template**: `gh api repos/{owner}/{repo}/issues --template '{{range .}}{{.title}}{{"\n"}}{{end}}'`
+- **jq**: `gh pr list --json number,title --jq '.[] | "\(.number): \(.title)"'`
 
 ## Wiki
 
-gh has no native wiki commands. Wiki is a separate git repo; edit via clone → edit .md → push.
-
-**Enable wiki** (if not enabled): `gh repo edit owner/repo --enable-wiki`
-
-**Find wiki URL** from current repo: `gh repo view --json nameWithOwner -q ".nameWithOwner"` → `owner/repo` → wiki URL is `https://github.com/owner/repo.wiki.git`
-
-**Clone wiki** (from inside repo):
-```bash
-git clone "https://github.com/$(gh repo view --json nameWithOwner -q ".nameWithOwner").wiki.git"
-cd repo.wiki
-```
-
-**Edit**: Edit `.md` files (e.g. `Home.md`), then `git add`, `git commit`, `git push`.
-
-**Note**: The wiki repo is created only after the first page is added via the web UI. If clone fails with "Repository not found", enable wiki and create the first page at `gh browse --wiki`.
-
-## Automation & Aliases
-
-- **Aliases**: `gh alias set prc 'pr create'`; `gh alias set prl 'pr list --assignee @me'`
-- **Scripting**: Set `GH_TOKEN`; use `--json` + `jq` for parsing
-- **Enterprise**: `gh auth login --hostname <host>`; `export GH_HOST=<host>`
-
-## Full Command Reference
-
-**repo**: list, create, clone, fork, view, edit, archive, unarchive, rename, sync, set-default, delete, license, gitignore, deploy-key, autolink
-
-**pr**: status, list, create, view, checkout, checks, diff, merge, review, comment, edit, close, reopen, ready, lock, unlock, revert, update-branch
-
-**issue**: status, list, create, view, comment, edit, close, reopen, lock, unlock, pin, unpin, transfer, delete, develop
-
-**release**: list, create, view, download, upload, edit, delete, delete-asset, verify, verify-asset
-
-**gist**: create, list, view, edit, clone, rename, delete
-
-**browse**: Use `--wiki`, `--issues`, `--commits` for specific views
-
-**auth**: login, logout, status, refresh, setup-git, token
-
-**api**: `gh api <endpoint>` — REST/GraphQL. Placeholders: `{owner}`, `{repo}`, `{branch}`. Flags: `-X`, `-f`, `-F`, `--jq`, `--template`, `--paginate`
-
-**workflow**: list, view, run, enable, disable | **run**: list, view, watch, download, rerun, delete | **cache**: list, delete
-
-**secret/variable**: list, set, delete
-
-**search**: repos, issues, prs, code, commits
-
-**org**: list, members, teams | **project**: list, view, create, edit, delete, field-list, item-list, item-add, item-edit, item-delete
-
-**ssh-key/gpg-key**: list, add, delete | **config**: get, set, list
-
-**codespace**: list, create, ssh, delete, logs, ports, cp, jupyter | **label**: list, create, edit, delete
-
-**ruleset**: list, create, view, update, delete | **extension**: list, install, create, upgrade, remove, browse
-
-**alias**: list, set, delete | **completion**: `-s bash|zsh|fish|powershell`
-
-**status**: PRs/issues relevant to you | **attestation**: verify, generate | **copilot**: explain, suggest, diff | **agent-task**: list, create, view, cancel | **preview**: Enable preview features
+No native gh wiki commands — clone `https://github.com/owner/repo.wiki.git`, edit `.md`, push.
 
 ## Common Examples
 
 ```bash
 gh repo clone owner/repo
-gh repo fork --clone
-gh repo create my-repo --public --source=.
 gh pr create --fill
 gh pr checkout 123
-gh pr list --state merged --author @me
-gh pr review 123 --approve -b "LGTM"
 gh pr merge 123 --squash
 gh issue create -t "Bug" -b "Description"
-gh issue comment 5 -b "Fixed in #6"
 gh release create v1.0.0 --notes "Release notes"
-gh release download v1.0.0
-gh gist create file.txt --public
 gh workflow run ci.yml
 gh run watch
-gh api repos/{owner}/{repo}/issues --jq '.[].title'
 ```
