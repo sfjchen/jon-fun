@@ -178,7 +178,6 @@ export default function Home() {
             <GameCard
               game={item}
               onComingSoonClick={() => setShowComingSoon(true)}
-              linePaper
               compact
               hideDescription
             />

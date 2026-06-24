@@ -161,12 +161,18 @@
 }
 
 /* Inline markdown tables */
+.notes-tiptap-wrap .tableWrapper {
+  overflow-x: auto;
+  margin: 0.75rem 0;
+  max-width: 100%;
+}
+
 .notes-tiptap-wrap .tiptap table {
   width: 100%;
   border-collapse: collapse;
-  margin: 0.75rem 0;
   font-size: 0.875rem;
   table-layout: auto;
+  margin: 0;
 }
 
 .notes-tiptap-wrap .tiptap th,

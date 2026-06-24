@@ -59,6 +59,21 @@ export function parseTabularText(text: string): string[][] {
     .map(splitLine)
 }
 
+/** Build RFC 4180-style CSV from a grid. */
+export function gridToCsv(grid: string[][]): string {
+  return grid
+    .map((row) =>
+      row
+        .map((cell) => {
+          const v = cell ?? ''
+          if (/[",\n\r]/.test(v)) return `"${v.replace(/"/g, '""')}"`
+          return v
+        })
+        .join(','),
+    )
+    .join('\n')
+}
+
 function escapeCell(value: string): string {
   return value.replace(/\|/g, '\\|').replace(/\n/g, ' ')
 }

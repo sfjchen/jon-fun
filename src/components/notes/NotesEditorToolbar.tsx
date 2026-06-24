@@ -170,7 +170,7 @@ export default function NotesEditorToolbar({ editor }: NotesEditorToolbarProps) 
       <span className="mx-0.5 h-4 w-px bg-[var(--uv-border)]" />
       <div className="relative">
         <ToolBtn
-          title="Insert table"
+          title="Insert table (Ctrl+Alt+T)"
           active={editor.isActive('table') || tableOpen}
           onClick={() => setTableOpen((o) => !o)}
         >

@@ -62,11 +62,12 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDesc
   const [clientReady, setClientReady] = useState(false)
   useEffect(() => setClientReady(true), [])
   const useCompact = compact ?? !linePaper
-  const homeTile = Boolean(hideDescription && useCompact && linePaper)
+  const homeTile = Boolean(hideDescription && useCompact)
 
   const cardClass =
     cardBase +
-    (linePaper ? ' bg-transparent min-h-0 flex flex-col' : '') +
+    (linePaper ? ' bg-transparent' : '') +
+    (homeTile ? ' min-h-0 flex flex-col' : '') +
     (homeTile
       ? ' h-full w-full min-h-[9.75rem] flex flex-col justify-center px-3 py-3 sm:min-h-[10.25rem] sm:px-4 sm:py-3.5'
       : useCompact

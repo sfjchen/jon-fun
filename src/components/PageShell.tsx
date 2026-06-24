@@ -79,8 +79,8 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
     }
   }, [fullBleed])
 
-  /** Same line-paper shell + 90px header on home and all notebook routes so the banner does not jump when navigating (pear-navigator keeps its own full-bleed shell). */
-  const outerLinePaper = isNotebook && !pearNav
+  /** Line-paper shell on notebook routes except home (plain cream grid on `/`). Pear-navigator keeps its own full-bleed shell. */
+  const outerLinePaper = isNotebook && !pearNav && !isHome
   const useCompactHeader = fullBleed && !useBigLogo
   const headerPadding = useCompactHeader ? 'px-3 py-2' : isNotebook ? 'px-4 py-3 md:py-4' : 'px-4 py-3 md:py-4'
   const logoSize = useBigLogo ? 'text-5xl md:text-6xl lg:text-7xl' : useCompactHeader ? 'text-2xl sm:text-3xl' : 'text-3xl md:text-4xl'
