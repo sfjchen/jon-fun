@@ -105,10 +105,10 @@ test.describe('Party games (Quip Clash, Fib It, Enough About You)', () => {
     await expect(page.getByTestId('party-error').first()).toBeVisible({ timeout: 25_000 })
   })
 
-  test('← Home from Fib It', async ({ page }) => {
+  test('Home link from Fib It', async ({ page }) => {
     await page.goto('/games/fib-it', { waitUntil: 'domcontentloaded' })
     await waitPartyLobbyReady(page, 'Create')
-    const homeLink = page.getByRole('link', { name: '← Home' })
+    const homeLink = page.getByRole('link', { name: 'Home' })
     await expect(homeLink).toBeVisible()
     await Promise.all([
       page.waitForURL((url) => new URL(url).pathname === '/', { timeout: 25_000 }),

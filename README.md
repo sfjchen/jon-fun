@@ -33,7 +33,9 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 
 **Notes verify loop (3 cycles):** (1) `npm run verify:notes-triggers && npm run verify:notes-attachments && npm run type-check` (2) `lsof -ti:3001 \| xargs kill -9`; `npm run test:e2e:notes` — if `.next` corrupt: `rm -rf .next && npm run build` (3) re-run E2E until green; optional `test:e2e:notes-deploy` + `smoke:notes-llm`.
 
-**Do not:** resurrect CodeMirror / `NEXT_PUBLIC_NOTES_WYSIWYG`; tell user to run migrations manually (use Supabase MCP); commit unless asked.
+**Do not:** resurrect CodeMirror / `NEXT_PUBLIC_NOTES_WYSIWYG`; tell user to run migrations manually (use Supabase MCP).
+
+**After agent edits:** commit + push to `main` (see [`.cursor/rules/git-workflow.mdc`](.cursor/rules/git-workflow.mdc) and **Workflow & Deployment** below).
 
 **Always update:** README changelog + `docs/NOTES-DESIGN.md` changelog for Notes changes; [`docs/NOTES-AGENT.md`](docs/NOTES-AGENT.md) if agent paths/commands change.
 
@@ -467,11 +469,12 @@ src/
 
 ### E2E Testing
 
-- **Playwright** in `e2e/` — tests in `e2e/*.spec.ts`
+- **Playwright CLI** (default for agents/CI) — `@playwright/test` in `e2e/`; see [`.cursor/rules/playwright-testing.mdc`](.cursor/rules/playwright-testing.mdc)
+- **Cursor Playwright plugin** (MCP) — ad-hoc UI verification on live site (“what do you see?”); not a substitute for CLI
 - **Coverage**: Home, navigation (all games on the main grid), Game24 (practice), Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Mental Obstacle Course, party games (Quip Clash, Fib It, Enough About You), **Connections** ([`e2e/connections.spec.ts`](e2e/connections.spec.ts) + in-memory [`e2e/helpers/connections-mock.ts`](e2e/helpers/connections-mock.ts)), Leaderboards, **Coming Soon API** ([`e2e/home-coming-soon-api.spec.ts`](e2e/home-coming-soon-api.spec.ts)). **Local**: Chromium + Mobile Chrome. **`CI=1` / `npm run test:e2e:ci`**: Chromium only (faster, less memory).
 - **Dev server**: Playwright starts `next dev` on **port 3001** by default (`PLAYWRIGHT_WEB_PORT`, `PLAYWRIGHT_BASE_URL` to override).
 - **Deployment-only E2E**: `npm run test:e2e:deployment` … **Notes layout/visual**: **`npm run test:e2e:notes-visual`**
-- **Agent**: Use `/e2e-reviewer` when Playwright E2E tests are needed to confirm site functionality, fix failing tests, or iterate on improvements. Prefer Composer 1.5 for interactive sessions.
+- **Agent**: Default **CLI** (`npm run test:e2e:notes`, etc.). Use **Playwright MCP plugin** for human-like UI checks on sfjc.dev; then add CLI specs for anything reproducible. Use `/e2e-reviewer` for full E2E iteration.
 
 ### MCP Servers
 
@@ -525,7 +528,7 @@ Running log of project work. Update this section when making significant changes
 - **2026-06**: **Notes file attachments** — paste/drop images, Excel/CSV (editable table preview), PDF/docs; drag-resize frames; image crop view; AI lookup gets spreadsheet text context.
 - **2026-06**: **Notes legacy cleanup** — removed uvimco redirects, localStorage migration, npm script aliases, CodeMirror CSS classes; CSS renamed to `notes-*`; admin key `notes_admin_ok`.
 - **2026-06**: **Supabase layout** — legacy root `supabase-migration-*.sql` → [`supabase/archive/legacy/`](supabase/archive/legacy/); [`supabase/README.md`](supabase/README.md); Notes migration history repaired (local/remote aligned).
-- **2026-06**: **Notes E2E hardening** — 3 QA cycles; tags/history/Ctrl+S/suffix-todo/highlight coverage; hints in bottom bar; deploy E2E green on sfjc.dev. See [docs/NOTES-DESIGN.md](docs/NOTES-DESIGN.md).
+- **2026-06**: **Playwright QA guidance** — [`.cursor/rules/playwright-testing.mdc`](.cursor/rules/playwright-testing.mdc): default **CLI** for regression; **Cursor Playwright plugin** for human-like UI verification on sfjc.dev.
 - **theme2 routes restored** at `/theme2` (game mirrors + home grid); archived copies remain under `src/app/_archive/theme2`. **Leaderboards** page copy updated to “parked for now” while focus stays on deeper projects (Veridian, etc.).
 - **Veridian whiteboard (canonical demo)**: **[sfjc.dev/veridian](https://sfjc.dev/veridian)** — Next.js local-first app proxied from [`sfjchen/veridian-whiteboard`](https://github.com/sfjchen/veridian-whiteboard). Not `www.veridian.fyi` (legacy Expo EdTech; redirects here). Added multi-agent reconciliation table in **[docs/VERIDIAN_WORKSPACE.md](docs/VERIDIAN_WORKSPACE.md)** so parallel Cursor chats don't mix Render/Supabase/Expo with the Vercel-only whiteboard.
 - **Veridian build isolation**: Parent `tsconfig.json` + `eslint.config.mjs` exclude `Veridian/**` so `npm run build` on Jon-fun no longer typechecks the nested whiteboard. Added **[docs/VERIDIAN_WORKSPACE.md](docs/VERIDIAN_WORKSPACE.md)** (three projects, envs, Supabase IDs, ports), plus nested **`Veridian/WORKING.md`** and **`Veridian/REMOTES.md`** (do not push whiteboard to `sfjchen/Veridian` EdTech fork).

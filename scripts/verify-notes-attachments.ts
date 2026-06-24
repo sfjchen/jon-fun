@@ -32,6 +32,7 @@ async function main() {
     console.error('parseSpreadsheetFile csv failed', preview)
     process.exit(1)
   }
+
   console.log('✓ attachmentIdsInNotes (📎 + 📷)')
   console.log('✓ attachmentDataUrl')
   console.log('✓ parseSpreadsheetFile csv')

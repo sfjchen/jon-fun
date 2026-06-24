@@ -51,6 +51,7 @@ export default function NotesBubbleMenu({ editor }: NotesBubbleMenuProps) {
   return (
     <BubbleMenu
       editor={editor}
+      shouldShow={({ editor: ed }) => !ed.isActive('table')}
       className="flex flex-wrap items-center gap-0.5 rounded-lg border border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-1 py-0.5 shadow-md"
       options={{ placement: 'top' }}
     >

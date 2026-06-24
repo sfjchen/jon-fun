@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useRef, useEffect, useImperativeHandle, forwardRef } from 'react'
 import Link from 'next/link'
 import html2canvas from 'html2canvas'
+import { HomeLink } from '@/components/HomeLink'
 
 const BRUSH_BLUE = '#60a5fa'
 const BRUSH_YELLOW = '#fbbf24'
@@ -1224,12 +1225,10 @@ export default function PearNavigator() {
                       >
                         Start over
                       </button>
-                      <Link
-                        href="/"
-                        className="flex-1 min-h-[40px] py-2 rounded-lg border border-white/20 bg-white/5 text-white font-medium text-sm hover:bg-white/10 transition-colors touch-manipulation text-center flex items-center justify-center"
-                      >
-                        Go home
-                      </Link>
+                      <HomeLink
+                        variant="dark"
+                        className="flex-1 min-h-[40px] justify-center border border-white/20 bg-white/5 font-medium text-sm hover:bg-white/10 transition-colors touch-manipulation py-2"
+                      />
                     </div>
                   )}
                 </div>

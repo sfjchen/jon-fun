@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 
 const ADMIN_KEY = 'notes_admin_ok'
@@ -63,11 +62,6 @@ export default function UvimcoNotesAdminPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <p className="mb-4">
-        <Link href="/" className="text-sm text-[var(--ink-accent)] hover:underline">
-          ← Home
-        </Link>
-      </p>
       <h1 className="mb-6 font-lora text-2xl font-semibold">Notes — Admin</h1>
 
       {!authorized ? (

@@ -1,7 +1,6 @@
 'use client'
 
 import Image from 'next/image'
-import Link from 'next/link'
 
 const notes = [
   'Global leaderboards are parked while sfjc.dev stays focused on a few deeper, lower-friction projects.',
@@ -38,15 +37,6 @@ export default function LeaderboardsPage() {
             </li>
           ))}
         </ul>
-        <Link href="/">
-          <button
-            className="rounded-lg px-6 py-2 text-white transition-colors hover:opacity-95 flex items-center gap-2 justify-center"
-            style={{ backgroundColor: 'var(--ink-accent)' }}
-          >
-            <Image src="/doodles/notebook/ereader.svg" alt="" width={20} height={20} className="h-5 w-5 invert" />
-            Back to sfjc.dev
-          </button>
-        </Link>
       </div>
     </div>
   )

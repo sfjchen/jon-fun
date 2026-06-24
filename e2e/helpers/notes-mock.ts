@@ -111,3 +111,61 @@ export async function waitForLookupComplete(page: Page): Promise<void> {
 }
 
 export const SESSIONS_KEY = 'notes_sessions'
+
+/** Insert CSV via `?notesE2e=1` hook (Playwright cannot synthesize file drop reliably). */
+export async function dropCsvOnNotesEditor(
+  page: Page,
+  csv: string,
+  filename = 'positions.csv',
+): Promise<void> {
+  await waitForNotesEditor(page)
+  await notesEditor(page).click()
+  const ok = await page.evaluate(
+    async ({ csv, filename }) => {
+      const fn = (window as Window & { __notesE2eInsertCsv?: (csv: string, name?: string) => Promise<boolean> })
+        .__notesE2eInsertCsv
+      if (!fn) return false
+      return fn(csv, filename)
+    },
+    { csv, filename },
+  )
+  if (!ok) throw new Error('notesE2e CSV insert failed — use /games/notes?notesE2e=1')
+}
+
+/** Seed a session with a spreadsheet attachment (deploy-safe smoke without file drop). */
+export async function seedSpreadsheetAttachmentSession(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const id = 'sheet-e2e-restore'
+    const csv = 'Ticker,Price\nAAPL,190\nMSFT,420'
+    const base64 = btoa(csv)
+    const session = {
+      id: 'attach-sheet-restore',
+      title: 'Sheet restore',
+      notes: `[📎 ${id}]`,
+      tags: [],
+      metadata: {},
+      lookups: [],
+      screenshots: {
+        [id]: {
+          id,
+          base64,
+          mimeType: 'text/csv',
+          kind: 'spreadsheet',
+          filename: 'positions.csv',
+          preview: {
+            sheetName: 'positions',
+            headers: ['Ticker', 'Price'],
+            rows: [['AAPL', '190'], ['MSFT', '420']],
+            totalRows: 2,
+            totalCols: 2,
+          },
+          display: { widthPx: 560, heightPx: 280 },
+        },
+      },
+      startedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+    localStorage.setItem('notes_sessions', JSON.stringify([session]))
+    localStorage.setItem('notes_active_session_id', session.id)
+  })
+}

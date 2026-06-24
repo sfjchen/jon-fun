@@ -28,7 +28,7 @@ export default function ChwaziPage() {
             This game is only available on touchscreen devices. Please use a phone, tablet, or other touch-enabled device.
           </p>
           <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-            Use ← Home above to return.
+            Use the home link above to return.
           </p>
         </div>
       </div>

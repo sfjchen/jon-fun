@@ -25,9 +25,9 @@ test.describe('Navigation', () => {
     })
   }
 
-  test('← Home returns to root', async ({ page }) => {
+  test('Home link returns to root', async ({ page }) => {
     await page.goto('/games/24')
-    await page.getByRole('link', { name: '← Home' }).click()
+    await page.getByRole('link', { name: 'Home' }).click()
     await expect(page).toHaveURL('/')
   })
 

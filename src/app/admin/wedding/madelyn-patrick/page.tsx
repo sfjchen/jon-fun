@@ -118,9 +118,6 @@ export default function WeddingAdminPage() {
             {loading ? 'Loading…' : 'Enter'}
           </button>
         </form>
-        <Link href="/" className="mt-6 inline-block text-sm" style={{ color: 'var(--ink-accent)' }}>
-          ← Home
-        </Link>
       </div>
     )
   }

@@ -68,6 +68,15 @@ npm run test:e2e:notes-deploy
 npm run smoke:notes-llm
 ```
 
+## Playwright: CLI vs Cursor plugin
+
+| Tool | When |
+|------|------|
+| **CLI** (`npm run test:e2e:notes`) | Default — regression, mocks, CI, new specs |
+| **Playwright MCP plugin** | Human QA only — “try on sfjc.dev and describe what you see”; promote to CLI if reproducible |
+
+Project rule: [`.cursor/rules/playwright-testing.mdc`](../.cursor/rules/playwright-testing.mdc)
+
 ## Common agent mistakes
 
 1. **Reintroducing CodeMirror** — `NoteEditor.tsx` / `cmDecorations.ts` are deleted; editor is Tiptap-only.

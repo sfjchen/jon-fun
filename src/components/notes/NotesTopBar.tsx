@@ -1,7 +1,7 @@
 'use client'
 
-import Link from 'next/link'
 import { useMemo, useState } from 'react'
+import { HomeLink } from '@/components/HomeLink'
 import { addToTagCatalog, listKnownTags } from '@/lib/notes/tagRegistry'
 import type { NoteSession } from '@/lib/notes/types'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
@@ -55,23 +55,13 @@ export default function NotesTopBar({
 
   return (
     <header
-      className="flex min-h-11 shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-b border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-3 py-1.5 sm:px-4"
+      className="flex min-h-11 shrink-0 items-center gap-x-3 border-b border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-3 py-1.5 sm:px-4"
       data-testid="notes-top-bar"
     >
-      <div className="flex min-w-0 items-center gap-2">
-        <Link
-          href="/"
-          className="shrink-0 text-[11px] text-[var(--uv-text-secondary)] hover:text-[var(--uv-accent)]"
-          data-testid="notes-home-link"
-        >
-          ← sfjc.dev
-        </Link>
-      </div>
-
       <input
         value={title}
         onChange={(e) => onTitleChange(e.target.value)}
-        className="min-w-[120px] flex-1 bg-transparent text-base font-semibold text-[var(--uv-text-primary)] placeholder:font-normal placeholder:italic placeholder:text-[var(--uv-text-muted)] focus:outline-none sm:text-lg"
+        className="min-w-0 flex-1 bg-transparent text-base font-semibold text-[var(--uv-text-primary)] placeholder:font-normal placeholder:italic placeholder:text-[var(--uv-text-muted)] focus:outline-none sm:text-lg"
         placeholder="Untitled"
         aria-label="Note title"
         data-testid="notes-meeting-title"
@@ -88,7 +78,7 @@ export default function NotesTopBar({
       </button>
 
       <div
-        className="flex min-w-0 max-w-full flex-wrap items-center justify-end gap-1 sm:max-w-[55%]"
+        className="hidden min-w-0 flex-wrap items-center justify-end gap-1 sm:flex sm:max-w-[45%]"
         data-testid="notes-meta-bar"
       >
         <span
@@ -138,6 +128,8 @@ export default function NotesTopBar({
           }}
         />
       </div>
+
+      <HomeLink variant="notes" className="ml-1 shrink-0" data-testid="notes-home-link" />
     </header>
   )
 }
