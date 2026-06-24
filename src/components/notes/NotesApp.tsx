@@ -257,10 +257,12 @@ function reducer(state: State, action: Action): State {
       }
     }
     case 'SELECT_LOOKUP': {
+      const lookup = state.session.lookups.find((l) => l.id === action.lookup.id) ?? action.lookup
       return {
         ...state,
-        currentLookup: action.lookup,
-        focusedLookupId: action.lookup.id,
+        currentLookup: lookup,
+        focusedLookupId: lookup.id,
+        aiListOpen: true,
       }
     }
     case 'DELETE_LOOKUP': {
@@ -613,7 +615,9 @@ export default function NotesApp() {
 
   const handleFollowUp = useCallback(
     (question: string) => {
-      const lk = state.currentLookup
+      const lkId = state.focusedLookupId ?? state.currentLookup?.id
+      if (!lkId) return
+      const lk = state.session.lookups.find((l) => l.id === lkId) ?? state.currentLookup
       if (!lk || isLookupStreaming(state.streamByLookupId, lk.id)) return
       const conversation = [...lk.conversation, { role: 'user' as const, content: question }]
       const updated = { ...lk, conversation }
@@ -628,7 +632,7 @@ export default function NotesApp() {
         followUpQuestion: question,
       })
     },
-    [state.currentLookup, state.streamByLookupId, runStream],
+    [state.focusedLookupId, state.currentLookup, state.session.lookups, state.streamByLookupId, runStream],
   )
 
   const handleDictionaryChange = useCallback(() => {
@@ -1020,7 +1024,7 @@ export default function NotesApp() {
           onPanelLookup={handlePanelLookup}
           onFollowUp={handleFollowUp}
           onSelectHistory={(lk) => dispatch({ type: 'SELECT_LOOKUP', lookup: lk })}
-          onClose={() => dispatch({ type: 'PANEL', open: false })}
+          onClearLookup={() => dispatch({ type: 'CLEAR_LOOKUP' })}
           onSynced={(opts) => void refreshFromServer(opts)}
           onJumpTodo={handleJump}
           onSourcesChange={() => {

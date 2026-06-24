@@ -73,6 +73,7 @@ type SidePanelProps = {
   onPanelLookup: (query: string) => void
   onFollowUp: (q: string) => void
   onSelectHistory: (lookup: Lookup) => void
+  onClearLookup: () => void
   onClose: () => void
   onSynced: (opts?: { skipPersist?: boolean }) => void
   onJumpTodo: (sessionId: string, lineIndex: number) => void
@@ -121,6 +122,7 @@ export default function SidePanel({
   onPanelLookup,
   onFollowUp,
   onSelectHistory,
+  onClearLookup,
   onClose,
   onSynced,
   onJumpTodo,
@@ -177,20 +179,18 @@ export default function SidePanel({
         className="absolute bottom-0 left-0 top-0 z-10 w-1 cursor-col-resize hover:bg-[var(--uv-accent-dim)] max-md:hidden"
         data-testid="notes-panel-resize"
       />
-      <div className="flex items-center justify-between border-b border-[var(--uv-border)] px-3 py-2">
-        <span className="text-xs font-semibold text-[var(--uv-text-secondary)]">Panel</span>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded px-1.5 text-[var(--uv-text-muted)] hover:text-[var(--uv-text-primary)]"
-          aria-label="Close panel"
-          data-testid="notes-panel-close"
-        >
-          ×
-        </button>
-      </div>
-
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <CollapsibleSection
+          title="Todos"
+          {...(todoCount ? { badge: String(todoCount) } : {})}
+          open={rollupOpen}
+          onToggle={() => onRollupOpenChange(!rollupOpen)}
+          testId="notes-rollup-section"
+          toggleTestId="notes-rollup-toggle"
+        >
+          <RollupPanel sessions={sessions} onJump={onJumpTodo} embedded />
+        </CollapsibleSection>
+
         <CollapsibleSection
           title="Notes"
           badge={String(sessions.length)}
@@ -216,17 +216,6 @@ export default function SidePanel({
         </CollapsibleSection>
 
         <CollapsibleSection
-          title="Todos"
-          {...(todoCount ? { badge: String(todoCount) } : {})}
-          open={rollupOpen}
-          onToggle={() => onRollupOpenChange(!rollupOpen)}
-          testId="notes-rollup-section"
-          toggleTestId="notes-rollup-toggle"
-        >
-          <RollupPanel sessions={sessions} onJump={onJumpTodo} embedded />
-        </CollapsibleSection>
-
-        <CollapsibleSection
           title={aiTitle}
           open={aiListOpen}
           onToggle={() => onAiListOpenChange(!aiListOpen)}
@@ -234,14 +223,21 @@ export default function SidePanel({
           toggleTestId="notes-ai-toggle"
         >
           <div className="px-3 pb-2">
-            <LookupComposer onSubmit={onPanelLookup} />
-
             {focusedLookup ? (
               <div className="mb-3 flex min-h-0 flex-col">
                 <div className="mb-1.5 flex shrink-0 items-center gap-1">
                   <p className="min-w-0 flex-1 text-[11px] text-[var(--uv-text-secondary)]">
                     {lookupLabel(focusedLookup)}
                   </p>
+                  <button
+                    type="button"
+                    aria-label="New AI question"
+                    data-testid="notes-clear-lookup"
+                    onClick={onClearLookup}
+                    className="shrink-0 rounded px-1 text-[10px] text-[var(--uv-text-muted)] hover:text-[var(--uv-text-primary)]"
+                  >
+                    New
+                  </button>
                   <button
                     type="button"
                     aria-label="Delete this lookup"
@@ -258,29 +254,36 @@ export default function SidePanel({
                   isStreaming={displayStreaming}
                   error={displayError}
                 />
+                {!displayStreaming ? <FollowUpComposer onSubmit={onFollowUp} /> : null}
               </div>
             ) : (
-              <LookupConversation lookup={null} streamText="" isStreaming={false} error={displayError} />
+              <>
+                <LookupComposer onSubmit={onPanelLookup} />
+                <LookupConversation lookup={null} streamText="" isStreaming={false} error={displayError} />
+              </>
             )}
 
-            {focusedLookup && !displayStreaming ? (
-              <FollowUpComposer onSubmit={onFollowUp} />
-            ) : null}
-
             {sessionHistory.length > 0 ? (
-              <div className="mt-4 border-t border-[var(--uv-border)] pt-2">
+              <div className={`border-[var(--uv-border)] pt-2 ${focusedLookup ? 'mt-2 border-t' : 'mt-4 border-t'}`}>
                 <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">
                   This note
                 </p>
                 <ul className="space-y-0.5">
                   {sessionHistory.map((lk) => {
                     const streaming = isLookupStreaming(streamByLookupId, lk.id)
+                    const active = focusedLookup?.id === lk.id
                     return (
                       <li key={lk.id} className="group flex items-center gap-0.5">
                         <button
                           type="button"
+                          data-testid={`notes-lookup-history-${lk.id}`}
+                          data-active={active ? 'true' : 'false'}
                           onClick={() => onSelectHistory(lk)}
-                          className="flex min-w-0 flex-1 items-center gap-1 rounded px-1.5 py-1 text-left text-[11px] text-[var(--uv-text-secondary)] hover:bg-[var(--uv-accent-dim)]"
+                          className={`flex min-w-0 flex-1 items-center gap-1 rounded px-1.5 py-1 text-left text-[11px] hover:bg-[var(--uv-accent-dim)] ${
+                            active
+                              ? 'notes-meeting-active text-[var(--uv-text-primary)]'
+                              : 'text-[var(--uv-text-secondary)]'
+                          }`}
                         >
                           <span className="min-w-0 flex-1 truncate">
                             {lookupLabel(lk)} · {timeAgo(lk.triggeredAt)}
@@ -294,7 +297,7 @@ export default function SidePanel({
                           aria-label={`Delete ${lookupLabel(lk)}`}
                           data-testid={`notes-delete-lookup-${lk.id}`}
                           onClick={() => onDeleteLookup(lk.id)}
-                          className="shrink-0 rounded px-1 text-[10px] text-[var(--uv-text-muted)] hover:text-red-600"
+                          className="shrink-0 rounded px-1 text-[10px] text-[var(--uv-text-muted)] opacity-0 hover:text-red-600 group-hover:opacity-100"
                         >
                           ×
                         </button>

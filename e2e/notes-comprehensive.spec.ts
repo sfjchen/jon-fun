@@ -56,10 +56,10 @@ test.describe('Notes comprehensive', () => {
     await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15_000 })
   })
 
-  test('panel close button hides panel', async ({ page }) => {
+  test('status bar hides panel', async ({ page }) => {
     await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-side-panel')).toBeVisible()
-    await page.getByTestId('notes-panel-close').click()
+    await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-side-panel')).toBeHidden()
   })
 
@@ -118,5 +118,8 @@ test.describe('Notes comprehensive', () => {
     await expect(editor).toContainText('mobile note text')
     await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-side-panel')).toBeVisible()
+    await expect(page.getByTestId('notes-panel-backdrop')).toBeVisible()
+    await page.getByTestId('notes-panel-backdrop').click()
+    await expect(page.getByTestId('notes-side-panel')).toBeHidden()
   })
 })
