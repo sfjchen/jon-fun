@@ -239,7 +239,8 @@ export async function saveEntry(entry: { date: string; text: string }): Promise<
   else entries.push(updated)
   entries.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0))
   localStorage.setItem(DAILY_LEARN_ENTRIES_KEY, JSON.stringify(entries))
-  return pushWithRetry(entries)
+  const { pushOk } = await syncWithServer()
+  return pushOk
 }
 
 export function getEntryByDate(date: string): DailyLearnEntry | undefined {
