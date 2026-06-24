@@ -38,15 +38,15 @@ test.describe('Notes mobile', () => {
     await expect(page.getByTestId('notes-toggle-panel')).toBeVisible()
   })
 
-  test('panel opens as overlay with backdrop and closes via × or backdrop', async ({ page }) => {
+  test('panel opens as overlay with backdrop and closes via backdrop or status bar', async ({ page }) => {
     await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-side-panel')).toBeVisible()
     await expect(page.getByTestId('notes-panel-backdrop')).toBeVisible()
-    await page.getByTestId('notes-panel-close').click()
+    await page.getByTestId('notes-panel-backdrop').click({ position: { x: 8, y: 200 } })
     await expect(page.getByTestId('notes-side-panel')).toBeHidden()
 
     await page.getByTestId('notes-toggle-panel').click()
-    await page.getByTestId('notes-panel-backdrop').click({ position: { x: 8, y: 200 } })
+    await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-side-panel')).toBeHidden()
   })
 
@@ -63,7 +63,7 @@ test.describe('Notes mobile', () => {
     await page.getByTestId('notes-toggle-panel').click()
     await page.getByTestId('notes-new-meeting').click()
     await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(2)
-    await page.getByTestId('notes-panel-close').click()
+    await page.getByTestId('notes-panel-backdrop').click({ position: { x: 8, y: 200 } })
     await expect(page.getByTestId('notes-side-panel')).toBeHidden()
   })
 
