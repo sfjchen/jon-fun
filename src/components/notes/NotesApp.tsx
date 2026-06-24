@@ -342,7 +342,7 @@ export default function NotesApp() {
   useEffect(() => {
     const mq = window.matchMedia(NOTES_DESKTOP_MIN_MQ)
     const fn = () => {
-      if (!mq.matches) dispatch({ type: 'PANEL', open: false })
+      dispatch({ type: 'PANEL', open: mq.matches })
     }
     mq.addEventListener('change', fn)
     return () => mq.removeEventListener('change', fn)
