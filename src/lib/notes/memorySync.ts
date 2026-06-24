@@ -5,6 +5,7 @@
 import { loadGlossary, mergeGlossaryFromServer } from './glossary'
 import { getEffectiveUserId } from './storage'
 import { loadSourcesLocal, saveSourcesLocal } from './sources'
+import { isBuiltinSource } from './knowledge/builtinSources'
 import type { GlossaryEntry, NoteSource } from './types'
 
 export async function fetchGlossaryFromServer(): Promise<GlossaryEntry[]> {
@@ -37,7 +38,7 @@ export async function fetchSourcesFromServer(): Promise<NoteSource[]> {
 
 export async function pushSourcesToServer(sources?: NoteSource[]): Promise<boolean> {
   const userId = getEffectiveUserId()
-  const list = sources ?? loadSourcesLocal()
+  const list = (sources ?? loadSourcesLocal()).filter((s) => !isBuiltinSource(s.id))
   if (!list.length) return true
   const res = await fetch('/api/notes/sources', {
     method: 'POST',

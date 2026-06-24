@@ -18,6 +18,7 @@ import { scheduleTriggerCheck } from '@/lib/notes/tiptap/triggerPlugin'
 import { insertNoteAttachmentsFromFiles } from '@/lib/notes/tiptap/pasteFiles'
 import type { Screenshot, TriggerType } from '@/lib/notes/types'
 import NotesEditorToolbar from './NotesEditorToolbar'
+import NotesBubbleMenu from './NotesBubbleMenu'
 import NotesTableMenu from './NotesTableMenu'
 
 export type NoteEditorHandle = {
@@ -181,8 +182,9 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
       data-testid="notes-tiptap-editor"
     >
       <NotesEditorToolbar editor={editor} />
+      <NotesBubbleMenu editor={editor} />
       <NotesTableMenu editor={editor} />
-      <EditorContent editor={editor} className="min-h-0 flex-1 overflow-auto" />
+      <EditorContent editor={editor} className="min-h-0 flex-1 overflow-auto overscroll-contain" />
     </div>
   )
 })

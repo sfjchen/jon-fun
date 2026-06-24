@@ -7,10 +7,12 @@ export function notesEditor(page: Page): Locator {
 
 /** Wait for Tiptap editor to mount (retries once after reload on slow dev compiles). */
 export async function waitForNotesEditor(page: Page): Promise<void> {
+  await page.getByTestId('notes-loading').waitFor({ state: 'hidden', timeout: 30_000 }).catch(() => {})
   try {
     await page.waitForSelector('[data-testid="notes-tiptap-editor"] .ProseMirror', { timeout: 25_000 })
   } catch {
     await page.reload({ waitUntil: 'domcontentloaded' })
+    await page.getByTestId('notes-loading').waitFor({ state: 'hidden', timeout: 30_000 }).catch(() => {})
     await page.waitForSelector('[data-testid="notes-tiptap-editor"] .ProseMirror', { timeout: 25_000 })
   }
 }
