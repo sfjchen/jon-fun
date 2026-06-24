@@ -20,7 +20,7 @@ export function extractDefinitionFromAssistant(content: string, term?: string): 
     kept.push(line)
   }
 
-  let text = kept.join('\n').trim()
+  const text = kept.join('\n').trim()
   if (!text) return content.trim().slice(0, 600)
 
   const blocks = text.split(/\n\n+/).map((b) => b.trim()).filter(Boolean)
