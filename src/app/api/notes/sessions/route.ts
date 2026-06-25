@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { NOTE_SESSIONS_TABLE } from '@/lib/notes/db'
 import { sanitizeSessionForSync } from '@/lib/notes/textSanitize'
-import { assertOwnerVaultAccess } from '@/lib/sfjc-sync-auth'
+import { assertOwnerVaultAccess, assertOwnerVaultReadAccess } from '@/lib/sfjc-sync-auth'
 import { supabaseAdmin } from '@/lib/supabase'
 import type { NoteSession } from '@/lib/notes/types'
 
@@ -43,10 +43,9 @@ export async function GET(request: NextRequest) {
     const userId = request.nextUrl.searchParams.get('userId')?.trim()
     if (!userId) return NextResponse.json({ error: 'userId required' }, { status: 400 })
 
-    const denied = assertOwnerVaultAccess(
+    const denied = assertOwnerVaultReadAccess(
       userId,
       request.nextUrl.searchParams.get('syncPassword'),
-      request.nextUrl.searchParams.get('deviceUserId'),
     )
     if (denied) return NextResponse.json({ error: denied }, { status: 403 })
 

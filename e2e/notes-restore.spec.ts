@@ -63,4 +63,44 @@ test.describe('Notes sync restore (mock API)', () => {
     const syncKey = await page.evaluate(() => localStorage.getItem('notes_sync_key'))
     expect(syncKey).toBe('restore-key-123')
   })
+
+  test('restore with owner sync password clears local when server vault empty', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'notes_sessions',
+        JSON.stringify([
+          {
+            id: 'local-only',
+            title: 'Old local note',
+            notes: 'stale',
+            tags: [],
+            metadata: {},
+            lookups: [],
+            screenshots: {},
+            startedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ]),
+      )
+      localStorage.removeItem('notes_sync_key')
+      localStorage.setItem('notes_user_id', 'non-admin-device')
+    })
+
+    await page.route('**/api/notes/sessions**', async (route) => {
+      const url = route.request().url()
+      if (route.request().method() === 'GET' && url.includes('userId=MLpnko') && url.includes('syncPassword=MLpnko')) {
+        await route.fulfill({ json: { sessions: [] } })
+        return
+      }
+      await route.fulfill({ json: { sessions: [] } })
+    })
+
+    await page.goto('/games/notes')
+    await page.getByTestId('notes-sync-toggle').click()
+    await page.getByTestId('notes-restore-key-input').fill('MLpnko#12')
+    await page.getByTestId('notes-restore-btn').click()
+
+    await expect(page.getByTestId('notes-sync-panel')).toContainText('Local vault cleared', { timeout: 10_000 })
+    await expect(page.getByTestId('notes-meeting-title')).toHaveValue('')
+  })
 })
