@@ -17,6 +17,22 @@ async function focusFirstBodyCell(page: import('@playwright/test').Page) {
   return cell
 }
 
+/** Table edit menu opens on contextmenu (right-click); long-press on mobile when supported. */
+async function openTableMenu(
+  page: import('@playwright/test').Page,
+  cell?: import('@playwright/test').Locator,
+  opts?: { focus?: boolean },
+) {
+  const target = cell ?? notesEditor(page).locator('table td').first()
+  if (opts?.focus !== false) await target.click()
+  await target.evaluate((el) => {
+    el.dispatchEvent(
+      new MouseEvent('contextmenu', { bubbles: true, cancelable: true, view: window, button: 2 }),
+    )
+  })
+  await expect(page.getByTestId('notes-table-menu')).toBeVisible({ timeout: 5000 })
+}
+
 test.describe('Notes inline markdown tables', () => {
   test.use({ viewport: { width: 1280, height: 800 } })
 
@@ -60,12 +76,20 @@ test.describe('Notes inline markdown tables', () => {
     await expect(table).toContainText('B')
   })
 
-  test('table bubble menu adds row and column', async ({ page }) => {
+  test('table menu hidden on cell click, shown on right-click', async ({ page }) => {
+    await insertTable(page, '2', '2')
+    await focusFirstBodyCell(page)
+    await expect(page.getByTestId('notes-table-menu')).toBeHidden()
+    await openTableMenu(page)
+    await page.keyboard.press('Escape')
+    await expect(page.getByTestId('notes-table-menu')).toBeHidden()
+  })
+
+  test('table context menu adds row and column', async ({ page }) => {
     await insertTable(page, '2', '2')
     const table = notesEditor(page).locator('table')
-    await focusFirstBodyCell(page)
+    await openTableMenu(page)
 
-    await expect(page.getByTestId('notes-table-menu')).toBeVisible({ timeout: 5000 })
     await expect(page.getByTestId('notes-table-dims')).toContainText('2×2')
 
     await page.getByTestId('notes-table-menu').getByRole('button', { name: '+↓ row' }).click()
@@ -77,13 +101,13 @@ test.describe('Notes inline markdown tables', () => {
 
   test('table menu toggles header column and cell alignment', async ({ page }) => {
     await insertTable(page, '2', '2')
-    await focusFirstBodyCell(page)
-    await expect(page.getByTestId('notes-table-menu')).toBeVisible()
+    await openTableMenu(page)
 
     await page.getByTestId('notes-table-menu').getByRole('button', { name: 'H col' }).click()
     await expect(notesEditor(page).locator('table th')).toHaveCount(2)
 
-    await notesEditor(page).locator('table td').first().click()
+    const cell = notesEditor(page).locator('table td').first()
+    await openTableMenu(page, cell)
     await page.getByTestId('notes-table-menu').getByRole('button', { name: '➡' }).click()
 
     const align = await page.evaluate(() => {
@@ -103,7 +127,7 @@ test.describe('Notes inline markdown tables', () => {
     await row.locator('td').nth(0).click()
     await row.locator('td').nth(1).click({ modifiers: ['Shift'] })
 
-    await expect(page.getByTestId('notes-table-menu')).toBeVisible()
+    await openTableMenu(page, row.locator('td').nth(0), { focus: false })
     await page.getByTestId('notes-table-menu').getByRole('button', { name: 'Merge' }).click()
     await expect(table.locator('[colspan="2"]')).toHaveCount(1)
   })
@@ -196,7 +220,7 @@ test.describe('Notes inline markdown tables', () => {
     await notesEditor(page).locator('table td').nth(1).click()
     await page.keyboard.type('Y')
 
-    await expect(page.getByTestId('notes-table-menu')).toBeVisible()
+    await openTableMenu(page)
     await page.getByTestId('notes-table-menu').getByRole('button', { name: 'CSV' }).click()
     await expect(page.getByTestId('notes-table-menu').getByRole('button', { name: 'Copied!' })).toBeVisible({
       timeout: 3000,

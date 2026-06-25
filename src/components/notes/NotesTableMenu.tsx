@@ -1,9 +1,12 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Editor } from '@tiptap/core'
 import { BubbleMenu } from '@tiptap/react/menus'
+import { PluginKey } from '@tiptap/pm/state'
 import { copyTableAsCsv, tableCellCount } from '@/lib/notes/tiptap/tableExtract'
+
+const TABLE_MENU_PLUGIN_KEY = new PluginKey('notesTableMenu')
 
 type NotesTableMenuProps = {
   editor: Editor | null
@@ -53,6 +56,25 @@ function currentCellAlign(editor: Editor): CellAlign | null {
 
 export default function NotesTableMenu({ editor }: NotesTableMenuProps) {
   const [copyOk, setCopyOk] = useState(false)
+  const menuOpenRef = useRef(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  const hideMenu = useCallback(() => {
+    if (!editor || !menuOpenRef.current) return
+    menuOpenRef.current = false
+    editor.view.dispatch(editor.state.tr.setMeta(TABLE_MENU_PLUGIN_KEY, 'hide'))
+  }, [editor])
+
+  const showMenu = useCallback(() => {
+    if (!editor) return
+    menuOpenRef.current = true
+    editor.view.dispatch(editor.state.tr.setMeta(TABLE_MENU_PLUGIN_KEY, 'show'))
+  }, [editor])
+
+  const shouldShow = useCallback(
+    ({ editor: ed }: { editor: Editor }) => menuOpenRef.current && ed.isActive('table'),
+    [],
+  )
 
   const setAlign = useCallback(
     (align: CellAlign) => {
@@ -70,6 +92,47 @@ export default function NotesTableMenu({ editor }: NotesTableMenuProps) {
     }
   }, [editor])
 
+  useEffect(() => {
+    if (!editor) return
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (!menuOpenRef.current) return
+      if (menuRef.current?.contains(e.target as Node)) return
+      hideMenu()
+    }
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') hideMenu()
+    }
+
+    const prevHandle = editor.options.editorProps?.handleDOMEvents ?? {}
+    editor.setOptions({
+      editorProps: {
+        handleDOMEvents: {
+          ...prevHandle,
+          contextmenu: (_view, event) => {
+            if (!editor.isActive('table')) return false
+            event.preventDefault()
+            showMenu()
+            return true
+          },
+        },
+      },
+    })
+
+    document.addEventListener('pointerdown', onPointerDown, true)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      editor.setOptions({
+        editorProps: {
+          handleDOMEvents: prevHandle,
+        },
+      })
+      document.removeEventListener('pointerdown', onPointerDown, true)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [editor, showMenu, hideMenu])
+
   if (!editor) return null
 
   const dims = tableCellCount(editor)
@@ -77,9 +140,11 @@ export default function NotesTableMenu({ editor }: NotesTableMenuProps) {
 
   return (
     <BubbleMenu
+      ref={menuRef}
       editor={editor}
-      pluginKey="notesTableMenu"
-      shouldShow={({ editor: ed }) => ed.isActive('table')}
+      pluginKey={TABLE_MENU_PLUGIN_KEY}
+      shouldShow={shouldShow}
+      updateDelay={0}
       className="flex max-w-[min(100vw-2rem,36rem)] flex-wrap items-center gap-0.5 rounded-lg border border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-1 py-0.5 shadow-md"
       options={{ placement: 'top' }}
       data-testid="notes-table-menu"
