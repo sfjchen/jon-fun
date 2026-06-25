@@ -39,6 +39,14 @@ export function exportFilename(session: NoteSession, ext: 'md' | 'pdf'): string 
   return `notes-${slug}-${date}.${ext}`
 }
 
+function escapeExportText(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
 function markdownLookupBlock(lk: Lookup): string {
   const lines = [`### ${lookupLabel(lk)}`, `_${formatDateTime(lk.triggeredAt)}_`, '']
   if (lk.conversation.length === 0) {
@@ -54,8 +62,8 @@ function markdownLookupBlock(lk: Lookup): string {
 
 /** Structured markdown export for a note session. */
 export function buildSessionMarkdown(session: NoteSession): string {
-  const title = session.title?.trim() || 'Untitled'
-  const tags = session.tags?.filter(Boolean) ?? []
+  const title = escapeExportText(session.title?.trim() || 'Untitled')
+  const tags = (session.tags?.filter(Boolean) ?? []).map(escapeExportText)
   const todos = collectTodosFromNotes(session.notes)
   const lookupBlocks = session.lookups.map(markdownLookupBlock)
   const notesBody = session.notes.trim() || '_Empty_'
@@ -108,11 +116,7 @@ function htmlLookupBlock(lk: Lookup): string {
 }
 
 function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+  return escapeExportText(s)
 }
 
 const EXPORT_CSS = `

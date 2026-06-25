@@ -11,6 +11,9 @@ export const NOTES_AI_DEVICE_DENIED =
 
 export const NOTES_VAULT_ACCESS_DENIED = 'Invalid sync password for owner vault.'
 
+export const NOTES_VAULT_DEVICE_DENIED =
+  'Owner vault requires a registered sfjc.dev admin device.'
+
 /** Server env: SFJC_SYNC_PASSWORD (set on Vercel — not committed). */
 export function ownerSyncPassword(): string {
   return process.env.SFJC_SYNC_PASSWORD?.trim() ?? ''
@@ -37,11 +40,13 @@ function ownerVaultProtected(): boolean {
 export function assertOwnerVaultAccess(
   userId: string | undefined | null,
   syncPassword?: string | null,
+  deviceUserId?: string | null,
 ): string | null {
   if (!ownerVaultProtected()) return null
   if ((userId ?? '').trim() !== SFJC_OWNER_SYNC_PASSWORD_USER_ID) return null
-  if (isValidSyncPassword(syncPassword)) return null
-  return NOTES_VAULT_ACCESS_DENIED
+  if (!isValidSyncPassword(syncPassword)) return NOTES_VAULT_ACCESS_DENIED
+  if (!isAdminDeviceId(deviceUserId)) return NOTES_VAULT_DEVICE_DENIED
+  return null
 }
 
 /** Returns error message when AI access denied, else null. */

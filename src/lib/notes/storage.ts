@@ -3,6 +3,7 @@
  */
 
 import { normalizeSessionTitle } from './prefs'
+import { sanitizeMetadataText, sanitizeSessionForSync, sanitizeTags } from './textSanitize'
 import {
   FOLDERS_VAULT_SESSION_ID,
   foldersToVaultNotes,
@@ -92,17 +93,17 @@ export function createEmptySession(title?: string, folderId?: string | null): No
 }
 
 function normalizeSession(s: NoteSession): NoteSession {
-  return {
+  return sanitizeSessionForSync({
     ...s,
-    tags: Array.isArray(s.tags) ? s.tags : [],
+    tags: sanitizeTags(Array.isArray(s.tags) ? s.tags : []),
     metadata: s.metadata ?? {},
     history: Array.isArray(s.history) ? s.history : [],
-    title: normalizeSessionTitle(s.title),
+    title: sanitizeMetadataText(normalizeSessionTitle(s.title), 200),
     lookups: (s.lookups ?? []).map((lk) => ({
       ...lk,
       type: (lk.type as string) === 'section' ? 'section' : 'line',
     })),
-  }
+  }) as NoteSession
 }
 
 function stripVaultRows(sessions: NoteSession[]): NoteSession[] {
@@ -240,7 +241,7 @@ export async function restoreFromServer(userId: string): Promise<{ restored: num
   const remote = withNormalizedTitles(remoteRaw)
   if (remote.length === 0) {
     const syncPassword = getSyncKey() || key
-    const qs = new URLSearchParams({ userId: key, syncPassword })
+    const qs = new URLSearchParams({ userId: key, syncPassword, deviceUserId: getOrCreateUserId() })
     const res = await fetch(`/api/notes/sessions?${qs.toString()}`)
     if (!res.ok) return { restored: 0, error: 'Failed to fetch' }
     return { restored: 0, error: 'No notes found for that key' }
@@ -253,7 +254,8 @@ export async function restoreFromServer(userId: string): Promise<{ restored: num
 
 async function fetchRawSessionsFromServer(userId: string): Promise<NoteSession[]> {
   const syncPassword = getSyncKey()
-  const qs = new URLSearchParams({ userId })
+  const deviceUserId = getOrCreateUserId()
+  const qs = new URLSearchParams({ userId, deviceUserId })
   if (syncPassword) qs.set('syncPassword', syncPassword)
   const res = await fetch(`/api/notes/sessions?${qs.toString()}`)
   if (!res.ok) return []
@@ -267,14 +269,16 @@ export async function fetchSessionsFromServer(): Promise<NoteSession[]> {
 
 async function pushWithRetry(sessions: NoteSession[]): Promise<boolean> {
   const userId = getEffectiveUserId()
+  const deviceUserId = getOrCreateUserId()
   const toSend = sessionsForPush(sessions)
   const slim = toSend.map((s) => ({
-    ...s,
+    ...sanitizeSessionForSync(s),
     screenshots: stripScreenshotsForSync(s.screenshots),
   }))
   const body = JSON.stringify({
     userId,
     sessions: slim,
+    deviceUserId,
     ...(getSyncKey() ? { syncPassword: getSyncKey() } : {}),
   })
   for (let i = 0; i < PUSH_RETRIES; i++) {
@@ -284,6 +288,7 @@ async function pushWithRetry(sessions: NoteSession[]): Promise<boolean> {
       body,
     })
     if (res.ok) return true
+    if (res.status === 413) return false
     if (i < PUSH_RETRIES - 1) await new Promise((r) => setTimeout(r, RETRY_DELAY_MS))
   }
   return false
@@ -354,6 +359,7 @@ export async function deleteSessionOnServer(userId: string, sessionId: string): 
     body: JSON.stringify({
       userId,
       sessionId,
+      deviceUserId: getOrCreateUserId(),
       ...(getSyncKey() ? { syncPassword: getSyncKey() } : {}),
     }),
   })

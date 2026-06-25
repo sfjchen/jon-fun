@@ -33,7 +33,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ci": "CI=1 playwright test",
     "test:e2e:deployment": "PLAYWRIGHT_SKIP_WEBSERVER=1 CI=1 playwright test",
-    "test:e2e:notes": "CI=1 playwright test e2e/notes.spec.ts e2e/notes-comprehensive.spec.ts e2e/notes-export.spec.ts e2e/notes-search.spec.ts e2e/notes-restore.spec.ts e2e/notes-attachments.spec.ts e2e/notes-tables.spec.ts e2e/notes-sync-race.spec.ts e2e/notes-visual.spec.ts e2e/notes-viewport.spec.ts --project=chromium --grep-invert screenshot",
+    "test:e2e:notes": "CI=1 playwright test e2e/notes.spec.ts e2e/notes-comprehensive.spec.ts e2e/notes-export.spec.ts e2e/notes-search.spec.ts e2e/notes-restore.spec.ts e2e/notes-attachments.spec.ts e2e/notes-tables.spec.ts e2e/notes-sync-race.spec.ts e2e/notes-security.spec.ts e2e/notes-visual.spec.ts e2e/notes-viewport.spec.ts --project=chromium --grep-invert screenshot",
     "test:e2e:notes-mobile": "CI=1 playwright test e2e/notes-mobile.spec.ts --project=mobile-chromium --grep-invert screenshot",
     "test:e2e:notes-visual": "PLAYWRIGHT_SKIP_WEBSERVER=1 CI=1 playwright test e2e/notes-visual.spec.ts --project=chromium",
     "test:e2e:notes-sync": "PLAYWRIGHT_SKIP_WEBSERVER=1 CI=1 playwright test e2e/notes-sync.spec.ts --project=chromium",

@@ -1,4 +1,5 @@
 import type { NoteFolder, NoteSession } from './types'
+import { sanitizeMetadataText } from './textSanitize'
 
 export const FOLDERS_KEY = 'notes_folders'
 export const FOLDERS_VAULT_SESSION_ID = '__notes_folders__'
@@ -26,7 +27,7 @@ export function createFolder(name: string, parentId: string | null = null): Note
   const siblings = folders.filter((f) => f.parentId === parentId)
   const folder: NoteFolder = {
     id: `fld-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-    name: name.trim() || 'New folder',
+    name: sanitizeMetadataText(name.trim() || 'New folder'),
     parentId,
     sortOrder: siblings.length,
     createdAt: now,
