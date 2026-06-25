@@ -23,6 +23,18 @@ const ACTIVE_SESSION_KEY = 'notes_active_session_id'
 const PUSH_RETRIES = 3
 const RETRY_DELAY_MS = 500
 
+/** Serialize sync/push so async fetch cannot merge against a stale local snapshot. */
+let syncChain: Promise<void> = Promise.resolve()
+
+function runSyncExclusive<T>(fn: () => Promise<T>): Promise<T> {
+  const run = syncChain.then(fn, fn)
+  syncChain = run.then(
+    () => undefined,
+    () => undefined,
+  )
+  return run
+}
+
 function genUuid(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -269,26 +281,31 @@ async function pushWithRetry(sessions: NoteSession[]): Promise<boolean> {
 }
 
 export async function pushAllToServer(): Promise<boolean> {
-  return pushWithRetry(loadSessions())
+  return runSyncExclusive(() => pushWithRetry(loadSessions()))
 }
 
 export async function syncWithServer(): Promise<{ sessions: NoteSession[]; pushOk: boolean }> {
   if (typeof window === 'undefined') return { sessions: loadSessions(), pushOk: true }
-  const local = loadSessions()
-  const remoteRaw = await fetchRawSessionsFromServer(getEffectiveUserId())
-  syncFoldersFromSessions([...local, ...remoteRaw])
-  const merged = mergeSessions(local, remoteRaw)
-  const mergedJson = JSON.stringify(merged)
-  if (localStorage.getItem(SESSIONS_KEY) !== mergedJson) {
-    saveSessionsLocal(merged)
-  }
-  const pushOk = await pushWithRetry(merged)
-  return { sessions: merged, pushOk }
+  return runSyncExclusive(async () => {
+    const userId = getEffectiveUserId()
+    const remoteRaw = await fetchRawSessionsFromServer(userId)
+    const local = loadSessions()
+    syncFoldersFromSessions([...local, ...remoteRaw])
+    const merged = mergeSessions(local, remoteRaw)
+    const mergedJson = JSON.stringify(merged)
+    if (localStorage.getItem(SESSIONS_KEY) !== mergedJson) {
+      saveSessionsLocal(merged)
+    }
+    const pushOk = await pushWithRetry(merged)
+    return { sessions: merged, pushOk }
+  })
 }
 
 export async function saveSessionToServer(session: NoteSession): Promise<boolean> {
-  upsertSession(session)
-  return pushWithRetry(loadSessions())
+  return runSyncExclusive(async () => {
+    upsertSession(session)
+    return pushWithRetry(loadSessions())
+  })
 }
 
 export type SessionPatch = Partial<

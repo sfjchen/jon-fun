@@ -370,12 +370,23 @@ export default function NotesApp() {
   const BACKGROUND_PULL_MIN_MS = 30_000
   const PERIODIC_VISIBLE_MS = 5 * 60_000
   const PERIODIC_HIDDEN_MS = 60 * 60_000
+  /** Skip remote overwrite while user is typing (extends on each keystroke). */
+  const EDIT_IDLE_MS = 1500
   const lastPullAtRef = useRef(0)
   const hiddenAtRef = useRef<number | null>(null)
   const pullingRef = useRef(false)
+  const editIdleUntilRef = useRef(0)
+  const syncInFlightRef = useRef(false)
+  const pendingSyncRef = useRef(false)
   sessionRef.current = state.session
   sessionsRef.current = state.sessions
   streamRef.current = state.streamByLookupId
+
+  const bumpEditActivity = useCallback(() => {
+    editIdleUntilRef.current = Date.now() + EDIT_IDLE_MS
+  }, [])
+
+  const isActivelyEditing = useCallback(() => Date.now() < editIdleUntilRef.current, [])
 
   const persistLocal = useCallback((session: NoteSession) => {
     upsertSession(session)
@@ -397,18 +408,30 @@ export default function NotesApp() {
     lastPullAtRef.current = Date.now()
     const mem = await syncMemoryBank()
     dispatch({ type: 'GLOSSARY_BUMP' })
-    dispatch({ type: 'SET_SESSIONS', sessions: r.sessions })
-    setFolders(loadFolders())
-    const active = loadActiveSession()
-    const mergedActive = r.sessions.find((s) => s.id === active.id) ?? active
     const inMem = sessionRef.current
     const preserveAi = anyStreaming(streamRef.current)
-    const storageNewer =
-      mergedActive.id !== inMem.id ||
-      mergedActive.notes !== inMem.notes ||
-      mergedActive.title !== inMem.title ||
+    const active = loadActiveSession()
+    const sameSession = inMem.id === active.id
+    const activeDirty = sameSession && isSessionDirty(inMem)
+    const editing = isActivelyEditing()
+    const protectActive = sameSession && (activeDirty || editing)
+
+    let sessions = r.sessions
+    if (protectActive) {
+      sessions = r.sessions.map((s) => (s.id === inMem.id ? inMem : s))
+      upsertSession(inMem)
+    }
+    dispatch({ type: 'SET_SESSIONS', sessions })
+    setFolders(loadFolders())
+
+    const mergedActive = r.sessions.find((s) => s.id === active.id) ?? active
+    const remoteNewer =
+      mergedActive.id === inMem.id &&
       new Date(mergedActive.updatedAt).getTime() > new Date(inMem.updatedAt).getTime()
-    if (storageNewer || preserveAi) {
+    const contentDiffers =
+      mergedActive.notes !== inMem.notes || mergedActive.title !== inMem.title
+
+    if (!preserveAi && !protectActive && (remoteNewer || contentDiffers)) {
       dispatch({
         type: 'LOAD_SESSION',
         session: mergedActive,
@@ -416,10 +439,11 @@ export default function NotesApp() {
       })
       setActiveSessionId(mergedActive.id)
     }
+
     const ok = r.pushOk && mem.glossaryOk && mem.sourcesOk
     dispatch({ type: 'SYNC_OK', ok, kind: 'synced' })
     return r
-  }, [persistLocal])
+  }, [persistLocal, isActivelyEditing])
 
   const shouldBackgroundPull = useCallback((force?: boolean) => {
     if (force) return true
@@ -431,47 +455,77 @@ export default function NotesApp() {
 
   const refreshFromServer = useCallback(
     async (opts?: { skipPersist?: boolean; force?: boolean }) => {
+      if (!opts?.force && isActivelyEditing()) return undefined
       if (!shouldBackgroundPull(opts?.force)) return undefined
-      if (pullingRef.current) return undefined
+      if (pullingRef.current) {
+        pendingSyncRef.current = true
+        return undefined
+      }
       pullingRef.current = true
       try {
         const syncOpts = opts?.skipPersist ? { skipPersist: true as const } : undefined
         return await applyServerSync(syncOpts)
       } finally {
         pullingRef.current = false
+        if (pendingSyncRef.current) {
+          pendingSyncRef.current = false
+          if (!isActivelyEditing()) {
+            void refreshFromServer(opts?.force ? { force: true } : undefined)
+          }
+        }
       }
     },
-    [applyServerSync, shouldBackgroundPull],
+    [applyServerSync, shouldBackgroundPull, isActivelyEditing],
   )
 
   const syncToServer = useCallback(
     async (session: NoteSession, opts?: { forcePull?: boolean }) => {
-      upsertSession(session)
-      if (shouldBackgroundPull(opts?.forcePull)) {
-        const pullOpts: { skipPersist: true; force?: true } = { skipPersist: true }
-        if (opts?.forcePull) pullOpts.force = true
-        return refreshFromServer(pullOpts)
+      if (syncInFlightRef.current) {
+        pendingSyncRef.current = true
+        upsertSession(session)
+        return { sessions: loadSessions(), pushOk: true }
       }
-      const ok = await saveSessionToServer(session)
-      dispatch({ type: 'SYNC_OK', ok, kind: 'saved' })
-      return { sessions: loadSessions(), pushOk: ok }
+      syncInFlightRef.current = true
+      try {
+        upsertSession(session)
+        const pullDue = shouldBackgroundPull(opts?.forcePull) && !isActivelyEditing()
+        if (pullDue) {
+          const pullOpts = opts?.forcePull
+            ? ({ skipPersist: false as const, force: true as const })
+            : ({ skipPersist: false as const })
+          const r = await refreshFromServer(pullOpts)
+          if (r) return r
+        }
+        const ok = await saveSessionToServer(session)
+        dispatch({ type: 'SYNC_OK', ok, kind: 'saved' })
+        return { sessions: loadSessions(), pushOk: ok }
+      } finally {
+        syncInFlightRef.current = false
+        if (pendingSyncRef.current) {
+          pendingSyncRef.current = false
+          void syncToServer(sessionRef.current)
+        }
+      }
     },
-    [refreshFromServer, shouldBackgroundPull],
+    [refreshFromServer, shouldBackgroundPull, isActivelyEditing],
   )
 
   const syncAllToServer = useCallback(
     async (opts?: { forcePull?: boolean }) => {
       persistLocal(sessionRef.current)
-      if (shouldBackgroundPull(opts?.forcePull)) {
-        const pullOpts: { skipPersist: true; force?: true } = { skipPersist: true }
-        if (opts?.forcePull) pullOpts.force = true
-        return refreshFromServer(pullOpts)
+      const pullDue = shouldBackgroundPull(opts?.forcePull) && !isActivelyEditing()
+      if (pullDue) {
+        const pullOpts = opts?.forcePull
+          ? ({ skipPersist: false as const, force: true as const })
+          : ({ skipPersist: false as const })
+        const r = await refreshFromServer(pullOpts)
+        if (r) return r
       }
       const ok = await pushAllToServer()
       dispatch({ type: 'SYNC_OK', ok, kind: 'saved' })
       return { sessions: loadSessions(), pushOk: ok }
     },
-    [persistLocal, refreshFromServer, shouldBackgroundPull],
+    [persistLocal, refreshFromServer, shouldBackgroundPull, isActivelyEditing],
   )
 
   const saveWithHistory = useCallback(
@@ -942,7 +996,6 @@ export default function NotesApp() {
     [state.sessions, state.session.id, handleSelectMeeting],
   )
 
-  const aiBusy = anyStreaming(state.streamByLookupId)
   const aiActiveCount = activeStreamCount(state.streamByLookupId)
 
   useEffect(() => {
@@ -1036,7 +1089,10 @@ export default function NotesApp() {
         updatedAt={state.session.updatedAt}
         tags={state.session.tags ?? []}
         sessions={state.sessions}
-        onTitleChange={(title) => dispatch({ type: 'TITLE', title })}
+        onTitleChange={(title) => {
+          bumpEditActivity()
+          dispatch({ type: 'TITLE', title })
+        }}
         onTagsChange={(tags) => dispatch({ type: 'TAGS', tags, recordHistory: true })}
         onDeleteNote={() => handleDeleteMeeting(state.session.id)}
       />
@@ -1063,7 +1119,10 @@ export default function NotesApp() {
               ref={editorRef}
               value={state.session.notes}
               screenshots={state.session.screenshots}
-              onChange={(notes) => dispatch({ type: 'NOTES', notes })}
+              onChange={(notes) => {
+                bumpEditActivity()
+                dispatch({ type: 'NOTES', notes })
+              }}
               onTrigger={handleTrigger}
               activeTriggerQuery={activeQuery}
               onAttachmentAdd={handleAttachmentAdd}
