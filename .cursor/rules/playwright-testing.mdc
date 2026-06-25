@@ -21,6 +21,10 @@ Use the **CLI** for regression, bug fixes, and “did we break anything?” afte
 
 Use the **plugin** only when CLI is insufficient — same Playwright APIs, **not** a replacement for the test suite.
 
+**Enable (repo):** [`.cursor/settings.json`](../settings.json) → `"playwright": { "enabled": true }` (Cursor plugin; **not** `claude-plugins-official/playwright`). MCP server id: **`plugin-playwright-playwright`**. If tools missing: Cursor **Settings → Tools & MCP** → Playwright on → **Reload Window**.
+
+**Invoke:** agent calls MCP tools via `CallMcpTool` with `server: "plugin-playwright-playwright"` (e.g. `browser_navigate`, `browser_snapshot`, `browser_take_screenshot`, `browser_console_messages`).
+
 **Use plugin for:**
 - “Try this flow and tell me what you see” (human QA you’d do manually)
 - Visual/layout sanity on **https://sfjc.dev** (toolbar, panel, mobile viewport)
