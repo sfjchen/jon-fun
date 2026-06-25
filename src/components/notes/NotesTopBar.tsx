@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { HomeLink } from '@/components/HomeLink'
-import { addToTagCatalog, listKnownTags } from '@/lib/notes/tagRegistry'
+import { addToTagCatalog, listKnownTags, removeFromTagCatalog } from '@/lib/notes/tagRegistry'
 import { sanitizeMetadataText, sanitizeTags } from '@/lib/notes/textSanitize'
 import type { NoteSession } from '@/lib/notes/types'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
@@ -39,7 +39,8 @@ export default function NotesTopBar({
   onDeleteNote,
 }: NotesTopBarProps) {
   const [draft, setDraft] = useState('')
-  const knownTags = useMemo(() => listKnownTags(sessions), [sessions])
+  const [catalogTick, setCatalogTick] = useState(0)
+  const knownTags = useMemo(() => listKnownTags(sessions), [sessions, catalogTick])
 
   function toggleTag(t: string) {
     const tag = sanitizeMetadataText(t)
@@ -53,6 +54,18 @@ export default function NotesTopBar({
     addToTagCatalog(t)
     if (!tags.includes(t)) onTagsChange(sanitizeTags([...tags, t]))
     setDraft('')
+  }
+
+  function removeTagFromNote(t: string) {
+    const tag = sanitizeMetadataText(t)
+    onTagsChange(tags.filter((x) => x !== tag))
+  }
+
+  function deleteTagFromCatalog(t: string) {
+    const tag = sanitizeMetadataText(t)
+    removeFromTagCatalog(tag)
+    onTagsChange(tags.filter((x) => x !== tag))
+    setCatalogTick((n) => n + 1)
   }
 
   return (
@@ -99,7 +112,13 @@ export default function NotesTopBar({
             Modified {formatDateTime(updatedAt)}
           </span>
         </span>
-        <TagChips tags={tags} knownTags={knownTags} toggleTag={toggleTag} />
+        <TagChips
+          tags={tags}
+          knownTags={knownTags}
+          toggleTag={toggleTag}
+          onRemoveFromNote={removeTagFromNote}
+          onDeleteFromCatalog={deleteTagFromCatalog}
+        />
         <TagInput draft={draft} setDraft={setDraft} commitDraft={commitDraft} />
       </div>
     </header>
@@ -110,29 +129,47 @@ function TagChips({
   tags,
   knownTags,
   toggleTag,
+  onRemoveFromNote,
+  onDeleteFromCatalog,
 }: {
   tags: string[]
   knownTags: string[]
   toggleTag: (t: string) => void
+  onRemoveFromNote: (t: string) => void
+  onDeleteFromCatalog: (t: string) => void
 }) {
   return (
     <>
       {knownTags.map((t) => {
         const on = tags.includes(t)
         return (
-          <button
-            key={t}
-            type="button"
-            onClick={() => toggleTag(t)}
-            data-testid={`notes-tag-chip-${t}`}
-            className={
-              on
-                ? 'shrink-0 rounded-full bg-[var(--uv-accent)] px-2 py-0.5 text-[10px] font-medium text-white'
-                : 'shrink-0 rounded-full border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] px-2 py-0.5 text-[10px] text-[var(--uv-text-secondary)] hover:border-[var(--uv-accent)]'
-            }
-          >
-            {t}
-          </button>
+          <span key={t} className="group/chip inline-flex shrink-0 items-center gap-0.5">
+            <button
+              type="button"
+              onClick={() => toggleTag(t)}
+              data-testid={`notes-tag-chip-${t}`}
+              className={
+                on
+                  ? 'rounded-full bg-[var(--uv-accent)] pl-2 pr-1 py-0.5 text-[10px] font-medium text-white'
+                  : 'rounded-full border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] pl-2 pr-1 py-0.5 text-[10px] text-[var(--uv-text-secondary)] hover:border-[var(--uv-accent)]'
+              }
+            >
+              {t}
+            </button>
+            <button
+              type="button"
+              aria-label={on ? `Remove ${t} from note` : `Delete tag ${t}`}
+              data-testid={on ? `notes-tag-remove-${t}` : `notes-tag-delete-${t}`}
+              onClick={(e) => {
+                e.stopPropagation()
+                if (on) onRemoveFromNote(t)
+                else onDeleteFromCatalog(t)
+              }}
+              className="rounded px-0.5 text-[10px] leading-none text-[var(--uv-text-muted)] hover:text-red-600"
+            >
+              ×
+            </button>
+          </span>
         )
       })}
     </>

@@ -1,6 +1,7 @@
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import type { Node as PmNode } from '@tiptap/pm/model'
 import { highlightRanges, parseTodoLine } from '../shorthand'
+import { isArchivedTodoLine, parseActiveTodoLine } from '../todoLines'
 
 function buildDecorations(doc: PmNode, activeQuery: string | null): DecorationSet {
   const decos: Decoration[] = []
@@ -11,7 +12,9 @@ function buildDecorations(doc: PmNode, activeQuery: string | null): DecorationSe
     const lineText = node.textContent
     const trimmed = lineText.trimStart()
 
-    if (parseTodoLine(lineText)) {
+    if (isArchivedTodoLine(lineText)) {
+      decos.push(Decoration.node(pos, pos + node.nodeSize, { class: 'tiptap-action-line tiptap-action-done' }))
+    } else if (parseActiveTodoLine(lineText)) {
       decos.push(Decoration.node(pos, pos + node.nodeSize, { class: 'tiptap-action-line' }))
     }
 

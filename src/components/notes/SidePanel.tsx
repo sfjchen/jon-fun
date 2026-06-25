@@ -92,6 +92,8 @@ type SidePanelProps = {
   onClearLookup: () => void
   onSynced: (opts?: { skipPersist?: boolean; force?: boolean }) => void
   onJumpTodo: (sessionId: string, lineIndex: number) => void
+  onArchiveTodo: (sessionId: string, lineIndex: number) => void
+  onRestoreTodo: (sessionId: string, lineIndex: number) => void
   onToggleSourceForNote: (sourceId: string, enabled: boolean) => void
   onSourcesChange: () => void
   onDictionaryChange: () => void
@@ -142,6 +144,8 @@ export default function SidePanel({
   onClearLookup,
   onSynced,
   onJumpTodo,
+  onArchiveTodo,
+  onRestoreTodo,
   onToggleSourceForNote,
   onSourcesChange,
   onDictionaryChange,
@@ -230,7 +234,13 @@ export default function SidePanel({
           testId="notes-rollup-section"
           toggleTestId="notes-rollup-toggle"
         >
-          <RollupPanel sessions={sessions} onJump={onJumpTodo} embedded />
+          <RollupPanel
+            sessions={sessions}
+            onJump={onJumpTodo}
+            onArchiveTodo={onArchiveTodo}
+            onRestoreTodo={onRestoreTodo}
+            embedded
+          />
         </CollapsibleSection>
 
         <CollapsibleSection
@@ -261,9 +271,9 @@ export default function SidePanel({
                     aria-label="Delete this lookup"
                     data-testid="notes-delete-lookup-active"
                     onClick={() => onDeleteLookup(focusedLookup.id)}
-                    className="shrink-0 rounded px-1 text-[var(--uv-text-muted)] hover:text-red-600"
+                    className="shrink-0 rounded px-1 text-[10px] leading-none text-[var(--uv-text-muted)] hover:text-red-600"
                   >
-                    Delete
+                    ×
                   </button>
                 </div>
                 <LookupConversation

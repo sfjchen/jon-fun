@@ -243,6 +243,7 @@ export default function SourcesPanel({
               enabled={isSourceEnabledForNote(session, s.id)}
               onToggle={(enabled) => onToggleSourceForNote(s.id, enabled)}
               onEdit={() => startEdit(s)}
+              {...(!isBuiltinSource(s.id) ? { onDelete: () => removeSource(s) } : {})}
             />
           ))}
         </ul>
@@ -256,14 +257,16 @@ function SourceRow({
   enabled,
   onToggle,
   onEdit,
+  onDelete,
 }: {
   source: NoteSource
   enabled: boolean
   onToggle: (enabled: boolean) => void
   onEdit: () => void
+  onDelete?: () => void
 }) {
   return (
-    <li className="flex items-center gap-1.5 text-[11px]">
+    <li className="group flex items-center gap-1.5 text-[11px]">
       <input
         type="checkbox"
         checked={enabled}
@@ -283,6 +286,17 @@ function SourceRow({
         {source.title}
         {source.userEdited ? <span className="ml-1 text-[9px] text-[var(--uv-text-muted)]">(edited)</span> : null}
       </button>
+      {onDelete ? (
+        <button
+          type="button"
+          aria-label={`Delete ${source.title}`}
+          data-testid={`notes-source-delete-row-${source.id}`}
+          onClick={onDelete}
+          className="shrink-0 rounded px-0.5 text-[10px] leading-none text-[var(--uv-text-muted)] opacity-0 hover:text-red-600 group-hover:opacity-100"
+        >
+          ×
+        </button>
+      ) : null}
       <span className="shrink-0 text-[9px] uppercase text-[var(--uv-text-muted)]">{source.kind}</span>
     </li>
   )

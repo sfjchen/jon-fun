@@ -40,6 +40,15 @@ export function addToTagCatalog(tag: string): string[] {
   return next
 }
 
+/** Remove tag from global picker catalog (does not edit notes). */
+export function removeFromTagCatalog(tag: string): string[] {
+  const t = tag.trim().replace(/^#/, '')
+  if (!t) return loadTagCatalog()
+  const next = loadTagCatalog().filter((x) => x !== t)
+  saveTagCatalog(next)
+  return next
+}
+
 /** Catalog + every tag used on any note, sorted for picker UI. */
 export function listKnownTags(sessions: NoteSession[]): string[] {
   const set = new Set(loadTagCatalog())

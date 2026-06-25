@@ -50,6 +50,12 @@
   padding-left: 0.35rem;
 }
 
+.notes-root .tiptap-action-line.tiptap-action-done {
+  border-left-color: var(--uv-text-muted);
+  opacity: 0.72;
+  text-decoration: line-through;
+}
+
 .notes-root .tiptap-highlight-span {
   background: var(--uv-accent-dim);
   font-weight: 500;
