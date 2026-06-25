@@ -78,7 +78,7 @@ npm run smoke:notes-llm
 | **CLI** (`npm run test:e2e:notes`) | Default — regression, mocks, CI, new specs |
 | **Playwright MCP plugin** (`plugin-playwright-playwright`) | Human QA only — “try on sfjc.dev and describe what you see”; promote to CLI if reproducible |
 
-**Plugin enable:** [`.cursor/settings.json`](../.cursor/settings.json) → `"playwright": { "enabled": true }`. One plugin only — do **not** re-add `claude-plugins-official/playwright`. If MCP tools absent: Cursor **Settings → Tools & MCP** → Playwright → reload window.
+**Plugin enable:** [`.cursor/settings.json`](../.cursor/settings.json) → `"claude-plugins-official/playwright": { "enabled": true }` (MCP `plugin-playwright-playwright`). One entry only — no short `"playwright"` key or manual `mcp.json`. If MCP tools absent: **Settings → Plugins** → install Playwright → **Tools & MCP** → enable → reload window.
 
 Project rule: [`.cursor/rules/playwright-testing.mdc`](../.cursor/rules/playwright-testing.mdc)
 

@@ -21,7 +21,7 @@ Use the **CLI** for regression, bug fixes, and “did we break anything?” afte
 
 Use the **plugin** only when CLI is insufficient — same Playwright APIs, **not** a replacement for the test suite.
 
-**Enable (repo):** [`.cursor/settings.json`](../settings.json) → `"playwright": { "enabled": true }` (Cursor plugin; **not** `claude-plugins-official/playwright`). MCP server id: **`plugin-playwright-playwright`**. If tools missing: Cursor **Settings → Tools & MCP** → Playwright on → **Reload Window**.
+**Enable (repo):** [`.cursor/settings.json`](../settings.json) → `"claude-plugins-official/playwright": { "enabled": true }` (one plugin; MCP id **`plugin-playwright-playwright`**). Do **not** also add a short `"playwright"` entry or manual `mcp.json` — that duplicates the same MCP. If tools missing: Cursor **Settings → Plugins** → install **Playwright** (Microsoft) → **Tools & MCP** → enable → **Reload Window**.
 
 **Invoke:** agent calls MCP tools via `CallMcpTool` with `server: "plugin-playwright-playwright"` (e.g. `browser_navigate`, `browser_snapshot`, `browser_take_screenshot`, `browser_console_messages`).
 
