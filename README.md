@@ -27,7 +27,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 | **Notes** (editor, AI, sync, attachments) | [`docs/NOTES-AGENT.md`](docs/NOTES-AGENT.md) → [`docs/NOTES-DESIGN.md`](docs/NOTES-DESIGN.md) | `verify:notes-*` → `test:e2e:notes` (3 cycles after substantive edits) |
 | Supabase schema | `.cursor/rules/supabase-migrations.mdc` | MCP `apply_migration` + `list_tables` |
 | Design / UX | **Core design principles** below + [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) | Visual specs in `e2e/*-visual.spec.ts` |
-| Deploy | Vercel on push to `main` | `npm run build` locally; check sfjc.dev |
+| Deploy | `.cursor/rules/vercel-deployments.mdc` | MCP `list_deployments` + build logs; `npm run build` locally |
 
 **Notes verify loop (3 cycles):** (1) `npm run verify:notes-triggers && npm run verify:notes-attachments && npm run type-check` (2) `lsof -ti:3001 \| xargs kill -9`; `npm run test:e2e:notes` — if `.next` corrupt: `rm -rf .next && npm run build` (3) re-run E2E until green; optional `test:e2e:notes-deploy` + `smoke:notes-llm`.
 
@@ -466,8 +466,8 @@ src/
 
 - **Supabase MCP** (`plugin-supabase-supabase`): Database queries, migrations, project management — [`.cursor/settings.json`](.cursor/settings.json) `"supabase"`
 - **Playwright MCP** (`plugin-playwright-playwright`): Ad-hoc browser QA (navigate, snapshot, screenshot); CLI remains primary for regression — [`.cursor/settings.json`](.cursor/settings.json) `"playwright"`. See [`.cursor/rules/playwright-testing.mdc`](.cursor/rules/playwright-testing.mdc)
-- **Vercel MCP**: Deployment management, project info, build logs
-  - Project: `jon-fun` (prj_p0GxMYUx0l1bfSrEVJQ161WkgTFe)
+- **Vercel MCP** (`plugin-vercel-vercel`): Deployments, build/runtime logs, project info — [`.cursor/settings.json`](.cursor/settings.json) `"vercel"`. See [`.cursor/rules/vercel-deployments.mdc`](.cursor/rules/vercel-deployments.mdc)
+  - Project: `jon-fun` (`prj_p0GxMYUx0l1bfSrEVJQ161WkgTFe`)
   - Team: jychen04's projects
 
 ### Troubleshooting
@@ -512,6 +512,7 @@ src/
 
 Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
 
+- **2026-06**: **Vercel Cursor plugin** — `"vercel": { "enabled": true }` in [`.cursor/settings.json`](.cursor/settings.json) (MCP `plugin-vercel-vercel`); agent rule [`.cursor/rules/vercel-deployments.mdc`](.cursor/rules/vercel-deployments.mdc) for deploy status, build/runtime logs, env vars. All three MCP plugins enabled: supabase, playwright, vercel.
 - **2026-06**: **Render removed** — no `render.yaml` or Render deploy scripts in Jon-fun; sfjc.dev/veridian is Vercel-only. Updated [docs/VERIDIAN_WORKSPACE.md](docs/VERIDIAN_WORKSPACE.md) (EdTech Render backend deprecated). Playwright: one Cursor plugin only — `"playwright"` in [`.cursor/settings.json`](.cursor/settings.json) (MCP `plugin-playwright-playwright`); removed duplicate `claude-plugins-official/playwright`. Ad-hoc QA vs CLI: [`.cursor/rules/playwright-testing.mdc`](.cursor/rules/playwright-testing.mdc).
 - **2026-06**: **Notes sync** — fix fast-typing corruption: re-read localStorage after remote fetch, serialize sync writes, skip remote overwrite while editing/focused, E2E stress tests (`notes-sync-race.spec.ts`).
 - **2026-06**: **Notes mobile** — dedicated `test:e2e:notes-mobile` (390×844); panel overlay + backdrop; scrollable tag row + toolbar; vault sort stable on note switch (switch history no longer bumps `updatedAt`).
