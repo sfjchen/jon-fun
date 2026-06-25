@@ -10,6 +10,7 @@ alwaysApply: true
 Use the **CLI** for regression, bug fixes, and “did we break anything?” after code changes.
 
 - Specs live in `e2e/*.spec.ts`; config in `playwright.config.ts`
+- After **`npm update @playwright/test`**: run **`npm run playwright:install`** (browser binary mismatch otherwise)
 - **Notes**: `npm run test:e2e:notes` (local mock + starts dev on :3001)
 - **Notes mobile**: `npm run test:e2e:notes-mobile` (390×844 touch viewport, `e2e/notes-mobile.spec.ts`)
 - **Notes prod**: `PLAYWRIGHT_SKIP_WEBSERVER=1 npm run test:e2e:notes` or `npm run test:e2e:notes-deploy`

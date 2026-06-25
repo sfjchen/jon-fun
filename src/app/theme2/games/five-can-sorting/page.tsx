@@ -1,5 +1,1 @@
-import FiveCanGame from '@/components/FiveCanGame'
-
-export default function Theme2FiveCanSortingPage() {
-  return <FiveCanGame />
-}
+export { default } from '@/app/games/five-can-sorting/page'

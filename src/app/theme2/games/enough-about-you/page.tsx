@@ -1,5 +1,1 @@
-import EayGame from '@/components/party/EayGame'
-
-export default function Theme2EnoughAboutYouPage() {
-  return <EayGame />
-}
+export { default } from '@/app/games/enough-about-you/page'

@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { partyFetch } from '@/lib/party/constants'
 import { usePartyRoomData } from './usePartyRoomData'
 import { usePartyLobby } from './usePartyLobby'
+import { usePartyRoomActions } from './usePartyRoomActions'
 import PartyLobbyForm from './PartyLobbyForm'
 
 type Player = { player_id: string; name: string; score: number }
@@ -61,19 +62,9 @@ export default function FibbageGame() {
     loadOnce,
   } = usePartyLobby('fibbage', onPayload)
 
-  usePartyRoomData(room?.pin ?? (pinInput.length === 4 ? pinInput : null), 'fibbage', onPayload)
+  const { startGame, playAgain } = usePartyRoomActions(room?.pin, playerId, loadOnce, setError)
 
-  const startGame = async () => {
-    if (!room?.pin || !playerId) return
-    const res = await partyFetch(`/api/party/rooms/${room.pin}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'start', playerId }),
-    })
-    const data = await res.json()
-    if (!res.ok) setError(data.error || 'Start failed')
-    await loadOnce(room.pin)
-  }
+  usePartyRoomData(room?.pin ?? (pinInput.length === 4 ? pinInput : null), 'fibbage', onPayload)
 
   const postFib = async (body: Record<string, unknown>) => {
     if (!room?.pin || !playerId) return
@@ -84,16 +75,6 @@ export default function FibbageGame() {
     })
     const data = await res.json()
     if (!res.ok) setError(data.error || 'Action failed')
-    await loadOnce(room.pin)
-  }
-
-  const playAgain = async () => {
-    if (!room?.pin || !playerId) return
-    await partyFetch(`/api/party/rooms/${room.pin}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'play-again', playerId }),
-    })
     await loadOnce(room.pin)
   }
 

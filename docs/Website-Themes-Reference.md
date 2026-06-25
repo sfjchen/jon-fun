@@ -1,5 +1,7 @@
 # Website Themes Reference
 
+**Status:** Inspiration / future exploration only. **Deployed** themes are **Notebook** (`/`) and **Ink & Paper mirror** (`/theme2`) — see [`DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md) and [`ARCHITECTURE-MAP.md`](ARCHITECTURE-MAP.md).
+
 Themes aligned with logical, elegant, classy aesthetics—favicon-aligned, VC-style, avoiding AI-generated look while remaining striking and bold.
 
 ---

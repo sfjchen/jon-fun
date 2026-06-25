@@ -1,5 +1,1 @@
-import FibbageGame from '@/components/party/FibbageGame'
-
-export default function Theme2FibItPage() {
-  return <FibbageGame />
-}
+export { default } from '@/app/games/fib-it/page'

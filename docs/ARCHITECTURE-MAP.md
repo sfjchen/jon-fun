@@ -30,7 +30,7 @@ Single Next.js 15 app at **`src/`** → [sfjc.dev](https://sfjc.dev) on **Vercel
 |--------|---------|
 | `/theme2` | Alternate home grid (visual-regression + Connections mirror) |
 | `/theme2/games/connections/*` | Connections with `basePath="/theme2/games/connections"` |
-| `/theme2/games/*` (other) | Thin re-exports of same components as `/games/*` |
+| `/theme2/games/*` (other) | One-line re-export of `/games/*` pages (Connections excepted) |
 
 **Do not delete** `/theme2` without updating `e2e/theme2-*.spec.ts` and Connections `basePath`. Prefer editing shared components under `src/components/` — both trees stay in sync automatically.
 
@@ -55,6 +55,7 @@ Archive-only copy: `src/app/_archive/theme2` (Next private folder — not routed
 ```
 PartyLobbyForm.tsx     ← create/join UI (Quip Clash, Fib It, Enough About You)
 usePartyLobby.ts       ← sessionStorage, create/join/loadOnce
+usePartyRoomActions.ts ← host start / play-again on /api/party/rooms
 usePartyRoomData.ts    ← Supabase Realtime + 2s poll fallback
 partyFetch             ← src/lib/party/constants.ts (25s timeout)
 /api/party/rooms       ← unified room CRUD + start/play-again
@@ -77,7 +78,7 @@ partyFetch             ← src/lib/party/constants.ts (25s timeout)
 
 | Area | Mechanism |
 |------|-----------|
-| Bundle | `next.config.mjs` → `optimizePackageImports` (Tiptap, Supabase, lucide, Vercel analytics) |
+| Bundle | `next.config.mjs` → `optimizePackageImports` (Tiptap, Supabase, Vercel analytics) |
 | Notes editor | `dynamic(..., { ssr: false })` for Tiptap |
 | Notes app | `NotesAppLoader.tsx` dynamic import |
 | Party rooms | Realtime primary; poll every **2s** as fallback (was 800ms) |
@@ -99,7 +100,19 @@ npm run test:e2e -- party-games   # Party lobby smoke
 npm run test:e2e -- theme2-visual # Theme2 snapshots (visual-* projects)
 ```
 
-## MCP (agents)
+## Deferred upgrades (intentional)
+
+Stay on current majors until a dedicated migration pass:
+
+| Package | Current | Latest | Why wait |
+|---------|---------|--------|----------|
+| `next` / `eslint-config-next` | 15.5.x | 16.x | App Router major; run official upgrade guide |
+| `eslint` | 9.x | 10.x | Tied to Next/eslint-config-next |
+| `@supabase/ssr` | 0.8.x | 0.12.x | Cookie API changes — test auth flows |
+| `pdfjs-dist` | 5.4.x | 6.x | Locked with `pdf-parse` tracing in `next.config.mjs` |
+| `@vercel/analytics` / `speed-insights` | 1.x | 2.x | Major API — verify `<Analytics />` usage first |
+
+Patch/minor updates within semver ranges: `npm update` then `npm run build`.
 
 - **Supabase:** `apply_migration` for `supabase/migrations/` — project `nzviiorrlsdtwzvzodpg`
 - **Vercel:** deploy status for `jon-fun`

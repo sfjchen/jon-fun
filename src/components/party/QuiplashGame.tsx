@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { partyFetch } from '@/lib/party/constants'
 import { usePartyRoomData } from './usePartyRoomData'
 import { usePartyLobby } from './usePartyLobby'
+import { usePartyRoomActions } from './usePartyRoomActions'
 import PartyLobbyForm from './PartyLobbyForm'
 
 type Player = { player_id: string; name: string; score: number }
@@ -68,22 +69,9 @@ export default function QuiplashGame() {
     loadOnce,
   } = usePartyLobby('quiplash', onPayload)
 
-  usePartyRoomData(room?.pin ?? (pinInput.length === 4 ? pinInput : null), 'quiplash', onPayload)
+  const { startGame, playAgain } = usePartyRoomActions(room?.pin, playerId, loadOnce, setError)
 
-  const startGame = async () => {
-    if (!room?.pin || !playerId) return
-    const res = await partyFetch(`/api/party/rooms/${room.pin}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'start', playerId }),
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      setError(data.error || 'Start failed')
-      return
-    }
-    await loadOnce(room.pin)
-  }
+  usePartyRoomData(room?.pin ?? (pinInput.length === 4 ? pinInput : null), 'quiplash', onPayload)
 
   const postQuiplash = async (body: Record<string, unknown>) => {
     if (!room?.pin || !playerId) return
@@ -190,15 +178,7 @@ export default function QuiplashGame() {
             {phase === 'finished' && isHost && (
               <button
                 type="button"
-                onClick={async () => {
-                  if (!room.pin || !playerId) return
-                  await partyFetch(`/api/party/rooms/${room.pin}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'play-again', playerId }),
-                  })
-                  await loadOnce(room.pin)
-                }}
+                onClick={() => void playAgain()}
                 className="w-full py-2 rounded text-white"
                 style={{ backgroundColor: 'var(--ink-accent)' }}
               >
