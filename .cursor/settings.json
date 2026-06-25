@@ -3,7 +3,7 @@
     "supabase": {
       "enabled": true
     },
-    "playwright": {
+    "claude-plugins-official/playwright": {
       "enabled": true
     },
     "vercel": {
