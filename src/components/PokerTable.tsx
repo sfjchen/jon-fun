@@ -422,32 +422,31 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
                 </button>
               )}
 
-              {callAmount > 0 && (
-                <>
-                  <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
-                    <input
-                      type="number"
-                      value={betAmount || minBet}
-                      onChange={(e) => setBetAmount(Math.max(minBet, Math.min(maxBet, parseInt(e.target.value) || minBet)))}
-                      className="w-20 sm:w-24 bg-white/10 border border-white/20 rounded-lg px-2 py-2 sm:px-3 sm:py-2 text-white text-center text-sm sm:text-base"
-                      min={minBet}
-                      max={maxBet}
-                    />
-                    <button
-                      onClick={() => handleAction('bet')}
-                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
-                    >
-                      Bet ${betAmount || minBet}
-                    </button>
-                    <button
-                      onClick={() => handleAction('raise')}
-                      className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
-                    >
-                      Raise ${betAmount || minBet}
-                    </button>
-                  </div>
-                </>
-              )}
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
+                <input
+                  type="number"
+                  value={betAmount || minBet}
+                  onChange={(e) => setBetAmount(Math.max(minBet, Math.min(maxBet, parseInt(e.target.value) || minBet)))}
+                  className="w-20 sm:w-24 bg-white/10 border border-white/20 rounded-lg px-2 py-2 sm:px-3 sm:py-2 text-white text-center text-sm sm:text-base"
+                  min={minBet}
+                  max={maxBet}
+                />
+                {callAmount === 0 ? (
+                  <button
+                    onClick={() => handleAction('bet')}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
+                  >
+                    Bet ${betAmount || minBet}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleAction('raise')}
+                    className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
+                  >
+                    Raise ${betAmount || minBet}
+                  </button>
+                )}
+              </div>
 
               <button
                 onClick={() => handleAction('all-in')}
