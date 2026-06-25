@@ -17,6 +17,26 @@ export function plainTextCursorOffset(editor: Editor): number {
   return editor.state.doc.textBetween(0, pos, '\n', '\n').length
 }
 
+export function lineIndexAtPlainOffset(plain: string, offset: number): number {
+  let line = 0
+  const end = Math.min(offset, plain.length)
+  for (let i = 0; i < end; i++) {
+    if (plain[i] === '\n') line++
+  }
+  return line
+}
+
+export function lineIndexAtCursor(editor: Editor): number {
+  const plain = plainTextFromEditor(editor)
+  return lineIndexAtPlainOffset(plain, plainTextCursorOffset(editor))
+}
+
+export function selectedTextFromEditor(editor: Editor): string {
+  const { from, to } = editor.state.selection
+  if (from === to) return ''
+  return editor.state.doc.textBetween(from, to, ' ')
+}
+
 /** Map plain-text char offset to ProseMirror document position. */
 export function plainOffsetToDocPos(editor: Editor, target: number): number {
   const doc = editor.state.doc

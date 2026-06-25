@@ -84,6 +84,29 @@ Data lives on Supabase under `note_sessions` (+ `notes_sources`, `notes_glossary
 - **Screenshots:** paste/drop/📷 Attach → inline image node; stored as `[📷 id]` in markdown + base64 in `session.screenshots`; follow-up composer shows thumbnails and sends images to lookup API
 - **Models (Jun 2026):** lookup `google/gemini-2.5-flash-lite`; decode/follow-up/images `gemini-2.5-flash`; embed `gemini-embedding-001`
 
+## Action placement (Jun 2026)
+
+Shared primitives: [`NotesActionUi`](../../src/components/notes/NotesActionUi.tsx) — `NotesRowAction` (hover ×, always on touch), `NotesOverflowMenu` (⋯), `NotesContextMenu` + long-press.
+
+**Rule:** primary/common actions stay visible or one obvious click away. Right-click / long-press is a **bonus** for power users, never the only path.
+
+| Surface | Primary | Hover-reveal | Overflow ⋯ | Context menu |
+|---------|---------|--------------|------------|--------------|
+| **Top bar — note** | Delete button | — | — | — |
+| **Top bar — tags** | Chip toggle on/off | × remove (on note) / × delete catalog (off note) | ⋯ → delete catalog when tag is on note | — |
+| **Vault note row** | Click to open | × delete | — | Long-press / right-click → delete |
+| **Vault folder** | Toggle expand | + note, +↳ subfolder, × delete (desktop) | ⋯ all folder actions (mobile) | — |
+| **Rollup todo** | Checkbox archive/restore | — | — | — |
+| **AI lookup (active)** | × delete, New | — | — | — |
+| **AI lookup history** | Click to open | × delete | — | — |
+| **Dictionary row** | Double-click edit | × delete | ⋯ edit, delete | — |
+| **Source row** | Checkbox + title → edit | × delete (custom only) | — | — |
+| **Source editor** | Save, Delete source | — | — | — |
+| **Editor selection** | Bubble menu (format) | — | — | Right-click / long-press → AI lookup, archive/restore todo line |
+| **Note history** | Read-only log | — | — | — |
+| **Sync** | Restore button | — | — | — |
+
+
 ## Device tiers (Jun 2026)
 
 Breakpoint **`768px`** (`md`) — helpers in [`device.ts`](../../src/lib/notes/device.ts), hook [`useNotesDevice`](../../src/lib/notes/useNotesDevice.ts).
@@ -133,3 +156,4 @@ Mock helper: `e2e/helpers/notes-mock.ts` — stubs `/api/notes/*` including embe
 - **2026-06-22**: Export menu — Markdown (.md) + formatted PDF; metadata/tags, full lookup threads, action items; Ctrl+E → MD.
 - **2026-06-24**: Device tiers — phone overlay panel, desktop default-open + resize, Mac Cmd labels, mobile-safe shortcuts.
 - **2026-06-24**: UX polish — status bar Saved/Synced distinction, sync panel hint, vault empty inbox, AI empty hint, note drag grips, mobile Notes panel button.
+- **2026-06-25**: Action placement pass — shared `NotesActionUi` (hover ×, ⋯ overflow, context menu + long-press); tag remove vs catalog delete split; editor selection context menu; touch-visible row deletes.

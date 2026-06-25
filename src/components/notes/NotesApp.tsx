@@ -1189,6 +1189,9 @@ export default function NotesApp() {
               activeTriggerQuery={activeQuery}
               onAttachmentAdd={handleAttachmentAdd}
               onAttachmentUpdate={handleAttachmentUpdate}
+              onLookupSelection={(query, type) => handleTrigger(type, query, state.session.notes)}
+              onArchiveTodoLine={(lineIndex) => handleArchiveTodo(state.session.id, lineIndex)}
+              onRestoreTodoLine={(lineIndex) => handleRestoreTodo(state.session.id, lineIndex)}
             />
           </div>
         </section>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEditor, EditorContent } from '@tiptap/react'
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { buildNotesExtensions, NOTES_EDITOR_PLACEHOLDER } from '@/lib/notes/tiptap/extensions'
 import type { NoteAttachmentStorage } from '@/lib/notes/tiptap/noteAttachment'
 import {
@@ -19,6 +19,8 @@ import { insertNoteAttachmentsFromFiles } from '@/lib/notes/tiptap/pasteFiles'
 import type { Screenshot, TriggerType } from '@/lib/notes/types'
 import NotesEditorToolbar from './NotesEditorToolbar'
 import NotesTableMenu from './NotesTableMenu'
+import { NotesContextMenu, type NotesMenuItem } from './NotesActionUi'
+import { buildEditorContextMenuItems } from './notesEditorContextMenu'
 
 export type NoteEditorHandle = {
   scrollToLine: (lineIndex: number) => void
@@ -33,6 +35,9 @@ type TiptapNoteEditorProps = {
   activeTriggerQuery: string | null
   onAttachmentAdd: (attachment: Screenshot) => void
   onAttachmentUpdate: (id: string, patch: Partial<Screenshot>) => void
+  onLookupSelection?: (query: string, type: TriggerType) => void
+  onArchiveTodoLine?: (lineIndex: number) => void
+  onRestoreTodoLine?: (lineIndex: number) => void
 }
 
 function editorMarkdown(ed: import('@tiptap/core').Editor): string {
@@ -40,7 +45,19 @@ function editorMarkdown(ed: import('@tiptap/core').Editor): string {
 }
 
 const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(function TiptapNoteEditor(
-  { sessionId, value, screenshots, onChange, onTrigger, activeTriggerQuery, onAttachmentAdd, onAttachmentUpdate },
+  {
+    sessionId,
+    value,
+    screenshots,
+    onChange,
+    onTrigger,
+    activeTriggerQuery,
+    onAttachmentAdd,
+    onAttachmentUpdate,
+    onLookupSelection,
+    onArchiveTodoLine,
+    onRestoreTodoLine,
+  },
   ref,
 ) {
   const lastFiredRef = useRef<string | null>(null)
@@ -57,6 +74,18 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
   const onAttachmentUpdateRef = useRef(onAttachmentUpdate)
   onAttachmentAddRef.current = onAttachmentAdd
   onAttachmentUpdateRef.current = onAttachmentUpdate
+
+  const onLookupSelectionRef = useRef(onLookupSelection)
+  const onArchiveTodoLineRef = useRef(onArchiveTodoLine)
+  const onRestoreTodoLineRef = useRef(onRestoreTodoLine)
+  onLookupSelectionRef.current = onLookupSelection
+  onArchiveTodoLineRef.current = onArchiveTodoLine
+  onRestoreTodoLineRef.current = onRestoreTodoLine
+
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; items: NotesMenuItem[] } | null>(null)
+  const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const touchPosRef = useRef({ x: 0, y: 0 })
+  const editorInstanceRef = useRef<import('@tiptap/core').Editor | null>(null)
 
   const extensions = useMemo(
     () =>
@@ -87,6 +116,20 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
       },
     },
   })
+
+  editorInstanceRef.current = editor
+
+  const openEditorContextMenu = useCallback((clientX: number, clientY: number) => {
+    const ed = editorInstanceRef.current
+    if (!ed) return
+    const lookup = onLookupSelectionRef.current
+    const archive = onArchiveTodoLineRef.current
+    const restore = onRestoreTodoLineRef.current
+    if (!lookup || !archive || !restore) return
+    const items = buildEditorContextMenuItems(ed, lookup, archive, restore)
+    if (items.length === 0) return
+    setCtxMenu({ x: clientX, y: clientY, items })
+  }, [])
 
   useImperativeHandle(ref, () => ({
     scrollToLine(lineIndex: number) {
@@ -185,6 +228,62 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
   }, [editor])
 
   useEffect(() => {
+    if (!editor || !onLookupSelection) return
+    const dom = editor.view.dom
+
+    const onContextMenu = (event: MouseEvent) => {
+      if (!onLookupSelectionRef.current || !onArchiveTodoLineRef.current || !onRestoreTodoLineRef.current) {
+        return
+      }
+      const items = buildEditorContextMenuItems(
+        editor,
+        onLookupSelectionRef.current,
+        onArchiveTodoLineRef.current,
+        onRestoreTodoLineRef.current,
+      )
+      if (items.length === 0) return
+      event.preventDefault()
+      openEditorContextMenu(event.clientX, event.clientY)
+    }
+
+    const onTouchStart = (event: TouchEvent) => {
+      const t = event.touches[0]
+      if (!t) return
+      touchPosRef.current = { x: t.clientX, y: t.clientY }
+      if (longPressRef.current) clearTimeout(longPressRef.current)
+      longPressRef.current = setTimeout(() => {
+        if (!onLookupSelectionRef.current || !onArchiveTodoLineRef.current || !onRestoreTodoLineRef.current) {
+          return
+        }
+        const items = buildEditorContextMenuItems(
+          editor,
+          onLookupSelectionRef.current,
+          onArchiveTodoLineRef.current,
+          onRestoreTodoLineRef.current,
+        )
+        if (items.length === 0) return
+        openEditorContextMenu(touchPosRef.current.x, touchPosRef.current.y)
+      }, 500)
+    }
+
+    const clearLongPress = () => {
+      if (longPressRef.current) clearTimeout(longPressRef.current)
+    }
+
+    dom.addEventListener('contextmenu', onContextMenu)
+    dom.addEventListener('touchstart', onTouchStart, { passive: true })
+    dom.addEventListener('touchend', clearLongPress)
+    dom.addEventListener('touchmove', clearLongPress)
+    return () => {
+      dom.removeEventListener('contextmenu', onContextMenu)
+      dom.removeEventListener('touchstart', onTouchStart)
+      dom.removeEventListener('touchend', clearLongPress)
+      dom.removeEventListener('touchmove', clearLongPress)
+      clearLongPress()
+    }
+  }, [editor, onLookupSelection, openEditorContextMenu])
+
+  useEffect(() => {
     if (!editor) return
     refreshShorthandDecorations(editor)
   }, [activeTriggerQuery, editor])
@@ -204,6 +303,10 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
       <NotesEditorToolbar editor={editor} />
       <NotesTableMenu editor={editor} />
       <EditorContent editor={editor} className="min-h-0 flex-1 overflow-auto overscroll-contain" />
+      <NotesContextMenu
+        state={ctxMenu ? { ...ctxMenu, testId: 'notes-editor-context-menu' } : null}
+        onClose={() => setCtxMenu(null)}
+      />
     </div>
   )
 })

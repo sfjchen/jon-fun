@@ -438,6 +438,25 @@
   font-weight: 600;
 }
 
+/* Row actions: hover-reveal on desktop, always visible on touch */
+.notes-row-action {
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.group:hover .notes-row-action,
+.group:focus-within .notes-row-action {
+  opacity: 1;
+}
+
+@media (max-width: 767px) {
+  .notes-row-action {
+    opacity: 1;
+    min-width: 1.75rem;
+    min-height: 1.75rem;
+  }
+}
+
 /* Mobile: side panel overlay + full-width sheet */
 .notes-panel-backdrop {
   position: fixed;

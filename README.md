@@ -513,7 +513,7 @@ src/
 
 Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
 
-- **2026-06-25**: **Notes UX** — delete tags (× on chip / catalog); check off todos → strikethrough + collapsible Archive (`text ✓>`); delete custom sources; AI lookup delete → compact ×; cleared owner vault bug-test sessions on Supabase.
+- **2026-06-25**: **Notes action UX** — shared `NotesActionUi` (hover ×, ⋯ overflow, context menu + long-press); tag remove vs catalog-delete split; editor selection context menu (AI lookup, todo archive); touch-visible row deletes; matrix in [`docs/NOTES-DESIGN.md`](docs/NOTES-DESIGN.md).
 - **2026-06-25**: **Single theme + Next 16** — removed `/theme2` routes (permanent redirects); Notes in-place Tiptap switch (no remount); `usePartyRoomActions`; dropped unused `@supabase/ssr`; Next **16.2.9** + `site-visual` E2E; poker/reader/jeopardy stay separate stacks (documented in ARCHITECTURE-MAP).
 - **2026-06-25**: **Architecture streamline** — [`docs/ARCHITECTURE-MAP.md`](docs/ARCHITECTURE-MAP.md) (routes, shared libs, perf levers); party games coalesce `usePartyLobby` + `PartyLobbyForm`; Realtime poll fallback 800ms→2s; `optimizePackageImports` for Tiptap/Supabase/lucide; README theme2 mirror docs corrected.
 - **2026-06-25**: **Notes stress-test fixes** — owner vault POST/GET/DELETE require sync password + admin device when `SFJC_SYNC_PASSWORD` set; markdown export HTML-escapes title/tags; metadata sanitization (U+2028/U+2029, BIDI, zero-width, HTML, 64-char cap); AI follow-up prompt delimiters + injection guard; cross-tab BroadcastChannel edit lock + storage listener for delete-while-editing; sync payload limits (413) + failed indicator; `e2e/notes-security.spec.ts`.
