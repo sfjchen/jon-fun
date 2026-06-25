@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { HomeLink } from '@/components/HomeLink'
 import { addToTagCatalog, listKnownTags } from '@/lib/notes/tagRegistry'
+import { sanitizeMetadataText, sanitizeTags } from '@/lib/notes/textSanitize'
 import type { NoteSession } from '@/lib/notes/types'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
 
@@ -41,15 +42,16 @@ export default function NotesTopBar({
   const knownTags = useMemo(() => listKnownTags(sessions), [sessions])
 
   function toggleTag(t: string) {
-    if (tags.includes(t)) onTagsChange(tags.filter((x) => x !== t))
-    else onTagsChange([...tags, t])
+    const tag = sanitizeMetadataText(t)
+    if (tags.includes(tag)) onTagsChange(tags.filter((x) => x !== tag))
+    else onTagsChange(sanitizeTags([...tags, tag]))
   }
 
   function commitDraft(raw: string) {
-    const t = raw.trim().replace(/^#/, '')
+    const t = sanitizeMetadataText(raw.trim().replace(/^#/, ''))
     if (!t) return
     addToTagCatalog(t)
-    if (!tags.includes(t)) onTagsChange([...tags, t])
+    if (!tags.includes(t)) onTagsChange(sanitizeTags([...tags, t]))
     setDraft('')
   }
 

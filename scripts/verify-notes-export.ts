@@ -61,6 +61,12 @@ function run(): void {
   assert.match(html, /Follow up on/)
   assert.match(html, /class="tag">IC<\/span>/)
 
+  const xss = { ...session, title: '<script>alert(1)</script>', tags: ['<img onerror=1>'] }
+  const mdXss = buildSessionMarkdown(xss)
+  assert.match(mdXss, /# &lt;script&gt;alert\(1\)&lt;\/script&gt;/)
+  assert.match(mdXss, /`&lt;img onerror=1&gt;`/)
+  assert.doesNotMatch(mdXss, /<script>/)
+
   console.log('verify:notes-export OK')
 }
 

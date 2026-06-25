@@ -25,12 +25,15 @@ import {
 import { NOTES_DESKTOP_MIN_MQ, isNotesMobileViewport } from '@/lib/notes/device'
 import { isNotesEditorTarget, isNotesTextFieldTarget } from '@/lib/notes/shortcuts'
 import { streamLookup } from '@/lib/notes/streamClient'
-import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
+import { loadNotesUiPrefs, saveNotesUiPrefs, normalizeSessionTitle } from '@/lib/notes/prefs'
+import { initNotesTabSync, isRemoteEditing, notifyTabEditing } from '@/lib/notes/notesTabSync'
+import { sanitizeMetadataText, sanitizeTags } from '@/lib/notes/textSanitize'
 import { downloadSessionMarkdown, downloadSessionPdf } from '@/lib/notes/export'
 import {
   createEmptySession,
   deleteSession,
   deleteSessionOnServer,
+  getActiveSessionId,
   getEffectiveUserId,
   getOrCreateUserId,
   loadActiveSession,
@@ -38,6 +41,7 @@ import {
   pushAllToServer,
   saveSessionToServer,
   saveSessionsLocal,
+  SESSIONS_KEY,
   setActiveSessionId,
   syncWithServer,
   isSessionDirty,
@@ -142,16 +146,20 @@ function reducer(state: State, action: Action): State {
       return { ...state, session, sessions }
     }
     case 'TITLE': {
-      const session = touchSession({ ...state.session, title: action.title })
+      const session = touchSession({
+        ...state.session,
+        title: sanitizeMetadataText(normalizeSessionTitle(action.title), 200),
+      })
       const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
       return { ...state, session, sessions }
     }
     case 'TAGS': {
-      let session = { ...state.session, tags: action.tags }
+      const cleanTags = sanitizeTags(action.tags)
+      let session = { ...state.session, tags: cleanTags }
       if (action.recordHistory) {
-        session = appendNoteHistory(session, { kind: 'tags', detail: action.tags.join(', ') })
+        session = appendNoteHistory(session, { kind: 'tags', detail: cleanTags.join(', ') })
       }
-      for (const t of action.tags) addToTagCatalog(t)
+      for (const t of cleanTags) addToTagCatalog(t)
       const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
       return { ...state, session, sessions }
     }
@@ -343,6 +351,7 @@ export default function NotesApp() {
   useEffect(() => {
     getOrCreateUserId()
     setHintsOpen(loadHintsOpen())
+    return initNotesTabSync()
   }, [])
 
   useEffect(() => {
@@ -384,6 +393,7 @@ export default function NotesApp() {
 
   const bumpEditActivity = useCallback(() => {
     editIdleUntilRef.current = Date.now() + EDIT_IDLE_MS
+    notifyTabEditing(sessionRef.current.id, EDIT_IDLE_MS)
   }, [])
 
   const isActivelyEditing = useCallback(() => Date.now() < editIdleUntilRef.current, [])
@@ -414,7 +424,8 @@ export default function NotesApp() {
     const sameSession = inMem.id === active.id
     const activeDirty = sameSession && isSessionDirty(inMem)
     const editing = isActivelyEditing()
-    const protectActive = sameSession && (activeDirty || editing)
+    const remoteEditing = isRemoteEditing(inMem.id)
+    const protectActive = sameSession && (activeDirty || editing || remoteEditing)
 
     let sessions = r.sessions
     if (protectActive) {
@@ -552,6 +563,24 @@ export default function NotesApp() {
   useEffect(() => {
     persistLocal(state.session)
   }, [state.session, persistLocal])
+
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== SESSIONS_KEY || e.newValue == null) return
+      try {
+        const sessions = loadSessions()
+        dispatch({ type: 'SET_SESSIONS', sessions })
+        const activeId = getActiveSessionId()
+        if (!activeId || sessions.some((s) => s.id === activeId)) return
+        const next = loadActiveSession()
+        dispatch({ type: 'LOAD_SESSION', session: next })
+      } catch {
+        /* ignore corrupt cross-tab payload */
+      }
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
 
   useEffect(() => {
     setSaving(true)

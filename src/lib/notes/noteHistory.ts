@@ -1,4 +1,5 @@
 import type { NoteHistoryEntry, NoteSession } from './types'
+import { sanitizeHistoryDetail } from './textSanitize'
 
 const MAX_ENTRIES = 120
 
@@ -56,6 +57,6 @@ export function formatHistoryLine(entry: NoteHistoryEntry): string {
     switch: 'Opened note',
   }
   let label = labels[entry.kind] ?? entry.kind
-  if (entry.detail) label += ` · ${entry.detail}`
+  if (entry.detail) label += ` · ${sanitizeHistoryDetail(entry.detail)}`
   return `${t} — ${label}`
 }
