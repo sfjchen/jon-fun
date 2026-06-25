@@ -106,19 +106,27 @@ function ReactionPhase({ onDone, quickE2e }: { onDone: (score: number) => void; 
   const rts = useRef<number[]>([])
   const trial = useRef(0)
   const goAt = useRef(0)
-  const toRef = useRef<number | null>(null)
+  const goTimerRef = useRef<number | null>(null)
+  const penaltyTimerRef = useRef<number | null>(null)
 
-  const clearT = () => {
-    if (toRef.current != null) {
-      window.clearTimeout(toRef.current)
-      toRef.current = null
+  const clearGoTimer = () => {
+    if (goTimerRef.current != null) {
+      window.clearTimeout(goTimerRef.current)
+      goTimerRef.current = null
+    }
+  }
+
+  const clearPenaltyTimer = () => {
+    if (penaltyTimerRef.current != null) {
+      window.clearTimeout(penaltyTimerRef.current)
+      penaltyTimerRef.current = null
     }
   }
 
   const scheduleWait = useCallback(() => {
-    clearT()
-    toRef.current = window.setTimeout(() => {
-      toRef.current = null
+    clearGoTimer()
+    goTimerRef.current = window.setTimeout(() => {
+      goTimerRef.current = null
       setPhase('go')
       goAt.current = performance.now()
     }, mocScheduleReactionDelayMs(quickE2e))
@@ -126,15 +134,21 @@ function ReactionPhase({ onDone, quickE2e }: { onDone: (score: number) => void; 
 
   useEffect(() => {
     if (phase === 'wait') scheduleWait()
-    return clearT
+    return clearGoTimer
   }, [phase, scheduleWait])
+
+  useEffect(() => () => {
+    clearGoTimer()
+    clearPenaltyTimer()
+  }, [])
 
   const tap = () => {
     if (phase === 'wait') {
-      clearT()
+      clearGoTimer()
       setPhase('tooSoon')
-      toRef.current = window.setTimeout(() => {
-        toRef.current = null
+      clearPenaltyTimer()
+      penaltyTimerRef.current = window.setTimeout(() => {
+        penaltyTimerRef.current = null
         setPhase('wait')
       }, 550)
       return
@@ -145,7 +159,8 @@ function ReactionPhase({ onDone, quickE2e }: { onDone: (score: number) => void; 
       rts.current.push(rt)
       trial.current += 1
       if (trial.current >= 8) {
-        clearT()
+        clearGoTimer()
+        clearPenaltyTimer()
         onDone(scoreReactionMedian(rts.current))
         return
       }
@@ -210,7 +225,7 @@ function ArithmeticPhase({ onDone, quickE2e }: { onDone: (score: number) => void
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
     if (done) return
-    const n = parseInt(input.trim(), 10)
+    const n = parseInt(input.trim().replace(/\u2212/g, '-'), 10)
     if (Number.isNaN(n)) return
     if (n === prob.answer) setCorrect((c) => c + 1)
     else setWrong((w) => w + 1)

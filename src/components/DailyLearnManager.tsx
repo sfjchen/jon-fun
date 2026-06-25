@@ -218,8 +218,17 @@ export default function DailyLearnManager() {
   const dateStr = (d: number) => `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 
   const editModal = editingDate && (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="rounded-lg p-6 border max-w-lg w-full shadow-lg" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+    <div
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4"
+      role="dialog"
+      aria-modal="true"
+      onClick={() => { setEditingDate(null); setEditingText('') }}
+    >
+      <div
+        className="rounded-lg p-6 border max-w-lg w-full shadow-lg relative z-[101]"
+        style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <h3 className="text-xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>Edit {parseLocalDate(editingDate).toLocaleDateString()}</h3>
         <textarea
           value={editingText}

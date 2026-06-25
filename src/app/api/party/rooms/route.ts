@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { supabaseAdmin as supabase } from '@/lib/supabase'
 import { generateRoomPin } from '@/lib/poker'
-import { PARTY_MAX_PLAYERS_DEFAULT } from '@/lib/party/constants'
+import { PARTY_MAX_PLAYERS_DEFAULT, PARTY_NAME_MAX_LEN } from '@/lib/party/constants'
 import type { PartyGameKind } from '@/lib/party/types'
 
 const KINDS: PartyGameKind[] = ['quiplash', 'fibbage', 'eay']
@@ -14,6 +14,10 @@ export async function POST(request: NextRequest) {
 
     if (!hostName || typeof hostName !== 'string' || hostName.trim().length === 0) {
       return NextResponse.json({ error: 'Host name is required' }, { status: 400 })
+    }
+    const trimmedName = hostName.trim()
+    if (trimmedName.length > PARTY_NAME_MAX_LEN) {
+      return NextResponse.json({ error: `Host name must be at most ${PARTY_NAME_MAX_LEN} characters` }, { status: 400 })
     }
     if (!gameKind || !KINDS.includes(gameKind as PartyGameKind)) {
       return NextResponse.json({ error: 'gameKind must be quiplash, fibbage, or eay' }, { status: 400 })
@@ -64,7 +68,7 @@ export async function POST(request: NextRequest) {
       id: uuidv4(),
       room_pin: finalPin,
       player_id: playerId,
-      name: hostName.trim(),
+      name: trimmedName,
       score: 0,
       is_connected: true,
       joined_at: now,

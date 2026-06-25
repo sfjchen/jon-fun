@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { supabaseAdmin as supabase } from '@/lib/supabase'
 import { validateRoomPin } from '@/lib/poker'
-import { PARTY_MAX_PLAYERS_DEFAULT } from '@/lib/party/constants'
+import { PARTY_MAX_PLAYERS_DEFAULT, PARTY_NAME_MAX_LEN } from '@/lib/party/constants'
 import { seedQuiplashRound1 } from '@/lib/party/quiplash-start'
 import { seedFibbageGame } from '@/lib/party/fibbage-start'
 import { seedEayIntake } from '@/lib/party/eay-start'
@@ -141,6 +141,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         if (!playerName || typeof playerName !== 'string' || playerName.trim().length === 0) {
           return NextResponse.json({ error: 'Player name is required' }, { status: 400 })
         }
+        const trimmedJoinName = playerName.trim()
+        if (trimmedJoinName.length > PARTY_NAME_MAX_LEN) {
+          return NextResponse.json({ error: `Player name must be at most ${PARTY_NAME_MAX_LEN} characters` }, { status: 400 })
+        }
         const { count } = await supabase
           .from('party_players')
           .select('*', { count: 'exact', head: true })
@@ -153,7 +157,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           id: uuidv4(),
           room_pin: pin,
           player_id: newPlayerId,
-          name: playerName.trim(),
+          name: trimmedJoinName,
           score: 0,
           is_connected: true,
           joined_at: now,

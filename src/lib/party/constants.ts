@@ -31,6 +31,7 @@ export const PARTY_MIN_PLAYERS_QUIPLASH = 3
 export const PARTY_MIN_PLAYERS_FIBBAGE = 2
 export const PARTY_MIN_PLAYERS_EAY = 3
 
+export const PARTY_NAME_MAX_LEN = 24
 export const ANSWER_MAX_LEN = 280
 export const PARTY_PHASE_SECONDS_DEFAULT = 120
 export const PARTY_VOTE_SECONDS_DEFAULT = 90

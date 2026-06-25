@@ -7,6 +7,7 @@ import type { ConnectionsDifficulty, ConnectionsGroup, ConnectionsPuzzle } from 
 import {
   CONNECTIONS_DIFFICULTIES,
   CONNECTIONS_DRAFT_KEY,
+  CONNECTIONS_WORD_MAX_LEN,
   createDefaultConnectionsPuzzle,
   downloadConnectionsPuzzle,
   editorChecklist,
@@ -388,6 +389,7 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
                   className="rounded-lg border px-2 py-2 text-sm"
                   style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
                   value={w}
+                  maxLength={CONNECTIONS_WORD_MAX_LEN}
                   placeholder={`Word ${wi + 1}`}
                   onChange={(e) => setWord(gi, wi, e.target.value)}
                 />

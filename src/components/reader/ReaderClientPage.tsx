@@ -53,5 +53,5 @@ export function ReaderClientPage({ bookId, chapterId, routeBase }: ReaderClientP
     )
   }
 
-  return <ReaderShell publication={publication} initialChapterId={chapterId} routeBase={routeBase} />
+  return <ReaderShell key={`${bookId}:${chapterId}`} publication={publication} initialChapterId={chapterId} routeBase={routeBase} />
 }
