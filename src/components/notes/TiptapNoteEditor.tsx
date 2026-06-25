@@ -25,6 +25,7 @@ export type NoteEditorHandle = {
 }
 
 type TiptapNoteEditorProps = {
+  sessionId: string
   value: string
   screenshots: Record<string, Screenshot>
   onChange: (val: string) => void
@@ -39,12 +40,13 @@ function editorMarkdown(ed: import('@tiptap/core').Editor): string {
 }
 
 const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(function TiptapNoteEditor(
-  { value, screenshots, onChange, onTrigger, activeTriggerQuery, onAttachmentAdd, onAttachmentUpdate },
+  { sessionId, value, screenshots, onChange, onTrigger, activeTriggerQuery, onAttachmentAdd, onAttachmentUpdate },
   ref,
 ) {
   const lastFiredRef = useRef<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const emittedMarkdownRef = useRef<string | null>(null)
+  const sessionIdRef = useRef(sessionId)
   const onTriggerStable = useCallback(onTrigger, [onTrigger])
   const activeQueryRef = useRef(activeTriggerQuery)
   activeQueryRef.current = activeTriggerQuery
@@ -101,6 +103,22 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
     storage.onUpdate = (id, patch) => onAttachmentUpdateRef.current(id, patch)
     editor.view.dispatch(editor.state.tr)
   }, [editor, screenshots, onAttachmentAdd, onAttachmentUpdate])
+
+  /** Note switch: swap content in-place (avoid remounting Tiptap / extensions). */
+  useEffect(() => {
+    if (!editor || sessionIdRef.current === sessionId) return
+    sessionIdRef.current = sessionId
+    lastFiredRef.current = null
+    emittedMarkdownRef.current = null
+    editor.commands.blur()
+    const next = normalizeNotesMarkdown(value)
+    emittedMarkdownRef.current = next
+    editor.commands.setContent(preprocessTodoMarkdown(value), {
+      contentType: 'markdown',
+      emitUpdate: false,
+    })
+    editor.commands.focus('start')
+  }, [sessionId, value, editor])
 
   useEffect(() => {
     if (!editor) return

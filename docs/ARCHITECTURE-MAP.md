@@ -1,119 +1,87 @@
 # sfjc.dev architecture map
 
-Single Next.js 15 app at **`src/`** → [sfjc.dev](https://sfjc.dev) on **Vercel**. **Supabase** (PostgreSQL + Realtime) for sync/multiplayer. **Veridian** whiteboard is an external Vercel app proxied via rewrite.
+Single Next.js app at **`src/`** → [sfjc.dev](https://sfjc.dev) on **Vercel**. **One public theme: Notebook** (`/` + `/games/*`). **Supabase** (PostgreSQL + Realtime) for sync/multiplayer. **Veridian** whiteboard is external (rewrite).
 
 ## Agent reading order
 
 | Priority | Doc | When |
 |----------|-----|------|
 | 1 | [`README.md`](../README.md) | Games list, verify loops, design principles |
-| 2 | **This file** | Route inventory, shared libs, duplication boundaries |
+| 2 | **This file** | Routes, shared libs, perf, stack boundaries |
 | 3 | [`docs/NOTES-AGENT.md`](NOTES-AGENT.md) | Notes editor / AI / sync |
 | 4 | [`docs/SFJC-ADMIN.md`](SFJC-ADMIN.md) | Owner sync password, admin device UUIDs |
 | 5 | [`.cursor/rules/`](../.cursor/rules/) | Supabase MCP, Playwright CLI, git, Vercel |
 
-## Route trees
-
-### Canonical (public)
+## Routes
 
 | Prefix | Purpose |
 |--------|---------|
 | `/` | Notebook home grid |
-| `/games/*` | All live games and tools |
+| `/games/*` | All games and tools |
 | `/games/notes` | Notes vault (standalone Lato shell) |
-| `/veridian/*` | Rewrite → external whiteboard (`VERIDIAN_ORIGIN`) |
-| `/api/*` | Route handlers (party, notes, reader, poker, …) |
+| `/leaderboards` | Leaderboards (parked copy) |
+| `/admin/*` | Owner admin surfaces (TMR, Notes) |
+| `/veridian/*` | Rewrite → external whiteboard |
+| `/api/*` | Route handlers |
 
-### Theme2 mirror (legacy Ink & Paper entry points)
+**Legacy redirects** (permanent): `/theme2` → `/`, `/theme2/games/:path*` → `/games/:path*`, `/notebook` → `/`.
 
-| Prefix | Purpose |
-|--------|---------|
-| `/theme2` | Alternate home grid (visual-regression + Connections mirror) |
-| `/theme2/games/connections/*` | Connections with `basePath="/theme2/games/connections"` |
-| `/theme2/games/*` (other) | One-line re-export of `/games/*` pages (Connections excepted) |
-
-**Do not delete** `/theme2` without updating `e2e/theme2-*.spec.ts` and Connections `basePath`. Prefer editing shared components under `src/components/` — both trees stay in sync automatically.
-
-Archive-only copy: `src/app/_archive/theme2` (Next private folder — not routed).
-
-## Projects / domains
+## Projects / backends
 
 | Project | Routes | State | Backend |
 |---------|--------|-------|---------|
-| **Notes** | `/games/notes` | localStorage + Supabase sync | `/api/notes/*`, owner-gated AI |
+| **Notes** | `/games/notes` | localStorage + Supabase | `/api/notes/*` |
 | **E-reader** | `/games/e-reader` | IndexedDB + optional Supabase | `/api/reader/*` |
 | **Daily log** | `/games/daily-log` | localStorage + Supabase | `/api/daily-learn/*` |
 | **Poker** | `/games/poker/*` | session + Supabase rooms | `/api/poker/*` |
 | **Party games** | quip-clash, fib-it, enough-about-you | sessionStorage + Realtime | `/api/party/*` |
-| **Connections** | `/games/connections` + theme2 mirror | Supabase shelf | `/api/connections/*` |
-| **Jeopardy, 24, MOC, …** | `/games/*` | Mostly localStorage | Minimal or none |
+| **Connections** | `/games/connections` | Supabase shelf | `/api/connections/*` |
+| **Jeopardy** | `/games/jeopardy` | localStorage + optional Supabase buzzer | `/api/jeopardy/*` |
 
-## Shared architecture (coalesced)
+## Why poker / reader / jeopardy are **not** one stack
 
-### Party games (`src/components/party/`)
+| Concern | Poker | Reader | Jeopardy |
+|---------|-------|--------|----------|
+| **Primary state** | Supabase room + chip stacks | IndexedDB books/chapters | localStorage boards + buzzer room |
+| **Realtime** | Postgres changes on seats/pot | Optional communal reading_state | Buzzer + host sync |
+| **Heavy deps** | Minimal UI | pdf.js, EPUB, TTS | Board JSON, passcode library API |
+| **Shell** | Full-bleed felt table | Standalone reader chrome | Game board + editor |
+
+**Shared infra only:** `src/lib/supabase.ts`, `partyFetch` pattern (party games), `PageShell` where applicable. Merging into one “game engine” would add abstraction without reducing code — each product has different persistence and UX. **Do not unify.**
+
+## Shared party architecture
 
 ```
-PartyLobbyForm.tsx     ← create/join UI (Quip Clash, Fib It, Enough About You)
-usePartyLobby.ts       ← sessionStorage, create/join/loadOnce
-usePartyRoomActions.ts ← host start / play-again on /api/party/rooms
-usePartyRoomData.ts    ← Supabase Realtime + 2s poll fallback
-partyFetch             ← src/lib/party/constants.ts (25s timeout)
-/api/party/rooms       ← unified room CRUD + start/play-again
-/api/party/{quiplash|fibbage|eay}/[pin]  ← game actions
+PartyLobbyForm.tsx       ← create/join UI
+usePartyLobby.ts         ← sessionStorage, create/join/loadOnce
+usePartyRoomActions.ts   ← host start / play-again
+usePartyRoomData.ts      ← Supabase Realtime + 2s poll fallback
+partyFetch               ← src/lib/party/constants.ts
 ```
 
-### Notes (`src/components/notes/`, `src/lib/notes/`)
+## Notes performance
 
-- **Editor:** Tiptap via dynamic import (`EditorShell.tsx` → `TiptapNoteEditor.tsx`)
-- **App shell:** `NotesApp.tsx` + `SidePanel.tsx` (reducer state)
-- **Sync:** `storage.ts` mutex + BroadcastChannel tab sync
-- **AI:** `streamClient.ts` → `/api/notes/lookup` (sync password + admin devices when env set)
+- **Editor:** single Tiptap instance; `sessionId` prop swaps markdown in-place (no `key=` remount on note switch)
+- **Switch path:** optimistic `LOAD_SESSION` dispatch; dirty-note save + sync deferred via `queueMicrotask`
+- **Dynamic import:** `EditorShell` → `TiptapNoteEditor` (`ssr: false`)
 
-### Page chrome
-
-- **`PageShell.tsx`** — notebook masthead, `sfjc.dev` → home
-- **Exceptions:** Notes (minimal), Poker lobby/table (full-bleed), Pear Navigator, Chwazi mobile
-
-## Performance levers
-
-| Area | Mechanism |
-|------|-----------|
-| Bundle | `next.config.mjs` → `optimizePackageImports` (Tiptap, Supabase, Vercel analytics) |
-| Notes editor | `dynamic(..., { ssr: false })` for Tiptap |
-| Notes app | `NotesAppLoader.tsx` dynamic import |
-| Party rooms | Realtime primary; poll every **2s** as fallback (was 800ms) |
-| Reader/Jeopardy | `outputFileTracingIncludes` for pdf.js + board JSON |
-
-## Known duplication (intentional)
-
-- **`/theme2/games/*` page.tsx** — one-liner re-exports; keep until theme2 visual suite retargets to `/games/*`
-- **Poker vs party** — separate APIs (poker chip tracker ≠ Jackbox-style party rooms)
-- **Veridian** — separate repo/deploy; only rewrite lives here
-
-## Verify commands
+## Verify
 
 ```bash
-npm run type-check
-npm run build
-npm run test:e2e:notes          # Notes regression
-npm run test:e2e -- party-games   # Party lobby smoke
-npm run test:e2e -- theme2-visual # Theme2 snapshots (visual-* projects)
+npm run type-check && npm run build
+npm run test:e2e:notes
+npm run test:e2e -- party-games connections
+npm run test:e2e -- --project=visual-desktop site-visual   # first run: --update-snapshots
 ```
 
-## Deferred upgrades (intentional)
+## Dependencies
 
-Stay on current majors until a dedicated migration pass:
+- **`@supabase/ssr` removed** — unused (client uses `@supabase/supabase-js` + service routes)
+- **`pdfjs-dist` pinned** at 5.4.x — must match `pdf-parse` tracing in `next.config.mjs`
+- **Next 16** — upgraded with `eslint-config-next@16`; run official codemods if build warns
 
-| Package | Current | Latest | Why wait |
-|---------|---------|--------|----------|
-| `next` / `eslint-config-next` | 15.5.x | 16.x | App Router major; run official upgrade guide |
-| `eslint` | 9.x | 10.x | Tied to Next/eslint-config-next |
-| `@supabase/ssr` | 0.8.x | 0.12.x | Cookie API changes — test auth flows |
-| `pdfjs-dist` | 5.4.x | 6.x | Locked with `pdf-parse` tracing in `next.config.mjs` |
-| `@vercel/analytics` / `speed-insights` | 1.x | 2.x | Major API — verify `<Analytics />` usage first |
+## MCP (agents)
 
-Patch/minor updates within semver ranges: `npm update` then `npm run build`.
-
-- **Supabase:** `apply_migration` for `supabase/migrations/` — project `nzviiorrlsdtwzvzodpg`
-- **Vercel:** deploy status for `jon-fun`
-- **Playwright:** ad-hoc smoke only; **CLI** for regression (see `.cursor/rules/playwright-testing.mdc`)
+- **Supabase:** project `nzviiorrlsdtwzvzodpg`
+- **Vercel:** `jon-fun`
+- **Playwright:** CLI for regression; plugin for ad-hoc smoke only

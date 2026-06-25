@@ -24,7 +24,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url)
   const isLocalReaderPath =
     url.origin === self.location.origin &&
-    (url.pathname.startsWith('/games/e-reader') || url.pathname.startsWith('/theme2/games/e-reader'))
+    (url.pathname.startsWith('/games/e-reader'))
 
   if (!isLocalReaderPath) return
 
