@@ -56,7 +56,7 @@ When the user says “Veridian whiteboard” or “my demo”, they mean **sfjc.
 
 - **Solo AI math whiteboard (Next.js, local-first):** `Jon-fun/Veridian/` → deploy **`sfjc.dev/veridian`**
 - **Classrooms, teacher dashboard, student Expo app:** `Desktop/Veridian/` only (not the public demo)
-- **Games, reader, wedding, party rooms:** parent Jon-fun `src/`
+- **Games, reader, party rooms:** parent Jon-fun `src/`
 
 ## How sfjc.dev/veridian is wired
 
@@ -78,7 +78,7 @@ Several chats may run at once (EdTech deploy, whiteboard refactor, Jon-fun hub).
 |------------------------|----------|---------------|
 | Whiteboard, demo, sfjc.dev/veridian, no login | `Jon-fun/Veridian/` | `veridian-whiteboard` Vercel → sfjc.dev path |
 | Classrooms, teacher, Expo, Supabase, Render | `Desktop/Veridian/` | Legacy EdTech; **public demo redirects** to sfjc.dev/veridian |
-| Games, reader, wedding, party rooms | Jon-fun parent `src/` | sfjc.dev root |
+| Games, reader, party rooms | Jon-fun parent `src/` | sfjc.dev root |
 
 ### Merged intent (Jun 2026 — reconcile parallel chats)
 

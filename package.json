@@ -30,7 +30,6 @@
     "verify:notes-export": "tsx scripts/verify-notes-export.ts",
     "verify:notes-tables": "tsx scripts/verify-notes-tables.ts",
     "verify:notes": "npm run verify:notes-triggers && npm run verify:notes-attachments && npm run verify:notes-tables && npm run verify:notes-export",
-    "wedding:rsvp-qr": "tsx scripts/generate-wedding-rsvp-qr.ts",
     "test:e2e": "playwright test",
     "test:e2e:ci": "CI=1 playwright test",
     "test:e2e:deployment": "PLAYWRIGHT_SKIP_WEBSERVER=1 CI=1 playwright test",

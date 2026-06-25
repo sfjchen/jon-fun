@@ -23,8 +23,6 @@ const nextConfig = {
     return [
       { source: '/notebook', destination: '/', permanent: true },
       { source: '/notebook/:path*', destination: '/:path*', permanent: true },
-      { source: '/Madelyn-Patrick', destination: '/wedding/madelyn-patrick', permanent: true },
-      { source: '/Madelyn-Patrick/:path*', destination: '/wedding/madelyn-patrick', permanent: true },
     ]
   },
   async rewrites() {
