@@ -127,9 +127,7 @@ test.describe('Notes', () => {
     await expect(panel).toBeVisible()
 
     const title = page.getByTestId('notes-meeting-title')
-    await title.click()
-    await title.fill('')
-    await page.keyboard.type('Source note A')
+    await title.fill('Source note A')
 
     const packCheckbox = panel.locator('[data-testid^="notes-source-check-builtin-pack-"]').first()
     await expect(packCheckbox).toBeChecked()
@@ -159,9 +157,7 @@ test.describe('Notes', () => {
   test('creates a second note and switches between them', async ({ page }) => {
 
     const title = page.getByTestId('notes-meeting-title')
-    await title.click()
-    await title.fill('')
-    await page.keyboard.type('IC standup')
+    await title.fill('IC standup')
     await expect(title).toHaveValue('IC standup')
 
     const editor = notesEditor(page)
