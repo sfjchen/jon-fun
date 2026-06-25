@@ -1,9 +1,11 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { PARTY_NAME_MAX_LEN, partyFetch, sessionKeys } from '@/lib/party/constants'
+import { useCallback, useMemo, useState } from 'react'
+import { partyFetch } from '@/lib/party/constants'
 import { EAY_INTAKE_QUESTIONS } from '@/lib/party/prompts-eay'
 import { usePartyRoomData } from './usePartyRoomData'
+import { usePartyLobby } from './usePartyLobby'
+import PartyLobbyForm from './PartyLobbyForm'
 
 type Player = { player_id: string; name: string; score: number }
 type Room = {
@@ -29,12 +31,7 @@ type FinalRow = { player_id: string; truth_text: string; lie_text: string }
 
 export default function EayGame() {
   const notebookLayout = true
-  const keys = sessionKeys('eay')
 
-  const [pinInput, setPinInput] = useState('')
-  const [nameInput, setNameInput] = useState('')
-  const [playerId, setPlayerId] = useState<string | null>(null)
-  const [hostId, setHostId] = useState<string | null>(null)
   const [room, setRoom] = useState<Room | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
   const [intake, setIntake] = useState<IntakeRow[]>([])
@@ -42,9 +39,6 @@ export default function EayGame() {
   const [lies, setLies] = useState<Lie[]>([])
   const [picks, setPicks] = useState<Pick[]>([])
   const [finals, setFinals] = useState<FinalRow[]>([])
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [clientReady, setClientReady] = useState(false)
 
   const onPayload = useCallback((data: unknown) => {
     if (!data || typeof data !== 'object') return
@@ -70,109 +64,23 @@ export default function EayGame() {
     }
   }, [])
 
+  const {
+    pinInput,
+    setPinInput,
+    nameInput,
+    setNameInput,
+    playerId,
+    hostId,
+    error,
+    setError,
+    loading,
+    clientReady,
+    createRoom,
+    joinRoom,
+    loadOnce,
+  } = usePartyLobby('eay', onPayload)
+
   usePartyRoomData(room?.pin ?? (pinInput.length === 4 ? pinInput : null), 'eay', onPayload)
-
-  useEffect(() => {
-    setClientReady(true)
-  }, [])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const p = sessionStorage.getItem(keys.pin) || ''
-    const pid = sessionStorage.getItem(keys.playerId) || ''
-    const hid = sessionStorage.getItem(keys.hostId) || ''
-    const n = sessionStorage.getItem(keys.playerName) || ''
-    if (p && pid) {
-      setPinInput(p)
-      setPlayerId(pid)
-      setHostId(hid || null)
-      setNameInput(n)
-    }
-  }, [keys])
-
-  const saveSession = useCallback(
-    (d: { pin?: string; playerId?: string; hostId?: string | null; playerName?: string }) => {
-      if (typeof window === 'undefined') return
-      if (d.pin !== undefined) sessionStorage.setItem(keys.pin, d.pin)
-      if (d.playerId !== undefined) sessionStorage.setItem(keys.playerId, d.playerId)
-      if (d.hostId !== undefined) sessionStorage.setItem(keys.hostId, d.hostId ?? '')
-      if (d.playerName !== undefined) sessionStorage.setItem(keys.playerName, d.playerName)
-    },
-    [keys],
-  )
-
-  const loadOnce = useCallback(
-    async (p: string) => {
-      setLoading(true)
-      setError(null)
-      try {
-        const res = await partyFetch(`/api/party/rooms/${p}`)
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error || 'Load failed')
-        onPayload(data)
-      } catch (e) {
-        const aborted = e instanceof DOMException && e.name === 'AbortError'
-        setError(aborted ? 'Request timed out' : e instanceof Error ? e.message : 'Load failed')
-      } finally {
-        setLoading(false)
-      }
-    },
-    [onPayload],
-  )
-
-  const createRoom = async () => {
-    if (!nameInput.trim()) {
-      setError('Name required')
-      return
-    }
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await partyFetch('/api/party/rooms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ hostName: nameInput.trim(), gameKind: 'eay' }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Create failed')
-      setPinInput(data.pin)
-      setPlayerId(data.playerId)
-      setHostId(data.hostId)
-      saveSession({ pin: data.pin, playerId: data.playerId, hostId: data.hostId, playerName: nameInput.trim() })
-      await loadOnce(data.pin)
-    } catch (e) {
-      const aborted = e instanceof DOMException && e.name === 'AbortError'
-      setError(aborted ? 'Request timed out' : e instanceof Error ? e.message : 'Create failed')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const joinRoom = async () => {
-    if (!nameInput.trim() || pinInput.length !== 4) {
-      setError('Name and 4-digit PIN required')
-      return
-    }
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await partyFetch(`/api/party/rooms/${pinInput}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'join', playerName: nameInput.trim() }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Join failed')
-      setPlayerId(data.playerId)
-      saveSession({ pin: pinInput, playerId: data.playerId, playerName: nameInput.trim() })
-      await loadOnce(pinInput)
-    } catch (e) {
-      const aborted = e instanceof DOMException && e.name === 'AbortError'
-      setError(aborted ? 'Request timed out' : e instanceof Error ? e.message : 'Join failed')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const startGame = async () => {
     if (!room?.pin || !playerId) return
@@ -237,39 +145,17 @@ export default function EayGame() {
       </p>
 
       {!room && (
-        <aside className="rounded-lg border p-4 max-w-md shadow-sm" style={cardStyle}>
-          <div className="space-y-3">
-            <input
-              value={nameInput}
-              onChange={(e) => setNameInput(e.target.value)}
-              maxLength={PARTY_NAME_MAX_LEN}
-              placeholder="Name"
-              className="w-full rounded border px-3 py-2"
-              style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
-            />
-            <div className="flex gap-2">
-              <input
-                value={pinInput}
-                onChange={(e) => setPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                maxLength={4}
-                placeholder="PIN"
-                className="flex-1 rounded border px-3 py-2"
-                style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
-              />
-              <button type="button" onClick={joinRoom} disabled={loading || !clientReady} className="px-3 py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>
-                Join
-              </button>
-            </div>
-            <button type="button" onClick={createRoom} disabled={loading || !clientReady} className="w-full py-2 rounded text-white" style={{ backgroundColor: 'rgb(22 101 52)' }}>
-              Create
-            </button>
-            {error && (
-              <div className="text-sm text-red-600" data-testid="party-error">
-                {error}
-              </div>
-            )}
-          </div>
-        </aside>
+        <PartyLobbyForm
+          nameInput={nameInput}
+          setNameInput={setNameInput}
+          pinInput={pinInput}
+          setPinInput={setPinInput}
+          onCreate={createRoom}
+          onJoin={joinRoom}
+          loading={loading}
+          clientReady={clientReady}
+          error={error}
+        />
       )}
 
       {room && (

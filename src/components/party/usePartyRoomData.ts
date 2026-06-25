@@ -182,7 +182,7 @@ export function usePartyRoomData(
 
     const poll = setInterval(() => {
       void loadRoomData(true)
-    }, 800)
+    }, 2000)
 
     return () => {
       chRoom.unsubscribe()

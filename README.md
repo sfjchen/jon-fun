@@ -24,6 +24,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 
 | Task | Read first | Verify |
 |------|------------|--------|
+| **Repo-wide** (routes, shared libs, perf) | [`docs/ARCHITECTURE-MAP.md`](docs/ARCHITECTURE-MAP.md) | `npm run type-check` → `npm run build` |
 | **Notes** (editor, AI, sync, attachments) | [`docs/NOTES-AGENT.md`](docs/NOTES-AGENT.md) → [`docs/NOTES-DESIGN.md`](docs/NOTES-DESIGN.md) | `verify:notes-*` → `test:e2e:notes` (3 cycles after substantive edits) |
 | Supabase schema | `.cursor/rules/supabase-migrations.mdc` | MCP `apply_migration` + `list_tables` |
 | Design / UX | **Core design principles** below + [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) | Visual specs in `e2e/*-visual.spec.ts` |
@@ -70,7 +71,7 @@ These guide **what** we build (product + UX) and **how** it should feel (visual 
 ### Visual and tonal language (ties to themes)
 
 - **Simple, bold, elegant:** Strong type and a **restrained palette**—confident without being stiff (**not** corporate-formal) and clear without being cute (**not** overly casual copy or novelty UI).
-- **Notebook (main site)** (`/`): hand-drawn Patrick Hand, cream line-paper, Stanford-adjacent red accent. An older **Ink & Paper** variant is kept only under `src/app/_archive/theme2` (not deployed as routes). Game-specific skins (Poker felt, Pear Navigator dark) are **allowed exceptions** where they aid the metaphor.
+- **Notebook (main site)** (`/`): hand-drawn Patrick Hand, cream line-paper, Stanford-adjacent red accent. A live **Ink & Paper mirror** remains at `/theme2` (Connections + visual-regression routes); archived sources under `src/app/_archive/theme2`. Game-specific skins (Poker felt, Pear Navigator dark) are **allowed exceptions** where they aid the metaphor.
 
 ### Data, identity, and sync
 
@@ -82,7 +83,7 @@ These guide **what** we build (product + UX) and **how** it should feel (visual 
 
 ## 🎨 Visual system & themes (quick reference)
 
-**Themes:** **Notebook** is the only public theme (at `/`). Legacy **Ink & Paper** pages live in `src/app/_archive/theme2` (Next.js private folder — not reachable on the web). **Tokens:** `var(--ink-*)` in `globals.css`; notebook maps those to `--nb-*` via `data-theme="notebook"`. **Game-specific:** Poker (green felt), Pear Navigator (dark inner UI). **Shell exceptions:** Chwazi mobile, Pear Navigator, Poker lobby & table (full-bleed / alternate chrome). Full detail: **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)**.
+**Themes:** **Notebook** is the primary public theme (at `/`). **Ink & Paper mirror** at `/theme2` (Connections `basePath`, theme2 E2E snapshots). Legacy archive: `src/app/_archive/theme2`. **Tokens:** `var(--ink-*)` in `globals.css`; notebook maps those to `--nb-*` via `data-theme="notebook"`. **Game-specific:** Poker (green felt), Pear Navigator (dark inner UI). **Shell exceptions:** Chwazi mobile, Pear Navigator, Poker lobby & table (full-bleed / alternate chrome). Full detail: **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)** · route map: **[docs/ARCHITECTURE-MAP.md](docs/ARCHITECTURE-MAP.md)**.
 
 ---
 
@@ -512,6 +513,7 @@ src/
 
 Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
 
+- **2026-06-25**: **Architecture streamline** — [`docs/ARCHITECTURE-MAP.md`](docs/ARCHITECTURE-MAP.md) (routes, shared libs, perf levers); party games coalesce `usePartyLobby` + `PartyLobbyForm`; Realtime poll fallback 800ms→2s; `optimizePackageImports` for Tiptap/Supabase/lucide; README theme2 mirror docs corrected.
 - **2026-06-25**: **Notes stress-test fixes** — owner vault POST/GET/DELETE require sync password + admin device when `SFJC_SYNC_PASSWORD` set; markdown export HTML-escapes title/tags; metadata sanitization (U+2028/U+2029, BIDI, zero-width, HTML, 64-char cap); AI follow-up prompt delimiters + injection guard; cross-tab BroadcastChannel edit lock + storage listener for delete-while-editing; sync payload limits (413) + failed indicator; `e2e/notes-security.spec.ts`.
 - **2026-06-25**: **SFJC stress-test fixes** — party games: applied `20260625120000_party_games.sql` (Supabase `party_*` tables + RLS); Quip Clash / Fib It / EAY name `maxLength` + empty join/create errors; poker PIN validated before seat pick; daily-log edit modal z-index; MOC speed early-tap freeze + ASCII minus; TMR duration clamp; e-reader chapter nav on direct URL + detect-chapters feedback; 24 Game numeric PIN; Connections word `maxLength`. **Veridian** (nested repo): AI prompt injection hardening via untrusted canvas boundaries in `Veridian/src/lib/server/ai.ts`.
 - **2026-06**: **Playwright docs consolidated** — single agent rule [`.cursor/rules/playwright-testing.mdc`](.cursor/rules/playwright-testing.mdc) (CLI vs MCP plugin vs `cursor-ide-browser`); one plugin key `"claude-plugins-official/playwright"` in [`.cursor/settings.json`](.cursor/settings.json); no manual `mcp.json`.

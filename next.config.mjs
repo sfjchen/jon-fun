@@ -35,7 +35,18 @@ const nextConfig = {
     }
   },
   experimental: {
-    optimizePackageImports: ['@vercel/analytics'],
+    optimizePackageImports: [
+      '@vercel/analytics',
+      '@vercel/speed-insights',
+      'lucide-react',
+      '@tiptap/react',
+      '@tiptap/starter-kit',
+      '@tiptap/extension-table',
+      '@tiptap/extension-table-row',
+      '@tiptap/extension-table-cell',
+      '@tiptap/extension-table-header',
+      '@supabase/supabase-js',
+    ],
   },
   images: {
     formats: ['image/webp', 'image/avif'],
