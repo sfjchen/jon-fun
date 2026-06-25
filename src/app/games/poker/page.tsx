@@ -229,8 +229,9 @@ export default function PokerPage() {
             ) : (
               <form onSubmit={handleJoinRoom} className="space-y-4">
                 <div>
-                  <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>Room PIN</label>
+                  <label htmlFor="poker-join-pin" className="block mb-2" style={{ color: 'var(--ink-text)' }}>Room PIN</label>
                   <input
+                    id="poker-join-pin"
                     type="text"
                     value={joinPin}
                     onChange={(e) => setJoinPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
