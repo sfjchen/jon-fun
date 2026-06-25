@@ -2,10 +2,12 @@ import { test, expect } from '@playwright/test'
 import {
   createPokerRoom,
   joinPokerRoom,
+  joinPokerRoomAtSeat,
   expectPotAmount,
   pokerModeTab,
   startPokerGame,
   waitForPokerTable,
+  hostStartNextHand,
 } from './helpers/poker-flow'
 
 test.describe('Texas Hold\'em', () => {
@@ -102,7 +104,7 @@ test.describe('Texas Hold\'em multiplayer (Supabase)', () => {
 
       // Guest acts first (seat 1); host waits
       await expect(guestPage.getByText('Your Turn')).toBeVisible({ timeout: 15_000 })
-      await expect(hostPage.getByText('Waiting for other players')).toBeVisible()
+      await expect(hostPage.getByText(/Waiting for.*Guest/)).toBeVisible()
       await expect(guestPage.getByRole('button', { name: /Call \$10/ })).toBeVisible()
 
       await guestPage.getByRole('button', { name: /Call \$10/ }).click()
@@ -138,8 +140,8 @@ test.describe('Texas Hold\'em multiplayer (Supabase)', () => {
       await guestPage.getByRole('button', { name: /Call \$10/ }).click()
       await expect(hostPage.getByText('Your Turn')).toBeVisible({ timeout: 20_000 })
 
-      // Heads-up after call: host can bet (callAmount === 0, no Raise button)
-      await hostPage.getByRole('button', { name: /Bet \$10/ }).click()
+      // Heads-up after call: host (BB) can check or raise — not open-bet
+      await hostPage.getByRole('button', { name: /Raise \$10/ }).click()
 
       // Pot: $10 BB + $10 call + $10 bet = $30
       await expectPotAmount(hostPage, 30)
@@ -147,6 +149,111 @@ test.describe('Texas Hold\'em multiplayer (Supabase)', () => {
 
       await expect(guestPage.getByText('Your Turn')).toBeVisible({ timeout: 20_000 })
       await expect(guestPage.getByRole('button', { name: /Call \$|Check/ })).toBeVisible()
+    } finally {
+      await hostCtx.close()
+      await guestCtx.close()
+    }
+  })
+
+  test('all-in action syncs chip stacks and ends betting for that player', async ({ browser }) => {
+    const tag = Date.now()
+    const hostName = `Host${tag}`
+    const guestName = `Guest${tag}`
+
+    const hostCtx = await browser.newContext()
+    const guestCtx = await browser.newContext()
+    const hostPage = await hostCtx.newPage()
+    const guestPage = await guestCtx.newPage()
+
+    try {
+      const pin = await createPokerRoom(hostPage, hostName)
+      await joinPokerRoom(guestPage, pin, guestName)
+      await startPokerGame(hostPage)
+      await waitForPokerTable(guestPage)
+
+      await expect(guestPage.getByText('Your Turn')).toBeVisible({ timeout: 15_000 })
+      await guestPage.getByRole('button', { name: /All-In/ }).click()
+
+      await expect(guestPage.locator('span.bg-yellow-600').filter({ hasText: 'All-In' })).toBeVisible({ timeout: 20_000 })
+      await expect(hostPage.getByText('Your Turn')).toBeVisible({ timeout: 20_000 })
+    } finally {
+      await hostCtx.close()
+      await guestCtx.close()
+    }
+  })
+
+  test('fold ends hand when only one player remains', async ({ browser }) => {
+    const tag = Date.now()
+    const hostName = `Host${tag}`
+    const guestName = `Guest${tag}`
+
+    const hostCtx = await browser.newContext()
+    const guestCtx = await browser.newContext()
+    const hostPage = await hostCtx.newPage()
+    const guestPage = await guestCtx.newPage()
+
+    try {
+      const pin = await createPokerRoom(hostPage, hostName)
+      await joinPokerRoom(guestPage, pin, guestName)
+      await startPokerGame(hostPage)
+      await waitForPokerTable(guestPage)
+
+      await expect(guestPage.getByText('Your Turn')).toBeVisible({ timeout: 15_000 })
+      await guestPage.getByRole('button', { name: 'Fold' }).click()
+
+      await expect(hostPage.getByText('Hand complete')).toBeVisible({ timeout: 25_000 })
+      await expect(guestPage.getByText('Hand complete')).toBeVisible({ timeout: 25_000 })
+    } finally {
+      await hostCtx.close()
+      await guestCtx.close()
+    }
+  })
+
+  test('host awards pot and starts next hand', async ({ browser }) => {
+    const tag = Date.now()
+    const hostName = `Host${tag}`
+    const guestName = `Guest${tag}`
+
+    const hostCtx = await browser.newContext()
+    const guestCtx = await browser.newContext()
+    const hostPage = await hostCtx.newPage()
+    const guestPage = await guestCtx.newPage()
+
+    try {
+      const pin = await createPokerRoom(hostPage, hostName)
+      await joinPokerRoom(guestPage, pin, guestName)
+      await startPokerGame(hostPage)
+      await waitForPokerTable(guestPage)
+
+      await expect(guestPage.getByText('Your Turn')).toBeVisible({ timeout: 15_000 })
+      await guestPage.getByRole('button', { name: 'Fold' }).click()
+      await hostStartNextHand(hostPage, hostName)
+      await expect(guestPage.getByText(/Hand #2/)).toBeVisible({ timeout: 25_000 })
+    } finally {
+      await hostCtx.close()
+      await guestCtx.close()
+    }
+  })
+
+  test('non-contiguous seats: guest at seat 5 gets correct turn order', async ({ browser }) => {
+    const tag = Date.now()
+    const hostName = `Host${tag}`
+    const guestName = `Guest${tag}`
+
+    const hostCtx = await browser.newContext()
+    const guestCtx = await browser.newContext()
+    const hostPage = await hostCtx.newPage()
+    const guestPage = await guestCtx.newPage()
+
+    try {
+      const pin = await createPokerRoom(hostPage, hostName)
+      await joinPokerRoomAtSeat(guestPage, pin, guestName, 5)
+      await startPokerGame(hostPage)
+      await waitForPokerTable(guestPage)
+
+      // Heads-up single BB: host seat 0 is BB, guest seat 5 acts first
+      await expect(guestPage.getByText('Your Turn')).toBeVisible({ timeout: 15_000 })
+      await expect(hostPage.getByText(/Waiting for.*Guest/)).toBeVisible({ timeout: 15_000 })
     } finally {
       await hostCtx.close()
       await guestCtx.close()
