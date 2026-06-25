@@ -144,12 +144,12 @@ export default function SidePanel({
       const onMove = (ev: MouseEvent) => {
         if (!dragRef.current) return
         const delta = dragRef.current.startX - ev.clientX
-        setWidth(Math.min(480, Math.max(240, dragRef.current.startW + delta)))
+        setWidth(Math.min(640, Math.max(240, dragRef.current.startW + delta)))
       }
       const onUp = (ev: MouseEvent) => {
         if (!dragRef.current) return
         const delta = dragRef.current.startX - ev.clientX
-        const next = Math.min(480, Math.max(240, dragRef.current.startW + delta))
+        const next = Math.min(640, Math.max(240, dragRef.current.startW + delta))
         dragRef.current = null
         setWidth(next)
         saveNotesUiPrefs({ panelWidth: next })
@@ -272,17 +272,6 @@ export default function SidePanel({
             ) : (
               <>
                 <LookupComposer onSubmit={onPanelLookup} />
-                {sessionHistory.length === 0 ? (
-                  <p
-                    className="mb-2 text-[11px] leading-snug text-[var(--uv-text-muted)]"
-                    data-testid="notes-ai-empty-hint"
-                  >
-                    Type{' '}
-                    <code className="text-[var(--uv-accent-strong)]">?</code> or{' '}
-                    <code className="text-[var(--uv-accent-strong)]">??</code> in the note, or ask
-                    above.
-                  </p>
-                ) : null}
                 <LookupConversation lookup={null} streamText="" isStreaming={false} error={displayError} />
               </>
             )}

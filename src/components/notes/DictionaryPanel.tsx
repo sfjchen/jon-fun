@@ -63,12 +63,10 @@ export default function DictionaryPanel({ refreshKey = 0, noteId, onChange, embe
       className={embedded ? 'px-3 pb-2' : 'border-b border-[var(--uv-border)] px-3 py-2'}
       data-testid="notes-glossary-panel"
     >
-      <div className="mb-2 flex items-center justify-between">
+      <div className={`mb-2 flex items-center ${embedded ? 'justify-end' : 'justify-between'}`}>
         {!embedded ? (
           <p className="text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">Dictionary</p>
-        ) : (
-          <span className="text-[10px] text-[var(--uv-text-muted)]">Term definitions for AI</span>
-        )}
+        ) : null}
         <button
           type="button"
           onClick={startAdd}
@@ -79,14 +77,14 @@ export default function DictionaryPanel({ refreshKey = 0, noteId, onChange, embe
         </button>
       </div>
 
-      {editingKey ? (
+      {editingKey === '__new__' ? (
         <div className="mb-2 space-y-1.5 rounded border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] p-2">
           <input
             value={draftTerm}
             onChange={(e) => setDraftTerm(e.target.value)}
             placeholder="Term"
             data-testid="notes-dictionary-term-input"
-            className="w-full rounded border border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-2 py-1 text-[11px] text-[var(--uv-text-primary)] focus:border-[var(--uv-accent)] focus:outline-none"
+            className="w-full rounded border border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-2 py-1 text-sm text-[var(--uv-text-primary)] focus:border-[var(--uv-accent)] focus:outline-none"
           />
           <textarea
             value={draftDef}
@@ -94,7 +92,7 @@ export default function DictionaryPanel({ refreshKey = 0, noteId, onChange, embe
             placeholder="Definition"
             rows={3}
             data-testid="notes-dictionary-def-input"
-            className="w-full resize-y rounded border border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-2 py-1 text-[11px] text-[var(--uv-text-primary)] focus:border-[var(--uv-accent)] focus:outline-none"
+            className="w-full resize-y rounded border border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-2 py-1 text-sm text-[var(--uv-text-primary)] focus:border-[var(--uv-accent)] focus:outline-none"
           />
           <div className="flex gap-2">
             <button
@@ -118,33 +116,80 @@ export default function DictionaryPanel({ refreshKey = 0, noteId, onChange, embe
         </p>
       ) : (
         <ul className="max-h-48 space-y-1 overflow-y-auto" key={refreshKey}>
-          {entries.map((e) => (
-            <li key={e.term} className="group flex items-start gap-1 rounded px-1 py-0.5 hover:bg-[var(--uv-bg-hover)]">
-              <div className="min-w-0 flex-1">
-                <span className="text-[11px] font-medium text-[var(--uv-accent-strong)]">{e.term}</span>
-                <p className="whitespace-pre-wrap text-[10px] leading-snug text-[var(--uv-text-secondary)]">
-                  {e.definition}
-                </p>
-              </div>
-              <button
-                type="button"
-                aria-label={`Edit ${e.term}`}
-                data-testid={`notes-dictionary-edit-${e.term}`}
-                onClick={() => startEdit(e)}
-                className="shrink-0 text-[10px] text-[var(--uv-text-muted)] hover:text-[var(--uv-accent)]"
+          {entries.map((e) => {
+            const isEditing = editingKey === e.term.toLowerCase()
+            return (
+              <li
+                key={e.term}
+                className="group flex items-start gap-1 rounded px-1 py-0.5 hover:bg-[var(--uv-bg-hover)]"
               >
-                Edit
-              </button>
-              <button
-                type="button"
-                aria-label={`Delete ${e.term}`}
-                onClick={() => remove(e.term)}
-                className="shrink-0 text-[10px] text-[var(--uv-text-muted)] hover:text-red-600"
-              >
-                ×
-              </button>
-            </li>
-          ))}
+                <div className="min-w-0 flex-1">
+                  {isEditing ? (
+                    <div className="space-y-1">
+                      <input
+                        value={draftTerm}
+                        onChange={(ev) => setDraftTerm(ev.target.value)}
+                        data-testid={`notes-dictionary-edit-${e.term}`}
+                        className="w-full rounded border border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-2 py-0.5 text-sm font-medium text-[var(--uv-accent-strong)] focus:border-[var(--uv-accent)] focus:outline-none"
+                      />
+                      <textarea
+                        value={draftDef}
+                        onChange={(ev) => setDraftDef(ev.target.value)}
+                        rows={3}
+                        className="w-full resize-y rounded border border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-2 py-0.5 text-sm leading-snug text-[var(--uv-text-secondary)] focus:border-[var(--uv-accent)] focus:outline-none"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={saveEdit}
+                          data-testid="notes-dictionary-save"
+                          className="rounded bg-[var(--uv-accent)] px-2 py-0.5 text-[10px] text-white"
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEdit}
+                          className="text-[10px] text-[var(--uv-text-muted)]"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onDoubleClick={() => startEdit(e)}
+                        className="cursor-text text-[11px] font-medium text-[var(--uv-accent-strong)]"
+                      >
+                        {e.term}
+                      </span>
+                      <p
+                        role="button"
+                        tabIndex={0}
+                        onDoubleClick={() => startEdit(e)}
+                        className="cursor-text whitespace-pre-wrap text-[10px] leading-snug text-[var(--uv-text-secondary)]"
+                      >
+                        {e.definition}
+                      </p>
+                    </>
+                  )}
+                </div>
+                {!isEditing ? (
+                  <button
+                    type="button"
+                    aria-label={`Delete ${e.term}`}
+                    onClick={() => remove(e.term)}
+                    className="shrink-0 text-[10px] text-[var(--uv-text-muted)] opacity-0 hover:text-red-600 group-hover:opacity-100"
+                  >
+                    ×
+                  </button>
+                ) : null}
+              </li>
+            )
+          })}
         </ul>
       )}
     </section>
