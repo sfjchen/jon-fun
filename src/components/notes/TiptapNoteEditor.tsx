@@ -113,6 +113,9 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
       return
     }
 
+    // Local editor wins while focused — remote/sync must not reset mid-keystroke.
+    if (editor.isFocused) return
+
     const { from, to } = editor.state.selection
     emittedMarkdownRef.current = next
     editor.commands.setContent(preprocessTodoMarkdown(value), {
