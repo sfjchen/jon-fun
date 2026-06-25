@@ -525,6 +525,7 @@ src/
 
 Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
 
+- **2026-06**: **Poker chip tracker** — seat-aware blinds/turn order (non-contiguous seats), betting-round completion fixes (raise re-opens action, all-in no longer skips opponent), host rebuy in lobby + award-pot/next-hand flow, clearer turn indicator, timer auto-check/fold, mobile min-h-11 buttons; 4 new E2E edge-case specs (all-in, fold-win, next hand, seat 5).
 - **2026-06**: **Notes mobile** — dedicated `test:e2e:notes-mobile` (390×844); panel overlay + backdrop; scrollable tag row + toolbar; vault sort stable on note switch (switch history no longer bumps `updatedAt`).
 - **2026-06**: **Notes legacy cleanup** — removed uvimco redirects, localStorage migration, npm script aliases, CodeMirror CSS classes; CSS renamed to `notes-*`; admin key `notes_admin_ok`.
 - **2026-06**: **Supabase layout** — legacy root `supabase-migration-*.sql` → [`supabase/archive/legacy/`](supabase/archive/legacy/); [`supabase/README.md`](supabase/README.md); Notes migration history repaired (local/remote aligned).

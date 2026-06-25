@@ -58,13 +58,17 @@ const SUIT_COLORS: Record<string, string> = {
 export default function PokerTable({ pin, onBack }: PokerTableProps) {
   const [players, setPlayers] = useState<Player[]>([])
   const [gameState, setGameState] = useState<GameStateData | null>(null)
-  const [room, setRoom] = useState<{ timer_per_turn?: number } | null>(null)
+  const [room, setRoom] = useState<{ timer_per_turn?: number; host_id?: string } | null>(null)
   const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null)
   const [betAmount, setBetAmount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [isMobile, setIsMobile] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<Record<number, number>>({})
+  const [hostId, setHostId] = useState<string | null>(null)
+  const [nextHandWinner, setNextHandWinner] = useState<string>('')
+  const [startingNextHand, setStartingNextHand] = useState(false)
+  const timerExpiredRef = useRef<number | null>(null)
   const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const fetchAbortRef = useRef<AbortController | null>(null)
 
@@ -119,7 +123,9 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const playerId = sessionStorage.getItem('poker_playerId')
+      const storedHostId = sessionStorage.getItem('poker_hostId')
       setCurrentPlayerId(playerId)
+      setHostId(storedHostId)
       
       const checkMobile = () => setIsMobile(window.innerWidth < 768)
       checkMobile()
@@ -195,7 +201,26 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
     }, 1000)
 
     return () => clearInterval(intervalId)
-  }, [gameState, room?.timer_per_turn])
+  }, [gameState?.action_on, room?.timer_per_turn])
+
+  // Auto check/fold when turn timer expires (client-side nudge for home games)
+  useEffect(() => {
+    if (!gameState || gameState.action_on < 0 || !currentPlayerId) return
+    const currentPlayer = players.find((p) => p.id === currentPlayerId)
+    if (!currentPlayer || gameState.action_on !== currentPlayer.position) return
+
+    const remaining = timeRemaining[gameState.action_on]
+    if (remaining !== 0) {
+      timerExpiredRef.current = null
+      return
+    }
+    if (timerExpiredRef.current === gameState.action_on) return
+    timerExpiredRef.current = gameState.action_on
+
+    const callAmt = Math.max(0, gameState.current_bet - currentPlayer.currentBet)
+    void handleAction(callAmt === 0 ? 'check' : 'fold')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeRemaining, gameState?.action_on, currentPlayerId, players])
 
   const handleAction = async (action: BettingAction, amount?: number) => {
     if (!currentPlayerId || !gameState) return
@@ -240,8 +265,34 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
       }
 
       setBetAmount(0)
+      setError('')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Action failed')
+    }
+  }
+
+  const handleNextHand = async () => {
+    if (!hostId || !nextHandWinner) return
+    setStartingNextHand(true)
+    setError('')
+    try {
+      const response = await fetch(`/api/poker/rooms/${pin}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'next_hand',
+          hostId,
+          winnerId: nextHandWinner,
+        }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to start next hand')
+      setNextHandWinner('')
+      timerExpiredRef.current = null
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to start next hand')
+    } finally {
+      setStartingNextHand(false)
     }
   }
 
@@ -315,6 +366,10 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
   const minBet = gameState.big_blind
   const maxBet = currentPlayer ? currentPlayer.chips : 0
   const callAmount = currentPlayer ? Math.max(0, gameState.current_bet - currentPlayer.currentBet) : 0
+  const canOpenBet = gameState.current_bet === 0
+  const isHost = hostId && room?.host_id === hostId
+  const actingPlayer = players.find((p) => p.position === gameState.action_on)
+  const activePlayers = players.filter((p) => !p.hasFolded)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 p-4">
@@ -401,7 +456,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
             <div className="flex flex-wrap gap-2 sm:gap-3 justify-center mb-4">
               <button
                 onClick={() => handleAction('fold')}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-3 sm:px-6 min-h-11 rounded-lg font-semibold text-sm sm:text-base"
               >
                 Fold
               </button>
@@ -409,14 +464,14 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
               {callAmount === 0 ? (
                 <button
                   onClick={() => handleAction('check')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 sm:px-6 min-h-11 rounded-lg font-semibold text-sm sm:text-base"
                 >
                   Check
                 </button>
               ) : (
                 <button
                   onClick={() => handleAction('call')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 sm:px-6 min-h-11 rounded-lg font-semibold text-sm sm:text-base"
                 >
                   Call ${callAmount}
                 </button>
@@ -427,21 +482,21 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
                   type="number"
                   value={betAmount || minBet}
                   onChange={(e) => setBetAmount(Math.max(minBet, Math.min(maxBet, parseInt(e.target.value) || minBet)))}
-                  className="w-20 sm:w-24 bg-white/10 border border-white/20 rounded-lg px-2 py-2 sm:px-3 sm:py-2 text-white text-center text-sm sm:text-base"
+                  className="w-20 sm:w-24 bg-white/10 border border-white/20 rounded-lg px-2 py-2 sm:px-3 min-h-11 text-white text-center text-sm sm:text-base"
                   min={minBet}
                   max={maxBet}
                 />
-                {callAmount === 0 ? (
+                {canOpenBet ? (
                   <button
                     onClick={() => handleAction('bet')}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-3 sm:px-6 min-h-11 rounded-lg font-semibold text-sm sm:text-base"
                   >
                     Bet ${betAmount || minBet}
                   </button>
                 ) : (
                   <button
                     onClick={() => handleAction('raise')}
-                    className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
+                    className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-3 sm:px-6 min-h-11 rounded-lg font-semibold text-sm sm:text-base"
                   >
                     Raise ${betAmount || minBet}
                   </button>
@@ -450,7 +505,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
               <button
                 onClick={() => handleAction('all-in')}
-                className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
+                className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 sm:px-6 min-h-11 rounded-lg font-semibold text-sm sm:text-base"
               >
                 All-In ${currentPlayer.chips}
               </button>
@@ -460,13 +515,43 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
         {!isMyTurn && currentPlayer && gameState.action_on >= 0 && (
           <div className="mt-6 text-center text-gray-300">
-            Waiting for other players...
+            {actingPlayer ? (
+              <span>Waiting for <span className="text-yellow-300 font-semibold">{actingPlayer.name}</span>...</span>
+            ) : (
+              'Waiting for other players...'
+            )}
           </div>
         )}
 
         {gameState.action_on === -1 && (
-          <div className="mt-6 text-center text-yellow-300 font-semibold">
-            Hand complete — showdown
+          <div className="mt-6 bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/20 text-center">
+            <div className="text-yellow-300 font-semibold text-lg mb-2">Hand complete</div>
+            <p className="text-gray-300 text-sm mb-4">
+              Pot: ${gameState.pot_main.toLocaleString()} — award at the table, then start next hand
+            </p>
+            {isHost ? (
+              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                <select
+                  value={nextHandWinner}
+                  onChange={(e) => setNextHandWinner(e.target.value)}
+                  className="bg-white/10 border border-white/20 rounded-lg px-4 py-3 min-h-11 text-white text-sm"
+                >
+                  <option value="" className="text-black">Select winner...</option>
+                  {activePlayers.map((p) => (
+                    <option key={p.id} value={p.id} className="text-black">{p.name}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleNextHand}
+                  disabled={!nextHandWinner || startingNextHand}
+                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white font-semibold px-6 py-3 min-h-11 rounded-lg"
+                >
+                  {startingNextHand ? 'Starting...' : 'Award Pot & Next Hand'}
+                </button>
+              </div>
+            ) : (
+              <p className="text-gray-400 text-sm">Waiting for host to award pot and start next hand...</p>
+            )}
           </div>
         )}
       </div>

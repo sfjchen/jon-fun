@@ -37,6 +37,7 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
   const [error, setError] = useState('')
   const [timerPerTurn, setTimerPerTurn] = useState(40)
   const [updatingTimer, setUpdatingTimer] = useState(false)
+  const [adjustingPlayer, setAdjustingPlayer] = useState<string | null>(null)
   const hostId = typeof window !== 'undefined' ? sessionStorage.getItem('poker_hostId') : null
   const isHost = hostId && room?.host_id === hostId
 
@@ -135,6 +136,31 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start game')
       setStarting(false)
+    }
+  }
+
+  const handleAdjustChips = async (targetPlayerId: string, chips: number) => {
+    if (!isHost || !room) return
+    setAdjustingPlayer(targetPlayerId)
+    setError('')
+    try {
+      const response = await fetch(`/api/poker/rooms/${pin}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'adjust_chips',
+          hostId,
+          targetPlayerId,
+          chips,
+        }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to adjust chips')
+      loadRoomData()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to adjust chips')
+    } finally {
+      setAdjustingPlayer(null)
     }
   }
 
@@ -294,7 +320,24 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
                         <span className="text-xs bg-green-600 px-2 py-1 rounded">Host</span>
                       )}
                     </div>
-                    <div className="text-gray-400 text-sm mt-1">Seat {player.position + 1} (Position {player.position})</div>
+                    <div className="text-gray-400 text-sm mt-1">Seat {player.position + 1}</div>
+                    {isHost && room?.status === 'waiting' && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <input
+                          type="number"
+                          defaultValue={player.chips || 1000}
+                          min={0}
+                          className="w-20 bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-sm"
+                          onBlur={(e) => {
+                            const val = Math.max(0, parseInt(e.target.value) || 0)
+                            if (val !== player.chips) handleAdjustChips(player.player_id, val)
+                          }}
+                        />
+                        <span className="text-xs text-gray-500">
+                          {adjustingPlayer === player.player_id ? 'Saving...' : 'Rebuy/set'}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

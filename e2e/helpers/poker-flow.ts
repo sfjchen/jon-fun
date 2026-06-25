@@ -93,3 +93,39 @@ export async function expectPotAmount(page: Page, amount: number, timeout = 20_0
   const label = amount === 1 ? '$1' : `$${amount.toLocaleString()}`
   await expect(potLocator(page)).toContainText(label, { timeout })
 }
+
+export async function joinPokerRoomAtSeat(
+  page: Page,
+  pin: string,
+  guestName: string,
+  seatIndex: number,
+): Promise<void> {
+  await page.goto('/games/poker')
+  await expect(page.getByRole('heading', { name: /Texas Hold'em/i })).toBeVisible()
+  await switchPokerMode(page, 'join')
+  const pinInput = joinPinInput(page)
+  await fillReactInput(pinInput, pin)
+  await page.getByRole('button', { name: 'Continue to Select Seat' }).click()
+  await page.getByRole('button', { name: `Seat ${seatIndex + 1}` }).click()
+  const nameInput = page.locator('form').getByPlaceholder('Enter your name')
+  await fillReactInput(nameInput, guestName)
+  const submit = page.locator('form button[type="submit"]')
+  await expect(submit).toBeEnabled({ timeout: 10_000 })
+  await submit.click()
+  await page.waitForURL(/\/lobby\//, { timeout: 25_000 })
+}
+
+export async function clickBetAction(page: Page, label: RegExp | string): Promise<void> {
+  await page.getByRole('button', { name: label }).click()
+}
+
+export async function expectHandComplete(page: Page): Promise<void> {
+  await expect(page.getByText('Hand complete')).toBeVisible({ timeout: 25_000 })
+}
+
+export async function hostStartNextHand(hostPage: Page, winnerName: string): Promise<void> {
+  await expect(hostPage.getByText('Hand complete')).toBeVisible({ timeout: 25_000 })
+  await hostPage.locator('select').selectOption({ label: winnerName })
+  await hostPage.getByRole('button', { name: 'Award Pot & Next Hand' }).click()
+  await expect(hostPage.getByText(/Hand #2/)).toBeVisible({ timeout: 25_000 })
+}
