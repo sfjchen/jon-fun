@@ -23,7 +23,7 @@ test.describe('Notes AI lookup (deploy)', () => {
     await page.addInitScript(() => {
       localStorage.removeItem('notes_sessions')
       localStorage.removeItem('notes_active_session_id')
-      localStorage.setItem('notes_user_id', `e2e-lookup-${Date.now()}`)
+      localStorage.setItem('notes_user_id', 'REDACTED-DEVICE-ID')
       localStorage.setItem('notes_sync_key', 'REDACTED')
       localStorage.removeItem('notes_ui_prefs')
     })

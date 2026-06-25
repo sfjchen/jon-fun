@@ -75,7 +75,6 @@ type SidePanelProps = {
   onFollowUp: (q: string) => void
   onSelectHistory: (lookup: Lookup) => void
   onClearLookup: () => void
-  onClose: () => void
   onSynced: (opts?: { skipPersist?: boolean; force?: boolean }) => void
   onJumpTodo: (sessionId: string, lineIndex: number) => void
   onToggleSourceForNote: (sourceId: string, enabled: boolean) => void
@@ -126,7 +125,6 @@ export default function SidePanel({
   onFollowUp,
   onSelectHistory,
   onClearLookup,
-  onClose,
   onSynced,
   onJumpTodo,
   onToggleSourceForNote,
@@ -172,7 +170,7 @@ export default function SidePanel({
   return (
     <aside
       style={{ width }}
-      className="notes-side-panel-mobile relative flex shrink-0 flex-col border-l border-[var(--uv-border)] bg-[var(--uv-bg-panel)] max-md:fixed max-md:inset-y-0 max-md:right-0 max-md:z-30 max-md:shadow-xl max-md:pt-[env(safe-area-inset-top)] max-md:pb-[env(safe-area-inset-bottom)]"
+      className="notes-side-panel-mobile relative flex shrink-0 flex-col border-l border-[var(--uv-border)] bg-[var(--uv-bg-panel)] max-md:fixed max-md:top-0 max-md:right-0 max-md:z-30 max-md:h-[calc(100dvh-2.25rem-env(safe-area-inset-bottom))] max-md:shadow-xl max-md:pt-[env(safe-area-inset-top)]"
       data-testid="notes-side-panel"
       aria-label="Notes and AI panel"
     >
@@ -183,15 +181,6 @@ export default function SidePanel({
         className="absolute bottom-0 left-0 top-0 z-10 w-1 cursor-col-resize hover:bg-[var(--uv-accent-dim)] max-md:hidden"
         data-testid="notes-panel-resize"
       />
-      <button
-        type="button"
-        onClick={onClose}
-        className="absolute right-2 top-2 z-20 flex min-h-8 min-w-8 items-center justify-center rounded-full border border-[var(--uv-border)] bg-[var(--uv-bg-panel)] text-lg leading-none text-[var(--uv-text-muted)] shadow-sm hover:text-[var(--uv-text-primary)] md:hidden"
-        aria-label="Close panel"
-        data-testid="notes-panel-close"
-      >
-        ×
-      </button>
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto max-md:pt-2">
         <CollapsibleSection
           title="Notes"

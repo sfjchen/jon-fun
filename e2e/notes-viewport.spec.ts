@@ -77,12 +77,6 @@ for (const vp of VIEWPORTS) {
       const vaultBox = await page.getByTestId('notes-vault-panel').boundingBox()
       const aiBox = await page.getByTestId('notes-ai-toggle').boundingBox()
       expect(vaultBox?.y ?? 0).toBeLessThan(aiBox?.y ?? Infinity)
-
-      if (vp.mobile) {
-        await expect(page.getByTestId('notes-panel-close')).toBeVisible()
-      } else {
-        await expect(page.getByTestId('notes-panel-close')).toBeHidden()
-      }
     })
 
     test('toolbar-only formatting; no selection bubble menu', async ({ page }) => {

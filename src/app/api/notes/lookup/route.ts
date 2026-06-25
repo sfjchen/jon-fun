@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'query required' }, { status: 400 })
     }
 
-    const denied = assertNotesAiAccess(body.syncPassword)
+    const denied = assertNotesAiAccess(body.syncPassword, body.deviceUserId)
     if (denied) {
       return NextResponse.json({ error: denied }, { status: 403 })
     }

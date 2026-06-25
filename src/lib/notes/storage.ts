@@ -239,7 +239,9 @@ export async function restoreFromServer(userId: string): Promise<{ restored: num
   syncFoldersFromSessions(remoteRaw)
   const remote = withNormalizedTitles(remoteRaw)
   if (remote.length === 0) {
-    const res = await fetch(`/api/notes/sessions?userId=${encodeURIComponent(key)}`)
+    const syncPassword = getSyncKey() || key
+    const qs = new URLSearchParams({ userId: key, syncPassword })
+    const res = await fetch(`/api/notes/sessions?${qs.toString()}`)
     if (!res.ok) return { restored: 0, error: 'Failed to fetch' }
     return { restored: 0, error: 'No notes found for that key' }
   }
@@ -250,7 +252,10 @@ export async function restoreFromServer(userId: string): Promise<{ restored: num
 }
 
 async function fetchRawSessionsFromServer(userId: string): Promise<NoteSession[]> {
-  const res = await fetch(`/api/notes/sessions?userId=${encodeURIComponent(userId)}`)
+  const syncPassword = getSyncKey()
+  const qs = new URLSearchParams({ userId })
+  if (syncPassword) qs.set('syncPassword', syncPassword)
+  const res = await fetch(`/api/notes/sessions?${qs.toString()}`)
   if (!res.ok) return []
   const data = (await res.json()) as { sessions?: NoteSession[] }
   return Array.isArray(data.sessions) ? data.sessions.map(normalizeSession) : []
@@ -267,7 +272,11 @@ async function pushWithRetry(sessions: NoteSession[]): Promise<boolean> {
     ...s,
     screenshots: stripScreenshotsForSync(s.screenshots),
   }))
-  const body = JSON.stringify({ userId, sessions: slim })
+  const body = JSON.stringify({
+    userId,
+    sessions: slim,
+    ...(getSyncKey() ? { syncPassword: getSyncKey() } : {}),
+  })
   for (let i = 0; i < PUSH_RETRIES; i++) {
     const res = await fetch('/api/notes/sessions', {
       method: 'POST',
@@ -342,7 +351,11 @@ export async function deleteSessionOnServer(userId: string, sessionId: string): 
   const res = await fetch('/api/notes/sessions', {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, sessionId }),
+    body: JSON.stringify({
+      userId,
+      sessionId,
+      ...(getSyncKey() ? { syncPassword: getSyncKey() } : {}),
+    }),
   })
   return res.ok
 }

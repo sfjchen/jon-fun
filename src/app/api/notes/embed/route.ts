@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const denied = assertNotesAiAccess(body.syncPassword)
+  const denied = assertNotesAiAccess(body.syncPassword, body.deviceUserId)
   if (denied) {
     return Response.json({ error: denied }, { status: 403 })
   }

@@ -47,7 +47,7 @@ test.describe('Notes mobile', () => {
 
     await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-side-panel')).toBeVisible()
-    await page.getByTestId('notes-panel-close').click()
+    await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-side-panel')).toBeHidden()
   })
 
@@ -106,7 +106,7 @@ test.describe('Notes mobile', () => {
     await page.getByTestId('notes-sync-toggle').click()
     await page.getByTestId('notes-sync-password-input').fill('mobile-sync-key')
     await page.getByTestId('notes-sync-save').click()
-    await expect(page.getByText('Synced', { exact: false })).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByTestId('notes-sync-panel').getByText('Synced')).toBeVisible({ timeout: 10_000 })
   })
 
   test('dictionary add term on mobile', async ({ page }) => {
