@@ -28,15 +28,11 @@ type StatusBarProps = {
   onHintsToggle: () => void
 }
 
-const HINT_ITEMS = (modKey: 'Cmd' | 'Ctrl') => [
+const HINT_ITEMS = [
   { sym: 'line?', desc: 'AI line' },
   { sym: 'line??', desc: 'AI section' },
   { sym: 'text>', desc: 'todo' },
   { sym: '*text*', desc: 'highlight' },
-  { sym: 'sel+*', desc: 'wrap highlight' },
-  { sym: 'Tab', desc: 'indent' },
-  { sym: `${modKey}+Shift+V`, desc: 'paste plain' },
-  { sym: 'paste/drop', desc: 'files' },
 ]
 
 export default function StatusBar({
@@ -60,7 +56,7 @@ export default function StatusBar({
   onTogglePanel,
   onHintsToggle,
 }: StatusBarProps) {
-  const { isMobile, modKey } = useNotesDevice()
+  const { isMobile } = useNotesDevice()
   let syncLabel = ''
   if (syncing) syncLabel = 'Syncing…'
   else if (saving) syncLabel = 'Saving…'
@@ -93,7 +89,7 @@ export default function StatusBar({
       <div className="ml-auto flex flex-wrap items-center gap-1">
         {hintsOpen ? (
           <span className="hidden items-center gap-2 border-r border-[var(--uv-border)] pr-2 lg:flex">
-            {HINT_ITEMS(modKey).map((it) => (
+            {HINT_ITEMS.map((it) => (
               <span key={it.sym}>
                 <code className="text-[var(--uv-accent-strong)]">{it.sym}</code>
                 <span className="ml-0.5 text-[var(--uv-text-muted)]">{it.desc}</span>
