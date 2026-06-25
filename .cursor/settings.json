@@ -2,9 +2,6 @@
   "plugins": {
     "supabase": {
       "enabled": true
-    },
-    "claude-plugins-official/playwright": {
-      "enabled": true
     }
   }
 }

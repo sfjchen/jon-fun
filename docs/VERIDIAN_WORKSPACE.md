@@ -21,7 +21,7 @@ When the user says “Veridian whiteboard” or “my demo”, they mean **sfjc.
 |---------|------|-----|--------|----------|
 | **Jon-fun (Game Hub)** | `/Users/jchen04mac/Desktop/Jon-fun/` (parent) | `sfjchen/Jon-fun` | [sfjc.dev](https://sfjc.dev) (Vercel) | `nzviiorrlsdtwzvzodpg` (sfjchen personal) |
 | **Veridian Whiteboard v1** | `Jon-fun/Veridian/` (nested) | `sfjchen/veridian-whiteboard` | [sfjc.dev/veridian](https://sfjc.dev/veridian) (rewrite → `veridian-whiteboard` origin) | **None** in v1 |
-| **Veridian EdTech (legacy)** | `/Users/jchen04mac/Desktop/Veridian/` | `sfjchen/Veridian` → fork of `VeridianTH/Veridian` | Render (Flask) + Vercel (Expo web) | `tpqasmpieyteutvdntda` (Jchen04 org) |
+| **Veridian EdTech (legacy, unmaintained)** | `/Users/jchen04mac/Desktop/Veridian/` | `sfjchen/Veridian` → fork of `VeridianTH/Veridian` | Was Render (Flask) + Vercel (Expo web) — **Render removed Jun 2026** | `tpqasmpieyteutvdntda` (Jchen04 org) |
 
 ## Boundaries in this repo (Jon-fun)
 
@@ -77,7 +77,7 @@ Several chats may run at once (EdTech deploy, whiteboard refactor, Jon-fun hub).
 | If the task mentions… | Work in… | Deploy target |
 |------------------------|----------|---------------|
 | Whiteboard, demo, sfjc.dev/veridian, no login | `Jon-fun/Veridian/` | `veridian-whiteboard` Vercel → sfjc.dev path |
-| Classrooms, teacher, Expo, Supabase, Render | `Desktop/Veridian/` | Legacy EdTech; **public demo redirects** to sfjc.dev/veridian |
+| Classrooms, teacher, Expo, Supabase (legacy EdTech) | `Desktop/Veridian/` | Unmaintained; **public demo redirects** to sfjc.dev/veridian |
 | Games, reader, party rooms | Jon-fun parent `src/` | sfjc.dev root |
 
 ### Merged intent (Jun 2026 — reconcile parallel chats)
@@ -85,10 +85,10 @@ Several chats may run at once (EdTech deploy, whiteboard refactor, Jon-fun hub).
 | Topic | Canonical choice |
 |-------|------------------|
 | **Demo URL** | [sfjc.dev/veridian](https://sfjc.dev/veridian) — `www.veridian.fyi` redirects here |
-| **Whiteboard stack** | Next.js + Vercel API routes + OpenRouter — **no Render, no Supabase** |
-| **EdTech stack** | `Desktop/Veridian/` Expo + Flask + Render **kz5l** + Supabase `tpqasmpieyteutvdntda` |
+| **Whiteboard stack** | Next.js + Vercel API routes + OpenRouter — **Vercel-only, no Supabase** |
+| **EdTech stack** | `Desktop/Veridian/` Expo + Flask (Render backend **removed** Jun 2026) + Supabase `tpqasmpieyteutvdntda` |
 | **Git remotes** | Whiteboard → `sfjchen/veridian-whiteboard`; EdTech → `sfjchen/Veridian` |
-| **AI keys** | Whiteboard: OpenRouter on Vercel; EdTech: OpenRouter on Render |
+| **AI keys** | Whiteboard: OpenRouter on Vercel; EdTech: was OpenRouter on Render (deprecated) |
 | **CTA** | **Analyze work** (rubric); demo URL `?demo=1` |
 | **Design** | Original Veridian org (green/forest) — not Jon-fun notebook |
 
@@ -96,7 +96,7 @@ Parent chats: [whiteboard refactor](00724d07-e8db-4584-95ed-e8f3e08ee861), [EdTe
 
 **Common agent mistakes**
 
-- Wiring whiteboard to Render Flask — **not needed**; whiteboard AI is Vercel-only.
+- Wiring whiteboard to a Flask backend — **not needed**; whiteboard AI is Vercel-only. Render hosting was removed Jun 2026.
 - Adding Supabase/auth to whiteboard v1 — **out of scope** unless user explicitly requests v2.
 - Using Jon-fun ink/notebook design on whiteboard — user wants **original Veridian org** styling.
 - Pushing whiteboard commits to `sfjchen/Veridian` — use `sfjchen/veridian-whiteboard`.
