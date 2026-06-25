@@ -6,6 +6,7 @@ import { addToTagCatalog, listKnownTags, removeFromTagCatalog } from '@/lib/note
 import { sanitizeMetadataText, sanitizeTags } from '@/lib/notes/textSanitize'
 import type { NoteSession } from '@/lib/notes/types'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
+import { NotesOverflowMenu, NotesRowAction } from './NotesActionUi'
 
 type NotesTopBarProps = {
   title: string
@@ -143,7 +144,7 @@ function TagChips({
       {knownTags.map((t) => {
         const on = tags.includes(t)
         return (
-          <span key={t} className="group/chip inline-flex shrink-0 items-center gap-0.5">
+          <span key={t} className="group inline-flex shrink-0 items-center gap-0.5">
             <button
               type="button"
               onClick={() => toggleTag(t)}
@@ -156,19 +157,33 @@ function TagChips({
             >
               {t}
             </button>
-            <button
-              type="button"
-              aria-label={on ? `Remove ${t} from note` : `Delete tag ${t}`}
-              data-testid={on ? `notes-tag-remove-${t}` : `notes-tag-delete-${t}`}
-              onClick={(e) => {
-                e.stopPropagation()
-                if (on) onRemoveFromNote(t)
-                else onDeleteFromCatalog(t)
-              }}
-              className="rounded px-0.5 text-[10px] leading-none text-[var(--uv-text-muted)] hover:text-red-600"
-            >
-              ×
-            </button>
+            {on ? (
+              <>
+                <NotesRowAction
+                  label={`Remove ${t} from note`}
+                  testId={`notes-tag-remove-${t}`}
+                  onClick={() => onRemoveFromNote(t)}
+                />
+                <NotesOverflowMenu
+                  label={`More actions for tag ${t}`}
+                  testId={`notes-tag-overflow-${t}`}
+                  items={[
+                    {
+                      id: 'delete-catalog',
+                      label: 'Delete from catalog',
+                      danger: true,
+                      onClick: () => onDeleteFromCatalog(t),
+                    },
+                  ]}
+                />
+              </>
+            ) : (
+              <NotesRowAction
+                label={`Delete tag ${t}`}
+                testId={`notes-tag-delete-${t}`}
+                onClick={() => onDeleteFromCatalog(t)}
+              />
+            )}
           </span>
         )
       })}

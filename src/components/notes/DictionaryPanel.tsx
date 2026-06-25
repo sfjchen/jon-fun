@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { deleteDictionaryEntry, loadGlossary, upsertManualEntry } from '@/lib/notes/glossary'
 import type { GlossaryEntry } from '@/lib/notes/types'
+import { NotesOverflowMenu, NotesRowAction } from './NotesActionUi'
 
 type DictionaryPanelProps = {
   refreshKey?: number
@@ -178,14 +179,26 @@ export default function DictionaryPanel({ refreshKey = 0, noteId, onChange, embe
                   )}
                 </div>
                 {!isEditing ? (
-                  <button
-                    type="button"
-                    aria-label={`Delete ${e.term}`}
-                    onClick={() => remove(e.term)}
-                    className="shrink-0 text-[10px] text-[var(--uv-text-muted)] opacity-0 hover:text-red-600 group-hover:opacity-100"
-                  >
-                    ×
-                  </button>
+                  <div className="flex shrink-0 items-center gap-0.5">
+                    <NotesRowAction
+                      label={`Delete ${e.term}`}
+                      testId={`notes-dictionary-delete-${e.term}`}
+                      onClick={() => remove(e.term)}
+                    />
+                    <NotesOverflowMenu
+                      label={`Dictionary actions for ${e.term}`}
+                      testId={`notes-dictionary-overflow-${e.term}`}
+                      items={[
+                        { id: 'edit', label: 'Edit', onClick: () => startEdit(e) },
+                        {
+                          id: 'delete',
+                          label: 'Delete',
+                          danger: true,
+                          onClick: () => remove(e.term),
+                        },
+                      ]}
+                    />
+                  </div>
                 ) : null}
               </li>
             )

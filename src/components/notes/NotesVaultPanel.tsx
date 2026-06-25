@@ -3,6 +3,13 @@
 import { useCallback, useState } from 'react'
 import type { NoteFolder, NoteSession } from '@/lib/notes/types'
 import { childFolders, sessionsInFolder } from '@/lib/notes/folders'
+import { useNotesDevice } from '@/lib/notes/useNotesDevice'
+import {
+  NotesContextMenu,
+  NotesOverflowMenu,
+  NotesRowAction,
+  useNotesContextTrigger,
+} from './NotesActionUi'
 
 const NOTE_DRAG = 'application/x-notes-session-id'
 const FOLDER_DRAG = 'application/x-notes-folder-id'
@@ -48,11 +55,17 @@ function NoteRow({
   onSelect: () => void
   onDelete: () => void
 }) {
+  const { state, close, onContextMenu, touchHandlers } = useNotesContextTrigger(() => [
+    { id: 'delete', label: 'Delete note', danger: true, onClick: onDelete },
+  ])
+
   return (
     <li
       className="group flex items-center gap-0.5 pl-2"
       draggable
       data-testid={`notes-note-row-${session.id}`}
+      onContextMenu={onContextMenu}
+      {...touchHandlers}
       onDragStart={(e) => {
         e.dataTransfer.setData(NOTE_DRAG, session.id)
         e.dataTransfer.setData('text/plain', session.id)
@@ -83,18 +96,12 @@ function NoteRow({
           {formatMeetingDate(session.updatedAt)}
         </span>
       </button>
-      <button
-        type="button"
-        aria-label={`Delete ${session.title || 'note'}`}
-        data-testid={`notes-delete-meeting-${session.id}`}
-        onClick={(e) => {
-          e.stopPropagation()
-          onDelete()
-        }}
-        className="shrink-0 rounded px-1 text-[10px] leading-none text-[var(--uv-text-muted)] opacity-0 hover:text-red-600 group-hover:opacity-100"
-      >
-        ×
-      </button>
+      <NotesRowAction
+        label={`Delete ${session.title || 'note'}`}
+        testId={`notes-delete-meeting-${session.id}`}
+        onClick={onDelete}
+      />
+      <NotesContextMenu state={state} onClose={close} />
     </li>
   )
 }
@@ -191,6 +198,13 @@ function FolderHeader({
   onOpenNewFolderForm: () => void
   onDeleteFolder: () => void
 }) {
+  const { isMobile } = useNotesDevice()
+  const overflowItems = [
+    { id: 'new-note', label: 'New note in folder', onClick: onNewNote },
+    { id: 'new-subfolder', label: 'New subfolder', onClick: onOpenNewFolderForm },
+    { id: 'delete', label: 'Delete folder', danger: true, onClick: onDeleteFolder },
+  ]
+
   return (
     <div className="group flex items-center gap-0.5">
       <span
@@ -218,31 +232,37 @@ function FolderHeader({
         <span className="truncate">{label}</span>
         <span className="text-[10px] font-normal text-[var(--uv-text-muted)]">({count})</span>
       </button>
-      <button
-        type="button"
-        title="New note in folder"
-        onClick={onNewNote}
-        className="shrink-0 rounded px-1 text-[10px] text-[var(--uv-accent)] opacity-0 hover:bg-[var(--uv-accent-dim)] group-hover:opacity-100"
-      >
-        +
-      </button>
-      <button
-        type="button"
-        title="New subfolder"
-        onClick={onOpenNewFolderForm}
-        className="shrink-0 rounded px-1 text-[10px] text-[var(--uv-text-muted)] opacity-0 hover:bg-[var(--uv-bg-hover)] group-hover:opacity-100"
-      >
-        +↳
-      </button>
-      <button
-        type="button"
-        aria-label={`Delete folder ${label}`}
-        data-testid={`notes-delete-folder-${folderId}`}
-        onClick={onDeleteFolder}
-        className="shrink-0 rounded px-1 text-[10px] text-[var(--uv-text-muted)] opacity-0 hover:text-red-600 group-hover:opacity-100"
-      >
-        ×
-      </button>
+      {isMobile ? (
+        <NotesOverflowMenu
+          label={`Folder actions for ${label}`}
+          testId={`notes-folder-overflow-${folderId}`}
+          items={overflowItems}
+        />
+      ) : (
+        <>
+          <button
+            type="button"
+            title="New note in folder"
+            onClick={onNewNote}
+            className="notes-row-action shrink-0 rounded px-1 text-[10px] text-[var(--uv-accent)] hover:bg-[var(--uv-accent-dim)]"
+          >
+            +
+          </button>
+          <button
+            type="button"
+            title="New subfolder"
+            onClick={onOpenNewFolderForm}
+            className="notes-row-action shrink-0 rounded px-1 text-[10px] text-[var(--uv-text-muted)] hover:bg-[var(--uv-bg-hover)]"
+          >
+            +↳
+          </button>
+          <NotesRowAction
+            label={`Delete folder ${label}`}
+            testId={`notes-delete-folder-${folderId}`}
+            onClick={onDeleteFolder}
+          />
+        </>
+      )}
     </div>
   )
 }

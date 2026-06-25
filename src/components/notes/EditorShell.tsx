@@ -16,6 +16,9 @@ type EditorShellProps = {
   activeTriggerQuery: string | null
   onAttachmentAdd: (attachment: import('@/lib/notes/types').Screenshot) => void
   onAttachmentUpdate: (id: string, patch: Partial<import('@/lib/notes/types').Screenshot>) => void
+  onLookupSelection?: (query: string, type: TriggerType) => void
+  onArchiveTodoLine?: (lineIndex: number) => void
+  onRestoreTodoLine?: (lineIndex: number) => void
 }
 
 const EditorShell = forwardRef<NoteEditorHandle, EditorShellProps>(function EditorShell(props, ref) {

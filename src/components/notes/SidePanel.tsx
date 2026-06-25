@@ -16,6 +16,7 @@ import SourcesPanel from './SourcesPanel'
 import NoteHistoryPanel from './NoteHistoryPanel'
 import NotesVaultPanel from './NotesVaultPanel'
 import type { NoteFolder } from '@/lib/notes/types'
+import { NotesRowAction } from './NotesActionUi'
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
@@ -320,15 +321,11 @@ export default function SidePanel({
                             <span className="shrink-0 text-[10px] text-[var(--uv-accent)]">…</span>
                           ) : null}
                         </button>
-                        <button
-                          type="button"
-                          aria-label={`Delete ${lookupLabel(lk)}`}
-                          data-testid={`notes-delete-lookup-${lk.id}`}
+                        <NotesRowAction
+                          label={`Delete ${lookupLabel(lk)}`}
+                          testId={`notes-delete-lookup-${lk.id}`}
                           onClick={() => onDeleteLookup(lk.id)}
-                          className="shrink-0 rounded px-1 text-[10px] text-[var(--uv-text-muted)] opacity-0 hover:text-red-600 group-hover:opacity-100"
-                        >
-                          ×
-                        </button>
+                        />
                       </li>
                     )
                   })}

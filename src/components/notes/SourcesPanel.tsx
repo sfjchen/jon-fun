@@ -12,6 +12,7 @@ import {
   readSourceFile,
   upsertSourceLocal,
 } from '@/lib/notes/sources'
+import { NotesRowAction } from './NotesActionUi'
 
 type SourcesPanelProps = {
   refreshKey?: number
@@ -287,15 +288,11 @@ function SourceRow({
         {source.userEdited ? <span className="ml-1 text-[9px] text-[var(--uv-text-muted)]">(edited)</span> : null}
       </button>
       {onDelete ? (
-        <button
-          type="button"
-          aria-label={`Delete ${source.title}`}
-          data-testid={`notes-source-delete-row-${source.id}`}
+        <NotesRowAction
+          label={`Delete ${source.title}`}
+          testId={`notes-source-delete-row-${source.id}`}
           onClick={onDelete}
-          className="shrink-0 rounded px-0.5 text-[10px] leading-none text-[var(--uv-text-muted)] opacity-0 hover:text-red-600 group-hover:opacity-100"
-        >
-          ×
-        </button>
+        />
       ) : null}
       <span className="shrink-0 text-[9px] uppercase text-[var(--uv-text-muted)]">{source.kind}</span>
     </li>
