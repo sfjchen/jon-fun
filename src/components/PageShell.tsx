@@ -33,13 +33,8 @@ function isChwaziPath(pathname: string): boolean {
   return pathname?.includes('/games/chwazi') ?? false
 }
 
-function isWeddingPath(pathname: string): boolean {
-  return pathname?.startsWith('/wedding/') ?? false
-}
-
 export function PageShell({ children, title, showBack }: PageShellProps) {
   const pathname = usePathname()
-  const weddingPath = isWeddingPath(pathname ?? '')
   const notesPage = isNotesPage(pathname ?? '')
   const [isMobile, setIsMobile] = useState(false)
   const chwaziMobile = isChwaziPath(pathname ?? '') && isMobile
@@ -89,14 +84,6 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
   /** Tighter horizontal gutters on phone so e-reader text column uses more width. */
   const readerReadCompact = (pathname ?? '').startsWith('/games/e-reader/read')
   const mainPadX = readerReadCompact ? 'px-2 sm:px-4' : 'px-4'
-
-  if (weddingPath) {
-    return (
-      <div data-theme="wedding" className="min-h-screen overflow-x-hidden">
-        {children}
-      </div>
-    )
-  }
 
   if (notesPage) {
     return (
