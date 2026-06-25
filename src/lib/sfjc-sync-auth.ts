@@ -11,7 +11,7 @@ export const NOTES_AI_DEVICE_DENIED =
 
 export const NOTES_VAULT_ACCESS_DENIED = 'Invalid sync password for owner vault.'
 
-/** Server env: SFJC_SYNC_PASSWORD (set on Vercel/Render — not committed). */
+/** Server env: SFJC_SYNC_PASSWORD (set on Vercel — not committed). */
 export function ownerSyncPassword(): string {
   return process.env.SFJC_SYNC_PASSWORD?.trim() ?? ''
 }
