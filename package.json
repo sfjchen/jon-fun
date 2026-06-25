@@ -31,6 +31,7 @@
     "verify:notes-tables": "tsx scripts/verify-notes-tables.ts",
     "verify:notes": "npm run verify:notes-triggers && npm run verify:notes-attachments && npm run verify:notes-tables && npm run verify:notes-export",
     "test:e2e": "playwright test",
+    "playwright:install": "playwright install chromium",
     "test:e2e:ci": "CI=1 playwright test",
     "test:e2e:deployment": "PLAYWRIGHT_SKIP_WEBSERVER=1 CI=1 playwright test",
     "test:e2e:notes": "CI=1 playwright test e2e/notes.spec.ts e2e/notes-comprehensive.spec.ts e2e/notes-export.spec.ts e2e/notes-search.spec.ts e2e/notes-restore.spec.ts e2e/notes-attachments.spec.ts e2e/notes-tables.spec.ts e2e/notes-sync-race.spec.ts e2e/notes-security.spec.ts e2e/notes-visual.spec.ts e2e/notes-viewport.spec.ts --project=chromium --grep-invert screenshot",
@@ -93,9 +94,8 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/uuid": "^10.0.0",
     "eslint": "^9",
-    "eslint-config-next": "15.5.2",
+    "eslint-config-next": "15.5.19",
     "tsx": "^4.20.5",
     "typescript": "^5"
   }

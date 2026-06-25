@@ -1,5 +1,1 @@
-import Game24 from '@/components/Game24'
-
-export default function Theme2Game24Page() {
-  return <Game24 />
-}
+export { default } from '@/app/games/24/page'

@@ -4,7 +4,19 @@
 
 ---
 
-## Active Theme: Ink & Paper (Cream + Burgundy)
+## Active themes (deployed)
+
+| Theme | Route | Role |
+|-------|-------|------|
+| **Notebook** | `/`, `/games/*` | Primary public theme (`data-theme="notebook"`, Patrick Hand, line paper) |
+| **Ink & Paper mirror** | `/theme2`, `/theme2/games/*` | Legacy burgundy palette entry points; Connections uses `basePath="/theme2/games/connections"`. Most game pages re-export `/games/*` routes. |
+| **Archive (not routed)** | `src/app/_archive/theme2` | Next.js private folder — source reference only |
+
+Token details below still describe **Ink & Paper** (`--ink-*`) used by party games, Connections mirror, and Notes-adjacent surfaces. Notebook maps `--nb-*` in `globals.css`.
+
+---
+
+## Ink & Paper tokens (cream + burgundy)
 
 ### Color Palette (CSS variables in `globals.css`)
 
@@ -82,13 +94,14 @@ Main site aesthetic (the only **public** theme). Applied when the shell is in no
 
 ---
 
-## Alternate Theme: Ink & Paper (archived, not public)
+## Alternate Theme: Ink & Paper mirror (`/theme2`)
 
-A second **Ink & Paper** route tree previously lived at `/theme2`. It is **not** deployed: sources are kept under `src/app/_archive/theme2` (Next.js private folder, no public URL). Same components as the main app where applicable; uses root `--ink-*` palette (cream + burgundy) when run from that tree.
+Live at **`/theme2`** for visual-regression E2E and Connections `basePath`. Game routes re-export canonical `/games/*` pages where possible; Connections keeps theme-specific paths. Archived duplicate sources: `src/app/_archive/theme2` (not routed).
 
 ---
 
 ## Related Docs
 
-- `docs/Website-Themes-Reference.md` — Alternative themes (Monolith, Charcoal, etc.)
+- `docs/Website-Themes-Reference.md` — **Inspiration only** (Monolith, Slate, etc. — not deployed routes)
+- `docs/ARCHITECTURE-MAP.md` — Route inventory, shared libs, perf levers
 - `docs/UI-Overhaul-Plan-Ink-And-Paper.md` — Original overhaul plan

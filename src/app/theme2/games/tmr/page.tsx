@@ -1,5 +1,1 @@
-import TMRManager from '@/components/TMRManager'
-
-export default function Theme2TMRPage() {
-  return <TMRManager />
-}
+export { default } from '@/app/games/tmr/page'

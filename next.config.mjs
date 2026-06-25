@@ -38,7 +38,6 @@ const nextConfig = {
     optimizePackageImports: [
       '@vercel/analytics',
       '@vercel/speed-insights',
-      'lucide-react',
       '@tiptap/react',
       '@tiptap/starter-kit',
       '@tiptap/extension-table',
