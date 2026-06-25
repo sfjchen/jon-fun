@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import {
   dropCsvOnNotesEditor,
+  ensureNotesVaultSectionOpen,
   mockNotesApi,
   notesEditor,
   SESSIONS_KEY,
@@ -62,6 +63,7 @@ test.describe('Notes mobile', () => {
     await expect(editor.locator('strong')).toContainText('mobile body text')
 
     await page.getByTestId('notes-toggle-panel').click()
+    await ensureNotesVaultSectionOpen(page)
     await page.getByTestId('notes-new-meeting').click()
     await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(2)
     await page.getByTestId('notes-panel-backdrop').click({ position: { x: 8, y: 200 } })

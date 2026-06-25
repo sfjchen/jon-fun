@@ -114,7 +114,7 @@ function initState(): State {
     session: initial,
     sessions: bootSessions.length > 0 ? bootSessions : [initial],
     panelOpen: prefs.panelOpen ?? desktop,
-    notesListOpen: prefs.notesListOpen ?? true,
+    notesListOpen: prefs.notesListOpen ?? false,
     aiListOpen: true,
     syncOpen: prefs.syncOpen ?? false,
     glossaryOpen: false,
