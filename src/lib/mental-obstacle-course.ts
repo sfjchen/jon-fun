@@ -154,7 +154,7 @@ export function randomArithmeticProblem(): ArithmeticProblem {
     let a = randInt(40, 150)
     let b = randInt(15, 95)
     if (a < b) [a, b] = [b, a]
-    return { prompt: `${a} − ${b}`, answer: a - b }
+    return { prompt: `${a} - ${b}`, answer: a - b }
   }
   if (kind === 2) {
     const a = randInt(6, 16)

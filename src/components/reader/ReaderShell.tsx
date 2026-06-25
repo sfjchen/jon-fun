@@ -127,10 +127,9 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   const chapterSelectRef = useRef<HTMLSelectElement | null>(null)
 
   const chapters = publication.chapters
-  const currentIndex = Math.max(
-    0,
-    chapters.findIndex((c) => c.id === chapterId),
-  )
+  const chapterIndex = chapters.findIndex((c) => c.id === chapterId)
+  const fallbackIndex = chapters.findIndex((c) => c.id === initialChapterId)
+  const currentIndex = chapterIndex >= 0 ? chapterIndex : fallbackIndex >= 0 ? fallbackIndex : 0
   const chapter = chapters[currentIndex] ?? chapters[0]
   const prevChapterId = currentIndex > 0 ? chapters[currentIndex - 1]?.id ?? '' : ''
   const nextChapterId = currentIndex < chapters.length - 1 ? chapters[currentIndex + 1]?.id ?? '' : ''

@@ -106,6 +106,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
   const [draft, setDraft] = useState<ReaderImportDraft | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [detectHint, setDetectHint] = useState('')
   const [catalogBanner, setCatalogBanner] = useState('')
   const [catalogBusy, setCatalogBusy] = useState(false)
   const [aiMerges, setAiMerges] = useState<{ startIndex: number; endIndex: number; reason: string; kind: 'llm' }[]>(
@@ -145,17 +146,21 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
   const parseImport = useCallback(async () => {
     setBusy(true)
     setError('')
+    setDetectHint('')
 
     try {
       if (importMode === 'paste') {
         if (!pasteText.trim()) throw new Error('Paste some text first.')
-        setDraft(
-          createImportDraft({
-            rawText: pasteText,
-            sourceType: 'paste',
-            title,
-          }),
-        )
+        const nextDraft = createImportDraft({
+          rawText: pasteText,
+          sourceType: 'paste',
+          title,
+        })
+        if (!nextDraft.chapters.length) {
+          throw new Error('No chapters detected. Add headings like "Chapter 1" or paste more text.')
+        }
+        setDraft(nextDraft)
+        setDetectHint(`Detected ${nextDraft.chapters.length} chapter(s). Your pasted text is unchanged — scroll down to review the preview.`)
         return
       }
 
@@ -172,16 +177,17 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                 extracted.extractMeta.scannedLikely,
               )
             : undefined
-        setDraft(
-          createImportDraft({
-            rawText: extracted.text,
-            sourceType: 'pdf',
-            title,
-            originalFileName: selectedFile.name,
-            notes: extracted.notes,
-            ...(pdfMeta ? { ingestMeta: pdfMeta } : {}),
-          }),
-        )
+        const nextDraft = createImportDraft({
+          rawText: extracted.text,
+          sourceType: 'pdf',
+          title,
+          originalFileName: selectedFile.name,
+          notes: extracted.notes,
+          ...(pdfMeta ? { ingestMeta: pdfMeta } : {}),
+        })
+        if (!nextDraft.chapters.length) throw new Error('No chapters detected in this PDF.')
+        setDraft(nextDraft)
+        setDetectHint(`Detected ${nextDraft.chapters.length} chapter(s). Scroll down to review the preview.`)
         return
       }
 
@@ -191,6 +197,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
         selectedFile.type === 'application/x-epub+zip'
       if (isEpub) {
         const extracted = await extractEpub(selectedFile)
+        if (!extracted.chapters.length) throw new Error('No chapters found in this EPUB spine.')
         setDraft(
           createEpubImportDraft({
             packageTitle: extracted.packageTitle,
@@ -200,18 +207,20 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
             notes: extracted.notes,
           }),
         )
+        setDetectHint(`Detected ${extracted.chapters.length} chapter(s). Scroll down to review the preview.`)
         return
       }
 
       const text = await fileToText(selectedFile)
-      setDraft(
-        createImportDraft({
-          rawText: text,
-          sourceType: 'txt',
-          title,
-          originalFileName: selectedFile.name,
-        }),
-      )
+      const nextDraft = createImportDraft({
+        rawText: text,
+        sourceType: 'txt',
+        title,
+        originalFileName: selectedFile.name,
+      })
+      if (!nextDraft.chapters.length) throw new Error('No chapters detected in this file.')
+      setDraft(nextDraft)
+      setDetectHint(`Detected ${nextDraft.chapters.length} chapter(s). Scroll down to review the preview.`)
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Could not import this file.')
     } finally {
@@ -487,6 +496,12 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
             {error ? (
               <div className="rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: '#f5b3b3', backgroundColor: '#fff2f2', color: '#7f1d1d' }}>
                 {error}
+              </div>
+            ) : null}
+
+            {detectHint ? (
+              <div className="rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-muted)' }} role="status">
+                {detectHint}
               </div>
             ) : null}
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { partyFetch, sessionKeys } from '@/lib/party/constants'
+import { PARTY_NAME_MAX_LEN, partyFetch, sessionKeys } from '@/lib/party/constants'
 import { EAY_INTAKE_QUESTIONS } from '@/lib/party/prompts-eay'
 import { usePartyRoomData } from './usePartyRoomData'
 
@@ -121,7 +121,10 @@ export default function EayGame() {
   )
 
   const createRoom = async () => {
-    if (!nameInput.trim()) return
+    if (!nameInput.trim()) {
+      setError('Name required')
+      return
+    }
     setLoading(true)
     setError(null)
     try {
@@ -146,7 +149,10 @@ export default function EayGame() {
   }
 
   const joinRoom = async () => {
-    if (!nameInput.trim() || pinInput.length !== 4) return
+    if (!nameInput.trim() || pinInput.length !== 4) {
+      setError('Name and 4-digit PIN required')
+      return
+    }
     setLoading(true)
     setError(null)
     try {
@@ -236,6 +242,7 @@ export default function EayGame() {
             <input
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
+              maxLength={PARTY_NAME_MAX_LEN}
               placeholder="Name"
               className="w-full rounded border px-3 py-2"
               style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}

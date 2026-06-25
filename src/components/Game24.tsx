@@ -808,7 +808,7 @@ export default function Game24() {
                     <div className="text-sm mb-1" style={{ color: 'var(--ink-muted)' }}>Room PIN</div>
                     <input
                       value={pinInput}
-                      onChange={(e) => setPinInput(e.target.value)}
+                      onChange={(e) => setPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
                       maxLength={4}
                       className="w-full rounded px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
                       style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}

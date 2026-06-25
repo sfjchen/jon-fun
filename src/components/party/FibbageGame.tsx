@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { partyFetch, sessionKeys } from '@/lib/party/constants'
+import { PARTY_NAME_MAX_LEN, partyFetch, sessionKeys } from '@/lib/party/constants'
 import { usePartyRoomData } from './usePartyRoomData'
 
 type Player = { player_id: string; name: string; score: number }
@@ -102,7 +102,10 @@ export default function FibbageGame() {
   )
 
   const createRoom = async () => {
-    if (!nameInput.trim()) return
+    if (!nameInput.trim()) {
+      setError('Name required')
+      return
+    }
     setLoading(true)
     setError(null)
     try {
@@ -127,7 +130,10 @@ export default function FibbageGame() {
   }
 
   const joinRoom = async () => {
-    if (!nameInput.trim() || pinInput.length !== 4) return
+    if (!nameInput.trim() || pinInput.length !== 4) {
+      setError('Name and 4-digit PIN required')
+      return
+    }
     setLoading(true)
     setError(null)
     try {
@@ -207,7 +213,7 @@ export default function FibbageGame() {
       {!room && (
         <aside className="rounded-lg border p-4 max-w-md shadow-sm" style={cardStyle}>
           <div className="space-y-3">
-            <input value={nameInput} onChange={(e) => setNameInput(e.target.value)} placeholder="Name" className="w-full rounded border px-3 py-2" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }} />
+            <input value={nameInput} onChange={(e) => setNameInput(e.target.value)} maxLength={PARTY_NAME_MAX_LEN} placeholder="Name" className="w-full rounded border px-3 py-2" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }} />
             <div className="flex gap-2">
               <input value={pinInput} onChange={(e) => setPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))} maxLength={4} placeholder="PIN" className="flex-1 rounded border px-3 py-2" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }} />
               <button type="button" onClick={joinRoom} disabled={loading || !clientReady} className="px-3 py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>Join</button>

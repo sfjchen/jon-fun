@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { partyFetch, sessionKeys } from '@/lib/party/constants'
+import { PARTY_NAME_MAX_LEN, partyFetch, sessionKeys } from '@/lib/party/constants'
 import { usePartyRoomData } from './usePartyRoomData'
 
 type Player = { player_id: string; name: string; score: number }
@@ -232,6 +232,7 @@ export default function QuiplashGame() {
                 <input
                   value={nameInput}
                   onChange={(e) => setNameInput(e.target.value)}
+                  maxLength={PARTY_NAME_MAX_LEN}
                   className="w-full rounded px-3 py-2 border"
                   style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
                   placeholder="Your name"

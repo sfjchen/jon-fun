@@ -15,6 +15,8 @@ import {
 export default function TMRStudySession({ onBack }: { onBack: () => void }) {
   const [config, setConfig] = useState<TMRConfig>(loadConfig())
   const [isRunning, setIsRunning] = useState(false)
+  const clampStudyDuration = (raw: number) => Math.min(120, Math.max(1, Number.isFinite(raw) ? raw : 60))
+
   const [duration, setDuration] = useState(config.studyDurationMinutes)
   const [elapsed, setElapsed] = useState(0)
   const [cuesPlayed, setCuesPlayed] = useState(0)
@@ -144,7 +146,15 @@ export default function TMRStudySession({ onBack }: { onBack: () => void }) {
               <input
                 type="number"
                 value={duration}
-                onChange={(e) => setDuration(Math.max(1, parseInt(e.target.value) || 60))}
+                onChange={(e) => {
+                  const raw = e.target.value
+                  if (raw === '') {
+                    setDuration(1)
+                    return
+                  }
+                  setDuration(clampStudyDuration(parseInt(raw, 10)))
+                }}
+                onBlur={() => setDuration((d) => clampStudyDuration(d))}
                 min="1"
                 max="120"
                 className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"

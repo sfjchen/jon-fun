@@ -62,8 +62,19 @@ export default function PokerPage() {
       return
     }
 
-    // Show position selection
-    setShowPositionSelection(true)
+    setLoading(true)
+    try {
+      const probe = await fetch(`/api/poker/rooms/${joinPin}`)
+      const probeData = await probe.json()
+      if (!probe.ok) {
+        throw new Error(probeData.error || 'Room not found')
+      }
+      setShowPositionSelection(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Room not found')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleJoinWithPosition = async (playerName: string, position: number) => {
@@ -245,7 +256,7 @@ export default function PokerPage() {
 
                 <button
                   type="submit"
-                  disabled={!joinPin || joinPin.length !== 4}
+                  disabled={!joinPin || joinPin.length !== 4 || loading}
                   className="w-full text-white font-semibold py-3 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ backgroundColor: 'rgb(22 101 52)' }}
                 >
