@@ -181,6 +181,16 @@ export async function ensureNotesPanelOpen(page: Page): Promise<void> {
   await expect(panel).toBeVisible()
 }
 
+/** Notes vault section is collapsed by default; expand when tests need vault rows. */
+export async function ensureNotesVaultSectionOpen(page: Page): Promise<void> {
+  await ensureNotesPanelOpen(page)
+  const toggle = page.getByTestId('notes-meetings-toggle')
+  if ((await toggle.getAttribute('aria-expanded')) !== 'true') {
+    await toggle.click()
+  }
+  await expect(page.getByTestId('notes-vault-panel')).toBeVisible()
+}
+
 /** Fail when the page body scrolls horizontally (layout overflow). */
 export async function assertNoHorizontalOverflow(page: Page): Promise<void> {
   const overflow = await page.evaluate(() => {

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import {
+  ensureNotesVaultSectionOpen,
   mockNotesApi,
   notesEditor,
   waitForNotesEditor,
@@ -24,6 +25,7 @@ test.describe('Notes comprehensive', () => {
     })
     await page.reload({ waitUntil: 'domcontentloaded' })
     await waitForNotesEditor(page)
+    await ensureNotesVaultSectionOpen(page)
   })
 
   test('Ctrl+\\ toggles side panel', async ({ page }) => {

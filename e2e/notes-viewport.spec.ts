@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 import {
   assertNoHorizontalOverflow,
   ensureNotesPanelOpen,
+  ensureNotesVaultSectionOpen,
   mockNotesApi,
   notesEditor,
   SESSIONS_KEY,
@@ -60,7 +61,7 @@ for (const vp of VIEWPORTS) {
       expect(editorBox?.height ?? 0).toBeGreaterThan(vp.minEditorHeight)
     })
 
-    test('panel default state and vault at top when open', async ({ page }) => {
+    test('panel default state and notes header above AI when open', async ({ page }) => {
       const panel = page.getByTestId('notes-side-panel')
       if (vp.panelDefaultOpen) {
         await expect(panel).toBeVisible()
@@ -70,13 +71,18 @@ for (const vp of VIEWPORTS) {
         await expect(panel).toBeVisible()
       }
 
-      await expect(page.getByTestId('notes-vault-panel')).toBeVisible()
       await expect(page.getByTestId('notes-meetings-section')).toBeVisible()
+      await expect(page.getByTestId('notes-meetings-toggle')).toHaveAttribute('aria-expanded', 'false')
+      await expect(page.getByTestId('notes-vault-panel')).toBeHidden()
+      await expect(page.getByTestId('notes-ai-toggle')).toHaveAttribute('aria-expanded', 'true')
       await expect(page.getByTestId('notes-ai-toggle')).toBeVisible()
 
-      const vaultBox = await page.getByTestId('notes-vault-panel').boundingBox()
+      const meetingsBox = await page.getByTestId('notes-meetings-toggle').boundingBox()
       const aiBox = await page.getByTestId('notes-ai-toggle').boundingBox()
-      expect(vaultBox?.y ?? 0).toBeLessThan(aiBox?.y ?? Infinity)
+      expect(meetingsBox?.y ?? 0).toBeLessThan(aiBox?.y ?? Infinity)
+
+      await ensureNotesVaultSectionOpen(page)
+      await expect(page.getByTestId('notes-vault-panel')).toBeVisible()
     })
 
     test('toolbar-only formatting; no selection bubble menu', async ({ page }) => {

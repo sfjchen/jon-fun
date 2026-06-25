@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 
 import {
   ensureNotesPanelOpen,
+  ensureNotesVaultSectionOpen,
   mockNotesApi,
   notesEditor,
   SESSIONS_KEY,
@@ -32,6 +33,7 @@ test.describe('Notes', () => {
     }, SESSIONS_KEY)
     await page.reload({ waitUntil: 'domcontentloaded' })
     await waitForNotesEditor(page)
+    await ensureNotesVaultSectionOpen(page)
   })
 
   test('loads full-width editor; panel open by default on desktop', async ({ page }) => {
@@ -43,16 +45,21 @@ test.describe('Notes', () => {
     await expect(page.getByTestId('notes-meeting-title')).toHaveAttribute('placeholder', 'Untitled')
   })
 
-  test('panel opens with collapsible notes + AI sections', async ({ page }) => {
+  test('panel sections default: AI + todos expanded, vault collapsed', async ({ page }) => {
+    await page.evaluate(() => localStorage.removeItem('notes_ui_prefs'))
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await waitForNotesEditor(page)
+
     await expect(page.getByTestId('notes-side-panel')).toBeVisible()
-    await expect(page.getByTestId('notes-meetings-section')).toBeVisible()
-    await expect(page.getByTestId('notes-ai-toggle')).toBeVisible()
-    await expect(page.getByTestId('notes-sync-section')).toBeVisible()
+    await expect(page.getByTestId('notes-meetings-toggle')).toHaveAttribute('aria-expanded', 'false')
+    await expect(page.getByTestId('notes-rollup-toggle')).toHaveAttribute('aria-expanded', 'true')
+    await expect(page.getByTestId('notes-ai-toggle')).toHaveAttribute('aria-expanded', 'true')
+    await expect(page.getByTestId('notes-glossary-toggle')).toHaveAttribute('aria-expanded', 'false')
+    await expect(page.getByTestId('notes-sources-toggle')).toHaveAttribute('aria-expanded', 'false')
+    await expect(page.getByTestId('notes-history-toggle')).toHaveAttribute('aria-expanded', 'false')
+    await expect(page.getByTestId('notes-sync-toggle')).toHaveAttribute('aria-expanded', 'false')
+    await expect(page.getByTestId('notes-vault-panel')).toBeHidden()
     await expect(page.getByTestId('notes-sync-panel')).toBeHidden()
-    await expect(page.getByTestId('notes-new-meeting')).toBeVisible()
-    await expect(page.getByTestId('notes-vault-panel')).toBeVisible()
-    await expect(page.getByTestId('notes-folder-inbox')).toBeVisible()
-    await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(1)
   })
 
   test('creates nested subfolder and moves note via drag and drop', async ({ page }) => {
