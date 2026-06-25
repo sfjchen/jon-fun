@@ -46,6 +46,8 @@ You are an E2E testing specialist for Jon-fun (sfjc.dev). Use Playwright to veri
 
 ## E2E workflow
 
+**CLI first** — use Playwright MCP plugin (`plugin-playwright-playwright`, see [`.cursor/rules/playwright-testing.mdc`](../rules/playwright-testing.mdc)) only for subjective/visual smoke; promote to CLI specs when reproducible.
+
 1. **Run tests**: `npm run test:e2e` (or `npx playwright test`)
 2. **Analyze failures**: Read error output, identify root cause (selector, timing, state)
 3. **Fix**: Update test or implementation per project conventions

@@ -456,7 +456,7 @@ src/
 ### E2E Testing
 
 - **Playwright CLI** (default for agents/CI) — `@playwright/test` in `e2e/`; see [`.cursor/rules/playwright-testing.mdc`](.cursor/rules/playwright-testing.mdc)
-- **Cursor Playwright plugin** (MCP) — ad-hoc UI verification on live site (“what do you see?”); not a substitute for CLI
+- **Cursor Playwright plugin** (MCP `plugin-playwright-playwright`) — ad-hoc UI verification on live site (“what do you see?”); enabled in [`.cursor/settings.json`](.cursor/settings.json) (`"playwright": { "enabled": true }`); not a substitute for CLI
 - **Coverage**: Home, navigation (all games on the main grid), Game24 (practice), Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Mental Obstacle Course, party games (Quip Clash, Fib It, Enough About You), **Connections** ([`e2e/connections.spec.ts`](e2e/connections.spec.ts) + in-memory [`e2e/helpers/connections-mock.ts`](e2e/helpers/connections-mock.ts)), Leaderboards, **Coming Soon API** ([`e2e/home-coming-soon-api.spec.ts`](e2e/home-coming-soon-api.spec.ts)). **Local**: Chromium + Mobile Chrome. **`CI=1` / `npm run test:e2e:ci`**: Chromium only (faster, less memory).
 - **Dev server**: Playwright starts `next dev` on **port 3001** by default (`PLAYWRIGHT_WEB_PORT`, `PLAYWRIGHT_BASE_URL` to override).
 - **Deployment-only E2E**: `npm run test:e2e:deployment` … **Notes layout/visual**: **`npm run test:e2e:notes-visual`**
@@ -464,7 +464,8 @@ src/
 
 ### MCP Servers
 
-- **Supabase MCP**: Database queries, migrations, project management
+- **Supabase MCP** (`plugin-supabase-supabase`): Database queries, migrations, project management — [`.cursor/settings.json`](.cursor/settings.json) `"supabase"`
+- **Playwright MCP** (`plugin-playwright-playwright`): Ad-hoc browser QA (navigate, snapshot, screenshot); CLI remains primary for regression — [`.cursor/settings.json`](.cursor/settings.json) `"playwright"`. See [`.cursor/rules/playwright-testing.mdc`](.cursor/rules/playwright-testing.mdc)
 - **Vercel MCP**: Deployment management, project info, build logs
   - Project: `jon-fun` (prj_p0GxMYUx0l1bfSrEVJQ161WkgTFe)
   - Team: jychen04's projects
@@ -511,7 +512,7 @@ src/
 
 Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
 
-- **2026-06**: **Render removed** — no `render.yaml` or Render deploy scripts in Jon-fun; sfjc.dev/veridian is Vercel-only. Updated [docs/VERIDIAN_WORKSPACE.md](docs/VERIDIAN_WORKSPACE.md) (EdTech Render backend deprecated). Disabled duplicate `claude-plugins-official/playwright` in [`.cursor/settings.json`](.cursor/settings.json); keep Cursor Playwright MCP (`plugin-playwright-playwright`) for ad-hoc QA per [`.cursor/rules/playwright-testing.mdc`](.cursor/rules/playwright-testing.mdc).
+- **2026-06**: **Render removed** — no `render.yaml` or Render deploy scripts in Jon-fun; sfjc.dev/veridian is Vercel-only. Updated [docs/VERIDIAN_WORKSPACE.md](docs/VERIDIAN_WORKSPACE.md) (EdTech Render backend deprecated). Playwright: one Cursor plugin only — `"playwright"` in [`.cursor/settings.json`](.cursor/settings.json) (MCP `plugin-playwright-playwright`); removed duplicate `claude-plugins-official/playwright`. Ad-hoc QA vs CLI: [`.cursor/rules/playwright-testing.mdc`](.cursor/rules/playwright-testing.mdc).
 - **2026-06**: **Notes sync** — fix fast-typing corruption: re-read localStorage after remote fetch, serialize sync writes, skip remote overwrite while editing/focused, E2E stress tests (`notes-sync-race.spec.ts`).
 - **2026-06**: **Notes mobile** — dedicated `test:e2e:notes-mobile` (390×844); panel overlay + backdrop; scrollable tag row + toolbar; vault sort stable on note switch (switch history no longer bumps `updatedAt`).
 - **2026-06**: **Notes legacy cleanup** — removed uvimco redirects, localStorage migration, npm script aliases, CodeMirror CSS classes; CSS renamed to `notes-*`; admin key `notes_admin_ok`.
