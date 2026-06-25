@@ -32,6 +32,21 @@ function lookupLabel(lk: Lookup): string {
   return `${lk.query}?`
 }
 
+const PANEL_MIN_WIDTH = 240
+const PANEL_ABSOLUTE_MAX = 900
+const PANEL_MIN_MAX = 800
+
+function maxPanelWidth(): number {
+  if (typeof window === 'undefined') return PANEL_ABSOLUTE_MAX
+  const vwHalf = window.innerWidth * 0.5
+  const viewportCap = window.innerWidth * 0.9
+  return Math.min(PANEL_ABSOLUTE_MAX, viewportCap, Math.max(PANEL_MIN_MAX, vwHalf))
+}
+
+function clampPanelWidth(w: number): number {
+  return Math.min(maxPanelWidth(), Math.max(PANEL_MIN_WIDTH, w))
+}
+
 type SidePanelProps = {
   isOpen: boolean
   sessions: NoteSession[]
@@ -131,8 +146,9 @@ export default function SidePanel({
   onSourcesChange,
   onDictionaryChange,
 }: SidePanelProps) {
-  const defaultWidth = loadNotesUiPrefs().panelWidth ?? 300
-  const [width, setWidth] = useState(defaultWidth)
+  const [width, setWidth] = useState(() =>
+    clampPanelWidth(loadNotesUiPrefs().panelWidth ?? 300),
+  )
   const dragRef = useRef<{ startX: number; startW: number } | null>(null)
 
   const onResizeStart = useCallback(
@@ -142,12 +158,12 @@ export default function SidePanel({
       const onMove = (ev: MouseEvent) => {
         if (!dragRef.current) return
         const delta = dragRef.current.startX - ev.clientX
-        setWidth(Math.min(640, Math.max(240, dragRef.current.startW + delta)))
+        setWidth(clampPanelWidth(dragRef.current.startW + delta))
       }
       const onUp = (ev: MouseEvent) => {
         if (!dragRef.current) return
         const delta = dragRef.current.startX - ev.clientX
-        const next = Math.min(640, Math.max(240, dragRef.current.startW + delta))
+        const next = clampPanelWidth(dragRef.current.startW + delta)
         dragRef.current = null
         setWidth(next)
         saveNotesUiPrefs({ panelWidth: next })
