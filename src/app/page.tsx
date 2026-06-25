@@ -64,14 +64,6 @@ const items: GameCardGame[] = [
     available: true,
   },
   {
-    id: 'ubi-ai',
-    title: 'UBI × AI',
-    description: 'R-backed scenario model: UBI social utility under AI job-security assumptions (sliders + charts)',
-    icon: `${nb}/obstacle.svg`,
-    href: '/games/ubi-ai',
-    available: true,
-  },
-  {
     id: 'quip-clash',
     title: 'Quip Clash',
     description: 'PIN room party game: paired prompts, head-to-head votes, final round (Supabase + Realtime)',
