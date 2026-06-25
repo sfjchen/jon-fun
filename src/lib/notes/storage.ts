@@ -3,8 +3,12 @@
  */
 
 import { normalizeSessionTitle } from './prefs'
+import { saveGlossary } from './glossary'
+import { ensureBuiltinSources } from './knowledge/builtinSources'
+import { saveSourcesLocal } from './sources'
 import { sanitizeMetadataText, sanitizeSessionForSync, sanitizeTags } from './textSanitize'
 import {
+  FOLDERS_KEY,
   FOLDERS_VAULT_SESSION_ID,
   foldersToVaultNotes,
   loadFolders,
@@ -232,7 +236,21 @@ export function upsertSession(session: NoteSession): NoteSession {
   return session
 }
 
-export async function restoreFromServer(userId: string): Promise<{ restored: number; error?: string }> {
+export function resetLocalNotesVault(): NoteSession {
+  if (typeof window === 'undefined') return createEmptySession()
+  localStorage.removeItem(FOLDERS_KEY)
+  localStorage.removeItem('notes_tag_catalog')
+  saveGlossary([])
+  saveSourcesLocal(ensureBuiltinSources([]))
+  const session = createEmptySession()
+  saveSessionsLocal([session])
+  setActiveSessionId(session.id)
+  return session
+}
+
+export async function restoreFromServer(
+  userId: string,
+): Promise<{ restored: number; cleared?: boolean; error?: string }> {
   if (typeof window === 'undefined') return { restored: 0 }
   const key = userId.trim()
   if (!key) return { restored: 0, error: 'Enter sync password or device ID' }
@@ -244,7 +262,9 @@ export async function restoreFromServer(userId: string): Promise<{ restored: num
     const qs = new URLSearchParams({ userId: key, syncPassword, deviceUserId: getOrCreateUserId() })
     const res = await fetch(`/api/notes/sessions?${qs.toString()}`)
     if (!res.ok) return { restored: 0, error: 'Failed to fetch' }
-    return { restored: 0, error: 'No notes found for that key' }
+    setSyncKey(key)
+    resetLocalNotesVault()
+    return { restored: 0, cleared: true }
   }
   setSyncKey(key)
   saveSessionsLocal(remote)
