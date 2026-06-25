@@ -8,6 +8,7 @@ import type { TriggerType } from '@/lib/notes/types'
 const TiptapEditor = dynamic(() => import('./TiptapNoteEditor'), { ssr: false })
 
 type EditorShellProps = {
+  sessionId: string
   value: string
   screenshots: Record<string, import('@/lib/notes/types').Screenshot>
   onChange: (val: string) => void

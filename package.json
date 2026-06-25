@@ -48,7 +48,6 @@
     "openclaw:graph:delete": "node openclaw-hybrid/scripts/graph-subscription.mjs delete"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.81.1",
     "@tailwindcss/postcss": "^4.1.12",
     "@tiptap/core": "^3.27.1",
@@ -73,7 +72,7 @@
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "marked": "^18.0.5",
-    "next": "^15.5.7",
+    "next": "^16.2.9",
     "node-html-parser": "^7.1.0",
     "pdf-parse": "^2.4.5",
     "pdfjs-dist": "5.4.296",
@@ -95,7 +94,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.5.19",
+    "eslint-config-next": "16.2.9",
     "tsx": "^4.20.5",
     "typescript": "^5"
   }

@@ -1,5 +1,5 @@
 /**
- * Visual-regression + accessibility helpers for theme2 stress tests.
+ * Visual-regression + accessibility helpers for site-wide stress tests.
  *
  * `gotoStable` deflakes screenshots by:
  *  - waiting for networkidle + DOM ready

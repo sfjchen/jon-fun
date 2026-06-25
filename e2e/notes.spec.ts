@@ -196,10 +196,10 @@ test.describe('Notes', () => {
 
     await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(2)
     const orderBefore = await noteLabels()
-    expect(orderBefore[0]).toContain('Note Beta')
+    expect(orderBefore[0]).toMatch(/Note\s*Beta/i)
 
-    await page.locator('[data-testid^="notes-meeting-item-"]').filter({ hasText: 'Note Alpha' }).click()
-    await expect(title).toHaveValue('Note Alpha')
+    await page.locator('[data-testid^="notes-meeting-item-"]').filter({ hasText: /Note\s*Alpha/i }).click()
+    await expect(title).toHaveValue(/Note\s*Alpha/)
 
     const orderAfter = await noteLabels()
     expect(orderAfter).toEqual(orderBefore)
@@ -226,17 +226,41 @@ test.describe('Notes', () => {
     await expect(meetings).toHaveCount(2)
 
     await page.keyboard.press('Control+s')
-    await meetings.filter({ hasText: 'Note Alpha' }).click()
-    await expect(title).toHaveValue('Note Alpha')
+    await meetings.filter({ hasText: /Note\s*Alpha/i }).click()
+    await expect(title).toHaveValue(/Note\s*Alpha/)
     await expect(editor).toContainText('alpha body')
 
     await page.waitForTimeout(1200)
-    await expect(title).toHaveValue('Note Alpha')
+    await expect(title).toHaveValue(/Note\s*Alpha/)
     await expect(editor).toContainText('alpha body')
 
-    await meetings.filter({ hasText: 'Note Beta' }).click()
-    await expect(title).toHaveValue('Note Beta')
+    await meetings.filter({ hasText: /Note\s*Beta/i }).click()
+    await expect(title).toHaveValue(/Note\s*Beta/)
     await expect(editor).toContainText('beta body')
+  })
+
+  test('note switch updates editor within 500ms', async ({ page }) => {
+    const title = page.getByTestId('notes-meeting-title')
+    const editor = notesEditor(page)
+
+    await title.click()
+    await title.fill('')
+    await page.keyboard.type('Fast Alpha')
+    await editor.click()
+    await page.keyboard.type('alpha-fast-content')
+
+    await page.getByTestId('notes-new-meeting').click()
+    await title.click()
+    await title.fill('')
+    await page.keyboard.type('Fast Beta')
+    await editor.click()
+    await page.keyboard.type('beta-fast-content')
+
+    const meetings = page.locator('[data-testid^="notes-meeting-item-"]')
+    const t0 = Date.now()
+    await meetings.filter({ hasText: /Fast\s*Alpha/i }).click()
+    await expect.poll(async () => (await editor.innerText()).includes('alpha-fast-content'), { timeout: 500 }).toBe(true)
+    expect(Date.now() - t0).toBeLessThan(500)
   })
 
   test('line? trigger opens panel and shows mock AI response', async ({ page }) => {

@@ -973,24 +973,30 @@ export default function NotesApp() {
     if (s.id === sessionRef.current.id) return
 
     const prev = sessionRef.current
-    const storedPrev = sessionsRef.current.find((x) => x.id === prev.id)
-    if (isSessionDirty(prev, storedPrev)) {
-      const saved = appendNoteHistory(prev, { kind: 'saved' })
-      upsertSession(saved)
-      void (async () => {
-        await syncToServer(saved)
-        dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
-        if (sessionRef.current.id === prev.id) {
-          dispatch({ type: 'PATCH_SESSION', session: saved })
-        }
-      })()
-    }
-
     const switched = appendNoteHistory(s, { kind: 'switch', detail: s.title || 'Untitled' })
+
     setActiveSessionId(switched.id)
-    upsertSession(switched)
-    dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
     dispatch({ type: 'LOAD_SESSION', session: switched })
+    dispatch({
+      type: 'SET_SESSIONS',
+      sessions: sessionsRef.current.map((x) => (x.id === switched.id ? switched : x.id === prev.id ? prev : x)),
+    })
+
+    queueMicrotask(() => {
+      upsertSession(switched)
+      const storedPrev = sessionsRef.current.find((x) => x.id === prev.id)
+      if (isSessionDirty(prev, storedPrev)) {
+        const saved = appendNoteHistory(prev, { kind: 'saved' })
+        upsertSession(saved)
+        void (async () => {
+          await syncToServer(saved)
+          dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+          if (sessionRef.current.id === prev.id) {
+            dispatch({ type: 'PATCH_SESSION', session: saved })
+          }
+        })()
+      }
+    })
   }, [syncToServer])
 
   const handleDeleteMeeting = useCallback((sessionId: string) => {
@@ -1144,7 +1150,7 @@ export default function NotesApp() {
         <section className="notes-editor-pane min-w-0 flex-1">
           <div className="notes-editor-body" data-testid="notes-editor">
             <EditorShell
-              key={state.session.id}
+              sessionId={state.session.id}
               ref={editorRef}
               value={state.session.notes}
               screenshots={state.session.screenshots}

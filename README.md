@@ -18,7 +18,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **Quip Clash** (`/games/quip-clash`): Party room (4-digit **PIN** — Personal Identification Number) — Quiplash-style paired prompts, sequential votes, round multipliers, final round; **Supabase** (PostgreSQL) + **Realtime**; session keys `party_quiplash_*`
 - **Fib It** (`/games/fib-it`): Fibbage-style bluff trivia — lies, shuffled options, picks, likes, 3 rounds; 2–8 players; `party_fibbage_*` session keys
 - **Enough About You** (`/games/enough-about-you`): Intake questions, subject rounds (reputation bonus), final truth-vs-lie vote per player; 3–8 players; `party_eay_*` session keys
-- **Connections** (`/games/connections`): NYT (New York Times)-style **16-word / 4-group** puzzle; **author-assigned** yellow/green/blue/purple tiers; **public shelf** via Supabase (`connections_puzzles`) when service env is set; **fingerprint + display name** for ownership (no login); JSON import/export; theme2 mirror under `/theme2/games/connections`
+- **Connections** (`/games/connections`): NYT (New York Times)-style **16-word / 4-group** puzzle; **author-assigned** yellow/green/blue/purple tiers; **public shelf** via Supabase (`connections_puzzles`) when service env is set; **fingerprint + display name** for ownership (no login); JSON import/export
 
 ## 🤖 AI agents — start here
 
@@ -71,7 +71,7 @@ These guide **what** we build (product + UX) and **how** it should feel (visual 
 ### Visual and tonal language (ties to themes)
 
 - **Simple, bold, elegant:** Strong type and a **restrained palette**—confident without being stiff (**not** corporate-formal) and clear without being cute (**not** overly casual copy or novelty UI).
-- **Notebook (main site)** (`/`): hand-drawn Patrick Hand, cream line-paper, Stanford-adjacent red accent. A live **Ink & Paper mirror** remains at `/theme2` (Connections + visual-regression routes); archived sources under `src/app/_archive/theme2`. Game-specific skins (Poker felt, Pear Navigator dark) are **allowed exceptions** where they aid the metaphor.
+- **Notebook (main site)** (`/`): hand-drawn Patrick Hand, cream line-paper, Stanford-adjacent red accent — **only public theme**. Game-specific skins (Poker felt, Pear Navigator dark) are **allowed exceptions** where they aid the metaphor.
 
 ### Data, identity, and sync
 
@@ -83,7 +83,7 @@ These guide **what** we build (product + UX) and **how** it should feel (visual 
 
 ## 🎨 Visual system & themes (quick reference)
 
-**Themes:** **Notebook** is the primary public theme (at `/`). **Ink & Paper mirror** at `/theme2` (Connections `basePath`, theme2 E2E snapshots). Legacy archive: `src/app/_archive/theme2`. **Tokens:** `var(--ink-*)` in `globals.css`; notebook maps those to `--nb-*` via `data-theme="notebook"`. **Game-specific:** Poker (green felt), Pear Navigator (dark inner UI). **Shell exceptions:** Chwazi mobile, Pear Navigator, Poker lobby & table (full-bleed / alternate chrome). Full detail: **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)** · route map: **[docs/ARCHITECTURE-MAP.md](docs/ARCHITECTURE-MAP.md)**.
+**Theme:** **Notebook** only (at `/` + `/games/*`). Legacy `/theme2/*` URLs redirect to canonical routes. **Tokens:** `var(--ink-*)` in `globals.css`; notebook maps to `--nb-*` via `data-theme="notebook"`. Full detail: **[docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)** · **[docs/ARCHITECTURE-MAP.md](docs/ARCHITECTURE-MAP.md)**.
 
 ---
 
@@ -492,10 +492,10 @@ src/
 - `npm run test:e2e:ci` - Same with `CI=1` (Chromium-only projects, stricter `forbidOnly`, retries)
 - `npm run test:e2e:deployment` - E2E against live deployment (`https://sfjc.dev` by default; set `PLAYWRIGHT_BASE_URL` for a preview URL); does not start local dev
 - `npm run test:e2e:ui` - Run E2E tests with Playwright UI
-- **Visual regression** (theme2 only, baselines under `e2e/theme2-*.spec.ts-snapshots/`):
-  - `npm run test:e2e -- --project=visual-desktop --grep theme2` — desktop 1280×800
-  - `npm run test:e2e -- --project=visual-tablet --grep theme2` — tablet 768×1024
-  - `npm run test:e2e -- --project=visual-mobile --grep theme2` — mobile 390×844
+- **Visual regression** (notebook routes, baselines under `e2e/site-visual.spec.ts-snapshots/`):
+  - `npm run test:e2e -- --project=visual-desktop site-visual` — desktop 1280×800
+  - `npm run test:e2e -- --project=visual-tablet site-visual` — tablet 768×1024
+  - `npm run test:e2e -- --project=visual-mobile site-visual` — mobile 390×844
   - Append `--update-snapshots` after an intentional UI change to refresh baselines; rerun without it to verify zero diff.
   - **Run one viewport-project at a time.** Chaining `--project=visual-desktop --project=visual-tablet --project=visual-mobile` in a single invocation runs ~60 next-dev compiles back-to-back and the dev server can hiccup near the end; the included `retries: 1` absorbs most of that but per-viewport is faster + more reliable.
 
@@ -513,7 +513,7 @@ src/
 
 Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
 
-- **2026-06-25**: **Docs + deps + theme2 re-exports** — fixed stale DESIGN-SYSTEM theme2 claims; theme2 game pages re-export `/games/*`; `usePartyRoomActions`; removed unused `lucide-react` bundle opt + `@types/uuid`; aligned `eslint-config-next` with Next 15.5.19; patch npm updates; deferred-major table in ARCHITECTURE-MAP.
+- **2026-06-25**: **Single theme + Next 16** — removed `/theme2` routes (permanent redirects); Notes in-place Tiptap switch (no remount); `usePartyRoomActions`; dropped unused `@supabase/ssr`; Next **16.2.9** + `site-visual` E2E; poker/reader/jeopardy stay separate stacks (documented in ARCHITECTURE-MAP).
 - **2026-06-25**: **Architecture streamline** — [`docs/ARCHITECTURE-MAP.md`](docs/ARCHITECTURE-MAP.md) (routes, shared libs, perf levers); party games coalesce `usePartyLobby` + `PartyLobbyForm`; Realtime poll fallback 800ms→2s; `optimizePackageImports` for Tiptap/Supabase/lucide; README theme2 mirror docs corrected.
 - **2026-06-25**: **Notes stress-test fixes** — owner vault POST/GET/DELETE require sync password + admin device when `SFJC_SYNC_PASSWORD` set; markdown export HTML-escapes title/tags; metadata sanitization (U+2028/U+2029, BIDI, zero-width, HTML, 64-char cap); AI follow-up prompt delimiters + injection guard; cross-tab BroadcastChannel edit lock + storage listener for delete-while-editing; sync payload limits (413) + failed indicator; `e2e/notes-security.spec.ts`.
 - **2026-06-25**: **SFJC stress-test fixes** — party games: applied `20260625120000_party_games.sql` (Supabase `party_*` tables + RLS); Quip Clash / Fib It / EAY name `maxLength` + empty join/create errors; poker PIN validated before seat pick; daily-log edit modal z-index; MOC speed early-tap freeze + ASCII minus; TMR duration clamp; e-reader chapter nav on direct URL + detect-chapters feedback; 24 Game numeric PIN; Connections word `maxLength`. **Veridian** (nested repo): AI prompt injection hardening via untrusted canvas boundaries in `Veridian/src/lib/server/ai.ts`.

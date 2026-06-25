@@ -23,6 +23,11 @@ const nextConfig = {
     return [
       { source: '/notebook', destination: '/', permanent: true },
       { source: '/notebook/:path*', destination: '/:path*', permanent: true },
+      /** Legacy Ink & Paper mirror — single notebook theme only */
+      { source: '/theme2', destination: '/', permanent: true },
+      { source: '/theme2/leaderboards', destination: '/leaderboards', permanent: true },
+      { source: '/theme2/admin/:path*', destination: '/admin/:path*', permanent: true },
+      { source: '/theme2/games/:path*', destination: '/games/:path*', permanent: true },
     ]
   },
   async rewrites() {
