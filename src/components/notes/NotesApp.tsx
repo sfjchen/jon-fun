@@ -952,7 +952,6 @@ export default function NotesApp() {
 
       if (e.key === 'Escape') {
         if (searchOpen) setSearchOpen(false)
-        else if (state.panelOpen && !aiBusy) dispatch({ type: 'PANEL', open: false })
         else dispatch({ type: 'CLEAR_LOOKUP' })
         return
       }
@@ -1015,7 +1014,7 @@ export default function NotesApp() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [handleSummarize, handleExportMd, saveWithHistory, handleNewNote, state.panelOpen, aiBusy, searchOpen])
+  }, [handleSummarize, handleExportMd, saveWithHistory, handleNewNote, searchOpen])
 
   const focusedId = state.focusedLookupId ?? state.currentLookup?.id ?? null
   const focusedLookup =
