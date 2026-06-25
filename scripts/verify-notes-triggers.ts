@@ -5,6 +5,7 @@
 import { detectLineTriggers, countShorthandFlags } from '../src/lib/notes/triggerParser'
 import { postprocessTodoMarkdown, preprocessTodoMarkdown, mergeTodoLinesIntoMarkdown } from '../src/lib/notes/tiptap/editorCoords'
 import { collectTodos } from '../src/lib/notes/rollup'
+import { setTodoArchivedAtLine, collectArchivedTodosFromNotes } from '../src/lib/notes/todoLines'
 import { termsFromLookup, extractDefinitionFromAssistant } from '../src/lib/notes/glossary'
 import { filterSourcesForNote, isSourceEnabledForNote, toggleSourceForNote } from '../src/lib/notes/sourceSelection'
 import type { NoteSession } from '../src/lib/notes/types'
@@ -150,6 +151,22 @@ if (todos.length !== 1 || todos[0]!.text !== 'follow up IC memo') {
   console.error('✗ collectTodos from > line', todos)
 } else {
   console.log('✓ collectTodos from > line')
+}
+
+const archiveMd = setTodoArchivedAtLine('Buy milk>\nOther', 0, true)
+if (archiveMd !== 'Buy milk ✓>\nOther') {
+  failed++
+  console.error('✗ setTodoArchivedAtLine archive', archiveMd)
+} else {
+  console.log('✓ setTodoArchivedAtLine archive')
+}
+
+const archived = collectArchivedTodosFromNotes('Buy milk ✓>\nStill open>')
+if (archived.length !== 1 || archived[0]!.text !== 'Buy milk') {
+  failed++
+  console.error('✗ collectArchivedTodosFromNotes', archived)
+} else {
+  console.log('✓ collectArchivedTodosFromNotes')
 }
 
 const vsTerms = termsFromLookup({

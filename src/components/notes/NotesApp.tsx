@@ -12,7 +12,7 @@ import {
   type LookupStreamMap,
 } from '@/lib/notes/lookupStreams'
 import { pushGlossaryToServer, syncMemoryBank } from '@/lib/notes/memorySync'
-import { countShorthandFlags } from '@/lib/notes/shorthand'
+import { countShorthandFlags, setTodoArchivedAtLine } from '@/lib/notes/shorthand'
 import { appendNoteHistory, lastHistoryEntry } from '@/lib/notes/noteHistory'
 import { addToTagCatalog } from '@/lib/notes/tagRegistry'
 import {
@@ -1031,6 +1031,33 @@ export default function NotesApp() {
     [state.sessions, state.session.id, handleSelectMeeting],
   )
 
+  const patchSessionTodo = useCallback(
+    (sessionId: string, lineIndex: number, archived: boolean) => {
+      const target = state.sessions.find((s) => s.id === sessionId)
+      if (!target) return
+      const notes = setTodoArchivedAtLine(target.notes, lineIndex, archived)
+      if (notes === target.notes) return
+      const session = touchSession({ ...target, notes })
+      upsertSession(session)
+      dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+      if (state.session.id === sessionId) {
+        dispatch({ type: 'NOTES', notes })
+      }
+      void syncToServer(session)
+    },
+    [state.sessions, state.session.id, syncToServer],
+  )
+
+  const handleArchiveTodo = useCallback(
+    (sessionId: string, lineIndex: number) => patchSessionTodo(sessionId, lineIndex, true),
+    [patchSessionTodo],
+  )
+
+  const handleRestoreTodo = useCallback(
+    (sessionId: string, lineIndex: number) => patchSessionTodo(sessionId, lineIndex, false),
+    [patchSessionTodo],
+  )
+
   const aiActiveCount = activeStreamCount(state.streamByLookupId)
 
   useEffect(() => {
@@ -1210,6 +1237,8 @@ export default function NotesApp() {
           onClearLookup={() => dispatch({ type: 'CLEAR_LOOKUP' })}
           onSynced={(opts) => void refreshFromServer(opts)}
           onJumpTodo={handleJump}
+          onArchiveTodo={handleArchiveTodo}
+          onRestoreTodo={handleRestoreTodo}
           onToggleSourceForNote={handleToggleSourceForNote}
           onSourcesChange={() => {
             dispatch({ type: 'GLOSSARY_BUMP' })

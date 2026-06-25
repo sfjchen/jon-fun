@@ -1,28 +1,28 @@
 /** Shared shorthand parsing: todos, highlights, AI triggers, counts. */
 
+import {
+  collectActiveTodosFromNotes,
+  parseActiveTodoLine,
+  isArchivedTodoLine,
+} from './todoLines'
+
 export type TodoLine = { text: string; lineIndex: number }
 
-const TODO_SUFFIX = /^(.+?)\s*[<>]\s*$/
-const TODO_PREFIX = /^\s*>\s?(.*)$/
+export {
+  collectActiveTodosFromNotes,
+  collectArchivedTodosFromNotes,
+  setTodoArchivedAtLine,
+} from './todoLines'
+
 const HIGHLIGHT = /\*([^*\n]+)\*/g
 
-/** Todo: suffix `>`/`<` on a line, or legacy prefix `>`. */
+/** Todo: suffix `>` or legacy prefix `>` (excludes archived `✓>`). */
 export function parseTodoLine(line: string): string | null {
-  const trimmed = line.trim()
-  const suffix = trimmed.match(TODO_SUFFIX)
-  if (suffix?.[1]?.trim()) return suffix[1].trim()
-  const prefix = trimmed.match(TODO_PREFIX)
-  if (prefix?.[1]?.trim()) return prefix[1].trim()
-  return null
+  return parseActiveTodoLine(line)
 }
 
 export function collectTodosFromNotes(notes: string): TodoLine[] {
-  const out: TodoLine[] = []
-  notes.split('\n').forEach((line, lineIndex) => {
-    const text = parseTodoLine(line)
-    if (text) out.push({ text, lineIndex })
-  })
-  return out
+  return collectActiveTodosFromNotes(notes)
 }
 
 export function countShorthandFlags(text: string): { flags: number; actions: number; chars: number } {
@@ -48,5 +48,5 @@ export function highlightRanges(text: string): { from: number; to: number }[] {
 }
 
 export function isTodoLine(line: string): boolean {
-  return parseTodoLine(line) !== null
+  return parseActiveTodoLine(line) !== null || isArchivedTodoLine(line)
 }
