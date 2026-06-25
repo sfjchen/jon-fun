@@ -141,12 +141,10 @@ export default function SourcesPanel({
       className={embedded ? 'px-3 pb-2' : 'border-b border-[var(--uv-border)] px-3 py-2'}
       data-testid="notes-sources-panel"
     >
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-1">
+      <div className={`mb-2 flex flex-wrap items-center gap-1 ${embedded ? 'justify-end' : 'justify-between'}`}>
         {!embedded ? (
           <p className="text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">Sources</p>
-        ) : (
-          <span className="text-[10px] text-[var(--uv-text-muted)]">Per-note reference docs for AI</span>
-        )}
+        ) : null}
         <div className="flex gap-2">
           <button
             type="button"
@@ -185,7 +183,7 @@ export default function SourcesPanel({
             onChange={(e) => setDraftTitle(e.target.value)}
             data-testid="notes-source-title-input"
             placeholder="Title"
-            className="mb-2 w-full rounded border border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-2 py-1 text-[11px] text-[var(--uv-text-primary)]"
+            className="mb-2 w-full rounded border border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-2 py-1 text-sm text-[var(--uv-text-primary)]"
           />
           <textarea
             value={draftContent}
@@ -193,7 +191,7 @@ export default function SourcesPanel({
             data-testid="notes-source-content-input"
             rows={8}
             placeholder="Content"
-            className="mb-2 w-full resize-y rounded border border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-2 py-1 font-mono text-[10px] leading-relaxed text-[var(--uv-text-primary)]"
+            className="mb-2 w-full resize-y rounded border border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-2 py-1 font-mono text-sm leading-relaxed text-[var(--uv-text-primary)]"
           />
           <div className="flex flex-wrap gap-2">
             <button
@@ -281,7 +279,6 @@ function SourceRow({
         className={`min-w-0 flex-1 truncate text-left hover:underline ${
           enabled ? 'text-[var(--uv-text-primary)]' : 'text-[var(--uv-text-muted)]'
         }`}
-        title="View or edit source"
       >
         {source.title}
         {source.userEdited ? <span className="ml-1 text-[9px] text-[var(--uv-text-muted)]">(edited)</span> : null}
