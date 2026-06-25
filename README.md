@@ -455,17 +455,17 @@ src/
 
 ### E2E Testing
 
-- **Playwright CLI** (default for agents/CI) — `@playwright/test` in `e2e/`; see [`.cursor/rules/playwright-testing.mdc`](.cursor/rules/playwright-testing.mdc)
-- **Cursor Playwright plugin** (MCP `plugin-playwright-playwright`) — ad-hoc UI verification on live site (“what do you see?”); enabled in [`.cursor/settings.json`](.cursor/settings.json) (`"claude-plugins-official/playwright": { "enabled": true }`); not a substitute for CLI
+**CLI vs MCP:** [`.cursor/rules/playwright-testing.mdc`](.cursor/rules/playwright-testing.mdc) — **CLI** (`@playwright/test`, `npm run test:e2e:*`) for regression/CI; **Playwright MCP plugin** (`plugin-playwright-playwright`) for ad-hoc smoke only. Plugin enabled in [`.cursor/settings.json`](.cursor/settings.json) (`"claude-plugins-official/playwright"` only — no duplicate keys or manual `mcp.json`).
+
 - **Coverage**: Home, navigation (all games on the main grid), Game24 (practice), Jeopardy, Poker, TMR, Chwazi, Daily-log, Pear Navigator, Mental Obstacle Course, party games (Quip Clash, Fib It, Enough About You), **Connections** ([`e2e/connections.spec.ts`](e2e/connections.spec.ts) + in-memory [`e2e/helpers/connections-mock.ts`](e2e/helpers/connections-mock.ts)), Leaderboards, **Coming Soon API** ([`e2e/home-coming-soon-api.spec.ts`](e2e/home-coming-soon-api.spec.ts)). **Local**: Chromium + Mobile Chrome. **`CI=1` / `npm run test:e2e:ci`**: Chromium only (faster, less memory).
 - **Dev server**: Playwright starts `next dev` on **port 3001** by default (`PLAYWRIGHT_WEB_PORT`, `PLAYWRIGHT_BASE_URL` to override).
 - **Deployment-only E2E**: `npm run test:e2e:deployment` … **Notes layout/visual**: **`npm run test:e2e:notes-visual`**
-- **Agent**: Default **CLI** (`npm run test:e2e:notes`, etc.). Use **Playwright MCP plugin** for human-like UI checks on sfjc.dev; then add CLI specs for anything reproducible. Use `/e2e-reviewer` for full E2E iteration.
+- **Agent**: `/e2e-reviewer` for full E2E iteration; follow the rule above for CLI vs plugin.
 
 ### MCP Servers
 
 - **Supabase MCP** (`plugin-supabase-supabase`): Database queries, migrations, project management — [`.cursor/settings.json`](.cursor/settings.json) `"supabase"`
-- **Playwright MCP** (`plugin-playwright-playwright`): Ad-hoc browser QA (navigate, snapshot, screenshot); CLI remains primary for regression — [`.cursor/settings.json`](.cursor/settings.json) `"claude-plugins-official/playwright"`. See [`.cursor/rules/playwright-testing.mdc`](.cursor/rules/playwright-testing.mdc)
+- **Playwright MCP** (`plugin-playwright-playwright`): Ad-hoc smoke only — see [`.cursor/rules/playwright-testing.mdc`](.cursor/rules/playwright-testing.mdc)
 - **Vercel MCP** (`plugin-vercel-vercel`): Deployments, build/runtime logs, project info — [`.cursor/settings.json`](.cursor/settings.json) `"vercel"`. See [`.cursor/rules/vercel-deployments.mdc`](.cursor/rules/vercel-deployments.mdc)
   - Project: `jon-fun` (`prj_p0GxMYUx0l1bfSrEVJQ161WkgTFe`)
   - Team: jychen04's projects
@@ -513,8 +513,9 @@ src/
 Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
 
 - **2026-06-25**: **SFJC stress-test fixes** — party games: applied `20260625120000_party_games.sql` (Supabase `party_*` tables + RLS); Quip Clash / Fib It / EAY name `maxLength` + empty join/create errors; poker PIN validated before seat pick; daily-log edit modal z-index; MOC speed early-tap freeze + ASCII minus; TMR duration clamp; e-reader chapter nav on direct URL + detect-chapters feedback; 24 Game numeric PIN; Connections word `maxLength`. **Veridian** (nested repo): AI prompt injection hardening via untrusted canvas boundaries in `Veridian/src/lib/server/ai.ts`.
-- **2026-06**: **Vercel Cursor plugin** — `"vercel": { "enabled": true }` in [`.cursor/settings.json`](.cursor/settings.json) (MCP `plugin-vercel-vercel`); agent rule [`.cursor/rules/vercel-deployments.mdc`](.cursor/rules/vercel-deployments.mdc) for deploy status, build/runtime logs, env vars. All three MCP plugins enabled: supabase, playwright, vercel.
-- **2026-06**: **Render removed** — no `render.yaml` or Render deploy scripts in Jon-fun; sfjc.dev/veridian is Vercel-only. Updated [docs/VERIDIAN_WORKSPACE.md](docs/VERIDIAN_WORKSPACE.md) (EdTech Render backend deprecated). Playwright: one plugin — `"claude-plugins-official/playwright"` in [`.cursor/settings.json`](.cursor/settings.json) (MCP `plugin-playwright-playwright`); ad-hoc QA vs CLI: [`.cursor/rules/playwright-testing.mdc`](.cursor/rules/playwright-testing.mdc).
+- **2026-06**: **Playwright docs consolidated** — single agent rule [`.cursor/rules/playwright-testing.mdc`](.cursor/rules/playwright-testing.mdc) (CLI vs MCP plugin vs `cursor-ide-browser`); one plugin key `"claude-plugins-official/playwright"` in [`.cursor/settings.json`](.cursor/settings.json); no manual `mcp.json`.
+- **2026-06**: **Vercel Cursor plugin** — `"vercel": { "enabled": true }` in [`.cursor/settings.json`](.cursor/settings.json) (MCP `plugin-vercel-vercel`); agent rule [`.cursor/rules/vercel-deployments.mdc`](.cursor/rules/vercel-deployments.mdc) for deploy status, build/runtime logs, env vars. MCP plugins enabled: supabase, playwright, vercel.
+- **2026-06**: **Render removed** — no `render.yaml` or Render deploy scripts in Jon-fun; sfjc.dev/veridian is Vercel-only. Updated [docs/VERIDIAN_WORKSPACE.md](docs/VERIDIAN_WORKSPACE.md) (EdTech Render backend deprecated).
 - **2026-06**: **Notes sync** — fix fast-typing corruption: re-read localStorage after remote fetch, serialize sync writes, skip remote overwrite while editing/focused, E2E stress tests (`notes-sync-race.spec.ts`).
 - **2026-06**: **Notes mobile** — dedicated `test:e2e:notes-mobile` (390×844); panel overlay + backdrop; scrollable tag row + toolbar; vault sort stable on note switch (switch history no longer bumps `updatedAt`).
 - **2026-06**: **Notes legacy cleanup** — removed uvimco redirects, localStorage migration, npm script aliases, CodeMirror CSS classes; CSS renamed to `notes-*`; admin key `notes_admin_ok`.

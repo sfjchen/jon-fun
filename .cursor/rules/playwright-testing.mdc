@@ -37,6 +37,10 @@ Use the **plugin** only when CLI is insufficient — same Playwright APIs, **not
 - CI-style regression (no parallel suite, no `page.route` mocks, no HTML report/traces)
 - Proving a fix — always confirm with CLI after
 
+## Not cursor-ide-browser
+
+Cursor’s built-in **`cursor-ide-browser`** MCP is separate (IDE page automation). Do **not** substitute it for Playwright CLI or the Playwright plugin when running E2E regression or Notes QA.
+
 ## Workflow
 
 1. **Implement fix** → run relevant **CLI** tests
