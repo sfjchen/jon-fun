@@ -36,15 +36,27 @@ function ownerVaultProtected(): boolean {
   return ownerSyncPassword().length > 0
 }
 
-/** Returns error message when owner vault access denied, else null. */
+/** Returns error message when owner vault read (GET) denied, else null. Password only — no device gate. */
+export function assertOwnerVaultReadAccess(
+  userId: string | undefined | null,
+  syncPassword?: string | null,
+): string | null {
+  if (!ownerVaultProtected()) return null
+  if ((userId ?? '').trim() !== SFJC_OWNER_SYNC_PASSWORD_USER_ID) return null
+  if (!isValidSyncPassword(syncPassword)) return NOTES_VAULT_ACCESS_DENIED
+  return null
+}
+
+/** Returns error message when owner vault write denied, else null. Password + admin device. */
 export function assertOwnerVaultAccess(
   userId: string | undefined | null,
   syncPassword?: string | null,
   deviceUserId?: string | null,
 ): string | null {
+  const readDenied = assertOwnerVaultReadAccess(userId, syncPassword)
+  if (readDenied) return readDenied
   if (!ownerVaultProtected()) return null
   if ((userId ?? '').trim() !== SFJC_OWNER_SYNC_PASSWORD_USER_ID) return null
-  if (!isValidSyncPassword(syncPassword)) return NOTES_VAULT_ACCESS_DENIED
   if (!isAdminDeviceId(deviceUserId)) return NOTES_VAULT_DEVICE_DENIED
   return null
 }

@@ -248,20 +248,47 @@ export function resetLocalNotesVault(): NoteSession {
   return session
 }
 
+async function fetchRawSessionsFromServer(
+  userId: string,
+  syncPasswordOverride?: string,
+): Promise<{ sessions: NoteSession[]; error?: string }> {
+  const deviceUserId = getOrCreateUserId()
+  const qs = new URLSearchParams({ userId, deviceUserId })
+  const syncPassword = syncPasswordOverride ?? getSyncKey()
+  if (syncPassword) qs.set('syncPassword', syncPassword)
+  try {
+    const res = await fetch(`/api/notes/sessions?${qs.toString()}`)
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`
+      try {
+        const data = (await res.json()) as { error?: string }
+        if (data.error) msg = data.error
+      } catch {
+        /* ignore */
+      }
+      return { sessions: [], error: msg }
+    }
+    const data = (await res.json()) as { sessions?: NoteSession[] }
+    const sessions = Array.isArray(data.sessions) ? data.sessions.map(normalizeSession) : []
+    return { sessions }
+  } catch {
+    return { sessions: [], error: 'Network error — check connection' }
+  }
+}
+
 export async function restoreFromServer(
   userId: string,
 ): Promise<{ restored: number; cleared?: boolean; error?: string }> {
   if (typeof window === 'undefined') return { restored: 0 }
   const key = userId.trim()
   if (!key) return { restored: 0, error: 'Enter sync password or device ID' }
-  const remoteRaw = await fetchRawSessionsFromServer(key)
+
+  const { sessions: remoteRaw, error } = await fetchRawSessionsFromServer(key, key)
+  if (error) return { restored: 0, error }
+
   syncFoldersFromSessions(remoteRaw)
   const remote = withNormalizedTitles(remoteRaw)
   if (remote.length === 0) {
-    const syncPassword = getSyncKey() || key
-    const qs = new URLSearchParams({ userId: key, syncPassword, deviceUserId: getOrCreateUserId() })
-    const res = await fetch(`/api/notes/sessions?${qs.toString()}`)
-    if (!res.ok) return { restored: 0, error: 'Failed to fetch' }
     setSyncKey(key)
     resetLocalNotesVault()
     return { restored: 0, cleared: true }
@@ -272,19 +299,9 @@ export async function restoreFromServer(
   return { restored: remote.length }
 }
 
-async function fetchRawSessionsFromServer(userId: string): Promise<NoteSession[]> {
-  const syncPassword = getSyncKey()
-  const deviceUserId = getOrCreateUserId()
-  const qs = new URLSearchParams({ userId, deviceUserId })
-  if (syncPassword) qs.set('syncPassword', syncPassword)
-  const res = await fetch(`/api/notes/sessions?${qs.toString()}`)
-  if (!res.ok) return []
-  const data = (await res.json()) as { sessions?: NoteSession[] }
-  return Array.isArray(data.sessions) ? data.sessions.map(normalizeSession) : []
-}
-
 export async function fetchSessionsFromServer(): Promise<NoteSession[]> {
-  return withNormalizedTitles(await fetchRawSessionsFromServer(getEffectiveUserId()))
+  const { sessions } = await fetchRawSessionsFromServer(getEffectiveUserId())
+  return withNormalizedTitles(sessions)
 }
 
 async function pushWithRetry(sessions: NoteSession[]): Promise<boolean> {
@@ -322,7 +339,7 @@ export async function syncWithServer(): Promise<{ sessions: NoteSession[]; pushO
   if (typeof window === 'undefined') return { sessions: loadSessions(), pushOk: true }
   return runSyncExclusive(async () => {
     const userId = getEffectiveUserId()
-    const remoteRaw = await fetchRawSessionsFromServer(userId)
+    const { sessions: remoteRaw } = await fetchRawSessionsFromServer(userId)
     const local = loadSessions()
     syncFoldersFromSessions([...local, ...remoteRaw])
     const merged = mergeSessions(local, remoteRaw)
