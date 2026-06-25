@@ -71,16 +71,9 @@ npm run test:e2e:notes-deploy
 npm run smoke:notes-llm
 ```
 
-## Playwright: CLI vs Cursor plugin
+## Playwright
 
-| Tool | When |
-|------|------|
-| **CLI** (`npm run test:e2e:notes`) | Default — regression, mocks, CI, new specs |
-| **Playwright MCP plugin** (`plugin-playwright-playwright`) | Human QA only — “try on sfjc.dev and describe what you see”; promote to CLI if reproducible |
-
-**Plugin enable:** [`.cursor/settings.json`](../.cursor/settings.json) → `"claude-plugins-official/playwright": { "enabled": true }` (MCP `plugin-playwright-playwright`). One entry only — no short `"playwright"` key or manual `mcp.json`. If MCP tools absent: **Settings → Plugins** → install Playwright → **Tools & MCP** → enable → reload window.
-
-Project rule: [`.cursor/rules/playwright-testing.mdc`](../.cursor/rules/playwright-testing.mdc)
+Notes E2E: `npm run test:e2e:notes`, `test:e2e:notes-mobile`, `test:e2e:notes-deploy` (above). CLI vs MCP plugin, enable steps, and `cursor-ide-browser` distinction — [`.cursor/rules/playwright-testing.mdc`](../.cursor/rules/playwright-testing.mdc) (single source of truth).
 
 ## Common agent mistakes
 
