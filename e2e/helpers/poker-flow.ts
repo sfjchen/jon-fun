@@ -82,6 +82,7 @@ export function potLocator(page: Page) {
 
 export async function setBetAmount(page: Page, amount: number): Promise<void> {
   const input = page.locator('input[type="number"]').first()
+  await expect(input).toBeVisible({ timeout: 20_000 })
   await input.click()
   await input.selectText()
   await input.pressSequentially(String(amount), { delay: 30 })

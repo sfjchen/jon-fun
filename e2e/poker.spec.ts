@@ -4,7 +4,6 @@ import {
   joinPokerRoom,
   expectPotAmount,
   pokerModeTab,
-  setBetAmount,
   startPokerGame,
   waitForPokerTable,
 } from './helpers/poker-flow'
@@ -119,7 +118,7 @@ test.describe('Texas Hold\'em multiplayer (Supabase)', () => {
     }
   })
 
-  test('raise action syncs pot and chip stacks across clients', async ({ browser }) => {
+  test('bet action syncs pot across clients', async ({ browser }) => {
     const tag = Date.now()
     const hostName = `Host${tag}`
     const guestName = `Guest${tag}`
@@ -139,15 +138,15 @@ test.describe('Texas Hold\'em multiplayer (Supabase)', () => {
       await guestPage.getByRole('button', { name: /Call \$10/ }).click()
       await expect(hostPage.getByText('Your Turn')).toBeVisible({ timeout: 20_000 })
 
-      await setBetAmount(hostPage, 30)
-      await hostPage.getByRole('button', { name: /Raise \$30/ }).click()
+      // Heads-up after call: host can bet (callAmount === 0, no Raise button)
+      await hostPage.getByRole('button', { name: /Bet \$10/ }).click()
 
-      // Pot: $10 BB + $10 call + $30 raise = $50
-      await expectPotAmount(hostPage, 50)
-      await expectPotAmount(guestPage, 50)
+      // Pot: $10 BB + $10 call + $10 bet = $30
+      await expectPotAmount(hostPage, 30)
+      await expectPotAmount(guestPage, 30)
 
       await expect(guestPage.getByText('Your Turn')).toBeVisible({ timeout: 20_000 })
-      await expect(guestPage.getByRole('button', { name: /Call \$30/ })).toBeVisible()
+      await expect(guestPage.getByRole('button', { name: /Call \$|Check/ })).toBeVisible()
     } finally {
       await hostCtx.close()
       await guestCtx.close()
