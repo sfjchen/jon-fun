@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { NOTE_SESSIONS_TABLE } from '@/lib/notes/db'
+import { assertOwnerVaultAccess } from '@/lib/sfjc-sync-auth'
 import { supabaseAdmin } from '@/lib/supabase'
 import type { NoteSession } from '@/lib/notes/types'
 
@@ -37,6 +38,9 @@ export async function GET(request: NextRequest) {
     const userId = request.nextUrl.searchParams.get('userId')?.trim()
     if (!userId) return NextResponse.json({ error: 'userId required' }, { status: 400 })
 
+    const denied = assertOwnerVaultAccess(userId, request.nextUrl.searchParams.get('syncPassword'))
+    if (denied) return NextResponse.json({ error: denied }, { status: 403 })
+
     const { data, error } = await supabaseAdmin
       .from(NOTE_SESSIONS_TABLE)
       .select('session_id, title, notes, tags, metadata, lookups, screenshots, started_at, updated_at')
@@ -55,8 +59,16 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, sessions } = body as { userId?: string; sessions?: NoteSession[] }
+    const { userId, sessions, syncPassword } = body as {
+      userId?: string
+      sessions?: NoteSession[]
+      syncPassword?: string
+    }
     if (!userId?.trim()) return NextResponse.json({ error: 'userId required' }, { status: 400 })
+
+    const denied = assertOwnerVaultAccess(userId, syncPassword)
+    if (denied) return NextResponse.json({ error: denied }, { status: 403 })
+
     const list = Array.isArray(sessions) ? sessions : []
     if (list.length === 0) return NextResponse.json({ ok: true })
 
@@ -87,10 +99,18 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, sessionId } = body as { userId?: string; sessionId?: string }
+    const { userId, sessionId, syncPassword } = body as {
+      userId?: string
+      sessionId?: string
+      syncPassword?: string
+    }
     if (!userId?.trim() || !sessionId?.trim()) {
       return NextResponse.json({ error: 'userId and sessionId required' }, { status: 400 })
     }
+
+    const denied = assertOwnerVaultAccess(userId, syncPassword)
+    if (denied) return NextResponse.json({ error: denied }, { status: 403 })
+
     const { error } = await supabaseAdmin
       .from(NOTE_SESSIONS_TABLE)
       .delete()

@@ -444,6 +444,10 @@
 }
 
 @media (max-width: 767px) {
+  .notes-panel-backdrop {
+    bottom: calc(2.25rem + env(safe-area-inset-bottom));
+  }
+
   .notes-root {
     min-height: 100dvh;
   }
@@ -454,6 +458,8 @@
   }
 
   .notes-statusbar-mobile {
+    position: relative;
+    z-index: 40;
     padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
   }
 

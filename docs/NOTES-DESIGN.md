@@ -90,11 +90,11 @@ Breakpoint **`768px`** (`md`) — helpers in [`device.ts`](../../src/lib/notes/d
 
 | Tier | Detect | Panel | Shortcuts | Chrome |
 |------|--------|-------|-----------|--------|
-| **Phone** | ≤767px / touch viewport | Overlay + backdrop dismiss; no “Panel” header; optional floating ×; closed by default | Status bar buttons only (no kbd badges); **no** Ctrl/Cmd panel/search/summarize handlers except **save** in fields | Safe-area insets; 44px tap targets; horizontal toolbar scroll; summarize runs AI without opening panel |
+| **Phone** | ≤767px / touch viewport | Overlay + backdrop dismiss; no panel header or ×; closed by default | Status bar buttons only (no kbd badges); **no** Ctrl/Cmd panel/search/summarize handlers except **save** in fields | Safe-area insets; 44px tap targets; horizontal toolbar scroll; summarize runs AI without opening panel |
 | **Laptop / desktop** | ≥768px pointer | Side-by-side; resizable handle; **open by default** (persisted in `notes_ui_prefs`) | Full keyboard map — **Cmd** labels on Mac, **Ctrl** on Windows/Linux; metaKey + ctrlKey both accepted | Hints row in status bar; summarize opens panel |
 | **Mac-specific** | `navigator.platform` / `userAgentData` | Same as desktop | UI badges use **Cmd+…**; handlers accept ⌘ | — |
 
-Shared: `?` / `??` triggers always open panel (phone included); Escape closes search → panel → clears lookup focus.
+Shared: `?` / `??` triggers always open panel (phone included); Escape closes search or clears lookup focus — **does not** close the side panel.
 
 ## E2E test matrix
 

@@ -28,7 +28,8 @@ Use admin device ids for future owner-only admin routes, debugging, and agent co
 
 ## Notes AI access
 
-- **`POST /api/notes/lookup`** and **`POST /api/notes/embed`** require a valid sync password in the request body when `SFJC_SYNC_PASSWORD` is set.
+- **`POST /api/notes/lookup`** and **`POST /api/notes/embed`** require a valid sync password **and** a registered admin device id (`deviceUserId`) when `SFJC_SYNC_PASSWORD` is set.
+- **`GET/POST/DELETE /api/notes/sessions`** for owner vault user id `MLpnko#12` requires `syncPassword` when `SFJC_SYNC_PASSWORD` is set.
 - Without the password, API returns **403** with the standard denial message.
 - Client sends `syncPassword` from localStorage + `deviceUserId` for auditing.
 
