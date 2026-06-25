@@ -5,6 +5,7 @@ import {
   getEffectiveUserId,
   getOrCreateUserId,
   getSyncPassword,
+  resetLocalNotesVault,
   restoreFromServer,
   setSyncPassword,
   syncWithServer,
@@ -34,14 +35,31 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
   async function handleRestore() {
     setBusy(true)
     setStatus(null)
-    const { restored, error } = await restoreFromServer(restoreKey)
+    const { restored, cleared, error } = await restoreFromServer(restoreKey)
     setBusy(false)
     if (error) setStatus(error)
-    else if (restored > 0) {
+    else if (cleared) {
+      setSyncPasswordInput(restoreKey.trim())
+      setStatus('Local vault cleared — server is empty')
+      onSynced({ skipPersist: true, force: true })
+    } else if (restored > 0) {
       setSyncPasswordInput(restoreKey.trim())
       setStatus(`Restored ${restored} note(s)`)
       onSynced({ skipPersist: true, force: true })
     } else setStatus('No notes found')
+  }
+
+  function handleClearLocal() {
+    if (
+      !window.confirm(
+        'Clear all notes on this device? Server vault is unchanged unless you sync. Built-in source packs stay.',
+      )
+    ) {
+      return
+    }
+    resetLocalNotesVault()
+    setStatus('Local vault cleared')
+    onSynced({ skipPersist: true, force: true })
   }
 
   function copyDeviceId() {
@@ -99,6 +117,14 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
         title={getOrCreateUserId()}
       >
         Copy device ID ({getEffectiveUserId().slice(0, 8)}…)
+      </button>
+      <button
+        type="button"
+        onClick={handleClearLocal}
+        data-testid="notes-clear-local-vault"
+        className="mt-2 block text-[10px] text-[var(--uv-text-muted)] hover:text-red-400"
+      >
+        Clear local vault…
       </button>
       {status ? <p className="mt-2 text-[11px] text-[var(--uv-text-secondary)]">{status}</p> : null}
     </div>
