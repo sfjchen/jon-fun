@@ -1,0 +1,42 @@
+---
+description: Vercel deploy status, build logs, env vars — use Vercel MCP after push to main
+alwaysApply: true
+---
+
+# Vercel deployments (agents)
+
+sfjc.dev deploys from **`main`** via Vercel. After substantive pushes, confirm the deployment succeeded before telling the user changes are live.
+
+## Cursor Vercel plugin (MCP `plugin-vercel-vercel`)
+
+**Enable (repo):** [`.cursor/settings.json`](../settings.json) → `"vercel": { "enabled": true }`. MCP server id: **`plugin-vercel-vercel`**. If tools missing: Cursor **Settings → Tools & MCP** → Vercel on → **Reload Window** (authenticate with Vercel if prompted).
+
+**Invoke:** agent calls MCP tools via `CallMcpTool` with `server: "plugin-vercel-vercel"`.
+
+**Project:** `jon-fun` (`prj_p0GxMYUx0l1bfSrEVJQ161WkgTFe`) · **Team:** jychen04's projects (use `list_teams` or `.vercel/project.json` `orgId` for `teamId`).
+
+## When to use Vercel MCP
+
+- **Deploy failed** after push — `list_deployments` → `get_deployment_build_logs` (`errorsOnly: true` first)
+- **"Changes not live"** — check latest deployment state vs `main` HEAD
+- **Runtime errors** on preview/prod — `get_runtime_logs`, `get_runtime_errors`
+- **Env var / project config** questions — `get_project`; see Vercel skill `env-vars` for `.env` / dashboard patterns
+
+## Key MCP tools
+
+| Tool | Use |
+|------|-----|
+| `list_deployments` | Recent deploys for project + team |
+| `get_deployment` | Status, URL, commit for one deploy |
+| `get_deployment_build_logs` | Build failures (`errorsOnly`, `direction: tail`) |
+| `get_runtime_logs` / `get_runtime_errors` | Production/preview runtime issues |
+| `get_project` / `list_projects` | Project metadata, linked repo |
+| `list_teams` | Resolve `teamId` when unknown |
+
+## Workflow
+
+1. **Push to `main`** → `list_deployments` (or `get_deployment` for known id)
+2. **Build error** → `get_deployment_build_logs` with `errorsOnly: true` → fix locally → `npm run build` → push again
+3. **Live site bug** → runtime logs first; Playwright CLI/plugin for UI verification (see [playwright-testing.mdc](./playwright-testing.mdc))
+
+**Do not** ask the user to paste Vercel dashboard logs when MCP auth works — fetch them yourself.
