@@ -2,8 +2,9 @@
  * Notes — localStorage + Supabase sync (mirrors daily-learn pattern).
  */
 
-import { normalizeSessionTitle } from './prefs'
+import { createEmptySessionId, getOrCreateUserId, stampDeviceOnMetadata } from './deviceIdentity'
 import { saveGlossary } from './glossary'
+import { normalizeSessionTitle } from './prefs'
 import { ensureBuiltinSources } from './knowledge/builtinSources'
 import { saveSourcesLocal } from './sources'
 import { sanitizeMetadataText, sanitizeSessionForSync, sanitizeTags } from './textSanitize'
@@ -20,10 +21,11 @@ import type { NoteFolder, NoteSession, Screenshot } from './types'
 
 export { buildSessionMarkdown, exportSessionMarkdown } from './export'
 
-const USER_ID_KEY = 'notes_user_id'
 const SYNC_KEY = 'notes_sync_key'
 export const SESSIONS_KEY = 'notes_sessions'
 const ACTIVE_SESSION_KEY = 'notes_active_session_id'
+
+export { getOrCreateUserId } from './deviceIdentity'
 
 const PUSH_RETRIES = 3
 const RETRY_DELAY_MS = 500
@@ -38,25 +40,6 @@ function runSyncExclusive<T>(fn: () => Promise<T>): Promise<T> {
     () => undefined,
   )
   return run
-}
-
-function genUuid(): string {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0
-    const v = c === 'x' ? r : (r & 0x3) | 0x8
-    return v.toString(16)
-  })
-}
-
-export function getOrCreateUserId(): string {
-  if (typeof window === 'undefined') return ''
-  let id = localStorage.getItem(USER_ID_KEY)
-  if (!id) {
-    id = genUuid()
-    localStorage.setItem(USER_ID_KEY, id)
-  }
-  return id
 }
 
 export function getSyncKey(): string {
@@ -83,7 +66,7 @@ export function createEmptySession(title?: string, folderId?: string | null): No
   const now = new Date().toISOString()
   const defaultTitle = title ?? ''
   return {
-    id: genUuid(),
+    id: createEmptySessionId(),
     title: defaultTitle,
     notes: '',
     tags: [],
@@ -228,12 +211,16 @@ export function isSessionDirty(session: NoteSession, baseline?: NoteSession): bo
 
 /** Persist session as-is — preserves updatedAt unless caller already bumped it. */
 export function upsertSession(session: NoteSession): NoteSession {
+  const stamped: NoteSession = {
+    ...session,
+    metadata: stampDeviceOnMetadata(session.metadata),
+  }
   const sessions = loadSessions()
-  const idx = sessions.findIndex((s) => s.id === session.id)
-  if (idx >= 0) sessions[idx] = session
-  else sessions.unshift(session)
+  const idx = sessions.findIndex((s) => s.id === stamped.id)
+  if (idx >= 0) sessions[idx] = stamped
+  else sessions.unshift(stamped)
   saveSessionsLocal(sessions)
-  return session
+  return stamped
 }
 
 export function resetLocalNotesVault(): NoteSession {
@@ -372,6 +359,7 @@ export function patchSession(id: string, patch: SessionPatch): NoteSession {
     ...patch,
     id,
     updatedAt: new Date().toISOString(),
+    metadata: stampDeviceOnMetadata(patch.metadata ?? base.metadata),
   }
   if (idx >= 0) sessions[idx] = updated
   else sessions.unshift(updated)

@@ -12,6 +12,7 @@ type NotesTopBarProps = {
   title: string
   startedAt: string
   updatedAt: string
+  lastDeviceLabel?: string
   tags: string[]
   sessions: NoteSession[]
   onTitleChange: (title: string) => void
@@ -33,6 +34,7 @@ export default function NotesTopBar({
   title,
   startedAt,
   updatedAt,
+  lastDeviceLabel,
   tags,
   sessions,
   onTitleChange,
@@ -112,6 +114,14 @@ export default function NotesTopBar({
           <span title={`Last modified ${formatDateTime(updatedAt)}`} data-testid="notes-modified-at">
             Modified {formatDateTime(updatedAt)}
           </span>
+          {lastDeviceLabel ? (
+            <>
+              <span className="mx-1.5 text-[var(--uv-border)]">·</span>
+              <span title="Last edited on this device" data-testid="notes-last-device">
+                {lastDeviceLabel}
+              </span>
+            </>
+          ) : null}
         </span>
         <TagChips
           tags={tags}

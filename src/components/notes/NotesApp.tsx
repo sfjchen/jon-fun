@@ -911,7 +911,6 @@ export default function NotesApp() {
   }, [syncAllToServer])
 
   const handleDeleteFolder = useCallback((folderId: string) => {
-    if (!window.confirm('Delete folder? Notes move to Inbox.')) return
     const { folders: nextFolders, sessions: nextSessions } = deleteFolder(folderId, loadSessions())
     saveSessionsLocal(nextSessions)
     setFolders(nextFolders)
@@ -1149,6 +1148,9 @@ export default function NotesApp() {
         title={state.session.title}
         startedAt={state.session.startedAt}
         updatedAt={state.session.updatedAt}
+        {...(state.session.metadata?.lastDeviceLabel
+          ? { lastDeviceLabel: state.session.metadata.lastDeviceLabel }
+          : {})}
         tags={state.session.tags ?? []}
         sessions={state.sessions}
         onTitleChange={(title) => {

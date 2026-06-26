@@ -53,7 +53,6 @@ export default function DictionaryPanel({ refreshKey = 0, noteId, onChange, embe
   }
 
   function remove(term: string) {
-    if (!window.confirm(`Delete "${term}" from dictionary?`)) return
     deleteDictionaryEntry(term)
     if (editingKey === term.toLowerCase()) cancelEdit()
     onChange?.()
