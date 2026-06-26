@@ -71,56 +71,38 @@ export default function NotesTopBar({
     setCatalogTick((n) => n + 1)
   }
 
+  const dateHint = [
+    `Created ${formatDateTime(startedAt)}`,
+    `Modified ${formatDateTime(updatedAt)}`,
+    lastDeviceLabel ? lastDeviceLabel : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+
   return (
     <header
-      className="flex shrink-0 flex-col border-b border-[var(--uv-border)] bg-[var(--uv-bg-base)]"
+      className="flex min-h-9 shrink-0 items-center gap-x-2 border-b border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-3 py-1 sm:gap-x-3 sm:px-4"
       data-testid="notes-top-bar"
     >
-      <div className="flex min-h-11 items-center gap-x-3 px-3 py-1.5 sm:px-4">
-        <input
-          value={title}
-          onChange={(e) => onTitleChange(e.target.value)}
-          className="min-w-0 flex-1 bg-transparent text-base font-semibold text-[var(--uv-text-primary)] placeholder:font-normal placeholder:italic placeholder:text-[var(--uv-text-muted)] focus:outline-none sm:text-lg"
-          placeholder="Untitled"
-          aria-label="Note title"
-          data-testid="notes-meeting-title"
-        />
-
-        <button
-          type="button"
-          onClick={onDeleteNote}
-          data-testid="notes-delete-note"
-          title="Delete note"
-          className="shrink-0 rounded px-2 py-0.5 text-[11px] text-[var(--uv-text-muted)] hover:bg-red-50 hover:text-red-600"
-        >
-          Delete
-        </button>
-
-        <HomeLink variant="notes" className="ml-1 shrink-0" data-testid="notes-home-link" />
-      </div>
+      <input
+        value={title}
+        onChange={(e) => onTitleChange(e.target.value)}
+        title={dateHint}
+        className="w-[min(11rem,32vw)] min-w-[4.5rem] max-w-[14rem] shrink-0 bg-transparent text-sm font-semibold text-[var(--uv-text-primary)] placeholder:font-normal placeholder:italic placeholder:text-[var(--uv-text-muted)] focus:outline-none sm:w-auto sm:max-w-[16rem] sm:text-base"
+        placeholder="Untitled"
+        aria-label="Note title"
+        data-testid="notes-meeting-title"
+      />
 
       <div
-        className="notes-tag-row-mobile flex gap-1 overflow-x-auto px-3 pb-2 sm:flex-wrap sm:justify-end sm:overflow-visible sm:px-4"
+        className="notes-tag-row-mobile flex min-w-0 flex-1 items-center gap-1 overflow-x-auto sm:flex-wrap sm:overflow-visible"
         data-testid="notes-tag-row"
       >
-        <span
-          className="hidden shrink-0 text-[10px] text-[var(--uv-text-muted)] xl:inline"
-          data-testid="notes-dates"
-        >
-          <span title={`Created ${formatDateTime(startedAt)}`} data-testid="notes-created-at">
-            Created {formatDateTime(startedAt)}
-          </span>
-          <span className="mx-1.5 text-[var(--uv-border)]">·</span>
-          <span title={`Last modified ${formatDateTime(updatedAt)}`} data-testid="notes-modified-at">
-            Modified {formatDateTime(updatedAt)}
-          </span>
+        <span className="sr-only" data-testid="notes-dates">
+          <span data-testid="notes-created-at">Created {formatDateTime(startedAt)}</span>
+          <span data-testid="notes-modified-at">Modified {formatDateTime(updatedAt)}</span>
           {lastDeviceLabel ? (
-            <>
-              <span className="mx-1.5 text-[var(--uv-border)]">·</span>
-              <span title="Last edited on this device" data-testid="notes-last-device">
-                {lastDeviceLabel}
-              </span>
-            </>
+            <span data-testid="notes-last-device">{lastDeviceLabel}</span>
           ) : null}
         </span>
         <TagChips
@@ -132,6 +114,18 @@ export default function NotesTopBar({
         />
         <TagInput draft={draft} setDraft={setDraft} commitDraft={commitDraft} />
       </div>
+
+      <button
+        type="button"
+        onClick={onDeleteNote}
+        data-testid="notes-delete-note"
+        title="Delete note"
+        className="shrink-0 rounded px-1.5 py-0.5 text-[11px] text-[var(--uv-text-muted)] hover:bg-red-50 hover:text-red-600"
+      >
+        Delete
+      </button>
+
+      <HomeLink variant="notes" className="shrink-0" data-testid="notes-home-link" />
     </header>
   )
 }
