@@ -445,4 +445,4 @@ export async function streamLookupWithFallback(
   })
 }
 
-export { resolveSystemPrompt, buildLineSystemPrompt } from './knowledge/prompts'
+export { resolveSystemPrompt, buildLineSystemPrompt, isFormulaDefinitionQuery } from './knowledge/prompts'
