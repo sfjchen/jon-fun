@@ -347,11 +347,12 @@ test.describe('Notes', () => {
     await page.getByTestId('notes-lookup-input').press('Enter')
     await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15_000 })
     await expect(page.getByTestId('notes-side-panel')).toContainText('fund TVPI ratio?')
-    await expect(page.getByTestId('notes-lookup-input')).toBeHidden()
-    await expect(page.getByTestId('notes-followup-input')).toBeVisible()
+    await expect(page.getByTestId('notes-lookup-input')).toBeVisible()
+    await expect(page.locator('[data-testid^="notes-lookup-pane-"]')).toHaveCount(1)
+    await expect(page.locator('[data-testid^="notes-followup-input-"]')).toHaveCount(1)
   })
 
-  test('switches between lookup chats with one composer visible', async ({ page }) => {
+  test('stacked lookup panes and history reopen', async ({ page }) => {
     const editor = notesEditor(page)
     await editor.click()
     await page.keyboard.type('first topic?')
@@ -364,23 +365,18 @@ test.describe('Notes', () => {
     await waitForNotesTrigger(page)
     await waitForLookupComplete(page)
 
-    await expect(page.getByTestId('notes-lookup-input')).toBeHidden()
-    await expect(page.getByTestId('notes-followup-input')).toBeVisible()
+    const panes = page.locator('[data-testid^="notes-lookup-pane-"]')
+    await expect(panes).toHaveCount(2)
+    await expect(page.getByTestId('notes-lookup-input')).toBeVisible()
+    await expect(page.locator('[data-testid^="notes-followup-input-"]')).toHaveCount(2)
+
+    await panes.filter({ hasText: 'first topic?' }).getByRole('button', { name: 'Close this lookup' }).click()
+    await expect(panes).toHaveCount(1)
 
     const historyButtons = page.locator('[data-testid^="notes-lookup-history-"]')
     await expect(historyButtons).toHaveCount(2)
-    await historyButtons.nth(1).click()
-    await expect(historyButtons.nth(1)).toHaveAttribute('data-active', 'true')
-    await expect(page.getByTestId('notes-side-panel')).toContainText('first topic?')
-
-    await historyButtons.first().click()
-    await expect(historyButtons.first()).toHaveAttribute('data-active', 'true')
-    await expect(page.getByTestId('notes-side-panel')).toContainText('second topic?')
-    await expect(page.getByTestId('notes-lookup-input')).toBeHidden()
-
-    await page.getByTestId('notes-clear-lookup').click()
-    await expect(page.getByTestId('notes-lookup-input')).toBeVisible()
-    await expect(page.getByTestId('notes-followup-input')).toBeHidden()
+    await historyButtons.filter({ hasText: 'first topic?' }).click()
+    await expect(panes).toHaveCount(2)
   })
 
   test('section ?? trigger opens panel and shows mock AI response', async ({ page }) => {
@@ -400,13 +396,18 @@ test.describe('Notes', () => {
     await page.keyboard.type('fund DPI?')
     await waitForNotesTrigger(page)
     await waitForLookupComplete(page)
-    await expect(page.getByTestId('notes-chat-thread')).toContainText('E2E mock answer', { timeout: 15_000 })
+    const pane = page.locator('[data-testid^="notes-lookup-pane-"]').first()
+    await expect(pane.locator('[data-testid^="notes-chat-thread-"]')).toContainText('E2E mock answer', {
+      timeout: 15_000,
+    })
 
-    await page.getByTestId('notes-followup-input').fill('How does it relate to TVPI?')
-    await page.getByTestId('notes-followup-input').press('Enter')
+    await pane.locator('[data-testid^="notes-followup-input-"]').fill('How does it relate to TVPI?')
+    await pane.locator('[data-testid^="notes-followup-input-"]').press('Enter')
     await expect(page.getByTestId('notes-chat-user')).toContainText('TVPI', { timeout: 5000 })
-    await expect(page.getByTestId('notes-chat-thread')).toContainText('E2E mock answer', { timeout: 15_000 })
-    await expect(page.getByTestId('notes-chat-assistant')).toHaveCount(2, { timeout: 15_000 })
+    await expect(pane.locator('[data-testid^="notes-chat-thread-"]')).toContainText('E2E mock answer', {
+      timeout: 15_000,
+    })
+    await expect(pane.getByTestId('notes-chat-assistant')).toHaveCount(2, { timeout: 15_000 })
   })
 
   test('cloud sync does not wipe in-flight lookup', async ({ page }) => {

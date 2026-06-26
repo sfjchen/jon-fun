@@ -35,6 +35,49 @@ function acceptVaultDrag(e: React.DragEvent): void {
   e.dataTransfer.dropEffect = 'move'
 }
 
+const NOTE_DRAG_THRESHOLD_PX = 6
+
+function useNoteDragGate(editing: boolean) {
+  const dragOkRef = useRef(false)
+
+  const onPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (editing || e.button !== 0) return
+      dragOkRef.current = false
+      const sx = e.clientX
+      const sy = e.clientY
+      const thresholdSq = NOTE_DRAG_THRESHOLD_PX * NOTE_DRAG_THRESHOLD_PX
+      const onMove = (ev: PointerEvent) => {
+        const dx = ev.clientX - sx
+        const dy = ev.clientY - sy
+        if (dx * dx + dy * dy >= thresholdSq) dragOkRef.current = true
+      }
+      const onUp = () => {
+        window.removeEventListener('pointermove', onMove)
+        window.removeEventListener('pointerup', onUp)
+        window.removeEventListener('pointercancel', onUp)
+      }
+      window.addEventListener('pointermove', onMove)
+      window.addEventListener('pointerup', onUp)
+      window.addEventListener('pointercancel', onUp)
+    },
+    [editing],
+  )
+
+  return { dragOkRef, onPointerDown }
+}
+
+function startNoteDrag(e: React.DragEvent, sessionId: string) {
+  e.dataTransfer.setData(NOTE_DRAG, sessionId)
+  e.dataTransfer.setData('text/plain', sessionId)
+  e.dataTransfer.effectAllowed = 'move'
+  document.documentElement.setAttribute('data-notes-vault-drag', '1')
+}
+
+function endNoteDrag() {
+  document.documentElement.removeAttribute('data-notes-vault-drag')
+}
+
 type NotesVaultPanelProps = {
   sessions: NoteSession[]
   folders: NoteFolder[]
@@ -82,6 +125,27 @@ function NoteRow({
   ]
 
   const { state, close, onContextMenu, touchHandlers } = useNotesContextTrigger(() => menuItems)
+  const { dragOkRef, onPointerDown: onTitlePointerDown } = useNoteDragGate(editing)
+
+  const handleNoteDragStart = useCallback(
+    (e: React.DragEvent, immediate = false) => {
+      if (editing) {
+        e.preventDefault()
+        return
+      }
+      if (!immediate && !dragOkRef.current) {
+        e.preventDefault()
+        return
+      }
+      startNoteDrag(e, session.id)
+    },
+    [editing, dragOkRef, session.id],
+  )
+
+  const handleNoteDragEnd = useCallback(() => {
+    dragOkRef.current = false
+    endNoteDrag()
+  }, [dragOkRef])
 
   useEffect(() => {
     if (editing) inputRef.current?.select()
@@ -135,21 +199,10 @@ function NoteRow({
         draggable={!editing}
         title="Drag to folder"
         aria-hidden
-        className="cursor-grab shrink-0 rounded px-0.5 text-[10px] text-[var(--uv-text-muted)] opacity-60 hover:opacity-100 active:cursor-grabbing"
+        className="cursor-grab shrink-0 rounded px-0.5 text-[10px] text-[var(--uv-text-muted)] opacity-0 group-hover:opacity-40 hover:!opacity-70 active:cursor-grabbing"
         data-testid={`notes-note-drag-${session.id}`}
-        onDragStart={(e) => {
-          if (editing) {
-            e.preventDefault()
-            return
-          }
-          e.dataTransfer.setData(NOTE_DRAG, session.id)
-          e.dataTransfer.setData('text/plain', session.id)
-          e.dataTransfer.effectAllowed = 'move'
-          document.documentElement.setAttribute('data-notes-vault-drag', '1')
-        }}
-        onDragEnd={() => {
-          document.documentElement.removeAttribute('data-notes-vault-drag')
-        }}
+        onDragStart={(e) => handleNoteDragStart(e, true)}
+        onDragEnd={handleNoteDragEnd}
       >
         ⠿
       </span>
@@ -196,7 +249,15 @@ function NoteRow({
             className="min-w-0 flex-1 rounded border border-[var(--uv-accent)] bg-[var(--uv-bg-base)] px-1 py-0 text-xs text-[var(--uv-text-primary)] focus:outline-none"
           />
         ) : (
-          <span title="Double-click to rename" className="min-w-0 flex-1 cursor-text truncate">
+          <span
+            draggable
+            onPointerDown={onTitlePointerDown}
+            onDragStart={(e) => handleNoteDragStart(e)}
+            onDragEnd={handleNoteDragEnd}
+            title="Drag to move or split · double-click to rename"
+            data-testid={`notes-note-drag-title-${session.id}`}
+            className="min-w-0 flex-1 cursor-grab truncate select-none active:cursor-grabbing"
+          >
             {session.title || 'Untitled'}
           </span>
         )}
@@ -284,7 +345,9 @@ function useFolderDropHandlers(
     (e: React.DragEvent) => {
       e.preventDefault()
       setOver(false)
-      const noteId = e.dataTransfer.getData(NOTE_DRAG)
+      const noteId =
+        e.dataTransfer.getData(NOTE_DRAG) ||
+        (e.dataTransfer.types.includes(FOLDER_DRAG) ? '' : e.dataTransfer.getData('text/plain'))
       const fldId = e.dataTransfer.getData(FOLDER_DRAG)
       if (noteId) onDropNote(noteId)
       else if (fldId && fldId !== selfFolderId) onDropFolder(fldId)

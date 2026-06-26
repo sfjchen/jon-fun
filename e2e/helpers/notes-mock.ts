@@ -119,6 +119,30 @@ export async function dropNoteOnSplitPane(
   )
 }
 
+/** Drag a vault note by its title onto a split pane (exceeds 6px movement threshold). */
+export async function dragNoteTitleToSplitPane(
+  page: Page,
+  sessionId: string,
+  side: 'left' | 'right',
+): Promise<void> {
+  const title = page.getByTestId(`notes-note-drag-title-${sessionId}`)
+  const drop = page.getByTestId(`notes-split-drop-${side}`)
+  await expect(title).toBeVisible()
+  await expect(drop).toBeVisible()
+  const titleBox = await title.boundingBox()
+  const dropBox = await drop.boundingBox()
+  if (!titleBox || !dropBox) throw new Error('missing drag title or split drop zone')
+  const sx = titleBox.x + titleBox.width / 2
+  const sy = titleBox.y + titleBox.height / 2
+  const ex = dropBox.x + dropBox.width / 2
+  const ey = dropBox.y + dropBox.height / 2
+  await page.mouse.move(sx, sy)
+  await page.mouse.down()
+  await page.mouse.move(sx + 10, sy)
+  await page.mouse.move(ex, ey, { steps: 12 })
+  await page.mouse.up()
+}
+
 /** Type into the active notes editor (fires ProseMirror onUpdate). */
 export async function typeInNotesEditor(page: Page, text: string): Promise<void> {
   await waitForNotesEditor(page)
@@ -137,7 +161,7 @@ export async function waitForLookupComplete(page: Page): Promise<void> {
   await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 10_000 })
   await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15_000 })
   await expect(page.getByTestId('notes-ai-active-count')).toHaveCount(0, { timeout: 20_000 })
-  await expect(page.getByTestId('notes-followup-input')).toBeVisible({ timeout: 5000 })
+  await expect(page.locator('[data-testid^="notes-followup-input-"]').first()).toBeVisible({ timeout: 5000 })
 }
 
 export const SESSIONS_KEY = 'notes_sessions'
