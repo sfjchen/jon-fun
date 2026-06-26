@@ -126,4 +126,33 @@ test.describe('1 Sentence Everyday', () => {
     await page.getByRole('button', { name: 'Restore' }).click()
     await expect(page.getByText(/No entries found/i)).toBeVisible({ timeout: 15000 })
   })
+
+  test('shortcut hint shows Cmd+Enter on Mac', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'platform', { get: () => 'MacIntel' })
+    })
+    await page.reload()
+    await expect(page.getByTestId('daily-learn-submit-shortcut-hint')).toContainText('Cmd+Enter to submit')
+  })
+
+  test('shortcut hint shows Ctrl+Enter on Windows', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'platform', { get: () => 'Win32' })
+    })
+    await page.reload()
+    await expect(page.getByTestId('daily-learn-submit-shortcut-hint')).toContainText('Ctrl+Enter to submit')
+  })
+
+  test('Ctrl+Enter submits today entry on Windows', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'platform', { get: () => 'Win32' })
+    })
+    await page.reload()
+    const phrase = `E2E ctrl-enter ${Date.now()}`
+    const textarea = page.getByPlaceholder(/One sentence/i)
+    await textarea.fill(phrase)
+    await textarea.press('Control+Enter')
+    await expect(page.getByText('Saved')).toBeVisible({ timeout: 15000 })
+    await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: phrase })).toBeVisible()
+  })
 })

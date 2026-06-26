@@ -21,6 +21,7 @@ import {
   capitalizeFirst,
   type DailyLearnEntry,
 } from '@/lib/dailyLearn'
+import { dailyLearnSubmitHint, isModEnter, useModKeyLabel } from '@/lib/keyboard'
 
 type View = 'log' | 'analytics' | 'export' | 'sync'
 
@@ -44,6 +45,7 @@ export default function DailyLearnManager() {
   const [syncFailed, setSyncFailed] = useState(false)
   const csvImportRef = useRef<HTMLInputElement>(null)
   const [importStatus, setImportStatus] = useState<string | null>(null)
+  const modKey = useModKeyLabel()
 
   const refresh = useCallback(() => {
     setEntries(loadEntries())
@@ -234,13 +236,16 @@ export default function DailyLearnManager() {
           value={editingText}
           onChange={(e) => setEditingText(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && e.metaKey) { e.preventDefault(); handleSaveEdit() }
+            if (isModEnter(e)) { e.preventDefault(); handleSaveEdit() }
             if (e.key === 'Escape') { e.preventDefault(); setEditingDate(null); setEditingText('') }
           }}
           className="w-full min-h-[100px] px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
           style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
           autoFocus
         />
+        <p className="text-xs mt-2" style={{ color: 'var(--ink-muted)' }} data-testid="daily-learn-edit-shortcut-hint">
+          {dailyLearnSubmitHint(modKey)}
+        </p>
         <div className="mt-4 flex gap-2">
           <button onClick={handleSaveEdit} disabled={saving} className="text-white px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-60" style={{ backgroundColor: 'var(--ink-accent)' }}>
             {saving ? 'Saving…' : 'Save'}
@@ -344,7 +349,7 @@ export default function DailyLearnManager() {
               value={todayText}
               onChange={(e) => setTodayText(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && e.metaKey) { e.preventDefault(); handleSubmit() }
+                if (isModEnter(e)) { e.preventDefault(); handleSubmit() }
                 if (e.key === 'Escape') { e.preventDefault(); (e.target as HTMLTextAreaElement).blur() }
               }}
               placeholder="One sentence (or more) about what you learned today"
@@ -352,6 +357,9 @@ export default function DailyLearnManager() {
               style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
               aria-label="Today's entry"
             />
+            <p className="text-xs mt-2" style={{ color: 'var(--ink-muted)' }} data-testid="daily-learn-submit-shortcut-hint">
+              {dailyLearnSubmitHint(modKey)}
+            </p>
             <div className="flex items-center gap-4 mt-3">
               <button
                 onClick={handleSubmit}
