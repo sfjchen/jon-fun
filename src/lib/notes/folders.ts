@@ -3,6 +3,30 @@ import { sanitizeMetadataText } from './textSanitize'
 
 export const FOLDERS_KEY = 'notes_folders'
 export const FOLDERS_VAULT_SESSION_ID = '__notes_folders__'
+export const ARCHIVE_FOLDER_NAME = 'Archive'
+
+export function findArchiveFolder(folders: NoteFolder[]): NoteFolder | undefined {
+  return folders.find(
+    (f) =>
+      f.parentId === null &&
+      f.name.localeCompare(ARCHIVE_FOLDER_NAME, undefined, { sensitivity: 'accent' }) === 0,
+  )
+}
+
+export function isArchiveFolder(folder: NoteFolder): boolean {
+  return (
+    folder.parentId === null &&
+    folder.name.localeCompare(ARCHIVE_FOLDER_NAME, undefined, { sensitivity: 'accent' }) === 0
+  )
+}
+
+/** Creates the root Archive folder when missing (used by Archive note). */
+export function ensureArchiveFolder(): NoteFolder {
+  const folders = loadFolders()
+  const existing = findArchiveFolder(folders)
+  if (existing) return existing
+  return createFolder(ARCHIVE_FOLDER_NAME, null)
+}
 
 export function loadFolders(): NoteFolder[] {
   if (typeof window === 'undefined') return []

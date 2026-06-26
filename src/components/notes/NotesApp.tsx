@@ -18,6 +18,8 @@ import { addToTagCatalog } from '@/lib/notes/tagRegistry'
 import {
   createFolder,
   deleteFolder,
+  ensureArchiveFolder,
+  isArchiveFolder,
   loadFolders,
   moveFolder,
   moveSessionToFolder,
@@ -925,6 +927,8 @@ export default function NotesApp() {
   }, [syncAllToServer])
 
   const handleDeleteFolder = useCallback((folderId: string) => {
+    const folder = loadFolders().find((f) => f.id === folderId)
+    if (folder && isArchiveFolder(folder)) return
     const { folders: nextFolders, sessions: nextSessions } = deleteFolder(folderId, loadSessions())
     saveSessionsLocal(nextSessions)
     setFolders(nextFolders)
@@ -958,6 +962,28 @@ export default function NotesApp() {
           return next
         })
       }
+    },
+    [state.session.id, syncToServer],
+  )
+
+  const handleArchiveNote = useCallback(
+    (sessionId: string) => {
+      const archiveFolder = ensureArchiveFolder()
+      setFolders(loadFolders())
+      setExpandedFolderIds((prev) => {
+        const next = [...new Set([...prev, archiveFolder.id, '__inbox__'])]
+        saveNotesUiPrefs({ expandedFolderIds: next })
+        return next
+      })
+      const s = loadSessions().find((x) => x.id === sessionId)
+      if (!s) return
+      const updated = moveSessionToFolder(s, archiveFolder.id)
+      upsertSession(updated)
+      dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+      if (sessionId === state.session.id) {
+        dispatch({ type: 'METADATA', metadata: updated.metadata ?? {} })
+      }
+      void syncToServer(updated)
     },
     [state.session.id, syncToServer],
   )
@@ -1011,6 +1037,24 @@ export default function NotesApp() {
       }
     })
   }, [syncToServer])
+
+  const handleRenameMeeting = useCallback(
+    (sessionId: string, title: string) => {
+      const s = loadSessions().find((x) => x.id === sessionId)
+      if (!s) return
+      const newTitle = sanitizeMetadataText(normalizeSessionTitle(title), 200)
+      if (newTitle === s.title) return
+      const updated = touchSession({ ...s, title: newTitle })
+      upsertSession(updated)
+      dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+      if (sessionId === sessionRef.current.id) {
+        bumpEditActivity()
+        dispatch({ type: 'PATCH_SESSION', session: updated })
+      }
+      void syncToServer(updated)
+    },
+    [bumpEditActivity, syncToServer],
+  )
 
   const handleDeleteMeeting = useCallback((sessionId: string) => {
     void deleteSessionOnServer(getEffectiveUserId(), sessionId)
@@ -1249,6 +1293,8 @@ export default function NotesApp() {
           onMoveFolder={handleMoveFolder}
           onToggleFolder={handleToggleFolder}
           onDeleteMeeting={handleDeleteMeeting}
+          onRenameMeeting={handleRenameMeeting}
+          onArchiveNote={handleArchiveNote}
           onDeleteLookup={handleDeleteLookup}
           onPanelLookup={handlePanelLookup}
           onFollowUp={handleFollowUp}

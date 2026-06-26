@@ -86,6 +86,8 @@ type SidePanelProps = {
   onMoveFolder: (folderId: string, parentId: string | null) => void
   onToggleFolder: (folderId: string) => void
   onDeleteMeeting: (sessionId: string) => void
+  onRenameMeeting: (sessionId: string, title: string) => void
+  onArchiveNote: (sessionId: string) => void
   onDeleteLookup: (lookupId: string) => void
   onPanelLookup: (query: string) => void
   onFollowUp: (q: string) => void
@@ -138,6 +140,8 @@ export default function SidePanel({
   onMoveFolder,
   onToggleFolder,
   onDeleteMeeting,
+  onRenameMeeting,
+  onArchiveNote,
   onDeleteLookup,
   onPanelLookup,
   onFollowUp,
@@ -223,6 +227,8 @@ export default function SidePanel({
             onMoveNote={onMoveNote}
             onMoveFolder={onMoveFolder}
             onDeleteMeeting={onDeleteMeeting}
+            onRenameMeeting={onRenameMeeting}
+            onArchiveNote={onArchiveNote}
             onToggleFolder={onToggleFolder}
           />
         </CollapsibleSection>
