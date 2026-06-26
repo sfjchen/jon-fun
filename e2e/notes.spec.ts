@@ -207,12 +207,8 @@ test.describe('Notes', () => {
     await page.getByTestId('notes-ctx-archive').click()
 
     await expect(page.getByTestId('notes-folder-toggle-__inbox__')).toContainText('(0)')
-    const archiveToggle = page.locator('button[data-testid^="notes-folder-toggle-"]').filter({ hasText: /^Archive\b/ })
-    await expect(archiveToggle).toContainText('(1)')
-    await archiveToggle.click()
-    await expect(
-      page.locator('[data-testid^="notes-folder-body-"]').filter({ hasText: 'Note to archive' }),
-    ).toBeVisible()
+    await expect(page.getByRole('button', { name: /Archive \(1\)/ })).toBeVisible()
+    await expect(page.locator('[data-testid^="notes-meeting-item-"]').filter({ hasText: 'Note to archive' })).toBeVisible()
   })
 
   test('switching notes does not reorder vault by last opened', async ({ page }) => {
