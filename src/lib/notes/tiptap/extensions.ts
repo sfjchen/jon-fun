@@ -64,9 +64,16 @@ export const NOTES_FONT_SIZES = ['12px', '14px', '16px', '18px', '20px', '24px']
 /** Default editor line-height (unitless); matches notes.css `--notes-line-height`. */
 export const NOTES_DEFAULT_LINE_HEIGHT = '1.5'
 
-/** Minimum safe line-height for Lato at 16px — below this, ascenders overlap open counters. */
-export const NOTES_MIN_LINE_HEIGHT = '1.35'
+/** Minimum safe line-height for Lato at 16px — below this, ascenders/dots bleed into open counters (P, C, O, …). */
+export const NOTES_MIN_LINE_HEIGHT = '1.5'
 
-export const NOTES_LINE_HEIGHTS = ['1.35', '1.5', '1.75', '2'] as const
+export const NOTES_LINE_HEIGHTS = ['1.5', '1.75', '2'] as const
+
+/** Clamp legacy or out-of-range saved prefs to a safe preset. */
+export function normalizeNotesLineHeight(saved?: string): string {
+  if (saved && (NOTES_LINE_HEIGHTS as readonly string[]).includes(saved)) return saved
+  if (saved && parseFloat(saved) < parseFloat(NOTES_MIN_LINE_HEIGHT)) return NOTES_DEFAULT_LINE_HEIGHT
+  return NOTES_DEFAULT_LINE_HEIGHT
+}
 
 export const NOTES_EDITOR_PLACEHOLDER = 'Start typing…'
