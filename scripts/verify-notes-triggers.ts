@@ -3,6 +3,8 @@
  *   npm run verify:notes-triggers
  */
 import { detectLineTriggers, countShorthandFlags } from '../src/lib/notes/triggerParser'
+import { buildLineSystemPrompt } from '../src/lib/notes/knowledge/prompts'
+import { buildUserText } from '../src/lib/notes/llm'
 import { postprocessTodoMarkdown, preprocessTodoMarkdown, mergeTodoLinesIntoMarkdown } from '../src/lib/notes/tiptap/editorCoords'
 import { collectTodos } from '../src/lib/notes/rollup'
 import { setTodoArchivedAtLine, collectArchivedTodosFromNotes } from '../src/lib/notes/todoLines'
@@ -251,6 +253,30 @@ if (filtered.length !== 1 || filtered[0]!.id !== 'src-b') {
   console.error('✗ filterSourcesForNote', filtered)
 } else {
   console.log('✓ filterSourcesForNote')
+}
+
+const linePrompt = buildLineSystemPrompt({ query: 'GP wants higher DPI before next close' })
+if (
+  !linePrompt.includes('WHOLE marked line') ||
+  !linePrompt.includes('not acronym expansion only') ||
+  linePrompt.includes('canonical form')
+) {
+  failed++
+  console.error('✗ buildLineSystemPrompt line-context instructions', linePrompt.slice(0, 200))
+} else {
+  console.log('✓ buildLineSystemPrompt line-context instructions')
+}
+
+const userText = buildUserText('line', 'GP wants higher DPI before next close', 'prior line\nGP wants higher DPI before next close', 'lookup')
+if (
+  !userText.includes('entire line') ||
+  !userText.includes('GP wants higher DPI before next close') ||
+  !userText.includes('not reduce to acronym expansion only')
+) {
+  failed++
+  console.error('✗ buildUserText line lookup', userText)
+} else {
+  console.log('✓ buildUserText line lookup')
 }
 
 if (failed > 0) {

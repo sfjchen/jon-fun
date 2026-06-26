@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     const system = resolveSystem(mode, type, promptCtx, query)
     const maxTokens =
-      mode === 'decode' ? 800 : mode === 'agent' || mode === 'followup' ? 1200 : type === 'section' ? 400 : 280
+      mode === 'decode' ? 800 : mode === 'agent' || mode === 'followup' ? 1200 : type === 'section' ? 400 : 360
     const userParts = buildLookupParts(type, query, context, screenshots, mode, body.followUpQuestion)
 
     return streamLookupWithFallback(mode, screenshots.length > 0, {

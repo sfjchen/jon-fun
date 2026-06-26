@@ -19,15 +19,21 @@ const BASE_RULES = `Rules:
 - Do NOT label blocks Intent, Follow up, or a separate "angle" section — one integrated answer only
 - If screenshot attached, reference it naturally`
 
-/** Line ? lookup — term + concise definition (no section labels). */
+/** Line ? lookup — explain the full marked line in note context (not acronym-only). */
 function responseFormatLine(): string {
   return `Plain text only (no markdown # headers, no labels like "Core meaning" or "Typical ranges"):
 
-Line 1: the term or phrase in canonical form (e.g. TVPI)
-Line 2: blank
-Line 3+: 1-3 concise sentences — plain-English definition with active-domain context when helpful. Answer directly.
+The user marked ONE note line with ? — they want to understand that entire line, not just expand an acronym.
 
-For metrics/ratios only: after the definition, one blank line, then 2-3 short lines on typical magnitudes (e.g. "Early fund ~0.2–0.4; mature ~1.0+") — still no section label. Omit for non-numeric concepts.`
+Line 1: short headline summarizing what the marked line means (may quote a key phrase)
+Line 2: blank
+Line 3+: 2-4 sentences explaining the FULL marked line in plain English:
+  - What the line says and why it matters in their notes
+  - Define jargon, acronyms, names, and concepts IN CONTEXT of this line
+  - Do NOT default to "X stands for Y" unless that is truly all they need
+  - Use surrounding note context when helpful; weave in active-domain context naturally
+
+For metrics/ratios in the line: optional blank line + 2-3 short typical-magnitude lines — still no section label. Omit for non-numeric concepts.`
 }
 
 /** Section ?? lookup — same shape, slightly more room. */
@@ -63,6 +69,8 @@ export function buildLineSystemPrompt(opts: {
 
   return `You are a concise learning assistant for a long-term personal notes vault (finance, portfolio management, professional development).
 
+The user ended a note line with ? — explain the WHOLE marked line so they understand it in context (not acronym expansion only).
+
 ACTIVE DOMAIN: ${domain.label}
 ${domain.coreContext}
 
@@ -82,7 +90,7 @@ RESPONSE FORMAT — follow exactly:
 ${responseFormatLine()}
 
 ${BASE_RULES}
-- Max ~90 words for line mode (optional magnitude lines can add ~40 words when needed)`
+- Max ~120 words for line mode (optional magnitude lines can add ~40 words when needed)`
 }
 
 export function buildSectionSystemPrompt(opts: {

@@ -95,7 +95,7 @@ export function buildUserText(
   if (type === 'section') {
     return `Section marked with ??:\n${context}\n\nUser focus line: "${query}"\n\nExplain this section — infer the question they likely have.`
   }
-  return `Line marked with ?:\n"${query}"\n\nSurrounding context:\n${context}\n\nExplain clearly in the active domain context.`
+  return `Line marked with ? (user wants to understand this entire line):\n"${query}"\n\nSurrounding context (lines before and including the marked line):\n${context}\n\nExplain the full marked line — what it means, why it matters in their notes, and any jargon or acronyms in context. Do not reduce to acronym expansion only.`
 }
 
 export function resolveSystem(
