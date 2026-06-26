@@ -1,4 +1,5 @@
 import { dashIndentLevel } from '../src/lib/notes/tiptap/dashList'
+import { normalizePlainPasteText } from '../src/lib/notes/tiptap/clipboardConvert'
 import { wrapLinesWithHighlight } from '../src/lib/notes/tiptap/editorCommands'
 import { normalizeNotesMarkdown } from '../src/lib/notes/tiptap/markdownNormalize'
 
@@ -20,6 +21,11 @@ ok('wrap highlight single line', wrapLinesWithHighlight('hello') === '*hello*')
 ok('wrap highlight keeps indent', wrapLinesWithHighlight('  item') === '  *item*')
 ok('wrap highlight skips wrapped', wrapLinesWithHighlight('*done*') === '*done*')
 ok('wrap highlight multiline', wrapLinesWithHighlight('a\nb') === '*a*\n*b*')
+ok(
+  'normalize plain unicode bullets',
+  normalizePlainPasteText('• one\n  • nested') === '- one\n  - nested',
+)
+ok('normalize plain skips dash lines', normalizePlainPasteText('- already\nplain') === null)
 
 if (failed > 0) {
   console.error(`\n${failed} check(s) failed.`)

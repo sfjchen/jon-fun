@@ -561,6 +561,39 @@ test.describe('Notes', () => {
     await expect(editor.locator('ul li')).toHaveCount(0)
   })
 
+  test('paste Google Docs HTML list as dash lines', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.evaluate(() => {
+      const dt = new DataTransfer()
+      dt.setData(
+        'text/html',
+        '<meta charset="utf-8"><ul><li>first bullet</li><li><span style="font-weight:700">bold</span> second</li></ul>',
+      )
+      dt.setData('text/plain', 'first bullet\nbold second')
+      const root = document.querySelector('[data-testid="notes-tiptap-editor"] .ProseMirror')!
+      root.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: dt }))
+    })
+    await expect(editor.locator('.notes-dash-line')).toHaveCount(2, { timeout: 5000 })
+    await expect(editor).toContainText('- first bullet')
+    await expect(editor).toContainText('- bold second')
+    await expect(editor.locator('strong')).toContainText('bold')
+  })
+
+  test('paste plain unicode bullets normalizes to dash lines', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.evaluate(() => {
+      const dt = new DataTransfer()
+      dt.setData('text/plain', '• alpha\n  • nested')
+      const root = document.querySelector('[data-testid="notes-tiptap-editor"] .ProseMirror')!
+      root.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: dt }))
+    })
+    await expect(editor.locator('.notes-dash-line')).toHaveCount(2, { timeout: 5000 })
+    await expect(editor).toContainText('- alpha')
+    await expect(editor).toContainText('- nested')
+  })
+
   test('Enter continues dash list on next line', async ({ page }) => {
     const editor = notesEditor(page)
     await editor.click()
