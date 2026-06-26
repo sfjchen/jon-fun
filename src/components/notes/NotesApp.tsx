@@ -1201,17 +1201,19 @@ export default function NotesApp() {
 
   const handleDropOnPane = useCallback(
     (sessionId: string, side: 'left' | 'right') => {
+      const sessions = sessionsRef.current
+      const primaryId = sessionRef.current.id
       if (isNotesMobileViewport()) {
-        const target = state.sessions.find((s) => s.id === sessionId)
+        const target = sessions.find((s) => s.id === sessionId)
         if (target) handleSelectMeeting(target)
         return
       }
       if (side === 'right') {
-        if (sessionId !== state.session.id) dispatch({ type: 'SPLIT_OPEN', sessionId })
+        if (sessionId !== primaryId) dispatch({ type: 'SPLIT_OPEN', sessionId })
         return
       }
-      if (sessionId === state.session.id) return
-      const target = state.sessions.find((s) => s.id === sessionId)
+      if (sessionId === primaryId) return
+      const target = sessions.find((s) => s.id === sessionId)
       if (!target) return
       const rightId = state.splitSessionId
       if (sessionId === rightId) {
@@ -1222,8 +1224,20 @@ export default function NotesApp() {
       handleSelectMeeting(target, { keepSplit: !!keepRight })
       if (keepRight) dispatch({ type: 'SPLIT_OPEN', sessionId: keepRight })
     },
-    [state.sessions, state.session.id, state.splitSessionId, handleSelectMeeting],
+    [state.splitSessionId, handleSelectMeeting],
   )
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (new URLSearchParams(window.location.search).get('notesE2e') !== '1') return
+    const w = window as typeof window & {
+      __notesE2eSplitDrop?: (sessionId: string, side: 'left' | 'right') => void
+    }
+    w.__notesE2eSplitDrop = (sessionId, side) => handleDropOnPane(sessionId, side)
+    return () => {
+      delete w.__notesE2eSplitDrop
+    }
+  }, [handleDropOnPane])
 
   const patchSecondarySession = useCallback(
     (patch: (s: NoteSession) => NoteSession) => {
