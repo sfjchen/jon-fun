@@ -8,6 +8,8 @@ export type NotesUiPrefs = {
   shorthandOpen?: boolean
   panelWidth?: number
   expandedFolderIds?: string[]
+  /** Document-wide line-height multiplier (unitless string, e.g. "1.25"). */
+  lineHeight?: string
 }
 
 const PREFS_KEY = 'notes_ui_prefs'

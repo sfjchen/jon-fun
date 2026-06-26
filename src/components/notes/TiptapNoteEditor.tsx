@@ -2,7 +2,7 @@
 
 import { useEditor, EditorContent } from '@tiptap/react'
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { buildNotesExtensions, NOTES_EDITOR_PLACEHOLDER } from '@/lib/notes/tiptap/extensions'
+import { buildNotesExtensions, NOTES_DEFAULT_LINE_HEIGHT, NOTES_EDITOR_PLACEHOLDER, NOTES_LINE_HEIGHTS } from '@/lib/notes/tiptap/extensions'
 import type { NoteAttachmentStorage } from '@/lib/notes/tiptap/noteAttachment'
 import {
   markdownFromEditor,
@@ -12,6 +12,7 @@ import {
   preprocessTodoMarkdown,
   scrollToLineIndex,
 } from '@/lib/notes/tiptap/editorCoords'
+import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
 import { normalizeNotesMarkdown } from '@/lib/notes/tiptap/markdownNormalize'
 import { refreshShorthandDecorations } from '@/lib/notes/tiptap/shorthandDecorations'
 import { scheduleTriggerCheck } from '@/lib/notes/tiptap/triggerPlugin'
@@ -83,6 +84,10 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
   onRestoreTodoLineRef.current = onRestoreTodoLine
 
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; items: NotesMenuItem[] } | null>(null)
+  const [lineHeight, setLineHeight] = useState(() => {
+    const saved = loadNotesUiPrefs().lineHeight
+    return saved && (NOTES_LINE_HEIGHTS as readonly string[]).includes(saved) ? saved : NOTES_DEFAULT_LINE_HEIGHT
+  })
   const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const touchPosRef = useRef({ x: 0, y: 0 })
   const editorInstanceRef = useRef<import('@tiptap/core').Editor | null>(null)
@@ -118,6 +123,16 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
   })
 
   editorInstanceRef.current = editor
+
+  const handleLineHeightChange = useCallback((lh: string) => {
+    setLineHeight(lh)
+    saveNotesUiPrefs({ lineHeight: lh })
+  }, [])
+
+  useEffect(() => {
+    if (!editor) return
+    editor.view.dom.style.setProperty('--notes-line-height', lineHeight)
+  }, [editor, lineHeight])
 
   const openEditorContextMenu = useCallback((clientX: number, clientY: number) => {
     const ed = editorInstanceRef.current
@@ -300,7 +315,7 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
       className="notes-tiptap-wrap flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[var(--uv-bg-elevated)]"
       data-testid="notes-tiptap-editor"
     >
-      <NotesEditorToolbar editor={editor} />
+      <NotesEditorToolbar editor={editor} lineHeight={lineHeight} onLineHeightChange={handleLineHeightChange} />
       <NotesTableMenu editor={editor} />
       <EditorContent editor={editor} className="min-h-0 flex-1 overflow-auto overscroll-contain" />
       <NotesContextMenu

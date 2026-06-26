@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import type { Editor } from '@tiptap/core'
-import { NOTES_DEFAULT_LINE_HEIGHT, NOTES_FONT_SIZES, NOTES_LINE_HEIGHTS } from '@/lib/notes/tiptap/extensions'
+import { NOTES_FONT_SIZES, NOTES_LINE_HEIGHTS } from '@/lib/notes/tiptap/extensions'
 import { DEFAULT_TABLE_COLS, DEFAULT_TABLE_ROWS } from '@/lib/notes/tiptap/tableUtils'
 
 type NotesEditorToolbarProps = {
   editor: Editor | null
+  lineHeight: string
+  onLineHeightChange: (lineHeight: string) => void
 }
 
 function ToolBtn({
@@ -42,11 +44,6 @@ function ToolBtn({
 function currentFontSize(editor: Editor): string {
   const attrs = editor.getAttributes('textStyle')
   return typeof attrs.fontSize === 'string' && attrs.fontSize ? attrs.fontSize : '16px'
-}
-
-function currentLineHeight(editor: Editor): string {
-  const attrs = editor.getAttributes('textStyle')
-  return typeof attrs.lineHeight === 'string' && attrs.lineHeight ? attrs.lineHeight : NOTES_DEFAULT_LINE_HEIGHT
 }
 
 function TableInsertPopover({ editor, onClose }: { editor: Editor; onClose: () => void }) {
@@ -117,13 +114,12 @@ function TableInsertPopover({ editor, onClose }: { editor: Editor; onClose: () =
   )
 }
 
-export default function NotesEditorToolbar({ editor }: NotesEditorToolbarProps) {
+export default function NotesEditorToolbar({ editor, lineHeight, onLineHeightChange }: NotesEditorToolbarProps) {
   const [tableOpen, setTableOpen] = useState(false)
 
   if (!editor) return null
 
   const size = currentFontSize(editor)
-  const lineHeight = currentLineHeight(editor)
 
   return (
     <div
@@ -180,11 +176,7 @@ export default function NotesEditorToolbar({ editor }: NotesEditorToolbarProps) 
         id="notes-line-height"
         data-testid="notes-line-height"
         value={lineHeight}
-        onChange={(e) => {
-          const lh = e.target.value
-          if (lh === NOTES_DEFAULT_LINE_HEIGHT) editor.chain().focus().unsetLineHeight().run()
-          else editor.chain().focus().setLineHeight(lh).run()
-        }}
+        onChange={(e) => onLineHeightChange(e.target.value)}
         className="rounded border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] px-1.5 py-0.5 text-[11px] text-[var(--uv-text-primary)]"
         title="Line spacing"
       >
