@@ -14,6 +14,7 @@ import { notesEditingExtension } from './notesEditing'
 import { NotesItalic } from './notesItalic'
 import { notesTableKit } from './tableConfig'
 import { tableKeymap } from './tableKeymap'
+import { richPasteExtension } from './richPaste'
 import { tablePasteExtension } from './tablePaste'
 
 export type NotesExtensionOpts = {
@@ -51,6 +52,7 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
     notesEditingExtension,
     dashListExtension,
     attachmentPasteExtension,
+    richPasteExtension,
     tablePasteExtension,
     createShorthandDecorationsExtension(opts.getActiveQuery),
   ]
