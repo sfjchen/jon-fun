@@ -100,14 +100,18 @@ export function preprocessTodoMarkdown(md: string): string {
       if (/^\s*>[^>]/.test(line) || /^\s*>\s/.test(line)) {
         return line.replace(/^(\s*)>/, '$1\\>')
       }
+      // Notes dash lines are paragraph text, not markdown bullet lists (lists disabled in schema).
+      if (/^(\s*)- /.test(line)) {
+        return line.replace(/^(\s*)- /, '$1\\- ')
+      }
       return line
     })
     .join('\n')
 }
 
-/** Restore escaped todo markers after getMarkdown(). */
+/** Restore escaped todo and dash markers after getMarkdown(). */
 export function postprocessTodoMarkdown(md: string): string {
-  return md.replace(/^(\s*)\\>/gm, '$1>')
+  return md.replace(/^(\s*)\\>/gm, '$1>').replace(/^(\s*)\\- /gm, '$1- ')
 }
 
 /** Keep todo lines from plain text when markdown serializer drops markers. */
