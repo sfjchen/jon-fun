@@ -8,7 +8,7 @@ export type NotesUiPrefs = {
   shorthandOpen?: boolean
   panelWidth?: number
   expandedFolderIds?: string[]
-  /** Document-wide line-height multiplier (unitless string, e.g. "1.25"). */
+  /** Document-wide line-height multiplier (unitless string, e.g. "1.25"). Default 1.25× when unset. */
   lineHeight?: string
   /** Right-pane session id when split view is open (desktop). */
   splitSessionId?: string | null

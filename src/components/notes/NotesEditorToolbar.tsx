@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import type { Editor } from '@tiptap/core'
-import { NOTES_FONT_SIZES, NOTES_LINE_HEIGHTS } from '@/lib/notes/tiptap/extensions'
+import { NOTES_DEFAULT_FONT_SIZE, NOTES_FONT_SIZES, NOTES_LINE_HEIGHTS } from '@/lib/notes/tiptap/extensions'
 import { DEFAULT_TABLE_COLS, DEFAULT_TABLE_ROWS } from '@/lib/notes/tiptap/tableUtils'
 
 type NotesEditorToolbarProps = {
@@ -43,7 +43,7 @@ function ToolBtn({
 
 function currentFontSize(editor: Editor): string {
   const attrs = editor.getAttributes('textStyle')
-  return typeof attrs.fontSize === 'string' && attrs.fontSize ? attrs.fontSize : '16px'
+  return typeof attrs.fontSize === 'string' && attrs.fontSize ? attrs.fontSize : NOTES_DEFAULT_FONT_SIZE
 }
 
 function TableInsertPopover({ editor, onClose }: { editor: Editor; onClose: () => void }) {
@@ -135,7 +135,7 @@ export default function NotesEditorToolbar({ editor, lineHeight, onLineHeightCha
         value={size}
         onChange={(e) => {
           const px = e.target.value
-          if (px === '16px') editor.chain().focus().unsetFontSize().run()
+          if (px === NOTES_DEFAULT_FONT_SIZE) editor.chain().focus().unsetFontSize().run()
           else editor.chain().focus().setFontSize(px).run()
         }}
         className="rounded border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] px-1.5 py-0.5 text-[11px] text-[var(--uv-text-primary)]"

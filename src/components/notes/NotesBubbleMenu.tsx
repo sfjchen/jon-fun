@@ -2,7 +2,7 @@
 
 import type { Editor } from '@tiptap/core'
 import { BubbleMenu } from '@tiptap/react/menus'
-import { NOTES_FONT_SIZES } from '@/lib/notes/tiptap/extensions'
+import { NOTES_DEFAULT_FONT_SIZE, NOTES_FONT_SIZES } from '@/lib/notes/tiptap/extensions'
 
 type NotesBubbleMenuProps = {
   editor: Editor | null
@@ -40,7 +40,7 @@ function MenuBtn({
 
 function currentFontSize(editor: Editor): string {
   const attrs = editor.getAttributes('textStyle')
-  return typeof attrs.fontSize === 'string' && attrs.fontSize ? attrs.fontSize : '16px'
+  return typeof attrs.fontSize === 'string' && attrs.fontSize ? attrs.fontSize : NOTES_DEFAULT_FONT_SIZE
 }
 
 export default function NotesBubbleMenu({ editor }: NotesBubbleMenuProps) {
@@ -64,7 +64,7 @@ export default function NotesBubbleMenu({ editor }: NotesBubbleMenuProps) {
         onMouseDown={(e) => e.stopPropagation()}
         onChange={(e) => {
           const px = e.target.value
-          if (px === '16px') editor.chain().focus().unsetFontSize().run()
+          if (px === NOTES_DEFAULT_FONT_SIZE) editor.chain().focus().unsetFontSize().run()
           else editor.chain().focus().setFontSize(px).run()
         }}
         className="max-w-[4.5rem] rounded border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] px-1 py-0.5 text-[11px] text-[var(--uv-text-primary)]"
