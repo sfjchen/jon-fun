@@ -1,8 +1,8 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { NoteFolder, NoteSession } from '@/lib/notes/types'
-import { childFolders, sessionsInFolder } from '@/lib/notes/folders'
+import { childFolders, findArchiveFolder, isArchiveFolder, sessionsInFolder } from '@/lib/notes/folders'
 import { useNotesDevice } from '@/lib/notes/useNotesDevice'
 import {
   NotesContextMenu,
@@ -42,41 +42,103 @@ type NotesVaultPanelProps = {
   onMoveFolder: (folderId: string, parentId: string | null) => void
   onDeleteMeeting: (sessionId: string) => void
   onToggleFolder: (folderId: string) => void
+  onRenameMeeting: (sessionId: string, title: string) => void
+  onArchiveNote: (sessionId: string) => void
 }
 
 function NoteRow({
   session,
   active,
+  archived,
   onSelect,
   onDelete,
+  onRename,
+  onArchive,
 }: {
   session: NoteSession
   active: boolean
+  archived?: boolean
   onSelect: () => void
   onDelete: () => void
+  onRename: (title: string) => void
+  onArchive: () => void
 }) {
-  const { state, close, onContextMenu, touchHandlers } = useNotesContextTrigger(() => [
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+  const selectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const { isMobile } = useNotesDevice()
+
+  const menuItems = [
+    ...(archived ? [] : [{ id: 'archive', label: 'Archive note', onClick: onArchive }]),
     { id: 'delete', label: 'Delete note', danger: true, onClick: onDelete },
-  ])
+  ]
+
+  const { state, close, onContextMenu, touchHandlers } = useNotesContextTrigger(() => menuItems)
+
+  useEffect(() => {
+    if (editing) inputRef.current?.select()
+  }, [editing])
+
+  useEffect(() => {
+    return () => {
+      if (selectTimerRef.current) clearTimeout(selectTimerRef.current)
+    }
+  }, [])
+
+  function startEdit(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (selectTimerRef.current) {
+      clearTimeout(selectTimerRef.current)
+      selectTimerRef.current = null
+    }
+    setDraft(session.title)
+    setEditing(true)
+  }
+
+  function scheduleSelect() {
+    if (editing) return
+    if (selectTimerRef.current) clearTimeout(selectTimerRef.current)
+    selectTimerRef.current = setTimeout(() => {
+      selectTimerRef.current = null
+      onSelect()
+    }, 250)
+  }
+
+  function commitEdit() {
+    const next = (inputRef.current?.value ?? draft).trim()
+    setEditing(false)
+    if (next !== (session.title || '').trim()) onRename(next)
+  }
+
+  function cancelEdit() {
+    setEditing(false)
+    setDraft('')
+  }
 
   return (
     <li
       className="group flex items-center gap-0.5 pl-2"
-      draggable
       data-testid={`notes-note-row-${session.id}`}
-      onContextMenu={onContextMenu}
-      {...touchHandlers}
-      onDragStart={(e) => {
-        e.dataTransfer.setData(NOTE_DRAG, session.id)
-        e.dataTransfer.setData('text/plain', session.id)
-        e.dataTransfer.effectAllowed = 'move'
-      }}
+      onContextMenu={editing ? undefined : onContextMenu}
+      {...(editing ? {} : touchHandlers)}
     >
       <span
+        draggable={!editing}
         title="Drag to folder"
         aria-hidden
         className="cursor-grab shrink-0 rounded px-0.5 text-[10px] text-[var(--uv-text-muted)] opacity-60 hover:opacity-100 active:cursor-grabbing"
         data-testid={`notes-note-drag-${session.id}`}
+        onDragStart={(e) => {
+          if (editing) {
+            e.preventDefault()
+            return
+          }
+          e.dataTransfer.setData(NOTE_DRAG, session.id)
+          e.dataTransfer.setData('text/plain', session.id)
+          e.dataTransfer.effectAllowed = 'move'
+        }}
       >
         ⠿
       </span>
@@ -84,23 +146,68 @@ function NoteRow({
         type="button"
         data-testid={`notes-meeting-item-${session.id}`}
         data-active={active ? 'true' : 'false'}
-        onClick={onSelect}
+        onClick={editing ? undefined : scheduleSelect}
+        onDoubleClick={(e) => {
+          if (editing) return
+          e.preventDefault()
+          e.stopPropagation()
+          startEdit(e)
+        }}
         className={`flex min-w-0 flex-1 items-center gap-2 rounded px-2 py-0.5 text-left text-xs ${
           active
             ? 'notes-meeting-active text-[var(--uv-text-primary)]'
             : 'text-[var(--uv-text-secondary)] hover:bg-[var(--uv-bg-hover)]'
         }`}
       >
-        <span className="min-w-0 flex-1 truncate">{session.title || 'Untitled'}</span>
+        {editing ? (
+          <input
+            ref={inputRef}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                commitEdit()
+              } else if (e.key === 'Escape') {
+                e.preventDefault()
+                cancelEdit()
+              }
+            }}
+            onBlur={commitEdit}
+            autoFocus
+            data-testid={`notes-sidebar-title-input-${session.id}`}
+            aria-label="Rename note"
+            spellCheck={false}
+            autoCorrect="off"
+            autoComplete="off"
+            autoCapitalize="off"
+            className="min-w-0 flex-1 rounded border border-[var(--uv-accent)] bg-[var(--uv-bg-base)] px-1 py-0 text-xs text-[var(--uv-text-primary)] focus:outline-none"
+          />
+        ) : (
+          <span title="Double-click to rename" className="min-w-0 flex-1 cursor-text truncate">
+            {session.title || 'Untitled'}
+          </span>
+        )}
         <span className="shrink-0 text-[10px] tabular-nums text-[var(--uv-text-muted)]">
           {formatMeetingDate(session.updatedAt)}
         </span>
       </button>
-      <NotesRowAction
-        label={`Delete ${session.title || 'note'}`}
-        testId={`notes-delete-meeting-${session.id}`}
-        onClick={onDelete}
-      />
+      {!editing ? (
+        isMobile ? (
+          <NotesOverflowMenu
+            label={`Note actions for ${session.title || 'note'}`}
+            testId={`notes-note-overflow-${session.id}`}
+            items={menuItems}
+          />
+        ) : (
+          <NotesRowAction
+            label={`Delete ${session.title || 'note'}`}
+            testId={`notes-delete-meeting-${session.id}`}
+            onClick={onDelete}
+          />
+        )
+      ) : null}
       <NotesContextMenu state={state} onClose={close} />
     </li>
   )
@@ -183,6 +290,7 @@ function FolderHeader({
   label,
   count,
   dragFolderId,
+  locked,
   onToggle,
   onNewNote,
   onOpenNewFolderForm,
@@ -193,17 +301,20 @@ function FolderHeader({
   label: string
   count: number
   dragFolderId: string
+  locked?: boolean
   onToggle: () => void
   onNewNote: () => void
   onOpenNewFolderForm: () => void
   onDeleteFolder: () => void
 }) {
   const { isMobile } = useNotesDevice()
-  const overflowItems = [
-    { id: 'new-note', label: 'New note in folder', onClick: onNewNote },
-    { id: 'new-subfolder', label: 'New subfolder', onClick: onOpenNewFolderForm },
-    { id: 'delete', label: 'Delete folder', danger: true, onClick: onDeleteFolder },
-  ]
+  const overflowItems = locked
+    ? [{ id: 'new-note', label: 'New note in folder', onClick: onNewNote }]
+    : [
+        { id: 'new-note', label: 'New note in folder', onClick: onNewNote },
+        { id: 'new-subfolder', label: 'New subfolder', onClick: onOpenNewFolderForm },
+        { id: 'delete', label: 'Delete folder', danger: true, onClick: onDeleteFolder },
+      ]
 
   return (
     <div className="group flex items-center gap-0.5">
@@ -248,19 +359,23 @@ function FolderHeader({
           >
             +
           </button>
-          <button
-            type="button"
-            title="New subfolder"
-            onClick={onOpenNewFolderForm}
-            className="notes-row-action shrink-0 rounded px-1 text-[10px] text-[var(--uv-text-muted)] hover:bg-[var(--uv-bg-hover)]"
-          >
-            +↳
-          </button>
-          <NotesRowAction
-            label={`Delete folder ${label}`}
-            testId={`notes-delete-folder-${folderId}`}
-            onClick={onDeleteFolder}
-          />
+          {!locked ? (
+            <>
+              <button
+                type="button"
+                title="New subfolder"
+                onClick={onOpenNewFolderForm}
+                className="notes-row-action shrink-0 rounded px-1 text-[10px] text-[var(--uv-text-muted)] hover:bg-[var(--uv-bg-hover)]"
+              >
+                +↳
+              </button>
+              <NotesRowAction
+                label={`Delete folder ${label}`}
+                testId={`notes-delete-folder-${folderId}`}
+                onClick={onDeleteFolder}
+              />
+            </>
+          ) : null}
         </>
       )}
     </div>
@@ -297,6 +412,9 @@ function FolderBranch({
   onMoveFolder,
   onDeleteMeeting,
   onToggleFolder,
+  onRenameMeeting,
+  onArchiveNote,
+  archiveFolderId,
 }: {
   folder: NoteFolder
   depth: number
@@ -312,10 +430,14 @@ function FolderBranch({
   onMoveFolder: (folderId: string, parentId: string | null) => void
   onDeleteMeeting: (sessionId: string) => void
   onToggleFolder: (folderId: string) => void
+  onRenameMeeting: (sessionId: string, title: string) => void
+  onArchiveNote: (sessionId: string) => void
+  archiveFolderId?: string
 }) {
   const open = expandedFolderIds.includes(folder.id)
   const notes = sessionsInFolder(sessions, folder.id)
   const subfolders = childFolders(folders, folder.id)
+  const locked = isArchiveFolder(folder)
 
   const handleDropNote = useCallback(
     (sessionId: string) => onMoveNote(sessionId, folder.id),
@@ -351,6 +473,7 @@ function FolderBranch({
           label={folder.name}
           count={notes.length}
           dragFolderId={folder.id}
+          locked={locked}
           onToggle={() => onToggleFolder(folder.id)}
           onNewNote={() => onNewNote(folder.id)}
           onOpenNewFolderForm={() => onOpenNewFolderForm(folder.id)}
@@ -367,8 +490,11 @@ function FolderBranch({
                   key={s.id}
                   session={s}
                   active={s.id === activeSessionId}
+                  archived={archiveFolderId === folder.id}
                   onSelect={() => onSelectMeeting(s)}
                   onDelete={() => onDeleteMeeting(s.id)}
+                  onRename={(title) => onRenameMeeting(s.id, title)}
+                  onArchive={() => onArchiveNote(s.id)}
                 />
               ))}
             </ul>
@@ -389,6 +515,9 @@ function FolderBranch({
                   onMoveFolder={onMoveFolder}
                   onDeleteMeeting={onDeleteMeeting}
                   onToggleFolder={onToggleFolder}
+                  onRenameMeeting={onRenameMeeting}
+                  onArchiveNote={onArchiveNote}
+                  {...(archiveFolderId ? { archiveFolderId } : {})}
                 />
               </ul>
             ))}
@@ -412,9 +541,12 @@ export default function NotesVaultPanel({
   onMoveFolder,
   onDeleteMeeting,
   onToggleFolder,
+  onRenameMeeting,
+  onArchiveNote,
 }: NotesVaultPanelProps) {
   const [newFolderParent, setNewFolderParent] = useState<string | null | undefined>(undefined)
-  const rootFolders = childFolders(folders, null)
+  const archiveFolder = findArchiveFolder(folders)
+  const rootFolders = childFolders(folders, null).filter((f) => f.id !== archiveFolder?.id)
   const inboxNotes = sessionsInFolder(sessions, null)
   const inboxOpen = expandedFolderIds.includes('__inbox__')
 
@@ -510,6 +642,8 @@ export default function NotesVaultPanel({
                         active={s.id === activeSessionId}
                         onSelect={() => onSelectMeeting(s)}
                         onDelete={() => onDeleteMeeting(s.id)}
+                        onRename={(title) => onRenameMeeting(s.id, title)}
+                        onArchive={() => onArchiveNote(s.id)}
                       />
                     ))}
                   </ul>
@@ -536,8 +670,34 @@ export default function NotesVaultPanel({
             onMoveFolder={onMoveFolder}
             onDeleteMeeting={onDeleteMeeting}
             onToggleFolder={onToggleFolder}
+            onRenameMeeting={onRenameMeeting}
+            onArchiveNote={onArchiveNote}
+            {...(archiveFolder ? { archiveFolderId: archiveFolder.id } : {})}
           />
         ))}
+
+        {archiveFolder ? (
+          <FolderBranch
+            key={archiveFolder.id}
+            folder={archiveFolder}
+            depth={0}
+            sessions={sessions}
+            folders={folders}
+            activeSessionId={activeSessionId}
+            expandedFolderIds={expandedFolderIds}
+            onSelectMeeting={onSelectMeeting}
+            onNewNote={onNewNote}
+            onOpenNewFolderForm={setNewFolderParent}
+            onDeleteFolder={onDeleteFolder}
+            onMoveNote={onMoveNote}
+            onMoveFolder={onMoveFolder}
+            onDeleteMeeting={onDeleteMeeting}
+            onToggleFolder={onToggleFolder}
+            onRenameMeeting={onRenameMeeting}
+            onArchiveNote={onArchiveNote}
+            archiveFolderId={archiveFolder.id}
+          />
+        ) : null}
       </ul>
     </div>
   )

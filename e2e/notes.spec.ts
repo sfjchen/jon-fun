@@ -27,6 +27,7 @@ test.describe('Notes', () => {
         localStorage.removeItem('notes_ui_prefs')
         localStorage.removeItem('notes_glossary')
         localStorage.removeItem('notes_sources')
+        localStorage.removeItem('notes_folders')
       } catch {
         /* ignore */
       }
@@ -186,10 +187,13 @@ test.describe('Notes', () => {
     await firstNote.dblclick()
 
     const renameInput = page.locator('[data-testid^="notes-sidebar-title-input-"]')
-    await expect(renameInput).toBeVisible()
+    await expect(renameInput).toBeVisible({ timeout: 5000 })
     await renameInput.fill('Renamed in sidebar')
-    await expect(firstNote).toContainText('Renamed in sidebar')
-    await firstNote.click()
+    await renameInput.press('Enter')
+
+    const renamedNote = page.locator('[data-testid^="notes-meeting-item-"]').filter({ hasText: 'Renamed in sidebar' })
+    await expect(renamedNote).toBeVisible()
+    await renamedNote.click()
     await expect(title).toHaveValue('Renamed in sidebar')
   })
 
@@ -199,13 +203,16 @@ test.describe('Notes', () => {
 
     const noteRow = page.locator('[data-testid^="notes-note-row-"]').filter({ hasText: 'Note to archive' })
     await noteRow.click({ button: 'right' })
+    await expect(page.getByTestId('notes-ctx-archive')).toBeVisible()
     await page.getByTestId('notes-ctx-archive').click()
 
     await expect(page.getByTestId('notes-folder-toggle-__inbox__')).toContainText('(0)')
-    const archiveToggle = page.locator('button[data-testid^="notes-folder-toggle-"]').filter({ hasText: 'Archive' })
-    await expect(archiveToggle).toBeVisible({ timeout: 5000 })
+    const archiveToggle = page.locator('button[data-testid^="notes-folder-toggle-"]').filter({ hasText: /^Archive\b/ })
+    await expect(archiveToggle).toContainText('(1)')
     await archiveToggle.click()
-    await expect(page.locator('[data-testid^="notes-meeting-item-"]').filter({ hasText: 'Note to archive' })).toBeVisible()
+    await expect(
+      page.locator('[data-testid^="notes-folder-body-"]').filter({ hasText: 'Note to archive' }),
+    ).toBeVisible()
   })
 
   test('switching notes does not reorder vault by last opened', async ({ page }) => {
