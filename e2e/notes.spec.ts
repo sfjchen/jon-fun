@@ -11,6 +11,7 @@ import {
   waitForNotesTrigger,
   typeInNotesEditor,
   dropNoteOnSplitPane,
+  dragNoteTitleToSplitPane,
 } from './helpers/notes-mock'
 
 test.describe('Notes', () => {
@@ -78,9 +79,9 @@ test.describe('Notes', () => {
     await page.getByTestId('notes-new-folder-input').press('Enter')
     await expect(page.locator('button[data-testid^="notes-folder-toggle-"]').filter({ hasText: 'IC' })).toBeVisible()
 
-    const noteRow = page.locator('[data-testid^="notes-note-row-"]').first()
+    const noteTitle = page.locator('[data-testid^="notes-note-drag-title-"]').first()
     const icBody = page.locator('[data-testid^="notes-folder-body-"]').last()
-    await noteRow.dragTo(icBody)
+    await noteTitle.dragTo(icBody)
 
     await expect(page.getByTestId('notes-folder-toggle-__inbox__')).toContainText('(0)')
     await expect(page.locator('button[data-testid^="notes-folder-toggle-"]').filter({ hasText: 'IC' })).toContainText('(1)')
@@ -305,6 +306,39 @@ test.describe('Notes', () => {
     await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 5000 })
     await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15000 })
     await expect(page.getByTestId('notes-side-panel')).not.toContainText(/Core meaning/i)
+  })
+
+  test('line? lookup sends full line as query with surrounding context', async ({ page }) => {
+    const lookupBodies: Array<{ type?: string; query?: string; context?: string }> = []
+    await page.route('**/api/notes/lookup', async (route) => {
+      try {
+        lookupBodies.push(route.request().postDataJSON() as { type?: string; query?: string; context?: string })
+      } catch {
+        /* empty */
+      }
+      const sse =
+        'data: {"token":"GP push on DPI\\n\\nThe GP wants distributions higher before the next fund close — E2E mock answer."}\n\n' +
+        'data: [DONE]\n\n'
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream; charset=utf-8',
+        body: sse,
+      })
+    })
+
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.keyboard.type('prior note about Fund III')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('GP wants higher DPI before next close?')
+    await waitForNotesTrigger(page)
+    await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 5000 })
+    await expect.poll(() => lookupBodies.length).toBeGreaterThan(0)
+    const body = lookupBodies[0]!
+    expect(body.type).toBe('line')
+    expect(body.query).toBe('GP wants higher DPI before next close')
+    expect(body.context).toContain('prior note about Fund III')
+    expect(body.context).toContain('GP wants higher DPI before next close')
   })
 
   test('panel lookup input runs AI without typing in editor', async ({ page }) => {
@@ -905,7 +939,7 @@ test.describe('Notes', () => {
       await ensureNotesVaultSectionOpen(page)
     })
 
-    test('drag note to right opens split; both panes edit independently; close returns single', async ({
+    test('drag note by title to right opens split; both panes edit independently; close returns single', async ({
       page,
     }) => {
       await page.getByTestId('notes-meeting-title').fill('Note Alpha')
@@ -919,8 +953,7 @@ test.describe('Notes', () => {
 
       const inactiveItem = page.locator('[data-testid^="notes-meeting-item-"][data-active="false"]').first()
       const secondId = (await inactiveItem.getAttribute('data-testid'))!.replace('notes-meeting-item-', '')
-      await inactiveItem.locator('xpath=ancestor::li[1]').locator('[data-testid^="notes-note-drag-"]').hover()
-      await dropNoteOnSplitPane(page, secondId, 'right')
+      await dragNoteTitleToSplitPane(page, secondId, 'right')
 
       await expect(page.getByTestId('notes-split-root')).toHaveAttribute('data-split', 'true', { timeout: 5000 })
       const leftEd = notesEditor(page, 'left')
