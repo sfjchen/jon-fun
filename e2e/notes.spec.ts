@@ -308,6 +308,27 @@ test.describe('Notes', () => {
     await expect(page.getByTestId('notes-side-panel')).not.toContainText(/Core meaning/i)
   })
 
+  test('formula lookup renders LaTeX math in panel chat', async ({ page }) => {
+    await page.route('**/api/notes/lookup', async (route) => {
+      const sse =
+        'data: {"token":"DPI formula\\n\\nDistributions to paid-in capital — cash returned vs capital called.\\n\\n$$\\\\text{DPI} = \\\\frac{D}{\\\\text{PIC}}$$\\n\\nD — distributions to LPs\\nPIC — paid-in capital"}\n\n' +
+        'data: [DONE]\n\n'
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream; charset=utf-8',
+        body: sse,
+      })
+    })
+
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.keyboard.type('what is the DPI formula?')
+    await waitForNotesTrigger(page)
+    await expect(page.getByTestId('notes-side-panel')).toContainText('DPI formula', { timeout: 15_000 })
+    await expect(page.locator('[data-testid^="notes-chat-thread-"] .katex')).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByTestId('notes-side-panel')).toContainText('paid-in capital')
+  })
+
   test('line? lookup sends full line as query with surrounding context', async ({ page }) => {
     const lookupBodies: Array<{ type?: string; query?: string; context?: string }> = []
     await page.route('**/api/notes/lookup', async (route) => {
@@ -516,8 +537,8 @@ test.describe('Notes', () => {
     await waitForLookupComplete(page)
 
     await page.getByTestId('notes-sync-toggle').click()
-    await page.getByTestId('notes-sync-now').click()
-    await expect(page.getByTestId('notes-sync-status')).toContainText(/synced|saved/i, { timeout: 15_000 })
+    await page.getByTestId('notes-sync-save').click()
+    await expect(page.getByTestId('notes-sync-panel')).toContainText('Synced', { timeout: 15_000 })
 
     await page.reload({ waitUntil: 'domcontentloaded' })
     await waitForNotesEditor(page)

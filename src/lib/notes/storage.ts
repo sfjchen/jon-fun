@@ -19,6 +19,7 @@ import {
   replaceFoldersFromSessions,
   saveFolders,
 } from './folders'
+import { mergeSessionLookups } from './lookupPersistence'
 import type { NoteFolder, NoteSession, Screenshot } from './types'
 
 export { buildSessionMarkdown, exportSessionMarkdown } from './export'
@@ -195,13 +196,23 @@ export function loadActiveSession(): NoteSession {
   return fresh
 }
 
+function mergeTwoSessions(a: NoteSession, b: NoteSession): NoteSession {
+  const newer = new Date(a.updatedAt) >= new Date(b.updatedAt) ? a : b
+  return {
+    ...newer,
+    lookups: mergeSessionLookups(a.lookups ?? [], b.lookups ?? []),
+  }
+}
+
 function mergeSessions(local: NoteSession[], remote: NoteSession[]): NoteSession[] {
   const byId = new Map<string, NoteSession>()
   for (const s of withNormalizedTitles([...local, ...remote])) {
     const existing = byId.get(s.id)
-    if (!existing || new Date(s.updatedAt) > new Date(existing.updatedAt)) {
+    if (!existing) {
       byId.set(s.id, s)
+      continue
     }
+    byId.set(s.id, mergeTwoSessions(existing, s))
   }
   return [...byId.values()].sort((a, b) => (b.updatedAt > a.updatedAt ? 1 : b.updatedAt < a.updatedAt ? -1 : 0))
 }
