@@ -25,6 +25,8 @@ import type { Screenshot, TriggerType } from '@/lib/notes/types'
 import NotesEditorToolbar from './NotesEditorToolbar'
 import NotesTableMenu from './NotesTableMenu'
 import { NotesContextMenu, type NotesMenuItem } from './NotesActionUi'
+import { isModD } from '@/lib/keyboard'
+import { selectedTextFromEditor } from '@/lib/notes/tiptap/editorCoords'
 import { buildEditorContextMenuItems } from './notesEditorContextMenu'
 
 export type NoteEditorHandle = {
@@ -41,6 +43,7 @@ type TiptapNoteEditorProps = {
   onAttachmentAdd: (attachment: Screenshot) => void
   onAttachmentUpdate: (id: string, patch: Partial<Screenshot>) => void
   onLookupSelection?: (query: string, type: TriggerType) => void
+  onAddSelectionToDictionary?: (term: string) => boolean
   onArchiveTodoLine?: (lineIndex: number) => void
   onRestoreTodoLine?: (lineIndex: number) => void
 }
@@ -60,6 +63,7 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
     onAttachmentAdd,
     onAttachmentUpdate,
     onLookupSelection,
+    onAddSelectionToDictionary,
     onArchiveTodoLine,
     onRestoreTodoLine,
   },
@@ -81,9 +85,11 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
   onAttachmentUpdateRef.current = onAttachmentUpdate
 
   const onLookupSelectionRef = useRef(onLookupSelection)
+  const onAddDictionaryRef = useRef(onAddSelectionToDictionary)
   const onArchiveTodoLineRef = useRef(onArchiveTodoLine)
   const onRestoreTodoLineRef = useRef(onRestoreTodoLine)
   onLookupSelectionRef.current = onLookupSelection
+  onAddDictionaryRef.current = onAddSelectionToDictionary
   onArchiveTodoLineRef.current = onArchiveTodoLine
   onRestoreTodoLineRef.current = onRestoreTodoLine
 
@@ -250,6 +256,22 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
       delete w.__notesE2eEditor
       delete w.__notesE2eGetMarkdown
     }
+  }, [editor])
+
+  useEffect(() => {
+    if (!editor) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!isModD(e)) return
+      const term = selectedTextFromEditor(editor).trim()
+      if (!term) return
+      const handler = onAddDictionaryRef.current
+      if (!handler?.(term)) return
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    const dom = editor.view.dom
+    dom.addEventListener('keydown', onKeyDown, true)
+    return () => dom.removeEventListener('keydown', onKeyDown, true)
   }, [editor])
 
   useEffect(() => {
