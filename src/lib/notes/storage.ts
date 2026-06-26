@@ -6,6 +6,7 @@ import { createEmptySessionId, getOrCreateUserId, stampDeviceOnMetadata } from '
 import { saveGlossary } from './glossary'
 import { normalizeSessionTitle } from './prefs'
 import { ensureBuiltinSources } from './knowledge/builtinSources'
+import { restoreMemoryBankFromServer } from './memorySync'
 import { saveSourcesLocal } from './sources'
 import { sanitizeMetadataText, sanitizeSessionForSync, sanitizeTags } from './textSanitize'
 import {
@@ -15,6 +16,7 @@ import {
   loadFolders,
   mergeFolders,
   parseFoldersFromVaultNotes,
+  replaceFoldersFromSessions,
   saveFolders,
 } from './folders'
 import type { NoteFolder, NoteSession, Screenshot } from './types'
@@ -286,16 +288,24 @@ export async function restoreFromServer(
   const { sessions: remoteRaw, error } = await fetchRawSessionsFromServer(key, key)
   if (error) return { restored: 0, error }
 
-  syncFoldersFromSessions(remoteRaw)
-  const remote = withNormalizedTitles(remoteRaw)
-  if (remote.length === 0) {
-    setSyncKey(key)
+  setSyncKey(key)
+
+  if (remoteRaw.length === 0) {
     resetLocalNotesVault()
     return { restored: 0, cleared: true }
   }
-  setSyncKey(key)
+
+  // Server wins — wipe stale local vault artifacts before applying remote snapshot.
+  localStorage.removeItem(FOLDERS_KEY)
+  localStorage.removeItem('notes_tag_catalog')
+  saveGlossary([])
+  saveSourcesLocal(ensureBuiltinSources([]))
+
+  replaceFoldersFromSessions(remoteRaw)
+  const remote = withNormalizedTitles(remoteRaw)
   saveSessionsLocal(remote)
   if (remote[0]) setActiveSessionId(remote[0].id)
+  await restoreMemoryBankFromServer()
   return { restored: remote.length }
 }
 

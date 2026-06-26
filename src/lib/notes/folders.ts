@@ -148,3 +148,15 @@ export function mergeFolders(local: NoteFolder[], remote: NoteFolder[]): NoteFol
   }
   return [...byId.values()].sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
 }
+
+/** Replace local folder tree from server vault row (restore — no merge with stale local). */
+export function replaceFoldersFromSessions(sessions: NoteSession[]): NoteFolder[] {
+  const folders = foldersFromSessions(sessions)
+  saveFolders(folders)
+  return folders
+}
+
+function foldersFromSessions(sessions: NoteSession[]): NoteFolder[] {
+  const row = sessions.find((s) => s.id === FOLDERS_VAULT_SESSION_ID)
+  return row ? parseFoldersFromVaultNotes(row.notes) : []
+}

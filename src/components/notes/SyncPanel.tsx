@@ -17,7 +17,7 @@ import {
 } from '@/lib/notes/storage'
 
 type SyncPanelProps = {
-  onSynced: (opts?: { skipPersist?: boolean; force?: boolean }) => void
+  onSynced: (opts?: { skipPersist?: boolean; force?: boolean; reloadLocal?: boolean }) => void
 }
 
 /** Sync / restore controls — shown inside collapsed "Sync & backup" section. */
@@ -53,19 +53,19 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
     if (error) setStatus(error)
     else if (cleared) {
       setSyncPasswordInput(restoreKey.trim())
-      setStatus('Local vault cleared — server is empty')
-      onSynced({ skipPersist: true, force: true })
+      setStatus('Local vault replaced — server is empty')
+      onSynced({ reloadLocal: true })
     } else if (restored > 0) {
       setSyncPasswordInput(restoreKey.trim())
-      setStatus(`Restored ${restored} note(s)`)
-      onSynced({ skipPersist: true, force: true })
+      setStatus(`Restored ${restored} note(s) from server`)
+      onSynced({ reloadLocal: true })
     } else setStatus('No notes found')
   }
 
   function handleClearLocal() {
     resetLocalNotesVault()
     setStatus('Local vault cleared')
-    onSynced({ skipPersist: true, force: true })
+    onSynced({ reloadLocal: true })
   }
 
   function commitDeviceLabel() {
@@ -81,7 +81,8 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
   return (
     <div className="px-3 pb-3" data-testid="notes-sync-panel">
       <p className="mb-2 text-[11px] leading-snug text-[var(--uv-text-muted)]">
-        Sync password merges notes across devices. Each browser keeps its own device ID.
+        Save &amp; Sync merges this device with the server vault. Restore replaces this device with the
+        server copy (server wins).
       </p>
 
       <div

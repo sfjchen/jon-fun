@@ -54,6 +54,7 @@ type SidePanelProps = {
   folders: NoteFolder[]
   expandedFolderIds: string[]
   activeSessionId: string
+  splitSessionId?: string | null | undefined
   activeSession: NoteSession
   focusedLookup: Lookup | null
   sessionHistory: Lookup[]
@@ -93,7 +94,7 @@ type SidePanelProps = {
   onFollowUp: (q: string) => void
   onSelectHistory: (lookup: Lookup) => void
   onClearLookup: () => void
-  onSynced: (opts?: { skipPersist?: boolean; force?: boolean }) => void
+  onSynced: (opts?: { skipPersist?: boolean; force?: boolean; reloadLocal?: boolean }) => void
   onJumpTodo: (sessionId: string, lineIndex: number) => void
   onArchiveTodo: (sessionId: string, lineIndex: number) => void
   onRestoreTodo: (sessionId: string, lineIndex: number) => void
@@ -108,6 +109,7 @@ export default function SidePanel({
   folders,
   expandedFolderIds,
   activeSessionId,
+  splitSessionId,
   activeSession,
   focusedLookup,
   sessionHistory,
@@ -219,6 +221,7 @@ export default function SidePanel({
             sessions={sessions}
             folders={folders}
             activeSessionId={activeSessionId}
+            splitSessionId={splitSessionId}
             expandedFolderIds={expandedFolderIds}
             onSelectMeeting={onSelectMeeting}
             onNewNote={onNewNote}
