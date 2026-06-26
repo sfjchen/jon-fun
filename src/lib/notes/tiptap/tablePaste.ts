@@ -2,6 +2,7 @@ import type { Editor } from '@tiptap/core'
 import { Extension } from '@tiptap/core'
 import { Plugin } from '@tiptap/pm/state'
 import { filesFromClipboard } from '../attachments'
+import { looksLikeBulletListText } from './clipboardConvert'
 import { gridToTableContent, looksLikeTabularText, parseTabularText } from './tableUtils'
 
 export function insertTableFromGrid(editor: Editor, grid: string[][], withHeaderRow = false): boolean {
@@ -21,7 +22,7 @@ export const tablePasteExtension = Extension.create({
             if (filesFromClipboard(event).length) return false
 
             const text = event.clipboardData?.getData('text/plain') ?? ''
-            if (!looksLikeTabularText(text)) return false
+            if (!looksLikeTabularText(text) || looksLikeBulletListText(text)) return false
 
             event.preventDefault()
             const grid = parseTabularText(text)

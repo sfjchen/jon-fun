@@ -1,4 +1,8 @@
-import { normalizePlainPasteText } from '../src/lib/notes/tiptap/clipboardConvert'
+import {
+  collapseRedundantBlankBlocks,
+  looksLikeBulletListText,
+  normalizePlainPasteText,
+} from '../src/lib/notes/tiptap/clipboardConvert'
 import { bullettizeLines, wrapLinesWithHighlight } from '../src/lib/notes/tiptap/editorCommands'
 import { dashIndentLevel, indentDashLineText } from '../src/lib/notes/tiptap/dashList'
 import { normalizeNotesMarkdown } from '../src/lib/notes/tiptap/markdownNormalize'
@@ -31,6 +35,26 @@ ok('bullettize skips existing dash', bullettizeLines('- done') === '- done')
 ok('indent dash line', indentDashLineText('- a', false) === '  - a')
 ok('outdent dash line', indentDashLineText('  - a', true) === '- a')
 ok('outdent dash at root stays bullet', indentDashLineText('- a', true) === '- a')
+ok('bullet list text detected', looksLikeBulletListText('• one\n\t• two'))
+ok('spreadsheet tabs not bullet list', !looksLikeBulletListText('A\tB\nC\tD'))
+ok(
+  'collapse mixed blank run to one',
+  collapseRedundantBlankBlocks([
+    { type: 'paragraph', content: [{ type: 'text', text: 'a' }] },
+    { type: 'paragraph' },
+    { type: 'paragraph', content: [{ type: 'hardBreak' }] },
+    { type: 'paragraph', content: [{ type: 'text', text: 'b' }] },
+  ]).filter((b) => b.type === 'paragraph' && !b.content?.length).length === 1,
+)
+ok(
+  'preserve two intentional empty paragraphs',
+  collapseRedundantBlankBlocks([
+    { type: 'paragraph', content: [{ type: 'text', text: 'a' }] },
+    { type: 'paragraph' },
+    { type: 'paragraph' },
+    { type: 'paragraph', content: [{ type: 'text', text: 'b' }] },
+  ]).filter((b) => b.type === 'paragraph' && !b.content?.length).length === 2,
+)
 
 if (failed > 0) {
   console.error(`\n${failed} check(s) failed.`)
