@@ -2,10 +2,10 @@
  * Sync glossary + sources between localStorage and Supabase (service-role API).
  */
 
-import { loadGlossary, mergeGlossaryFromServer } from './glossary'
+import { loadGlossary, mergeGlossaryFromServer, saveGlossary } from './glossary'
 import { getEffectiveUserId } from './storage'
+import { ensureBuiltinSources, isBuiltinSource } from './knowledge/builtinSources'
 import { loadSourcesLocal, saveSourcesLocal } from './sources'
-import { isBuiltinSource } from './knowledge/builtinSources'
 import type { GlossaryEntry, NoteSource } from './types'
 
 export async function fetchGlossaryFromServer(): Promise<GlossaryEntry[]> {
@@ -77,4 +77,15 @@ export async function syncMemoryBank(): Promise<{ glossaryOk: boolean; sourcesOk
   const glossaryOk = await pushGlossaryToServer(loadGlossary())
   const sourcesOk = await pushSourcesToServer(loadSourcesLocal())
   return { glossaryOk, sourcesOk }
+}
+
+/** Replace local glossary/sources from server (restore — server wins, no merge). */
+export async function restoreMemoryBankFromServer(): Promise<void> {
+  const [remoteGlossary, remoteSources] = await Promise.all([
+    fetchGlossaryFromServer(),
+    fetchSourcesFromServer(),
+  ])
+  saveGlossary(remoteGlossary)
+  const custom = remoteSources.filter((s) => !isBuiltinSource(s.id))
+  saveSourcesLocal(ensureBuiltinSources(custom))
 }
