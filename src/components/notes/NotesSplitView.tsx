@@ -84,7 +84,8 @@ export default function NotesSplitView({
 
   const onDrop = useCallback(
     (e: React.DragEvent, side: 'left' | 'right') => {
-      const sessionId = e.dataTransfer.getData(NOTE_SESSION_DRAG)
+      const sessionId =
+        e.dataTransfer.getData(NOTE_SESSION_DRAG) || e.dataTransfer.getData('text/plain')
       if (!sessionId) return
       e.preventDefault()
       setVaultDrag(false)
