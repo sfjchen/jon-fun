@@ -17,3 +17,11 @@ export const SFJC_ADMIN_DEVICES = [
 export const SFJC_OWNER_SYNC_PASSWORD_USER_ID = 'MLpnko#12'
 
 export const SFJC_ADMIN_DEVICE_IDS = new Set<string>(SFJC_ADMIN_DEVICES.map((d) => d.id))
+
+export function adminDeviceLabel(deviceId: string): string | null {
+  const id = deviceId.trim()
+  for (const d of SFJC_ADMIN_DEVICES) {
+    if (d.id === id) return d.label
+  }
+  return null
+}

@@ -1,5 +1,6 @@
 'use client'
 
+import { getDeviceDisplayName } from '@/lib/notes/deviceIdentity'
 import { formatHistoryLine } from '@/lib/notes/noteHistory'
 import { notesShortcutLabel } from '@/lib/notes/shortcuts'
 import { useNotesDevice } from '@/lib/notes/useNotesDevice'
@@ -57,6 +58,7 @@ export default function StatusBar({
   onHintsToggle,
 }: StatusBarProps) {
   const { isMobile } = useNotesDevice()
+  const deviceName = getDeviceDisplayName()
   let syncLabel = ''
   if (syncing) syncLabel = 'Syncing…'
   else if (saving) syncLabel = 'Saving…'
@@ -71,6 +73,13 @@ export default function StatusBar({
       <span title="Character count">{chars} chars</span>
       <span title="Lines with ? or ?? AI triggers">{flags} ?</span>
       <span title="Todo lines (suffix &gt;)">{actions} todos</span>
+      <span
+        className="hidden text-[var(--uv-text-muted)] sm:inline"
+        data-testid="notes-statusbar-device"
+        title="This browser device"
+      >
+        {deviceName}
+      </span>
       {aiActiveCount > 0 ? (
         <span className="text-[var(--uv-accent)]" data-testid="notes-ai-active-count">
           {aiActiveCount} AI active

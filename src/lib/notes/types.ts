@@ -30,6 +30,10 @@ export interface NoteMetadata {
   folderId?: string | null
   /** Source ids excluded from AI context for this note (default: all included) */
   excludedSourceIds?: string[]
+  /** Device UUID that last edited this note */
+  lastDeviceId?: string
+  /** Friendly device label at last edit */
+  lastDeviceLabel?: string
 }
 
 export interface NoteFolder {

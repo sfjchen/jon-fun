@@ -128,7 +128,6 @@ export default function SourcesPanel({
 
   function removeSource(source: NoteSource) {
     if (isBuiltinSource(source.id)) return
-    if (!window.confirm(`Delete source "${source.title}" from your library?`)) return
     deleteSourceLocal(source.id)
     void deleteSourceOnServer(source.id)
     if (editingId === source.id) cancelEdit()
