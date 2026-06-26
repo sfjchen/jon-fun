@@ -3,7 +3,24 @@ import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
 /** Lines starting with optional spaces + "- " get visual indent; dash stays in text. */
-const DASH_LINE = /^(\s*)- (.*)$/
+export const DASH_LINE = /^(\s*)- (.*)$/
+
+export function parseDashLine(text: string): { leading: string; body: string } | null {
+  const m = text.match(DASH_LINE)
+  if (!m) return null
+  return { leading: m[1] ?? '', body: m[2] ?? '' }
+}
+
+/** Indent/outdent a dash line by 2 spaces; never strips the "- " prefix. */
+export function indentDashLineText(text: string, outdent: boolean): string {
+  const p = parseDashLine(text)
+  if (!p) return text
+  if (outdent) {
+    if (p.leading.length >= 2) return `${p.leading.slice(2)}- ${p.body}`
+    return text
+  }
+  return `  ${p.leading}- ${p.body}`
+}
 
 export function dashIndentLevel(leadingSpaces: string): number {
   return Math.floor(leadingSpaces.length / 2) + 1

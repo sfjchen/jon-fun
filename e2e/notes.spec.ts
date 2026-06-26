@@ -646,6 +646,37 @@ test.describe('Notes', () => {
     await expect(editor).toHaveText('indented')
   })
 
+  test('selection + minus bullettizes all lines', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.keyboard.type('first line')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('second line')
+    await page.keyboard.press('ControlOrMeta+a')
+    await page.keyboard.press('-')
+    await expect(editor.locator('.notes-dash-line')).toHaveCount(2, { timeout: 5000 })
+    await expect(editor).toContainText('- first line')
+    await expect(editor).toContainText('- second line')
+  })
+
+  test('Tab indents multiple dash lines; Shift+Tab outdents without losing bullets', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.keyboard.type('- alpha')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('- beta')
+    await page.keyboard.press('ControlOrMeta+a')
+    await page.keyboard.press('Tab')
+    await expect(editor.locator('.notes-dash-line[data-dash-indent="2"]')).toHaveCount(2, { timeout: 5000 })
+    await page.keyboard.press('Shift+Tab')
+    await expect(editor.locator('.notes-dash-line')).toHaveCount(2, { timeout: 5000 })
+    await expect(editor).toContainText('- alpha')
+    await expect(editor).toContainText('- beta')
+    await page.keyboard.press('Shift+Tab')
+    await expect(editor.locator('.notes-dash-line')).toHaveCount(2, { timeout: 5000 })
+    await expect(editor).toContainText('- alpha')
+  })
+
   test('Ctrl+Shift+V pastes plain text without rich formatting', async ({ page }) => {
     const editor = notesEditor(page)
     await page.evaluate(async () => {
