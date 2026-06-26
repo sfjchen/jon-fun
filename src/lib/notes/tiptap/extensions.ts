@@ -64,15 +64,22 @@ export const NOTES_FONT_SIZES = ['12px', '14px', '16px', '18px', '20px', '24px']
 /** Default editor line-height (unitless); matches notes.css `--notes-line-height`. */
 export const NOTES_DEFAULT_LINE_HEIGHT = '1.5'
 
-/** Minimum safe line-height for Lato at 16px — below this, ascenders/dots bleed into open counters (P, C, O, …). */
-export const NOTES_MIN_LINE_HEIGHT = '1.5'
+export const NOTES_LINE_HEIGHTS = ['1', '1.25', '1.5', '1.75', '2'] as const
 
-export const NOTES_LINE_HEIGHTS = ['1.5', '1.75', '2'] as const
+const NOTES_LINE_HEIGHT_VALUES = NOTES_LINE_HEIGHTS.map((lh) => parseFloat(lh))
 
-/** Clamp legacy or out-of-range saved prefs to a safe preset. */
+/** Map legacy or out-of-range saved prefs to the nearest preset (default 1.5×). */
 export function normalizeNotesLineHeight(saved?: string): string {
   if (saved && (NOTES_LINE_HEIGHTS as readonly string[]).includes(saved)) return saved
-  if (saved && parseFloat(saved) < parseFloat(NOTES_MIN_LINE_HEIGHT)) return NOTES_DEFAULT_LINE_HEIGHT
+  if (saved) {
+    const n = parseFloat(saved)
+    if (!Number.isNaN(n) && n >= 1 && n <= 2) {
+      const nearest = NOTES_LINE_HEIGHT_VALUES.reduce((best, q) =>
+        Math.abs(q - n) < Math.abs(best - n) ? q : best,
+      )
+      return String(nearest)
+    }
+  }
   return NOTES_DEFAULT_LINE_HEIGHT
 }
 

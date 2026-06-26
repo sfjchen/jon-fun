@@ -190,10 +190,15 @@ html[data-notes-vault-drag] .notes-split-drop-zone {
   line-height: var(--notes-line-height, 1.5);
   color: var(--uv-text-primary);
   caret-color: var(--uv-text-primary);
+  isolation: isolate;
 }
 
+/* Tight line-height (1×–1.25×): clip ascender bleed into open counters (P, C, O, …). */
 .notes-tiptap-wrap .tiptap p {
-  margin: 0.15em 0;
+  margin: 0.2em 0;
+  padding-block: 0.06em;
+  overflow: hidden;
+  isolation: isolate;
 }
 
 .notes-tiptap-wrap .tiptap h1 {
