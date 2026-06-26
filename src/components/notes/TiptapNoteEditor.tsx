@@ -31,6 +31,8 @@ import { buildEditorContextMenuItems } from './notesEditorContextMenu'
 
 export type NoteEditorHandle = {
   scrollToLine: (lineIndex: number) => void
+  /** Sync editor markdown to parent state — call before session switch. */
+  flushPendingChanges: () => string | null
 }
 
 type TiptapNoteEditorProps = {
@@ -39,7 +41,7 @@ type TiptapNoteEditorProps = {
   screenshots: Record<string, Screenshot>
   onChange: (val: string) => void
   onTrigger: (type: TriggerType, query: string, context: string) => void
-  activeTriggerQuery: string | null
+  activeTriggerQueries: string[]
   onAttachmentAdd: (attachment: Screenshot) => void
   onAttachmentUpdate: (id: string, patch: Partial<Screenshot>) => void
   onLookupSelection?: (query: string, type: TriggerType) => void
@@ -59,7 +61,7 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
     screenshots,
     onChange,
     onTrigger,
-    activeTriggerQuery,
+    activeTriggerQueries,
     onAttachmentAdd,
     onAttachmentUpdate,
     onLookupSelection,
@@ -74,10 +76,13 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
   const emittedMarkdownRef = useRef<string | null>(null)
   const sessionIdRef = useRef(sessionId)
   const onTriggerStable = useCallback(onTrigger, [onTrigger])
-  const activeQueryRef = useRef(activeTriggerQuery)
-  activeQueryRef.current = activeTriggerQuery
+  const activeQueriesRef = useRef(activeTriggerQueries)
+  activeQueriesRef.current = activeTriggerQueries
   const screenshotsRef = useRef(screenshots)
   screenshotsRef.current = screenshots
+
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
 
   const onAttachmentAddRef = useRef(onAttachmentAdd)
   const onAttachmentUpdateRef = useRef(onAttachmentUpdate)
@@ -108,7 +113,7 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
     () =>
       buildNotesExtensions({
         placeholder: NOTES_EDITOR_PLACEHOLDER,
-        getActiveQuery: () => activeQueryRef.current,
+        getActiveQueries: () => activeQueriesRef.current,
       }),
     [],
   )
@@ -122,9 +127,9 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
     onUpdate: ({ editor: ed }) => {
       const plain = plainTextFromEditor(ed)
       const md = postprocessTodoMarkdown(markdownFromEditor(ed))
-      const merged = mergeTodoLinesIntoMarkdown(plain, md)
-      emittedMarkdownRef.current = normalizeNotesMarkdown(merged)
-      onChange(merged)
+      const merged = normalizeNotesMarkdown(mergeTodoLinesIntoMarkdown(plain, md))
+      emittedMarkdownRef.current = merged
+      onChangeRef.current(merged)
       scheduleTriggerCheck(ed, debounceRef, onTriggerStable, lastFiredRef)
     },
     editorProps: {
@@ -162,12 +167,35 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
     setCtxMenu({ x: clientX, y: clientY, items })
   }, [])
 
-  useImperativeHandle(ref, () => ({
-    scrollToLine(lineIndex: number) {
-      if (!editor) return
-      scrollToLineIndex(editor, lineIndex)
-    },
-  }))
+  const readEditorMarkdown = useCallback((ed: import('@tiptap/core').Editor): string => {
+    const plain = plainTextFromEditor(ed)
+    const md = postprocessTodoMarkdown(markdownFromEditor(ed))
+    return normalizeNotesMarkdown(mergeTodoLinesIntoMarkdown(plain, md))
+  }, [])
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      scrollToLine(lineIndex: number) {
+        if (!editor) return
+        scrollToLineIndex(editor, lineIndex)
+      },
+      flushPendingChanges() {
+        const ed = editorInstanceRef.current
+        if (!ed) return null
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current)
+          debounceRef.current = null
+        }
+        const merged = readEditorMarkdown(ed)
+        if (emittedMarkdownRef.current === merged) return merged
+        emittedMarkdownRef.current = merged
+        onChangeRef.current(merged)
+        return merged
+      },
+    }),
+    [editor, readEditorMarkdown],
+  )
 
   useEffect(() => {
     if (!editor) return
@@ -333,7 +361,7 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
   useEffect(() => {
     if (!editor) return
     refreshShorthandDecorations(editor)
-  }, [activeTriggerQuery, editor])
+  }, [activeTriggerQueries, editor])
 
   useEffect(() => {
     const debounce = debounceRef

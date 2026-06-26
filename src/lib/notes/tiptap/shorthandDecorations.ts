@@ -3,7 +3,7 @@ import type { Node as PmNode } from '@tiptap/pm/model'
 import { highlightRanges, parseTodoLine } from '../shorthand'
 import { isArchivedTodoLine, parseActiveTodoLine } from '../todoLines'
 
-function buildDecorations(doc: PmNode, activeQuery: string | null): DecorationSet {
+function buildDecorations(doc: PmNode, activeQueries: string[]): DecorationSet {
   const decos: Decoration[] = []
 
   doc.descendants((node, pos) => {
@@ -29,8 +29,9 @@ function buildDecorations(doc: PmNode, activeQuery: string | null): DecorationSe
       const query = trimmed.slice(0, -endMatch[0]!.length).trim()
       const start = pos + 1 + lineText.length - endMatch[0]!.length
       const end = pos + 1 + lineText.length
-      const cls =
-        activeQuery && query === activeQuery ? 'tiptap-trigger-line tiptap-trigger-active' : 'tiptap-trigger-line'
+      const cls = activeQueries.includes(query)
+        ? 'tiptap-trigger-line tiptap-trigger-active'
+        : 'tiptap-trigger-line'
       decos.push(Decoration.inline(start, end, { class: cls }))
     }
   })
@@ -45,7 +46,7 @@ import { Plugin, PluginKey } from '@tiptap/pm/state'
 
 export const shorthandDecorationsKey = new PluginKey('notesShorthandDecorations')
 
-export function createShorthandDecorationsExtension(getActiveQuery: () => string | null) {
+export function createShorthandDecorationsExtension(getActiveQueries: () => string[]) {
   return Extension.create({
     name: 'notesShorthandDecorations',
     addProseMirrorPlugins() {
@@ -54,10 +55,10 @@ export function createShorthandDecorationsExtension(getActiveQuery: () => string
           key: shorthandDecorationsKey,
           state: {
             init(_, { doc }) {
-              return buildDecorations(doc, getActiveQuery())
+              return buildDecorations(doc, getActiveQueries())
             },
             apply(_tr, _old, _oldState, newState) {
-              return buildDecorations(newState.doc, getActiveQuery())
+              return buildDecorations(newState.doc, getActiveQueries())
             },
           },
           props: {

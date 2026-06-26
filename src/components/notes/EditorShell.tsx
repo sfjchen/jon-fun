@@ -13,7 +13,7 @@ type EditorShellProps = {
   screenshots: Record<string, import('@/lib/notes/types').Screenshot>
   onChange: (val: string) => void
   onTrigger: (type: TriggerType, query: string, context: string) => void
-  activeTriggerQuery: string | null
+  activeTriggerQueries: string[]
   onAttachmentAdd: (attachment: import('@/lib/notes/types').Screenshot) => void
   onAttachmentUpdate: (id: string, patch: Partial<import('@/lib/notes/types').Screenshot>) => void
   onLookupSelection?: (query: string, type: TriggerType) => void

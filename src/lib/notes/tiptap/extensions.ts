@@ -19,7 +19,7 @@ import { tablePasteExtension } from './tablePaste'
 
 export type NotesExtensionOpts = {
   placeholder: string
-  getActiveQuery: () => string | null
+  getActiveQueries: () => string[]
 }
 
 export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
@@ -54,7 +54,7 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
     attachmentPasteExtension,
     richPasteExtension,
     tablePasteExtension,
-    createShorthandDecorationsExtension(opts.getActiveQuery),
+    createShorthandDecorationsExtension(opts.getActiveQueries),
   ]
 }
 
