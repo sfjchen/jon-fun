@@ -14,13 +14,13 @@ Reference for Jon's personal cross-device setup on sfjc.dev.
 1. Open **Notes** → panel → **Sync & backup** → enter sync password → **Save & Sync**
 2. Open **1 Sentence Everyday** → **Sync** tab → same password → **Save & Sync**
 
-## Admin devices (2026-06-24)
+## Admin devices (2026-06-26)
 
 | Device | `notes_user_id` / device UUID |
 |--------|-------------------------------|
 | Jonathan's iPhone | `REDACTED-DEVICE-ID` |
 | Jonathan's Macbook Air | `REDACTED-DEVICE-ID` |
-| Jonathan's Work Laptop | `81a932d2-de6b-42a5-a2b5-274a9141c668` |
+| Jonathan's Work Laptop | `REDACTED-DEVICE-ID` |
 
 Source of truth in code: [`src/data/sfjc-admin-devices.ts`](../src/data/sfjc-admin-devices.ts).
 
