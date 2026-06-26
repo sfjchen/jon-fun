@@ -19,9 +19,39 @@ const BASE_RULES = `Rules:
 - Do NOT label blocks Intent, Follow up, or a separate "angle" section — one integrated answer only
 - If screenshot attached, reference it naturally`
 
+/** Formula/equation/ratio/metric-definition lookups — enable LaTeX + variable list. */
+const METRIC_TERMS =
+  /\b(dpi|tvpi|rvpi|moic|irr|nav|p\/e|sharpe|sortino|alpha|beta|capm|wacc|ev\/ebitda)\b/i
+const FORMULA_INTENT =
+  /\b(formula|equation|ratio|metric definition|multiple|defined as|calculate|calculation|how (?:is|to compute)|what is the)\b/i
+
+export function isFormulaDefinitionQuery(query: string): boolean {
+  const q = query.trim()
+  if (!q) return false
+  if (FORMULA_INTENT.test(q)) return true
+  if (/\bwhat is\b/i.test(q) && METRIC_TERMS.test(q)) return true
+  if (/\b(formula|ratio|equation|definition)\s+(?:for|of)\b/i.test(q)) return true
+  return false
+}
+
+function formulaMathAddendum(): string {
+  return `FORMULA / METRIC DEFINITION (this query asks for a formula, equation, ratio, or metric definition):
+- After plain-English explanation, show the formula with LaTeX when helpful:
+  - Inline: $...$ (e.g. $\\text{DPI} = D / \\text{PIC}$)
+  - Display on its own line: $$...$$ (e.g. $$\\text{TVPI} = \\frac{D + \\text{NAV}}{\\text{PIC}}$$)
+- Then list variables (plain lines, no # header): "symbol — meaning" per line; include units when relevant
+- Plain English first; math supports the explanation — never answer with only symbols
+- Still no markdown # headers or labels like "Core meaning" or "Variables:"`
+}
+
 /** Line ? lookup — explain the full marked line in note context (not acronym-only). */
-function responseFormatLine(): string {
-  return `Plain text only (no markdown # headers, no labels like "Core meaning" or "Typical ranges"):
+function responseFormatLine(query?: string): string {
+  const formula = query ? isFormulaDefinitionQuery(query) : false
+  const intro = formula
+    ? 'Plain English with LaTeX math where helpful ($...$ inline, $$...$$ display). No markdown # headers or section labels:'
+    : 'Plain text only (no markdown # headers, no labels like "Core meaning" or "Typical ranges"):'
+
+  const base = `${intro}
 
 The user marked ONE note line with ? — they want to understand that entire line, not just expand an acronym.
 
@@ -34,17 +64,26 @@ Line 3+: 2-4 sentences explaining the FULL marked line in plain English:
   - Use surrounding note context when helpful; weave in active-domain context naturally
 
 For metrics/ratios in the line: optional blank line + 2-3 short typical-magnitude lines — still no section label. Omit for non-numeric concepts.`
+
+  return formula ? `${base}\n\n${formulaMathAddendum()}` : base
 }
 
 /** Section ?? lookup — same shape, slightly more room. */
-function sectionResponseFormat(): string {
-  return `Plain text only (no markdown # headers, no labels like "Core meaning" or "Typical ranges"):
+function sectionResponseFormat(query?: string): string {
+  const formula = query ? isFormulaDefinitionQuery(query) : false
+  const intro = formula
+    ? 'Plain English with LaTeX math where helpful ($...$ inline, $$...$$ display). No markdown # headers or section labels:'
+    : 'Plain text only (no markdown # headers, no labels like "Core meaning" or "Typical ranges"):'
+
+  const base = `${intro}
 
 Line 1: the main topic or term for this section block
 Line 2: blank
 Line 3+: 2-4 concise sentences on what this section is about — domain context woven in; infer the likely question.
 
 For metrics in the section: optional blank line + 2-4 short typical-magnitude lines (no label). Omit if not applicable.`
+
+  return formula ? `${base}\n\n${formulaMathAddendum()}` : base
 }
 
 export function buildLineSystemPrompt(opts: {
@@ -87,10 +126,10 @@ RELATED NOTES:
 ${opts.relatedNotes?.trim() || '(none)'}
 
 RESPONSE FORMAT — follow exactly:
-${responseFormatLine()}
+${responseFormatLine(opts.query)}
 
 ${BASE_RULES}
-- Max ~120 words for line mode (optional magnitude lines can add ~40 words when needed)`
+- Max ~${opts.query && isFormulaDefinitionQuery(opts.query) ? '180' : '120'} words for line mode (formula/variable lines can add ~60 words when needed)`
 }
 
 export function buildSectionSystemPrompt(opts: {
@@ -130,10 +169,10 @@ RELATED NOTES:
 ${opts.relatedNotes?.trim() || '(none)'}
 
 RESPONSE FORMAT:
-${sectionResponseFormat()}
+${sectionResponseFormat(opts.query)}
 
 ${BASE_RULES}
-- Under ~140 words unless section is complex or magnitude lines apply`
+- Under ~${opts.query && isFormulaDefinitionQuery(opts.query) ? '200' : '140'} words unless section is complex or magnitude lines apply`
 }
 
 export function buildSummarizeSystemPrompt(opts: {
@@ -221,11 +260,12 @@ ${opts.relatedNotes?.trim() || '(none)'}
 
 Behavior:
 - Answer naturally in plain text — explain, plan, or execute changes when asked.
-- For finance/metric questions: term on its own line, blank line, concise definition — no section labels.
+- For finance/metric/formula questions: term on its own line, blank line, concise definition; use LaTeX ($...$, $$...$$) for formulas and list variables (symbol — meaning) when helpful — no section labels.
 - dictionary.set definitions must be plain concise text only (term is separate); never include "Core meaning" or similar labels.
 - When the user asks to store a definition, fix note text, rename the note, or change tags — use the ACTIONS block below.
 - Confirm what you changed in your visible reply.
 - You can discuss app features and suggest workflows; you have full read access to the note above.
+${opts.query && isFormulaDefinitionQuery(opts.query) ? `\n\n${formulaMathAddendum()}` : ''}
 
 ${AGENT_ACTIONS_FOOTER}`
 }

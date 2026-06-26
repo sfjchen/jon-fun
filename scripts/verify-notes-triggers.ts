@@ -3,7 +3,7 @@
  *   npm run verify:notes-triggers
  */
 import { detectLineTriggers, countShorthandFlags } from '../src/lib/notes/triggerParser'
-import { buildLineSystemPrompt } from '../src/lib/notes/knowledge/prompts'
+import { buildLineSystemPrompt, isFormulaDefinitionQuery } from '../src/lib/notes/knowledge/prompts'
 import { buildUserText } from '../src/lib/notes/llm'
 import { postprocessTodoMarkdown, preprocessTodoMarkdown, mergeTodoLinesIntoMarkdown } from '../src/lib/notes/tiptap/editorCoords'
 import { collectTodos } from '../src/lib/notes/rollup'
@@ -277,6 +277,41 @@ if (
   console.error('✗ buildUserText line lookup', userText)
 } else {
   console.log('✓ buildUserText line lookup')
+}
+
+if (!isFormulaDefinitionQuery('what is the DPI formula?')) {
+  failed++
+  console.error('✗ isFormulaDefinitionQuery detects formula query')
+} else {
+  console.log('✓ isFormulaDefinitionQuery detects formula query')
+}
+
+if (isFormulaDefinitionQuery('boss flagged DPI gap')) {
+  failed++
+  console.error('✗ isFormulaDefinitionQuery skips non-formula DPI mention')
+} else {
+  console.log('✓ isFormulaDefinitionQuery skips non-formula DPI mention')
+}
+
+const formulaPrompt = buildLineSystemPrompt({ query: 'what is the TVPI formula?' })
+if (
+  !formulaPrompt.includes('LaTeX') ||
+  !formulaPrompt.includes('$$') ||
+  !formulaPrompt.includes('symbol — meaning') ||
+  !formulaPrompt.includes('FORMULA / METRIC DEFINITION')
+) {
+  failed++
+  console.error('✗ buildLineSystemPrompt formula LaTeX instructions', formulaPrompt.slice(0, 400))
+} else {
+  console.log('✓ buildLineSystemPrompt formula LaTeX instructions')
+}
+
+const plainPrompt = buildLineSystemPrompt({ query: 'boss flagged DPI gap' })
+if (plainPrompt.includes('FORMULA / METRIC DEFINITION')) {
+  failed++
+  console.error('✗ buildLineSystemPrompt omits formula block for non-formula query')
+} else {
+  console.log('✓ buildLineSystemPrompt omits formula block for non-formula query')
 }
 
 if (failed > 0) {
