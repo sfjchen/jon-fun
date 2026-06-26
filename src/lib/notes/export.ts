@@ -124,7 +124,7 @@ const EXPORT_CSS = `
   body {
     font-family: Georgia, 'Times New Roman', Times, serif;
     font-size: 11pt;
-    line-height: 1.55;
+    line-height: 1.25;
     color: #1a1a1a;
     margin: 0;
     padding: 0;

@@ -4,7 +4,6 @@ import Placeholder from '@tiptap/extension-placeholder'
 import Underline from '@tiptap/extension-underline'
 import Link from '@tiptap/extension-link'
 import { FontSize, TextStyle } from '@tiptap/extension-text-style'
-import { LineHeight } from '@tiptap/extension-text-style/line-height'
 import { Markdown } from '@tiptap/markdown'
 import { notesKeymap } from './keymap'
 import { createShorthandDecorationsExtension } from './shorthandDecorations'
@@ -38,7 +37,6 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
     NotesItalic,
     TextStyle,
     FontSize,
-    LineHeight,
     Underline,
     Link.configure({
       openOnClick: false,
@@ -63,9 +61,9 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
 /** Preset font sizes for the bubble menu (px). */
 export const NOTES_FONT_SIZES = ['12px', '14px', '16px', '18px', '20px', '24px'] as const
 
-/** Default editor line-height (unitless); matches notes.css. */
-export const NOTES_DEFAULT_LINE_HEIGHT = '1.55'
+/** Default editor line-height (unitless); matches notes.css `--notes-line-height`. */
+export const NOTES_DEFAULT_LINE_HEIGHT = '1.25'
 
-export const NOTES_LINE_HEIGHTS = ['1.35', '1.55', '1.75', '2'] as const
+export const NOTES_LINE_HEIGHTS = ['1', '1.25', '1.5', '1.75', '2'] as const
 
 export const NOTES_EDITOR_PLACEHOLDER = 'Start typing…'
