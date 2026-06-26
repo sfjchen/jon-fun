@@ -99,7 +99,7 @@
   outline: none;
   font-family: var(--font-lato), 'Lato', sans-serif;
   font-size: 16px;
-  line-height: var(--notes-line-height, 1.25);
+  line-height: var(--notes-line-height, 1.5);
   color: var(--uv-text-primary);
   caret-color: var(--uv-text-primary);
 }

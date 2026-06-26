@@ -62,8 +62,11 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
 export const NOTES_FONT_SIZES = ['12px', '14px', '16px', '18px', '20px', '24px'] as const
 
 /** Default editor line-height (unitless); matches notes.css `--notes-line-height`. */
-export const NOTES_DEFAULT_LINE_HEIGHT = '1.25'
+export const NOTES_DEFAULT_LINE_HEIGHT = '1.5'
 
-export const NOTES_LINE_HEIGHTS = ['1', '1.25', '1.5', '1.75', '2'] as const
+/** Minimum safe line-height for Lato at 16px — below this, ascenders overlap open counters. */
+export const NOTES_MIN_LINE_HEIGHT = '1.35'
+
+export const NOTES_LINE_HEIGHTS = ['1.35', '1.5', '1.75', '2'] as const
 
 export const NOTES_EDITOR_PLACEHOLDER = 'Start typing…'
