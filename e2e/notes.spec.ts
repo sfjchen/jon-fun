@@ -374,7 +374,7 @@ test.describe('Notes', () => {
     await expect(panes).toHaveCount(1)
 
     const historyButtons = page.locator('[data-testid^="notes-lookup-history-"]')
-    await expect(historyButtons).toHaveCount(2)
+    await expect(historyButtons).toHaveCount(1)
     await historyButtons.filter({ hasText: 'first topic?' }).click()
     await expect(panes).toHaveCount(2)
   })
@@ -408,6 +408,123 @@ test.describe('Notes', () => {
       timeout: 15_000,
     })
     await expect(pane.getByTestId('notes-chat-assistant')).toHaveCount(2, { timeout: 15_000 })
+  })
+
+  test('lookup chat survives switching away and back', async ({ page }) => {
+    await page.getByTestId('notes-lookup-input').fill('fund TVPI ratio')
+    await page.getByTestId('notes-lookup-input').press('Enter')
+    await waitForLookupComplete(page)
+    await expect(page.locator('[data-testid^="notes-lookup-pane-"]')).toContainText('E2E mock answer')
+
+    await page.getByTestId('notes-new-meeting').click()
+    const meetings = page.locator('[data-testid^="notes-meeting-item-"]')
+    await expect(meetings).toHaveCount(2)
+    await expect(page.locator('[data-testid^="notes-lookup-pane-"]')).toHaveCount(0)
+
+    await meetings.nth(1).click()
+    await expect(page.locator('[data-testid^="notes-lookup-pane-"]')).toContainText('E2E mock answer', {
+      timeout: 10_000,
+    })
+    await expect(page.locator('[data-testid^="notes-lookup-pane-"]')).toContainText('fund TVPI ratio')
+  })
+
+  test('each note shows its own lookup chats after switching', async ({ page }) => {
+    await page.route('**/api/notes/lookup', async (route) => {
+      let body: { query?: string } = {}
+      try {
+        body = route.request().postDataJSON() as { query?: string }
+      } catch {
+        /* empty */
+      }
+      const q = String(body.query ?? '').toLowerCase()
+      const answer = q.includes('alpha')
+        ? 'Alpha note E2E mock answer'
+        : q.includes('beta')
+          ? 'Beta note E2E mock answer'
+          : 'E2E mock answer'
+      const sse = `data: {"token":"${answer}"}\n\ndata: [DONE]\n\n`
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream; charset=utf-8',
+        body: sse,
+      })
+    })
+
+    await page.getByTestId('notes-meeting-title').fill('Note Alpha')
+    await page.getByTestId('notes-lookup-input').fill('alpha topic')
+    await page.getByTestId('notes-lookup-input').press('Enter')
+    await waitForLookupComplete(page)
+    await expect(page.getByTestId('notes-side-panel')).toContainText('Alpha note E2E mock answer')
+
+    await page.getByTestId('notes-new-meeting').click()
+    await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(2)
+    await page.getByTestId('notes-meeting-title').fill('Note Beta')
+    await page.getByTestId('notes-lookup-input').fill('beta topic')
+    await page.getByTestId('notes-lookup-input').press('Enter')
+    await waitForLookupComplete(page)
+    await expect(page.getByTestId('notes-side-panel')).toContainText('Beta note E2E mock answer')
+    await expect(page.getByTestId('notes-side-panel')).not.toContainText('Alpha note E2E mock answer')
+
+    await page.locator('[data-testid^="notes-meeting-item-"]').filter({ hasText: 'Note Alpha' }).click()
+    await expect(page.getByTestId('notes-side-panel')).toContainText('Alpha note E2E mock answer', {
+      timeout: 10_000,
+    })
+    await expect(page.getByTestId('notes-side-panel')).not.toContainText('Beta note E2E mock answer')
+
+    await page.locator('[data-testid^="notes-meeting-item-"]').filter({ hasText: 'Note Beta' }).click()
+    await expect(page.getByTestId('notes-side-panel')).toContainText('Beta note E2E mock answer', {
+      timeout: 10_000,
+    })
+    await expect(page.getByTestId('notes-side-panel')).not.toContainText('Alpha note E2E mock answer')
+  })
+
+  test('lookup chats survive Save & Sync round-trip', async ({ page }) => {
+    const remoteSessions: unknown[] = []
+    await page.route('**/api/notes/sessions**', async (route) => {
+      const method = route.request().method()
+      if (method === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ sessions: remoteSessions }),
+        })
+        return
+      }
+      if (method === 'POST') {
+        try {
+          const body = route.request().postDataJSON() as { sessions?: unknown[] }
+          if (Array.isArray(body.sessions)) remoteSessions.splice(0, remoteSessions.length, ...body.sessions)
+        } catch {
+          /* empty */
+        }
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ ok: true }),
+        })
+        return
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true }),
+      })
+    })
+
+    await page.getByTestId('notes-lookup-input').fill('fund TVPI ratio')
+    await page.getByTestId('notes-lookup-input').press('Enter')
+    await waitForLookupComplete(page)
+
+    await page.getByTestId('notes-sync-toggle').click()
+    await page.getByTestId('notes-sync-now').click()
+    await expect(page.getByTestId('notes-sync-status')).toContainText(/synced|saved/i, { timeout: 15_000 })
+
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await waitForNotesEditor(page)
+    await ensureNotesVaultSectionOpen(page)
+    await expect(page.locator('[data-testid^="notes-lookup-pane-"]')).toContainText('E2E mock answer', {
+      timeout: 15_000,
+    })
   })
 
   test('cloud sync does not wipe in-flight lookup', async ({ page }) => {
@@ -534,8 +651,50 @@ test.describe('Notes', () => {
     await page.keyboard.type('TVPI?')
     await waitForNotesTrigger(page)
     await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 5000 })
+    await expect(page.locator('[data-testid^="notes-lookup-pane-"]')).toHaveCount(2, { timeout: 5000 })
     await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15000 })
     await expect(page.getByTestId('notes-ai-section')).toContainText(/MOIC|TVPI/)
+  })
+
+  test('concurrent lookups show two panes streaming in parallel', async ({ page }) => {
+    await page.route('**/api/notes/lookup', async (route) => {
+      let body: { query?: string } = {}
+      try {
+        body = route.request().postDataJSON() as { query?: string }
+      } catch {
+        /* empty */
+      }
+      const q = String(body.query ?? '')
+      await new Promise((r) => setTimeout(r, 1200))
+      const answer = q.toLowerCase().includes('moic')
+        ? 'MOIC parallel E2E answer'
+        : 'TVPI parallel E2E answer'
+      const sse = `data: {"token":"${answer}"}\n\ndata: [DONE]\n\n`
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream; charset=utf-8',
+        body: sse,
+      })
+    })
+
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.keyboard.type('MOIC?')
+    await waitForNotesTrigger(page)
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('TVPI?')
+    await waitForNotesTrigger(page)
+
+    await expect(page.locator('[data-testid^="notes-lookup-pane-"]')).toHaveCount(2, { timeout: 5000 })
+    await expect(page.getByTestId('notes-ai-active-count')).toContainText('2', { timeout: 8000 })
+
+    await expect(page.getByTestId('notes-side-panel')).toContainText('MOIC parallel E2E answer', {
+      timeout: 20_000,
+    })
+    await expect(page.getByTestId('notes-side-panel')).toContainText('TVPI parallel E2E answer', {
+      timeout: 20_000,
+    })
+    await expect(page.getByTestId('notes-ai-active-count')).toHaveCount(0, { timeout: 20_000 })
   })
 
   test('shorthand hints toggle', async ({ page }) => {
@@ -586,6 +745,58 @@ test.describe('Notes', () => {
     await expect(meetings).toHaveCount(2)
     await meetings.nth(1).click()
     await expect(editor.locator('strong')).toContainText('important term', { timeout: 5000 })
+  })
+
+  test('paste Google Docs then quick switch preserves lines and formatting', async ({ page }) => {
+    const gdocsHtml =
+      '<meta charset="utf-8"><p>Intro line</p><p><br></p><ul><li>first bullet</li><li><span style="font-weight:700">bold item</span></li><ul><li>nested item</li></ul></ul>'
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.evaluate((html) => {
+      const dt = new DataTransfer()
+      dt.setData('text/html', html)
+      dt.setData('text/plain', 'Intro line\n\nfirst bullet\nbold item\nnested item')
+      const root = document.querySelector('[data-testid="notes-tiptap-editor"] .ProseMirror')!
+      root.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: dt }))
+    }, gdocsHtml)
+    await expect(editor.locator('strong')).toContainText('bold item', { timeout: 5000 })
+    await expect(editor.locator('.notes-dash-line')).toHaveCount(3, { timeout: 5000 })
+
+    await page.getByTestId('notes-new-meeting').click()
+    const meetings = page.locator('[data-testid^="notes-meeting-item-"]')
+    await expect(meetings).toHaveCount(2)
+    await meetings.nth(1).click()
+
+    await expect(editor).toContainText('Intro line', { timeout: 5000 })
+    await expect(editor.locator('strong')).toContainText('bold item')
+    await expect(editor).toContainText('- first bullet')
+    await expect(editor).toContainText('nested item')
+
+    const stored = await page.evaluate(() => {
+      const sessions = JSON.parse(localStorage.getItem('notes_sessions') ?? '[]') as { notes: string }[]
+      return sessions[1]?.notes ?? ''
+    })
+    expect(stored).toMatch(/bold/i)
+    expect(stored).toContain('Intro line')
+    expect(stored).toContain('first bullet')
+  })
+
+  test('save then quick switch preserves typed content', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.keyboard.type('persist-after-save line one')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('line two with content')
+
+    await page.getByTestId('notes-new-meeting').click()
+    const meetings = page.locator('[data-testid^="notes-meeting-item-"]')
+    await expect(meetings).toHaveCount(2)
+
+    await page.keyboard.press('Control+s')
+    await meetings.nth(1).click()
+
+    await expect(editor).toContainText('persist-after-save line one', { timeout: 5000 })
+    await expect(editor).toContainText('line two with content')
   })
 
   test('trigger works with bold text in line', async ({ page }) => {

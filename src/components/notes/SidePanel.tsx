@@ -5,13 +5,12 @@ import type { Lookup, NoteHistoryEntry, NoteSession } from '@/lib/notes/types'
 import { isLookupStreaming, type LookupStreamMap } from '@/lib/notes/lookupStreams'
 import { collectTodos } from '@/lib/notes/rollup'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
-import LookupConversation from './LookupConversation'
+import LookupPane from './LookupPane'
+import LookupComposer from './LookupComposer'
 import CollapsibleSection from './CollapsibleSection'
 import SyncPanel from './SyncPanel'
 import DictionaryPanel from './DictionaryPanel'
 import RollupPanel from './RollupPanel'
-import FollowUpComposer from './FollowUpComposer'
-import LookupComposer from './LookupComposer'
 import SourcesPanel from './SourcesPanel'
 import NoteHistoryPanel from './NoteHistoryPanel'
 import NotesVaultPanel from './NotesVaultPanel'
@@ -56,12 +55,9 @@ type SidePanelProps = {
   activeSessionId: string
   splitSessionId?: string | null | undefined
   activeSession: NoteSession
-  focusedLookup: Lookup | null
+  openLookups: Lookup[]
   sessionHistory: Lookup[]
   streamByLookupId: LookupStreamMap
-  streamText: string
-  displayStreaming: boolean
-  displayError: string | null
   aiActiveCount: number
   notesListOpen: boolean
   aiListOpen: boolean
@@ -91,9 +87,9 @@ type SidePanelProps = {
   onArchiveNote: (sessionId: string) => void
   onDeleteLookup: (lookupId: string) => void
   onPanelLookup: (query: string) => void
-  onFollowUp: (q: string) => void
+  onFollowUp: (lookupId: string, question: string) => void
   onSelectHistory: (lookup: Lookup) => void
-  onClearLookup: () => void
+  onDismissLookup: (lookupId: string) => void
   onSynced: (opts?: { skipPersist?: boolean; force?: boolean; reloadLocal?: boolean }) => void
   onJumpTodo: (sessionId: string, lineIndex: number) => void
   onArchiveTodo: (sessionId: string, lineIndex: number) => void
@@ -111,12 +107,9 @@ export default function SidePanel({
   activeSessionId,
   splitSessionId,
   activeSession,
-  focusedLookup,
+  openLookups,
   sessionHistory,
   streamByLookupId,
-  streamText,
-  displayStreaming,
-  displayError,
   aiActiveCount,
   notesListOpen,
   aiListOpen,
@@ -148,7 +141,7 @@ export default function SidePanel({
   onPanelLookup,
   onFollowUp,
   onSelectHistory,
-  onClearLookup,
+  onDismissLookup,
   onSynced,
   onJumpTodo,
   onArchiveTodo,
@@ -193,6 +186,8 @@ export default function SidePanel({
     aiActiveCount > 1 ? `AI lookup · ${aiActiveCount} active` : 'AI lookup'
 
   const todoCount = collectTodos(sessions).length
+  const openLookupIds = new Set(openLookups.map((lk) => lk.id))
+  const historyClosed = sessionHistory.filter((lk) => !openLookupIds.has(lk.id))
 
   return (
     <aside
@@ -261,67 +256,38 @@ export default function SidePanel({
           toggleTestId="notes-ai-toggle"
         >
           <div className="px-3 pb-2">
-            {focusedLookup ? (
-              <div className="mb-3 flex min-h-0 flex-col">
-                <div className="mb-1.5 flex shrink-0 items-center gap-1">
-                  <p className="min-w-0 flex-1 text-[11px] text-[var(--uv-text-secondary)]">
-                    {lookupLabel(focusedLookup)}
-                  </p>
-                  <button
-                    type="button"
-                    aria-label="New AI question"
-                    data-testid="notes-clear-lookup"
-                    onClick={onClearLookup}
-                    className="shrink-0 rounded px-1 text-[10px] text-[var(--uv-text-muted)] hover:text-[var(--uv-text-primary)]"
-                  >
-                    New
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Delete this lookup"
-                    data-testid="notes-delete-lookup-active"
-                    onClick={() => onDeleteLookup(focusedLookup.id)}
-                    className="shrink-0 rounded px-1 text-[10px] leading-none text-[var(--uv-text-muted)] hover:text-red-600"
-                  >
-                    ×
-                  </button>
-                </div>
-                <LookupConversation
-                  lookup={focusedLookup}
-                  streamText={streamText}
-                  isStreaming={displayStreaming}
-                  error={displayError}
-                />
-                {!displayStreaming ? <FollowUpComposer onSubmit={onFollowUp} /> : null}
-              </div>
-            ) : (
-              <>
-                <LookupComposer onSubmit={onPanelLookup} />
-                <LookupConversation lookup={null} streamText="" isStreaming={false} error={displayError} />
-              </>
-            )}
+            <LookupComposer onSubmit={onPanelLookup} />
 
-            {sessionHistory.length > 0 ? (
-              <div className={`border-[var(--uv-border)] pt-2 ${focusedLookup ? 'mt-2 border-t' : 'mt-4 border-t'}`}>
+            {openLookups.length > 0 ? (
+              <div className="notes-lookup-panes flex flex-col" data-testid="notes-lookup-panes">
+                {openLookups.map((lk) => (
+                  <LookupPane
+                    key={lk.id}
+                    lookup={lk}
+                    streamByLookupId={streamByLookupId}
+                    onFollowUp={onFollowUp}
+                    onDismiss={onDismissLookup}
+                    onDelete={onDeleteLookup}
+                  />
+                ))}
+              </div>
+            ) : null}
+
+            {historyClosed.length > 0 ? (
+              <div className={`border-[var(--uv-border)] pt-2 ${openLookups.length ? 'mt-2 border-t' : 'mt-4 border-t'}`}>
                 <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">
                   This note
                 </p>
                 <ul className="space-y-0.5">
-                  {sessionHistory.map((lk) => {
+                  {historyClosed.map((lk) => {
                     const streaming = isLookupStreaming(streamByLookupId, lk.id)
-                    const active = focusedLookup?.id === lk.id
                     return (
                       <li key={lk.id} className="group flex items-center gap-0.5">
                         <button
                           type="button"
                           data-testid={`notes-lookup-history-${lk.id}`}
-                          data-active={active ? 'true' : 'false'}
                           onClick={() => onSelectHistory(lk)}
-                          className={`flex min-w-0 flex-1 items-center gap-1 rounded px-1.5 py-1 text-left text-[11px] hover:bg-[var(--uv-accent-dim)] ${
-                            active
-                              ? 'notes-meeting-active text-[var(--uv-text-primary)]'
-                              : 'text-[var(--uv-text-secondary)]'
-                          }`}
+                          className="flex min-w-0 flex-1 items-center gap-1 rounded px-1.5 py-1 text-left text-[11px] text-[var(--uv-text-secondary)] hover:bg-[var(--uv-accent-dim)]"
                         >
                           <span className="min-w-0 flex-1 truncate">
                             {lookupLabel(lk)} · {timeAgo(lk.triggeredAt)}

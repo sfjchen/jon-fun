@@ -2,8 +2,11 @@
 
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import { useEffect, useRef } from 'react'
 import type { Lookup, Message } from '@/lib/notes/types'
+import 'katex/dist/katex.min.css'
 
 const mdComponents = {
   h1: ({ children }: { children?: React.ReactNode }) => (
@@ -38,7 +41,11 @@ const mdComponents = {
 function AssistantBubble({ content, streaming }: { content: string; streaming?: boolean }) {
   return (
     <div className="mb-3 text-sm leading-relaxed text-[var(--uv-text-primary)]" data-testid="notes-chat-assistant">
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeKatex]}
+        components={mdComponents}
+      >
         {content}
       </ReactMarkdown>
       {streaming ? <span className="ml-0.5 inline-block animate-pulse text-[var(--uv-accent)]">▌</span> : null}
@@ -62,6 +69,7 @@ type LookupConversationProps = {
   streamText: string
   isStreaming: boolean
   error?: string | null
+  testId?: string
 }
 
 export default function LookupConversation({
@@ -69,6 +77,7 @@ export default function LookupConversation({
   streamText,
   isStreaming,
   error,
+  testId = 'notes-chat-thread',
 }: LookupConversationProps) {
   const ref = useRef<HTMLDivElement>(null)
   const messages = lookup?.conversation ?? []
@@ -88,7 +97,7 @@ export default function LookupConversation({
     <div
       ref={ref}
       className="max-h-[min(50vh,28rem)] min-h-[4rem] overflow-y-auto"
-      data-testid="notes-chat-thread"
+      data-testid={testId}
     >
       {messages.map((m: Message, i) =>
         m.role === 'user' ? (
