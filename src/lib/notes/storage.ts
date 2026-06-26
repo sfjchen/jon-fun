@@ -30,6 +30,19 @@ export { getOrCreateUserId } from './deviceIdentity'
 const PUSH_RETRIES = 3
 const RETRY_DELAY_MS = 500
 
+export type PushResult = { ok: boolean; error?: string }
+
+async function parseApiError(res: Response): Promise<string> {
+  let msg = `HTTP ${res.status}`
+  try {
+    const data = (await res.json()) as { error?: string }
+    if (data.error) msg = data.error
+  } catch {
+    /* ignore */
+  }
+  return msg
+}
+
 /** Serialize sync/push so async fetch cannot merge against a stale local snapshot. */
 let syncChain: Promise<void> = Promise.resolve()
 
@@ -291,7 +304,7 @@ export async function fetchSessionsFromServer(): Promise<NoteSession[]> {
   return withNormalizedTitles(sessions)
 }
 
-async function pushWithRetry(sessions: NoteSession[]): Promise<boolean> {
+async function pushWithRetry(sessions: NoteSession[]): Promise<PushResult> {
   const userId = getEffectiveUserId()
   const deviceUserId = getOrCreateUserId()
   const toSend = sessionsForPush(sessions)
@@ -305,24 +318,35 @@ async function pushWithRetry(sessions: NoteSession[]): Promise<boolean> {
     deviceUserId,
     ...(getSyncKey() ? { syncPassword: getSyncKey() } : {}),
   })
+  let lastError = 'Network error — check connection'
   for (let i = 0; i < PUSH_RETRIES; i++) {
-    const res = await fetch('/api/notes/sessions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body,
-    })
-    if (res.ok) return true
-    if (res.status === 413) return false
+    try {
+      const res = await fetch('/api/notes/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      })
+      if (res.ok) return { ok: true }
+      lastError = await parseApiError(res)
+      if (res.status === 413) return { ok: false, error: lastError }
+      if (res.status === 403) return { ok: false, error: lastError }
+    } catch {
+      lastError = 'Network error — check connection'
+    }
     if (i < PUSH_RETRIES - 1) await new Promise((r) => setTimeout(r, RETRY_DELAY_MS))
   }
-  return false
+  return { ok: false, error: lastError }
 }
 
-export async function pushAllToServer(): Promise<boolean> {
+export async function pushAllToServer(): Promise<PushResult> {
   return runSyncExclusive(() => pushWithRetry(loadSessions()))
 }
 
-export async function syncWithServer(): Promise<{ sessions: NoteSession[]; pushOk: boolean }> {
+export async function syncWithServer(): Promise<{
+  sessions: NoteSession[]
+  pushOk: boolean
+  pushError?: string
+}> {
   if (typeof window === 'undefined') return { sessions: loadSessions(), pushOk: true }
   return runSyncExclusive(async () => {
     const userId = getEffectiveUserId()
@@ -334,12 +358,16 @@ export async function syncWithServer(): Promise<{ sessions: NoteSession[]; pushO
     if (localStorage.getItem(SESSIONS_KEY) !== mergedJson) {
       saveSessionsLocal(merged)
     }
-    const pushOk = await pushWithRetry(merged)
-    return { sessions: merged, pushOk }
+    const push = await pushWithRetry(merged)
+    return {
+      sessions: merged,
+      pushOk: push.ok,
+      ...(push.error ? { pushError: push.error } : {}),
+    }
   })
 }
 
-export async function saveSessionToServer(session: NoteSession): Promise<boolean> {
+export async function saveSessionToServer(session: NoteSession): Promise<PushResult> {
   return runSyncExclusive(async () => {
     upsertSession(session)
     return pushWithRetry(loadSessions())

@@ -391,6 +391,33 @@ test.describe('Notes', () => {
     expect(postedUserId).toBe('my-sync-password-99')
   })
 
+  test('owner vault POST 403 surfaces API error in sync panel', async ({ page }) => {
+    const deviceDenied = 'Owner vault requires a registered sfjc.dev admin device.'
+    await page.addInitScript(() => {
+      localStorage.setItem('notes_user_id', 'non-admin-device-uuid')
+    })
+    await page.route('**/api/notes/sessions**', async (route) => {
+      if (route.request().method() === 'GET') {
+        await route.fulfill({ json: { sessions: [] } })
+        return
+      }
+      if (route.request().method() === 'POST') {
+        await route.fulfill({ status: 403, json: { error: deviceDenied } })
+        return
+      }
+      await route.fulfill({ json: { ok: true } })
+    })
+
+    await page.goto('/games/notes')
+    await waitForNotesEditor(page)
+    await ensureNotesPanelOpen(page)
+    await page.getByTestId('notes-sync-toggle').click()
+    await page.getByTestId('notes-sync-password-input').fill('MLpnko#12')
+    await page.getByTestId('notes-sync-save').click()
+    await expect(page.getByTestId('notes-sync-panel')).toContainText(deviceDenied, { timeout: 10_000 })
+    await expect(page.getByTestId('notes-device-unregistered-warning')).toBeVisible()
+  })
+
   test('global search opens with Ctrl+Shift+F', async ({ page }) => {
     const editor = notesEditor(page)
     await editor.click()
