@@ -9,7 +9,7 @@ export const SFJC_ADMIN_DEVICES = [
     label: "Jonathan's Macbook Air",
   },
   {
-    id: '81a932d2-de6b-42a5-a2b5-274a9141c668',
+    id: 'cc19ad2e-2ee4-4156-8b50-cf0d9c74fbf7',
     label: "Jonathan's Work Laptop",
   },
 ] as const
