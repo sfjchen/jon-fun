@@ -72,6 +72,12 @@ function sanitizeEntries(entries: GlossaryEntry[]): GlossaryEntry[] {
   return [...byTerm.values()].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
 }
 
+export function findGlossaryEntry(term: string): GlossaryEntry | null {
+  const label = term.trim()
+  if (!label) return null
+  return loadGlossary().find((e) => e.term.toLowerCase() === label.toLowerCase()) ?? null
+}
+
 export function loadGlossary(): GlossaryEntry[] {
   if (typeof window === 'undefined') return []
   try {

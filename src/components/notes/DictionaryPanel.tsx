@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { deleteDictionaryEntry, loadGlossary, upsertManualEntry } from '@/lib/notes/glossary'
+import { notesShortcutLabel } from '@/lib/notes/shortcuts'
 import type { GlossaryEntry } from '@/lib/notes/types'
 import { NotesOverflowMenu, NotesRowAction } from './NotesActionUi'
 
@@ -112,7 +113,8 @@ export default function DictionaryPanel({ refreshKey = 0, noteId, onChange, embe
 
       {entries.length === 0 && !editingKey ? (
         <p className="text-[11px] text-[var(--uv-text-muted)]">
-          No terms yet — add manually or ask AI lookup to store definitions.
+          No terms yet — add manually, select text and press {notesShortcutLabel('addToDictionary')}, or ask AI
+          lookup to store definitions.
         </p>
       ) : (
         <ul className="max-h-48 space-y-1 overflow-y-auto" key={refreshKey}>

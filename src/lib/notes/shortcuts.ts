@@ -9,6 +9,7 @@ export const NOTES_SHORTCUTS = {
   panel: 'Ctrl+\\',
   hints: 'Ctrl+Shift+H',
   save: 'Ctrl+S',
+  addToDictionary: 'Ctrl+D',
 } as const
 
 export type NotesShortcutKey = keyof typeof NOTES_SHORTCUTS

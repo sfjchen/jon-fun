@@ -3,6 +3,7 @@ import {
   ensureNotesVaultSectionOpen,
   mockNotesApi,
   notesEditor,
+  waitForLookupComplete,
   waitForNotesEditor,
   waitForNotesTrigger,
   typeInNotesEditor,
@@ -74,6 +75,48 @@ test.describe('Notes comprehensive', () => {
     await expect(page.getByTestId('notes-side-panel')).toBeHidden()
     await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-side-panel')).toBeVisible()
+  })
+
+  test('Ctrl+D adds selection to dictionary via lookup', async ({ page }) => {
+    await typeInNotesEditor(page, 'TVPI')
+    await notesEditor(page).click()
+    await page.keyboard.press('ControlOrMeta+a')
+    await page.keyboard.press('ControlOrMeta+d')
+    await expect(page.getByTestId('notes-dictionary-toast')).toContainText('Looking up')
+    await waitForLookupComplete(page)
+    await expect(page.getByTestId('notes-glossary-panel')).toContainText('TVPI', { timeout: 20_000 })
+
+    const stored = await page.evaluate(() => {
+      const raw = localStorage.getItem('notes_glossary') ?? '[]'
+      return JSON.parse(raw) as { term: string }[]
+    })
+    expect(stored.some((e) => e.term === 'TVPI')).toBe(true)
+  })
+
+  test('Ctrl+D shows duplicate toast when term already in dictionary', async ({ page }) => {
+    await page.evaluate(() => {
+      localStorage.setItem(
+        'notes_glossary',
+        JSON.stringify([
+          {
+            term: 'TVPI',
+            definition: 'Total value to paid-in',
+            sourceNoteId: 'seed',
+            sourceLookupId: 'manual',
+            updatedAt: new Date().toISOString(),
+            useCount: 1,
+          },
+        ]),
+      )
+    })
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await waitForNotesEditor(page)
+
+    await typeInNotesEditor(page, 'TVPI')
+    await notesEditor(page).click()
+    await page.keyboard.press('ControlOrMeta+a')
+    await page.keyboard.press('ControlOrMeta+d')
+    await expect(page.getByTestId('notes-dictionary-toast')).toContainText('Already in dictionary: TVPI')
   })
 
   test('dictionary add term persists in localStorage', async ({ page }) => {

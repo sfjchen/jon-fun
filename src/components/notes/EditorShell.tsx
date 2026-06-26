@@ -17,6 +17,7 @@ type EditorShellProps = {
   onAttachmentAdd: (attachment: import('@/lib/notes/types').Screenshot) => void
   onAttachmentUpdate: (id: string, patch: Partial<import('@/lib/notes/types').Screenshot>) => void
   onLookupSelection?: (query: string, type: TriggerType) => void
+  onAddSelectionToDictionary?: (term: string) => boolean
   onArchiveTodoLine?: (lineIndex: number) => void
   onRestoreTodoLine?: (lineIndex: number) => void
 }

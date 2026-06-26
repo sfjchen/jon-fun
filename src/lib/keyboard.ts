@@ -12,6 +12,10 @@ export function isModEnter(e: { key: string; metaKey: boolean; ctrlKey: boolean 
   return e.key === 'Enter' && isModKey(e)
 }
 
+export function isModD(e: { key: string; metaKey: boolean; ctrlKey: boolean }): boolean {
+  return e.key.toLowerCase() === 'd' && isModKey(e)
+}
+
 /** Client-safe mod key label (avoids Mac → Ctrl flash during hydration). */
 export function useModKeyLabel(): 'Cmd' | 'Ctrl' {
   const [label, setLabel] = useState<'Cmd' | 'Ctrl'>('Ctrl')
