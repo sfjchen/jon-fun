@@ -13,6 +13,7 @@ export function insertRichPasteContent(editor: Editor, html: string | null | und
 /** Google Docs / Sheets / web HTML paste + plain-text bullet normalization. */
 export const richPasteExtension = Extension.create({
   name: 'richPaste',
+  priority: 1000,
   addProseMirrorPlugins() {
     const editor = this.editor
     return [

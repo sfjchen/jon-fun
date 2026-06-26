@@ -175,6 +175,39 @@ test.describe('Notes', () => {
     await expect(editor).toContainText('DPI gap?')
   })
 
+  test('renames note inline from sidebar on double-click', async ({ page }) => {
+    const title = page.getByTestId('notes-meeting-title')
+    await title.fill('Original title')
+
+    await page.getByTestId('notes-new-meeting').click()
+    await title.fill('Other note')
+
+    const firstNote = page.locator('[data-testid^="notes-meeting-item-"]').filter({ hasText: 'Original title' })
+    await firstNote.dblclick()
+
+    const renameInput = page.locator('[data-testid^="notes-sidebar-title-input-"]')
+    await expect(renameInput).toBeVisible()
+    await renameInput.fill('Renamed in sidebar')
+    await expect(firstNote).toContainText('Renamed in sidebar')
+    await firstNote.click()
+    await expect(title).toHaveValue('Renamed in sidebar')
+  })
+
+  test('archives note via context menu into Archive folder', async ({ page }) => {
+    const title = page.getByTestId('notes-meeting-title')
+    await title.fill('Note to archive')
+
+    const noteRow = page.locator('[data-testid^="notes-note-row-"]').filter({ hasText: 'Note to archive' })
+    await noteRow.click({ button: 'right' })
+    await page.getByTestId('notes-ctx-archive').click()
+
+    await expect(page.getByTestId('notes-folder-toggle-__inbox__')).toContainText('(0)')
+    const archiveToggle = page.locator('button[data-testid^="notes-folder-toggle-"]').filter({ hasText: 'Archive' })
+    await expect(archiveToggle).toBeVisible({ timeout: 5000 })
+    await archiveToggle.click()
+    await expect(page.locator('[data-testid^="notes-meeting-item-"]').filter({ hasText: 'Note to archive' })).toBeVisible()
+  })
+
   test('switching notes does not reorder vault by last opened', async ({ page }) => {
 
     const title = page.getByTestId('notes-meeting-title')
@@ -619,6 +652,122 @@ test.describe('Notes', () => {
     await expect(editor.locator('.notes-dash-line')).toHaveCount(2, { timeout: 5000 })
     await expect(editor).toContainText('- alpha')
     await expect(editor).toContainText('- nested')
+  })
+
+  test('paste Google Docs nested list as indented dash lines', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.evaluate(() => {
+      const dt = new DataTransfer()
+      dt.setData(
+        'text/html',
+        '<meta charset="utf-8"><ul><li>top level</li><ul><li>nested once</li><ul><li>nested twice</li></ul></ul></ul>',
+      )
+      dt.setData('text/plain', 'top level\nnested once\nnested twice')
+      const root = document.querySelector('[data-testid="notes-tiptap-editor"] .ProseMirror')!
+      root.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: dt }))
+    })
+    await expect(editor.locator('.notes-dash-line')).toHaveCount(3, { timeout: 5000 })
+    await expect(editor).toContainText('- top level')
+    await expect(editor).toContainText('  - nested once')
+    await expect(editor).toContainText('    - nested twice')
+    await expect(editor.locator('table')).toHaveCount(0)
+  })
+
+  test('paste Google Docs layout table bullets stay dash lines not table', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.evaluate(() => {
+      const dt = new DataTransfer()
+      dt.setData(
+        'text/html',
+        '<table><tr><td></td><td>• first bullet</td></tr><tr><td></td><td style="padding-left:36pt">• nested bullet</td></tr></table>',
+      )
+      dt.setData('text/plain', 'first bullet\nnested bullet')
+      const root = document.querySelector('[data-testid="notes-tiptap-editor"] .ProseMirror')!
+      root.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: dt }))
+    })
+    await expect(editor.locator('.notes-dash-line')).toHaveCount(2, { timeout: 5000 })
+    await expect(editor).toContainText('- first bullet')
+    await expect(editor).toContainText('- nested bullet')
+    await expect(editor.locator('table')).toHaveCount(0)
+  })
+
+  test('paste Google Docs single blank line stays one blank line', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.evaluate(() => {
+      const dt = new DataTransfer()
+      dt.setData(
+        'text/html',
+        '<meta charset="utf-8"><p>First paragraph</p><p><br></p><p>Second paragraph</p>',
+      )
+      dt.setData('text/plain', 'First paragraph\n\nSecond paragraph')
+      const root = document.querySelector('[data-testid="notes-tiptap-editor"] .ProseMirror')!
+      root.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: dt }))
+    })
+    const lines = await page.evaluate(() => {
+      const root = document.querySelector('[data-testid="notes-tiptap-editor"] .ProseMirror')!
+      return [...root.children].map((el) => el.textContent ?? '')
+    })
+    expect(lines).toEqual(['First paragraph', '', 'Second paragraph'])
+  })
+
+  test('paste Google Docs double blank artifact collapses to one blank', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.evaluate(() => {
+      const dt = new DataTransfer()
+      dt.setData(
+        'text/html',
+        '<meta charset="utf-8"><p>Line one</p><p></p><p><br></p><p>Line two</p>',
+      )
+      dt.setData('text/plain', 'Line one\n\nLine two')
+      const root = document.querySelector('[data-testid="notes-tiptap-editor"] .ProseMirror')!
+      root.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: dt }))
+    })
+    const lines = await page.evaluate(() => {
+      const root = document.querySelector('[data-testid="notes-tiptap-editor"] .ProseMirror')!
+      return [...root.children].map((el) => el.textContent ?? '')
+    })
+    expect(lines).toEqual(['Line one', '', 'Line two'])
+  })
+
+  test('paste Google Docs mixed paragraph and bullets', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.evaluate(() => {
+      const dt = new DataTransfer()
+      dt.setData(
+        'text/html',
+        '<p>Intro <strong>bold</strong> text</p><ul><li>bullet A</li><li>bullet B</li></ul><p>Outro</p>',
+      )
+      dt.setData('text/plain', 'Intro bold text\nbullet A\nbullet B\nOutro')
+      const root = document.querySelector('[data-testid="notes-tiptap-editor"] .ProseMirror')!
+      root.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: dt }))
+    })
+    await expect(editor).toContainText('Intro bold text')
+    await expect(editor).toContainText('- bullet A')
+    await expect(editor).toContainText('- bullet B')
+    await expect(editor).toContainText('Outro')
+    await expect(editor.locator('strong')).toContainText('bold')
+    await expect(editor.locator('.notes-dash-line')).toHaveCount(2, { timeout: 5000 })
+  })
+
+  test('paste Google Docs link preserves href', async ({ page }) => {
+    const editor = notesEditor(page)
+    await editor.click()
+    await page.evaluate(() => {
+      const dt = new DataTransfer()
+      dt.setData(
+        'text/html',
+        '<p>Visit <a href="https://example.com/docs">the docs</a> please</p>',
+      )
+      dt.setData('text/plain', 'Visit the docs please')
+      const root = document.querySelector('[data-testid="notes-tiptap-editor"] .ProseMirror')!
+      root.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: dt }))
+    })
+    await expect(editor.locator('a[href="https://example.com/docs"]')).toContainText('the docs', { timeout: 5000 })
   })
 
   test('Enter continues dash list on next line', async ({ page }) => {
