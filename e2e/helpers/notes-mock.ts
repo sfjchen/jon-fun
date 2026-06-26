@@ -1,8 +1,12 @@
 import { expect, type Page, Locator } from '@playwright/test'
 
-/** Tiptap ProseMirror content area. */
-export function notesEditor(page: Page): Locator {
-  return page.locator('[data-testid="notes-tiptap-editor"] .ProseMirror')
+/** Tiptap ProseMirror content area (left/primary pane by default). */
+export function notesEditor(page: Page, pane: 'left' | 'right' = 'left'): Locator {
+  const paneRoot =
+    pane === 'right'
+      ? page.getByTestId('notes-editor-right')
+      : page.getByTestId('notes-editor-left').or(page.getByTestId('notes-editor'))
+  return paneRoot.locator('[data-testid="notes-tiptap-editor"] .ProseMirror').first()
 }
 
 /** Wait for Tiptap editor to mount (retries once after reload on slow dev compiles). */
@@ -88,8 +92,32 @@ export async function mockNotesApi(page: Page): Promise<void> {
   })
 }
 
-/** @deprecated use mockNotesApi */
-export const mockUvimcoNotesApi = mockNotesApi
+/** Drop a vault note onto a split pane (Playwright dragTo omits custom MIME payloads). */
+export async function dropNoteOnSplitPane(
+  page: Page,
+  sessionId: string,
+  side: 'left' | 'right',
+): Promise<void> {
+  await page.evaluate(
+    ([id, pane]) => {
+      const w = window as { __notesE2eSplitDrop?: (sid: string, s: 'left' | 'right') => void }
+      if (w.__notesE2eSplitDrop) {
+        w.__notesE2eSplitDrop(id, pane)
+        return
+      }
+      document.documentElement.setAttribute('data-notes-vault-drag', '1')
+      const el = document.querySelector(`[data-testid="notes-split-drop-${pane}"]`)
+      if (!el) throw new Error(`missing split drop zone: ${pane}`)
+      const dt = new DataTransfer()
+      dt.setData('application/x-notes-session-id', id)
+      el.dispatchEvent(new DragEvent('dragenter', { bubbles: true, dataTransfer: dt }))
+      el.dispatchEvent(new DragEvent('dragover', { bubbles: true, dataTransfer: dt }))
+      el.dispatchEvent(new DragEvent('drop', { bubbles: true, dataTransfer: dt }))
+      document.documentElement.removeAttribute('data-notes-vault-drag')
+    },
+    [sessionId, side] as const,
+  )
+}
 
 /** Type into the active notes editor (fires ProseMirror onUpdate). */
 export async function typeInNotesEditor(page: Page, text: string): Promise<void> {

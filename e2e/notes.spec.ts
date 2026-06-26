@@ -10,6 +10,7 @@ import {
   waitForLookupComplete,
   waitForNotesTrigger,
   typeInNotesEditor,
+  dropNoteOnSplitPane,
 } from './helpers/notes-mock'
 
 test.describe('Notes', () => {
@@ -875,5 +876,54 @@ test.describe('Notes', () => {
     await waitForNotesEditor(page)
     await expect(page.getByTestId('notes-toggle-panel').locator('kbd')).toContainText('Cmd+\\')
     await expect(page.getByTestId('notes-search-btn').locator('kbd')).toContainText('Cmd+Shift+F')
+  })
+
+  test.describe('split view', () => {
+    test.beforeEach(async ({ page }) => {
+      await page.goto('/games/notes?notesE2e=1', { waitUntil: 'domcontentloaded' })
+      await waitForNotesEditor(page)
+      await ensureNotesVaultSectionOpen(page)
+    })
+
+    test('drag note to right opens split; both panes edit independently; close returns single', async ({
+      page,
+    }) => {
+      await page.getByTestId('notes-meeting-title').fill('Note Alpha')
+      await typeInNotesEditor(page, 'alpha body')
+
+      await page.getByTestId('notes-new-meeting').click()
+      await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(2)
+
+      await page.locator('[data-testid^="notes-meeting-item-"]').filter({ hasText: 'Note Alpha' }).click()
+      await expect(page.getByTestId('notes-meeting-title')).toHaveValue('Note Alpha')
+
+      const inactiveItem = page.locator('[data-testid^="notes-meeting-item-"][data-active="false"]').first()
+      const secondId = (await inactiveItem.getAttribute('data-testid'))!.replace('notes-meeting-item-', '')
+      await inactiveItem.locator('xpath=ancestor::li[1]').locator('[data-testid^="notes-note-drag-"]').hover()
+      await dropNoteOnSplitPane(page, secondId, 'right')
+
+      await expect(page.getByTestId('notes-split-root')).toHaveAttribute('data-split', 'true', { timeout: 5000 })
+      const leftEd = notesEditor(page, 'left')
+      const rightEd = notesEditor(page, 'right')
+      await expect(leftEd).toContainText('alpha body')
+      await expect(rightEd).toBeVisible()
+
+      await rightEd.click()
+      await page.keyboard.type('beta body')
+      await expect(rightEd).toContainText('beta body')
+
+      await leftEd.click()
+      await page.keyboard.press('End')
+      await page.keyboard.type(' more alpha')
+      await expect(leftEd).toContainText('alpha body more alpha')
+      await expect(rightEd).toContainText('beta body')
+
+      await page.getByTestId('notes-split-right-title').fill('Note Beta')
+      await expect(page.getByTestId('notes-split-right-title')).toHaveValue('Note Beta')
+
+      await page.getByTestId('notes-split-close-right').click()
+      await expect(page.getByTestId('notes-split-root')).toHaveAttribute('data-split', 'false')
+      await expect(page.getByTestId('notes-editor-right')).toHaveCount(0)
+    })
   })
 })

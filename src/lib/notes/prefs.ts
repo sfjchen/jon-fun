@@ -10,6 +10,10 @@ export type NotesUiPrefs = {
   expandedFolderIds?: string[]
   /** Document-wide line-height multiplier (unitless string, e.g. "1.25"). */
   lineHeight?: string
+  /** Right-pane session id when split view is open (desktop). */
+  splitSessionId?: string | null
+  /** Left pane width fraction when split (0.25–0.75). */
+  splitRatio?: number
 }
 
 const PREFS_KEY = 'notes_ui_prefs'

@@ -11,8 +11,14 @@ import {
   useNotesContextTrigger,
 } from './NotesActionUi'
 
-const NOTE_DRAG = 'application/x-notes-session-id'
-const FOLDER_DRAG = 'application/x-notes-folder-id'
+import { NOTE_FOLDER_DRAG, NOTE_SESSION_DRAG } from '@/lib/notes/dragTypes'
+
+const NOTE_DRAG = NOTE_SESSION_DRAG
+const FOLDER_DRAG = NOTE_FOLDER_DRAG
+
+function isNoteActive(sessionId: string, activeSessionId: string, splitSessionId?: string | null): boolean {
+  return sessionId === activeSessionId || (!!splitSessionId && sessionId === splitSessionId)
+}
 
 function formatMeetingDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
@@ -33,6 +39,7 @@ type NotesVaultPanelProps = {
   sessions: NoteSession[]
   folders: NoteFolder[]
   activeSessionId: string
+  splitSessionId?: string | null | undefined
   expandedFolderIds: string[]
   onSelectMeeting: (session: NoteSession) => void
   onNewNote: (folderId: string | null) => void
@@ -138,6 +145,10 @@ function NoteRow({
           e.dataTransfer.setData(NOTE_DRAG, session.id)
           e.dataTransfer.setData('text/plain', session.id)
           e.dataTransfer.effectAllowed = 'move'
+          document.documentElement.setAttribute('data-notes-vault-drag', '1')
+        }}
+        onDragEnd={() => {
+          document.documentElement.removeAttribute('data-notes-vault-drag')
         }}
       >
         ⠿
@@ -403,6 +414,7 @@ function FolderBranch({
   sessions,
   folders,
   activeSessionId,
+  splitSessionId,
   expandedFolderIds,
   onSelectMeeting,
   onNewNote,
@@ -421,6 +433,7 @@ function FolderBranch({
   sessions: NoteSession[]
   folders: NoteFolder[]
   activeSessionId: string
+  splitSessionId?: string | null | undefined
   expandedFolderIds: string[]
   onSelectMeeting: (s: NoteSession) => void
   onNewNote: (folderId: string | null) => void
@@ -489,7 +502,7 @@ function FolderBranch({
                 <NoteRow
                   key={s.id}
                   session={s}
-                  active={s.id === activeSessionId}
+                  active={isNoteActive(s.id, activeSessionId, splitSessionId)}
                   archived={archiveFolderId === folder.id}
                   onSelect={() => onSelectMeeting(s)}
                   onDelete={() => onDeleteMeeting(s.id)}
@@ -506,6 +519,7 @@ function FolderBranch({
                   sessions={sessions}
                   folders={folders}
                   activeSessionId={activeSessionId}
+                  splitSessionId={splitSessionId}
                   expandedFolderIds={expandedFolderIds}
                   onSelectMeeting={onSelectMeeting}
                   onNewNote={onNewNote}
@@ -532,6 +546,7 @@ export default function NotesVaultPanel({
   sessions,
   folders,
   activeSessionId,
+  splitSessionId,
   expandedFolderIds,
   onSelectMeeting,
   onNewNote,
@@ -639,7 +654,7 @@ export default function NotesVaultPanel({
                       <NoteRow
                         key={s.id}
                         session={s}
-                        active={s.id === activeSessionId}
+                        active={isNoteActive(s.id, activeSessionId, splitSessionId)}
                         onSelect={() => onSelectMeeting(s)}
                         onDelete={() => onDeleteMeeting(s.id)}
                         onRename={(title) => onRenameMeeting(s.id, title)}
@@ -661,6 +676,7 @@ export default function NotesVaultPanel({
             sessions={sessions}
             folders={folders}
             activeSessionId={activeSessionId}
+            splitSessionId={splitSessionId}
             expandedFolderIds={expandedFolderIds}
             onSelectMeeting={onSelectMeeting}
             onNewNote={onNewNote}
@@ -684,6 +700,7 @@ export default function NotesVaultPanel({
             sessions={sessions}
             folders={folders}
             activeSessionId={activeSessionId}
+            splitSessionId={splitSessionId}
             expandedFolderIds={expandedFolderIds}
             onSelectMeeting={onSelectMeeting}
             onNewNote={onNewNote}

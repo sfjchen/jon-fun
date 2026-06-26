@@ -8,6 +8,7 @@ import {
   waitForNotesEditor,
   waitForNotesTrigger,
   typeInNotesEditor,
+  dropNoteOnSplitPane,
 } from './helpers/notes-mock'
 
 /** True mobile viewport — do not inherit desktop 1280px from other describe blocks. */
@@ -171,5 +172,26 @@ test.describe('Notes mobile', () => {
     await page.getByTestId('notes-toggle-panel').click()
     await expect(page.getByTestId('notes-side-panel')).toBeVisible()
     await expect(page.getByTestId('notes-side-panel')).not.toContainText(/^Panel$/m)
+  })
+
+  test('split view stays single pane on narrow viewport', async ({ page }) => {
+    await page.goto('/games/notes?notesE2e=1', { waitUntil: 'domcontentloaded' })
+    await waitForNotesEditor(page)
+
+    await page.getByTestId('notes-meeting-title').fill('Mobile note A')
+    await typeInNotesEditor(page, 'mobile alpha')
+
+    await page.getByTestId('notes-toggle-panel').click()
+    await ensureNotesVaultSectionOpen(page)
+    await page.getByTestId('notes-new-meeting').click()
+    await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(2)
+
+    const inactiveItem = page.locator('[data-testid^="notes-meeting-item-"][data-active="false"]').first()
+    const secondId = (await inactiveItem.getAttribute('data-testid'))!.replace('notes-meeting-item-', '')
+    await dropNoteOnSplitPane(page, secondId, 'right')
+
+    await expect(page.getByTestId('notes-split-root')).toHaveAttribute('data-split', 'false')
+    await expect(page.getByTestId('notes-editor-right')).toHaveCount(0)
+    await expect(notesEditor(page)).toHaveCount(1)
   })
 })

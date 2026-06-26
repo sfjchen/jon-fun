@@ -86,6 +86,94 @@
   min-height: 0;
 }
 
+.notes-split-root {
+  min-height: 0;
+}
+
+.notes-split-single-zones {
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+  transition: opacity 0.12s ease;
+}
+
+html[data-notes-vault-drag] .notes-split-single-zones,
+.notes-split-single-zones-active {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 50;
+}
+
+.notes-split-root.notes-split-dragging .notes-split-single-zones {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 50;
+}
+
+html[data-notes-vault-drag] .notes-split-drop-zone {
+  pointer-events: auto;
+  z-index: 50;
+}
+
+.notes-split-drop-half {
+  flex: 1 1 50%;
+  min-height: 0;
+  border: 2px dashed transparent;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.notes-split-drop-half-active {
+  background: var(--uv-accent-dim);
+  border-color: var(--uv-accent);
+}
+
+.notes-split-drop-zone {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed transparent;
+  pointer-events: auto;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.notes-split-drop-zone-active {
+  background: var(--uv-accent-dim);
+  border-color: var(--uv-accent);
+}
+
+.notes-split-drop-label {
+  pointer-events: none;
+  border-radius: 4px;
+  background: var(--uv-bg-elevated);
+  padding: 0.25rem 0.5rem;
+  font-size: 11px;
+  color: var(--uv-text-secondary);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.notes-split-pane {
+  min-width: 0;
+}
+
+.notes-split-resize {
+  background: var(--uv-border);
+}
+
+@media (max-width: 767px) {
+  .notes-split-drop-half,
+  .notes-split-drop-zone,
+  .notes-split-drag-hint {
+    display: none !important;
+  }
+}
+
 .notes-tiptap-wrap {
   flex: 1 1 auto;
   min-height: 0;
