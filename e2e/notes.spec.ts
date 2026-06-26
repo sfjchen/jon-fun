@@ -428,6 +428,26 @@ test.describe('Notes', () => {
     expect(postedUserId).toBe('my-sync-password-99')
   })
 
+  test('renames device inline from sync panel on double-click', async ({ page }) => {
+    await page.goto('/games/notes')
+    await waitForNotesEditor(page)
+    await ensureNotesPanelOpen(page)
+    await page.getByTestId('notes-sync-toggle').click()
+    await expect(page.getByTestId('notes-sync-panel')).toBeVisible()
+
+    await page.getByTestId('notes-device-name').dblclick()
+    const renameInput = page.getByTestId('notes-device-name-input')
+    await expect(renameInput).toBeVisible({ timeout: 5000 })
+    await renameInput.fill('E2E Test Device')
+    await renameInput.press('Enter')
+
+    await expect(page.getByTestId('notes-device-name')).toHaveText('E2E Test Device')
+    await expect(page.getByTestId('notes-statusbar-device')).toHaveText('E2E Test Device')
+
+    const stored = await page.evaluate(() => localStorage.getItem('notes_device_label'))
+    expect(stored).toBe('E2E Test Device')
+  })
+
   test('owner vault POST 403 surfaces API error in sync panel', async ({ page }) => {
     const deviceDenied = 'Owner vault requires a registered sfjc.dev admin device.'
     await page.addInitScript(() => {

@@ -4,6 +4,7 @@ import { adminDeviceLabel } from '@/data/sfjc-admin-devices'
 
 export const NOTES_USER_ID_KEY = 'notes_user_id'
 const DEVICE_LABEL_KEY = 'notes_device_label'
+export const NOTES_DEVICE_LABEL_CHANGED = 'notes-device-label-changed'
 
 function genUuid(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
@@ -42,6 +43,7 @@ export function setCustomDeviceLabel(label: string): void {
   const t = label.trim()
   if (t) localStorage.setItem(DEVICE_LABEL_KEY, t)
   else localStorage.removeItem(DEVICE_LABEL_KEY)
+  window.dispatchEvent(new Event(NOTES_DEVICE_LABEL_CHANGED))
 }
 
 /** Friendly name: custom label → registered admin name → short id. */

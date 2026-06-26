@@ -1,6 +1,7 @@
 'use client'
 
-import { getDeviceDisplayName } from '@/lib/notes/deviceIdentity'
+import { useEffect, useState } from 'react'
+import { getDeviceDisplayName, NOTES_DEVICE_LABEL_CHANGED } from '@/lib/notes/deviceIdentity'
 import { formatHistoryLine } from '@/lib/notes/noteHistory'
 import { notesShortcutLabel } from '@/lib/notes/shortcuts'
 import { useNotesDevice } from '@/lib/notes/useNotesDevice'
@@ -60,7 +61,12 @@ export default function StatusBar({
   onHintsToggle,
 }: StatusBarProps) {
   const { isMobile } = useNotesDevice()
-  const deviceName = getDeviceDisplayName()
+  const [deviceName, setDeviceName] = useState(() => getDeviceDisplayName())
+  useEffect(() => {
+    const refresh = () => setDeviceName(getDeviceDisplayName())
+    window.addEventListener(NOTES_DEVICE_LABEL_CHANGED, refresh)
+    return () => window.removeEventListener(NOTES_DEVICE_LABEL_CHANGED, refresh)
+  }, [])
   let syncLabel = ''
   if (syncing) syncLabel = 'Syncing…'
   else if (saving) syncLabel = 'Saving…'

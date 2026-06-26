@@ -1,11 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { SFJC_ADMIN_DEVICES, SFJC_ADMIN_DEVICE_IDS, SFJC_OWNER_SYNC_PASSWORD_USER_ID } from '@/data/sfjc-admin-devices'
 import {
   getDeviceDisplayName,
   getDeviceId,
-  getCustomDeviceLabel,
   setCustomDeviceLabel,
 } from '@/lib/notes/deviceIdentity'
 import {
@@ -24,13 +23,15 @@ type SyncPanelProps = {
 export default function SyncPanel({ onSynced }: SyncPanelProps) {
   const [syncPasswordInput, setSyncPasswordInput] = useState(() => getSyncPassword())
   const [restoreKey, setRestoreKey] = useState('')
-  const [deviceLabel, setDeviceLabelInput] = useState(() => getCustomDeviceLabel())
+  const [displayName, setDisplayName] = useState(() => getDeviceDisplayName())
+  const [editingName, setEditingName] = useState(false)
+  const [nameDraft, setNameDraft] = useState('')
   const [status, setStatus] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const nameInputRef = useRef<HTMLInputElement>(null)
 
   const deviceId = getDeviceId()
   const vaultUserId = getSyncPassword()
-  const deviceName = getDeviceDisplayName()
   const ownerVault = vaultUserId === SFJC_OWNER_SYNC_PASSWORD_USER_ID
   const isRegisteredDevice = SFJC_ADMIN_DEVICE_IDS.has(deviceId)
 
@@ -68,9 +69,24 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
     onSynced({ reloadLocal: true })
   }
 
-  function commitDeviceLabel() {
-    setCustomDeviceLabel(deviceLabel)
-    setStatus('Device name saved')
+  function startNameEdit() {
+    setNameDraft(displayName)
+    setEditingName(true)
+  }
+
+  function commitNameEdit() {
+    const prev = displayName
+    const next = (nameInputRef.current?.value ?? nameDraft).trim()
+    setEditingName(false)
+    if (next !== prev) {
+      setCustomDeviceLabel(next)
+      setDisplayName(getDeviceDisplayName())
+    }
+  }
+
+  function cancelNameEdit() {
+    setEditingName(false)
+    setNameDraft('')
   }
 
   function copyDeviceId() {
@@ -90,9 +106,43 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
         data-testid="notes-device-identity"
       >
         <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">This device</p>
-        <p className="text-xs font-medium text-[var(--uv-text-primary)]" data-testid="notes-device-name">
-          {deviceName}
-        </p>
+        {editingName ? (
+          <input
+            ref={nameInputRef}
+            value={nameDraft}
+            onChange={(e) => setNameDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                commitNameEdit()
+              } else if (e.key === 'Escape') {
+                e.preventDefault()
+                cancelNameEdit()
+              }
+            }}
+            onBlur={commitNameEdit}
+            autoFocus
+            data-testid="notes-device-name-input"
+            aria-label="Rename device"
+            spellCheck={false}
+            autoCorrect="off"
+            autoComplete="off"
+            autoCapitalize="off"
+            className="w-full rounded border border-[var(--uv-accent)] bg-[var(--uv-bg-base)] px-1 py-0.5 text-xs font-medium text-[var(--uv-text-primary)] focus:outline-none"
+          />
+        ) : (
+          <p
+            className="cursor-text text-xs font-medium text-[var(--uv-text-primary)]"
+            data-testid="notes-device-name"
+            title="Double-click to rename"
+            onDoubleClick={(e) => {
+              e.preventDefault()
+              startNameEdit()
+            }}
+          >
+            {displayName}
+          </p>
+        )}
         <p
           className="mt-0.5 font-mono text-[10px] text-[var(--uv-text-muted)]"
           data-testid="notes-device-id"
@@ -107,17 +157,6 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
         ) : (
           <p className="mt-1 text-[10px] text-[var(--uv-text-muted)]">Vault: this device only (no sync password)</p>
         )}
-        <label className="mt-2 block text-[10px] text-[var(--uv-text-muted)]">Device nickname (optional)</label>
-        <div className="mt-0.5 flex gap-1">
-          <input
-            value={deviceLabel}
-            onChange={(e) => setDeviceLabelInput(e.target.value)}
-            onBlur={commitDeviceLabel}
-            placeholder={deviceName}
-            data-testid="notes-device-label-input"
-            className="min-w-0 flex-1 rounded border border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-2 py-1 text-xs"
-          />
-        </div>
         <button
           type="button"
           onClick={copyDeviceId}
