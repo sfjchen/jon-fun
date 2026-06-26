@@ -126,6 +126,10 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
     editorProps: {
       attributes: {
         class: 'tiptap notes-tiptap min-h-full px-4 py-3 text-base focus:outline-none',
+        spellcheck: 'false',
+        autocorrect: 'off',
+        autocomplete: 'off',
+        autocapitalize: 'off',
       },
     },
   })

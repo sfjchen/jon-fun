@@ -92,6 +92,10 @@ export default function NotesTopBar({
         placeholder="Untitled"
         aria-label="Note title"
         data-testid="notes-meeting-title"
+        spellCheck={false}
+        autoCorrect="off"
+        autoComplete="off"
+        autoCapitalize="off"
       />
 
       <div
@@ -210,6 +214,10 @@ function TagInput({
       onChange={(e) => setDraft(e.target.value)}
       placeholder="+ tag ↵"
       data-testid="notes-tag-input"
+      spellCheck={false}
+      autoCorrect="off"
+      autoComplete="off"
+      autoCapitalize="off"
       className="w-16 min-w-0 bg-transparent text-[10px] text-[var(--uv-text-primary)] placeholder:text-[var(--uv-text-muted)] focus:w-24 focus:outline-none sm:w-20"
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
