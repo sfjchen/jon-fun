@@ -4,10 +4,8 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import {
   buildNotesExtensions,
-  NOTES_DEFAULT_LINE_HEIGHT,
   NOTES_EDITOR_PLACEHOLDER,
-  NOTES_LINE_HEIGHTS,
-  NOTES_MIN_LINE_HEIGHT,
+  normalizeNotesLineHeight,
 } from '@/lib/notes/tiptap/extensions'
 import type { NoteAttachmentStorage } from '@/lib/notes/tiptap/noteAttachment'
 import {
@@ -92,9 +90,9 @@ const TiptapNoteEditor = forwardRef<NoteEditorHandle, TiptapNoteEditorProps>(fun
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; items: NotesMenuItem[] } | null>(null)
   const [lineHeight, setLineHeight] = useState(() => {
     const saved = loadNotesUiPrefs().lineHeight
-    if (saved && (NOTES_LINE_HEIGHTS as readonly string[]).includes(saved)) return saved
-    if (saved && parseFloat(saved) < parseFloat(NOTES_MIN_LINE_HEIGHT)) return NOTES_DEFAULT_LINE_HEIGHT
-    return NOTES_DEFAULT_LINE_HEIGHT
+    const normalized = normalizeNotesLineHeight(saved)
+    if (saved && saved !== normalized) saveNotesUiPrefs({ lineHeight: normalized })
+    return normalized
   })
   const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const touchPosRef = useRef({ x: 0, y: 0 })
