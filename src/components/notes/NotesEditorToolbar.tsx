@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import type { Editor } from '@tiptap/core'
-import { NOTES_FONT_SIZES } from '@/lib/notes/tiptap/extensions'
+import { NOTES_DEFAULT_LINE_HEIGHT, NOTES_FONT_SIZES, NOTES_LINE_HEIGHTS } from '@/lib/notes/tiptap/extensions'
 import { DEFAULT_TABLE_COLS, DEFAULT_TABLE_ROWS } from '@/lib/notes/tiptap/tableUtils'
 
 type NotesEditorToolbarProps = {
@@ -42,6 +42,11 @@ function ToolBtn({
 function currentFontSize(editor: Editor): string {
   const attrs = editor.getAttributes('textStyle')
   return typeof attrs.fontSize === 'string' && attrs.fontSize ? attrs.fontSize : '16px'
+}
+
+function currentLineHeight(editor: Editor): string {
+  const attrs = editor.getAttributes('textStyle')
+  return typeof attrs.lineHeight === 'string' && attrs.lineHeight ? attrs.lineHeight : NOTES_DEFAULT_LINE_HEIGHT
 }
 
 function TableInsertPopover({ editor, onClose }: { editor: Editor; onClose: () => void }) {
@@ -118,6 +123,7 @@ export default function NotesEditorToolbar({ editor }: NotesEditorToolbarProps) 
   if (!editor) return null
 
   const size = currentFontSize(editor)
+  const lineHeight = currentLineHeight(editor)
 
   return (
     <div
@@ -167,6 +173,27 @@ export default function NotesEditorToolbar({ editor }: NotesEditorToolbarProps) 
       >
         <span className="underline">U</span>
       </ToolBtn>
+      <label className="sr-only" htmlFor="notes-line-height">
+        Line spacing
+      </label>
+      <select
+        id="notes-line-height"
+        data-testid="notes-line-height"
+        value={lineHeight}
+        onChange={(e) => {
+          const lh = e.target.value
+          if (lh === NOTES_DEFAULT_LINE_HEIGHT) editor.chain().focus().unsetLineHeight().run()
+          else editor.chain().focus().setLineHeight(lh).run()
+        }}
+        className="rounded border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] px-1.5 py-0.5 text-[11px] text-[var(--uv-text-primary)]"
+        title="Line spacing"
+      >
+        {NOTES_LINE_HEIGHTS.map((lh) => (
+          <option key={lh} value={lh}>
+            {lh}×
+          </option>
+        ))}
+      </select>
       <span className="mx-0.5 h-4 w-px bg-[var(--uv-border)]" />
       <div className="relative">
         <ToolBtn
