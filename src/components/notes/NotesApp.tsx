@@ -74,6 +74,7 @@ type State = {
   streamByLookupId: LookupStreamMap
   syncOk: boolean | null
   syncKind: 'saved' | 'synced' | null
+  syncError: string | null
   glossaryRefreshKey: number
 }
 
@@ -99,7 +100,7 @@ type Action =
   | { type: 'STREAM_ERROR'; lookupId: string; message: string }
   | { type: 'SELECT_LOOKUP'; lookup: Lookup }
   | { type: 'DELETE_LOOKUP'; lookupId: string }
-  | { type: 'SYNC_OK'; ok: boolean; kind?: 'saved' | 'synced' }
+  | { type: 'SYNC_OK'; ok: boolean; kind?: 'saved' | 'synced'; error?: string | null }
   | { type: 'LOAD_SESSION'; session: NoteSession; preserveAi?: boolean }
   | { type: 'CLEAR_LOOKUP' }
   | { type: 'GLOSSARY_BUMP' }
@@ -127,6 +128,7 @@ function initState(): State {
     streamByLookupId: {},
     syncOk: null,
     syncKind: null,
+    syncError: null,
     glossaryRefreshKey: 0,
   }
 }
@@ -300,6 +302,7 @@ function reducer(state: State, action: Action): State {
         ...state,
         syncOk: action.ok,
         syncKind: action.ok ? (action.kind ?? 'saved') : null,
+        syncError: action.ok ? null : (action.error ?? null),
       }
     case 'LOAD_SESSION': {
       const preserveAi = action.preserveAi && anyStreaming(state.streamByLookupId)
@@ -452,7 +455,8 @@ export default function NotesApp() {
     }
 
     const ok = r.pushOk && mem.glossaryOk && mem.sourcesOk
-    dispatch({ type: 'SYNC_OK', ok, kind: 'synced' })
+    const syncError = !r.pushOk ? (r.pushError ?? null) : !mem.glossaryOk || !mem.sourcesOk ? 'Dictionary or sources sync failed' : null
+    dispatch({ type: 'SYNC_OK', ok, kind: 'synced', error: syncError })
     return r
   }, [persistLocal, isActivelyEditing])
 
@@ -507,9 +511,14 @@ export default function NotesApp() {
           const r = await refreshFromServer(pullOpts)
           if (r) return r
         }
-        const ok = await saveSessionToServer(session)
-        dispatch({ type: 'SYNC_OK', ok, kind: 'saved' })
-        return { sessions: loadSessions(), pushOk: ok }
+        const push = await saveSessionToServer(session)
+        dispatch({
+          type: 'SYNC_OK',
+          ok: push.ok,
+          kind: 'saved',
+          error: push.ok ? null : (push.error ?? null),
+        })
+        return { sessions: loadSessions(), pushOk: push.ok, pushError: push.error }
       } finally {
         syncInFlightRef.current = false
         if (pendingSyncRef.current) {
@@ -532,9 +541,14 @@ export default function NotesApp() {
         const r = await refreshFromServer(pullOpts)
         if (r) return r
       }
-      const ok = await pushAllToServer()
-      dispatch({ type: 'SYNC_OK', ok, kind: 'saved' })
-      return { sessions: loadSessions(), pushOk: ok }
+      const push = await pushAllToServer()
+      dispatch({
+        type: 'SYNC_OK',
+        ok: push.ok,
+        kind: 'saved',
+        error: push.ok ? null : (push.error ?? null),
+      })
+      return { sessions: loadSessions(), pushOk: push.ok, pushError: push.error }
     },
     [persistLocal, refreshFromServer, shouldBackgroundPull, isActivelyEditing],
   )
@@ -1258,6 +1272,7 @@ export default function NotesApp() {
         actions={counts.actions}
         syncOk={state.syncOk}
         syncKind={state.syncKind}
+        syncError={state.syncError}
         saving={saving}
         syncing={syncing}
         aiActiveCount={aiActiveCount}

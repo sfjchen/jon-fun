@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { SFJC_ADMIN_DEVICES } from '@/data/sfjc-admin-devices'
+import { SFJC_ADMIN_DEVICES, SFJC_ADMIN_DEVICE_IDS, SFJC_OWNER_SYNC_PASSWORD_USER_ID } from '@/data/sfjc-admin-devices'
 import {
   getDeviceDisplayName,
   getDeviceId,
@@ -31,6 +31,8 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
   const deviceId = getDeviceId()
   const vaultUserId = getSyncPassword()
   const deviceName = getDeviceDisplayName()
+  const ownerVault = vaultUserId === SFJC_OWNER_SYNC_PASSWORD_USER_ID
+  const isRegisteredDevice = SFJC_ADMIN_DEVICE_IDS.has(deviceId)
 
   async function handleSaveSync() {
     setBusy(true)
@@ -38,7 +40,8 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
     setSyncPassword(syncPasswordInput.trim())
     const r = await syncWithServer()
     setBusy(false)
-    setStatus(r.pushOk ? 'Synced' : 'Sync failed — saved locally')
+    if (r.pushOk) setStatus('Synced')
+    else setStatus(r.pushError ?? 'Sync failed — saved locally')
     onSynced({ force: true })
   }
 
@@ -121,6 +124,15 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
         >
           Copy device ID
         </button>
+        {ownerVault && !isRegisteredDevice ? (
+          <p
+            className="mt-2 rounded border border-amber-600/40 bg-amber-950/30 px-2 py-1.5 text-[10px] leading-snug text-amber-200"
+            data-testid="notes-device-unregistered-warning"
+          >
+            This device is not registered for owner vault saves. Notes stay local until you add this
+            device ID to sfjc-admin-devices or use a registered browser.
+          </p>
+        ) : null}
         <ul className="mt-2 space-y-0.5 border-t border-[var(--uv-border)] pt-2">
           {SFJC_ADMIN_DEVICES.map((d) => (
             <li

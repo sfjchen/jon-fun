@@ -13,6 +13,7 @@ type StatusBarProps = {
   actions: number
   syncOk: boolean | null
   syncKind?: 'saved' | 'synced' | null
+  syncError?: string | null
   saving: boolean
   syncing?: boolean
   aiActiveCount?: number
@@ -42,6 +43,7 @@ export default function StatusBar({
   actions,
   syncOk,
   syncKind,
+  syncError,
   saving,
   syncing,
   aiActiveCount = 0,
@@ -62,7 +64,7 @@ export default function StatusBar({
   let syncLabel = ''
   if (syncing) syncLabel = 'Syncing…'
   else if (saving) syncLabel = 'Saving…'
-  else if (syncOk === false) syncLabel = 'Sync failed — saved locally'
+  else if (syncOk === false) syncLabel = syncError ?? 'Sync failed — saved locally'
   else if (syncOk === true) syncLabel = syncKind === 'synced' ? 'Synced' : 'Saved'
 
   return (
@@ -89,7 +91,7 @@ export default function StatusBar({
         <span
           data-testid="notes-sync-label"
           className={syncOk === false && !syncing ? 'text-amber-800' : 'text-[var(--uv-text-muted)]'}
-          title={lastHistory ? formatHistoryLine(lastHistory) : undefined}
+          title={syncError ?? (lastHistory ? formatHistoryLine(lastHistory) : undefined)}
         >
           {syncLabel}
         </span>
