@@ -186,8 +186,8 @@ html[data-notes-vault-drag] .notes-split-drop-zone {
   min-height: 12rem;
   outline: none;
   font-family: var(--font-lato), 'Lato', sans-serif;
-  font-size: 16px;
-  line-height: var(--notes-line-height, 1.5);
+  font-size: 14px;
+  line-height: var(--notes-line-height, 1.25);
   color: var(--uv-text-primary);
   caret-color: var(--uv-text-primary);
   isolation: isolate;

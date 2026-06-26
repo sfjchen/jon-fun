@@ -61,14 +61,17 @@ export function buildNotesExtensions(opts: NotesExtensionOpts): Extensions {
 /** Preset font sizes for the bubble menu (px). */
 export const NOTES_FONT_SIZES = ['12px', '14px', '16px', '18px', '20px', '24px'] as const
 
+/** Default editor font size; matches notes.css `.tiptap` and unset `textStyle.fontSize`. */
+export const NOTES_DEFAULT_FONT_SIZE = '14px'
+
 /** Default editor line-height (unitless); matches notes.css `--notes-line-height`. */
-export const NOTES_DEFAULT_LINE_HEIGHT = '1.5'
+export const NOTES_DEFAULT_LINE_HEIGHT = '1.25'
 
 export const NOTES_LINE_HEIGHTS = ['1', '1.25', '1.5', '1.75', '2'] as const
 
 const NOTES_LINE_HEIGHT_VALUES = NOTES_LINE_HEIGHTS.map((lh) => parseFloat(lh))
 
-/** Map legacy or out-of-range saved prefs to the nearest preset (default 1.5×). */
+/** Map legacy or out-of-range saved prefs to the nearest preset (default 1.25×). */
 export function normalizeNotesLineHeight(saved?: string): string {
   if (saved && (NOTES_LINE_HEIGHTS as readonly string[]).includes(saved)) return saved
   if (saved) {
