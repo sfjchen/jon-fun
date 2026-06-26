@@ -146,7 +146,7 @@ function initState(): State {
     sourcesOpen: false,
     historyOpen: false,
     rollupOpen: prefs.rollupOpen ?? true,
-    openLookupIds: [],
+    openLookupIds: lookupIdsNewestFirst(initial.lookups),
     sessionHistory: [...initial.lookups].reverse(),
     streamByLookupId: {},
     syncOk: null,
