@@ -938,12 +938,80 @@ test.describe('Notes', () => {
       await expect(leftEd).toContainText('alpha body more alpha')
       await expect(rightEd).toContainText('beta body')
 
-      await page.getByTestId('notes-split-right-title').fill('Note Beta')
-      await expect(page.getByTestId('notes-split-right-title')).toHaveValue('Note Beta')
+      await page.getByTestId('notes-meeting-title-right').fill('Note Beta')
+      await expect(page.getByTestId('notes-meeting-title-right')).toHaveValue('Note Beta')
 
       await page.getByTestId('notes-split-close-right').click()
       await expect(page.getByTestId('notes-split-root')).toHaveAttribute('data-split', 'false')
       await expect(page.getByTestId('notes-editor-right')).toHaveCount(0)
+    })
+
+    test('split panes show tags and align top bars', async ({ page }) => {
+      await page.getByTestId('notes-meeting-title').fill('Note Alpha')
+      await typeInNotesEditor(page, 'alpha body')
+
+      await page.getByTestId('notes-new-meeting').click()
+      await page.locator('[data-testid^="notes-meeting-item-"]').filter({ hasText: 'Note Alpha' }).click()
+
+      const inactiveItem = page.locator('[data-testid^="notes-meeting-item-"][data-active="false"]').first()
+      const secondId = (await inactiveItem.getAttribute('data-testid'))!.replace('notes-meeting-item-', '')
+      await dropNoteOnSplitPane(page, secondId, 'right')
+
+      await expect(page.getByTestId('notes-tag-row')).toBeVisible()
+      await expect(page.getByTestId('notes-tag-row-right')).toBeVisible()
+
+      const leftBar = page.getByTestId('notes-top-bar')
+      const rightBar = page.getByTestId('notes-top-bar-right')
+      const leftBox = await leftBar.boundingBox()
+      const rightBox = await rightBar.boundingBox()
+      expect(leftBox).not.toBeNull()
+      expect(rightBox).not.toBeNull()
+      expect(Math.abs(leftBox!.y - rightBox!.y)).toBeLessThan(2)
+    })
+
+    test('panel lookup includes combined context from both open notes', async ({ page }) => {
+      const lookupBodies: Array<{ fullNotes?: string; context?: string; title?: string }> = []
+      await page.route('**/api/notes/lookup', async (route) => {
+        try {
+          lookupBodies.push(route.request().postDataJSON() as { fullNotes?: string; context?: string; title?: string })
+        } catch {
+          /* empty */
+        }
+        const sse =
+          'data: {"token":"TVPI\\n\\nTotal value to paid-in — ratio of current NAV plus distributions to capital called. E2E mock answer."}\n\n' +
+          'data: [DONE]\n\n'
+        await route.fulfill({
+          status: 200,
+          contentType: 'text/event-stream; charset=utf-8',
+          body: sse,
+        })
+      })
+
+      await page.getByTestId('notes-meeting-title').fill('Note Alpha')
+      await typeInNotesEditor(page, 'alpha body unique')
+
+      await page.getByTestId('notes-new-meeting').click()
+      await page.locator('[data-testid^="notes-meeting-item-"]').filter({ hasText: 'Note Alpha' }).click()
+
+      const inactiveItem = page.locator('[data-testid^="notes-meeting-item-"][data-active="false"]').first()
+      const secondId = (await inactiveItem.getAttribute('data-testid'))!.replace('notes-meeting-item-', '')
+      await dropNoteOnSplitPane(page, secondId, 'right')
+
+      const rightEd = notesEditor(page, 'right')
+      await rightEd.click()
+      await page.keyboard.type('beta body unique')
+
+      await ensureNotesPanelOpen(page)
+      await expect(page.getByTestId('notes-lookup-input')).toBeVisible()
+      await page.getByTestId('notes-lookup-input').fill('fund TVPI ratio')
+      await page.getByTestId('notes-lookup-input').press('Enter')
+
+      await expect.poll(() => lookupBodies.length).toBeGreaterThan(0)
+      const body = lookupBodies[0]!
+      const combined = `${body.fullNotes ?? ''}\n${body.context ?? ''}\n${body.title ?? ''}`
+      expect(combined).toContain('alpha body unique')
+      expect(combined).toContain('beta body unique')
+      expect(combined).toContain('Note Alpha')
     })
   })
 })

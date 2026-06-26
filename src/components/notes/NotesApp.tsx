@@ -2,8 +2,15 @@
 
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { assembleClientContextAsync } from '@/lib/notes/contextAssembler'
+import {
+  formatSplitFullNotes,
+  mergeSplitEditorContext,
+  mergeSplitTags,
+  mergeSplitTitle,
+  splitCompanionSession,
+} from '@/lib/notes/splitContext'
 import { applyAgentActions, parseAgentResponse } from '@/lib/notes/agentActions'
-import { formatGlossaryForPrompt, upsertFromLookup } from '@/lib/notes/glossary'
+import { findGlossaryEntry, formatGlossaryForPrompt, upsertFromLookup } from '@/lib/notes/glossary'
 import {
   activeStreamCount,
   anyStreaming,
@@ -113,6 +120,7 @@ type Action =
   | { type: 'SPLIT_CLOSE' }
   | { type: 'SESSION_NOTES'; sessionId: string; notes: string }
   | { type: 'SESSION_TITLE'; sessionId: string; title: string }
+  | { type: 'SESSION_TAGS'; sessionId: string; tags: string[] }
 
 function initState(): State {
   const prefs = typeof window !== 'undefined' ? loadNotesUiPrefs() : {}
@@ -368,6 +376,17 @@ function reducer(state: State, action: Action): State {
         session: state.session.id === session.id ? session : state.session,
       }
     }
+    case 'SESSION_TAGS': {
+      const target = state.sessions.find((s) => s.id === action.sessionId)
+      if (!target) return state
+      const session = touchSession({ ...target, tags: sanitizeTags(action.tags) })
+      const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
+      return {
+        ...state,
+        sessions,
+        session: state.session.id === session.id ? session : state.session,
+      }
+    }
     default:
       return state
   }
@@ -396,12 +415,15 @@ export default function NotesApp() {
     return loadNotesUiPrefs().expandedFolderIds ?? ['__inbox__']
   })
   const [pdfExportBusy, setPdfExportBusy] = useState(false)
+  const [dictToast, setDictToast] = useState<string | null>(null)
+  const dictToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [splitRatio, setSplitRatio] = useState(() => {
     const r = typeof window !== 'undefined' ? loadNotesUiPrefs().splitRatio : undefined
     return typeof r === 'number' && r >= 0.25 && r <= 0.75 ? r : 0.5
   })
   const editorRef = useRef<NoteEditorHandle>(null)
   const secondaryEditorRef = useRef<NoteEditorHandle>(null)
+  const [triggerPane, setTriggerPane] = useState<'left' | 'right'>('left')
 
   const streamBufs = useRef<Record<string, string>>({})
   const rafByLookup = useRef<Record<string, number>>({})
@@ -435,6 +457,7 @@ export default function NotesApp() {
 
   const sessionRef = useRef(state.session)
   const sessionsRef = useRef(state.sessions)
+  const splitSessionIdRef = useRef(state.splitSessionId)
   const streamRef = useRef(state.streamByLookupId)
   /** Min ms between background server pulls (visibility, periodic, debounced save). */
   const BACKGROUND_PULL_MIN_MS = 30_000
@@ -450,6 +473,7 @@ export default function NotesApp() {
   const pendingSyncRef = useRef(false)
   sessionRef.current = state.session
   sessionsRef.current = state.sessions
+  splitSessionIdRef.current = state.splitSessionId
   streamRef.current = state.streamByLookupId
 
   const bumpEditActivity = useCallback(() => {
@@ -740,10 +764,17 @@ export default function NotesApp() {
     }) => {
       streamBufs.current[opts.lookupId] = ''
 
+      const companion = splitCompanionSession(
+        sessionRef.current,
+        sessionsRef.current,
+        splitSessionIdRef.current,
+      )
+
       const ctx = await assembleClientContextAsync({
         query: opts.query,
         activeSession: sessionRef.current,
         allSessions: sessionsRef.current,
+        ...(companion ? { companionSession: companion } : {}),
       })
 
       const agentMode = opts.mode === 'agent' || opts.mode === 'followup'
@@ -756,7 +787,14 @@ export default function NotesApp() {
       commitSession(withDomain)
 
       const noteShots = screenshotsInContext(withDomain.notes, withDomain.screenshots)
-      const screenshots = [...noteShots, ...(opts.extraScreenshots ?? [])]
+      const companionShots = companion
+        ? screenshotsInContext(companion.notes, companion.screenshots)
+        : []
+      const screenshots = [...noteShots, ...companionShots, ...(opts.extraScreenshots ?? [])]
+
+      const mergedFullNotes = formatSplitFullNotes(withDomain, companion)
+      const mergedTitle = mergeSplitTitle(withDomain, companion)
+      const mergedTags = mergeSplitTags(withDomain, companion)
 
       await streamLookup({
         type: opts.type,
@@ -767,10 +805,10 @@ export default function NotesApp() {
         glossaryBlock,
         sourcesBlock: ctx.sourcesBlock,
         relatedNotesBlock: ctx.relatedNotesBlock,
-        noteTags: ctx.noteTags,
+        noteTags: mergedTags,
         noteDomain: ctx.domainId,
-        fullNotes: withDomain.notes,
-        title: withDomain.title,
+        fullNotes: mergedFullNotes,
+        title: mergedTitle,
         ...(opts.mode ? { mode: opts.mode } : {}),
         ...(opts.followUpQuestion ? { followUpQuestion: opts.followUpQuestion } : {}),
         onToken: (token) => {
@@ -824,31 +862,84 @@ export default function NotesApp() {
   )
 
   const handleTrigger = useCallback(
-    (type: TriggerType, query: string, context: string) => {
+    (type: TriggerType, query: string, context: string, pane: 'left' | 'right' = 'left') => {
+      setTriggerPane(pane)
+      const companion = splitCompanionSession(
+        sessionRef.current,
+        sessionsRef.current,
+        splitSessionIdRef.current,
+      )
+      const mergedContext = mergeSplitEditorContext(
+        context,
+        sessionRef.current,
+        companion,
+        pane,
+      )
       const lookup: Lookup = {
         id: `lk-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type,
         query,
-        context,
+        context: mergedContext,
         conversation: [],
         triggeredAt: new Date().toISOString(),
       }
       dispatch({ type: 'LOOKUP_START', lookup })
       void saveWithHistory('lookup', query)
-      void runStream({ lookupId: lookup.id, type, query, context, conversation: [] })
+      void runStream({ lookupId: lookup.id, type, query, context: mergedContext, conversation: [] })
     },
     [runStream, saveWithHistory],
+  )
+
+  const handleSecondaryTrigger = useCallback(
+    (type: TriggerType, query: string, context: string) => {
+      handleTrigger(type, query, context, 'right')
+    },
+    [handleTrigger],
+  )
+
+  const showDictToast = useCallback((msg: string) => {
+    setDictToast(msg)
+    if (dictToastTimerRef.current) clearTimeout(dictToastTimerRef.current)
+    dictToastTimerRef.current = setTimeout(() => setDictToast(null), 2800)
+  }, [])
+
+  const handleAddSelectionToDictionary = useCallback(
+    (term: string, contextNotes: string) => {
+      const label = term.trim()
+      if (!label) return false
+
+      const existing = findGlossaryEntry(label)
+      dispatch({ type: 'GLOSSARY_OPEN', open: true })
+      if (!isMobile) dispatch({ type: 'PANEL', open: true })
+
+      if (existing) {
+        showDictToast(`Already in dictionary: ${existing.term}`)
+        return true
+      }
+
+      showDictToast(`Looking up “${label}” for dictionary…`)
+      handleTrigger('line', label, contextNotes)
+      return true
+    },
+    [handleTrigger, showDictToast, isMobile],
   )
 
   const handlePanelLookup = useCallback(
     (raw: string) => {
       const query = raw.trim()
       if (!query) return
+      setTriggerPane('left')
+      const companion = splitCompanionSession(
+        state.session,
+        state.sessions,
+        state.splitSessionId,
+      )
+      const mergedNotes = formatSplitFullNotes(state.session, companion)
       const lookup: Lookup = {
         id: `lk-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type: 'line',
         query,
-        context: state.session.notes,
+        context: mergedNotes,
         conversation: [],
         triggeredAt: new Date().toISOString(),
       }
@@ -859,12 +950,12 @@ export default function NotesApp() {
         lookupId: lookup.id,
         type: 'line',
         query,
-        context: state.session.notes,
+        context: mergedNotes,
         conversation: [],
         mode: 'agent',
       })
     },
-    [runStream, saveWithHistory, state.session.notes],
+    [runStream, saveWithHistory, state.session, state.sessions, state.splitSessionId],
   )
 
   const handleFollowUp = useCallback(
@@ -947,11 +1038,18 @@ export default function NotesApp() {
   const handleSummarize = useCallback(() => {
     const mobile = isNotesMobileViewport()
     if (!mobile) dispatch({ type: 'PANEL', open: true })
+    setTriggerPane('left')
+    const companion = splitCompanionSession(
+      state.session,
+      state.sessions,
+      state.splitSessionId,
+    )
+    const mergedNotes = formatSplitFullNotes(state.session, companion)
     const lookup: Lookup = {
       id: `decode-${Date.now()}`,
       type: 'line',
-      query: state.session.notes,
-      context: state.session.notes,
+      query: mergedNotes,
+      context: mergedNotes,
       conversation: [],
       triggeredAt: new Date().toISOString(),
     }
@@ -959,12 +1057,12 @@ export default function NotesApp() {
     void runStream({
       lookupId: lookup.id,
       type: 'line',
-      query: state.session.notes,
-      context: state.session.notes,
+      query: mergedNotes,
+      context: mergedNotes,
       conversation: [],
       mode: 'decode',
     })
-  }, [state.session.notes, runStream])
+  }, [state.session, state.sessions, state.splitSessionId, runStream])
 
   const handleNewNote = useCallback((folderId: string | null = null) => {
     const fid = typeof folderId === 'string' ? folderId : null
@@ -1019,10 +1117,14 @@ export default function NotesApp() {
     void syncAllToServer()
   }, [syncAllToServer])
 
-  const handleToggleSourceForNote = useCallback((sourceId: string, enabled: boolean) => {
-    const metadata = toggleSourceForNote(sessionRef.current.metadata, sourceId, enabled)
-    dispatch({ type: 'METADATA', metadata })
-    upsertSession({ ...sessionRef.current, metadata })
+  const handleToggleSourceForNote = useCallback((sourceId: string, enabled: boolean, sessionId?: string) => {
+    const targetId = sessionId ?? sessionRef.current.id
+    const target = sessionsRef.current.find((s) => s.id === targetId) ?? sessionRef.current
+    const metadata = toggleSourceForNote(target.metadata, sourceId, enabled)
+    const updated = touchSession({ ...target, metadata })
+    upsertSession(updated)
+    dispatch({ type: 'PATCH_SESSION', session: updated })
+    if (targetId === sessionRef.current.id) dispatch({ type: 'METADATA', metadata })
   }, [])
 
   const handleMoveNote = useCallback(
@@ -1310,9 +1412,24 @@ export default function NotesApp() {
     [patchSecondarySession],
   )
 
-  const noopTrigger = useCallback(() => {}, [])
+  const handleSecondaryTags = useCallback(
+    (tags: string[]) => {
+      if (!state.splitSessionId) return
+      const target = sessionsRef.current.find((s) => s.id === state.splitSessionId)
+      if (!target) return
+      upsertSession(touchSession({ ...target, tags: sanitizeTags(tags) }))
+      dispatch({ type: 'SESSION_TAGS', sessionId: state.splitSessionId, tags })
+    },
+    [state.splitSessionId],
+  )
 
   const aiActiveCount = activeStreamCount(state.streamByLookupId)
+
+  useEffect(() => {
+    return () => {
+      if (dictToastTimerRef.current) clearTimeout(dictToastTimerRef.current)
+    }
+  }, [])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -1395,26 +1512,54 @@ export default function NotesApp() {
 
   const counts = countShorthandFlags(state.session.notes)
   const activeQuery = focusedLookup?.query ?? null
+  const leftActiveQuery = triggerPane === 'left' ? activeQuery : null
+  const rightActiveQuery = triggerPane === 'right' ? activeQuery : null
   const lastHist = lastHistoryEntry(state.session)
+  const splitActive = !isMobile && !!secondarySession
+
+  const primaryTopBar = (
+    <NotesTopBar
+      pane="primary"
+      title={state.session.title}
+      startedAt={state.session.startedAt}
+      updatedAt={state.session.updatedAt}
+      {...(state.session.metadata?.lastDeviceLabel
+        ? { lastDeviceLabel: state.session.metadata.lastDeviceLabel }
+        : {})}
+      tags={state.session.tags ?? []}
+      sessions={state.sessions}
+      onTitleChange={(title) => {
+        bumpEditActivity()
+        dispatch({ type: 'TITLE', title })
+      }}
+      onTagsChange={(tags) => dispatch({ type: 'TAGS', tags, recordHistory: true })}
+      onDeleteNote={() => handleDeleteMeeting(state.session.id)}
+    />
+  )
+
+  const secondaryTopBar =
+    secondarySession ? (
+      <NotesTopBar
+        pane="secondary"
+        title={secondarySession.title}
+        startedAt={secondarySession.startedAt}
+        updatedAt={secondarySession.updatedAt}
+        {...(secondarySession.metadata?.lastDeviceLabel
+          ? { lastDeviceLabel: secondarySession.metadata.lastDeviceLabel }
+          : {})}
+        tags={secondarySession.tags ?? []}
+        sessions={state.sessions}
+        onTitleChange={handleSecondaryTitle}
+        onTagsChange={handleSecondaryTags}
+        onDeleteNote={() => handleDeleteMeeting(secondarySession.id)}
+        onClosePane={() => dispatch({ type: 'SPLIT_CLOSE' })}
+        showHomeLink={false}
+      />
+    ) : null
 
   return (
     <div className="notes-root bg-[var(--uv-bg-base)] text-[var(--uv-text-primary)]">
-      <NotesTopBar
-        title={state.session.title}
-        startedAt={state.session.startedAt}
-        updatedAt={state.session.updatedAt}
-        {...(state.session.metadata?.lastDeviceLabel
-          ? { lastDeviceLabel: state.session.metadata.lastDeviceLabel }
-          : {})}
-        tags={state.session.tags ?? []}
-        sessions={state.sessions}
-        onTitleChange={(title) => {
-          bumpEditActivity()
-          dispatch({ type: 'TITLE', title })
-        }}
-        onTagsChange={(tags) => dispatch({ type: 'TAGS', tags, recordHistory: true })}
-        onDeleteNote={() => handleDeleteMeeting(state.session.id)}
-      />
+      {!splitActive ? primaryTopBar : null}
       <GlobalSearch
         open={searchOpen}
         sessions={state.sessions}
@@ -1433,14 +1578,14 @@ export default function NotesApp() {
         ) : null}
         <section className="notes-editor-pane min-w-0 flex-1">
           <NotesSplitView
-            split={!isMobile && !!secondarySession}
+            split={splitActive}
             splitRatio={splitRatio}
             primarySession={state.session}
             secondarySession={secondarySession}
+            leftHeader={splitActive ? primaryTopBar : null}
+            rightHeader={splitActive ? secondaryTopBar : null}
             onSplitRatioChange={setSplitRatio}
             onDropNote={handleDropOnPane}
-            onCloseRight={() => dispatch({ type: 'SPLIT_CLOSE' })}
-            onSecondaryTitleChange={handleSecondaryTitle}
             leftEditor={
               <EditorShell
                 sessionId={state.session.id}
@@ -1451,11 +1596,16 @@ export default function NotesApp() {
                   bumpEditActivity()
                   dispatch({ type: 'NOTES', notes })
                 }}
-                onTrigger={handleTrigger}
-                activeTriggerQuery={activeQuery}
+                onTrigger={(type, query, context) => handleTrigger(type, query, context, 'left')}
+                activeTriggerQuery={leftActiveQuery}
                 onAttachmentAdd={handleAttachmentAdd}
                 onAttachmentUpdate={handleAttachmentUpdate}
-                onLookupSelection={(query, type) => handleTrigger(type, query, state.session.notes)}
+                onLookupSelection={(query, type) =>
+                  handleTrigger(type, query, state.session.notes, 'left')
+                }
+                onAddSelectionToDictionary={(term) =>
+                  handleAddSelectionToDictionary(term, state.session.notes)
+                }
                 onArchiveTodoLine={(lineIndex) => handleArchiveTodo(state.session.id, lineIndex)}
                 onRestoreTodoLine={(lineIndex) => handleRestoreTodo(state.session.id, lineIndex)}
               />
@@ -1468,10 +1618,16 @@ export default function NotesApp() {
                   value={secondarySession.notes}
                   screenshots={secondarySession.screenshots}
                   onChange={handleSecondaryNotes}
-                  onTrigger={noopTrigger}
-                  activeTriggerQuery={null}
+                  onTrigger={handleSecondaryTrigger}
+                  activeTriggerQuery={rightActiveQuery}
                   onAttachmentAdd={handleSecondaryAttachmentAdd}
                   onAttachmentUpdate={handleSecondaryAttachmentUpdate}
+                  onLookupSelection={(query, type) =>
+                    handleSecondaryTrigger(type, query, secondarySession.notes)
+                  }
+                  onAddSelectionToDictionary={(term) =>
+                    handleAddSelectionToDictionary(term, secondarySession.notes)
+                  }
                   onArchiveTodoLine={(lineIndex) => handleArchiveTodo(secondarySession.id, lineIndex)}
                   onRestoreTodoLine={(lineIndex) => handleRestoreTodo(secondarySession.id, lineIndex)}
                 />
@@ -1537,6 +1693,16 @@ export default function NotesApp() {
           onDictionaryChange={handleDictionaryChange}
         />
       </div>
+      {dictToast ? (
+        <div
+          role="status"
+          aria-live="polite"
+          data-testid="notes-dictionary-toast"
+          className="pointer-events-none fixed bottom-10 left-1/2 z-50 max-w-[min(90vw,24rem)] -translate-x-1/2 rounded-md border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] px-3 py-2 text-center text-[11px] text-[var(--uv-text-primary)] shadow-md"
+        >
+          {dictToast}
+        </div>
+      ) : null}
       <StatusBar
         chars={counts.chars}
         flags={counts.flags}

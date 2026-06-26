@@ -18,6 +18,9 @@ type NotesTopBarProps = {
   onTitleChange: (title: string) => void
   onTagsChange: (tags: string[]) => void
   onDeleteNote: () => void
+  pane?: 'primary' | 'secondary'
+  onClosePane?: () => void
+  showHomeLink?: boolean
 }
 
 function formatDateTime(iso: string): string {
@@ -40,6 +43,9 @@ export default function NotesTopBar({
   onTitleChange,
   onTagsChange,
   onDeleteNote,
+  pane = 'primary',
+  onClosePane,
+  showHomeLink = pane === 'primary',
 }: NotesTopBarProps) {
   const [draft, setDraft] = useState('')
   const [catalogTick, setCatalogTick] = useState(0)
@@ -79,10 +85,15 @@ export default function NotesTopBar({
     .filter(Boolean)
     .join(' · ')
 
+  const titleTestId = pane === 'secondary' ? 'notes-meeting-title-right' : 'notes-meeting-title'
+  const tagRowTestId = pane === 'secondary' ? 'notes-tag-row-right' : 'notes-tag-row'
+  const topBarTestId = pane === 'secondary' ? 'notes-top-bar-right' : 'notes-top-bar'
+  const tagInputTestId = pane === 'secondary' ? 'notes-tag-input-right' : 'notes-tag-input'
+
   return (
     <header
       className="flex min-h-9 shrink-0 items-center gap-x-2 border-b border-[var(--uv-border)] bg-[var(--uv-bg-base)] px-3 py-1 sm:gap-x-3 sm:px-4"
-      data-testid="notes-top-bar"
+      data-testid={topBarTestId}
     >
       <input
         value={title}
@@ -91,7 +102,7 @@ export default function NotesTopBar({
         className="w-[min(11rem,32vw)] min-w-[4.5rem] max-w-[14rem] shrink-0 bg-transparent text-sm font-semibold text-[var(--uv-text-primary)] placeholder:font-normal placeholder:italic placeholder:text-[var(--uv-text-muted)] focus:outline-none sm:w-auto sm:max-w-[16rem] sm:text-base"
         placeholder="Untitled"
         aria-label="Note title"
-        data-testid="notes-meeting-title"
+        data-testid={titleTestId}
         spellCheck={false}
         autoCorrect="off"
         autoComplete="off"
@@ -100,7 +111,7 @@ export default function NotesTopBar({
 
       <div
         className="notes-tag-row-mobile flex min-w-0 flex-1 items-center gap-1 overflow-x-auto sm:flex-wrap sm:overflow-visible"
-        data-testid="notes-tag-row"
+        data-testid={tagRowTestId}
       >
         <span className="sr-only" data-testid="notes-dates">
           <span data-testid="notes-created-at">Created {formatDateTime(startedAt)}</span>
@@ -116,7 +127,7 @@ export default function NotesTopBar({
           onRemoveFromNote={removeTagFromNote}
           onDeleteFromCatalog={deleteTagFromCatalog}
         />
-        <TagInput draft={draft} setDraft={setDraft} commitDraft={commitDraft} />
+        <TagInput draft={draft} setDraft={setDraft} commitDraft={commitDraft} testId={tagInputTestId} />
       </div>
 
       <button
@@ -129,7 +140,19 @@ export default function NotesTopBar({
         Delete
       </button>
 
-      <HomeLink variant="notes" className="shrink-0" data-testid="notes-home-link" />
+      {onClosePane ? (
+        <button
+          type="button"
+          className="shrink-0 rounded px-2 py-0.5 text-xs text-[var(--uv-text-secondary)] hover:bg-[var(--uv-bg-hover)]"
+          data-testid="notes-split-close-right"
+          aria-label="Close right pane"
+          onClick={onClosePane}
+        >
+          Close
+        </button>
+      ) : null}
+
+      {showHomeLink ? <HomeLink variant="notes" className="shrink-0" data-testid="notes-home-link" /> : null}
     </header>
   )
 }
@@ -203,17 +226,19 @@ function TagInput({
   draft,
   setDraft,
   commitDraft,
+  testId,
 }: {
   draft: string
   setDraft: (v: string) => void
   commitDraft: (raw: string) => void
+  testId: string
 }) {
   return (
     <input
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
       placeholder="+ tag ↵"
-      data-testid="notes-tag-input"
+      data-testid={testId}
       spellCheck={false}
       autoCorrect="off"
       autoComplete="off"
