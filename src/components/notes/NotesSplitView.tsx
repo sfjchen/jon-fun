@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { isNoteSessionDrag, NOTE_SESSION_DRAG } from '@/lib/notes/dragTypes'
-import { normalizeSessionTitle } from '@/lib/notes/prefs'
-import { sanitizeMetadataText } from '@/lib/notes/textSanitize'
 import type { NoteSession } from '@/lib/notes/types'
 
 const SPLIT_MIN = 0.25
@@ -18,12 +16,12 @@ type NotesSplitViewProps = {
   splitRatio: number
   primarySession: NoteSession
   secondarySession: NoteSession | null
+  leftHeader: ReactNode | null
+  rightHeader: ReactNode | null
   leftEditor: ReactNode
   rightEditor: ReactNode | null
   onSplitRatioChange: (ratio: number) => void
   onDropNote: (sessionId: string, side: 'left' | 'right') => void
-  onCloseRight: () => void
-  onSecondaryTitleChange: (title: string) => void
 }
 
 export default function NotesSplitView({
@@ -31,12 +29,12 @@ export default function NotesSplitView({
   splitRatio,
   primarySession,
   secondarySession,
+  leftHeader,
+  rightHeader,
   leftEditor,
   rightEditor,
   onSplitRatioChange,
   onDropNote,
-  onCloseRight,
-  onSecondaryTitleChange,
 }: NotesSplitViewProps) {
   const [vaultDrag, setVaultDrag] = useState(false)
   const [hoverSide, setHoverSide] = useState<'left' | 'right' | null>(null)
@@ -210,6 +208,7 @@ export default function NotesSplitView({
         data-testid="notes-editor-left"
       >
         {dropOverlay('left')}
+        {leftHeader}
         <div className="notes-editor-body flex min-h-0 flex-1 flex-col">{leftEditor}</div>
       </section>
 
@@ -228,29 +227,7 @@ export default function NotesSplitView({
         data-testid="notes-editor-right"
       >
         {dropOverlay('right')}
-        <header className="flex shrink-0 items-center gap-2 border-b border-[var(--uv-border)] px-3 py-1.5">
-          <input
-            type="text"
-            value={secondarySession.title}
-            placeholder="Untitled"
-            className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[var(--uv-text-primary)] outline-none placeholder:text-[var(--uv-text-muted)]"
-            data-testid="notes-split-right-title"
-            onChange={(e) =>
-              onSecondaryTitleChange(
-                sanitizeMetadataText(normalizeSessionTitle(e.target.value), 200),
-              )
-            }
-          />
-          <button
-            type="button"
-            className="shrink-0 rounded px-2 py-0.5 text-xs text-[var(--uv-text-secondary)] hover:bg-[var(--uv-bg-hover)]"
-            data-testid="notes-split-close-right"
-            aria-label="Close right pane"
-            onClick={onCloseRight}
-          >
-            Close
-          </button>
-        </header>
+        {rightHeader}
         <div className="notes-editor-body flex min-h-0 flex-1 flex-col">{rightEditor}</div>
       </section>
     </div>

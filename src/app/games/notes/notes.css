@@ -90,6 +90,12 @@
   min-height: 0;
 }
 
+.notes-split-dual {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
 .notes-split-single-zones {
   opacity: 0;
   pointer-events: none;

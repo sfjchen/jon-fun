@@ -8,7 +8,8 @@ import {
 import { resolveDomainOpts, resolveDomainsForNote } from './knowledge/registry'
 import { formatSectionsOutline, parseNoteSections } from './knowledge/sectioning'
 import { formatSourcesForPrompt, loadSourcesLocal } from './sources'
-import { filterSourcesForNote } from './sourceSelection'
+import { filterSourcesForNote, isSourceEnabledForNote } from './sourceSelection'
+import { formatSplitFullNotes, mergeSplitTags } from './splitContext'
 import type { NoteSession } from './types'
 
 const MS_PER_DAY = 86_400_000
@@ -22,23 +23,35 @@ function baseContext(opts: {
   query: string
   activeSession: NoteSession
   allSessions: NoteSession[]
+  companionSession?: NoteSession | null
   maxNotes?: number
 }) {
+  const companion = opts.companionSession ?? null
+  const mergedNotes = formatSplitFullNotes(opts.activeSession, companion)
+  const mergedTags = mergeSplitTags(opts.activeSession, companion)
+
   const domainOpts = resolveDomainOpts({
-    tags: opts.activeSession.tags,
-    notes: opts.activeSession.notes,
+    tags: mergedTags,
+    notes: mergedNotes,
     query: opts.query,
     ...(opts.activeSession.metadata?.kind ? { kind: opts.activeSession.metadata.kind } : {}),
   })
 
   const { primary } = resolveDomainsForNote(domainOpts)
-  const sections = parseNoteSections(opts.activeSession.notes)
+  const sections = parseNoteSections(mergedNotes)
   const sectionsOutline = formatSectionsOutline(sections)
   const glossaryBlock = formatGlossaryForPrompt(12)
-  const sources = filterSourcesForNote(loadSourcesLocal(), opts.activeSession)
+  const allSources = loadSourcesLocal()
+  const sources = companion
+    ? allSources.filter(
+        (s) =>
+          isSourceEnabledForNote(opts.activeSession, s.id) ||
+          isSourceEnabledForNote(companion, s.id),
+      )
+    : filterSourcesForNote(allSources, opts.activeSession)
   const domainTags = new Set(primary.tagHints.map((t) => t.toLowerCase()))
 
-  const tagSet = new Set(opts.activeSession.tags.map((t) => t.toLowerCase()))
+  const tagSet = new Set(mergedTags.map((t) => t.toLowerCase()))
   const related = opts.allSessions
     .filter((s) => s.id !== opts.activeSession.id)
     .map((s) => {
@@ -70,7 +83,7 @@ function baseContext(opts: {
     relatedNotesBlock: relatedNotesBlock || '(none)',
     sectionsOutline,
     domainId: primary.id,
-    noteTags: opts.activeSession.tags,
+    noteTags: mergedTags,
     sources,
     domainTags,
     keywordRelated: related.map((x) => x.s),
@@ -81,6 +94,7 @@ export function assembleClientContext(opts: {
   query: string
   activeSession: NoteSession
   allSessions: NoteSession[]
+  companionSession?: NoteSession | null
   maxNotes?: number
 }) {
   const ctx = baseContext(opts)
@@ -99,6 +113,7 @@ export async function assembleClientContextAsync(opts: {
   query: string
   activeSession: NoteSession
   allSessions: NoteSession[]
+  companionSession?: NoteSession | null
   maxNotes?: number
 }) {
   const ctx = baseContext(opts)

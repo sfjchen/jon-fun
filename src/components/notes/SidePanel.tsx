@@ -98,7 +98,7 @@ type SidePanelProps = {
   onJumpTodo: (sessionId: string, lineIndex: number) => void
   onArchiveTodo: (sessionId: string, lineIndex: number) => void
   onRestoreTodo: (sessionId: string, lineIndex: number) => void
-  onToggleSourceForNote: (sourceId: string, enabled: boolean) => void
+  onToggleSourceForNote: (sourceId: string, enabled: boolean, sessionId?: string) => void
   onSourcesChange: () => void
   onDictionaryChange: () => void
 }
@@ -369,6 +369,11 @@ export default function SidePanel({
           <SourcesPanel
             refreshKey={glossaryRefreshKey}
             session={activeSession}
+            splitSession={
+              splitSessionId
+                ? (sessions.find((s) => s.id === splitSessionId) ?? null)
+                : null
+            }
             onToggleSourceForNote={onToggleSourceForNote}
             onChange={onSourcesChange}
             embedded

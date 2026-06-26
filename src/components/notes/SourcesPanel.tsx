@@ -17,7 +17,8 @@ import { NotesRowAction } from './NotesActionUi'
 type SourcesPanelProps = {
   refreshKey?: number
   session: NoteSession
-  onToggleSourceForNote: (sourceId: string, enabled: boolean) => void
+  splitSession?: NoteSession | null
+  onToggleSourceForNote: (sourceId: string, enabled: boolean, sessionId?: string) => void
   onChange?: () => void
   embedded?: boolean
 }
@@ -25,6 +26,7 @@ type SourcesPanelProps = {
 export default function SourcesPanel({
   refreshKey = 0,
   session,
+  splitSession = null,
   onToggleSourceForNote,
   onChange,
   embedded,
@@ -234,21 +236,71 @@ export default function SourcesPanel({
 
       {sources.length === 0 ? (
         <p className="text-[11px] text-[var(--uv-text-muted)]">No sources — paste or attach IPS, memos, glossaries.</p>
+      ) : splitSession ? (
+        <div className="space-y-2">
+          <SourceList
+            label={session.title.trim() || 'Left note'}
+            sources={sources}
+            session={session}
+            onToggleSourceForNote={onToggleSourceForNote}
+            onEdit={startEdit}
+            onDelete={removeSource}
+          />
+          <SourceList
+            label={splitSession.title.trim() || 'Right note'}
+            sources={sources}
+            session={splitSession}
+            onToggleSourceForNote={onToggleSourceForNote}
+            onEdit={startEdit}
+            onDelete={removeSource}
+          />
+        </div>
       ) : (
-        <ul className="max-h-40 space-y-1 overflow-y-auto">
-          {sources.map((s) => (
-            <SourceRow
-              key={s.id}
-              source={s}
-              enabled={isSourceEnabledForNote(session, s.id)}
-              onToggle={(enabled) => onToggleSourceForNote(s.id, enabled)}
-              onEdit={() => startEdit(s)}
-              {...(!isBuiltinSource(s.id) ? { onDelete: () => removeSource(s) } : {})}
-            />
-          ))}
-        </ul>
+        <SourceList
+          sources={sources}
+          session={session}
+          onToggleSourceForNote={onToggleSourceForNote}
+          onEdit={startEdit}
+          onDelete={removeSource}
+        />
       )}
     </section>
+  )
+}
+
+function SourceList({
+  label,
+  sources,
+  session,
+  onToggleSourceForNote,
+  onEdit,
+  onDelete,
+}: {
+  label?: string
+  sources: NoteSource[]
+  session: NoteSession
+  onToggleSourceForNote: (sourceId: string, enabled: boolean, sessionId?: string) => void
+  onEdit: (source: NoteSource) => void
+  onDelete: (source: NoteSource) => void
+}) {
+  return (
+    <div>
+      {label ? (
+        <p className="mb-1 truncate text-[10px] font-medium text-[var(--uv-text-secondary)]">{label}</p>
+      ) : null}
+      <ul className="max-h-40 space-y-1 overflow-y-auto">
+        {sources.map((s) => (
+          <SourceRow
+            key={`${session.id}-${s.id}`}
+            source={s}
+            enabled={isSourceEnabledForNote(session, s.id)}
+            onToggle={(enabled) => onToggleSourceForNote(s.id, enabled, session.id)}
+            onEdit={() => onEdit(s)}
+            {...(!isBuiltinSource(s.id) ? { onDelete: () => onDelete(s) } : {})}
+          />
+        ))}
+      </ul>
+    </div>
   )
 }
 
