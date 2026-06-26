@@ -1,6 +1,6 @@
-import { dashIndentLevel } from '../src/lib/notes/tiptap/dashList'
 import { normalizePlainPasteText } from '../src/lib/notes/tiptap/clipboardConvert'
-import { wrapLinesWithHighlight } from '../src/lib/notes/tiptap/editorCommands'
+import { bullettizeLines, wrapLinesWithHighlight } from '../src/lib/notes/tiptap/editorCommands'
+import { dashIndentLevel, indentDashLineText } from '../src/lib/notes/tiptap/dashList'
 import { normalizeNotesMarkdown } from '../src/lib/notes/tiptap/markdownNormalize'
 
 let failed = 0
@@ -26,6 +26,11 @@ ok(
   normalizePlainPasteText('• one\n  • nested') === '- one\n  - nested',
 )
 ok('normalize plain skips dash lines', normalizePlainPasteText('- already\nplain') === null)
+ok('bullettize plain lines', bullettizeLines('one\n  two') === '- one\n  - two')
+ok('bullettize skips existing dash', bullettizeLines('- done') === '- done')
+ok('indent dash line', indentDashLineText('- a', false) === '  - a')
+ok('outdent dash line', indentDashLineText('  - a', true) === '- a')
+ok('outdent dash at root stays bullet', indentDashLineText('- a', true) === '- a')
 
 if (failed > 0) {
   console.error(`\n${failed} check(s) failed.`)
