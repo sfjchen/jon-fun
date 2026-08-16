@@ -11,7 +11,7 @@ import { createClient } from '@supabase/supabase-js'
 import { v4 as uuidv4 } from 'uuid'
 import { normalizeBoard } from '../src/lib/jeopardy-ops'
 import { defaultPlayState } from '../src/lib/jeopardy-play-ops'
-import { generateBoardSlug } from '../src/lib/jeopardy'
+import { generateBoardSlug } from '../src/lib/jeopardy-core'
 
 function loadEnvLocal(): void {
   for (const file of ['.env.local', '.env']) {

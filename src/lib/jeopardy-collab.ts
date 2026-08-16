@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-import type { JeopardyBoard } from '@/lib/jeopardy'
+import type { JeopardyBoard } from '@/lib/jeopardy-core'
 import { applyOp, normalizeBoard, type JeopardyOp } from '@/lib/jeopardy-ops'
 import type { EditorIdentity } from '@/lib/jeopardy-identity'
 

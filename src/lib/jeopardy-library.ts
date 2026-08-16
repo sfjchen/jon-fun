@@ -4,7 +4,7 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { normalizeBoard } from '@/lib/jeopardy-ops'
-import type { JeopardyBoard } from '@/lib/jeopardy'
+import type { JeopardyBoard } from '@/lib/jeopardy-core'
 
 const DATA_DIR = path.join(process.cwd(), 'data', 'jeopardy')
 const FILE_RE = /^[a-z0-9._-]+\.jeopardy\.json$/i

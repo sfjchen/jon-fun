@@ -1,7 +1,7 @@
 // Server-only: insert a new Supabase jeopardy_boards row, retrying on slug collision.
 import { v4 as uuidv4 } from 'uuid'
 import { supabaseAdmin as supabase } from '@/lib/supabase'
-import { generateBoardSlug, type JeopardyBoard } from '@/lib/jeopardy'
+import { generateBoardSlug, type JeopardyBoard } from '@/lib/jeopardy-core'
 
 const TITLE_MAX = 120
 const EDITOR_MAX = 40

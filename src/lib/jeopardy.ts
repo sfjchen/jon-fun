@@ -1,71 +1,19 @@
 'use client'
 
-// Core types for a Jeopardy board
-export interface JeopardyClue {
-  question: string
-  answer: string
-}
+import {
+  type BoardCoordinates,
+  type JeopardyBoard,
+  type JeopardyCategory,
+  type JeopardyClue,
+  createDefaultBoard,
+  generateShortId,
+  getClueValue,
+  slugify,
+} from '@/lib/jeopardy-core'
 
-export interface JeopardyCategory {
-  title: string
-  clues: JeopardyClue[]
-}
+export type { BoardCoordinates, JeopardyBoard, JeopardyCategory, JeopardyClue }
+export { createDefaultBoard, generateShortId, getClueValue, slugify, generateBoardSlug } from '@/lib/jeopardy-core'
 
-export interface JeopardyBoard {
-  id: string
-  version: 1
-  title: string
-  categories: JeopardyCategory[]
-  baseValue: number // usually 200
-  increment: number // usually 200
-}
-
-export type BoardCoordinates = { colIndex: number; rowIndex: number }
-
-// Helpers
-export function generateShortId(title: string): string {
-  const slug = slugify(title)
-  const rand = Math.random().toString(36).slice(2, 8)
-  return `${slug}-${rand}`
-}
-
-export function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 40) || 'board'
-}
-
-/** Slug pattern shared between the API routes that create boards: `${title-slug}-${5 random chars}`. */
-export function generateBoardSlug(title: string): string {
-  return `${slugify(title || 'board') || 'board'}-${Math.random().toString(36).slice(2, 7)}`
-}
-
-export function createDefaultBoard(title = 'Title'): JeopardyBoard {
-  const cols = 5
-  const rows = 5
-  const categories: JeopardyCategory[] = Array.from({ length: cols }, (_, c) => ({
-    title: `category ${c + 1}`,
-    clues: Array.from({ length: rows }, () => ({ question: '', answer: '' })),
-  }))
-
-  return {
-    id: generateShortId(title),
-    version: 1,
-    title,
-    categories,
-    baseValue: 200,
-    increment: 200,
-  }
-}
-
-export function getClueValue(board: JeopardyBoard, rowIndex: number): number {
-  // Ensure value depends strictly on row position (top=200 → downwards +200)
-  return board.baseValue * (rowIndex + 1)
-}
-
-// JSON IO
 export function downloadBoard(board: JeopardyBoard) {
   const data = JSON.stringify(board, null, 2)
   const blob = new Blob([data], { type: 'application/json' })
@@ -82,7 +30,6 @@ export function downloadBoard(board: JeopardyBoard) {
 export async function readBoardFromFile(file: File): Promise<JeopardyBoard> {
   const text = await file.text()
   const parsed = JSON.parse(text)
-  // minimal validation
   if (!parsed || typeof parsed !== 'object') throw new Error('Invalid file')
   if (!Array.isArray(parsed.categories)) throw new Error('Invalid board format')
   const board: JeopardyBoard = {
@@ -101,7 +48,6 @@ export async function readBoardFromFile(file: File): Promise<JeopardyBoard> {
     baseValue: typeof parsed.baseValue === 'number' ? parsed.baseValue : 200,
     increment: typeof parsed.increment === 'number' ? parsed.increment : 200,
   }
-  // normalize columns to the same rows length
   const maxRows = Math.max(...board.categories.map((c) => c.clues.length)) || 5
   board.categories = board.categories.map((c) => ({
     ...c,
@@ -109,5 +55,3 @@ export async function readBoardFromFile(file: File): Promise<JeopardyBoard> {
   }))
   return board
 }
-
-

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin as supabase } from '@/lib/supabase'
 import { applyOp, normalizeBoard, type JeopardyOp } from '@/lib/jeopardy-ops'
-import type { JeopardyBoard } from '@/lib/jeopardy'
+import type { JeopardyBoard } from '@/lib/jeopardy-core'
 import { normalizePlayState } from '@/lib/jeopardy-play-ops'
 
 function isValidSlug(s: string): boolean {

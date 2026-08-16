@@ -1,6 +1,6 @@
 // Pure operations applied to a JeopardyBoard. Identical logic runs client- and
 // server-side so we can apply optimistic ops locally and re-apply on the server.
-import type { JeopardyBoard, JeopardyCategory, JeopardyClue } from '@/lib/jeopardy'
+import type { JeopardyBoard, JeopardyCategory, JeopardyClue } from '@/lib/jeopardy-core'
 
 export type JeopardyOp =
   | { kind: 'setBoardTitle'; title: string }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
-import { createDefaultBoard, type JeopardyBoard } from '@/lib/jeopardy'
+import { createDefaultBoard, type JeopardyBoard } from '@/lib/jeopardy-core'
 import { normalizeBoard } from '@/lib/jeopardy-ops'
 import { insertNewBoard } from '@/lib/jeopardy-board-server'
 
