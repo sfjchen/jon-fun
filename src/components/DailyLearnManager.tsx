@@ -19,6 +19,7 @@ import {
   restoreFromServer,
   parseLocalDate,
   capitalizeFirst,
+  isEntryTextDirty,
   type DailyLearnEntry,
 } from '@/lib/dailyLearn'
 import { dailyLearnSubmitHint, isModEnter, useModKeyLabel } from '@/lib/keyboard'
@@ -45,6 +46,11 @@ export default function DailyLearnManager() {
   const [syncFailed, setSyncFailed] = useState(false)
   const csvImportRef = useRef<HTMLInputElement>(null)
   const [importStatus, setImportStatus] = useState<string | null>(null)
+  const [remoteTodayHint, setRemoteTodayHint] = useState<string | null>(null)
+  const todayDirtyRef = useRef(false)
+  const todayTextRef = useRef('')
+  const syncInFlightRef = useRef(false)
+  const pendingSyncRef = useRef(false)
   const modKey = useModKeyLabel()
 
   const refresh = useCallback(() => {
@@ -52,61 +58,93 @@ export default function DailyLearnManager() {
   }, [])
 
   useEffect(() => {
+    todayTextRef.current = todayText
+  }, [todayText])
+
+  const applySyncResult = useCallback((r: { entries: DailyLearnEntry[]; pushOk: boolean }) => {
+    setEntries(r.entries)
+    setSyncFailed(!r.pushOk)
+    const today = getTodayDate()
+    const serverToday = r.entries.find((e) => e.date === today)
+    const serverText = serverToday?.text ?? ''
+    if (todayDirtyRef.current) {
+      if (serverText && isEntryTextDirty(todayTextRef.current, serverToday)) {
+        setRemoteTodayHint(serverText)
+      } else {
+        setRemoteTodayHint(null)
+      }
+      return
+    }
+    setTodayText(serverText)
+    setRemoteTodayHint(null)
+  }, [])
+
+  const runBackgroundSync = useCallback(async () => {
+    if (syncInFlightRef.current) {
+      pendingSyncRef.current = true
+      return
+    }
+    syncInFlightRef.current = true
+    setSyncing(true)
+    try {
+      const r = await syncWithServer()
+      applySyncResult(r)
+    } finally {
+      setSyncing(false)
+      syncInFlightRef.current = false
+      if (pendingSyncRef.current) {
+        pendingSyncRef.current = false
+        void runBackgroundSync()
+      }
+    }
+  }, [applySyncResult])
+
+  useEffect(() => {
     getOrCreateUserId()
+    const d = getTodayDate()
+    setTodayText(getEntryByDate(d)?.text ?? '')
     refresh()
   }, [refresh])
 
   // Initial sync on load: push localStorage to Supabase, merge with server. Runs for all users so local-only data is backed up.
   useEffect(() => {
-    setSyncing(true)
-    syncWithServer()
-      .then((r) => {
-        refresh()
-        setSyncFailed(!r.pushOk)
-      })
-      .finally(() => setSyncing(false))
-  }, [refresh])
+    void runBackgroundSync()
+  }, [runBackgroundSync])
 
-  // Periodic sync: 5 min when tab visible, 1hr when hidden. Sync on visibility (user returns to tab)
+  // Poll when visible (60s), refetch on tab visible / window focus — calendar + history always refresh; today only if not dirty.
   useEffect(() => {
-    const runSync = () => {
-      syncWithServer().then((r) => {
-        refresh()
-        setSyncFailed(!r.pushOk)
-      })
-    }
+    const VISIBLE_POLL_MS = 60_000
+    const HIDDEN_POLL_MS = 3_600_000
     let id: ReturnType<typeof setInterval> | null = null
     const schedule = () => {
       if (id) clearInterval(id)
-      const ms = document.visibilityState === 'visible' ? 300_000 : 3_600_000
-      id = setInterval(() => {
-        runSync()
-        schedule()
-      }, ms)
+      const ms = document.visibilityState === 'visible' ? VISIBLE_POLL_MS : HIDDEN_POLL_MS
+      id = setInterval(() => void runBackgroundSync(), ms)
+    }
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return
+      void runBackgroundSync()
     }
     const onVisibilityChange = () => {
-      if (document.visibilityState === 'visible') runSync()
+      if (document.visibilityState === 'visible') onVisible()
       schedule()
     }
     document.addEventListener('visibilitychange', onVisibilityChange)
+    window.addEventListener('focus', onVisible)
     schedule()
     return () => {
       document.removeEventListener('visibilitychange', onVisibilityChange)
+      window.removeEventListener('focus', onVisible)
       if (id) clearInterval(id)
     }
-  }, [refresh])
+  }, [runBackgroundSync])
 
-  useEffect(() => {
-    const d = getTodayDate()
-    const fromStorage = getEntryByDate(d)?.text ?? ''
-    setTodayText((prev) => {
-      // Load from storage when empty and storage has content (initial load)
-      if (!prev && fromStorage) return fromStorage
-      // Preserve user's draft when it differs from storage (typing, not yet saved)
-      if (prev && prev !== fromStorage) return prev
-      return fromStorage
-    })
-  }, [view, entries])
+  const applyRemoteToday = useCallback(() => {
+    if (!remoteTodayHint) return
+    setTodayText(remoteTodayHint)
+    todayDirtyRef.current = false
+    setRemoteTodayHint(null)
+  }, [remoteTodayHint])
 
   useEffect(() => {
     if (!editingDate) return
@@ -129,6 +167,10 @@ export default function DailyLearnManager() {
     setSaving(false)
     setSaved(ok)
     setSyncFailed(!ok)
+    if (ok) {
+      todayDirtyRef.current = false
+      setRemoteTodayHint(null)
+    }
     refresh()
     if (ok) setTimeout(() => setSaved(false), 2000)
   }, [todayText, refresh])
@@ -347,7 +389,11 @@ export default function DailyLearnManager() {
             </p>
             <textarea
               value={todayText}
-              onChange={(e) => setTodayText(e.target.value)}
+              onChange={(e) => {
+                todayDirtyRef.current = true
+                setRemoteTodayHint(null)
+                setTodayText(e.target.value)
+              }}
               onKeyDown={(e) => {
                 if (isModEnter(e)) { e.preventDefault(); handleSubmit() }
                 if (e.key === 'Escape') { e.preventDefault(); (e.target as HTMLTextAreaElement).blur() }
@@ -360,6 +406,17 @@ export default function DailyLearnManager() {
             <p className="text-xs mt-2" style={{ color: 'var(--ink-muted)' }} data-testid="daily-learn-submit-shortcut-hint">
               {dailyLearnSubmitHint(modKey)}
             </p>
+            {remoteTodayHint && (
+              <button
+                type="button"
+                data-testid="daily-learn-remote-today-hint"
+                onClick={applyRemoteToday}
+                className="mt-2 text-sm text-left underline hover:opacity-80"
+                style={{ color: 'var(--ink-accent)' }}
+              >
+                Newer entry on another device — tap to load
+              </button>
+            )}
             <div className="flex items-center gap-4 mt-3">
               <button
                 onClick={handleSubmit}

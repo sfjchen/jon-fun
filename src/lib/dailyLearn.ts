@@ -182,6 +182,11 @@ export async function restoreFromServer(userId: string): Promise<{ restored: num
   return { restored: entries.length }
 }
 
+/** True when textarea content differs from the saved entry for that date. */
+export function isEntryTextDirty(localText: string, saved?: DailyLearnEntry): boolean {
+  return localText.trim() !== (saved?.text ?? '').trim()
+}
+
 /** Sync: fetch from server, merge with local, save local, push merged. Returns entries and whether push succeeded. */
 export async function syncWithServer(): Promise<{ entries: DailyLearnEntry[]; pushOk: boolean }> {
   if (typeof window === 'undefined') return { entries: loadEntries(), pushOk: true }

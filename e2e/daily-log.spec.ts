@@ -4,7 +4,7 @@ import { join } from 'node:path'
 
 import { test, expect, type Page } from '@playwright/test'
 
-import { mockDailyLearnApi } from './helpers/daily-learn-mock'
+import { mockDailyLearnApi, setDailyLearnMockServerEntries, triggerDailyLearnTabVisible } from './helpers/daily-learn-mock'
 
 function sectionsNav(page: Page) {
   return page.getByRole('navigation', { name: /Daily log sections/i })
@@ -154,5 +154,90 @@ test.describe('1 Sentence Everyday', () => {
     await textarea.press('Control+Enter')
     await expect(page.getByText('Saved')).toBeVisible({ timeout: 15000 })
     await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: phrase })).toBeVisible()
+  })
+
+  test('visibility refetch updates history from server', async ({ page }) => {
+    await page.evaluate(() => {
+      localStorage.setItem(
+        'daily_learn_entries',
+        JSON.stringify([
+          {
+            date: '2018-06-01',
+            text: 'Stale local only',
+            updatedAt: '2018-06-01T10:00:00.000Z',
+          },
+        ]),
+      )
+    })
+    await page.reload()
+    await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: 'Stale local only' })).toBeVisible()
+
+    await setDailyLearnMockServerEntries(page, [
+      {
+        date: '2018-06-02',
+        text: 'Fresh from another device',
+        updatedAt: '2018-06-02T12:00:00.000Z',
+      },
+      {
+        date: '2018-06-01',
+        text: 'Stale local only',
+        updatedAt: '2018-06-01T10:00:00.000Z',
+      },
+    ])
+
+    await triggerDailyLearnTabVisible(page)
+    await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: 'Fresh from another device' })).toBeVisible({
+      timeout: 15000,
+    })
+  })
+
+  test('visibility refetch does not wipe dirty today draft', async ({ page }) => {
+    const today = await page.evaluate(() => {
+      const now = new Date()
+      if (now.getHours() < 5) {
+        const prev = new Date(now)
+        prev.setDate(prev.getDate() - 1)
+      }
+      const d = now.getHours() < 5 ? new Date(now.getTime() - 86400000) : now
+      const y = d.getFullYear()
+      const m = String(d.getMonth() + 1).padStart(2, '0')
+      const day = String(d.getDate()).padStart(2, '0')
+      return `${y}-${m}-${day}`
+    })
+
+    await page.evaluate(
+      ({ date }) => {
+        localStorage.setItem(
+          'daily_learn_entries',
+          JSON.stringify([
+            {
+              date,
+              text: 'Old saved today',
+              updatedAt: '2020-01-01T10:00:00.000Z',
+            },
+          ]),
+        )
+      },
+      { date: today },
+    )
+    await page.reload()
+    await expect(page.getByPlaceholder(/One sentence/i)).toHaveValue('Old saved today')
+
+    await setDailyLearnMockServerEntries(page, [
+      {
+        date: today,
+        text: 'Saved on phone remotely',
+        updatedAt: '2030-01-01T12:00:00.000Z',
+      },
+    ])
+
+    const textarea = page.getByPlaceholder(/One sentence/i)
+    await textarea.fill('Unsaved draft in progress')
+    await triggerDailyLearnTabVisible(page)
+
+    await expect(textarea).toHaveValue('Unsaved draft in progress', { timeout: 15000 })
+    await expect(page.getByTestId('daily-learn-remote-today-hint')).toBeVisible()
+    await page.getByTestId('daily-learn-remote-today-hint').click()
+    await expect(textarea).toHaveValue('Saved on phone remotely')
   })
 })
