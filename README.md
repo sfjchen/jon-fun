@@ -338,10 +338,11 @@ src/
 
 - Body: `{ pin, playerId, action, amount? }`
 
-**`POST /api/poker/cleanup`**: Cleanup inactive rooms (cron)
+**`GET` / `POST /api/poker/cleanup`**: Cleanup inactive rooms
 
 - Deletes poker, Game 24, and **party** (`party_rooms`) rooms inactive >24 hours (party child rows cascade on room delete)
-- Requires `CLEANUP_API_KEY` env var (optional)
+- **`GET`** (Vercel cron, [`vercel.json`](vercel.json) daily at 00:00 UTC): requires `Authorization: Bearer ${CRON_SECRET}`, which Vercel sends automatically when **`CRON_SECRET`** is set. Fails closed: if `CRON_SECRET` is unset, `GET` always returns 401.
+- **`POST`** (manual trigger): requires `Authorization: Bearer ${CLEANUP_API_KEY}` when that var is set; open if unset.
 
 **Party games** (`/api/party/…`)
 
@@ -452,7 +453,8 @@ src/
 **Production (Vercel):**
 
 - Same variables configured in Vercel dashboard
-- `CLEANUP_API_KEY` (optional, for cleanup endpoint)
+- **`CRON_SECRET`** (required for the daily cleanup cron): Vercel sends it as `Authorization: Bearer …` to `GET /api/poker/cleanup`. Set via `vercel env add CRON_SECRET production` (generate with `openssl rand -hex 32`), then redeploy.
+- `CLEANUP_API_KEY` (optional): protects manual `POST /api/poker/cleanup`
 
 ### E2E Testing
 
@@ -513,6 +515,7 @@ src/
 
 Running log of project work. Update this section when making significant changes. Format: **YYYY-MM**: Short description.
 
+- **2026-10-04**: **Cleanup cron auth** — `GET /api/poker/cleanup` now verifies Vercel's `Authorization: Bearer ${CRON_SECRET}` header (fails closed when unset) instead of proxying to `POST` without auth; `POST` keeps `CLEANUP_API_KEY`. Shared `runCleanup()`; room lookups parallelized. **Action**: set `CRON_SECRET` on Vercel.
 - **2026-06-25**: **Notes action UX** — shared `NotesActionUi` (hover ×, ⋯ overflow, context menu + long-press); tag remove vs catalog-delete split; editor selection context menu (AI lookup, todo archive); touch-visible row deletes; matrix in [`docs/NOTES-DESIGN.md`](docs/NOTES-DESIGN.md).
 - **2026-06-25**: **Single theme + Next 16** — removed `/theme2` routes (permanent redirects); Notes in-place Tiptap switch (no remount); `usePartyRoomActions`; dropped unused `@supabase/ssr`; Next **16.2.9** + `site-visual` E2E; poker/reader/jeopardy stay separate stacks (documented in ARCHITECTURE-MAP).
 - **2026-06-25**: **Architecture streamline** — [`docs/ARCHITECTURE-MAP.md`](docs/ARCHITECTURE-MAP.md) (routes, shared libs, perf levers); party games coalesce `usePartyLobby` + `PartyLobbyForm`; Realtime poll fallback 800ms→2s; `optimizePackageImports` for Tiptap/Supabase/lucide; README theme2 mirror docs corrected.
