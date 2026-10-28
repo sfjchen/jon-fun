@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 
-import { isMacPlatform, modKeyLabel } from '@/lib/notes/device'
+import { modKeyLabel } from '@/lib/notes/device'
 
 export { isMacPlatform, modKeyLabel } from '@/lib/notes/device'
 
@@ -18,9 +18,11 @@ export function isModD(e: { key: string; metaKey: boolean; ctrlKey: boolean }): 
 
 /** Client-safe mod key label (avoids Mac → Ctrl flash during hydration). */
 export function useModKeyLabel(): 'Cmd' | 'Ctrl' {
-  const [label, setLabel] = useState<'Cmd' | 'Ctrl'>('Ctrl')
-  useEffect(() => setLabel(modKeyLabel()), [])
-  return label
+  return useSyncExternalStore(
+    () => () => {},
+    modKeyLabel,
+    () => 'Ctrl',
+  )
 }
 
 export function modEnterShortcutLabel(mod: 'Cmd' | 'Ctrl' = modKeyLabel()): string {

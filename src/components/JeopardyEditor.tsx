@@ -103,6 +103,18 @@ export default function JeopardyEditor({
 
   const rowsCount = useMemo(() => board.categories[0]?.clues.length ?? 5, [board])
 
+  const openCell = useCallback(
+    (colIndex: number, rowIndex: number) => {
+      if (modal) return // already editing a cell — guard against losing unsaved work
+      const key = lockKeyForCell(colIndex, rowIndex)
+      if (locks[key]) return // someone else editing — block open
+      setFocused({ colIndex, rowIndex })
+      setModal({ colIndex, rowIndex })
+      setLock?.(key)
+    },
+    [modal, locks, setLock],
+  )
+
   // Keyboard navigation (no inputs/textareas).
   useEffect(() => {
     if (modal) return
@@ -145,8 +157,7 @@ export default function JeopardyEditor({
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [board.categories.length, rowsCount, focused, modal])
+  }, [board.categories.length, rowsCount, focused, modal, openCell])
 
   const reorderColumns = useCallback(
     (from: number, to: number) => {
@@ -154,18 +165,6 @@ export default function JeopardyEditor({
       sendOp({ kind: 'reorderCols', from, to })
     },
     [sendOp],
-  )
-
-  const openCell = useCallback(
-    (colIndex: number, rowIndex: number) => {
-      if (modal) return // already editing a cell — guard against losing unsaved work
-      const key = lockKeyForCell(colIndex, rowIndex)
-      if (locks[key]) return // someone else editing — block open
-      setFocused({ colIndex, rowIndex })
-      setModal({ colIndex, rowIndex })
-      setLock?.(key)
-    },
-    [modal, locks, setLock],
   )
 
   const closeCell = useCallback(() => {
@@ -197,8 +196,11 @@ export default function JeopardyEditor({
     setTimeout(() => setShareToast(null), 2400)
   }, [shareUrl])
 
+  // Ticks the clock that the relative "Saved Xm ago" label reads.
+  const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
-    setFocused({ colIndex: 0, rowIndex: 0 })
+    const t = setInterval(() => setNow(Date.now()), 30_000)
+    return () => clearInterval(t)
   }, [])
 
   const savedLabel = useMemo(() => {
@@ -208,13 +210,13 @@ export default function JeopardyEditor({
     if (saveStatus === 'saved') return 'Saved'
     if (updatedAt) {
       const t = new Date(updatedAt).getTime()
-      const diff = Date.now() - t
+      const diff = now - t
       if (diff < 60_000) return 'Saved just now'
       if (diff < 3_600_000) return `Saved ${Math.round(diff / 60_000)}m ago`
       return `Saved ${new Date(updatedAt).toLocaleString()}`
     }
     return ''
-  }, [saveStatus, updatedAt])
+  }, [saveStatus, updatedAt, now])
 
   return (
     <div className="p-4 flex flex-col">

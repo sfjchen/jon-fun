@@ -27,6 +27,26 @@ export { buildSessionMarkdown, exportSessionMarkdown } from './export'
 const SYNC_KEY = 'notes_sync_key'
 export const SESSIONS_KEY = 'notes_sessions'
 const ACTIVE_SESSION_KEY = 'notes_active_session_id'
+const WELCOME_SEEDED_KEY = 'notes_welcome_seeded'
+
+/** Local-only sample note id — seeded once per browser, never pushed to the server. */
+const WELCOME_SESSION_ID = '__notes_welcome__'
+
+const WELCOME_NOTES = [
+  'Shorthand notes that stay in this browser. Try editing anything here.',
+  '',
+  '- Wrap words in *stars* to highlight them',
+  '- End a line with > to make it a todo, like this one >',
+  '- Click ▦ for a table, or paste cells from Excel',
+  '- Paste or drop a screenshot to attach it',
+  '',
+  '| Type | Does |',
+  '| --- | --- |',
+  '| line? | AI lookup on that line |',
+  '| line?? | AI lookup on the whole section |',
+  '',
+  'AI lookups and Summarize are private to the site owner. Everything else works for you locally.',
+].join('\n')
 
 export { getOrCreateUserId } from './deviceIdentity'
 
@@ -143,7 +163,8 @@ export function syncFoldersFromSessions(sessions: NoteSession[]): NoteFolder[] {
 
 export function sessionsForPush(sessions: NoteSession[]): NoteSession[] {
   const folders = loadFolders()
-  return [...stripVaultRows(sessions), vaultRowFromFolders(folders)]
+  const own = stripVaultRows(sessions).filter((s) => s.id !== WELCOME_SESSION_ID)
+  return [...own, vaultRowFromFolders(folders)]
 }
 
 function withNormalizedTitles(sessions: NoteSession[]): NoteSession[] {
@@ -190,7 +211,12 @@ export function loadActiveSession(): NoteSession {
     setActiveSessionId(sessions[0].id)
     return sessions[0]
   }
-  const fresh = createEmptySession()
+  if (typeof window === 'undefined') return createEmptySession()
+  const seeded = localStorage.getItem(WELCOME_SEEDED_KEY) === '1'
+  const fresh = seeded
+    ? createEmptySession()
+    : { ...createEmptySession('Welcome to Notes'), id: WELCOME_SESSION_ID, notes: WELCOME_NOTES }
+  localStorage.setItem(WELCOME_SEEDED_KEY, '1')
   saveSessionsLocal([fresh])
   setActiveSessionId(fresh.id)
   return fresh

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import JeopardyEditor from '@/components/JeopardyEditor'
 import NamePrompt from '@/components/JeopardyNamePrompt'
@@ -12,14 +12,16 @@ export default function JeopardyEditPage() {
   const router = useRouter()
   const slug = params?.slug || ''
 
-  const [identity, setIdentity] = useState<EditorIdentity | null>(null)
-  const [showNamePrompt, setShowNamePrompt] = useState(false)
-
-  useEffect(() => {
+  // Reads the device identity only after hydration, since it lives in localStorage.
+  const hydrated = useSyncExternalStore(() => () => {}, () => true, () => false)
+  const [chosenName, setChosenName] = useState<string | null>(null)
+  const identity = useMemo<EditorIdentity | null>(() => {
+    if (!hydrated) return null
     const ident = getOrCreateIdentity()
-    setIdentity(ident)
-    if (!ident.name) setShowNamePrompt(true)
-  }, [])
+    return chosenName === null ? ident : { ...ident, name: chosenName }
+  }, [hydrated, chosenName])
+  const [promptOpen, setPromptOpen] = useState<boolean | null>(null)
+  const showNamePrompt = promptOpen ?? !identity?.name
 
   const collab = useCollabBoard(slug, identity)
 
@@ -52,13 +54,13 @@ export default function JeopardyEditPage() {
           initial={identity.name}
           onSubmit={(name) => {
             setEditorName(name)
-            setIdentity((prev) => (prev ? { ...prev, name } : prev))
-            setShowNamePrompt(false)
+            setChosenName(name)
+            setPromptOpen(false)
           }}
           onSkip={() => {
             setEditorName('Anonymous')
-            setIdentity((prev) => (prev ? { ...prev, name: 'Anonymous' } : prev))
-            setShowNamePrompt(false)
+            setChosenName('Anonymous')
+            setPromptOpen(false)
           }}
         />
       )}
@@ -75,7 +77,7 @@ export default function JeopardyEditPage() {
         setLock={collab.setLock}
         identityName={identity.name}
         shareUrl={typeof window !== 'undefined' ? window.location.href : ''}
-        onChangeName={() => setShowNamePrompt(true)}
+        onChangeName={() => setPromptOpen(true)}
       />
     </>
   )

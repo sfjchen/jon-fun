@@ -107,10 +107,12 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   const [hitIndex, setHitIndex] = useState(0)
   const [tocOpen, setTocOpen] = useState(true)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
-  const [rankedSearchHits, setRankedSearchHits] = useState<ReturnType<typeof findSearchHits> | null>(null)
-  const [chapterComments, setChapterComments] = useState<ReaderPublicationCommentDto[]>([])
-  const [commentsAvailable, setCommentsAvailable] = useState<boolean | null>(null)
-  const [commentDisplayName, setCommentDisplayNameState] = useState('Reader')
+  const [rankedSearchHits, setRankedSearchHits] = useState<{
+    publication: ReaderPublication
+    query: string
+    hits: ReturnType<typeof findSearchHits>
+  } | null>(null)
+  const [commentDisplayName, setCommentDisplayNameState] = useState(getReaderCommentDisplayName)
   const [annBundle, setAnnBundle] = useState<ChapterAnnotationBundle>(emptyChapterAnnotationBundle)
   const [activeMarkTool, setActiveMarkTool] = useState<'none' | 'comment' | 'highlight' | 'pen'>('none')
   const [shiftDraw, setShiftDraw] = useState(false)
@@ -127,6 +129,29 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   const chapterSelectRef = useRef<HTMLSelectElement | null>(null)
 
   const chapters = publication.chapters
+  const [syncedChapters, setSyncedChapters] = useState<typeof chapters | null>(null)
+  const [loadedPublicationId, setLoadedPublicationId] = useState<string | null>(null)
+
+  // Snaps to the route's chapter, or the first chapter when the route's is missing, whenever the chapters change.
+  if (syncedChapters !== chapters) {
+    setSyncedChapters(chapters)
+    const id = chapters.some((c) => c.id === initialChapterId) ? initialChapterId : chapters[0]?.id
+    if (id) setChapterId(id)
+  }
+
+  // Loads saved preferences and this book's bookmark whenever the book changes.
+  if (loadedPublicationId !== publication.id) {
+    setLoadedPublicationId(publication.id)
+    const loaded = loadReaderPreferences()
+    setPrefs({
+      ...defaultReaderPreferences,
+      ...loaded,
+      uiMode: loaded.uiMode ?? defaultReaderPreferences.uiMode,
+      focusBandEnabled: loaded.focusBandEnabled ?? defaultReaderPreferences.focusBandEnabled,
+    })
+    setBookmark(loadReaderBookmark(publication.id))
+  }
+
   const chapterIndex = chapters.findIndex((c) => c.id === chapterId)
   const fallbackIndex = chapters.findIndex((c) => c.id === initialChapterId)
   const currentIndex = chapterIndex >= 0 ? chapterIndex : fallbackIndex >= 0 ? fallbackIndex : 0
@@ -137,7 +162,6 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   const lexicalHits = useMemo(() => findSearchHits(publication, searchActiveQuery), [publication, searchActiveQuery])
 
   useEffect(() => {
-    setRankedSearchHits(null)
     const q = searchActiveQuery.trim()
     if (!q) return
     if (process.env.NEXT_PUBLIC_READER_SEMANTIC_SEARCH !== '1') return
@@ -147,38 +171,23 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
       const ch = publication.chapters.find((c) => c.id === h.chapterId)
       return ch?.paragraphs[h.paragraphIndex] ?? ''
     }).then((next) => {
-      if (!cancelled) setRankedSearchHits(next)
+      if (!cancelled) setRankedSearchHits({ publication, query: searchActiveQuery, hits: next })
     })
     return () => {
       cancelled = true
     }
   }, [publication, searchActiveQuery])
 
-  const hits = rankedSearchHits ?? lexicalHits
+  const hits =
+    rankedSearchHits?.publication === publication && rankedSearchHits.query === searchActiveQuery
+      ? rankedSearchHits.hits
+      : lexicalHits
 
   useEffect(() => {
-    if (!chapters.length) return
-    const idx = chapters.findIndex((c) => c.id === initialChapterId)
-    if (idx >= 0) {
-      setChapterId(initialChapterId)
-      return
-    }
     const firstId = chapters[0]?.id
-    if (!firstId) return
-    setChapterId(firstId)
+    if (!firstId || chapters.some((c) => c.id === initialChapterId)) return
     router.replace(`${routeBase}/read/${publication.id}/${firstId}`, { scroll: false })
   }, [chapters, initialChapterId, publication.id, routeBase, router])
-
-  useEffect(() => {
-    const loaded = loadReaderPreferences()
-    setPrefs({
-      ...defaultReaderPreferences,
-      ...loaded,
-      uiMode: loaded.uiMode ?? defaultReaderPreferences.uiMode,
-      focusBandEnabled: loaded.focusBandEnabled ?? defaultReaderPreferences.focusBandEnabled,
-    })
-    setBookmark(loadReaderBookmark(publication.id))
-  }, [publication.id])
 
   useEffect(() => {
     saveReaderPreferences(prefs)
@@ -192,9 +201,21 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
     void mergeRemoteReadingStateIfNewer(publication.id, chapterId)
   }, [publication.id, chapterId])
 
-  useEffect(() => {
-    if (prefs.uiMode === 'study' && !mobile) setTocOpen(true)
-  }, [prefs.uiMode, mobile])
+  const studyDesktop = prefs.uiMode === 'study' && !mobile
+  const [prevStudyDesktop, setPrevStudyDesktop] = useState(false)
+  const [prevMobile, setPrevMobile] = useState(mobile)
+
+  // Opens the contents panel on entering study mode on desktop.
+  if (studyDesktop !== prevStudyDesktop) {
+    setPrevStudyDesktop(studyDesktop)
+    if (studyDesktop) setTocOpen(true)
+  }
+
+  // Closes the side panel on switching to the mobile layout.
+  if (mobile !== prevMobile) {
+    setPrevMobile(mobile)
+    if (mobile) setPrefs((current) => (current.panelOpen ? { ...current, panelOpen: false } : current))
+  }
 
   useEffect(() => {
     const media = window.matchMedia('(max-width: 1023px)')
@@ -230,68 +251,50 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   }, [])
 
   useEffect(() => {
-    if (!mobile) return
-    setPrefs((current) => (current.panelOpen ? { ...current, panelOpen: false } : current))
-  }, [mobile])
-
-  useEffect(() => {
     if (!mobile || !mobileSearchOpen) return
     const id = window.requestAnimationFrame(() => searchInputRef.current?.focus())
     return () => window.cancelAnimationFrame(id)
   }, [mobile, mobileSearchOpen])
 
-  useEffect(() => {
-    setCommentDisplayNameState(getReaderCommentDisplayName())
-  }, [])
+  const [annChapter, setAnnChapter] = useState<typeof chapter | null>(null)
 
-  const loadChapterComments = useCallback(async () => {
+  // Loads local annotations when the chapter changes.
+  if (chapter && annChapter !== chapter) {
+    setAnnChapter(chapter)
+    setAnnBundle(loadChapterAnnotations(publication.id, chapter.id))
+  }
+
+  /** Fetches shared block comments for the chapter and merges them into the local bundle when the API is available. */
+  useEffect(() => {
     if (!chapter) return
-    const res = await fetch(
+    let live = true
+    void fetch(
       `/api/reader/comments?publicationId=${encodeURIComponent(publication.id)}&chapterId=${encodeURIComponent(chapter.id)}`,
       { cache: 'no-store' },
     )
-    if (res.status === 503) {
-      setCommentsAvailable(false)
-      setChapterComments([])
-      return
+      .then(async (res) =>
+        res.ok ? (((await res.json()) as { comments?: ReaderPublicationCommentDto[] }).comments ?? []) : [],
+      )
+      .then((comments) => {
+        if (!live || !comments.length) return
+        setAnnBundle((b) =>
+          mergeApiBlockComments(
+            b,
+            comments.map((c) => ({
+              id: c.id,
+              blockId: c.blockId,
+              body: c.body,
+              authorDisplay: c.authorDisplay,
+              authorFingerprint: c.authorFingerprint,
+              createdAt: c.createdAt,
+            })),
+          ),
+        )
+      })
+    return () => {
+      live = false
     }
-    if (!res.ok) {
-      setCommentsAvailable(false)
-      setChapterComments([])
-      return
-    }
-    setCommentsAvailable(true)
-    const data = (await res.json()) as { comments?: ReaderPublicationCommentDto[] }
-    setChapterComments(data.comments ?? [])
   }, [chapter, publication.id])
-
-  useEffect(() => {
-    void loadChapterComments()
-  }, [loadChapterComments])
-
-  /** Local annotations when chapter changes. */
-  useEffect(() => {
-    if (!chapter) return
-    setAnnBundle(loadChapterAnnotations(publication.id, chapter.id))
-  }, [chapter, publication.id])
-
-  /** Merge shared block comments (when API available) into the local bundle. */
-  useEffect(() => {
-    if (!chapter || commentsAvailable !== true || chapterComments.length === 0) return
-    setAnnBundle((b) =>
-      mergeApiBlockComments(
-        b,
-        chapterComments.map((c) => ({
-          id: c.id,
-          blockId: c.blockId,
-          body: c.body,
-          authorDisplay: c.authorDisplay,
-          authorFingerprint: c.authorFingerprint,
-          createdAt: c.createdAt,
-        })),
-      ),
-    )
-  }, [chapter, chapterComments, commentsAvailable, publication.id])
 
   useEffect(() => {
     if (!chapter) return
@@ -534,14 +537,9 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
     return () => window.clearTimeout(timer)
   }, [publication.id, chapter, prefersReducedMotion])
 
-  useEffect(() => {
-    if (!hits.length) {
-      if (hitIndex !== 0) setHitIndex(0)
-      return
-    }
-    const safeIdx = Math.min(hitIndex, hits.length - 1)
-    if (safeIdx !== hitIndex) setHitIndex(safeIdx)
-  }, [hits.length, hitIndex])
+  // Clamps the active hit when the hit list shrinks.
+  const safeHitIndex = hits.length ? Math.min(hitIndex, hits.length - 1) : 0
+  if (safeHitIndex !== hitIndex) setHitIndex(safeHitIndex)
 
   useEffect(() => {
     if (!hits.length || !chapter) return

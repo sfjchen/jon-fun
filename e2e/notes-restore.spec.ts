@@ -176,7 +176,7 @@ test.describe('Notes sync restore (mock API)', () => {
   test('save and sync merges local and remote sessions', async ({ page }) => {
     const localTime = '2026-01-01T12:00:00.000Z'
     const remoteTime = '2026-01-02T12:00:00.000Z'
-    await page.addInitScript(({ localTime, remoteTime }) => {
+    await page.addInitScript(({ localTime }) => {
       localStorage.setItem(
         'notes_sessions',
         JSON.stringify([
@@ -195,7 +195,7 @@ test.describe('Notes sync restore (mock API)', () => {
       )
       localStorage.setItem('notes_active_session_id', 'local-merge-note')
       localStorage.setItem('notes_sync_key', 'merge-sync-key')
-    }, { localTime, remoteTime })
+    }, { localTime })
 
     await page.route('**/api/notes/sessions**', async (route) => {
       const url = route.request().url()

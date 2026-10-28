@@ -1,6 +1,24 @@
-# Jon-fun - Game Hub
+# sfjc.dev
 
-A personal collection of fun games built with Next.js, TypeScript, and Supabase. Deployed at [sfjc.dev](https://sfjc.dev).
+A collection of fun games and projects I build and actually use, live at [sfjc.dev](https://sfjc.dev).
+
+- **Web E-Reader**: TXT, PDF and EPUB reader with chapters, highlights, notes, TTS and synced progress
+- **Notes**: Tiptap notes vault with inline AI lookups, tables, attachments and search
+- **Realtime party games**: Quip Clash, Fib It, Enough About You and Jeopardy, played from phones with a room PIN
+- **Smaller games**: Connections, 24, 5 Can Sorting, Mental Obstacle Course, a poker chip tracker and more
+
+Built with Next.js, TypeScript, Tailwind and Supabase (Postgres + Realtime), deployed on Vercel, tested with Playwright.
+
+```bash
+npm install
+npm run dev
+```
+
+<br><br><br><br><br><br><br><br>
+
+---
+
+# AI agent context
 
 ## 🎮 Games
 
@@ -10,7 +28,7 @@ A personal collection of fun games built with Next.js, TypeScript, and Supabase.
 - **Jeopardy with Friends** (`/games/jeopardy`): Create and play custom Jeopardy boards locally
 - **Texas Hold'em chip tracker** (`/games/poker`): Poker chip tracker with real-time multiplayer lobbies
 - **Chwazi Finger Chooser** (`/games/chwazi`): Place fingers on screen to randomly select a winner
-- **TMR System** (`/games/tmr`): Targeted Memory Reactivation for learning and sleep
+- **Focus Chimes** (`/games/tmr`): Recurring background chimes to stay on track and keep a sense of time (also has TMR — Targeted Memory Reactivation — study and sleep modes)
 - **1 Sentence Everyday** (`/games/daily-log`): One sentence per day, history, calendar, export (text / JSON / RFC 4180 CSV) + CSV merge import (`updatedAt` wins per date), cross-device sync (localStorage + Supabase)
 - **Notes** (`/games/notes`): Personal knowledge vault — **Tiptap** editor, domain packs (UVIMCO, portfolio quant, CFA L1); parallel AI (`line?`/`??`); paste/drop **file attachments** (images, Excel/CSV, PDF); search/sync/glossary/sources/RAG. Agent ref: **`docs/NOTES-AGENT.md`** · design: **`docs/NOTES-DESIGN.md`** · E2E: **`npm run test:e2e:notes`**.
 - **Pear Navigator** (`/games/pear-navigator`): PearPad tablet simulator—Procreate, Notion, Figma guides; tap UI elements to advance; MS&E 165 demo; A/B test results at `/games/pear-navigator/results`

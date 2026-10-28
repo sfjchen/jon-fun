@@ -115,6 +115,9 @@ export default function PokerPage() {
         <header className="text-center mb-8">
           <h1 className="text-5xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>🃏 Texas Hold&apos;em</h1>
           <p className="text-xl" style={{ color: 'var(--ink-muted)' }}>Poker Chip Tracker</p>
+          <p className="text-sm mt-2" style={{ color: 'var(--ink-muted)' }}>
+            2+ players, each on their own phone. Solo? Create a room, then join its PIN from a 2nd tab.
+          </p>
         </header>
 
         <div className="rounded-lg p-8 border shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>

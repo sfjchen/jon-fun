@@ -4,15 +4,19 @@ import {
 } from '@/data/sfjc-admin-devices'
 
 export const NOTES_AI_ACCESS_DENIED =
-  "Notes AI lookup requires Jon's sync password. Open Sync & backup → enter the sync password → Save & Sync."
+  'Notes AI is private to the site owner (needs the owner sync password). Writing, tables, search and export ' +
+    'still work locally in this browser.'
 
 export const NOTES_AI_DEVICE_DENIED =
-  'Notes AI is limited to registered sfjc.dev admin devices.'
+  'Notes AI is private to the site owner\'s registered devices. Everything else still works locally.'
 
 export const NOTES_VAULT_ACCESS_DENIED = 'Invalid sync password for owner vault.'
 
 export const NOTES_VAULT_DEVICE_DENIED =
   'Owner vault requires a registered sfjc.dev admin device.'
+
+export const READER_SHELF_OWNER_DENIED =
+  'Only the site owner can change or delete shared shelf books. Reading and local export still work.'
 
 /** Server env: SFJC_SYNC_PASSWORD (set on Vercel — not committed). */
 export function ownerSyncPassword(): string {
@@ -59,6 +63,15 @@ export function assertOwnerVaultAccess(
   if ((userId ?? '').trim() !== SFJC_OWNER_SYNC_PASSWORD_USER_ID) return null
   if (!isAdminDeviceId(deviceUserId)) return NOTES_VAULT_DEVICE_DENIED
   return null
+}
+
+/**
+ * Reports whether a request carries the owner sync password from a registered admin device.
+ * Without SFJC_SYNC_PASSWORD set, only development and test builds count as owner.
+ */
+export function isOwnerRequest(syncPassword?: string | null, deviceUserId?: string | null): boolean {
+  if (!ownerVaultProtected()) return process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'
+  return isValidSyncPassword(syncPassword) && isAdminDeviceId(deviceUserId)
 }
 
 /** Returns error message when AI access denied, else null. */

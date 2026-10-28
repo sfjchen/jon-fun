@@ -61,22 +61,6 @@ export default function ConnectionsBoard({ puzzle, onComplete }: ConnectionsBoar
 
   const mistakesRemaining = Math.max(0, 4 - wrongGuesses)
 
-  const restart = useCallback(() => {
-    finishedRef.current = false
-    setPool(shuffleTiles(allTiles))
-    setRevealed([])
-    setSelectedKeys(new Set())
-    setWrongGuesses(0)
-    setDone(false)
-    setShake(false)
-    setToast(null)
-    setSolvedDifficulties([])
-  }, [allTiles])
-
-  useEffect(() => {
-    restart()
-  }, [puzzle.id, restart])
-
   const toggleSel = useCallback((word: string) => {
     if (done) return
     const k = wordKey(word)

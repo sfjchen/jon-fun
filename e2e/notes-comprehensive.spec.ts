@@ -5,7 +5,6 @@ import {
   notesEditor,
   waitForLookupComplete,
   waitForNotesEditor,
-  waitForNotesTrigger,
   typeInNotesEditor,
 } from './helpers/notes-mock'
 

@@ -8,6 +8,7 @@ import {
   publicationPayloadTooLarge,
   publicationToDbRow,
 } from '@/lib/reader/communal-server'
+import { isOwnerRequest } from '@/lib/sfjc-sync-auth'
 import { supabaseAdmin } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
@@ -70,6 +71,11 @@ export async function POST(request: NextRequest) {
     .select('reading_state')
     .eq('id', publication.id)
     .maybeSingle()
+  // Strangers may add new books, but only the owner may overwrite an existing one (re-imports become no-ops).
+  const creds = body as { syncPassword?: string; deviceUserId?: string }
+  if (existing && !isOwnerRequest(creds.syncPassword, creds.deviceUserId)) {
+    return NextResponse.json({ ok: true, skipped: true })
+  }
   const existingState = existing && typeof existing === 'object' && 'reading_state' in existing ? (existing as { reading_state?: unknown }).reading_state : null
   if (existingState && typeof existingState === 'object') {
     ;(row as { reading_state?: unknown }).reading_state = existingState

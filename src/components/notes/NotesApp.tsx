@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import { assembleClientContextAsync } from '@/lib/notes/contextAssembler'
 import {
   formatSplitFullNotes,
@@ -348,7 +348,7 @@ function reducer(state: State, action: Action): State {
         state.splitSessionId === action.session.id ? null : state.splitSessionId
       const sessionLookupIds = new Set(action.session.lookups.map((l) => l.id))
       let openLookupIds = lookupIdsNewestFirst(action.session.lookups)
-      let streamByLookupId: LookupStreamMap = {}
+      const streamByLookupId: LookupStreamMap = {}
       if (preserveAi) {
         const keptOpen = state.openLookupIds.filter((id) => sessionLookupIds.has(id))
         openLookupIds = keptOpen.length > 0 ? keptOpen : openLookupIds
@@ -437,7 +437,7 @@ export default function NotesApp() {
   const [saving, setSaving] = useState(false)
   const [syncing, setSyncing] = useState(true)
   const [searchOpen, setSearchOpen] = useState(false)
-  const [hintsOpen, setHintsOpen] = useState(false)
+  const [hintsOpen, setHintsOpen] = useState(() => typeof window !== 'undefined' && loadHintsOpen())
   const [folders, setFolders] = useState<NoteFolder[]>(() =>
     typeof window !== 'undefined' ? loadFolders() : [],
   )
@@ -459,7 +459,6 @@ export default function NotesApp() {
 
   useEffect(() => {
     getOrCreateUserId()
-    setHintsOpen(loadHintsOpen())
     return initNotesTabSync()
   }, [])
 
@@ -500,10 +499,13 @@ export default function NotesApp() {
   const editIdleUntilRef = useRef(0)
   const syncInFlightRef = useRef(false)
   const pendingSyncRef = useRef(false)
-  sessionRef.current = state.session
-  sessionsRef.current = state.sessions
-  splitSessionIdRef.current = state.splitSessionId
-  streamRef.current = state.streamByLookupId
+  // Mirrors the committed state into refs before any passive effect or handler reads them.
+  useLayoutEffect(() => {
+    sessionRef.current = state.session
+    sessionsRef.current = state.sessions
+    splitSessionIdRef.current = state.splitSessionId
+    streamRef.current = state.streamByLookupId
+  })
 
   const bumpEditActivity = useCallback(() => {
     editIdleUntilRef.current = Date.now() + EDIT_IDLE_MS
@@ -737,7 +739,6 @@ export default function NotesApp() {
   )
 
   useEffect(() => {
-    setSyncing(true)
     refreshFromServer({ force: true }).finally(() => setSyncing(false))
   }, [refreshFromServer])
 
@@ -763,8 +764,14 @@ export default function NotesApp() {
     return () => window.removeEventListener('storage', onStorage)
   }, [])
 
-  useEffect(() => {
+  // Flags saving on every session change, including the first render, until the debounced sync settles.
+  const [savingFor, setSavingFor] = useState<NoteSession | null>(null)
+  if (savingFor !== state.session) {
+    setSavingFor(state.session)
     setSaving(true)
+  }
+
+  useEffect(() => {
     const t = setTimeout(() => {
       void syncToServer(state.session).finally(() => setSaving(false))
     }, 800)
@@ -1686,7 +1693,6 @@ export default function NotesApp() {
           <NotesSplitView
             split={splitActive}
             splitRatio={splitRatio}
-            primarySession={state.session}
             secondarySession={secondarySession}
             leftHeader={splitActive ? primaryTopBar : null}
             rightHeader={splitActive ? secondaryTopBar : null}

@@ -1,6 +1,6 @@
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import type { Node as PmNode } from '@tiptap/pm/model'
-import { highlightRanges, parseTodoLine } from '../shorthand'
+import { highlightRanges } from '../shorthand'
 import { isArchivedTodoLine, parseActiveTodoLine } from '../todoLines'
 
 function buildDecorations(doc: PmNode, activeQueries: string[]): DecorationSet {

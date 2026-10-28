@@ -114,7 +114,7 @@ test.describe('Party games (Quip Clash, Fib It, Enough About You)', () => {
       page.waitForURL((url) => new URL(url).pathname === '/', { timeout: 25_000 }),
       homeLink.click(),
     ])
-    await expect(page.getByRole('link', { name: /TMR System/i }).first()).toBeVisible()
+    await expect(page.getByRole('link', { name: /Focus Chimes/i }).first()).toBeVisible()
     await expect(page.getByRole('link', { name: /Fib It/i }).first()).toBeVisible()
   })
 })

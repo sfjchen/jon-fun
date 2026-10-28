@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState, useSyncExternalStore } from 'react'
 import { partyFetch, sessionKeys } from '@/lib/party/constants'
 import type { PartyGameKind } from '@/lib/party/types'
 
@@ -21,25 +21,24 @@ export function usePartyLobby(gameKind: PartyGameKind, onPayload: (data: unknown
   const [hostId, setHostId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [clientReady, setClientReady] = useState(false)
-
-  useEffect(() => {
-    setClientReady(true)
-  }, [])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const p = sessionStorage.getItem(keys.pin) || ''
-    const pid = sessionStorage.getItem(keys.playerId) || ''
-    const hid = sessionStorage.getItem(keys.hostId) || ''
-    const n = sessionStorage.getItem(keys.playerName) || ''
+  /* Reads the saved session on the client; null on the server and during hydration. */
+  const saved = useSyncExternalStore(
+    () => () => {},
+    () => JSON.stringify([keys.pin, keys.playerId, keys.hostId, keys.playerName].map((k) => sessionStorage.getItem(k) || '')),
+    () => null,
+  )
+  const clientReady = saved !== null
+  const [restored, setRestored] = useState(false)
+  if (saved !== null && !restored) {
+    setRestored(true)
+    const [p, pid, hid, n] = JSON.parse(saved) as string[]
     if (p && pid) {
       setPinInput(p)
       setPlayerId(pid)
       setHostId(hid || null)
-      setNameInput(n)
+      setNameInput(n ?? '')
     }
-  }, [keys.pin, keys.playerId, keys.hostId, keys.playerName])
+  }
 
   const saveSession = useCallback(
     (d: SessionPatch) => {

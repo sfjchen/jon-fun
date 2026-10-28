@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useState, useEffect } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import TMRStudySession from './TMRStudySession'
 import TMRSleepReactivation from './TMRSleepReactivation'
 import {
@@ -19,10 +19,14 @@ export default function TMRManager() {
   const [studySessions, setStudySessions] = useState<StudySession[]>([])
   const [sleepSessions, setSleepSessions] = useState<SleepSession[]>([])
 
-  useEffect(() => {
+  /* Loads saved sessions once on the client, after hydration renders the empty lists. */
+  const hydrated = useSyncExternalStore(() => () => {}, () => true, () => false)
+  const [loaded, setLoaded] = useState(false)
+  if (hydrated && !loaded) {
+    setLoaded(true)
     setStudySessions(loadStudySessions())
     setSleepSessions(loadSleepSessions())
-  }, [])
+  }
 
   const formatDate = (isoString: string) => {
     const date = new Date(isoString)
@@ -127,10 +131,10 @@ export default function TMRManager() {
       <header className="text-center mb-12">
         <h1 className="text-5xl font-bold font-lora mb-4 flex items-center justify-center gap-3" style={{ color: 'var(--ink-text)' }}>
           <Image src={inNotebook ? '/doodles/notebook/tmr.svg' : '/doodles/tmr.svg'} alt="" width={48} height={48} className="h-12 w-12" />
-          TMR System
+          Focus Chimes
         </h1>
         <p className="text-xl" style={{ color: 'var(--ink-muted)' }}>
-            Targeted Memory Reactivation for Enhanced Learning
+            Recurring background chimes to stay on track and keep a sense of time
           </p>
         </header>
 
@@ -144,7 +148,7 @@ export default function TMRManager() {
           <Image src="/doodles/study.svg" alt="" width={56} height={56} className="h-14 w-14 mb-4" />
           <h2 className="text-2xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>Study Session</h2>
           <p style={{ color: 'var(--ink-muted)' }}>
-              Start a focused study session with TMR cues to tag your memories
+              Work while a soft chime plays on a set interval
             </p>
           </button>
 
@@ -156,7 +160,7 @@ export default function TMRManager() {
           <Image src="/doodles/sleep.svg" alt="" width={56} height={56} className="h-14 w-14 mb-4" />
           <h2 className="text-2xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>Sleep Reactivation</h2>
           <p style={{ color: 'var(--ink-muted)' }}>
-              Schedule TMR cues during optimal sleep stages for memory consolidation
+              Replay the same chime quietly while you sleep
             </p>
           </button>
 
@@ -168,16 +172,16 @@ export default function TMRManager() {
           <Image src="/doodles/history.svg" alt="" width={56} height={56} className="h-14 w-14 mb-4" />
           <h2 className="text-2xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>Session History</h2>
           <p style={{ color: 'var(--ink-muted)' }}>
-              View your study and sleep reactivation session logs
+              Past study and sleep sessions
             </p>
           </button>
 
         <div className={`rounded-lg border h-full min-h-0 flex flex-col ${inNotebook ? 'p-[30px]' : 'p-8'}`} style={{ backgroundColor: inNotebook ? 'transparent' : 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
           <Image src="/doodles/info.svg" alt="" width={56} height={56} className="h-14 w-14 mb-4" />
-          <h2 className="text-2xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>About TMR</h2>
+          <h2 className="text-2xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>How it works</h2>
           <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-              Targeted Memory Reactivation uses sound cues during study and sleep to enhance
-              memory consolidation. Research shows it can improve learning by 10-20%.
+              Based on Targeted Memory Reactivation (TMR): a sound heard while studying, replayed during sleep, may
+              help memory.
             </p>
           </div>
         </div>

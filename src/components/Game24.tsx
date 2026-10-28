@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { supabase } from '@/lib/supabase'
 import {
   GAME24_MAX_PLAYERS,
@@ -87,7 +87,7 @@ export default function Game24() {
   const [hostId, setHostId] = useState<string | null>(null)
   const [offlineScore, setOfflineScore] = useState(0)
   const [hasSubmitted, setHasSubmitted] = useState(false)
-  const [phase, setPhase] = useState<'idle' | 'waiting' | 'active' | 'intermission' | 'finished'>('idle')
+  const phase = room ? room.status : 'idle'
   const [loadingRoom, setLoadingRoom] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [roundRemainingMs, setRoundRemainingMs] = useState(0)
@@ -141,7 +141,6 @@ export default function Game24() {
       setRoundScores(data.roundScores || {})
       setPlayerCorrectCounts(data.playerCorrectCounts || {})
       setHostId(data.room.host_id ?? null)
-      setPhase(data.room.status ?? 'waiting')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load room')
     } finally {
@@ -149,42 +148,20 @@ export default function Game24() {
     }
   }, [])
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const savedPin = sessionStorage.getItem('game24_pin') || ''
-    const savedPlayerId = sessionStorage.getItem('game24_playerId') || ''
-    const savedHostId = sessionStorage.getItem('game24_hostId') || ''
-    const savedName = sessionStorage.getItem('game24_playerName') || ''
-
-    // Prefill but do NOT auto-rejoin; require explicit join/resume.
-    if (savedPin && savedPlayerId) {
-      setPinInput(savedPin)
-      setPlayerId(savedPlayerId)
-      setHostId(savedHostId || null)
-      setNameInput(savedName)
-    } else {
-      setNameInput(savedName || '')
+  // Resets the board when a new round arrives
+  const [prevRound, setPrevRound] = useState(round)
+  if (round !== prevRound) {
+    setPrevRound(round)
+    if (round?.numbers) {
+      setGameState({
+        numbers: round.numbers,
+        cards: buildCards(round.numbers),
+        selectedCard: null,
+        pendingOperation: null,
+      })
+      setHasSubmitted(false)
     }
-  }, [])
-
-  useEffect(() => {
-    if (!room) {
-      setPhase('idle')
-      return
-    }
-    setPhase(room.status)
-  }, [room])
-
-  useEffect(() => {
-    if (!round || !round.numbers) return
-    setGameState({
-      numbers: round.numbers,
-      cards: buildCards(round.numbers),
-      selectedCard: null,
-      pendingOperation: null,
-    })
-    setHasSubmitted(false)
-  }, [round])
+  }
 
   useEffect(() => {
     if (!pinInput) return
@@ -564,7 +541,6 @@ export default function Game24() {
     setRoom(null)
     setPlayers([])
     setRound(null)
-    setPhase('idle')
     setPinInput('')
     setPlayerId(null)
     setHostId(null)
@@ -637,12 +613,31 @@ export default function Game24() {
     setPracticePendingOp(null)
   }, [solver])
 
-  useEffect(() => {
+  // Prefills the saved session and deals a random practice hand once on the client, after hydration
+  const hydrated = useSyncExternalStore(() => () => {}, () => true, () => false)
+  const [restored, setRestored] = useState(false)
+  if (hydrated && !restored) {
+    setRestored(true)
+    const savedPin = sessionStorage.getItem('game24_pin') || ''
+    const savedPlayerId = sessionStorage.getItem('game24_playerId') || ''
+    const savedHostId = sessionStorage.getItem('game24_hostId') || ''
+    const savedName = sessionStorage.getItem('game24_playerName') || ''
+
+    // Prefill but do NOT auto-rejoin; require explicit join/resume.
+    if (savedPin && savedPlayerId) {
+      setPinInput(savedPin)
+      setPlayerId(savedPlayerId)
+      setHostId(savedHostId || null)
+    }
+    setNameInput(savedName)
     generatePractice()
+  }
+
+  useEffect(() => {
     return () => {
       if (practiceMessageRef.current) clearTimeout(practiceMessageRef.current)
     }
-  }, [generatePractice])
+  }, [])
 
   const performPractice = useCallback(
     (secondIndex: number) => {

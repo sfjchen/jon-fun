@@ -456,7 +456,7 @@ export function collapseRedundantBlankBlocks(blocks: JSONContent[]): JSONContent
     } else if (hasBreakOnly) {
       out.push(emptyParagraph())
     } else {
-      for (const _ of blankRun) out.push(emptyParagraph())
+      blankRun.forEach(() => out.push(emptyParagraph()))
     }
     blankRun = []
   }

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { notesEditor, waitForNotesEditor } from './helpers/notes-mock'
+import { waitForNotesEditor } from './helpers/notes-mock'
 
 test.describe('Notes search (local)', () => {
   test.use({ viewport: { width: 1280, height: 800 } })

@@ -157,3 +157,4 @@ Mock helper: `e2e/helpers/notes-mock.ts` — stubs `/api/notes/*` including embe
 - **2026-06-24**: Device tiers — phone overlay panel, desktop default-open + resize, Mac Cmd labels, mobile-safe shortcuts.
 - **2026-06-24**: UX polish — status bar Saved/Synced distinction, sync panel hint, vault empty inbox, AI empty hint, note drag grips, mobile Notes panel button.
 - **2026-06-25**: Action placement pass — shared `NotesActionUi` (hover ×, ⋯ overflow, context menu + long-press); tag remove vs catalog delete split; editor selection context menu; touch-visible row deletes.
+- **2026-10-28**: Fresh browsers get a local-only *Welcome to Notes* sample (seeded once, excluded from sync push); AI-denied message says plainly that AI is owner-only.

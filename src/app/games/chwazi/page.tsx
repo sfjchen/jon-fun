@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 import ChwaziGame from '@/components/ChwaziGame'
 
 function isTouchDevice(): boolean {
@@ -11,11 +11,11 @@ function isTouchDevice(): boolean {
 
 export default function ChwaziPage() {
   const isNotebook = true
-  const [touchOk, setTouchOk] = useState<boolean | null>(null)
-
-  useEffect(() => {
-    setTouchOk(isTouchDevice())
-  }, [])
+  const touchOk = useSyncExternalStore<boolean | null>(
+    () => () => {},
+    isTouchDevice,
+    () => null,
+  )
 
   if (touchOk === null) return null
   if (!touchOk) {

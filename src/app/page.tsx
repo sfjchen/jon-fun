@@ -1,22 +1,17 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { GameCard } from '@/components/GameCard'
 import type { GameCardGame } from '@/components/GameCard'
+import Link from 'next/link'
 import { HOME_COMING_SOON_DEFAULTS, type HomeComingSoonCopy } from '@/data/home-coming-soon-defaults'
+import { SFJC_ADMIN_DEVICE_IDS } from '@/data/sfjc-admin-devices'
+import { NOTES_USER_ID_KEY } from '@/lib/notes/deviceIdentity'
 
 const nb = '/doodles/notebook'
 /** Pear Navigator stays archived off home — see `@/data/notebook-home-games-archive` for the preserved card. */
 const items: GameCardGame[] = [
-  {
-    id: 'veridian',
-    title: 'Veridian Whiteboard',
-    description: 'Draw math, analyze mistakes, Socratic chat — local-first AI whiteboard',
-    icon: '/doodles/study.svg',
-    href: '/veridian',
-    available: true,
-  },
   {
     id: 'e-reader',
     title: 'Web E-Reader',
@@ -26,41 +21,11 @@ const items: GameCardGame[] = [
     available: true,
   },
   {
-    id: 'five-can-sorting',
-    title: '5 Can Sorting',
-    description: 'Swap two cans at a time; only see how many are in the right place — deduce the hidden order',
-    icon: `${nb}/cans.svg`,
-    href: '/games/five-can-sorting',
-    available: true,
-  },
-  { id: 'tmr', title: 'TMR System', description: 'Targeted Memory Reactivation for learning and sleep', icon: `${nb}/tmr.svg`, href: '/games/tmr', available: true },
-  { id: 'daily-log', title: '1 Sentence Everyday', description: 'One sentence per day; history, calendar, export', icon: `${nb}/daily.svg`, href: '/games/daily-log', available: true },
-  {
     id: 'notes',
     title: 'Notes',
     description: 'Meeting shorthand + ? AI lookups; notes live in collapsible side panel',
     icon: `${nb}/daily.svg`,
     href: '/games/notes',
-    available: true,
-  },
-  { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: `${nb}/game24.svg`, href: '/games/24', available: true },
-  { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom boards locally', icon: `${nb}/jeopardy.svg`, href: '/games/jeopardy', available: true },
-  {
-    id: 'connections',
-    title: 'Connections',
-    description: 'NYT-style groups of four; build puzzles and browse a public shelf',
-    icon: `${nb}/connections.svg`,
-    href: '/games/connections',
-    available: true,
-  },
-  { id: 'poker', title: 'Texas Hold\'em chip tracker', description: 'Chip tracker with multiplayer lobbies', icon: `${nb}/poker.svg`, href: '/games/poker', available: true },
-  { id: 'chwazi', title: 'Chwazi Finger Chooser', description: 'Touch screen to pick a winner', icon: `${nb}/chwazi.svg`, href: '/games/chwazi', available: true },
-  {
-    id: 'mental-obstacle-course',
-    title: 'Mental Obstacle Course',
-    description: 'Six-round brain benchmark: reaction, math, patterns, memory, words, trivia — radar chart (local scores)',
-    icon: `${nb}/obstacle.svg`,
-    href: '/games/mental-obstacle-course',
     available: true,
   },
   {
@@ -87,10 +52,54 @@ const items: GameCardGame[] = [
     href: '/games/enough-about-you',
     available: true,
   },
+  { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom boards locally', icon: `${nb}/jeopardy.svg`, href: '/games/jeopardy', available: true },
+  { id: 'poker', title: 'Texas Hold\'em chip tracker', description: 'Chip tracker with multiplayer lobbies', icon: `${nb}/poker.svg`, href: '/games/poker', available: true },
+  {
+    id: 'veridian',
+    title: 'Veridian Whiteboard',
+    description: 'Draw math, analyze mistakes, Socratic chat — local-first AI whiteboard',
+    icon: '/doodles/study.svg',
+    href: '/veridian',
+    available: true,
+  },
+  {
+    id: 'connections',
+    title: 'Connections',
+    description: 'NYT-style groups of four; build puzzles and browse a public shelf',
+    icon: `${nb}/connections.svg`,
+    href: '/games/connections',
+    available: true,
+  },
+  { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: `${nb}/game24.svg`, href: '/games/24', available: true },
+  {
+    id: 'mental-obstacle-course',
+    title: 'Mental Obstacle Course',
+    description: 'Six-round brain benchmark: reaction, math, patterns, memory, words, trivia — radar chart (local scores)',
+    icon: `${nb}/obstacle.svg`,
+    href: '/games/mental-obstacle-course',
+    available: true,
+  },
+  {
+    id: 'five-can-sorting',
+    title: '5 Can Sorting',
+    description: 'Swap two cans at a time; only see how many are in the right place — deduce the hidden order',
+    icon: `${nb}/cans.svg`,
+    href: '/games/five-can-sorting',
+    available: true,
+  },
+  { id: 'daily-log', title: '1 Sentence Everyday', description: 'One sentence per day; history, calendar, export', icon: `${nb}/daily.svg`, href: '/games/daily-log', available: true },
+  { id: 'tmr', title: 'Focus Chimes', description: 'Recurring background chimes to stay on track and keep a sense of time', icon: `${nb}/tmr.svg`, href: '/games/tmr', available: true },
+  { id: 'chwazi', title: 'Chwazi Finger Chooser', description: 'Touch screen to pick a winner', icon: `${nb}/chwazi.svg`, href: '/games/chwazi', available: true },
   { id: 'coming-soon', title: 'Coming Soon', description: 'More brain games in development', icon: `${nb}/coming-soon.svg`, href: '#', available: false },
 ]
 
 export default function Home() {
+  /* Coming Soon tile shows only on Jon's registered devices. The device id never changes while the page is open. */
+  const isOwner = useSyncExternalStore(
+    () => () => {},
+    () => SFJC_ADMIN_DEVICE_IDS.has(localStorage.getItem(NOTES_USER_ID_KEY) ?? ''),
+    () => false,
+  )
   const [showComingSoon, setShowComingSoon] = useState(false)
   const [copy, setCopy] = useState<HomeComingSoonCopy>(HOME_COMING_SOON_DEFAULTS)
   const [showEditor, setShowEditor] = useState(false)
@@ -116,8 +125,12 @@ export default function Home() {
   }, [])
 
   const gridItems = useMemo(
-    () => items.map((item) => (item.id === 'coming-soon' ? { ...item, title: copy.headline } : item)),
-    [copy.headline],
+    () =>
+      items.flatMap((item) => {
+        if (item.id !== 'coming-soon') return [item]
+        return isOwner ? [{ ...item, title: copy.headline }] : []
+      }),
+    [copy.headline, isOwner],
   )
 
   function openEditorFields() {
@@ -176,6 +189,13 @@ export default function Home() {
           </li>
         ))}
       </ul>
+
+      <footer className="mt-16 text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
+        Made by Jonathan Chen ·{' '}
+        <Link href="/about" className="underline-offset-2 hover:underline" style={{ color: 'var(--ink-accent)' }}>
+          About
+        </Link>
+      </footer>
 
       {showComingSoon && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 p-4">

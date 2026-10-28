@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { Player, BettingAction, Card } from '@/lib/poker'
 import PokerPlayer from './PokerPlayer'
@@ -59,53 +59,69 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
   const [players, setPlayers] = useState<Player[]>([])
   const [gameState, setGameState] = useState<GameStateData | null>(null)
   const [room, setRoom] = useState<{ timer_per_turn?: number; host_id?: string } | null>(null)
-  const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null)
+  const currentPlayerId = useSyncExternalStore(
+    () => () => {},
+    () => sessionStorage.getItem('poker_playerId'),
+    () => null,
+  )
   const [betAmount, setBetAmount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [isMobile, setIsMobile] = useState(false)
+  const isMobile = useSyncExternalStore(
+    (cb) => {
+      window.addEventListener('resize', cb)
+      return () => window.removeEventListener('resize', cb)
+    },
+    () => window.innerWidth < 768,
+    () => false,
+  )
   const [timeRemaining, setTimeRemaining] = useState<Record<number, number>>({})
-  const [hostId, setHostId] = useState<string | null>(null)
+  const hostId = useSyncExternalStore(
+    () => () => {},
+    () => sessionStorage.getItem('poker_hostId'),
+    () => null,
+  )
   const [nextHandWinner, setNextHandWinner] = useState<string>('')
   const [startingNextHand, setStartingNextHand] = useState(false)
   const timerExpiredRef = useRef<number | null>(null)
   const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const fetchAbortRef = useRef<AbortController | null>(null)
 
-  const loadGameData = useCallback(async (signal?: AbortSignal) => {
-    try {
-      const init: RequestInit | undefined = signal ? { signal } : undefined
-      const response = await fetch(`/api/poker/rooms/${pin}`, init)
-      const data = await response.json()
+  const loadGameData = useCallback((signal?: AbortSignal) => {
+    const init: RequestInit | undefined = signal ? { signal } : undefined
+    return fetch(`/api/poker/rooms/${pin}`, init)
+      .then(async (response) => {
+        const data = await response.json()
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to load game')
-      }
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to load game')
+        }
 
-      const convertedPlayers: Player[] = (data.players || [])
-        .map((p: DbPlayer) => ({
-          id: p.player_id,
-          name: p.name,
-          chips: p.chips,
-          position: p.position,
-          isActive: p.is_active,
-          isAllIn: p.is_all_in,
-          currentBet: p.current_bet,
-          holeCards: p.hole_cards,
-          hasFolded: p.has_folded,
-          hasActed: p.has_acted,
-        }))
-        .sort((a: Player, b: Player) => a.position - b.position)
+        const convertedPlayers: Player[] = (data.players || [])
+          .map((p: DbPlayer) => ({
+            id: p.player_id,
+            name: p.name,
+            chips: p.chips,
+            position: p.position,
+            isActive: p.is_active,
+            isAllIn: p.is_all_in,
+            currentBet: p.current_bet,
+            holeCards: p.hole_cards,
+            hasFolded: p.has_folded,
+            hasActed: p.has_acted,
+          }))
+          .sort((a: Player, b: Player) => a.position - b.position)
 
-      setPlayers(convertedPlayers)
-      setGameState(data.gameState)
-      setRoom(data.room)
-      setLoading(false)
-    } catch (err) {
-      if (signal?.aborted) return
-      setError(err instanceof Error ? err.message : 'Failed to load game')
-      setLoading(false)
-    }
+        setPlayers(convertedPlayers)
+        setGameState(data.gameState)
+        setRoom(data.room)
+        setLoading(false)
+      })
+      .catch((err) => {
+        if (signal?.aborted) return
+        setError(err instanceof Error ? err.message : 'Failed to load game')
+        setLoading(false)
+      })
   }, [pin])
 
   const scheduleLoad = useCallback(() => {
@@ -119,20 +135,6 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
       void loadGameData(controller.signal)
     }, 120)
   }, [loadGameData])
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const playerId = sessionStorage.getItem('poker_playerId')
-      const storedHostId = sessionStorage.getItem('poker_hostId')
-      setCurrentPlayerId(playerId)
-      setHostId(storedHostId)
-      
-      const checkMobile = () => setIsMobile(window.innerWidth < 768)
-      checkMobile()
-      window.addEventListener('resize', checkMobile)
-      return () => window.removeEventListener('resize', checkMobile)
-    }
-  }, [])
 
   useEffect(() => {
     loadGameData()
@@ -175,17 +177,23 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
     }
   }, [pin, loadGameData, scheduleLoad])
 
+  // Resets the acting seat's timer when the turn or timer length changes
+  const turnKey = `${gameState?.action_on}:${room?.timer_per_turn}`
+  const [prevTurnKey, setPrevTurnKey] = useState(turnKey)
+  if (turnKey !== prevTurnKey) {
+    setPrevTurnKey(turnKey)
+    if (gameState && room?.timer_per_turn && gameState.action_on >= 0) {
+      const timerPerTurn = room.timer_per_turn
+      setTimeRemaining((prev) => ({ ...prev, [gameState.action_on]: timerPerTurn }))
+    }
+  }
+
   // Timer countdown effect
   useEffect(() => {
     if (!gameState || !room?.timer_per_turn || gameState.action_on < 0) return
 
     const timerPerTurn = room.timer_per_turn
     const actionOnPosition = gameState.action_on
-
-    setTimeRemaining((prev) => ({
-      ...prev,
-      [actionOnPosition]: timerPerTurn,
-    }))
 
     const intervalId = setInterval(() => {
       setTimeRemaining((prev) => {
@@ -202,25 +210,6 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
     return () => clearInterval(intervalId)
   }, [gameState?.action_on, room?.timer_per_turn])
-
-  // Auto check/fold when turn timer expires (client-side nudge for home games)
-  useEffect(() => {
-    if (!gameState || gameState.action_on < 0 || !currentPlayerId) return
-    const currentPlayer = players.find((p) => p.id === currentPlayerId)
-    if (!currentPlayer || gameState.action_on !== currentPlayer.position) return
-
-    const remaining = timeRemaining[gameState.action_on]
-    if (remaining !== 0) {
-      timerExpiredRef.current = null
-      return
-    }
-    if (timerExpiredRef.current === gameState.action_on) return
-    timerExpiredRef.current = gameState.action_on
-
-    const callAmt = Math.max(0, gameState.current_bet - currentPlayer.currentBet)
-    void handleAction(callAmt === 0 ? 'check' : 'fold')
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeRemaining, gameState?.action_on, currentPlayerId, players])
 
   const handleAction = async (action: BettingAction, amount?: number) => {
     if (!currentPlayerId || !gameState) return
@@ -270,6 +259,25 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
       setError(err instanceof Error ? err.message : 'Action failed')
     }
   }
+
+  // Auto check/fold when turn timer expires (client-side nudge for home games)
+  useEffect(() => {
+    if (!gameState || gameState.action_on < 0 || !currentPlayerId) return
+    const currentPlayer = players.find((p) => p.id === currentPlayerId)
+    if (!currentPlayer || gameState.action_on !== currentPlayer.position) return
+
+    const remaining = timeRemaining[gameState.action_on]
+    if (remaining !== 0) {
+      timerExpiredRef.current = null
+      return
+    }
+    if (timerExpiredRef.current === gameState.action_on) return
+    timerExpiredRef.current = gameState.action_on
+
+    const callAmt = Math.max(0, gameState.current_bet - currentPlayer.currentBet)
+    void handleAction(callAmt === 0 ? 'check' : 'fold')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeRemaining, gameState?.action_on, currentPlayerId, players])
 
   const handleNextHand = async () => {
     if (!hostId || !nextHandWinner) return

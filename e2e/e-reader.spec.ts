@@ -16,7 +16,7 @@ const hasMeditationsPdf = fs.existsSync(MEDITATIONS_PDF)
 
     installReaderCommunalMock(page)
     await page.goto('/games/e-reader?e2eUpload=1', { waitUntil: 'domcontentloaded', timeout: 60_000 })
-    await expect(page.getByRole('heading', { name: /Import books into the communal e-reader/i })).toBeVisible({ timeout: 25_000 })
+    await expect(page.getByRole('heading', { name: 'Web E-Reader', exact: true })).toBeVisible({ timeout: 25_000 })
 
     await expect(page.getByTestId('reader-file-input')).toBeVisible({ timeout: 15_000 })
     await page.getByTestId('reader-file-input').setInputFiles(MEDITATIONS_PDF)

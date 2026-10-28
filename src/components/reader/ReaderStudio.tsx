@@ -1,9 +1,9 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { analyzeImportDraft, draftToChapterStructurePayload } from '@/lib/reader/chapter-import-analyze'
 import {
   createEpubImportDraft,
@@ -22,10 +22,15 @@ import {
   deleteReaderPublication,
   getAllReaderPublications,
   getReaderPublication,
+  hideReaderPublication,
   importReaderPublicationsMerge,
   listReaderPublications,
+  loadSamplePublications,
   saveReaderPublication,
 } from '@/lib/reader/publications'
+import { toSummary } from '@/lib/reader/publications-idb'
+import { SFJC_ADMIN_DEVICE_IDS } from '@/data/sfjc-admin-devices'
+import { notesSyncCredentials } from '@/lib/notes/syncCredentials'
 import { loadLastReaderLocation } from '@/lib/reader/settings'
 import { registerReaderServiceWorker } from '@/lib/reader/pwa'
 import type { ReaderImportDraft, ReaderPublication, ReaderPublicationSummary, ReaderSourceType } from '@/lib/reader/types'
@@ -98,8 +103,11 @@ function formatUpdatedAt(iso: string): string {
 
 export function ReaderStudio({ routeBase }: ReaderStudioProps) {
   const router = useRouter()
+  /** E2E (End-to-End): `?e2eUpload=1` opens file mode without relying on click timing (Playwright). */
+  const e2eUpload = useSearchParams().get('e2eUpload') === '1'
   const [library, setLibrary] = useState<ReaderPublicationSummary[]>([])
-  const [importMode, setImportMode] = useState<'paste' | 'file'>('paste')
+  const [samples, setSamples] = useState<ReaderPublicationSummary[]>([])
+  const [importMode, setImportMode] = useState<'paste' | 'file'>(e2eUpload ? 'file' : 'paste')
   const [title, setTitle] = useState('')
   const [pasteText, setPasteText] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -118,30 +126,32 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
   const [aiBusy, setAiBusy] = useState(false)
   const [aiError, setAiError] = useState('')
   const [lastLocation, setLastLocation] = useState<{ bookId: string; chapterId: string } | null>(null)
+  const [aiDraft, setAiDraft] = useState(draft)
+  /* Owner devices with the sync password delete books for everyone. Other devices only remove them locally. */
+  const isOwner = useSyncExternalStore(
+    () => () => {},
+    () => {
+      const creds = notesSyncCredentials()
+      return Boolean(creds.syncPassword) && SFJC_ADMIN_DEVICE_IDS.has(creds.deviceUserId)
+    },
+    () => false,
+  )
   const libraryImportInputRef = useRef<HTMLInputElement>(null)
 
-  const loadLibrary = useCallback(async () => {
-    const summaries = await listReaderPublications()
-    setLibrary(summaries)
-    setLastLocation(loadLastReaderLocation())
-  }, [])
+  const loadLibrary = useCallback(
+    () =>
+      listReaderPublications().then((summaries) => {
+        setLibrary(summaries)
+        setLastLocation(loadLastReaderLocation())
+      }),
+    [],
+  )
 
   useEffect(() => {
     void registerReaderServiceWorker()
     void loadLibrary()
+    void loadSamplePublications().then((pubs) => setSamples(pubs.map(toSummary)))
   }, [loadLibrary])
-
-  /** E2E (End-to-End): `?e2eUpload=1` opens file mode without relying on click timing (Playwright). */
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    try {
-      if (new URLSearchParams(window.location.search).get('e2eUpload') === '1') {
-        setImportMode('file')
-      }
-    } catch {
-      /* ignore */
-    }
-  }, [])
 
   const parseImport = useCallback(async () => {
     setBusy(true)
@@ -331,13 +341,15 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
 
   const chapterAnalysis = useMemo(() => (draft ? analyzeImportDraft(draft) : null), [draft])
 
-  useEffect(() => {
+  /* Clears AI suggestions during render whenever the draft changes, so they never describe a stale draft. */
+  if (aiDraft !== draft) {
+    setAiDraft(draft)
     setAiMerges([])
     setAiSplitChapters([])
     setAiFormatNotes([])
     setAiNotes([])
     setAiError('')
-  }, [draft])
+  }
 
   const applyMergeRangeToDraft = useCallback((startIndex: number, endIndex: number) => {
     setDraft((cur) => {
@@ -395,33 +407,57 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
   const libraryCards = useMemo(
     () =>
       library.map((item) => {
-        const resumeChapterId = lastLocation?.bookId === item.id ? lastLocation.chapterId : item.firstChapterId
+        const resumable = lastLocation?.bookId === item.id
         return {
           ...item,
-          resumeHref: `${routeBase}/read/${item.id}/${resumeChapterId}`,
+          resumable,
+          resumeHref: `${routeBase}/read/${item.id}/${resumable ? lastLocation.chapterId : item.firstChapterId}`,
         }
       }),
-    [lastLocation?.bookId, lastLocation?.chapterId, library, routeBase],
+    [lastLocation, library, routeBase],
   )
 
   return (
     <section className="space-y-6">
       <div className="rounded-3xl border p-5 md:p-6" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-        <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-base font-semibold" style={{ color: 'var(--ink-accent)' }}>NovelFire-style web reader</p>
-            <h1 className="font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>Import books into the communal e-reader</h1>
-            <p className="mt-2 max-w-3xl text-sm" style={{ color: 'var(--ink-muted)' }}>
-              Paste plain text or upload `.txt` / `.md` on-device. PDF and EPUB are parsed once on the server (not stored) for reliable text; chapters follow PDF heuristics or the EPUB spine. DRM EPUBs are not supported.{' '}
-              <strong style={{ color: 'var(--ink-text)' }}>The shared shelf starts empty</strong> and grows when anyone uploads or saves a book: with the communal backend enabled, the same library list is visible on every device. If the backend is not configured for this deployment, the app falls back to{' '}
-              <strong style={{ color: 'var(--ink-text)' }}>this browser only</strong> (IndexedDB (Indexed Database API)). Reading progress and bookmarks stay per-device in localStorage unless you migrate those keys. Use Export / Import library (.json) for a portable backup. Optional{' '}
-              <code className="rounded bg-black/5 px-1">public/reader/library-curated.json</code> (Load site catalog) can still seed the local fallback when you self-host without Supabase.
-            </p>
-          </div>
-          <div className="rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-muted)' }}>
-            PDFs are reflowed into paragraphs; EPUBs use spine order and plain text from XHTML. Complex layouts, images, and footnotes may need cleanup before saving.
-          </div>
+        <div className="mb-4">
+          <h1 className="font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>Web E-Reader</h1>
+          <p className="mt-2 text-sm" style={{ color: 'var(--ink-muted)' }}>
+            Open a sample below, or paste text or upload a .txt, .md, PDF or EPUB to add your own.
+          </p>
         </div>
+
+        {samples.length ? (
+          <div className="mb-6" data-testid="reader-sample-shelf">
+            <h2 className="mb-3 font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>Sample shelf</h2>
+            <div className="grid gap-3 md:grid-cols-3">
+              {samples.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex flex-col justify-between gap-3 rounded-2xl border p-4"
+                  style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)' }}
+                >
+                  <div>
+                    <h3 className="text-lg font-semibold" style={{ color: 'var(--ink-text)' }}>{item.title}</h3>
+                    <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                      {item.chapterCount} chapters · {item.totalWords.toLocaleString()} words
+                    </p>
+                  </div>
+                  <Link
+                    href={
+                      `${routeBase}/read/${item.id}/` +
+                        (lastLocation?.bookId === item.id ? lastLocation.chapterId : item.firstChapterId)
+                    }
+                    className="self-start rounded-full px-4 py-2 text-sm font-semibold text-white"
+                    style={{ backgroundColor: 'var(--ink-accent)' }}
+                  >
+                    {lastLocation?.bookId === item.id ? 'Resume' : 'Read'}
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-4">
@@ -575,7 +611,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
             </div>
             {libraryCards.length === 0 ? (
               <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-                No saved books in the shared shelf yet. Import on the left, merge a `.json` portable library, or use Load site catalog if this deployment ships `library-curated.json` (local-fallback seed only).
+                No saved books yet. Paste or upload one to add it here.
               </p>
             ) : (
               <div className="space-y-3">
@@ -590,11 +626,18 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                       </div>
                       <button
                         type="button"
-                        onClick={() => void deleteReaderPublication(item.id).then(loadLibrary)}
+                        onClick={() => {
+                          if (!isOwner) {
+                            hideReaderPublication(item.id)
+                            void loadLibrary()
+                          } else if (confirm(`Delete "${item.title}" from the shared shelf for everyone?`)) {
+                            void deleteReaderPublication(item.id).then(loadLibrary)
+                          }
+                        }}
                         className="rounded-full border px-3 py-1 text-xs font-semibold"
                         style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-muted)' }}
                       >
-                        Delete
+                        {isOwner ? 'Delete' : 'Remove'}
                       </button>
                     </div>
                     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -612,19 +655,21 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                         >
                           Export .txt
                         </button>
-                        <Link
-                          href={`${routeBase}/read/${item.id}/${item.firstChapterId}`}
-                          className="rounded-full border px-4 py-2 text-sm font-medium"
-                          style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-                        >
-                          Open from start
-                        </Link>
+                        {item.resumable ? (
+                          <Link
+                            href={`${routeBase}/read/${item.id}/${item.firstChapterId}`}
+                            className="rounded-full border px-4 py-2 text-sm font-medium"
+                            style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                          >
+                            Open from start
+                          </Link>
+                        ) : null}
                         <Link
                           href={item.resumeHref}
                           className="rounded-full px-4 py-2 text-sm font-semibold text-white"
                           style={{ backgroundColor: 'var(--ink-accent)' }}
                         >
-                          Resume
+                          {item.resumable ? 'Resume' : 'Read'}
                         </Link>
                       </div>
                     </div>

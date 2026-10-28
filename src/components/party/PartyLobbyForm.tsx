@@ -80,6 +80,9 @@ export default function PartyLobbyForm({
   return (
     <aside className={`rounded-lg border p-4 shadow-sm ${className}`} style={cardStyle}>
       <div className="space-y-3">
+        <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+          Multiplayer: each player joins on their own phone. Host creates a room and shares the PIN.
+        </p>
         {variant === 'labeled' ? (
           <div className="space-y-4">
             <div>

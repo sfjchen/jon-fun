@@ -5,9 +5,7 @@ import {
   type JeopardyBoard,
   type JeopardyCategory,
   type JeopardyClue,
-  createDefaultBoard,
   generateShortId,
-  getClueValue,
   slugify,
 } from '@/lib/jeopardy-core'
 
