@@ -47,11 +47,9 @@ const SkyPaintCanvas = forwardRef<SkyPaintCanvasHandle, {
   const yellowStrokeCountRef = useRef(0)
   const hasAdvancedRef = useRef(false)
   const strokeColorRef = useRef<'blue' | 'yellow'>('blue')
-  const prevPhaseRef = useRef<'blue' | 'yellow' | undefined>(undefined)
-  if (prevPhaseRef.current !== paintPhase) {
-    prevPhaseRef.current = paintPhase
+  useEffect(() => {
     hasAdvancedRef.current = false
-  }
+  }, [paintPhase])
 
   const setupCanvas = useCallback((canvas: HTMLCanvasElement | null) => {
     if (!show || !containerRef.current || !canvas) return
@@ -400,13 +398,17 @@ function FigmaMock({ currentHotspotId, onStepComplete, onWrongTap, showHighlight
       onStepComplete()
     }, mime, quality)
   }, [onStepComplete])
-  useEffect(() => {
+  // Clears step-scoped UI when the task or step changes
+  const stepKey = `${taskId}:${stepIdx}`
+  const [prevStepKey, setPrevStepKey] = useState(stepKey)
+  if (stepKey !== prevStepKey) {
+    setPrevStepKey(stepKey)
     if (taskId === 'figmaBusinessCard' && stepIdx !== 3 && stepIdx !== 4 && stepIdx !== 5) setBcTextInput(null)
     if (taskId === 'figmaMindmap' && stepIdx !== 4) setMmInstanceCount(0)
     if (taskId === 'figmaMindmap' && stepIdx !== 6) setMmConnectorCount(0)
     if (taskId !== 'figmaMindmap' || stepIdx < 9) setMmHasSeenExample(false)
     if (!bcInExportStep) setBcExportMenuOpen(false)
-  }, [taskId, stepIdx, bcInExportStep])
+  }
   const hasCard = isBusinessCard && stepIdx >= 1
   const hasName = isBusinessCard && stepIdx >= 3
   const hasRole = isBusinessCard && stepIdx >= 4
@@ -738,9 +740,11 @@ function ProcreateMock({ currentHotspotId, onStepComplete, onWrongTap, showHighl
   const canvasRef = useRef<SkyPaintCanvasHandle>(null)
 
   const inExportStep = stepIdx === 14 || stepIdx === 15
-  useEffect(() => {
+  const [prevInExportStep, setPrevInExportStep] = useState(inExportStep)
+  if (inExportStep !== prevInExportStep) {
+    setPrevInExportStep(inExportStep)
     if (!inExportStep) setExportMenuOpen(false)
-  }, [inExportStep])
+  }
 
   const handleExport = useCallback(async (format: 'png' | 'jpeg') => {
     const blob = await canvasRef.current?.exportAs(format)
@@ -969,6 +973,7 @@ export default function PearNavigator() {
   const [variant, setVariant] = useState<ABVariant | null>(null)
   const [feedbackRating, setFeedbackRating] = useState<FeedbackRating | null>(null)
   const [showFeedbackOverlay, setShowFeedbackOverlay] = useState(false)
+  const [totalMs, setTotalMs] = useState(0)
   const taskStartTimeRef = useRef<number>(0)
   const stepStartTimeRef = useRef<number>(0)
   const sessionIdRef = useRef<string | null>(null)
@@ -989,7 +994,10 @@ export default function PearNavigator() {
 
   useEffect(() => {
     if (phase !== 'done') return
-    const t = setTimeout(() => setShowFeedbackOverlay(true), 1000)
+    const t = setTimeout(() => {
+      setTotalMs(Date.now() - taskStartTimeRef.current)
+      setShowFeedbackOverlay(true)
+    }, 1000)
     return () => clearTimeout(t)
   }, [phase])
 
@@ -1264,7 +1272,7 @@ export default function PearNavigator() {
                 ))}
               </div>
               <p className="text-[10px] sm:text-xs text-white/50">
-                Total: {Math.round((Date.now() - taskStartTimeRef.current) / 1000)}s · Avg: {task ? Math.round((Date.now() - taskStartTimeRef.current) / 1000 / task.steps.length) : 0}s/step
+                Total: {Math.round(totalMs / 1000)}s · Avg: {task ? Math.round(totalMs / 1000 / task.steps.length) : 0}s/step
               </p>
             </div>
           </div>

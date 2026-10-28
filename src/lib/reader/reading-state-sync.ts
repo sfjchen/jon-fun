@@ -1,3 +1,4 @@
+import { isSamplePublicationId } from '@/lib/reader/publications'
 import { readerProgressStorageKey } from '@/lib/reader/settings'
 import type { ReaderProgress } from '@/lib/reader/types'
 
@@ -14,7 +15,7 @@ export async function syncRemoteReadingState(
   scrollY: number,
   anchor?: { blockId?: string; charOffset?: number },
 ): Promise<void> {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined' || isSamplePublicationId(bookId)) return
   try {
     const payload: ReaderProgress = {
       chapterId,
@@ -38,7 +39,7 @@ export async function syncRemoteReadingState(
 
 /** Merge server reading state into localStorage if newer (called after book load). */
 export async function mergeRemoteReadingStateIfNewer(bookId: string, chapterId: string): Promise<void> {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined' || isSamplePublicationId(bookId)) return
   try {
     const res = await fetch(`/api/reader/communal/${encodeURIComponent(bookId)}/reading-state`, { cache: 'no-store' })
     if (res.status === 503 || res.status === 404) return

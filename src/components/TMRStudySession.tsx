@@ -131,7 +131,7 @@ export default function TMRStudySession({ onBack }: { onBack: () => void }) {
         >
           ← Back
         </button>
-        <h1 className="text-4xl font-bold font-lora" style={{ color: 'var(--ink-text)' }}>TMR Study Session</h1>
+        <h1 className="text-4xl font-bold font-lora" style={{ color: 'var(--ink-text)' }}>Study Session</h1>
         <div className="w-16" />
       </div>
 

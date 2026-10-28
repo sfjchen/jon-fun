@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { searchNotes } from '@/lib/notes/searchIndex'
 import type { NoteSession, SearchHit } from '@/lib/notes/types'
 
@@ -24,24 +24,23 @@ const facets: { id: Facet; label: string }[] = [
 export default function GlobalSearch({ open, sessions, onClose, onJump }: GlobalSearchProps) {
   const [query, setQuery] = useState('')
   const [facet, setFacet] = useState<Facet>('all')
-  const [hits, setHits] = useState<SearchHit[]>([])
+  const [wasOpen, setWasOpen] = useState(open)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    if (open) {
-      setQuery('')
-      setHits([])
-      setTimeout(() => inputRef.current?.focus(), 50)
-    }
-  }, [open])
+  // Clears the query each time the panel opens.
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) setQuery('')
+  }
 
   useEffect(() => {
-    if (!query.trim()) {
-      setHits([])
-      return
-    }
-    setHits(searchNotes(sessions, query, facet))
-  }, [query, facet, sessions])
+    if (open) setTimeout(() => inputRef.current?.focus(), 50)
+  }, [open])
+
+  const hits = useMemo<SearchHit[]>(
+    () => (query.trim() ? searchNotes(sessions, query, facet) : []),
+    [query, facet, sessions],
+  )
 
   const handleSelect = useCallback(
     (hit: SearchHit) => {

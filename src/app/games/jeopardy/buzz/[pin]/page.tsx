@@ -10,30 +10,29 @@ export default function BuzzerPlayerPage() {
   const params = useParams<{ pin: string }>()
   const pin = params?.pin || ''
   const [data, setData] = useState<{ session: BuzzerSession; queue: Buzz[]; boardTitle: string | null } | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [fetchError, setFetchError] = useState<string | null>(null)
+  const validPin = isValidBuzzerPin(pin)
+  const error = validPin ? fetchError : 'Invalid PIN'
 
   useEffect(() => {
-    if (!isValidBuzzerPin(pin)) {
-      setError('Invalid PIN')
-      return
-    }
+    if (!validPin) return
     let cancelled = false
     ;(async () => {
       try {
         const res = await fetch(`/api/jeopardy/buzzer/sessions/${pin}`, { cache: 'no-store' })
         if (res.status === 404) {
-          if (!cancelled) setError('No buzzer session for that PIN.')
+          if (!cancelled) setFetchError('No buzzer session for that PIN.')
           return
         }
         if (!res.ok) throw new Error(await res.text())
         const d = await res.json() as { session: BuzzerSession; queue: Buzz[]; board?: { title?: string | null } | null }
         if (!cancelled) setData({ session: d.session, queue: d.queue ?? [], boardTitle: d.board?.title ?? null })
       } catch (e) {
-        if (!cancelled) setError((e as Error).message || 'Failed to load buzzer session.')
+        if (!cancelled) setFetchError((e as Error).message || 'Failed to load buzzer session.')
       }
     })()
     return () => { cancelled = true }
-  }, [pin])
+  }, [pin, validPin])
 
   if (error) {
     return (

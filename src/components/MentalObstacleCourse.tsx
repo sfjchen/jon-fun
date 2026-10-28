@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from 'react'
 import { HomeLink } from '@/components/HomeLink'
 import {
   DOMAIN_LABELS,
@@ -200,7 +200,7 @@ function ReactionPhase({ onDone, quickE2e }: { onDone: (score: number) => void; 
 
 function ArithmeticPhase({ onDone, quickE2e }: { onDone: (score: number) => void; quickE2e: boolean }) {
   const durationMs = mocArithmeticDurationMs(quickE2e)
-  const start = useRef(performance.now())
+  const [start] = useState(() => performance.now())
   const [prob, setProb] = useState<ArithmeticProblem>(() => randomArithmeticProblem())
   const [input, setInput] = useState('')
   const [correct, setCorrect] = useState(0)
@@ -210,17 +210,17 @@ function ArithmeticPhase({ onDone, quickE2e }: { onDone: (score: number) => void
 
   useEffect(() => {
     const id = window.setInterval(() => {
-      const elapsed = performance.now() - start.current
+      const elapsed = performance.now() - start
       setSecLeft(Math.max(0, Math.ceil((durationMs - elapsed) / 1000)))
       if (elapsed > durationMs) setDone(true)
     }, 250)
     return () => clearInterval(id)
-  }, [durationMs])
+  }, [durationMs, start])
 
   useEffect(() => {
     if (!done) return
-    onDone(scoreArithmetic(correct, wrong, performance.now() - start.current))
-  }, [done, correct, wrong, onDone])
+    onDone(scoreArithmetic(correct, wrong, performance.now() - start))
+  }, [done, correct, wrong, onDone, start])
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -296,9 +296,12 @@ function LogicPhase({ onDone, quickE2e }: { onDone: (score: number) => void; qui
   const [roundStart, setRoundStart] = useState(() => performance.now())
   const times = useRef<number[]>([])
 
-  const pick = (n: number) => {
+  /*
+   * Scores a choice. `at` is the click's event timestamp, on the same clock as performance.now().
+   */
+  const pick = (n: number, at: number) => {
     if (total >= 6) return
-    const elapsed = performance.now() - roundStart
+    const elapsed = at - roundStart
     times.current.push(elapsed)
     const nextCorrect = correct + (n === prob.answer ? 1 : 0)
     const nextTotal = total + 1
@@ -312,7 +315,7 @@ function LogicPhase({ onDone, quickE2e }: { onDone: (score: number) => void; qui
       return
     }
     setProb(randomPatternProblem())
-    setRoundStart(performance.now())
+    setRoundStart(at)
   }
 
   return (
@@ -332,7 +335,7 @@ function LogicPhase({ onDone, quickE2e }: { onDone: (score: number) => void; qui
             key={c}
             type="button"
             data-testid={quickE2e && c === prob.answer ? 'moc-logic-correct' : undefined}
-            onClick={() => pick(c)}
+            onClick={(e) => pick(c, e.timeStamp)}
             className="rounded-lg border py-3 font-mono text-lg"
             style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
           >
@@ -429,35 +432,34 @@ function WordsPhase({
   onDone: (score: number) => void
   quickE2e: boolean
 }) {
-  const phrase = useRef(randomTypingPhrase())
-  const word = useRef(randomTapWord())
+  const [phrase] = useState(randomTypingPhrase)
+  const [target] = useState(randomTapWord)
   const [typed, setTyped] = useState('')
-  const start = useRef(performance.now())
-  const [letters] = useState(() => shuffledLetters(word.current))
+  const [start] = useState(() => performance.now())
+  const [letters] = useState(() => shuffledLetters(target))
   const [picked, setPicked] = useState<string[]>([])
-  const pickedRef = useRef<string[]>([])
-  pickedRef.current = picked
   const [wrongTaps, setWrongTaps] = useState(0)
-  const wrongRef = useRef(0)
-  wrongRef.current = wrongTaps
   const [done, setDone] = useState(false)
   const wordTapMs = mocWordTapDurationMs(quickE2e)
 
+  /*
+   * Ends the touch round on timeout, scoring the latest picks and wrong taps.
+   */
+  const onTick = useEffectEvent(() => {
+    if (performance.now() - start > wordTapMs) {
+      setDone(true)
+      const ok = picked.join('') === target
+      onDone(scoreWordTap(ok, wrongTaps, performance.now() - start, wordTapMs))
+    }
+  })
+
   useEffect(() => {
     if (!touchMode || done) return
-    const id = window.setInterval(() => {
-      if (performance.now() - start.current > wordTapMs) {
-        setDone(true)
-        const target = word.current
-        const ok = pickedRef.current.join('') === target
-        onDone(scoreWordTap(ok, wrongRef.current, performance.now() - start.current, wordTapMs))
-      }
-    }, 300)
+    const id = window.setInterval(() => onTick(), 300)
     return () => clearInterval(id)
-  }, [touchMode, done, onDone, wordTapMs])
+  }, [touchMode, done])
 
   if (touchMode) {
-    const target = word.current
     const tapLetter = (ch: string) => {
       if (done) return
       setPicked((p) => {
@@ -470,7 +472,7 @@ function WordsPhase({
         if (n.length === target.length) {
           setDone(true)
           queueMicrotask(() =>
-            onDone(scoreWordTap(true, wrongRef.current, performance.now() - start.current, wordTapMs)),
+            onDone(scoreWordTap(true, wrongTaps, performance.now() - start, wordTapMs)),
           )
         }
         return n
@@ -511,8 +513,8 @@ function WordsPhase({
     e.preventDefault()
     if (done) return
     setDone(true)
-    const elapsed = performance.now() - start.current
-    onDone(scoreWordBurst(phrase.current, typed, elapsed))
+    const elapsed = performance.now() - start
+    onDone(scoreWordBurst(phrase, typed, elapsed))
   }
 
   return (
@@ -525,7 +527,7 @@ function WordsPhase({
         className="rounded-lg border p-4 font-mono text-lg"
         style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-muted)' }}
       >
-        {phrase.current}
+        {phrase}
       </div>
       <input
         type="text"
@@ -586,10 +588,7 @@ function TriviaPhase({
   }, [idx, done, batch.length, finish, perQMs])
 
   const q = batch[idx]
-  if (!q) {
-    if (!done) finish(correctRef.current)
-    return null
-  }
+  if (!q) return null
 
   const pick = (i: number) => {
     if (done) return
@@ -674,24 +673,15 @@ export default function MentalObstacleCourse() {
   const searchParams = useSearchParams()
   const quickE2e = searchParams.get(MOC_E2E_QUERY) === '1'
   const [screen, setScreen] = useState<Screen>('intro')
-  const [clientReady, setClientReady] = useState(false)
+  const clientReady = useSyncExternalStore(() => () => {}, () => true, () => false)
   const [inputMode, setInputMode] = useState<InputMode>('mixed')
   const [roundIdx, setRoundIdx] = useState(0)
   const [roundReady, setRoundReady] = useState(false)
   const accRef = useRef<Partial<Record<MentalDomain, number>>>({})
   const [result, setResult] = useState<CourseRunResult | null>(null)
   const [triviaBatch, setTriviaBatch] = useState(() => pickTriviaBatch(6))
-  const [best, setBest] = useState(0)
-  const [historyCount, setHistoryCount] = useState(0)
-
-  useEffect(() => {
-    setClientReady(true)
-  }, [])
-
-  useEffect(() => {
-    setBest(loadBestCourseScore())
-    setHistoryCount(loadHistory().length)
-  }, [result])
+  const best = useSyncExternalStore(() => () => {}, loadBestCourseScore, () => 0)
+  const historyCount = useSyncExternalStore(() => () => {}, () => loadHistory().length, () => 0)
 
   const onRoundComplete = useCallback(
     (domain: MentalDomain, score: number) => {

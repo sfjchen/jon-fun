@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef, type ChangeEvent } from 'react'
+import { useState, useEffect, useCallback, useRef, useSyncExternalStore, type ChangeEvent } from 'react'
 import { usePathname } from 'next/navigation'
 import {
   loadEntries,
@@ -99,12 +99,18 @@ export default function DailyLearnManager() {
     }
   }, [applySyncResult])
 
+  /* Reads today's date on the client; null on the server and during hydration. */
+  const today = useSyncExternalStore(() => () => {}, getTodayDate, () => null)
+  const [loaded, setLoaded] = useState(false)
+  if (today !== null && !loaded) {
+    setLoaded(true)
+    setTodayText(getEntryByDate(today)?.text ?? '')
+    refresh()
+  }
+
   useEffect(() => {
     getOrCreateUserId()
-    const d = getTodayDate()
-    setTodayText(getEntryByDate(d)?.text ?? '')
-    refresh()
-  }, [refresh])
+  }, [])
 
   // Initial sync on load: push localStorage to Supabase, merge with server. Runs for all users so local-only data is backed up.
   useEffect(() => {
@@ -235,10 +241,6 @@ export default function DailyLearnManager() {
 
   const counts = getCounts()
   const calendarDates = new Set(entries.map((e) => e.date))
-  const [today, setToday] = useState<string | null>(null)
-  useEffect(() => {
-    setToday(getTodayDate())
-  }, [])
 
   /** Outer padding only; page background comes from `PageShell` (card routes = solid ink-bg). */
   const shellPadClass = isDailyLog ? 'rounded-lg p-4' : ''
@@ -317,9 +319,9 @@ export default function DailyLearnManager() {
 
         {entries.length === 0 && (
           <div className="rounded-lg border p-4 mb-4" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-            <p className="font-medium" style={{ color: 'var(--ink-text)' }}>Restore your logs</p>
-            <p className="text-sm mt-1" style={{ color: 'var(--ink-muted)' }}>
-              Go to <button type="button" onClick={() => setView('sync')} className="underline" style={{ color: 'var(--ink-accent)' }}>Sync</button> tab → enter your sync password → Restore. Do this on each device.
+            <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+              Write one sentence about today below. Have a sync password?{' '}
+              <button type="button" onClick={() => setView('sync')} className="underline" style={{ color: 'var(--ink-accent)' }}>Restore</button>
             </p>
           </div>
         )}

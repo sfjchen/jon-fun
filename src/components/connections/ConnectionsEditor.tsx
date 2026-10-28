@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import type { ConnectionsDifficulty, ConnectionsGroup, ConnectionsPuzzle } from '@/lib/connections'
 import {
   CONNECTIONS_DIFFICULTIES,
@@ -48,10 +48,7 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
   const canPublish = checklist.pass
 
   useEffect(() => {
-    if (!editId) {
-      setLoading(false)
-      return
-    }
+    if (!editId) return
     let cancelled = false
     ;(async () => {
       setLoading(true)
@@ -92,17 +89,19 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
     }
   }, [puzzle, editId])
 
-  useEffect(() => {
-    if (editId) return
+  /* Restores the create draft once on the client, after hydration renders the default puzzle. */
+  const hydrated = useSyncExternalStore(() => () => {}, () => true, () => false)
+  const [draftRead, setDraftRead] = useState(false)
+  if (hydrated && !draftRead) {
+    setDraftRead(true)
     try {
-      const raw = localStorage.getItem(CONNECTIONS_DRAFT_KEY)
-      if (!raw) return
-      const parsed = JSON.parse(raw) as ConnectionsPuzzle
+      const raw = editId ? null : localStorage.getItem(CONNECTIONS_DRAFT_KEY)
+      const parsed = raw ? (JSON.parse(raw) as ConnectionsPuzzle) : null
       if (parsed?.id && parsed.groups?.length === 4) setPuzzle(parsed)
     } catch {
       // ignore
     }
-  }, [editId])
+  }
 
   const setGroup = useCallback((idx: number, patch: Partial<ConnectionsGroup>) => {
     setPuzzle((p) => {

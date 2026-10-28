@@ -1,7 +1,7 @@
 'use client'
 
 import { createPortal } from 'react-dom'
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import type { CSSProperties } from 'react'
 import type { ReaderChapter } from '@/lib/reader/types'
 
@@ -30,14 +30,14 @@ export function ReaderChapterListModal({
   const [query, setQuery] = useState('')
   const deferredQuery = useDeferredValue(query)
   const activeRef = useRef<HTMLButtonElement | null>(null)
-  const [mounted, setMounted] = useState(false)
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false)
+  const [prev, setPrev] = useState({ open, currentChapterId })
 
-  useEffect(() => setMounted(true), [])
-
-  useEffect(() => {
-    if (!open) return
-    setQuery('')
-  }, [open, currentChapterId])
+  // Clears the filter when the modal opens or the current chapter changes while open.
+  if (prev.open !== open || prev.currentChapterId !== currentChapterId) {
+    setPrev({ open, currentChapterId })
+    if (open) setQuery('')
+  }
 
   useEffect(() => {
     if (!open) return

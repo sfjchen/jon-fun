@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 
 const ADMIN_KEY = 'notes_admin_ok'
 
@@ -21,44 +21,38 @@ export default function UvimcoNotesAdminPage() {
   const [userIds, setUserIds] = useState<string[]>([])
   const [filterUser, setFilterUser] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  /* Reads the URL or session key on the client so the first client render knows an auto-load is pending. */
+  const autoKey = useSyncExternalStore(
+    () => () => {},
+    () => new URLSearchParams(window.location.search).get('key') || sessionStorage.getItem(ADMIN_KEY),
+    () => null,
+  )
+  const [loadingState, setLoading] = useState<boolean | null>(null)
+  const loading = loadingState ?? Boolean(autoKey)
 
-  const fetchData = useCallback(async (adminKey: string, userId?: string) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const q = new URLSearchParams({ key: adminKey })
-      if (userId) q.set('userId', userId)
-      const res = await fetch(`/api/notes/admin/sessions?${q}`)
-      if (res.status === 401) {
-        setError('Invalid key')
-        setLoading(false)
-        return
-      }
-      if (!res.ok) {
-        setError('Failed to load')
-        setLoading(false)
-        return
-      }
-      const data = (await res.json()) as { sessions?: SessionRow[]; userIds?: string[] }
-      setSessions(data.sessions ?? [])
-      setUserIds(data.userIds ?? [])
-      setAuthorized(true)
-      if (typeof window !== 'undefined') sessionStorage.setItem(ADMIN_KEY, adminKey)
-    } catch {
-      setError('Request failed')
-    }
-    setLoading(false)
+  /*
+   * Fetches sessions for the key. Callers outside the auto-load set loading and clear the error first.
+   */
+  const fetchData = useCallback((adminKey: string, userId?: string) => {
+    const q = new URLSearchParams({ key: adminKey })
+    if (userId) q.set('userId', userId)
+    return fetch(`/api/notes/admin/sessions?${q}`)
+      .then(async (res) => {
+        if (res.status === 401) return setError('Invalid key')
+        if (!res.ok) return setError('Failed to load')
+        const data = (await res.json()) as { sessions?: SessionRow[]; userIds?: string[] }
+        setSessions(data.sessions ?? [])
+        setUserIds(data.userIds ?? [])
+        setAuthorized(true)
+        sessionStorage.setItem(ADMIN_KEY, adminKey)
+      })
+      .catch(() => setError('Request failed'))
+      .finally(() => setLoading(false))
   }, [])
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    const q = new URLSearchParams(window.location.search)
-    const urlKey = q.get('key')
-    const stored = sessionStorage.getItem(ADMIN_KEY)
-    if (urlKey) void fetchData(urlKey)
-    else if (stored) void fetchData(stored)
-  }, [fetchData])
+    if (autoKey && !authorized) void fetchData(autoKey)
+  }, [autoKey, authorized, fetchData])
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
@@ -68,7 +62,10 @@ export default function UvimcoNotesAdminPage() {
         <form
           onSubmit={(e) => {
             e.preventDefault()
-            if (key.trim()) void fetchData(key.trim())
+            if (!key.trim()) return
+            setLoading(true)
+            setError(null)
+            void fetchData(key.trim())
           }}
           className="max-w-sm space-y-3"
         >
@@ -97,7 +94,10 @@ export default function UvimcoNotesAdminPage() {
                 onChange={(e) => {
                   setFilterUser(e.target.value)
                   const stored = sessionStorage.getItem(ADMIN_KEY)
-                  if (stored) void fetchData(stored, e.target.value || undefined)
+                  if (!stored) return
+                  setLoading(true)
+                  setError(null)
+                  void fetchData(stored, e.target.value || undefined)
                 }}
                 className="ml-2 rounded border px-2 py-1 text-sm"
               >

@@ -15,35 +15,28 @@ export default function PokerJoinForm({ pin, onJoin, onCancel, loading, error }:
   const [selectedPosition, setSelectedPosition] = useState<number | null>(null)
   const [occupiedPositions, setOccupiedPositions] = useState<Set<number>>(new Set())
 
-  const loadAvailablePositions = async () => {
-    try {
-      const response = await fetch(`/api/poker/rooms/${pin}`)
-      const data = await response.json()
-
-      if (response.ok && data.players) {
-        const occupied = new Set<number>(data.players.map((p: { position: number }) => p.position))
-        setOccupiedPositions(occupied)
-        
-        // Auto-select first available position
-        if (selectedPosition === null) {
-          for (let i = 0; i < 12; i++) {
-            if (!occupied.has(i)) {
-              setSelectedPosition(i)
-              break
-            }
-          }
-        }
-      }
-    } catch {
-      // Silently fail - positions will be auto-selected
-    }
-  }
-
   useEffect(() => {
-    if (pin) {
-      loadAvailablePositions()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!pin) return
+    void (async () => {
+      try {
+        const response = await fetch(`/api/poker/rooms/${pin}`)
+        const data = await response.json()
+
+        if (response.ok && data.players) {
+          const occupied = new Set<number>(data.players.map((p: { position: number }) => p.position))
+          setOccupiedPositions(occupied)
+
+          // Auto-select first available position
+          setSelectedPosition((prev) => {
+            if (prev !== null) return prev
+            for (let i = 0; i < 12; i++) if (!occupied.has(i)) return i
+            return null
+          })
+        }
+      } catch {
+        // Silently fail - positions will be auto-selected
+      }
+    })()
   }, [pin])
 
   const handleSubmit = async (e: React.FormEvent) => {

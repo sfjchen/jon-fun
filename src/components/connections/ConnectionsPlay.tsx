@@ -6,6 +6,7 @@ import type { ConnectionsPuzzle } from '@/lib/connections'
 import { buildShareLines } from '@/lib/connections'
 import ConnectionsBoard, { type ConnectionsCompletePayload } from '@/components/connections/ConnectionsBoard'
 import ConnectionsResult from '@/components/connections/ConnectionsResult'
+import { SAMPLE_PUZZLE } from '@/lib/connections-sample'
 
 export type ConnectionsPlayProps = {
   basePath: string
@@ -25,6 +26,10 @@ export default function ConnectionsPlay({ basePath, idOrSlug }: ConnectionsPlayP
       setLoading(true)
       setErr(null)
       try {
+        if (idOrSlug === SAMPLE_PUZZLE.slug) {
+          if (!cancelled) setPuzzle(SAMPLE_PUZZLE)
+          return
+        }
         const r = await fetch(`/api/connections/puzzles/${encodeURIComponent(idOrSlug)}`)
         if (r.status === 503) {
           if (!cancelled) setErr('Library offline — configure Supabase for this deployment.')
@@ -49,7 +54,7 @@ export default function ConnectionsPlay({ basePath, idOrSlug }: ConnectionsPlayP
   }, [idOrSlug])
 
   useEffect(() => {
-    if (!result || !puzzle) return
+    if (!result || !puzzle || puzzle === SAMPLE_PUZZLE) return
     void (async () => {
       try {
         await fetch(`/api/connections/puzzles/${encodeURIComponent(puzzle.id)}/record`, {

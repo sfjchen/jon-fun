@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -59,8 +59,11 @@ function HomeTileContent({ game }: { game: GameCardGame }) {
 }
 
 export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDescription }: GameCardProps) {
-  const [clientReady, setClientReady] = useState(false)
-  useEffect(() => setClientReady(true), [])
+  const clientReady = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  )
   const useCompact = compact ?? !linePaper
   const homeTile = Boolean(hideDescription && useCompact)
 

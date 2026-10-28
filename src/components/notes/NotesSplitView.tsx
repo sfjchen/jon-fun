@@ -14,7 +14,6 @@ function clampSplitRatio(r: number): number {
 type NotesSplitViewProps = {
   split: boolean
   splitRatio: number
-  primarySession: NoteSession
   secondarySession: NoteSession | null
   leftHeader: ReactNode | null
   rightHeader: ReactNode | null
@@ -27,7 +26,6 @@ type NotesSplitViewProps = {
 export default function NotesSplitView({
   split,
   splitRatio,
-  primarySession,
   secondarySession,
   leftHeader,
   rightHeader,

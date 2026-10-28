@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { ConnectionsDifficulty, ConnectionsPuzzleSummary } from '@/lib/connections'
 import { CONNECTIONS_DIFFICULTIES, summaryAvgMistakes, summarySolveRate } from '@/lib/connections'
+import { SAMPLE_PUZZLE } from '@/lib/connections-sample'
 
 const TIER_DOT: Record<ConnectionsDifficulty, string> = {
   yellow: '#f9df6d',
@@ -26,34 +27,30 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<SortKey>('newest')
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const r = await fetch('/api/connections/puzzles?sort=newest&limit=300')
-      if (r.status === 503) {
-        setOffline(true)
-        setItems([])
-        return
-      }
-      setOffline(false)
-      if (!r.ok) {
-        const j = (await r.json().catch(() => ({}))) as { error?: string }
-        throw new Error(j.error || r.statusText)
-      }
-      const data = (await r.json()) as ConnectionsPuzzleSummary[]
-      setItems(Array.isArray(data) ? data : [])
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load')
-      setItems([])
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
   useEffect(() => {
-    void load()
-  }, [load])
+    void (async () => {
+      try {
+        const r = await fetch('/api/connections/puzzles?sort=newest&limit=300')
+        if (r.status === 503) {
+          setOffline(true)
+          setItems([])
+          return
+        }
+        setOffline(false)
+        if (!r.ok) {
+          const j = (await r.json().catch(() => ({}))) as { error?: string }
+          throw new Error(j.error || r.statusText)
+        }
+        const data = (await r.json()) as ConnectionsPuzzleSummary[]
+        setItems(Array.isArray(data) ? data : [])
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Failed to load')
+        setItems([])
+      } finally {
+        setLoading(false)
+      }
+    })()
+  }, [])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -175,15 +172,24 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
             No puzzles yet
           </p>
           <p className="mb-4 text-sm" style={{ color: 'var(--ink-muted)' }}>
-            Be the first to publish one to the public shelf.
+            Try the sample, then publish your own to the public shelf.
           </p>
-          <Link
-            href={`${basePath}/new`}
-            className="inline-block rounded-lg px-4 py-2 text-white"
-            style={{ backgroundColor: 'var(--ink-accent)' }}
-          >
-            Create puzzle
-          </Link>
+          <div className="flex justify-center gap-2">
+            <Link
+              href={`${basePath}/play/${SAMPLE_PUZZLE.slug}`}
+              className="inline-block rounded-lg px-4 py-2 text-white"
+              style={{ backgroundColor: 'var(--ink-accent)' }}
+            >
+              Play sample
+            </Link>
+            <Link
+              href={`${basePath}/new`}
+              className="inline-block rounded-lg border px-4 py-2"
+              style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+            >
+              Create puzzle
+            </Link>
+          </div>
         </div>
       ) : filtered.length > 0 ? (
         <ul className="grid gap-4 sm:grid-cols-2">

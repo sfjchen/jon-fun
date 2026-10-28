@@ -835,9 +835,9 @@ test.describe('Notes', () => {
   })
 
   test('tag chips toggle on note and persist in localStorage', async ({ page }) => {
-    await expect(page.getByTestId('notes-tag-chip-IC')).toBeVisible()
-    await page.getByTestId('notes-tag-chip-IC').click()
-    await expect(page.getByTestId('notes-tag-chip-IC')).toHaveClass(/bg-\[var\(--uv-accent\)\]/)
+    await expect(page.getByTestId('notes-tag-chip-meeting')).toBeVisible()
+    await page.getByTestId('notes-tag-chip-meeting').click()
+    await expect(page.getByTestId('notes-tag-chip-meeting')).toHaveClass(/bg-\[var\(--uv-accent\)\]/)
 
     await page.getByTestId('notes-tag-input').fill('custom-tag')
     await page.getByTestId('notes-tag-input').press('Enter')
@@ -848,7 +848,7 @@ test.describe('Notes', () => {
       const sessions = JSON.parse(raw) as { tags: string[] }[]
       return sessions[0]?.tags ?? []
     })
-    expect(stored).toContain('IC')
+    expect(stored).toContain('meeting')
     expect(stored).toContain('custom-tag')
   })
 

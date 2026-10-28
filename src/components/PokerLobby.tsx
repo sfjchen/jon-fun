@@ -41,33 +41,29 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
   const hostId = typeof window !== 'undefined' ? sessionStorage.getItem('poker_hostId') : null
   const isHost = hostId && room?.host_id === hostId
 
-  const loadRoomData = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/poker/rooms/${pin}`)
-      const data = await response.json()
+  const loadRoomData = useCallback(() => {
+    return fetch(`/api/poker/rooms/${pin}`)
+      .then(async (response) => {
+        const data = await response.json()
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to load room')
-      }
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to load room')
+        }
 
-      setRoom(data.room)
-      setPlayers(data.players || [])
-      setLoading(false)
+        setRoom(data.room)
+        if (data.room?.timer_per_turn) setTimerPerTurn(data.room.timer_per_turn)
+        setPlayers(data.players || [])
+        setLoading(false)
 
-      if (data.room.status === 'active') {
-        onStartGame()
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load room')
-      setLoading(false)
-    }
+        if (data.room.status === 'active') {
+          onStartGame()
+        }
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : 'Failed to load room')
+        setLoading(false)
+      })
   }, [pin, onStartGame])
-
-  useEffect(() => {
-    if (room?.timer_per_turn) {
-      setTimerPerTurn(room.timer_per_turn)
-    }
-  }, [room])
 
   useEffect(() => {
     loadRoomData()

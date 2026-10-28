@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('TMR System', () => {
+test.describe('Focus Chimes', () => {
   test('menu shows Study and Sleep options', async ({ page }) => {
     await page.goto('/games/tmr')
     await expect(page.getByRole('button', { name: /Study Session/i }).nth(0)).toBeVisible()

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useState } from 'react'
 import { FiveCanDoodle } from '@/components/FiveCanDoodle'
 import {
   CAN_BRAND_NAMES,
@@ -65,7 +65,7 @@ function Slot({
       data-testid={`five-can-slot-${idx}`}
       disabled={disabled}
       onClick={() => onPick(idx)}
-      className={`flex w-[min(22vw,104px)] shrink-0 flex-col items-center justify-start rounded-xl border-2 px-1.5 pb-2 pt-1.5 transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 disabled:opacity-50 sm:w-[104px] md:w-[112px] ${sel}`}
+      className={`flex min-w-0 flex-1 flex-col items-center justify-start rounded-xl border-2 px-1.5 pb-2 pt-1.5 transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 disabled:opacity-50 sm:w-[104px] sm:flex-none md:w-[112px] ${sel}`}
       style={{
         backgroundColor: 'var(--ink-paper)',
       }}
@@ -119,7 +119,7 @@ export default function FiveCanGame() {
     [first, second, g.won],
   )
 
-  const applyMove = useCallback(() => {
+  const applyMove = () => {
     if (g.won || first === null || second === null) return
     const next =
       mode === 'swap'
@@ -138,7 +138,7 @@ export default function FiveCanGame() {
     }))
     setFirst(null)
     setSecond(null)
-  }, [first, second, g, mode, shiftMoveKind])
+  }
 
   const newGame = useCallback(() => {
     setG(initialState())
@@ -161,7 +161,7 @@ export default function FiveCanGame() {
 
   const solverHint = !g.won ? hintFirstMoveOnShortestPath(g.current, g.target, mode) : null
 
-  const applyHint = useCallback(() => {
+  const applyHint = () => {
     if (g.won) return
     const h = hintFirstMoveOnShortestPath(g.current, g.target, mode)
     if (!h) return
@@ -174,47 +174,47 @@ export default function FiveCanGame() {
       setSecond(h.to)
       if (mode === 'shift') setShiftMoveKind('insert')
     }
-  }, [g, mode])
+  }
 
-  const keyCb = useRef({ pick, applyMove, newGame, clearSelection, applyHint })
-  keyCb.current = { pick, applyMove, newGame, clearSelection, applyHint }
+  /*
+   * Handles game shortcuts with the latest callbacks without re-binding the window listener.
+   */
+  const handleKey = useEffectEvent((e: KeyboardEvent) => {
+    if (e.defaultPrevented) return
+    const t = e.target as HTMLElement | null
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
+
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      clearSelection()
+      return
+    }
+    if (e.key === 'n' || e.key === 'N') {
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      e.preventDefault()
+      newGame()
+      return
+    }
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      applyMove()
+      return
+    }
+    if (e.key === 'h' || e.key === 'H') {
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      e.preventDefault()
+      applyHint()
+      return
+    }
+    const n = e.key >= '1' && e.key <= '5' ? Number.parseInt(e.key, 10) - 1 : -1
+    if (n >= 0 && n <= 4) {
+      e.preventDefault()
+      pick(n)
+    }
+  })
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.defaultPrevented) return
-      const t = e.target as HTMLElement | null
-      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
-
-      const { pick: p, applyMove: go, newGame: ng, clearSelection: clear, applyHint: hi } = keyCb.current
-
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        clear()
-        return
-      }
-      if (e.key === 'n' || e.key === 'N') {
-        if (e.metaKey || e.ctrlKey || e.altKey) return
-        e.preventDefault()
-        ng()
-        return
-      }
-      if (e.key === 'Enter') {
-        e.preventDefault()
-        go()
-        return
-      }
-      if (e.key === 'h' || e.key === 'H') {
-        if (e.metaKey || e.ctrlKey || e.altKey) return
-        e.preventDefault()
-        hi()
-        return
-      }
-      const n = e.key >= '1' && e.key <= '5' ? Number.parseInt(e.key, 10) - 1 : -1
-      if (n >= 0 && n <= 4) {
-        e.preventDefault()
-        p(n)
-      }
-    }
+    const onKey = (e: KeyboardEvent) => handleKey(e)
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
@@ -350,7 +350,7 @@ export default function FiveCanGame() {
               </div>
 
               <div className="min-w-0 flex-1 touch-pan-x overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
-                <div className="flex h-full min-h-[200px] w-max min-w-full flex-nowrap items-stretch justify-between gap-2 sm:gap-3 md:min-w-0 md:justify-evenly">
+                <div className="flex h-full min-h-[200px] w-full flex-nowrap sm:w-max sm:min-w-full items-stretch justify-between gap-2 sm:gap-3 md:min-w-0 md:justify-evenly">
                   {[0, 1, 2, 3, 4].map((idx) => (
                     <Slot
                       key={idx}

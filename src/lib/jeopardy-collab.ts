@@ -49,6 +49,30 @@ export interface UseCollabBoardResult extends CollabState {
   refresh: () => Promise<void>
 }
 
+/**
+ * Fetches a board by slug and returns a state updater for the result.
+ * The updater marks not-found, error or offline states when the fetch fails.
+ */
+async function loadBoard(slug: string): Promise<(s: CollabState) => CollabState> {
+  try {
+    const res = await fetch(`/api/jeopardy/boards/${slug}`, { cache: 'no-store' })
+    if (res.status === 404) return (s) => ({ ...s, loading: false, notFound: true })
+    if (!res.ok) return (s) => ({ ...s, loading: false, saveStatus: 'error' })
+    const data = await res.json()
+    return (s) => ({
+      ...s,
+      board: normalizeBoard(data.board, data.board?.id ?? ''),
+      version: data.version ?? 0,
+      updatedAt: data.updatedAt ?? null,
+      lastEditor: data.lastEditor ?? '',
+      loading: false,
+      notFound: false,
+    })
+  } catch {
+    return (s) => ({ ...s, loading: false, saveStatus: 'offline' })
+  }
+}
+
 export function useCollabBoard(slug: string | null, identity: EditorIdentity | null): UseCollabBoardResult {
   const [state, setState] = useState<CollabState>({
     board: null,
@@ -63,9 +87,6 @@ export function useCollabBoard(slug: string | null, identity: EditorIdentity | n
     pendingOps: 0,
   })
 
-  const stateRef = useRef(state)
-  stateRef.current = state
-
   const myLockRef = useRef<LockKey | null>(null)
   const channelRef = useRef<RealtimeChannel | null>(null)
   const pendingRef = useRef(0)
@@ -78,40 +99,19 @@ export function useCollabBoard(slug: string | null, identity: EditorIdentity | n
   // Latest identity in a ref so the presence channel callbacks can read current
   // values without tearing down the channel on every rename.
   const identityRef = useRef({ name: editorName, color: editorColor })
-  identityRef.current = { name: editorName, color: editorColor }
+  useEffect(() => {
+    identityRef.current = { name: editorName, color: editorColor }
+  }, [editorName, editorColor])
 
   // ----- Initial fetch + realtime subscriptions -----
   const fetchBoard = useCallback(async (): Promise<void> => {
-    if (!slug) return
-    try {
-      const res = await fetch(`/api/jeopardy/boards/${slug}`, { cache: 'no-store' })
-      if (res.status === 404) {
-        setState((s) => ({ ...s, loading: false, notFound: true }))
-        return
-      }
-      if (!res.ok) {
-        setState((s) => ({ ...s, loading: false, saveStatus: 'error' }))
-        return
-      }
-      const data = await res.json()
-      setState((s) => ({
-        ...s,
-        board: normalizeBoard(data.board, data.board?.id ?? ''),
-        version: data.version ?? 0,
-        updatedAt: data.updatedAt ?? null,
-        lastEditor: data.lastEditor ?? '',
-        loading: false,
-        notFound: false,
-      }))
-    } catch {
-      setState((s) => ({ ...s, loading: false, saveStatus: 'offline' }))
-    }
+    if (slug) setState(await loadBoard(slug))
   }, [slug])
 
   useEffect(() => {
     if (!slug) return
-    void fetchBoard()
-  }, [slug, fetchBoard])
+    void loadBoard(slug).then(setState)
+  }, [slug])
 
   // Subscribe to DB row updates so other clients see writes.
   useEffect(() => {
@@ -129,8 +129,7 @@ export function useCollabBoard(slug: string | null, identity: EditorIdentity | n
           }
           // Only accept newer versions.
           const incomingVersion = typeof row.version === 'number' ? row.version : 0
-          if (incomingVersion <= stateRef.current.version) return
-          setState((s) => ({
+          setState((s) => (incomingVersion <= s.version ? s : {
             ...s,
             board: normalizeBoard(row.board, (row.id as string) || ''),
             version: incomingVersion,

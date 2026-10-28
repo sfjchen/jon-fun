@@ -59,7 +59,11 @@ async function pingClock(pin: string, t0: number): Promise<{ t0: number; tS: num
 }
 
 export default function BuzzerPlayer({ pin, initialSession, initialQueue, boardTitle }: BuzzerPlayerProps) {
-  const [identity, setIdentity] = useState<EditorIdentity | null>(null)
+  // Mounts only after the client fetch in the PIN page, so reading localStorage here cannot break hydration.
+  const [identity, setIdentity] = useState<EditorIdentity | null>(() => {
+    const id = getOrCreateIdentity()
+    return id.name ? id : null
+  })
   const [pendingName, setPendingName] = useState('')
   const [calibration, setCalibration] = useState<CalibrationState>('idle')
   const [offsetMs, setOffsetMs] = useState(0)
@@ -74,17 +78,6 @@ export default function BuzzerPlayer({ pin, initialSession, initialQueue, boardT
   const offsetRef = useRef(0)
   // Tracks whether THIS player has already buzzed in the current round.
   const lastBuzzedRoundRef = useRef<string | null>(null)
-
-  // ----- Load identity from localStorage; prompt for name if missing -----
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const id = getOrCreateIdentity()
-    if (!id.name) {
-      setPendingName('')
-    } else {
-      setIdentity(id)
-    }
-  }, [])
 
   const confirmName = useCallback(() => {
     const trimmed = pendingName.trim()

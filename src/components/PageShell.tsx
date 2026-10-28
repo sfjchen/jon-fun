@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
 import { HomeLink } from '@/components/HomeLink'
 
 type PageShellProps = {
@@ -36,7 +36,15 @@ function isChwaziPath(pathname: string): boolean {
 export function PageShell({ children, title, showBack }: PageShellProps) {
   const pathname = usePathname()
   const notesPage = isNotesPage(pathname ?? '')
-  const [isMobile, setIsMobile] = useState(false)
+  const isMobile = useSyncExternalStore(
+    (cb) => {
+      const mq = window.matchMedia('(max-width: 767px)')
+      mq.addEventListener('change', cb)
+      return () => mq.removeEventListener('change', cb)
+    },
+    () => window.matchMedia('(max-width: 767px)').matches,
+    () => false,
+  )
   const chwaziMobile = isChwaziPath(pathname ?? '') && isMobile
   const isNotebook = !chwaziMobile && !notesPage
   const isHome = pathname === '/'
@@ -45,14 +53,6 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
   const pearNav = isPearNavigator(pathname ?? '')
   const homeHref = '/'
   const useBigLogo = isNotebook && !pearNav
-
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)')
-    setIsMobile(mq.matches)
-    const fn = () => setIsMobile(mq.matches)
-    mq.addEventListener('change', fn)
-    return () => mq.removeEventListener('change', fn)
-  }, [])
 
   const notebookTypographyRoot = isNotebook && !pearNav
 

@@ -10,9 +10,9 @@ export const metadata: Metadata = {
     default: 'sfjc.dev',
     template: '%s | sfjc.dev'
   },
-  description: 'Collection of fun brain games built with Next.js',
-  keywords: ['games', 'brain games', 'puzzles', 'math games'],
-  authors: [{ name: 'Game Hub' }],
+  description: 'A collection of fun games and projects by Jonathan Chen',
+  keywords: ['games', 'party games', 'puzzles', 'projects'],
+  authors: [{ name: 'Jonathan Chen' }],
   robots: 'index, follow',
   icons: { icon: '/icon.png' },
 }

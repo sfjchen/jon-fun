@@ -27,7 +27,7 @@ function txRequest<T>(request: IDBRequest<T>): Promise<T> {
   })
 }
 
-function toSummary(publication: ReaderPublication): ReaderPublicationSummary {
+export function toSummary(publication: ReaderPublication): ReaderPublicationSummary {
   return {
     id: publication.id,
     title: publication.title,

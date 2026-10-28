@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { ReaderPublicationCommentDto } from '@/lib/reader/comments-server'
 import { getReaderCommentIdentity } from '@/lib/reader/comment-identity'
 
@@ -40,12 +40,16 @@ export function ReaderCommentPanel({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
-  useEffect(() => {
+  const [prev, setPrev] = useState({ open, blockId })
+
+  // Clears the draft when the panel opens or moves to another block while open.
+  if (prev.open !== open || prev.blockId !== blockId) {
+    setPrev({ open, blockId })
     if (open) {
       setDraft('')
       setError('')
     }
-  }, [open, blockId])
+  }
 
   const thread = useMemo(() => {
     if (!blockId) return []

@@ -3,14 +3,18 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState, useSyncExternalStore } from 'react'
 import { readBoardFromFile } from '@/lib/jeopardy'
 import { getRecents, removeRecent, type RecentBoard } from '@/lib/jeopardy-identity'
 import { useJeopardyLibrary } from '@/lib/jeopardy-library-client'
+import { SAMPLE_BOARD } from '@/lib/jeopardy-sample'
 
 // Magic string that, when typed into the join field, unlocks the saved library.
 // Mirrors `DEFAULT_LIBRARY_PASSCODE` server-side; both must match (or both be overridden via env).
 const LIBRARY_TRIGGER = '890-'
+
+// Remembers this device's sample board slug so "Play a sample board" reuses it.
+const SAMPLE_SLUG_KEY = 'jeopardy_sample_slug'
 
 const surfaceStyle = {
   backgroundColor: 'var(--ink-paper)',
@@ -30,7 +34,10 @@ export default function JeopardyPage() {
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [joinCode, setJoinCode] = useState('')
-  const [recents, setRecents] = useState<RecentBoard[]>([])
+  /* Reads recents from localStorage only after hydration; the version counter re-reads them after a removal. */
+  const hydrated = useSyncExternalStore(() => () => {}, () => true, () => false)
+  const [, setRecentsVer] = useState(0)
+  const recents: RecentBoard[] = hydrated ? getRecents() : []
 
   const showError = useCallback((msg: string, ttl = 3000) => {
     setError(msg)
@@ -39,14 +46,21 @@ export default function JeopardyPage() {
 
   const library = useJeopardyLibrary(showError)
 
-  useEffect(() => {
-    setRecents(getRecents())
-  }, [])
 
+  /**
+   * Creates a board from an optional payload and opens it in edit or play mode.
+   * With a reuse key, it reopens the board slug saved under that key while the board still exists,
+   * so repeat clicks don't pile up duplicate boards.
+   */
   const createBoard = useCallback(
-    async (payload?: { board?: unknown; title?: string }) => {
+    async (payload?: { board?: unknown; title?: string }, mode: 'edit' | 'play' = 'edit', reuseKey?: string) => {
       setCreating(true)
       try {
+        const kept = reuseKey ? localStorage.getItem(reuseKey) : null
+        if (kept && (await fetch(`/api/jeopardy/boards/${encodeURIComponent(kept)}`, { cache: 'no-store' })).ok) {
+          router.push(`/games/jeopardy/${mode}/${kept}`)
+          return
+        }
         const res = await fetch('/api/jeopardy/boards', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -54,7 +68,8 @@ export default function JeopardyPage() {
         })
         if (!res.ok) throw new Error('fail')
         const data = await res.json()
-        router.push(`/games/jeopardy/edit/${data.slug}`)
+        if (reuseKey) localStorage.setItem(reuseKey, data.slug)
+        router.push(`/games/jeopardy/${mode}/${data.slug}`)
       } catch {
         showError('Could not create board. Check your connection and try again.', 3500)
       } finally {
@@ -114,13 +129,22 @@ export default function JeopardyPage() {
             {creating ? 'Creating…' : 'Create New Game'}
           </button>
 
+          <button
+            onClick={() => void createBoard({ board: SAMPLE_BOARD, title: SAMPLE_BOARD.title }, 'play', SAMPLE_SLUG_KEY)}
+            disabled={creating}
+            className="w-full py-3 px-6 rounded-lg border hover:opacity-90 disabled:opacity-50"
+            style={surfaceStyle}
+          >
+            Play a sample board
+          </button>
+
           <div className="flex gap-2">
             <input
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleJoin() }}
               placeholder="Paste link or code to join…"
-              className="flex-1 px-3 py-2 rounded-lg border outline-none"
+              className="min-w-0 flex-1 px-3 py-2 rounded-lg border outline-none"
               style={sunkStyle}
             />
             <button
@@ -210,7 +234,7 @@ export default function JeopardyPage() {
                       title="Play"
                     >▶</Link>
                     <button
-                      onClick={() => { removeRecent(r.slug); setRecents(getRecents()) }}
+                      onClick={() => { removeRecent(r.slug); setRecentsVer((v) => v + 1) }}
                       className="px-2 py-2 rounded-lg border text-sm"
                       style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-muted)' }}
                       title="Remove from list"

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useSyncExternalStore } from 'react'
 const TMR_ADMIN_KEY = 'tmr_admin_ok'
 
 type StudyRow = {
@@ -33,49 +33,43 @@ export default function TMRAdminPage() {
   const [studySessions, setStudySessions] = useState<StudyRow[]>([])
   const [sleepSessions, setSleepSessions] = useState<SleepRow[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  /* Reads the URL or session key on the client so the first client render knows an auto-load is pending. */
+  const autoKey = useSyncExternalStore(
+    () => () => {},
+    () => new URLSearchParams(window.location.search).get('key') || window.sessionStorage.getItem(TMR_ADMIN_KEY),
+    () => null,
+  )
+  const [loadingState, setLoading] = useState<boolean | null>(null)
+  const loading = loadingState ?? Boolean(autoKey)
 
-  const fetchEntries = useCallback(async (adminKey: string) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await fetch(`/api/tmr/admin/entries?key=${encodeURIComponent(adminKey)}`)
-      if (res.status === 401) {
-        setError('Invalid key')
-        setLoading(false)
-        return
-      }
-      if (!res.ok) {
-        setError('Failed to load')
-        setLoading(false)
-        return
-      }
-      const data = (await res.json()) as { studySessions: StudyRow[]; sleepSessions: SleepRow[] }
-      setStudySessions(data.studySessions ?? [])
-      setSleepSessions(data.sleepSessions ?? [])
-      setAuthorized(true)
-      if (typeof window !== 'undefined') window.sessionStorage.setItem(TMR_ADMIN_KEY, adminKey)
-    } catch {
-      setError('Request failed')
-    }
-    setLoading(false)
+  /*
+   * Fetches entries for the key. Callers outside the auto-load set loading and clear the error first.
+   */
+  const fetchEntries = useCallback((adminKey: string) => {
+    return fetch(`/api/tmr/admin/entries?key=${encodeURIComponent(adminKey)}`)
+      .then(async (res) => {
+        if (res.status === 401) return setError('Invalid key')
+        if (!res.ok) return setError('Failed to load')
+        const data = (await res.json()) as { studySessions: StudyRow[]; sleepSessions: SleepRow[] }
+        setStudySessions(data.studySessions ?? [])
+        setSleepSessions(data.sleepSessions ?? [])
+        setAuthorized(true)
+        window.sessionStorage.setItem(TMR_ADMIN_KEY, adminKey)
+      })
+      .catch(() => setError('Request failed'))
+      .finally(() => setLoading(false))
   }, [])
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    const q = new URLSearchParams(window.location.search)
-    const urlKey = q.get('key')
-    const stored = window.sessionStorage.getItem(TMR_ADMIN_KEY)
-    if (urlKey) {
-      void fetchEntries(urlKey)
-      return
-    }
-    if (stored) void fetchEntries(stored)
-  }, [fetchEntries])
+    if (autoKey && !authorized) void fetchEntries(autoKey)
+  }, [autoKey, authorized, fetchEntries])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (key.trim()) void fetchEntries(key.trim())
+    if (!key.trim()) return
+    setLoading(true)
+    setError(null)
+    void fetchEntries(key.trim())
   }
 
   const exportJson = useCallback(() => {

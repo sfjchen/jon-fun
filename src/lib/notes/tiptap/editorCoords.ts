@@ -114,18 +114,19 @@ export function postprocessTodoMarkdown(md: string): string {
   return md.replace(/^(\s*)\\>/gm, '$1>').replace(/^(\s*)\\- /gm, '$1- ')
 }
 
-/** Keep todo lines from plain text when markdown serializer drops markers. */
+/**
+ * Keeps todo lines from plain text when the markdown serializer drops or escapes their markers.
+ * Matches each markdown line to a plain todo line by content, never by index, since table rows and blank lines
+ * make the 2 line lists differ in length.
+ */
 export function mergeTodoLinesIntoMarkdown(plain: string, md: string): string {
-  const plainLines = plain.split('\n')
-  const mdLines = md.split('\n')
-  const max = Math.max(plainLines.length, mdLines.length)
-  const out: string[] = []
-  for (let i = 0; i < max; i++) {
-    const p = plainLines[i] ?? ''
-    const m = mdLines[i] ?? ''
-    const merged = m || p
-    if (parseTodoLine(p) && !parseTodoLine(merged)) out.push(p)
-    else out.push(merged)
-  }
-  return out.join('\n')
+  const todos = plain.split('\n').filter((p) => parseTodoLine(p))
+  return md
+    .split('\n')
+    .map((m) => {
+      if (!m.trim() || parseTodoLine(m)) return m
+      const text = m.replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&').trim()
+      return todos.find((p) => p.trim() === text || parseTodoLine(p) === text) ?? m
+    })
+    .join('\n')
 }

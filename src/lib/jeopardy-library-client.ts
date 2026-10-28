@@ -25,11 +25,43 @@ export interface UseJeopardyLibraryResult {
   importEntry: (filename: string) => Promise<string | null> // returns slug on success
 }
 
+/**
+ * Fetches the saved library listing for a passcode.
+ * Returns null for a wrong passcode and throws on other failures.
+ */
+async function fetchLibrary(code: string): Promise<LibraryEntry[] | null> {
+  const res = await fetch(`/api/jeopardy/library?passcode=${encodeURIComponent(code)}`, { cache: 'no-store' })
+  if (res.status === 401) return null
+  if (!res.ok) throw new Error('fail')
+  const data = await res.json()
+  return Array.isArray(data.items) ? data.items : []
+}
+
 export function useJeopardyLibrary(onError: (msg: string) => void): UseJeopardyLibraryResult {
   const [passcode, setPasscode] = useState('')
   const [items, setItems] = useState<LibraryEntry[] | null>(null)
   const [loading, setLoading] = useState(false)
   const [importingFile, setImportingFile] = useState<string | null>(null)
+
+  /**
+   * Applies a fetched listing for a passcode, clearing the cached passcode when it was wrong.
+   * Returns whether the passcode unlocked the library.
+   */
+  const applyListing = useCallback(
+    (code: string, list: LibraryEntry[] | null): boolean => {
+      if (!list) {
+        onError('Wrong passcode')
+        setItems(null)
+        localStorage.removeItem(LIBRARY_PASSCODE_KEY)
+        return false
+      }
+      setItems(list)
+      setPasscode(code)
+      localStorage.setItem(LIBRARY_PASSCODE_KEY, code)
+      return true
+    },
+    [onError],
+  )
 
   const unlock = useCallback(
     async (raw: string): Promise<boolean> => {
@@ -37,19 +69,7 @@ export function useJeopardyLibrary(onError: (msg: string) => void): UseJeopardyL
       if (!code) return false
       setLoading(true)
       try {
-        const res = await fetch(`/api/jeopardy/library?passcode=${encodeURIComponent(code)}`, { cache: 'no-store' })
-        if (res.status === 401) {
-          onError('Wrong passcode')
-          setItems(null)
-          localStorage.removeItem(LIBRARY_PASSCODE_KEY)
-          return false
-        }
-        if (!res.ok) throw new Error('fail')
-        const data = await res.json()
-        setItems(Array.isArray(data.items) ? data.items : [])
-        setPasscode(code)
-        localStorage.setItem(LIBRARY_PASSCODE_KEY, code)
-        return true
+        return applyListing(code, await fetchLibrary(code))
       } catch {
         onError('Could not load library')
         return false
@@ -57,7 +77,7 @@ export function useJeopardyLibrary(onError: (msg: string) => void): UseJeopardyL
         setLoading(false)
       }
     },
-    [onError],
+    [onError, applyListing],
   )
 
   const lock = useCallback(() => {
@@ -91,8 +111,11 @@ export function useJeopardyLibrary(onError: (msg: string) => void): UseJeopardyL
 
   // Resume from cached passcode on mount.
   useEffect(() => {
-    const stored = typeof window !== 'undefined' ? localStorage.getItem(LIBRARY_PASSCODE_KEY) : null
-    if (stored) void unlock(stored)
+    const stored = localStorage.getItem(LIBRARY_PASSCODE_KEY)?.trim()
+    if (!stored) return
+    fetchLibrary(stored)
+      .then((list) => applyListing(stored, list))
+      .catch(() => onError('Could not load library'))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

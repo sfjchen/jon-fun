@@ -61,3 +61,5 @@ node_modules
 e2e/fixtures/*.pdf
 e2e/fixtures/*.epub
 e2e/fixtures/dokumen.pub*.epub
+
+.claude/
