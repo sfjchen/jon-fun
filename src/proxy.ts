@@ -1,6 +1,7 @@
 /**
  * Edge gate for the public Veridian demo: caps AI calls per visitor before the /veridian rewrite forwards them.
- * Counts live in Supabase (`veridian_demo_hit`), so limits hold across server instances.
+ * Counts live in Supabase (`veridian_demo_hit`), so limits hold across server instances. Allowed requests carry
+ * VERIDIAN_PROXY_SECRET so the Veridian origin rejects direct calls that skip this gate.
  */
 
 import { NextResponse, type NextRequest } from 'next/server'
@@ -11,7 +12,7 @@ const CAPS = {
 } as const
 
 /**
- * Returns a 429 when the visitor is over a cap, else passes the request on to the rewrite.
+ * Returns a 429 when the visitor is over a cap, else passes the request on to the rewrite with the proxy secret.
  * Fails open when Supabase is unreachable so the demo never breaks on a counter outage.
  */
 export async function proxy(req: NextRequest) {
@@ -19,7 +20,10 @@ export async function proxy(req: NextRequest) {
   const cap = CAPS[route]
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const svc = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (req.method !== 'POST' || !url || !svc) return NextResponse.next()
+  const fwd = new Headers(req.headers)
+  fwd.set('x-veridian-proxy', process.env.VERIDIAN_PROXY_SECRET ?? '')
+  const pass = () => NextResponse.next({ request: { headers: fwd } })
+  if (req.method !== 'POST' || !url || !svc) return pass()
 
   /* sfjc.dev sits behind Cloudflare; Vercel sets x-forwarded-host itself, so cf-connecting-ip is trusted only there. */
   const h = req.headers
@@ -36,13 +40,13 @@ export async function proxy(req: NextRequest) {
           p_daily: cap.daily }),
     })
     const hit = res.ok ? ((await res.json()) as string | null) : null
-    if (!hit) return NextResponse.next()
+    if (!hit) return pass()
     const label = hit === 'burst' ? `${cap.burst} ${cap.noun} per ${cap.burstMin} minutes` :
         `${cap.daily} ${cap.noun} per day`
     const wait = hit === 'burst' ? `${cap.burstMin} minutes` : 'tomorrow'
     return NextResponse.json({ error: `Public demo limit reached (${label}). Try again in ${wait}.` }, { status: 429 })
   } catch {
-    return NextResponse.next()
+    return pass()
   }
 }
 
