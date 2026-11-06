@@ -1257,15 +1257,19 @@ test.describe('Notes', () => {
       await typeInNotesEditor(page, 'alpha body unique')
 
       await page.getByTestId('notes-new-meeting').click()
+      await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(2)
       await page.locator('[data-testid^="notes-meeting-item-"]').filter({ hasText: 'Note Alpha' }).click()
+      await expect(page.getByTestId('notes-meeting-title')).toHaveValue('Note Alpha')
 
       const inactiveItem = page.locator('[data-testid^="notes-meeting-item-"][data-active="false"]').first()
       const secondId = (await inactiveItem.getAttribute('data-testid'))!.replace('notes-meeting-item-', '')
       await dropNoteOnSplitPane(page, secondId, 'right')
+      await expect(page.getByTestId('notes-split-root')).toHaveAttribute('data-split', 'true', { timeout: 5000 })
 
       const rightEd = notesEditor(page, 'right')
       await rightEd.click()
       await page.keyboard.type('beta body unique')
+      await expect(rightEd).toContainText('beta body unique')
 
       await ensureNotesPanelOpen(page)
       await expect(page.getByTestId('notes-lookup-input')).toBeVisible()

@@ -23,6 +23,9 @@ export async function waitForNotesEditor(page: Page): Promise<void> {
 
 /** Stub Notes sync, lookup, embed, glossary, and sources routes for offline E2E. */
 export async function mockNotesApi(page: Page): Promise<void> {
+  /** Skip the first-visit welcome note so specs start on an empty note. */
+  await page.addInitScript(() => localStorage.setItem('notes_welcome_seeded', '1'))
+
   await page.route('**/api/notes/sessions**', async (route) => {
     const method = route.request().method()
     if (method === 'GET') {
