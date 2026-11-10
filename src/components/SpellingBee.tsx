@@ -66,30 +66,23 @@ function loadFound(id: string): string[] {
 }
 
 /**
- * Renders this browser's daily stats (days played, Genius days, current streak) and a copy-to-share button.
+ * Renders this browser's daily stats (days played, average words found, current streak) and a copy-to-share button.
  */
-function Stats({ data, now, share }: { data: Data; now: string; share: string }) {
+function Stats({ now, share }: { now: string; share: string }) {
   const [copied, setCopied] = useState('')
   const days = new Map<string, number>()
   try {
     Object.keys(localStorage).forEach((k) => {
-      const m = /^sb:(\d{4}-\d{2}-\d{2}):([a-z]{7})$/.exec(k)
-      if (!m) return
-      const pz = makePuzzle(m[2]!, data.words)
-      days.set(
-        m[1]!,
-        rankIdx(
-          loadFound(k.slice(3)).reduce((s, w) => s + score(w), 0),
-          pz.max,
-        ),
-      )
+      const m = /^sb:(\d{4}-\d{2}-\d{2}):[a-z]{7}$/.exec(k)
+      const n = m ? loadFound(k.slice(3)).length : 0
+      if (n) days.set(m![1]!, n)
     })
   } catch {}
   let streak = 0
   for (let d = days.has(now) ? now : addDays(now, -1); days.has(d); d = addDays(d, -1)) streak++
   const cells: [string, number][] = [
     ['Days played', days.size],
-    ['Genius days', [...days.values()].filter((r) => r >= 8).length],
+    ['Avg words', days.size ? Math.round([...days.values()].reduce((a, b) => a + b, 0) / days.size) : 0],
     ['Day streak', streak],
   ]
   return (
@@ -374,48 +367,57 @@ export default function SpellingBee() {
 
   const yd = makePuzzle(dailyId(addDays(date, -1), data.bank), data.words)
   const btn = 'rounded-full border px-5 py-2.5 text-[15px] font-medium active:scale-95 transition'
-  const link = 'text-sm underline underline-offset-2 disabled:opacity-30 disabled:no-underline'
+  const link = 'text-[13px] md:text-sm underline underline-offset-2 disabled:opacity-30 disabled:no-underline'
   const label = isPractice
     ? 'Practice puzzle'
     : new Date(`${date}T12:00`).toLocaleDateString(undefined, {
-        weekday: 'long',
-        month: 'long',
+        weekday: 'short',
+        month: 'short',
         day: 'numeric',
         year: 'numeric',
       })
   const sorted = [...found].sort()
 
   return (
-    <div className="mx-auto w-full max-w-5xl select-none" style={{ color: 'var(--ink-text)' }}>
+    <div
+      className="mx-auto w-full max-w-5xl select-none"
+      style={{ color: 'var(--ink-text)', touchAction: 'manipulation' }}
+    >
       <style>{`@keyframes sb-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}
         75%{transform:translateX(8px)}}
         @keyframes sb-blink{50%{opacity:0}}`}</style>
 
       <header
-        className="mb-4 flex flex-wrap items-end justify-between gap-3 border-b pb-3"
+        className="mb-3 flex flex-col gap-1.5 border-b pb-2 md:mb-4 md:flex-row md:items-end md:justify-between md:pb-3"
         style={{ borderColor: 'var(--ink-border)' }}
       >
-        <div>
-          <h1 className="font-lora text-2xl font-bold">Spelling Bee</h1>
-          <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-            {label}
-          </p>
-        </div>
-        <nav className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          {!isPractice && (
-            <>
-              <button className={link} disabled={dayNum(date) <= 0} onClick={() => go(`?d=${addDays(date, -1)}`)}>
-                ‹ Prev
-              </button>
+        <div className="flex items-baseline justify-between gap-3 md:block">
+          <h1 className="font-lora text-lg font-bold md:text-2xl">Spelling Bee</h1>
+          <p className="flex items-center gap-2 text-xs md:text-sm" style={{ color: 'var(--ink-muted)' }}>
+            {!isPractice && (
               <button
-                className={link}
+                className="px-1 text-base leading-none disabled:opacity-30"
+                aria-label="Previous day"
+                disabled={dayNum(date) <= 0}
+                onClick={() => go(`?d=${addDays(date, -1)}`)}
+              >
+                ‹
+              </button>
+            )}
+            {label}
+            {!isPractice && (
+              <button
+                className="px-1 text-base leading-none disabled:opacity-30"
+                aria-label="Next day"
                 disabled={date >= now}
                 onClick={() => go(addDays(date, 1) >= now ? '' : `?d=${addDays(date, 1)}`)}
               >
-                Next ›
+                ›
               </button>
-            </>
-          )}
+            )}
+          </p>
+        </div>
+        <nav className="flex flex-wrap items-center gap-x-3 gap-y-1 md:gap-x-4">
           {(isPractice || date !== now) && (
             <button className={link} onClick={() => go('')}>
               Today
@@ -441,9 +443,9 @@ export default function SpellingBee() {
         </nav>
       </header>
 
-      <div className="grid gap-6 md:grid-cols-[1fr_1fr] md:gap-10">
+      <div className="grid gap-3 md:grid-cols-[1fr_1fr] md:gap-10">
         <section className="order-2 flex flex-col items-center md:order-1">
-          <div className="relative flex h-14 w-full md:h-16 items-center justify-center">
+          <div className="relative flex h-12 w-full items-center justify-center md:h-16">
             {toast && (
               <div
                 className="absolute -top-1 rounded-md px-3 py-1.5 text-sm font-semibold shadow"
@@ -463,7 +465,7 @@ export default function SpellingBee() {
             )}
             <p
               data-testid="sb-entry"
-              className="mt-6 text-3xl font-bold uppercase tracking-wide"
+              className="mt-4 text-3xl font-bold uppercase tracking-wide md:mt-6"
               style={{ animation: shake ? 'sb-shake .3s 2' : undefined }}
             >
               {[...entry].map((c, i) => (
@@ -483,7 +485,7 @@ export default function SpellingBee() {
 
           <svg
             viewBox="-135 -140 270 280"
-            className="my-1 w-full max-w-[250px] md:my-3 md:max-w-[300px]"
+            className="my-1 w-full max-w-[min(250px,40svh)] md:my-3 md:max-w-[min(300px,55svh)]"
             aria-label="Letter hive"
             style={{ touchAction: 'manipulation' }}
           >
@@ -542,7 +544,7 @@ export default function SpellingBee() {
           </p>
         </section>
 
-        <section className="order-1 space-y-4 md:order-2">
+        <section className="order-1 space-y-3 md:order-2 md:space-y-4">
           <button className="block w-full text-left" onClick={() => setModal('ranks')} aria-label="Show rankings">
             <div className="flex items-center gap-4">
               <span className="w-24 shrink-0 font-bold">{RANKS[rk]![0]}</span>
@@ -569,23 +571,26 @@ export default function SpellingBee() {
                 </div>
               </div>
             </div>
-            {rk < RANKS.length - 2 && (
-              <p className="mt-1 text-xs" style={{ color: 'var(--ink-muted)' }}>
-                {mins[rk + 1]![1] - pts} to {mins[rk + 1]![0]}
-                {rk < 8 ? ` · ${mins[8]![1] - pts} to Genius` : ''}
-              </p>
-            )}
-          </button>
-          {crowd && crowd.players > 0 && (
-            <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
-              {crowd.players} player{crowd.players === 1 ? '' : 's'}{' '}
-              {isPractice || date !== now ? 'on this puzzle' : 'today'} · {crowd.genius} reached Genius
+            <p className="mt-1 text-xs" style={{ color: 'var(--ink-muted)' }}>
+              {[
+                rk < 8 && `${mins[rk + 1]![1] - pts} to ${mins[rk + 1]![0]}`,
+                rk < 7 && `${mins[8]![1] - pts} to Genius`,
+                crowd?.players &&
+                  `${crowd.players} player${crowd.players === 1 ? '' : 's'} ` +
+                    `${isPractice || date !== now ? 'on this puzzle' : 'today'}` +
+                    (crowd.genius ? ` (${crowd.genius} Genius)` : ''),
+              ]
+                .filter(Boolean)
+                .join(' · ')}
             </p>
-          )}
+          </button>
 
           <div className="rounded-lg border" style={{ borderColor: 'var(--ink-border)' }}>
             <button
-              className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left md:pointer-events-none"
+              className={
+                'flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm ' +
+                  'md:pointer-events-none md:px-4 md:py-3 md:text-base'
+              }
               onClick={() => setOpen((o) => !o)}
             >
               <span className="truncate">
@@ -649,7 +654,6 @@ export default function SpellingBee() {
       {modal === 'stats' && (
         <Dialog title="Your stats" onClose={() => setModal(null)}>
           <Stats
-            data={data}
             now={now}
             share={
               `Spelling Bee ${isPractice ? 'practice' : date} · ${RANKS[rk]![0]} · ${pts}/${pz.max} points · ` +

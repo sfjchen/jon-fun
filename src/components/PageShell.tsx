@@ -53,6 +53,8 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
   const pearNav = isPearNavigator(pathname ?? '')
   const homeHref = '/'
   const useBigLogo = isNotebook && !pearNav
+  /** Game-first routes keep a short header on phones so the board fits above the fold. */
+  const slimMobile = (pathname ?? '').startsWith('/games/spelling-bee')
 
   const notebookTypographyRoot = isNotebook && !pearNav
 
@@ -78,7 +80,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
   const outerLinePaper = isNotebook && !pearNav && !isHome
   const useCompactHeader = fullBleed && !useBigLogo
   const headerPadding = useCompactHeader ? 'px-3 py-2' : 'px-4 py-3 md:py-4'
-  const logoSize = useBigLogo ? 'text-5xl md:text-6xl lg:text-7xl' : useCompactHeader ? 'text-2xl sm:text-3xl' : 'text-3xl md:text-4xl'
+  const logoSize = useBigLogo ? `${slimMobile ? 'text-3xl' : 'text-5xl'} md:text-6xl lg:text-7xl` : useCompactHeader ? 'text-2xl sm:text-3xl' : 'text-3xl md:text-4xl'
   /* Chwazi mobile: full-viewport fixed layer in main would paint over header without a stacking boost */
   const headerStackClass = chwaziMobile ? 'relative z-50' : ''
   /** Tighter horizontal gutters on phone so e-reader text column uses more width. */
@@ -102,7 +104,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
       className={`overflow-x-hidden ${fullBleed ? 'h-dynamic flex flex-col overflow-y-hidden' : 'min-h-screen'} ${outerLinePaper ? 'notebook-line-paper' : ''}`}
       style={outerLinePaper ? { color: 'var(--ink-text)' } : { backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
     >
-      <header className={`flex-none ${headerStackClass} ${headerPadding} ${!isHome && !outerLinePaper ? 'border-b' : ''} ${outerLinePaper ? 'bg-[var(--ink-paper)] h-[90px] flex flex-col justify-center' : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
+      <header className={`flex-none ${headerStackClass} ${headerPadding} ${!isHome && !outerLinePaper ? 'border-b' : ''} ${outerLinePaper ? `bg-[var(--ink-paper)] ${slimMobile ? 'h-[60px] md:h-[90px]' : 'h-[90px]'} flex flex-col justify-center` : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
         <div className="mx-auto max-w-6xl flex w-full items-center justify-between">
           <div className="flex-1" />
           <Link
@@ -127,7 +129,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
                   : isHome
                     ? 'py-8'
                     : isNotebook && outerLinePaper
-                      ? 'pt-[30px] pb-8'
+                      ? slimMobile ? 'pt-3 pb-6 md:pt-[30px] md:pb-8' : 'pt-[30px] pb-8'
                       : 'py-6'
               } ${isNotebook ? 'min-h-[calc(100vh-6rem)]' : ''}`
         }
