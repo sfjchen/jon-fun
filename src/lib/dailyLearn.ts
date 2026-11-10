@@ -177,12 +177,42 @@ export function isEntryTextDirty(localText: string, saved?: DailyLearnEntry): bo
   return localText.trim() !== (saved?.text ?? '').trim()
 }
 
+const IDS_URL = '/api/daily-learn/ids'
+/** Resolves once this page load has restored and backed up its ids, shared so concurrent syncs wait on 1 run. */
+let idsReady: Promise<void> | null = null
+
+/**
+ * Restores the sync password and device ID from the server cookie when localStorage has lost them (Safari erases
+ * it after 7 days without a visit, which used to strand new entries under a fresh device ID), then backs up the
+ * current ids. A failed attempt clears itself so the next sync retries.
+ */
+function ensureIds(): Promise<void> {
+  idsReady ??= (async () => {
+    if (!localStorage.getItem(USER_ID_KEY)) {
+      const res = await fetch(IDS_URL)
+      const saved = res.ok ? ((await res.json()) as { syncKey?: string; deviceId?: string }) : {}
+      if (saved.deviceId) localStorage.setItem(USER_ID_KEY, saved.deviceId)
+      if (saved.syncKey && !getSyncKey()) setSyncKey(saved.syncKey)
+    }
+    const res = await fetch(IDS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ syncKey: getSyncKey(), deviceId: getOrCreateUserId() }),
+    })
+    if (!res.ok) throw new Error('ids backup failed')
+  })().catch(() => {
+    idsReady = null
+  })
+  return idsReady
+}
+
 /**
  * Fetches from the server, merges with local, saves local, and pushes the merge back.
  * A failed fetch still pushes local data (the server keeps whichever copy is newer) but reports not ok.
  */
 export async function syncWithServer(): Promise<{ entries: DailyLearnEntry[]; pushOk: boolean }> {
   if (typeof window === 'undefined') return { entries: [], pushOk: true }
+  await ensureIds()
   const remote = await fetchEntriesFromServer()
   const merged = mergeEntries(loadAllEntries(), remote ?? [])
   localStorage.setItem(DAILY_LEARN_ENTRIES_KEY, JSON.stringify(merged))
@@ -196,6 +226,7 @@ export async function syncWithServer(): Promise<{ entries: DailyLearnEntry[]; pu
  */
 export async function connectSyncKey(key: string): Promise<{ entries: DailyLearnEntry[]; pushOk: boolean }> {
   setSyncKey(key)
+  idsReady = null
   return syncWithServer()
 }
 

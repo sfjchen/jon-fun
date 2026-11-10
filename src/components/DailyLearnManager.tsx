@@ -12,7 +12,6 @@ import {
   exportAsCsv,
   exportAsJson,
   importMergedCsv,
-  getOrCreateUserId,
   getSyncKey,
   syncWithServer,
   connectSyncKey,
@@ -104,10 +103,6 @@ export default function DailyLearnManager() {
     setTodayText(getEntryByDate(today)?.text ?? '')
     refresh()
   }
-
-  useEffect(() => {
-    getOrCreateUserId()
-  }, [])
 
   // Initial sync on load: push localStorage to Supabase, merge with server. Runs for all users so local-only data is backed up.
   useEffect(() => {

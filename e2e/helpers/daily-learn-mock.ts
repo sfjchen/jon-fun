@@ -28,6 +28,7 @@ export async function mockDailyLearnApi(
 
   await page.route('**/api/daily-learn/**', async (route) => {
     const req = route.request()
+    if (req.url().includes('/api/daily-learn/ids')) return route.continue()
     const method = req.method()
     if (method === 'GET') {
       const userId = new URL(req.url()).searchParams.get('userId') ?? 'default'

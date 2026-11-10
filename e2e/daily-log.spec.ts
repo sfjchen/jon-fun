@@ -184,6 +184,24 @@ test.describe('1 Sentence Everyday', () => {
     await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: 'Deleted on another device' })).toHaveCount(0)
   })
 
+  test('sync key survives a Safari-style localStorage wipe', async ({ page }) => {
+    await setDailyLearnMockServerEntries(
+      page,
+      [{ date: '2019-06-01', text: 'Only on the shared key', updatedAt: '2019-06-01T10:00:00.000Z' }],
+      'e2e-wiped-key',
+    )
+    await sectionsNav(page).getByRole('button', { name: 'sync' }).click()
+    await page.getByPlaceholder(/sync password or device ID/i).fill('e2e-wiped-key')
+    await page.getByRole('button', { name: 'Sync', exact: true }).click()
+    await expect(page.getByText('Synced 1 entries')).toBeVisible({ timeout: 15000 })
+    await page.evaluate(() => localStorage.clear())
+    await page.reload()
+    await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: 'Only on the shared key' })).toBeVisible({
+      timeout: 15000,
+    })
+    expect(await page.evaluate(() => localStorage.getItem('daily_learn_sync_key'))).toBe('e2e-wiped-key')
+  })
+
   test('shortcut hint shows Cmd+Enter on Mac', async ({ page }) => {
     await page.addInitScript(() => {
       Object.defineProperty(navigator, 'platform', { get: () => 'MacIntel' })
