@@ -23,7 +23,10 @@ const devs = data ?? []
 
 if (cmd === 'approve' || cmd === 'remove') {
   const hits = devs.filter((d) => (arg === 'pending' ? !d.approved : arg && d.device_id.startsWith(arg)))
-  if (!hits.length) throw new Error(`No device matches "${arg}"`)
+  if (!hits.length) {
+    console.log(arg === 'pending' ? 'No devices waiting. Open sfjc.dev on the browser first.' : `No device matches "${arg}"`)
+    process.exit(1)
+  }
   for (const d of hits) {
     const patch = cmd === 'approve' ? { approved: true } : { approved: false, sync_key: null }
     const { error: e } = await db.from('sync_devices').update(patch).eq('device_id', d.device_id)

@@ -56,7 +56,8 @@ async function listDevices(key: string) {
 }
 
 /**
- * Links the device to its sync key (a new key resets approval), refreshes the cookie, and returns the
+ * Links the device to its sync key (a new key resets approval; keyless devices store no row), refreshes the
+ * cookie, and returns the
  * canonical key, approval state and, for approved devices, the key's device list.
  */
 export async function POST(request: NextRequest) {
@@ -75,7 +76,9 @@ export async function POST(request: NextRequest) {
       label,
       last_seen: new Date().toISOString(),
     }
-    const { error } = await supabaseAdmin.from(SYNC_DEVICES_TABLE).upsert(row, { onConflict: 'device_id' })
+    const { error } = key || prev
+      ? await supabaseAdmin.from(SYNC_DEVICES_TABLE).upsert(row, { onConflict: 'device_id' })
+      : { error: null }
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     const res = NextResponse.json({
       syncKey: key,
