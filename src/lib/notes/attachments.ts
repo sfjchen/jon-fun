@@ -1,4 +1,5 @@
 import type { AttachmentKind, Screenshot, SpreadsheetPreview } from './types'
+import { splitCsvLine } from './tiptap/tableUtils'
 
 /** Markers in markdown: `[📎 id]` (new) or `[📷 id]` (legacy images). */
 export const NOTE_ATTACHMENT_MARKER = /\[(?:📎|📷)\s*([^\]]+)\]/g
@@ -28,9 +29,6 @@ export function attachmentDataUrl(shot: Screenshot): string {
   return `data:${shot.mimeType};base64,${shot.base64}`
 }
 
-/** @deprecated use attachmentDataUrl */
-export const screenshotDataUrl = attachmentDataUrl
-
 export function attachmentKindForFile(file: File): AttachmentKind {
   if (file.type.startsWith('image/')) return 'image'
   if (SPREADSHEET_MIMES.has(file.type) || SPREADSHEET_EXT.test(file.name)) return 'spreadsheet'
@@ -50,9 +48,6 @@ export function readFileAsBase64(file: File): Promise<{ base64: string; mimeType
     reader.readAsDataURL(file)
   })
 }
-
-/** @deprecated */
-export const readImageFile = readFileAsBase64
 
 const PREVIEW_MAX_ROWS = 40
 const PREVIEW_MAX_COLS = 12
@@ -74,28 +69,8 @@ function parseCsvText(text: string): SpreadsheetPreview {
   if (!lines.length) {
     return { sheetName: 'CSV', headers: [], rows: [], totalRows: 0, totalCols: 0 }
   }
-  const split = (line: string) => {
-    const out: string[] = []
-    let cur = ''
-    let q = false
-    for (let i = 0; i < line.length; i++) {
-      const c = line[i]!
-      if (c === '"') {
-        q = !q
-        continue
-      }
-      if (c === ',' && !q) {
-        out.push(cur.trim())
-        cur = ''
-        continue
-      }
-      cur += c
-    }
-    out.push(cur.trim())
-    return out
-  }
-  const headers = split(lines[0]!)
-  const rows = lines.slice(1).map(split)
+  const headers = splitCsvLine(lines[0]!)
+  const rows = lines.slice(1).map(splitCsvLine)
   return trimGrid(headers, rows)
 }
 
@@ -184,16 +159,6 @@ export function filesFromDataTransfer(dt: DataTransfer | null): File[] {
     }
   }
   return out
-}
-
-/** @deprecated */
-export function imageFileFromClipboard(event: { clipboardData: DataTransfer | null }): File | null {
-  return filesFromClipboard(event).find((f) => f.type.startsWith('image/')) ?? null
-}
-
-/** @deprecated */
-export function imageFilesFromDataTransfer(dt: DataTransfer | null): File[] {
-  return filesFromDataTransfer(dt).filter((f) => f.type.startsWith('image/'))
 }
 
 export function formatFileSize(bytes: number): string {

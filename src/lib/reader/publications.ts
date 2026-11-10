@@ -1,6 +1,6 @@
 import type { ReaderPublication, ReaderPublicationSummary } from '@/lib/reader/types'
 import { parsePortableLibrary } from '@/lib/reader/library-portable'
-import { notesSyncCredentials } from '@/lib/notes/syncCredentials'
+import { syncCredentials } from '@/lib/syncIdentity'
 import {
   deleteReaderPublicationIdb,
   getAllReaderPublicationsIdb,
@@ -87,7 +87,7 @@ export async function importReaderPublicationsMerge(publications: ReaderPublicat
   const first = await fetch(COMMUNAL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...publications[0], ...notesSyncCredentials() }),
+    body: JSON.stringify({ ...publications[0], ...syncCredentials() }),
   })
   if (first.status === 503) {
     await importReaderPublicationsMergeIdb(publications)
@@ -101,7 +101,7 @@ export async function importReaderPublicationsMerge(publications: ReaderPublicat
     const res = await fetch(COMMUNAL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...publications[i], ...notesSyncCredentials() }),
+      body: JSON.stringify({ ...publications[i], ...syncCredentials() }),
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
@@ -127,7 +127,7 @@ export async function saveReaderPublication(publication: ReaderPublication): Pro
   const res = await fetch(COMMUNAL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...publication, ...notesSyncCredentials() }),
+    body: JSON.stringify({ ...publication, ...syncCredentials() }),
   })
   if (res.status === 503) {
     await saveReaderPublicationIdb(publication)
@@ -143,7 +143,7 @@ export async function deleteReaderPublication(id: string): Promise<void> {
   const res = await fetch(`${COMMUNAL}/${encodeURIComponent(id)}`, {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(notesSyncCredentials()),
+    body: JSON.stringify(syncCredentials()),
   })
   if (res.status === 503) {
     await deleteReaderPublicationIdb(id)

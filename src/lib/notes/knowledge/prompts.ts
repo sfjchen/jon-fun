@@ -1,5 +1,4 @@
 import {
-  DEFAULT_ACTIVE_DOMAIN_ID,
   resolveDomainOpts,
   resolveDomainsForNote,
   type KnowledgeDomainId,
@@ -313,19 +312,4 @@ export function resolveSystemPrompt(
   if (mode === 'followup') return buildFollowupSystemPrompt(base)
   if (triggerType === 'section') return buildSectionSystemPrompt(base)
   return buildLineSystemPrompt(base)
-}
-
-/** @deprecated use resolveSystemPrompt — kept for imports */
-export const UVIMCO_SYSTEM = buildLineSystemPrompt({ domainId: DEFAULT_ACTIVE_DOMAIN_ID })
-export const SECTION_SYSTEM = buildSectionSystemPrompt({ domainId: DEFAULT_ACTIVE_DOMAIN_ID })
-export const DECODE_ALL_SYSTEM = buildSummarizeSystemPrompt({ domainId: DEFAULT_ACTIVE_DOMAIN_ID })
-
-export function injectContextPlaceholders(
-  system: string,
-  sources: string,
-  glossary: string,
-): string {
-  return system
-    .replace('{sources}', sources.trim() || '(none yet)')
-    .replace('{glossary}', glossary.trim() || '(none yet)')
 }

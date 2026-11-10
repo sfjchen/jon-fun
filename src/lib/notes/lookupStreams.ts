@@ -20,17 +20,6 @@ export function anyStreaming(map: LookupStreamMap): boolean {
   return activeStreamCount(map) > 0
 }
 
-export function streamTextFor(
-  map: LookupStreamMap,
-  lookupId: string | null,
-  fallbackFromConversation: string,
-): string {
-  if (!lookupId) return fallbackFromConversation
-  const live = map[lookupId]
-  if (live?.isStreaming || live?.text) return live.text
-  return fallbackFromConversation
-}
-
 export function isLookupStreaming(map: LookupStreamMap, lookupId: string): boolean {
   return map[lookupId]?.isStreaming ?? false
 }

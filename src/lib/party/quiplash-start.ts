@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import { supabaseAdmin as supabase } from '@/lib/supabase'
 import { PARTY_PHASE_SECONDS_DEFAULT } from './constants'
+import { shuffle } from '@/lib/random'
 import { QUIPLASH_PROMPT_POOL } from './prompts-quiplash'
 import { buildQuiplashMatchups } from './quiplash-pairing'
 
@@ -16,7 +17,7 @@ export async function seedQuiplashRound1(pin: string, playerIds: string[], nowIs
   await supabase.from('party_quiplash_final_answers').delete().eq('room_pin', pin)
   await supabase.from('party_quiplash_final_prompt').delete().eq('room_pin', pin)
 
-  const shuffled = [...QUIPLASH_PROMPT_POOL].sort(() => Math.random() - 0.5)
+  const shuffled = shuffle(QUIPLASH_PROMPT_POOL)
   const pairs = buildQuiplashMatchups(playerIds, shuffled, 1)
   const deadline = new Date(Date.now() + PARTY_PHASE_SECONDS_DEFAULT * 1000).toISOString()
 

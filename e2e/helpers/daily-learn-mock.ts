@@ -1,5 +1,7 @@
 import type { Page } from '@playwright/test'
 
+import { mockSyncIdentity } from './sync-identity-mock'
+
 export type MockDailyLearnEntry = { date: string; text: string; updatedAt: string }
 
 /** Mock server rows per page, keyed by user id. Lives in Node so it survives reloads like a real server. */
@@ -13,22 +15,22 @@ export async function setDailyLearnMockServerEntries(
 ): Promise<void> {
   const uid =
     userId ??
-    (await page.evaluate(() => localStorage.getItem('daily_learn_sync_key') || localStorage.getItem('daily_learn_user_id') || 'default'))
+    (await page.evaluate(() => localStorage.getItem('sfjc_sync_key') || localStorage.getItem('sfjc_device_id') || 'default'))
   stores.get(page)?.set(uid, entries)
 }
 
 /** Stubs daily-learn sync routes with an in-memory store that mirrors the server's newest-updatedAt-wins rule. */
 export async function mockDailyLearnApi(
   page: Page,
-  opts?: { serverEntries?: MockDailyLearnEntry[] },
+  opts?: { serverEntries?: MockDailyLearnEntry[]; approved?: boolean },
 ): Promise<void> {
+  await mockSyncIdentity(page, { approved: opts?.approved ?? true })
   const store = new Map<string, MockDailyLearnEntry[]>()
   if (opts?.serverEntries?.length) store.set('default', opts.serverEntries)
   stores.set(page, store)
 
   await page.route('**/api/daily-learn/**', async (route) => {
     const req = route.request()
-    if (req.url().includes('/api/daily-learn/ids')) return route.continue()
     const method = req.method()
     if (method === 'GET') {
       const userId = new URL(req.url()).searchParams.get('userId') ?? 'default'

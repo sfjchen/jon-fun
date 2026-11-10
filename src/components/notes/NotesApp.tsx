@@ -48,8 +48,6 @@ import {
   deleteSession,
   deleteSessionOnServer,
   getActiveSessionId,
-  getEffectiveUserId,
-  getOrCreateUserId,
   loadActiveSession,
   loadSessions,
   pushAllToServer,
@@ -458,7 +456,6 @@ export default function NotesApp() {
   const rafByLookup = useRef<Record<string, number>>({})
 
   useEffect(() => {
-    getOrCreateUserId()
     return initNotesTabSync()
   }, [])
 
@@ -1344,7 +1341,7 @@ export default function NotesApp() {
   )
 
   const handleDeleteMeeting = useCallback((sessionId: string) => {
-    void deleteSessionOnServer(getEffectiveUserId(), sessionId)
+    void deleteSessionOnServer(sessionId)
     const next = deleteSession(sessionId)
     dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
     if (state.splitSessionId === sessionId) dispatch({ type: 'SPLIT_CLOSE' })

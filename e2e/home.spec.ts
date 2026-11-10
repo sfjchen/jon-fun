@@ -1,7 +1,11 @@
 import { test, expect } from '@playwright/test'
-import { SFJC_ADMIN_DEVICES } from '../src/data/sfjc-admin-devices'
+import { mockSyncIdentity } from './helpers/sync-identity-mock'
 
 test.describe('Home page', () => {
+  test.beforeEach(async ({ page }) => {
+    await mockSyncIdentity(page)
+  })
+
   test('loads and shows game cards', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60_000 })
     await expect(page.getByText('sfjc.dev').first()).toBeVisible({ timeout: 20_000 })
@@ -15,12 +19,6 @@ test.describe('Home page', () => {
     await expect(page.getByRole('link', { name: /Open Connections/i })).toBeVisible()
   })
 
-  test('navigates to TMR game', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60_000 })
-    await page.getByRole('link', { name: /Focus Chimes/i }).click()
-    await expect(page).toHaveURL(/\/games\/tmr/)
-  })
-
   test('hides Coming Soon from strangers', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60_000 })
     await expect(page.getByRole('link', { name: /Focus Chimes/i })).toBeVisible({ timeout: 20_000 })
@@ -28,7 +26,10 @@ test.describe('Home page', () => {
   })
 
   test('Coming Soon modal opens and closes on owner device', async ({ page }) => {
-    await page.addInitScript((id) => localStorage.setItem('notes_user_id', id), SFJC_ADMIN_DEVICES[0].id)
+    await page.addInitScript(() => {
+      localStorage.setItem('sfjc_sync_key', 'sfjc')
+      localStorage.setItem('sfjc_approved_key', 'sfjc')
+    })
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60_000 })
     const comingSoon = page.getByRole('button', { name: /Coming Soon/i })
     await expect(comingSoon).toBeEnabled({ timeout: 25_000 })

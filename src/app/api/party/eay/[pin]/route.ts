@@ -2,21 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { supabaseAdmin as supabase } from '@/lib/supabase'
 import { validateRoomPin } from '@/lib/poker'
+import { shuffle } from '@/lib/random'
 import { ANSWER_MAX_LEN, PARTY_PHASE_SECONDS_DEFAULT } from '@/lib/party/constants'
 import { EAY_INTAKE_QUESTIONS } from '@/lib/party/prompts-eay'
 import { FIBBAGE_SUGGESTED_LIES } from '@/lib/party/prompts-fibbage'
 
 type OptRow = { text: string; truth: boolean; authorId: string | null }
 type FinalPairSlot = { text: string; isTruth: boolean }
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j]!, a[i]!]
-  }
-  return a
-}
 
 async function bumpRoom(pin: string, patch: Record<string, unknown>, nowIso: string) {
   const { data: room } = await supabase.from('party_rooms').select('version').eq('pin', pin).single()

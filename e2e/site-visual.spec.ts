@@ -53,7 +53,7 @@ test.describe('site visual + contrast (notebook)', () => {
         page.locator('time'),
       ]
 
-      await snap(page, snapName(route), masks)
+      await snap(page, snapName(route), { mask: masks })
       try {
         await assertNoLowContrast(page)
       } catch (e) {

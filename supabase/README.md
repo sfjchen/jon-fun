@@ -14,26 +14,6 @@ supabase/migrations/*.sql
 - **`npm run db:push`** — apply pending migrations to linked remote (`supabase db push --linked --yes`)
 - Agents: prefer Supabase MCP `apply_migration` for one-off remote DDL, but **commit the same SQL** under `supabase/migrations/` when it belongs in repo history.
 
-## Legacy manual SQL (archived)
-
-Pre–CLI migrations and one-off game schemas live under:
-
-```
-supabase/archive/legacy/
-```
-
-These files are **not** run by `db push`. They were applied manually (SQL Editor or ad-hoc scripts) before the repo standardized on `supabase/migrations/`.
-
-| File | Feature |
-|------|---------|
-| `party-games.sql` | Quip Clash, Fib It, Enough About You (`party_rooms`, …) |
-| `daily-learn.sql` | 1 Sentence Everyday (`daily_learn_entries`) |
-| `game24.sql` | Game 24 multiplayer |
-| `tmr-sessions.sql` | TMR study/sleep sessions |
-| `pear-navigator-ab.sql` / `pear-navigator-sessions.sql` | Pear Navigator A/B |
-| `add-last-activity.sql` | Room activity timestamps |
-
-Keep for reference and fresh-env bootstrap; copy into a new timestamped file under `supabase/migrations/` only if you need them in automated push history.
 
 ## Notes vault tables
 

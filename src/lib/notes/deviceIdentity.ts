@@ -1,75 +1,31 @@
-/** Per-browser device UUID + friendly label (separate from shared vault user id). */
+/**
+ * Notes device helpers on top of the shared sync identity: session ids, display names and the last-edited-by
+ * stamp on note metadata.
+ */
+import { genUuid, getDeviceId, getDeviceLabel, SYNC_IDENTITY_CHANGED } from '@/lib/syncIdentity'
 
-import { adminDeviceLabel } from '@/data/sfjc-admin-devices'
+export { getDeviceId, SYNC_IDENTITY_CHANGED as NOTES_DEVICE_LABEL_CHANGED }
 
-export const NOTES_USER_ID_KEY = 'notes_user_id'
-const DEVICE_LABEL_KEY = 'notes_device_label'
-export const NOTES_DEVICE_LABEL_CHANGED = 'notes-device-label-changed'
-
-function genUuid(): string {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0
-    const v = c === 'x' ? r : (r & 0x3) | 0x8
-    return v.toString(16)
-  })
-}
-
-export function getOrCreateUserId(): string {
-  if (typeof window === 'undefined') return ''
-  let id = localStorage.getItem(NOTES_USER_ID_KEY)
-  if (!id) {
-    id = genUuid()
-    localStorage.setItem(NOTES_USER_ID_KEY, id)
-  }
-  return id
-}
-
-export function getDeviceId(): string {
-  return getOrCreateUserId()
-}
-
+/** Returns a fresh session id. */
 export function createEmptySessionId(): string {
   return genUuid()
 }
 
-export function getCustomDeviceLabel(): string {
-  if (typeof window === 'undefined') return ''
-  return localStorage.getItem(DEVICE_LABEL_KEY)?.trim() ?? ''
-}
-
-export function setCustomDeviceLabel(label: string): void {
-  if (typeof window === 'undefined') return
-  const t = label.trim()
-  if (t) localStorage.setItem(DEVICE_LABEL_KEY, t)
-  else localStorage.removeItem(DEVICE_LABEL_KEY)
-  window.dispatchEvent(new Event(NOTES_DEVICE_LABEL_CHANGED))
-}
-
-/** Friendly name: custom label → registered admin name → short id. */
+/**
+ * Returns a friendly device name: this browser's custom label, else a short id.
+ */
 export function getDeviceDisplayName(deviceId?: string): string {
-  const id = deviceId ?? getOrCreateUserId()
-  if (id === getOrCreateUserId()) {
-    const custom = getCustomDeviceLabel()
-    if (custom) return custom
-  }
-  const admin = adminDeviceLabel(id)
-  if (admin) return admin
+  const id = deviceId ?? getDeviceId()
+  if (id === getDeviceId() && getDeviceLabel()) return getDeviceLabel()
   return `Device ${id.slice(0, 8)}`
 }
 
-export function formatDeviceShort(deviceId?: string): string {
-  const id = deviceId ?? getOrCreateUserId()
-  return `${getDeviceDisplayName(id)} · ${id.slice(0, 8)}…`
-}
-
+/**
+ * Stamps this device's id and name onto note metadata.
+ */
 export function stampDeviceOnMetadata<T extends { lastDeviceId?: string; lastDeviceLabel?: string }>(
   metadata: T | undefined,
 ): T & { lastDeviceId: string; lastDeviceLabel: string } {
-  const id = getOrCreateUserId()
-  return {
-    ...(metadata ?? ({} as T)),
-    lastDeviceId: id,
-    lastDeviceLabel: getDeviceDisplayName(id),
-  }
+  const id = getDeviceId()
+  return { ...(metadata ?? ({} as T)), lastDeviceId: id, lastDeviceLabel: getDeviceDisplayName(id) }
 }

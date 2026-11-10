@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { resolveSyncUser } from '@/lib/syncAccess'
 import type { GlossaryEntry } from '@/lib/notes/types'
 
 export async function GET(request: NextRequest) {
-  const userId = request.nextUrl.searchParams.get('userId')?.trim()
-  if (!userId) return NextResponse.json({ error: 'userId required' }, { status: 400 })
+  const qs = request.nextUrl.searchParams
+  const who = await resolveSyncUser(qs.get('userId'), qs.get('deviceUserId'))
+  if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
 
   const { data, error } = await supabaseAdmin
     .from('notes_glossary')
     .select('term, definition, source_note_id, source_lookup_id, use_count, updated_at')
-    .eq('user_id', userId)
+    .eq('user_id', who.uid)
     .order('updated_at', { ascending: false })
     .limit(500)
 
@@ -29,10 +31,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as { userId?: string; entries?: GlossaryEntry[] }
-    const userId = body.userId?.trim()
+    const body = (await request.json()) as { userId?: string; deviceUserId?: string; entries?: GlossaryEntry[] }
+    const who = await resolveSyncUser(body.userId, body.deviceUserId)
+    if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
+    const userId = who.uid
     const entries = Array.isArray(body.entries) ? body.entries : []
-    if (!userId) return NextResponse.json({ error: 'userId required' }, { status: 400 })
     if (!entries.length) return NextResponse.json({ ok: true })
 
     const rows = entries.map((e) => ({

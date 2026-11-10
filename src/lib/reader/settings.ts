@@ -220,11 +220,6 @@ export function loadReaderBookmark(bookId: string): ReaderBookmark | null {
   }
 }
 
-export function loadLastReaderBookId(): string {
-  if (!isBrowser()) return ''
-  return window.localStorage.getItem(LAST_BOOK_KEY) ?? ''
-}
-
 export function loadLastReaderLocation(): { bookId: string; chapterId: string } | null {
   if (!isBrowser()) return null
   const raw = window.localStorage.getItem(LAST_ROUTE_KEY)

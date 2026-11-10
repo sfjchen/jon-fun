@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { resolveSyncUser } from '@/lib/syncAccess'
 import type { NoteSource } from '@/lib/notes/types'
 
 export async function GET(request: NextRequest) {
-  const userId = request.nextUrl.searchParams.get('userId')?.trim()
-  if (!userId) return NextResponse.json({ error: 'userId required' }, { status: 400 })
+  const qs = request.nextUrl.searchParams
+  const who = await resolveSyncUser(qs.get('userId'), qs.get('deviceUserId'))
+  if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
 
   const { data, error } = await supabaseAdmin
     .from('notes_sources')
     .select('id, title, kind, content, tags, include_in_context, created_at, updated_at, last_used_at')
-    .eq('user_id', userId)
+    .eq('user_id', who.uid)
     .order('updated_at', { ascending: false })
     .limit(100)
 
@@ -32,10 +34,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as { userId?: string; sources?: NoteSource[] }
-    const userId = body.userId?.trim()
+    const body = (await request.json()) as { userId?: string; deviceUserId?: string; sources?: NoteSource[] }
+    const who = await resolveSyncUser(body.userId, body.deviceUserId)
+    if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
+    const userId = who.uid
     const sources = Array.isArray(body.sources) ? body.sources : []
-    if (!userId) return NextResponse.json({ error: 'userId required' }, { status: 400 })
     if (!sources.length) return NextResponse.json({ ok: true })
 
     const rows = sources.map((s) => ({
@@ -61,14 +64,14 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const body = (await request.json()) as { userId?: string; sourceId?: string }
-    if (!body.userId?.trim() || !body.sourceId?.trim()) {
-      return NextResponse.json({ error: 'userId and sourceId required' }, { status: 400 })
-    }
+    const body = (await request.json()) as { userId?: string; deviceUserId?: string; sourceId?: string }
+    if (!body.sourceId?.trim()) return NextResponse.json({ error: 'sourceId required' }, { status: 400 })
+    const who = await resolveSyncUser(body.userId, body.deviceUserId)
+    if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
     const { error } = await supabaseAdmin
       .from('notes_sources')
       .delete()
-      .eq('user_id', body.userId.trim())
+      .eq('user_id', who.uid)
       .eq('id', body.sourceId.trim())
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ ok: true })

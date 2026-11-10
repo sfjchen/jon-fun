@@ -64,3 +64,15 @@ e2e/fixtures/dokumen.pub*.epub
 
 .claude/
 /finance/
+
+# owner's non-site work, kept on disk
+/Smart OverlayEye/
+/TMR_audio/
+/sports-talent-research/
+/openclaw-hybrid/
+/scripts/openclaw-hybrid/
+/docs/openclaw-hybrid/
+/docs/image/
+/docs/MS&E165-*.md
+/docs/MVP-Feedback-Evolution.md
+/docs/five-can-sorting/

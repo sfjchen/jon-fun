@@ -2,11 +2,11 @@
  * Notes — localStorage + Supabase sync (mirrors daily-learn pattern).
  */
 
-import { createEmptySessionId, getOrCreateUserId, stampDeviceOnMetadata } from './deviceIdentity'
+import { createEmptySessionId, stampDeviceOnMetadata } from './deviceIdentity'
+import { ensureSyncIdentity, syncCredentials } from '@/lib/syncIdentity'
 import { saveGlossary } from './glossary'
 import { normalizeSessionTitle } from './prefs'
 import { ensureBuiltinSources } from './knowledge/builtinSources'
-import { restoreMemoryBankFromServer } from './memorySync'
 import { saveSourcesLocal } from './sources'
 import { sanitizeMetadataText, sanitizeSessionForSync, sanitizeTags } from './textSanitize'
 import {
@@ -16,7 +16,6 @@ import {
   loadFolders,
   mergeFolders,
   parseFoldersFromVaultNotes,
-  replaceFoldersFromSessions,
   saveFolders,
 } from './folders'
 import { mergeSessionLookups } from './lookupPersistence'
@@ -24,7 +23,6 @@ import type { NoteFolder, NoteSession, Screenshot } from './types'
 
 export { buildSessionMarkdown, exportSessionMarkdown } from './export'
 
-const SYNC_KEY = 'notes_sync_key'
 export const SESSIONS_KEY = 'notes_sessions'
 const ACTIVE_SESSION_KEY = 'notes_active_session_id'
 const WELCOME_SEEDED_KEY = 'notes_welcome_seeded'
@@ -48,7 +46,7 @@ const WELCOME_NOTES = [
   'AI lookups and Summarize are private to the site owner. Everything else works for you locally.',
 ].join('\n')
 
-export { getOrCreateUserId } from './deviceIdentity'
+export { getEffectiveUserId } from '@/lib/syncIdentity'
 
 const PUSH_RETRIES = 3
 const RETRY_DELAY_MS = 500
@@ -78,25 +76,6 @@ function runSyncExclusive<T>(fn: () => Promise<T>): Promise<T> {
   return run
 }
 
-export function getSyncKey(): string {
-  if (typeof window === 'undefined') return ''
-  return localStorage.getItem(SYNC_KEY) ?? ''
-}
-
-export function setSyncKey(key: string): void {
-  if (typeof window === 'undefined') return
-  if (key.trim()) localStorage.setItem(SYNC_KEY, key.trim())
-  else localStorage.removeItem(SYNC_KEY)
-}
-
-/** Alias — UI uses "sync password". */
-export const getSyncPassword = getSyncKey
-export const setSyncPassword = setSyncKey
-
-export function getEffectiveUserId(): string {
-  const sk = getSyncKey()
-  return sk || getOrCreateUserId()
-}
 
 export function createEmptySession(title?: string, folderId?: string | null): NoteSession {
   const now = new Date().toISOString()
@@ -287,14 +266,8 @@ export function resetLocalNotesVault(): NoteSession {
   return session
 }
 
-async function fetchRawSessionsFromServer(
-  userId: string,
-  syncPasswordOverride?: string,
-): Promise<{ sessions: NoteSession[]; error?: string }> {
-  const deviceUserId = getOrCreateUserId()
-  const qs = new URLSearchParams({ userId, deviceUserId })
-  const syncPassword = syncPasswordOverride ?? getSyncKey()
-  if (syncPassword) qs.set('syncPassword', syncPassword)
+async function fetchRawSessionsFromServer(): Promise<{ sessions: NoteSession[]; error?: string }> {
+  const qs = new URLSearchParams(syncCredentials())
   try {
     const res = await fetch(`/api/notes/sessions?${qs.toString()}`)
     if (!res.ok) {
@@ -315,56 +288,18 @@ async function fetchRawSessionsFromServer(
   }
 }
 
-export async function restoreFromServer(
-  userId: string,
-): Promise<{ restored: number; cleared?: boolean; error?: string }> {
-  if (typeof window === 'undefined') return { restored: 0 }
-  const key = userId.trim()
-  if (!key) return { restored: 0, error: 'Enter sync password or device ID' }
-
-  const { sessions: remoteRaw, error } = await fetchRawSessionsFromServer(key, key)
-  if (error) return { restored: 0, error }
-
-  setSyncKey(key)
-
-  if (remoteRaw.length === 0) {
-    resetLocalNotesVault()
-    return { restored: 0, cleared: true }
-  }
-
-  // Server wins — wipe stale local vault artifacts before applying remote snapshot.
-  localStorage.removeItem(FOLDERS_KEY)
-  localStorage.removeItem('notes_tag_catalog')
-  saveGlossary([])
-  saveSourcesLocal(ensureBuiltinSources([]))
-
-  replaceFoldersFromSessions(remoteRaw)
-  const remote = withNormalizedTitles(remoteRaw)
-  saveSessionsLocal(remote)
-  if (remote[0]) setActiveSessionId(remote[0].id)
-  await restoreMemoryBankFromServer()
-  return { restored: remote.length }
-}
-
 export async function fetchSessionsFromServer(): Promise<NoteSession[]> {
-  const { sessions } = await fetchRawSessionsFromServer(getEffectiveUserId())
+  const { sessions } = await fetchRawSessionsFromServer()
   return withNormalizedTitles(sessions)
 }
 
 async function pushWithRetry(sessions: NoteSession[]): Promise<PushResult> {
-  const userId = getEffectiveUserId()
-  const deviceUserId = getOrCreateUserId()
   const toSend = sessionsForPush(sessions)
   const slim = toSend.map((s) => ({
     ...sanitizeSessionForSync(s),
     screenshots: stripScreenshotsForSync(s.screenshots),
   }))
-  const body = JSON.stringify({
-    userId,
-    sessions: slim,
-    deviceUserId,
-    ...(getSyncKey() ? { syncPassword: getSyncKey() } : {}),
-  })
+  const body = JSON.stringify({ ...syncCredentials(), sessions: slim })
   let lastError = 'Network error — check connection'
   for (let i = 0; i < PUSH_RETRIES; i++) {
     try {
@@ -395,9 +330,9 @@ export async function syncWithServer(): Promise<{
   pushError?: string
 }> {
   if (typeof window === 'undefined') return { sessions: loadSessions(), pushOk: true }
+  await ensureSyncIdentity()
   return runSyncExclusive(async () => {
-    const userId = getEffectiveUserId()
-    const { sessions: remoteRaw } = await fetchRawSessionsFromServer(userId)
+    const { sessions: remoteRaw } = await fetchRawSessionsFromServer()
     const local = loadSessions()
     syncFoldersFromSessions([...local, ...remoteRaw])
     const merged = mergeSessions(local, remoteRaw)
@@ -452,16 +387,11 @@ export function deleteSession(sessionId: string): NoteSession | null {
   return next
 }
 
-export async function deleteSessionOnServer(userId: string, sessionId: string): Promise<boolean> {
+export async function deleteSessionOnServer(sessionId: string): Promise<boolean> {
   const res = await fetch('/api/notes/sessions', {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      userId,
-      sessionId,
-      deviceUserId: getOrCreateUserId(),
-      ...(getSyncKey() ? { syncPassword: getSyncKey() } : {}),
-    }),
+    body: JSON.stringify({ ...syncCredentials(), sessionId }),
   })
   return res.ok
 }

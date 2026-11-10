@@ -5,7 +5,10 @@ import type { JSONContent } from '@tiptap/core'
 export const DEFAULT_TABLE_ROWS = 3
 export const DEFAULT_TABLE_COLS = 3
 
-function splitCsvLine(line: string): string[] {
+/**
+ * Splits one CSV line on unquoted commas, drops quote characters and trims each cell.
+ */
+export function splitCsvLine(line: string): string[] {
   const out: string[] = []
   let cur = ''
   let q = false

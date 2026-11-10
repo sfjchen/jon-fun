@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { NOTE_SESSIONS_TABLE } from '@/lib/notes/db'
 import { sanitizeSessionForSync } from '@/lib/notes/textSanitize'
-import { assertOwnerVaultAccess, assertOwnerVaultReadAccess } from '@/lib/sfjc-sync-auth'
+import { resolveSyncUser } from '@/lib/syncAccess'
 import { supabaseAdmin } from '@/lib/supabase'
 import type { NoteSession } from '@/lib/notes/types'
 
@@ -40,19 +40,14 @@ function rowToSession(r: {
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.nextUrl.searchParams.get('userId')?.trim()
-    if (!userId) return NextResponse.json({ error: 'userId required' }, { status: 400 })
-
-    const denied = assertOwnerVaultReadAccess(
-      userId,
-      request.nextUrl.searchParams.get('syncPassword'),
-    )
-    if (denied) return NextResponse.json({ error: denied }, { status: 403 })
+    const qs = request.nextUrl.searchParams
+    const who = await resolveSyncUser(qs.get('userId'), qs.get('deviceUserId'))
+    if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
 
     const { data, error } = await supabaseAdmin
       .from(NOTE_SESSIONS_TABLE)
       .select('session_id, title, notes, tags, metadata, lookups, screenshots, started_at, updated_at')
-      .eq('user_id', userId)
+      .eq('user_id', who.uid)
       .order('updated_at', { ascending: false })
       .limit(200)
 
@@ -73,14 +68,11 @@ export async function POST(request: NextRequest) {
     const body = JSON.parse(rawBody) as {
       userId?: string
       sessions?: NoteSession[]
-      syncPassword?: string
       deviceUserId?: string
     }
-    const { userId, sessions, syncPassword, deviceUserId } = body
-    if (!userId?.trim()) return NextResponse.json({ error: 'userId required' }, { status: 400 })
-
-    const denied = assertOwnerVaultAccess(userId, syncPassword, deviceUserId)
-    if (denied) return NextResponse.json({ error: denied }, { status: 403 })
+    const { sessions } = body
+    const who = await resolveSyncUser(body.userId, body.deviceUserId)
+    if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
 
     const list = Array.isArray(sessions) ? sessions : []
     if (list.length === 0) return NextResponse.json({ ok: true })
@@ -100,7 +92,7 @@ export async function POST(request: NextRequest) {
     const rows = list.map((s) => {
       const clean = sanitizeSessionForSync(s)
       return {
-        user_id: userId.trim(),
+        user_id: who.uid,
         session_id: clean.id,
         title: clean.title ?? '',
         notes: clean.notes ?? '',
@@ -127,23 +119,15 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, sessionId, syncPassword, deviceUserId } = body as {
-      userId?: string
-      sessionId?: string
-      syncPassword?: string
-      deviceUserId?: string
-    }
-    if (!userId?.trim() || !sessionId?.trim()) {
-      return NextResponse.json({ error: 'userId and sessionId required' }, { status: 400 })
-    }
-
-    const denied = assertOwnerVaultAccess(userId, syncPassword, deviceUserId)
-    if (denied) return NextResponse.json({ error: denied }, { status: 403 })
+    const { userId, sessionId, deviceUserId } = body as { userId?: string; sessionId?: string; deviceUserId?: string }
+    if (!sessionId?.trim()) return NextResponse.json({ error: 'sessionId required' }, { status: 400 })
+    const who = await resolveSyncUser(userId, deviceUserId)
+    if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
 
     const { error } = await supabaseAdmin
       .from(NOTE_SESSIONS_TABLE)
       .delete()
-      .eq('user_id', userId.trim())
+      .eq('user_id', who.uid)
       .eq('session_id', sessionId.trim())
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ ok: true })

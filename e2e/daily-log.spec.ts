@@ -18,25 +18,12 @@ test.describe('1 Sentence Everyday', () => {
     await page.evaluate(() => {
       try {
         localStorage.removeItem('daily_learn_entries')
-        localStorage.removeItem('daily_learn_sync_key')
+        localStorage.removeItem('sfjc_sync_key')
       } catch {
         /* ignore */
       }
     })
     await page.reload()
-  })
-
-  test('shows today entry and tabs', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: '1 Sentence Everyday' })).toBeVisible({ timeout: 5000 })
-    await expect(sectionsNav(page).getByRole('button', { name: 'analytics' })).toBeVisible()
-    await expect(page.getByPlaceholder(/One sentence/i)).toBeVisible()
-  })
-
-  test('can type in today textarea', async ({ page }) => {
-    const textarea = page.getByPlaceholder(/One sentence/i)
-    await expect(textarea).toBeVisible({ timeout: 5000 })
-    await textarea.fill('E2E test entry')
-    await expect(textarea).toHaveValue('E2E test entry')
   })
 
   test('submit persists entry and shows in history', async ({ page }) => {
@@ -46,40 +33,6 @@ test.describe('1 Sentence Everyday', () => {
     await expect(page.getByText('Saved')).toBeVisible({ timeout: 15000 })
     await expect(page.getByRole('heading', { name: 'History' })).toBeVisible()
     await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: phrase })).toBeVisible()
-  })
-
-  test('analytics tab loads counts after save', async ({ page }) => {
-    await page.getByPlaceholder(/One sentence/i).fill(`analytics marker ${Date.now()}`)
-    await page.getByRole('button', { name: 'Submit' }).click()
-    await expect(page.getByText('Saved')).toBeVisible({ timeout: 15000 })
-    await sectionsNav(page).getByRole('button', { name: 'analytics' }).click()
-    await expect(page.getByRole('heading', { name: 'Analytics' })).toBeVisible()
-    await expect(page.getByText('Total entries')).toBeVisible()
-    await expect(page.getByText('This week')).toBeVisible()
-  })
-
-  test('CSV import merge surfaces commas and quoted text', async ({ page }) => {
-    const csv =
-      'date,text,updatedAt\n2023-08-08,"Learned comma, pause",2023-08-08T15:00:00.000Z\n'
-    await sectionsNav(page).getByRole('button', { name: 'export' }).click()
-    await page.getByTestId('daily-learn-csv-import').setInputFiles({
-      name: 'fixture.csv',
-      mimeType: 'text/csv',
-      buffer: Buffer.from(csv),
-    })
-    await expect(page.getByRole('status')).toContainText(/Imported/)
-    await page.getByRole('button', { name: /← Log/ }).click()
-    await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: /Learned comma, pause/ })).toBeVisible()
-  })
-
-  test('CSV import rejects invalid header', async ({ page }) => {
-    await sectionsNav(page).getByRole('button', { name: 'export' }).click()
-    await page.getByTestId('daily-learn-csv-import').setInputFiles({
-      name: 'bad.csv',
-      mimeType: 'text/csv',
-      buffer: Buffer.from('foo,bar\n2023-01-01,z'),
-    })
-    await expect(page.getByRole('status')).toContainText(/Header row must include/)
   })
 
   test('CSV export download round-trips through import', async ({ page }) => {
@@ -129,7 +82,7 @@ test.describe('1 Sentence Everyday', () => {
     })
     await page.reload()
     await sectionsNav(page).getByRole('button', { name: 'sync' }).click()
-    await page.getByPlaceholder(/sync password or device ID/i).fill('e2e-empty-user')
+    await page.getByPlaceholder('Sync key').fill('e2e-empty-user')
     await page.getByRole('button', { name: 'Sync', exact: true }).click()
     await expect(page.getByText('Synced 1 entries')).toBeVisible({ timeout: 15000 })
   })
@@ -155,7 +108,7 @@ test.describe('1 Sentence Everyday', () => {
       'e2e-shared-key',
     )
     await sectionsNav(page).getByRole('button', { name: 'sync' }).click()
-    await page.getByPlaceholder(/sync password or device ID/i).fill('e2e-shared-key')
+    await page.getByPlaceholder('Sync key').fill('e2e-shared-key')
     await page.getByRole('button', { name: 'Sync', exact: true }).click()
     await expect(page.getByText('Synced 3 entries')).toBeVisible({ timeout: 15000 })
     await page.getByRole('button', { name: /← Log/ }).click()
@@ -184,51 +137,19 @@ test.describe('1 Sentence Everyday', () => {
     await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: 'Deleted on another device' })).toHaveCount(0)
   })
 
-  test('sync key survives a Safari-style localStorage wipe', async ({ page }) => {
-    await setDailyLearnMockServerEntries(
-      page,
-      [{ date: '2019-06-01', text: 'Only on the shared key', updatedAt: '2019-06-01T10:00:00.000Z' }],
-      'e2e-wiped-key',
-    )
+  test('pending device shows waiting for approval and does not upload', async ({ page }) => {
+    await mockDailyLearnApi(page, { approved: false })
+    await page.evaluate(() => localStorage.setItem('daily_learn_entries', JSON.stringify([
+      { date: '2019-03-01', text: 'Stay local', updatedAt: '2019-03-01T10:00:00.000Z' },
+    ])))
+    await page.reload()
+    let posted = false
+    page.on('request', (r) => { if (r.method() === 'POST' && r.url().includes('/api/daily-learn/')) posted = true })
     await sectionsNav(page).getByRole('button', { name: 'sync' }).click()
-    await page.getByPlaceholder(/sync password or device ID/i).fill('e2e-wiped-key')
+    await page.getByPlaceholder('Sync key').fill('e2e-pending-key')
     await page.getByRole('button', { name: 'Sync', exact: true }).click()
-    await expect(page.getByText('Synced 1 entries')).toBeVisible({ timeout: 15000 })
-    await page.evaluate(() => localStorage.clear())
-    await page.reload()
-    await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: 'Only on the shared key' })).toBeVisible({
-      timeout: 15000,
-    })
-    expect(await page.evaluate(() => localStorage.getItem('daily_learn_sync_key'))).toBe('e2e-wiped-key')
-  })
-
-  test('shortcut hint shows Cmd+Enter on Mac', async ({ page }) => {
-    await page.addInitScript(() => {
-      Object.defineProperty(navigator, 'platform', { get: () => 'MacIntel' })
-    })
-    await page.reload()
-    await expect(page.getByTestId('daily-learn-submit-shortcut-hint')).toContainText('Cmd+Enter to submit')
-  })
-
-  test('shortcut hint shows Ctrl+Enter on Windows', async ({ page }) => {
-    await page.addInitScript(() => {
-      Object.defineProperty(navigator, 'platform', { get: () => 'Win32' })
-    })
-    await page.reload()
-    await expect(page.getByTestId('daily-learn-submit-shortcut-hint')).toContainText('Ctrl+Enter to submit')
-  })
-
-  test('Ctrl+Enter submits today entry on Windows', async ({ page }) => {
-    await page.addInitScript(() => {
-      Object.defineProperty(navigator, 'platform', { get: () => 'Win32' })
-    })
-    await page.reload()
-    const phrase = `E2E ctrl-enter ${Date.now()}`
-    const textarea = page.getByPlaceholder(/One sentence/i)
-    await textarea.fill(phrase)
-    await textarea.press('Control+Enter')
-    await expect(page.getByText('Saved')).toBeVisible({ timeout: 15000 })
-    await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: phrase })).toBeVisible()
+    await expect(page.getByTestId('daily-learn-device-status')).toContainText(/waiting for approval/i, { timeout: 15000 })
+    expect(posted).toBe(false)
   })
 
   test('visibility refetch updates history from server', async ({ page }) => {

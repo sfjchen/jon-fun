@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { type CommunalDbRow, communalReaderBackendReady, dbRowToPublication } from '@/lib/reader/communal-server'
-import { isOwnerRequest, READER_SHELF_OWNER_DENIED } from '@/lib/sfjc-sync-auth'
+import { isOwnerDevice, OWNER_ONLY } from '@/lib/syncAccess'
 import { supabaseAdmin } from '@/lib/supabase'
 
 type RouteParams = { params: Promise<{ id: string }> }
@@ -25,9 +25,9 @@ export async function DELETE(request: Request, { params }: RouteParams) {
   const { id } = await params
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
-  const creds = (await request.json().catch(() => ({}))) as { syncPassword?: string; deviceUserId?: string }
-  if (!isOwnerRequest(creds.syncPassword, creds.deviceUserId)) {
-    return NextResponse.json({ error: READER_SHELF_OWNER_DENIED }, { status: 403 })
+  const creds = (await request.json().catch(() => ({}))) as { deviceUserId?: string }
+  if (!(await isOwnerDevice(creds.deviceUserId))) {
+    return NextResponse.json({ error: OWNER_ONLY }, { status: 403 })
   }
 
   const { error } = await supabaseAdmin.from('reader_communal_publications').delete().eq('id', id)

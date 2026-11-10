@@ -1,6 +1,5 @@
 /**
- * TMR (Targeted Memory Reactivation) Utilities
- * Client-side implementation for study sessions and sleep reactivation
+ * Client-side TMR (Targeted Memory Reactivation) helpers for study sessions and sleep cues.
  */
 
 export interface TMRConfig {
@@ -38,7 +37,7 @@ export const DEFAULT_CONFIG: TMRConfig = {
   studyDurationMinutes: 60,
   cueIntervalSeconds: 60,
   studyVolume: 0.7,
-  sleepOnsetDelayMinutes: 15, // Typical 10-15 min sleep latency
+  sleepOnsetDelayMinutes: 15,
   sleepCueIntervalSeconds: 10,
   cuesPerWindow: 30,
   sleepVolume: 0.2,
@@ -47,7 +46,7 @@ export const DEFAULT_CONFIG: TMRConfig = {
 }
 
 /**
- * Generate TMR cue sound using Web Audio API
+ * Returns a sine cue buffer with fade in and out.
  */
 export async function generateTMRCue(
   duration: number = 0.9,
@@ -59,10 +58,9 @@ export async function generateTMRCue(
   const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate)
   const data = buffer.getChannelData(0)
 
-  // Generate sine wave with fade in/out
   for (let i = 0; i < data.length; i++) {
     const t = i / sampleRate
-    const fadeSamples = 0.2 * sampleRate // 200ms fade
+    const fadeSamples = 0.2 * sampleRate
     let envelope = 1
 
     if (i < fadeSamples) {
@@ -78,7 +76,7 @@ export async function generateTMRCue(
 }
 
 /**
- * Generate pink noise using Web Audio API
+ * Returns a pink noise buffer with a 2 second fade.
  */
 export async function generatePinkNoise(
   duration: number = 300,
@@ -89,7 +87,6 @@ export async function generatePinkNoise(
   const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate)
   const data = buffer.getChannelData(0)
 
-  // Generate pink noise (simplified 1/f filter)
   let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0
   const white = new Float32Array(data.length)
 
@@ -97,7 +94,6 @@ export async function generatePinkNoise(
     white[i] = Math.random() * 2 - 1
   }
 
-  // Apply pink noise filter
   for (let i = 0; i < data.length; i++) {
     const whiteValue = white[i]!
     b0 = 0.99886 * b0 + whiteValue * 0.0555179
@@ -107,12 +103,11 @@ export async function generatePinkNoise(
     b4 = 0.55000 * b4 + whiteValue * 0.5329522
     b5 = -0.7616 * b5 - whiteValue * 0.0168980
     data[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + whiteValue * 0.5362
-    data[i]! *= 0.11 // Normalize
+    data[i]! *= 0.11
     b6 = whiteValue * 0.115926
   }
 
-  // Apply fade in/out
-  const fadeSamples = 2 * sampleRate // 2 second fade
+  const fadeSamples = 2 * sampleRate
   for (let i = 0; i < fadeSamples && i < data.length; i++) {
     data[i]! *= i / fadeSamples
   }
@@ -124,7 +119,7 @@ export async function generatePinkNoise(
 }
 
 /**
- * Play audio buffer with volume control
+ * Plays an audio buffer at the given volume.
  */
 export function playAudioBuffer(
   buffer: AudioBuffer,
@@ -146,7 +141,7 @@ export function playAudioBuffer(
 }
 
 /**
- * Calculate sleep reactivation windows based on personalized sleep cycle data
+ * Returns sleep reactivation windows from personalized sleep cycle data.
  *
  * Based on Apple Watch data analysis:
  * - Typical cycles: ~75-85 min, first cycle is longer (~90 min)
@@ -155,7 +150,6 @@ export function playAudioBuffer(
 export function calculateSleepWindows(sleepOnsetDelayMinutes: number = 0) {
   const windows = []
 
-  // Personalized sleep cycle windows based on Apple Watch data
   // Cycle 1: 0-90 min, target 50-85 min (peak deep sleep, cushioned)
   windows.push({
     startMinutes: sleepOnsetDelayMinutes + 50,
@@ -252,7 +246,7 @@ export async function syncSleepSessionToServer(session: SleepSession): Promise<v
 }
 
 /**
- * Load config from localStorage
+ * Loads the config from localStorage.
  */
 export function loadConfig(): TMRConfig {
   if (typeof window === 'undefined') return DEFAULT_CONFIG
@@ -269,7 +263,7 @@ export function loadConfig(): TMRConfig {
 }
 
 /**
- * Save config to localStorage
+ * Saves the config to localStorage.
  */
 export function saveConfig(config: TMRConfig): void {
   if (typeof window === 'undefined') return
@@ -277,7 +271,7 @@ export function saveConfig(config: TMRConfig): void {
 }
 
 /**
- * Load study sessions from localStorage
+ * Loads study sessions from localStorage.
  */
 export function loadStudySessions(): StudySession[] {
   if (typeof window === 'undefined') return []
@@ -294,7 +288,7 @@ export function loadStudySessions(): StudySession[] {
 }
 
 /**
- * Save study session to localStorage
+ * Saves a study session to localStorage.
  */
 export function saveStudySession(session: StudySession): void {
   if (typeof window === 'undefined') return
@@ -305,7 +299,7 @@ export function saveStudySession(session: StudySession): void {
 }
 
 /**
- * Load sleep sessions from localStorage
+ * Loads sleep sessions from localStorage.
  */
 export function loadSleepSessions(): SleepSession[] {
   if (typeof window === 'undefined') return []
@@ -322,7 +316,7 @@ export function loadSleepSessions(): SleepSession[] {
 }
 
 /**
- * Save sleep session to localStorage
+ * Saves a sleep session to localStorage.
  */
 export function saveSleepSession(session: SleepSession): void {
   if (typeof window === 'undefined') return

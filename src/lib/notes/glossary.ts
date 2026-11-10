@@ -184,14 +184,6 @@ export function formatGlossaryForPrompt(maxEntries = 12): string {
     .join('\n')
 }
 
-export function searchGlossary(q: string): GlossaryEntry[] {
-  const needle = q.toLowerCase().trim()
-  if (!needle) return loadGlossary().slice(0, 20)
-  return loadGlossary().filter(
-    (e) => e.term.toLowerCase().includes(needle) || e.definition.toLowerCase().includes(needle),
-  )
-}
-
 export function mergeGlossaryFromServer(remote: GlossaryEntry[]): void {
   const local = loadGlossary()
   saveGlossary(sanitizeEntries([...local, ...remote]))

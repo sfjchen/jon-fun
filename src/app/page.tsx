@@ -6,11 +6,9 @@ import { GameCard } from '@/components/GameCard'
 import type { GameCardGame } from '@/components/GameCard'
 import Link from 'next/link'
 import { HOME_COMING_SOON_DEFAULTS, type HomeComingSoonCopy } from '@/data/home-coming-soon-defaults'
-import { SFJC_ADMIN_DEVICE_IDS } from '@/data/sfjc-admin-devices'
-import { NOTES_USER_ID_KEY } from '@/lib/notes/deviceIdentity'
+import { isOwnerDevice, subscribeSyncIdentity } from '@/lib/syncIdentity'
 
 const nb = '/doodles/notebook'
-/** Pear Navigator stays archived off home — see `@/data/notebook-home-games-archive` for the preserved card. */
 const items: GameCardGame[] = [
   {
     id: 'e-reader',
@@ -102,12 +100,8 @@ const items: GameCardGame[] = [
 ]
 
 export default function Home() {
-  /* Coming Soon tile shows only on Jon's registered devices. The device id never changes while the page is open. */
-  const isOwner = useSyncExternalStore(
-    () => () => {},
-    () => SFJC_ADMIN_DEVICE_IDS.has(localStorage.getItem(NOTES_USER_ID_KEY) ?? ''),
-    () => false,
-  )
+  /* Coming Soon tile shows only on the owner's approved devices. */
+  const isOwner = useSyncExternalStore(subscribeSyncIdentity, isOwnerDevice, () => false)
   const [showComingSoon, setShowComingSoon] = useState(false)
   const [copy, setCopy] = useState<HomeComingSoonCopy>(HOME_COMING_SOON_DEFAULTS)
   const [showEditor, setShowEditor] = useState(false)

@@ -5,6 +5,7 @@ import { HomeLink } from '@/components/HomeLink'
 import { addToTagCatalog, listKnownTags, removeFromTagCatalog } from '@/lib/notes/tagRegistry'
 import { sanitizeMetadataText, sanitizeTags } from '@/lib/notes/textSanitize'
 import type { NoteSession } from '@/lib/notes/types'
+import { formatDateTime } from '@/lib/notes/formatDateTime'
 import { loadNotesUiPrefs, saveNotesUiPrefs } from '@/lib/notes/prefs'
 import { NotesOverflowMenu, NotesRowAction } from './NotesActionUi'
 
@@ -21,16 +22,6 @@ type NotesTopBarProps = {
   pane?: 'primary' | 'secondary'
   onClosePane?: () => void
   showHomeLink?: boolean
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  })
 }
 
 export default function NotesTopBar({

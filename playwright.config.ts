@@ -35,54 +35,19 @@ export default defineConfig({
     actionTimeout: 15_000,
     navigationTimeout: 45_000,
   },
-  projects: process.env.CI
-    ? [
-        { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: visualIgnore },
-        {
-          name: 'mobile-chromium',
-          use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
-          testMatch: /notes-mobile\.spec\.ts$/,
-        },
-        {
-          name: 'visual-desktop',
-          testMatch: /site-visual\.spec\.ts$|connections-states\.spec\.ts$/,
-          use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 },
-        },
-        {
-          name: 'visual-tablet',
-          testMatch: /site-visual\.spec\.ts$|connections-states\.spec\.ts$/,
-          use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 }, deviceScaleFactor: 1 },
-        },
-        {
-          name: 'visual-mobile',
-          testMatch: /site-visual\.spec\.ts$|connections-states\.spec\.ts$/,
-          use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 },
-        },
-      ]
-    : [
-        { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: visualIgnore },
-        { name: 'Mobile Chrome', use: { ...devices['Pixel 5'] }, testIgnore: visualIgnore },
-        {
-          name: 'mobile-chromium',
-          use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
-          testMatch: /notes-mobile\.spec\.ts$/,
-        },
-        {
-          name: 'visual-desktop',
-          testMatch: /site-visual\.spec\.ts$|connections-states\.spec\.ts$/,
-          use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 },
-        },
-        {
-          name: 'visual-tablet',
-          testMatch: /site-visual\.spec\.ts$|connections-states\.spec\.ts$/,
-          use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 }, deviceScaleFactor: 1 },
-        },
-        {
-          name: 'visual-mobile',
-          testMatch: /site-visual\.spec\.ts$|connections-states\.spec\.ts$/,
-          use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 },
-        },
-      ],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: visualIgnore },
+    {
+      name: 'mobile-chromium',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
+      testMatch: /notes-mobile\.spec\.ts$/,
+    },
+    {
+      name: 'visual-desktop',
+      testMatch: visualIgnore,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 },
+    },
+  ],
   ...(skipWebServer
     ? {}
     : {

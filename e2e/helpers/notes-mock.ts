@@ -1,5 +1,7 @@
 import { expect, type Page, Locator } from '@playwright/test'
 
+import { mockSyncIdentity } from './sync-identity-mock'
+
 /** Tiptap ProseMirror content area (left/primary pane by default). */
 export function notesEditor(page: Page, pane: 'left' | 'right' = 'left'): Locator {
   const paneRoot =
@@ -21,8 +23,15 @@ export async function waitForNotesEditor(page: Page): Promise<void> {
   }
 }
 
-/** Stub Notes sync, lookup, embed, glossary, and sources routes for offline E2E. */
-export async function mockNotesApi(page: Page): Promise<void> {
+/** Stub Notes sync, lookup, embed, glossary, and sources routes for offline E2E. `owner` makes this an owner device. */
+export async function mockNotesApi(page: Page, opts?: { owner?: boolean }): Promise<void> {
+  await mockSyncIdentity(page)
+  if (opts?.owner) {
+    await page.addInitScript(() => {
+      localStorage.setItem('sfjc_sync_key', 'sfjc')
+      localStorage.setItem('sfjc_approved_key', 'sfjc')
+    })
+  }
   /** Skip the first-visit welcome note so specs start on an empty note. */
   await page.addInitScript(() => localStorage.setItem('notes_welcome_seeded', '1'))
 

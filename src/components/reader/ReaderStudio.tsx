@@ -29,8 +29,7 @@ import {
   saveReaderPublication,
 } from '@/lib/reader/publications'
 import { toSummary } from '@/lib/reader/publications-idb'
-import { SFJC_ADMIN_DEVICE_IDS } from '@/data/sfjc-admin-devices'
-import { notesSyncCredentials } from '@/lib/notes/syncCredentials'
+import { isOwnerDevice, subscribeSyncIdentity } from '@/lib/syncIdentity'
 import { loadLastReaderLocation } from '@/lib/reader/settings'
 import { registerReaderServiceWorker } from '@/lib/reader/pwa'
 import type { ReaderImportDraft, ReaderPublication, ReaderPublicationSummary, ReaderSourceType } from '@/lib/reader/types'
@@ -127,15 +126,8 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
   const [aiError, setAiError] = useState('')
   const [lastLocation, setLastLocation] = useState<{ bookId: string; chapterId: string } | null>(null)
   const [aiDraft, setAiDraft] = useState(draft)
-  /* Owner devices with the sync password delete books for everyone. Other devices only remove them locally. */
-  const isOwner = useSyncExternalStore(
-    () => () => {},
-    () => {
-      const creds = notesSyncCredentials()
-      return Boolean(creds.syncPassword) && SFJC_ADMIN_DEVICE_IDS.has(creds.deviceUserId)
-    },
-    () => false,
-  )
+  /* Approved owner devices delete books for everyone. Other devices only remove them locally. */
+  const isOwner = useSyncExternalStore(subscribeSyncIdentity, isOwnerDevice, () => false)
   const libraryImportInputRef = useRef<HTMLInputElement>(null)
 
   const loadLibrary = useCallback(

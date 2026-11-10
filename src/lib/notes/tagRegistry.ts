@@ -1,5 +1,4 @@
-import { SFJC_ADMIN_DEVICE_IDS } from '@/data/sfjc-admin-devices'
-import { getOrCreateUserId } from './deviceIdentity'
+import { isOwnerDevice } from '@/lib/syncIdentity'
 import type { NoteSession } from './types'
 
 const CATALOG_KEY = 'notes_tag_catalog'
@@ -7,7 +6,7 @@ const CATALOG_KEY = 'notes_tag_catalog'
 /** Neutral starter tags for visitors (editable catalog seeds). Tags already used on notes still join the picker. */
 export const DEFAULT_TAG_CATALOG = ['meeting', 'learning', 'idea', 'reading']
 
-/** Jon's work tags, seeded only on his registered devices. */
+/** Jon's work tags, seeded only on his approved owner devices. */
 const OWNER_TAG_CATALOG = ['IC', 'GP', 'meeting', 'learning', 'internal', 'endowment', 'portfolio']
 
 /**
@@ -16,7 +15,7 @@ const OWNER_TAG_CATALOG = ['IC', 'GP', 'meeting', 'learning', 'internal', 'endow
  */
 export function loadTagCatalog(): string[] {
   if (typeof window === 'undefined') return [...DEFAULT_TAG_CATALOG]
-  const seed = SFJC_ADMIN_DEVICE_IDS.has(getOrCreateUserId()) ? OWNER_TAG_CATALOG : DEFAULT_TAG_CATALOG
+  const seed = isOwnerDevice() ? OWNER_TAG_CATALOG : DEFAULT_TAG_CATALOG
   try {
     const arr = JSON.parse(localStorage.getItem(CATALOG_KEY) ?? '[]') as unknown
     return Array.isArray(arr) && arr.length ? (arr as string[]) : [...seed]

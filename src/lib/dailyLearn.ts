@@ -5,6 +5,7 @@
  */
 
 import { formatDailyLearnCsv, parseDailyLearnCsv } from './dailyLearnCsv'
+import { connectSyncKey, ensureSyncIdentity, syncCredentials } from './syncIdentity'
 
 export interface DailyLearnEntry {
   date: string // 'YYYY-MM-DD'
@@ -18,10 +19,8 @@ export interface DailyLearnCounts {
   thisMonth: number
 }
 
-const USER_ID_KEY = 'daily_learn_user_id'
 /** localStorage key for entry JSON array — exported for E2E (End-to-End) and tooling */
 export const DAILY_LEARN_ENTRIES_KEY = 'daily_learn_entries'
-const SYNC_KEY = 'daily_learn_sync_key'
 
 function toLocalYYYYMMDD(d: Date): string {
   const y = d.getFullYear()
@@ -45,15 +44,6 @@ export function parseLocalDate(dateStr: string): Date {
   return new Date(y ?? 0, (m ?? 1) - 1, d ?? 1)
 }
 
-function genUuid(): string {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0
-    const v = c === 'x' ? r : (r & 0x3) | 0x8
-    return v.toString(16)
-  })
-}
-
 /** Day resets at 5 AM in the device's local timezone (not midnight). Call client-side only. */
 export function getTodayDate(): string {
   const now = new Date()
@@ -63,34 +53,6 @@ export function getTodayDate(): string {
     return toLocalYYYYMMDD(prev)
   }
   return toLocalYYYYMMDD(now)
-}
-
-export function getOrCreateUserId(): string {
-  if (typeof window === 'undefined') return ''
-  let id = localStorage.getItem(USER_ID_KEY)
-  if (!id) {
-    id = genUuid()
-    localStorage.setItem(USER_ID_KEY, id)
-  }
-  return id
-}
-
-/** Sync password links devices; when set, both use same user_id for Supabase. */
-export function getSyncKey(): string {
-  if (typeof window === 'undefined') return ''
-  return localStorage.getItem(SYNC_KEY) ?? ''
-}
-
-export function setSyncKey(key: string): void {
-  if (typeof window === 'undefined') return
-  if (key.trim()) localStorage.setItem(SYNC_KEY, key.trim())
-  else localStorage.removeItem(SYNC_KEY)
-}
-
-/** Effective user_id for API: sync password if set, else device user_id. */
-export function getEffectiveUserId(): string {
-  const sk = getSyncKey()
-  return sk ? sk : getOrCreateUserId()
 }
 
 /** Sorts entries newest date first. */
@@ -138,7 +100,7 @@ function loadAllEntries(): DailyLearnEntry[] {
 /** Fetches every row (tombstones included) for the effective user_id, or null when the request fails. */
 async function fetchEntriesFromServer(): Promise<DailyLearnEntry[] | null> {
   try {
-    const res = await fetch(`/api/daily-learn/entries?userId=${encodeURIComponent(getEffectiveUserId())}`)
+    const res = await fetch(`/api/daily-learn/entries?${new URLSearchParams(syncCredentials())}`)
     if (!res.ok) return null
     const data = (await res.json()) as { entries?: DailyLearnEntry[] }
     return Array.isArray(data.entries) ? data.entries : []
@@ -153,7 +115,7 @@ const RETRY_DELAY_MS = 500
 /** Pushes entries with their own updatedAt so the server only overwrites rows older than each one. */
 async function pushWithRetry(entries: DailyLearnEntry[]): Promise<boolean> {
   const body = JSON.stringify({
-    userId: getEffectiveUserId(),
+    ...syncCredentials(),
     entries: entries.map((e) => ({ date: e.date, text: e.text, updatedAt: e.updatedAt })),
   })
   for (let i = 0; i < PUSH_RETRIES; i++) {
@@ -177,42 +139,13 @@ export function isEntryTextDirty(localText: string, saved?: DailyLearnEntry): bo
   return localText.trim() !== (saved?.text ?? '').trim()
 }
 
-const IDS_URL = '/api/daily-learn/ids'
-/** Resolves once this page load has restored and backed up its ids, shared so concurrent syncs wait on 1 run. */
-let idsReady: Promise<void> | null = null
-
-/**
- * Restores the sync password and device ID from the server cookie when localStorage has lost them (Safari erases
- * it after 7 days without a visit, which used to strand new entries under a fresh device ID), then backs up the
- * current ids. A failed attempt clears itself so the next sync retries.
- */
-function ensureIds(): Promise<void> {
-  idsReady ??= (async () => {
-    if (!localStorage.getItem(USER_ID_KEY)) {
-      const res = await fetch(IDS_URL)
-      const saved = res.ok ? ((await res.json()) as { syncKey?: string; deviceId?: string }) : {}
-      if (saved.deviceId) localStorage.setItem(USER_ID_KEY, saved.deviceId)
-      if (saved.syncKey && !getSyncKey()) setSyncKey(saved.syncKey)
-    }
-    const res = await fetch(IDS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ syncKey: getSyncKey(), deviceId: getOrCreateUserId() }),
-    })
-    if (!res.ok) throw new Error('ids backup failed')
-  })().catch(() => {
-    idsReady = null
-  })
-  return idsReady
-}
-
 /**
  * Fetches from the server, merges with local, saves local, and pushes the merge back.
  * A failed fetch still pushes local data (the server keeps whichever copy is newer) but reports not ok.
  */
 export async function syncWithServer(): Promise<{ entries: DailyLearnEntry[]; pushOk: boolean }> {
   if (typeof window === 'undefined') return { entries: [], pushOk: true }
-  await ensureIds()
+  await ensureSyncIdentity()
   const remote = await fetchEntriesFromServer()
   const merged = mergeEntries(loadAllEntries(), remote ?? [])
   localStorage.setItem(DAILY_LEARN_ENTRIES_KEY, JSON.stringify(merged))
@@ -224,9 +157,8 @@ export async function syncWithServer(): Promise<{ entries: DailyLearnEntry[]; pu
  * Sets the sync password (or device ID) and merges this browser's entries with that account's.
  * Never replaces local data, so it is safe on a fresh browser and on one that already has entries.
  */
-export async function connectSyncKey(key: string): Promise<{ entries: DailyLearnEntry[]; pushOk: boolean }> {
-  setSyncKey(key)
-  idsReady = null
+export async function connectAndSync(key: string): Promise<{ entries: DailyLearnEntry[]; pushOk: boolean }> {
+  await connectSyncKey(key)
   return syncWithServer()
 }
 

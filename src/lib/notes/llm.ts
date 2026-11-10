@@ -135,10 +135,6 @@ export function buildOpenRouterMessages(
   return msgs
 }
 
-export function screenshotParts(screenshots: Screenshot[]): OpenRouterContentPart[] {
-  return attachmentParts(screenshots).filter((p) => p.type === 'image_url')
-}
-
 export function attachmentParts(attachments: Screenshot[]): OpenRouterContentPart[] {
   const parts: OpenRouterContentPart[] = []
   for (const s of attachments) {

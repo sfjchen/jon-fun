@@ -76,5 +76,3 @@ On cream `--ink-paper` / `--nb-paper`: use `var(--ink-text)` / `var(--nb-text)`,
 ## Related docs
 
 - [`docs/ARCHITECTURE-MAP.md`](ARCHITECTURE-MAP.md) — routes, backends
-- [`docs/Website-Themes-Reference.md`](Website-Themes-Reference.md) — **inspiration only** (not deployed)
-- [`docs/UI-Overhaul-Plan-Ink-And-Paper.md`](UI-Overhaul-Plan-Ink-And-Paper.md) — historical plan

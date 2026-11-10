@@ -3,6 +3,8 @@
  * Playful benchmark only; not a clinical or IQ measure.
  */
 
+import { shuffle } from '@/lib/random'
+
 export type MentalDomain =
   | 'speed'
   | 'workingMemory'
@@ -178,15 +180,6 @@ export type PatternProblem = {
   prompt: string
   answer: number
   choices: number[]
-}
-
-function shuffle<T>(arr: T[]): T[] {
-  const o = [...arr]
-  for (let i = o.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[o[i], o[j]] = [o[j]!, o[i]!]
-  }
-  return o
 }
 
 export function randomPatternProblem(): PatternProblem {

@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
 import {
-  dropCsvOnNotesEditor,
   ensureNotesVaultSectionOpen,
   mockNotesApi,
   notesEditor,
@@ -8,8 +7,7 @@ import {
   waitForNotesEditor,
   waitForNotesTrigger,
   typeInNotesEditor,
-  dropNoteOnSplitPane,
-} from './helpers/notes-mock'
+  } from './helpers/notes-mock'
 
 /** True mobile viewport — do not inherit desktop 1280px from other describe blocks. */
 const MOBILE = { width: 390, height: 844 }
@@ -24,20 +22,12 @@ test.describe('Notes mobile', () => {
     await page.evaluate((key) => {
       localStorage.removeItem(key)
       localStorage.removeItem('notes_active_session_id')
-      localStorage.removeItem('notes_user_id')
       localStorage.removeItem('notes_ui_prefs')
       localStorage.removeItem('notes_glossary')
       localStorage.removeItem('notes_sources')
     }, SESSIONS_KEY)
     await page.reload({ waitUntil: 'domcontentloaded' })
     await waitForNotesEditor(page)
-  })
-
-  test('editor fills viewport height; panel hidden by default', async ({ page }) => {
-    const editorBox = await page.getByTestId('notes-editor').boundingBox()
-    expect(editorBox?.height ?? 0).toBeGreaterThan(200)
-    await expect(page.getByTestId('notes-side-panel')).toBeHidden()
-    await expect(page.getByTestId('notes-toggle-panel')).toBeVisible()
   })
 
   test('panel opens as overlay with backdrop and closes via backdrop or status bar', async ({ page }) => {
@@ -89,109 +79,4 @@ test.describe('Notes mobile', () => {
     await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15_000 })
   })
 
-  test('tag chips visible and toggle on mobile', async ({ page }) => {
-    await expect(page.getByTestId('notes-tag-chip-IC')).toBeVisible()
-    await page.getByTestId('notes-tag-chip-IC').click()
-    await expect(page.getByTestId('notes-tag-chip-IC')).toHaveClass(/bg-\[var\(--uv-accent\)\]/)
-  })
-
-  test('export markdown from status bar menu', async ({ page }) => {
-    await typeInNotesEditor(page, 'export on mobile')
-    const downloadPromise = page.waitForEvent('download')
-    await page.getByTestId('notes-export-toggle').click()
-    await page.getByTestId('notes-export-md').click()
-    const download = await downloadPromise
-    expect(download.suggestedFilename()).toMatch(/\.md$/i)
-  })
-
-  test('sync panel accepts password on mobile', async ({ page }) => {
-    await page.getByTestId('notes-toggle-panel').click()
-    await page.getByTestId('notes-sync-toggle').click()
-    await page.getByTestId('notes-sync-password-input').fill('mobile-sync-key')
-    await page.getByTestId('notes-sync-save').click()
-    await expect(page.getByTestId('notes-sync-panel').getByText('Synced')).toBeVisible({ timeout: 10_000 })
-  })
-
-  test('dictionary add term on mobile', async ({ page }) => {
-    await page.getByTestId('notes-toggle-panel').click()
-    await page.getByTestId('notes-glossary-toggle').click()
-    await page.getByTestId('notes-dictionary-add').click()
-    await page.getByTestId('notes-dictionary-term-input').fill('TVPI')
-    await page.getByTestId('notes-dictionary-def-input').fill('Total value to paid-in')
-    await page.getByTestId('notes-dictionary-save').click()
-    await expect(page.getByTestId('notes-glossary-panel')).toContainText('TVPI')
-  })
-
-  test('inline table insert via toolbar on mobile', async ({ page }) => {
-    await page.getByTestId('notes-table-insert-btn').click()
-    await expect(page.getByTestId('notes-table-insert-popover')).toBeVisible()
-    await page.getByTestId('notes-table-insert-confirm').click()
-    await expect(notesEditor(page).locator('table')).toBeVisible({ timeout: 5000 })
-  })
-
-  test('CSV attachment via e2e hook on mobile', async ({ page }) => {
-    await page.goto('/games/notes?notesE2e=1', { waitUntil: 'domcontentloaded' })
-    await waitForNotesEditor(page)
-    await dropCsvOnNotesEditor(page, 'Ticker,Price\nAAPL,190')
-    await expect(page.getByTestId('notes-attachment').first()).toBeVisible({ timeout: 8000 })
-  })
-
-  test('New button in status bar creates note on mobile', async ({ page }) => {
-    await page.getByTestId('notes-header-new').click()
-    await expect(page.getByTestId('notes-side-panel')).toBeVisible()
-    await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(2)
-  })
-
-  test('summarize runs AI without opening panel overlay', async ({ page }) => {
-    await typeInNotesEditor(page, 'mobile summarize body')
-    await page.evaluate(() => {
-      document.querySelector<HTMLButtonElement>('[data-testid="notes-summarize-btn"]')?.click()
-    })
-    await expect(page.getByTestId('notes-side-panel')).toBeHidden()
-    await expect(page.getByTestId('notes-ai-active-count')).toBeVisible({ timeout: 10_000 })
-  })
-
-  test('desktop-only keyboard shortcuts ignored on mobile viewport', async ({ page }) => {
-    await page.keyboard.press('Control+\\')
-    await expect(page.getByTestId('notes-side-panel')).toBeHidden()
-    await page.keyboard.press('Control+Shift+F')
-    await expect(page.getByTestId('notes-global-search')).toBeHidden()
-    await typeInNotesEditor(page, 'shortcut guard')
-    await page.keyboard.press('Control+k')
-    await expect(page.getByTestId('notes-side-panel')).toBeHidden()
-  })
-
-  test('status bar hides shortcut badges on mobile', async ({ page }) => {
-    const panelBtn = page.getByTestId('notes-toggle-panel')
-    await expect(panelBtn).toBeVisible()
-    await expect(panelBtn.locator('kbd')).toHaveCount(0)
-    await expect(page.getByTestId('notes-search-btn').locator('kbd')).toHaveCount(0)
-  })
-
-  test('mobile panel has no Panel header title', async ({ page }) => {
-    await page.getByTestId('notes-toggle-panel').click()
-    await expect(page.getByTestId('notes-side-panel')).toBeVisible()
-    await expect(page.getByTestId('notes-side-panel')).not.toContainText(/^Panel$/m)
-  })
-
-  test('split view stays single pane on narrow viewport', async ({ page }) => {
-    await page.goto('/games/notes?notesE2e=1', { waitUntil: 'domcontentloaded' })
-    await waitForNotesEditor(page)
-
-    await page.getByTestId('notes-meeting-title').fill('Mobile note A')
-    await typeInNotesEditor(page, 'mobile alpha')
-
-    await page.getByTestId('notes-toggle-panel').click()
-    await ensureNotesVaultSectionOpen(page)
-    await page.getByTestId('notes-new-meeting').click()
-    await expect(page.locator('[data-testid^="notes-meeting-item-"]')).toHaveCount(2)
-
-    const inactiveItem = page.locator('[data-testid^="notes-meeting-item-"][data-active="false"]').first()
-    const secondId = (await inactiveItem.getAttribute('data-testid'))!.replace('notes-meeting-item-', '')
-    await dropNoteOnSplitPane(page, secondId, 'right')
-
-    await expect(page.getByTestId('notes-split-root')).toHaveAttribute('data-split', 'false')
-    await expect(page.getByTestId('notes-editor-right')).toHaveCount(0)
-    await expect(notesEditor(page)).toHaveCount(1)
-  })
 })

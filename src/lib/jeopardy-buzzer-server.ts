@@ -3,7 +3,8 @@
 
 import { v4 as uuidv4 } from 'uuid'
 import { supabaseAdmin as supabase } from '@/lib/supabase'
-import { generateBuzzerPin, type BuzzerSession } from '@/lib/jeopardy-buzzer'
+import { type BuzzerSession } from '@/lib/jeopardy-buzzer'
+import { randomPin } from '@/lib/random'
 
 type SessionRow = {
   id: string
@@ -62,7 +63,7 @@ export async function ensureSessionForBoard(boardId: string): Promise<{ ok: true
   if (existing) return { ok: true, session: existing }
 
   for (let attempt = 0; attempt < MAX_PIN_ATTEMPTS; attempt++) {
-    const pin = generateBuzzerPin()
+    const pin = randomPin()
     const { data, error } = await supabase
       .from('jeopardy_buzzer_sessions')
       .insert({

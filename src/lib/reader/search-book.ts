@@ -34,7 +34,3 @@ export function findSearchHits(publication: ReaderPublication, rawQuery: string)
 
   return hits
 }
-
-export function hitKey(hit: ReaderSearchHit): string {
-  return `${hit.chapterId}:${hit.paragraphIndex}:${hit.offset}`
-}

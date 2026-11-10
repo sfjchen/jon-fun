@@ -33,12 +33,3 @@ export async function insertNoteAttachmentsFromFiles(
   }
   return ids
 }
-
-/** @deprecated */
-export async function insertNoteAttachment(
-  editor: Editor,
-  file: File,
-  onScreenshotPaste: (id: string, base64: string, mimeType: string) => void,
-): Promise<string | null> {
-  return insertNoteAttachmentFromFile(editor, file, (a) => onScreenshotPaste(a.id, a.base64, a.mimeType))
-}

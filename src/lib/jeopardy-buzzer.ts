@@ -95,11 +95,6 @@ export function isValidBuzzerPin(s: string): boolean {
   return typeof s === 'string' && /^\d{4}$/.test(s)
 }
 
-/** PIN allocator (same convention as poker rooms). */
-export function generateBuzzerPin(): string {
-  return Math.floor(1000 + Math.random() * 9000).toString()
-}
-
 export interface BuzzQueueEntry extends Buzz {
   /** Milliseconds behind the #1 buzzer. 0 for the winner. */
   deltaFromFirstMs: number

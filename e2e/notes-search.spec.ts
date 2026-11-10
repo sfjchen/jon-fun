@@ -19,7 +19,6 @@ test.describe('Notes search (local)', () => {
       }
       localStorage.setItem('notes_sessions', JSON.stringify([session]))
       localStorage.setItem('notes_active_session_id', session.id)
-      localStorage.setItem('notes_user_id', `e2e-search-${Date.now()}`)
     })
 
     await page.route('**/api/notes/sessions**', async (route) => {

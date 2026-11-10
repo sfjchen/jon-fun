@@ -30,9 +30,7 @@ export interface SeatPlayer {
 export const BETTING_ROUNDS = ['pre-flop', 'flop', 'turn', 'river'] as const
 export type BettingRound = (typeof BETTING_ROUNDS)[number]
 
-export function generateRoomPin(): string {
-  return Math.floor(1000 + Math.random() * 9000).toString()
-}
+export { randomPin as generateRoomPin } from '@/lib/random'
 
 export function validateRoomPin(pin: string): boolean {
   return /^\d{4}$/.test(pin)

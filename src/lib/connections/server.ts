@@ -5,7 +5,6 @@ import {
   parseConnectionsGroup,
   slugify,
   validateConnectionsPuzzleShape,
-  wordKey,
 } from '@/lib/connections'
 
 export function connectionsBackendReady(): boolean {
@@ -132,17 +131,4 @@ export function dbRowToSummary(row: ConnectionsDbRow): ConnectionsPuzzleSummary 
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
-}
-
-/** Server-side duplicate word check using same normalization as client. */
-export function assertUniqueWords(groups: ConnectionsGroup[]): void {
-  const keys = new Set<string>()
-  for (const g of groups) {
-    for (const w of g.words) {
-      const k = wordKey(w)
-      if (keys.has(k)) throw new Error('duplicate word')
-      keys.add(k)
-    }
-  }
-  if (keys.size !== 16) throw new Error('all 16 words must be unique')
 }

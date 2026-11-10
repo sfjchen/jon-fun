@@ -25,10 +25,6 @@ export function useModKeyLabel(): 'Cmd' | 'Ctrl' {
   )
 }
 
-export function modEnterShortcutLabel(mod: 'Cmd' | 'Ctrl' = modKeyLabel()): string {
-  return `${mod}+Enter`
-}
-
 export function dailyLearnSubmitHint(mod: 'Cmd' | 'Ctrl' = modKeyLabel()): string {
   return `${mod}+Enter to submit · Esc to cancel`
 }

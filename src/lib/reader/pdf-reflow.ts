@@ -6,23 +6,6 @@ export type PdfPositionedItem = {
   y: number
 }
 
-export function bucketLines(items: PdfPositionedItem[]): string[] {
-  const sorted = [...items].sort((a, b) => b.y - a.y || a.x - b.x)
-  const lines: PdfPositionedItem[][] = []
-
-  for (const item of sorted) {
-    const line = lines.find((candidate) => candidate[0] != null && Math.abs(candidate[0]!.y - item.y) < 3)
-    if (line) line.push(item)
-    else lines.push([item])
-  }
-
-  return lines
-    .map((line) =>
-      line.sort((a, b) => a.x - b.x).map((item) => item.text).join(' ').replace(/[ \t]+/g, ' ').trim(),
-    )
-    .filter(Boolean)
-}
-
 /** Repair pdf.js run breaks (e.g. “B” + “ook” → “B ook”); restores the word “Book”, not an abbreviation rewrite. */
 export function normalizePdfTextArtifacts(text: string): string {
   return text.replace(/\bB\s+ook\b/gi, 'Book')

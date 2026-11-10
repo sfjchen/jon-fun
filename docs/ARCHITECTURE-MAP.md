@@ -8,9 +8,8 @@ Single Next.js app at **`src/`** → [sfjc.dev](https://sfjc.dev) on **Vercel**.
 |----------|-----|------|
 | 1 | [`README.md`](../README.md) | Games list, verify loops, design principles |
 | 2 | **This file** | Routes, shared libs, perf, stack boundaries |
-| 3 | [`docs/NOTES-AGENT.md`](NOTES-AGENT.md) | Notes editor / AI / sync |
-| 4 | [`docs/SFJC-ADMIN.md`](SFJC-ADMIN.md) | Owner sync password, admin device UUIDs |
-| 5 | [`.cursor/rules/`](../.cursor/rules/) | Supabase MCP, Playwright CLI, git, Vercel |
+| 3 | [`docs/NOTES.md`](NOTES.md) | Notes editor / AI / sync |
+| 4 | [`docs/SYNC.md`](SYNC.md) | Shared sync identity, device approval, owner access |
 
 ## Routes
 

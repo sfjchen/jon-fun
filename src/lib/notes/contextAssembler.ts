@@ -90,24 +90,6 @@ function baseContext(opts: {
   }
 }
 
-export function assembleClientContext(opts: {
-  query: string
-  activeSession: NoteSession
-  allSessions: NoteSession[]
-  companionSession?: NoteSession | null
-  maxNotes?: number
-}) {
-  const ctx = baseContext(opts)
-  return {
-    glossaryBlock: ctx.glossaryBlock,
-    sourcesBlock: ctx.sourcesBlock,
-    relatedNotesBlock: ctx.relatedNotesBlock,
-    sectionsOutline: ctx.sectionsOutline,
-    domainId: ctx.domainId,
-    noteTags: ctx.noteTags,
-  }
-}
-
 /** Keyword + optional Gemini embedding re-rank for sources and related notes. */
 export async function assembleClientContextAsync(opts: {
   query: string

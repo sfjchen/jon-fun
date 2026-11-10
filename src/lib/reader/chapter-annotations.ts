@@ -229,12 +229,3 @@ export function mergeApiBlockComments(
   }
   return next
 }
-
-export function countThreadsForBlock(bundle: ChapterAnnotationBundle, blockId: string): number {
-  return bundle.threads.filter((t) => t.anchor.kind === 'block' && t.anchor.blockId === blockId).length
-}
-
-export function countThreadsForGap(bundle: ChapterAnnotationBundle, afterParagraphIndex: number): number {
-  return bundle.threads.filter((t) => t.anchor.kind === 'gap' && t.anchor.afterParagraphIndex === afterParagraphIndex)
-    .length
-}

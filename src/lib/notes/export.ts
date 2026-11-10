@@ -1,6 +1,7 @@
 import { marked } from 'marked'
 import { collectTodosFromNotes } from './shorthand'
 import type { Lookup, NoteSession } from './types'
+import { formatDateTime } from './formatDateTime'
 
 marked.setOptions({ gfm: true, breaks: true })
 
@@ -10,16 +11,6 @@ function formatDate(iso: string): string {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-  })
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
   })
 }
 

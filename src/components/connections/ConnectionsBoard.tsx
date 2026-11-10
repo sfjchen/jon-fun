@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { shuffle } from '@/lib/random'
 import type { ConnectionsDifficulty, ConnectionsGroup, ConnectionsPuzzle } from '@/lib/connections'
 import {
   CONNECTIONS_DIFFICULTIES,
@@ -49,7 +50,7 @@ export default function ConnectionsBoard({ puzzle, onComplete }: ConnectionsBoar
     return tiles
   }, [puzzle.groups])
 
-  const [pool, setPool] = useState<Tile[]>(() => shuffleTiles(allTiles))
+  const [pool, setPool] = useState<Tile[]>(() => shuffle(allTiles))
   const [revealed, setRevealed] = useState<ConnectionsGroup[]>([])
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(() => new Set())
   const [wrongGuesses, setWrongGuesses] = useState(0)
@@ -137,7 +138,7 @@ export default function ConnectionsBoard({ puzzle, onComplete }: ConnectionsBoar
 
   const shufflePool = useCallback(() => {
     if (done) return
-    setPool((p) => shuffleTiles(p))
+    setPool((p) => shuffle(p))
   }, [done])
 
   const giveUp = useCallback(() => {
@@ -303,16 +304,4 @@ export default function ConnectionsBoard({ puzzle, onComplete }: ConnectionsBoar
 
     </div>
   )
-}
-
-function shuffleTiles<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    const tmpI = a[i] as T
-    const tmpJ = a[j] as T
-    a[i] = tmpJ
-    a[j] = tmpI
-  }
-  return a
 }

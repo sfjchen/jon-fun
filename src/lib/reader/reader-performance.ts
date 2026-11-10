@@ -10,15 +10,3 @@ export function markReaderContentPaint(): void {
     /* ignore */
   }
 }
-
-export function measureReaderContentPaint(): number | null {
-  if (typeof performance === 'undefined' || typeof performance.measure !== 'function') return null
-  try {
-    performance.measure('reader:content', MARK)
-    const entries = performance.getEntriesByName('reader:content')
-    const last = entries[entries.length - 1]
-    return last && 'duration' in last ? (last as PerformanceEntry).duration : null
-  } catch {
-    return null
-  }
-}
