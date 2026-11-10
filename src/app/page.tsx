@@ -70,6 +70,14 @@ const items: GameCardGame[] = [
     href: '/games/connections',
     available: true,
   },
+  {
+    id: 'spelling-bee',
+    title: 'Spelling Bee',
+    description: 'Make words from 7 letters around a center letter; daily puzzle, archive and unlimited practice',
+    icon: `${nb}/bee.svg`,
+    href: '/games/spelling-bee',
+    available: true,
+  },
   { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: `${nb}/game24.svg`, href: '/games/24', available: true },
   {
     id: 'mental-obstacle-course',
