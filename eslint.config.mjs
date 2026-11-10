@@ -19,6 +19,7 @@ const eslintConfig = [
       "playwright-report/**",
       "test-results/**",
       "Veridian/**",
+      "finance/**",
     ],
   },
   ...nextVitals,
