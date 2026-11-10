@@ -2,17 +2,8 @@ import type { Page } from '@playwright/test'
 
 export type MockDailyLearnEntry = { date: string; text: string; updatedAt: string }
 
-const STORE_KEY = '__dailyLearnMockStore__'
-
-function ensureStoreScript(): string {
-  return `
-    (() => {
-      const k = ${JSON.stringify(STORE_KEY)};
-      const w = window;
-      if (!w[k]) w[k] = new Map();
-    })();
-  `
-}
+/** Mock server rows per page, keyed by user id. Lives in Node so it survives reloads like a real server. */
+const stores = new WeakMap<Page, Map<string, MockDailyLearnEntry[]>>()
 
 /** Seed or replace mock server rows for a user id (defaults to effective device id after page load). */
 export async function setDailyLearnMockServerEntries(
@@ -23,14 +14,7 @@ export async function setDailyLearnMockServerEntries(
   const uid =
     userId ??
     (await page.evaluate(() => localStorage.getItem('daily_learn_sync_key') || localStorage.getItem('daily_learn_user_id') || 'default'))
-  await page.evaluate(
-    ({ storeKey, uid, rows }) => {
-      const w = window as Window & { [key: string]: Map<string, MockDailyLearnEntry[]> | undefined }
-      if (!w[storeKey]) w[storeKey] = new Map()
-      w[storeKey]!.set(uid, rows)
-    },
-    { storeKey: STORE_KEY, uid, rows: entries },
-  )
+  stores.get(page)?.set(uid, entries)
 }
 
 /** Stubs daily-learn sync routes with an in-memory store that mirrors the server's newest-updatedAt-wins rule. */
@@ -38,36 +22,16 @@ export async function mockDailyLearnApi(
   page: Page,
   opts?: { serverEntries?: MockDailyLearnEntry[] },
 ): Promise<void> {
-  await page.addInitScript(
-    ({ storeKey, initialEntries }: { storeKey: string; initialEntries: MockDailyLearnEntry[] }) => {
-      const w = window as Window & { [key: string]: Map<string, MockDailyLearnEntry[]> | undefined }
-      if (!w[storeKey]) w[storeKey] = new Map()
-      if (initialEntries.length > 0) w[storeKey]!.set('default', initialEntries)
-    },
-    { storeKey: STORE_KEY, initialEntries: opts?.serverEntries ?? [] },
-  )
+  const store = new Map<string, MockDailyLearnEntry[]>()
+  if (opts?.serverEntries?.length) store.set('default', opts.serverEntries)
+  stores.set(page, store)
 
   await page.route('**/api/daily-learn/**', async (route) => {
     const req = route.request()
     const method = req.method()
     if (method === 'GET') {
-      const url = new URL(req.url())
-      const userId = url.searchParams.get('userId') ?? 'default'
-      const frame = route.request().frame()
-      const entries = frame
-        ? await frame.evaluate(
-            ({ storeKey, uid }) => {
-              const w = window as Window & { [key: string]: Map<string, MockDailyLearnEntry[]> | undefined }
-              return w[storeKey]?.get(uid) ?? []
-            },
-            { storeKey: STORE_KEY, uid: userId },
-          )
-        : []
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ entries }),
-      })
+      const userId = new URL(req.url()).searchParams.get('userId') ?? 'default'
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ entries: store.get(userId) ?? [] }) })
       return
     }
     if (method === 'POST') {
@@ -76,47 +40,24 @@ export async function mockDailyLearnApi(
         entries?: Array<{ date: string; text: string; updatedAt?: string }>
       }
       const userId = body.userId ?? 'default'
-      const incoming = Array.isArray(body.entries) ? body.entries : []
-      const frame = route.request().frame()
-      if (frame) {
-        await frame.evaluate(
-          ({ storeKey, uid, rows }) => {
-            const w = window as Window & { [key: string]: Map<string, MockDailyLearnEntry[]> | undefined }
-            if (!w[storeKey]) w[storeKey] = new Map()
-            const list = [...(w[storeKey]!.get(uid) ?? [])]
-            for (const row of rows) {
-              const ms = Math.min(Date.parse(row.updatedAt ?? '') || 0, Date.now())
-              const idx = list.findIndex((x) => x.date === row.date)
-              const cur = idx >= 0 ? Date.parse(list[idx]!.updatedAt) || 0 : -1
-              if (!ms || ms <= cur) continue
-              const entry = { date: row.date, text: (row.text ?? '').trim(), updatedAt: new Date(ms).toISOString() }
-              if (idx >= 0) list[idx] = entry
-              else list.push(entry)
-            }
-            w[storeKey]!.set(uid, list)
-          },
-          { storeKey: STORE_KEY, uid: userId, rows: incoming },
-        )
+      const list = [...(store.get(userId) ?? [])]
+      for (const row of Array.isArray(body.entries) ? body.entries : []) {
+        const ms = Math.min(Date.parse(row.updatedAt ?? '') || 0, Date.now())
+        const idx = list.findIndex((x) => x.date === row.date)
+        const cur = idx >= 0 ? Date.parse(list[idx]!.updatedAt) || 0 : -1
+        if (!ms || ms <= cur) continue
+        const entry = { date: row.date, text: (row.text ?? '').trim(), updatedAt: new Date(ms).toISOString() }
+        if (idx >= 0) list[idx] = entry
+        else list.push(entry)
       }
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ ok: true }),
-      })
-      return
+      store.set(userId, list)
     }
-    if (method === 'DELETE') {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ ok: true }),
-      })
+    if (method === 'POST' || method === 'DELETE') {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) })
       return
     }
     await route.continue()
   })
-
-  await page.evaluate(ensureStoreScript())
 }
 
 /** Simulate tab hidden → visible to trigger background sync in DailyLearnManager. */
