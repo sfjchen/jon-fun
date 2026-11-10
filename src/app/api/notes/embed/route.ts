@@ -1,7 +1,7 @@
 export const runtime = 'nodejs'
 
 import { embedModel, geminiEmbedKey, rankExcerptsByQuery } from '@/lib/embed/gemini'
-import { isOwnerDevice, OWNER_ONLY } from '@/lib/syncAccess'
+import { isOwnerKey, OWNER_ONLY } from '@/lib/syncAccess'
 
 export async function POST(req: Request) {
   const key = geminiEmbedKey()
@@ -9,14 +9,14 @@ export async function POST(req: Request) {
     return Response.json({ error: 'GEMINI_API_KEY not configured', disabled: true }, { status: 501 })
   }
 
-  let body: { query?: string; excerpts?: string[]; deviceUserId?: string }
+  let body: { query?: string; excerpts?: string[]; userId?: string }
   try {
-    body = (await req.json()) as { query?: string; excerpts?: string[]; deviceUserId?: string }
+    body = (await req.json()) as { query?: string; excerpts?: string[]; userId?: string }
   } catch {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  if (!(await isOwnerDevice(body.deviceUserId))) {
+  if (!isOwnerKey(body.userId)) {
     return Response.json({ error: OWNER_ONLY }, { status: 403 })
   }
 

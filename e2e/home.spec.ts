@@ -28,7 +28,6 @@ test.describe('Home page', () => {
   test('Coming Soon modal opens and closes on owner device', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem('sfjc_sync_key', 'sfjc')
-      localStorage.setItem('sfjc_approved_key', 'sfjc')
     })
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60_000 })
     const comingSoon = page.getByRole('button', { name: /Coming Soon/i })

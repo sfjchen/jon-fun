@@ -14,7 +14,6 @@
     "verify:witcher-epub": "tsx scripts/verify-witcher-epub-structure.ts",
     "verify:daily-learn-csv": "tsx scripts/verify-daily-learn-csv.ts",
     "verify:daily-learn-merge": "tsx scripts/verify-daily-learn-merge.ts",
-    "sync:devices": "tsx --env-file=.env.local scripts/sync-devices.mts",
     "seed:reader-portable": "tsx scripts/seed-reader-portable-from-fixtures.ts",
     "build:reader-curated": "tsx scripts/build-reader-library-curated.ts",
     "patch:tinad-wiki-section1": "tsx scripts/patch-tinad-wiki-section1-portable.ts",

@@ -5,7 +5,7 @@ import type { NoteSource } from '@/lib/notes/types'
 
 export async function GET(request: NextRequest) {
   const qs = request.nextUrl.searchParams
-  const who = await resolveSyncUser(qs.get('userId'), qs.get('deviceUserId'))
+  const who = resolveSyncUser(qs.get('userId'))
   if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
 
   const { data, error } = await supabaseAdmin
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as { userId?: string; deviceUserId?: string; sources?: NoteSource[] }
-    const who = await resolveSyncUser(body.userId, body.deviceUserId)
+    const who = resolveSyncUser(body.userId)
     if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
     const userId = who.uid
     const sources = Array.isArray(body.sources) ? body.sources : []
@@ -66,7 +66,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const body = (await request.json()) as { userId?: string; deviceUserId?: string; sourceId?: string }
     if (!body.sourceId?.trim()) return NextResponse.json({ error: 'sourceId required' }, { status: 400 })
-    const who = await resolveSyncUser(body.userId, body.deviceUserId)
+    const who = resolveSyncUser(body.userId)
     if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
     const { error } = await supabaseAdmin
       .from('notes_sources')

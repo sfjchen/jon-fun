@@ -1,29 +1,19 @@
 /**
  * Server-side sync access shared by Daily Learn, Notes and the Reader shelf.
- * A sync key's rows open only to devices linked to that key and approved from an already approved device,
- * so a guessed or leaked key alone reads nothing. Device-only data (userId equal to the caller's own device ID)
- * stays open to that device.
+ * The sync key is the account: whoever sends it reads and writes its rows. Device-only data lives under the
+ * device ID. The owner key unlocks owner-only features.
  */
 import { supabaseAdmin } from '@/lib/supabase'
 
 export const OWNER_SYNC_KEY = 'sfjc'
 export const SYNC_DEVICES_TABLE = 'sync_devices'
-export const DEVICE_PENDING =
-  'This device is waiting for approval. Approve it from a device already linked to this sync key.'
-export const OWNER_ONLY = 'Only the site owner\'s approved devices can do this. Everything else still works locally.'
+export const OWNER_ONLY = 'Only the site owner\'s sync key can do this. Everything else still works locally.'
 
-export type SyncDevice = {
-  device_id: string
-  sync_key: string | null
-  approved: boolean
-  label: string
-  created_at: string
-  last_seen: string
-}
+export type SyncDevice = { device_id: string; sync_key: string | null; label: string; last_seen: string }
 
 /**
- * Maps the retired owner password (still in old browsers' storage) to the owner key, so those browsers join the
- * owner account and wait for approval like any new device.
+ * Maps the retired owner password (still in old browsers' storage) to the owner key, so those browsers land in
+ * the owner account.
  */
 export function canonicalKey(key: string | null | undefined): string {
   const k = (key ?? '').trim()
@@ -32,7 +22,7 @@ export function canonicalKey(key: string | null | undefined): string {
 }
 
 /**
- * Fetches a device's link row, or null when the device has never linked.
+ * Fetches a device's link row, or null when the device has never linked a key.
  */
 export async function getDevice(deviceId: string | null | undefined): Promise<SyncDevice | null> {
   const id = (deviceId ?? '').trim()
@@ -42,26 +32,16 @@ export async function getDevice(deviceId: string | null | undefined): Promise<Sy
 }
 
 /**
- * Resolves which user_id a request may use. Returns the canonical id, or an error with its HTTP status when the
- * device is not approved for that sync key.
+ * Resolves the canonical user_id for a request, or a 400 error when it is missing.
  */
-export async function resolveSyncUser(
+export function resolveSyncUser(
   userId: string | null | undefined,
-  deviceId: string | null | undefined,
-): Promise<{ uid: string } | { error: string; status: number }> {
+): { uid: string } | { error: string; status: number } {
   const uid = canonicalKey(userId)
-  const did = (deviceId ?? '').trim()
-  if (!uid) return { error: 'userId required', status: 400 }
-  if (uid === did) return { uid }
-  const dev = await getDevice(did)
-  if (dev?.approved && dev.sync_key === uid) return { uid }
-  return { error: DEVICE_PENDING, status: 403 }
+  return uid ? { uid } : { error: 'userId required', status: 400 }
 }
 
-/**
- * Reports whether the device is an approved device of the owner key (gates Notes AI and Reader shelf edits).
- */
-export async function isOwnerDevice(deviceId: string | null | undefined): Promise<boolean> {
-  const dev = await getDevice(deviceId)
-  return Boolean(dev?.approved && dev.sync_key === OWNER_SYNC_KEY)
+/** Reports whether the request carries the owner key (gates Notes AI and Reader shelf edits). */
+export function isOwnerKey(userId: string | null | undefined): boolean {
+  return canonicalKey(userId) === OWNER_SYNC_KEY
 }

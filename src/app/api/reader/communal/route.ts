@@ -8,7 +8,7 @@ import {
   publicationPayloadTooLarge,
   publicationToDbRow,
 } from '@/lib/reader/communal-server'
-import { isOwnerDevice } from '@/lib/syncAccess'
+import { isOwnerKey } from '@/lib/syncAccess'
 import { supabaseAdmin } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     .eq('id', publication.id)
     .maybeSingle()
   // Strangers may add new books, but only the owner may overwrite an existing one (re-imports become no-ops).
-  if (existing && !(await isOwnerDevice((body as { deviceUserId?: string }).deviceUserId))) {
+  if (existing && !isOwnerKey((body as { userId?: string }).userId)) {
     return NextResponse.json({ ok: true, skipped: true })
   }
   const existingState = existing && typeof existing === 'object' && 'reading_state' in existing ? (existing as { reading_state?: unknown }).reading_state : null

@@ -73,7 +73,7 @@ export async function streamLookup(params: {
       noteDomain: params.noteDomain,
       fullNotes: params.fullNotes,
       title: params.title,
-      deviceUserId: creds.deviceUserId,
+      userId: creds.userId,
     }),
   })
 

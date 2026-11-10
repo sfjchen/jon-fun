@@ -100,7 +100,7 @@ const items: GameCardGame[] = [
 ]
 
 export default function Home() {
-  /* Coming Soon tile shows only on the owner's approved devices. */
+  /* Coming Soon tile shows only on browsers using the owner key. */
   const isOwner = useSyncExternalStore(subscribeSyncIdentity, isOwnerDevice, () => false)
   const [showComingSoon, setShowComingSoon] = useState(false)
   const [copy, setCopy] = useState<HomeComingSoonCopy>(HOME_COMING_SOON_DEFAULTS)

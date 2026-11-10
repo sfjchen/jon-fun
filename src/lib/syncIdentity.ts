@@ -2,20 +2,17 @@
  * Client sync identity shared by Daily Learn, Notes and Reader.
  * Each browser has 1 device ID and at most 1 sync key, kept in localStorage and mirrored to a server cookie and
  * the server's device links (/api/sync/identity), so Safari's 7-day storage wipe no longer strands new entries
- * under a fresh ID. A key's data opens only after another approved device approves this one.
+ * under a fresh ID. Typing the key once on a browser is all it needs.
  */
 
 const KEY = 'sfjc_sync_key'
 const DEVICE = 'sfjc_device_id'
 const LABEL = 'sfjc_device_label'
-const APPROVED = 'sfjc_approved_key'
 const LEGACY_KEYS = ['daily_learn_sync_key', 'notes_sync_key']
-const LEGACY_IDS = ['daily_learn_user_id', 'notes_user_id', 'notes_device_label']
+const LEGACY_IDS = ['daily_learn_user_id', 'notes_user_id', 'notes_device_label', 'sfjc_approved_key']
 const API = '/api/sync/identity'
 export const OWNER_SYNC_KEY = 'sfjc'
 export const SYNC_IDENTITY_CHANGED = 'sfjc-sync-identity-changed'
-
-export type LinkedDevice = { deviceId: string; label: string; approved: boolean; lastSeen: string }
 
 /**
  * Reads localStorage, returning '' on the server or when storage is blocked.
@@ -78,15 +75,9 @@ export function getEffectiveUserId(): string {
   return getSyncKey() || getDeviceId()
 }
 
-/** Reports whether the server approved this device for its current sync key (cached from the last link). */
-export function isDeviceApproved(): boolean {
-  const k = getSyncKey()
-  return !k || read(APPROVED) === k
-}
-
-/** Reports whether this is an approved device of the owner key (shows owner-only UI). */
+/** Reports whether this browser uses the owner key (shows owner-only UI). */
 export function isOwnerDevice(): boolean {
-  return getSyncKey() === OWNER_SYNC_KEY && isDeviceApproved()
+  return getSyncKey() === OWNER_SYNC_KEY
 }
 
 /** Returns the credentials every synced API call sends. */
@@ -111,13 +102,7 @@ function defaultLabel(): string {
   return `${browser} on ${os}`
 }
 
-let devices: LinkedDevice[] = []
 let ready: Promise<void> | null = null
-
-/** Returns the key's linked devices from the last link (empty unless this device is approved). */
-export function getLinkedDevices(): LinkedDevice[] {
-  return devices
-}
 
 /**
  * Calls the identity API, returning parsed JSON or null on any failure.
@@ -151,15 +136,13 @@ export function ensureSyncIdentity(): Promise<void> {
     if (!read(KEY)) write(KEY, LEGACY_KEYS.map(read).find(Boolean) ?? '')
     if (!read(LABEL)) write(LABEL, read('notes_device_label'))
     for (const k of [...LEGACY_KEYS, ...LEGACY_IDS]) write(k, '')
-    const r = await call<{ syncKey: string; approved: boolean; devices: LinkedDevice[] }>('POST', {
+    const r = await call<{ syncKey: string }>('POST', {
       syncKey: getSyncKey(),
       deviceId: getDeviceId(),
       label: getDeviceLabel() || defaultLabel(),
     })
     if (!r) throw new Error('link failed')
     write(KEY, r.syncKey)
-    write(APPROVED, r.approved ? r.syncKey : '')
-    devices = r.devices
     window.dispatchEvent(new Event(SYNC_IDENTITY_CHANGED))
   })().catch(() => {
     ready = null
@@ -168,8 +151,8 @@ export function ensureSyncIdentity(): Promise<void> {
 }
 
 /**
- * Subscribes to identity changes (for useSyncExternalStore) and starts the link, so owner-only UI appears once
- * the server confirms approval.
+ * Subscribes to identity changes (for useSyncExternalStore) and starts the link, so owner-only UI updates once
+ * a restored key arrives.
  */
 export function subscribeSyncIdentity(cb: () => void): () => void {
   window.addEventListener(SYNC_IDENTITY_CHANGED, cb)
@@ -178,13 +161,12 @@ export function subscribeSyncIdentity(cb: () => void): () => void {
 }
 
 /**
- * Sets the sync key (shared by every app) and relinks this device. Returns whether the device is approved.
+ * Sets the sync key (shared by every app) and ties this device to it on the server.
  */
-export async function connectSyncKey(key: string): Promise<boolean> {
+export async function connectSyncKey(key: string): Promise<void> {
   write(KEY, key.trim())
   ready = null
   await ensureSyncIdentity()
-  return isDeviceApproved()
 }
 
 /**
@@ -194,16 +176,4 @@ export async function setDeviceLabel(label: string): Promise<void> {
   write(LABEL, label.trim())
   ready = null
   await ensureSyncIdentity()
-}
-
-/**
- * Approves (or removes) another device of this key from an approved device, refreshing the device list.
- */
-export async function setDeviceApproval(target: string, approve: boolean): Promise<boolean> {
-  const r = await call<{ devices: LinkedDevice[] }>('PATCH', { deviceId: getDeviceId(), target, approve })
-  if (r) {
-    devices = r.devices
-    window.dispatchEvent(new Event(SYNC_IDENTITY_CHANGED))
-  }
-  return Boolean(r)
 }

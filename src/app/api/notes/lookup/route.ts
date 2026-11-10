@@ -7,7 +7,7 @@ import {
   streamLookupWithFallback,
 } from '@/lib/notes/llm'
 import type { KnowledgeDomainId } from '@/lib/notes/knowledge/registry'
-import { isOwnerDevice, OWNER_ONLY } from '@/lib/syncAccess'
+import { isOwnerKey, OWNER_ONLY } from '@/lib/syncAccess'
 import type { Message, Screenshot, TriggerType } from '@/lib/notes/types'
 
 export const runtime = 'nodejs'
@@ -27,7 +27,7 @@ type LookupBody = {
   noteTags?: string[]
   noteDomain?: KnowledgeDomainId
   fullNotes?: string
-  deviceUserId?: string
+  userId?: string
 }
 
 export async function POST(request: NextRequest) {
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'query required' }, { status: 400 })
     }
 
-    if (!(await isOwnerDevice(body.deviceUserId))) {
+    if (!isOwnerKey(body.userId)) {
       return NextResponse.json({ error: OWNER_ONLY }, { status: 403 })
     }
 

@@ -41,7 +41,7 @@ function rowToSession(r: {
 export async function GET(request: NextRequest) {
   try {
     const qs = request.nextUrl.searchParams
-    const who = await resolveSyncUser(qs.get('userId'), qs.get('deviceUserId'))
+    const who = resolveSyncUser(qs.get('userId'))
     if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
 
     const { data, error } = await supabaseAdmin
@@ -68,10 +68,9 @@ export async function POST(request: NextRequest) {
     const body = JSON.parse(rawBody) as {
       userId?: string
       sessions?: NoteSession[]
-      deviceUserId?: string
     }
     const { sessions } = body
-    const who = await resolveSyncUser(body.userId, body.deviceUserId)
+    const who = resolveSyncUser(body.userId)
     if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
 
     const list = Array.isArray(sessions) ? sessions : []
@@ -119,9 +118,9 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, sessionId, deviceUserId } = body as { userId?: string; sessionId?: string; deviceUserId?: string }
+    const { userId, sessionId } = body as { userId?: string; sessionId?: string }
     if (!sessionId?.trim()) return NextResponse.json({ error: 'sessionId required' }, { status: 400 })
-    const who = await resolveSyncUser(userId, deviceUserId)
+    const who = resolveSyncUser(userId)
     if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
 
     const { error } = await supabaseAdmin

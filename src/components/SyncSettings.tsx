@@ -1,19 +1,15 @@
 'use client'
 
 /**
- * Shared sync controls for every synced app: 1 sync key for the whole site, this device's approval state, and
- * approve / remove buttons for the key's other devices. The app passes its own merge as onSync.
+ * Shared sync controls for every synced app: 1 sync key for the whole site and this device's name.
+ * The app passes its own merge as onSync.
  */
 import { useEffect, useState } from 'react'
 import {
   connectSyncKey,
   ensureSyncIdentity,
-  getDeviceId,
   getDeviceLabel,
-  getLinkedDevices,
   getSyncKey,
-  isDeviceApproved,
-  setDeviceApproval,
   setDeviceLabel,
   SYNC_IDENTITY_CHANGED,
 } from '@/lib/syncIdentity'
@@ -33,7 +29,7 @@ type Props = {
 }
 
 /**
- * Renders the sync key form, device status and the approval list.
+ * Renders the sync key form and device status.
  */
 export default function SyncSettings({ onSync, testIdPrefix: t }: Props) {
   const [keyInput, setKeyInput] = useState(() => getSyncKey())
@@ -49,18 +45,15 @@ export default function SyncSettings({ onSync, testIdPrefix: t }: Props) {
   }, [])
 
   const key = getSyncKey()
-  const approved = isDeviceApproved()
-  const me = getDeviceId()
-  const others = getLinkedDevices().filter((d) => d.deviceId !== me)
 
   /**
-   * Links the typed key, then runs the app's merge when this device is approved.
+   * Links the typed key, then runs the app's merge.
    */
   async function handleSync() {
     setBusy(true)
     setStatus(null)
-    const ok = await connectSyncKey(keyInput)
-    setStatus(ok ? await onSync() : { ok: false, message: 'Waiting for approval from another device' })
+    await connectSyncKey(keyInput)
+    setStatus(await onSync())
     setBusy(false)
   }
 
@@ -113,38 +106,8 @@ export default function SyncSettings({ onSync, testIdPrefix: t }: Props) {
           {getDeviceLabel() || 'Unnamed'}
         </button>
         {' · '}
-        {!key ? 'not synced (local only)' : approved ? 'approved' : 'waiting for approval'}
+        {key ? 'synced' : 'not synced (local only)'}
       </p>
-      {key && !approved && (
-        <p className="mt-1 text-sm text-amber-600">
-          Open Sync on a browser already using this key and approve this device. Until then entries stay on this
-          browser and upload once approved.
-        </p>
-      )}
-      {approved && others.length > 0 && (
-        <ul className="mt-3 space-y-1 border-t pt-2 text-sm" style={{ borderColor: C.border }}>
-          {others.map((d) => (
-            <li key={d.deviceId} className="flex items-center gap-2" data-testid={`${t}-linked-device`}>
-              <span className="min-w-0 flex-1 truncate">
-                {d.label || 'Unnamed'}{' '}
-                <span style={{ color: C.muted }}>
-                  · {d.approved ? 'approved' : 'waiting'} · {new Date(d.lastSeen).toLocaleDateString()}
-                </span>
-              </span>
-              {!d.approved && (
-                <button type="button" className={`${btn} text-white`} style={{ background: C.accent }}
-                  onClick={() => void setDeviceApproval(d.deviceId, true)}>
-                  Approve
-                </button>
-              )}
-              <button type="button" className={`${btn} border`} style={{ borderColor: C.border }}
-                onClick={() => void setDeviceApproval(d.deviceId, false)}>
-                Remove
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   )
 }

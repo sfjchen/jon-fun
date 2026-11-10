@@ -126,7 +126,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
   const [aiError, setAiError] = useState('')
   const [lastLocation, setLastLocation] = useState<{ bookId: string; chapterId: string } | null>(null)
   const [aiDraft, setAiDraft] = useState(draft)
-  /* Approved owner devices delete books for everyone. Other devices only remove them locally. */
+  /* Browsers using the owner key delete books for everyone. Other devices only remove them locally. */
   const isOwner = useSyncExternalStore(subscribeSyncIdentity, isOwnerDevice, () => false)
   const libraryImportInputRef = useRef<HTMLInputElement>(null)
 

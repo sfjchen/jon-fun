@@ -22,9 +22,9 @@ export async function setDailyLearnMockServerEntries(
 /** Stubs daily-learn sync routes with an in-memory store that mirrors the server's newest-updatedAt-wins rule. */
 export async function mockDailyLearnApi(
   page: Page,
-  opts?: { serverEntries?: MockDailyLearnEntry[]; approved?: boolean },
+  opts?: { serverEntries?: MockDailyLearnEntry[] },
 ): Promise<void> {
-  await mockSyncIdentity(page, { approved: opts?.approved ?? true })
+  await mockSyncIdentity(page)
   const store = new Map<string, MockDailyLearnEntry[]>()
   if (opts?.serverEntries?.length) store.set('default', opts.serverEntries)
   stores.set(page, store)

@@ -2,7 +2,6 @@
  * 1 Sentence Everyday sync API (Application Programming Interface).
  * Rows keep the client's updatedAt, and a write only lands when it is newer than the stored row, so
  * repeated full pushes from stale devices never overwrite newer entries. Empty text marks a deleted day.
- * Every call sends userId plus the caller's deviceUserId, and a sync key's rows open only to its approved devices.
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
@@ -18,7 +17,7 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 export async function GET(request: NextRequest) {
   try {
     const qs = new URL(request.url).searchParams
-    const who = await resolveSyncUser(qs.get('userId'), qs.get('deviceUserId'))
+    const who = resolveSyncUser(qs.get('userId'))
     if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
     const { data, error } = await supabaseAdmin
       .from(TABLE)
@@ -84,12 +83,11 @@ async function writeNewer(userId: string, incoming: Array<{ date?: string; text?
 /** Merges a batch of entries into the user's rows (newest updatedAt wins per date). */
 export async function POST(request: NextRequest) {
   try {
-    const { userId, deviceUserId, entries } = (await request.json()) as {
+    const { userId, entries } = (await request.json()) as {
       userId?: string
-      deviceUserId?: string
       entries?: Array<{ date?: string; text?: string; updatedAt?: string }>
     }
-    const who = await resolveSyncUser(userId, deviceUserId)
+    const who = resolveSyncUser(userId)
     if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
     const error = await writeNewer(who.uid, Array.isArray(entries) ? entries : [])
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -102,13 +100,12 @@ export async function POST(request: NextRequest) {
 /** Marks a day deleted with a tombstone (kept for older cached clients that still call DELETE). */
 export async function DELETE(request: NextRequest) {
   try {
-    const { userId, deviceUserId, date } = (await request.json()) as {
+    const { userId, date } = (await request.json()) as {
       userId?: string
-      deviceUserId?: string
       date?: string
     }
     if (!date?.trim()) return NextResponse.json({ error: 'date required' }, { status: 400 })
-    const who = await resolveSyncUser(userId, deviceUserId)
+    const who = resolveSyncUser(userId)
     if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
     const error = await writeNewer(who.uid, [{ date: date.trim(), text: '', updatedAt: new Date().toISOString() }])
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })

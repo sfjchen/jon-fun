@@ -29,7 +29,6 @@ export async function mockNotesApi(page: Page, opts?: { owner?: boolean }): Prom
   if (opts?.owner) {
     await page.addInitScript(() => {
       localStorage.setItem('sfjc_sync_key', 'sfjc')
-      localStorage.setItem('sfjc_approved_key', 'sfjc')
     })
   }
   /** Skip the first-visit welcome note so specs start on an empty note. */

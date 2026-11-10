@@ -137,21 +137,6 @@ test.describe('1 Sentence Everyday', () => {
     await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: 'Deleted on another device' })).toHaveCount(0)
   })
 
-  test('pending device shows waiting for approval and does not upload', async ({ page }) => {
-    await mockDailyLearnApi(page, { approved: false })
-    await page.evaluate(() => localStorage.setItem('daily_learn_entries', JSON.stringify([
-      { date: '2019-03-01', text: 'Stay local', updatedAt: '2019-03-01T10:00:00.000Z' },
-    ])))
-    await page.reload()
-    let posted = false
-    page.on('request', (r) => { if (r.method() === 'POST' && r.url().includes('/api/daily-learn/')) posted = true })
-    await sectionsNav(page).getByRole('button', { name: 'sync' }).click()
-    await page.getByPlaceholder('Sync key').fill('e2e-pending-key')
-    await page.getByRole('button', { name: 'Sync', exact: true }).click()
-    await expect(page.getByTestId('daily-learn-device-status')).toContainText(/waiting for approval/i, { timeout: 15000 })
-    expect(posted).toBe(false)
-  })
-
   test('visibility refetch updates history from server', async ({ page }) => {
     await page.evaluate(() => {
       localStorage.setItem(

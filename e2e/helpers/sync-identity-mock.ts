@@ -3,16 +3,13 @@
  */
 import type { Page } from '@playwright/test'
 
-/** Stubs GET/POST/PATCH `/api/sync/identity`. POST echoes the key and reports `approved` (default true). */
-export async function mockSyncIdentity(page: Page, opts?: { approved?: boolean }): Promise<void> {
-  const approved = opts?.approved ?? true
+/** Stubs GET/POST `/api/sync/identity`. GET restores nothing and POST echoes the key. */
+export async function mockSyncIdentity(page: Page): Promise<void> {
   await page.route('**/api/sync/identity', async (route) => {
-    const method = route.request().method()
-    let body: unknown = { syncKey: '', deviceId: '' }
-    if (method === 'POST') {
-      const req = route.request().postDataJSON() as { syncKey?: string }
-      body = { syncKey: req.syncKey ?? '', approved, devices: [] }
-    } else if (method === 'PATCH') body = { devices: [] }
+    const req = route.request()
+    const body = req.method() === 'POST'
+      ? { syncKey: (req.postDataJSON() as { syncKey?: string }).syncKey ?? '' }
+      : { syncKey: '', deviceId: '' }
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) })
   })
 }

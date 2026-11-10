@@ -6,7 +6,7 @@ const CATALOG_KEY = 'notes_tag_catalog'
 /** Neutral starter tags for visitors (editable catalog seeds). Tags already used on notes still join the picker. */
 export const DEFAULT_TAG_CATALOG = ['meeting', 'learning', 'idea', 'reading']
 
-/** Jon's work tags, seeded only on his approved owner devices. */
+/** Jon's work tags, seeded only on browsers using the owner key. */
 const OWNER_TAG_CATALOG = ['IC', 'GP', 'meeting', 'learning', 'internal', 'endowment', 'portfolio']
 
 /**
