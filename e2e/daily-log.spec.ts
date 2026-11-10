@@ -120,11 +120,68 @@ test.describe('1 Sentence Everyday', () => {
     await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: /Quoted.*comma/ })).toBeVisible()
   })
 
-  test('sync tab restore handles empty server response', async ({ page }) => {
+  test('sync with an empty account keeps local entries', async ({ page }) => {
+    await page.evaluate(() => {
+      localStorage.setItem(
+        'daily_learn_entries',
+        JSON.stringify([{ date: '2019-03-01', text: 'Only on this browser', updatedAt: '2019-03-01T10:00:00.000Z' }]),
+      )
+    })
+    await page.reload()
     await sectionsNav(page).getByRole('button', { name: 'sync' }).click()
     await page.getByPlaceholder(/sync password or device ID/i).fill('e2e-empty-user')
-    await page.getByRole('button', { name: 'Restore' }).click()
-    await expect(page.getByText(/No entries found/i)).toBeVisible({ timeout: 15000 })
+    await page.getByRole('button', { name: 'Sync', exact: true }).click()
+    await expect(page.getByText('Synced 1 entries')).toBeVisible({ timeout: 15000 })
+  })
+
+  test('fresh browser sync merges both sides and keeps the newer copy per day', async ({ page }) => {
+    await page.evaluate(() => {
+      localStorage.setItem(
+        'daily_learn_entries',
+        JSON.stringify([
+          { date: '2019-04-01', text: 'Typed here before syncing', updatedAt: '2019-04-01T10:00:00.000Z' },
+          { date: '2019-04-02', text: 'Newer local edit', updatedAt: '2019-04-03T10:00:00.000Z' },
+        ]),
+      )
+    })
+    await page.reload()
+    await setDailyLearnMockServerEntries(
+      page,
+      [
+        { date: '2019-04-02', text: 'Older server copy', updatedAt: '2019-04-02T10:00:00.000Z' },
+        { date: '2019-04-05', text: 'From my other laptop', updatedAt: '2019-04-05T10:00:00.000Z' },
+        { date: '2019-04-06', text: '', updatedAt: '2019-04-06T10:00:00.000Z' },
+      ],
+      'e2e-shared-key',
+    )
+    await sectionsNav(page).getByRole('button', { name: 'sync' }).click()
+    await page.getByPlaceholder(/sync password or device ID/i).fill('e2e-shared-key')
+    await page.getByRole('button', { name: 'Sync', exact: true }).click()
+    await expect(page.getByText('Synced 3 entries')).toBeVisible({ timeout: 15000 })
+    await page.getByRole('button', { name: /← Log/ }).click()
+    for (const t of ['Typed here before syncing', 'Newer local edit', 'From my other laptop']) {
+      await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: t })).toBeVisible()
+    }
+    await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: 'Older server copy' })).toHaveCount(0)
+  })
+
+  test('deleted entry stays deleted when the server still has an older copy', async ({ page }) => {
+    await page.evaluate(() => {
+      localStorage.setItem(
+        'daily_learn_entries',
+        JSON.stringify([{ date: '2019-05-01', text: '', updatedAt: '2019-05-02T10:00:00.000Z' }]),
+      )
+    })
+    await page.reload()
+    await setDailyLearnMockServerEntries(page, [
+      { date: '2019-05-01', text: 'Deleted on another device', updatedAt: '2019-05-01T10:00:00.000Z' },
+    ])
+    const pushed = page.waitForRequest((r) => r.method() === 'POST' && r.url().includes('/api/daily-learn/entries'))
+    await triggerDailyLearnTabVisible(page)
+    await pushed
+    const stored = await page.evaluate(() => localStorage.getItem('daily_learn_entries') ?? '')
+    expect(JSON.parse(stored)).toEqual([{ date: '2019-05-01', text: '', updatedAt: '2019-05-02T10:00:00.000Z' }])
+    await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: 'Deleted on another device' })).toHaveCount(0)
   })
 
   test('shortcut hint shows Cmd+Enter on Mac', async ({ page }) => {

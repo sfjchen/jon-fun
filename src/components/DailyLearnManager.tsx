@@ -14,9 +14,8 @@ import {
   importMergedCsv,
   getOrCreateUserId,
   getSyncKey,
-  setSyncKey,
   syncWithServer,
-  restoreFromServer,
+  connectSyncKey,
   parseLocalDate,
   capitalizeFirst,
   isEntryTextDirty,
@@ -39,9 +38,7 @@ export default function DailyLearnManager() {
   const [calMonth, setCalMonth] = useState(() => new Date().getMonth())
   const [syncKeyInput, setSyncKeyInput] = useState('')
   const [syncing, setSyncing] = useState(false)
-  const [restoreKey, setRestoreKey] = useState('')
-  const [restoring, setRestoring] = useState(false)
-  const [restoreResult, setRestoreResult] = useState<string | null>(null)
+  const [syncResult, setSyncResult] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [syncFailed, setSyncFailed] = useState(false)
   const csvImportRef = useRef<HTMLInputElement>(null)
@@ -321,7 +318,7 @@ export default function DailyLearnManager() {
           <div className="rounded-lg border p-4 mb-4" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
             <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
               Write one sentence about today below. Have a sync password?{' '}
-              <button type="button" onClick={() => setView('sync')} className="underline" style={{ color: 'var(--ink-accent)' }}>Restore</button>
+              <button type="button" onClick={() => { setSyncKeyInput(getSyncKey()); setView('sync') }} className="underline" style={{ color: 'var(--ink-accent)' }}>Sync</button>
             </p>
           </div>
         )}
@@ -516,77 +513,40 @@ export default function DailyLearnManager() {
       'Sync',
       <>
         <div className="rounded-lg border shadow-sm p-4 mb-4" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-          <h2 className="text-2xl font-bold font-lora mb-3" style={{ color: 'var(--ink-text)' }}>Restore from Server</h2>
+          <h2 className="text-2xl font-bold font-lora mb-3" style={{ color: 'var(--ink-text)' }}>Sync Across Devices</h2>
           <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>
-            Lost data after clearing site? Enter your sync password or device ID and click Restore to pull entries from the server.
+            Enter the same sync password (or a device ID) on every device. Sync merges this browser&apos;s entries with the
+            server&apos;s, keeping the latest edit for each day, and never replaces either side. It also runs on load and on every save.
           </p>
           <div className="flex gap-2 mb-4">
             <input
               type="text"
-              value={restoreKey}
-              onChange={(e) => { setRestoreKey(e.target.value); setRestoreResult(null) }}
+              value={syncKeyInput}
+              onChange={(e) => { setSyncKeyInput(e.target.value); setSyncResult(null) }}
               placeholder="Sync password or device ID"
               className="flex-1 px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
               style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
             />
             <button
               onClick={async () => {
-                setRestoring(true)
-                setRestoreResult(null)
-                const { restored, error } = await restoreFromServer(restoreKey)
-                setRestoring(false)
-                if (error) setRestoreResult(error)
-                else if (restored > 0) {
-                  setRestoreResult(`Restored ${restored} entries`)
-                  setSyncKeyInput(restoreKey.trim())
-                  refresh()
-                } else setRestoreResult('No entries found for that key')
-              }}
-              disabled={restoring || !restoreKey.trim()}
-              className="px-4 py-2 rounded-lg text-white disabled:opacity-50"
-              style={{ backgroundColor: 'var(--ink-accent)' }}
-            >
-              {restoring ? 'Restoring…' : 'Restore'}
-            </button>
-          </div>
-          {restoreResult && (
-            <p className={`text-sm ${restoreResult.startsWith('Restored') ? 'text-green-600' : ''}`} style={!restoreResult.startsWith('Restored') ? { color: 'var(--ink-muted)' } : undefined}>
-              {restoreResult}
-            </p>
-          )}
-        </div>
-        <div className="rounded-lg border shadow-sm p-4 mb-4" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-          <h2 className="text-2xl font-bold font-lora mb-3" style={{ color: 'var(--ink-text)' }}>Cross-Device Sync</h2>
-          <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>
-            Set the same sync password on all devices to merge your history. Sync runs on page load and on every save.
-          </p>
-          <div className="flex gap-2 mb-4">
-            <input
-              type="text"
-              value={syncKeyInput}
-              onChange={(e) => setSyncKeyInput(e.target.value)}
-              placeholder="e.g. jon123"
-              className="flex-1 px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
-              style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-            />
-            <button
-              onClick={async () => {
-                setSyncKey(syncKeyInput.trim())
                 setSyncing(true)
-                const r = await syncWithServer()
-                refresh()
-                setSyncFailed(!r.pushOk)
+                setSyncResult(null)
+                const r = await connectSyncKey(syncKeyInput)
+                applySyncResult(r)
                 setSyncing(false)
+                setSyncResult(r.pushOk ? `Synced ${r.entries.length} entries` : 'Sync failed – saved locally, will retry')
               }}
-              disabled={syncing}
+              disabled={syncing || !syncKeyInput.trim()}
               className="text-white px-4 py-2 rounded-lg disabled:opacity-50"
               style={{ backgroundColor: 'var(--ink-accent)' }}
             >
-              {syncing ? 'Syncing…' : 'Save & Sync'}
+              {syncing ? 'Syncing…' : 'Sync'}
             </button>
           </div>
-          {getSyncKey() && (
-            <p className="text-green-600 text-sm">Synced. Use this password on your other devices.</p>
+          {syncResult && (
+            <p className={`text-sm ${syncResult.startsWith('Synced') ? 'text-green-600' : 'text-amber-600'}`} role="status">
+              {syncResult}
+            </p>
           )}
         </div>
         <button onClick={() => setView('log')} className="px-4 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
