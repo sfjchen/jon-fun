@@ -1,6 +1,7 @@
 /**
- * 1 Sentence Everyday – localStorage utilities
- * One entry per calendar day (upsert by date)
+ * 1 Sentence Everyday – localStorage utilities and cross-device sync.
+ * One entry per calendar day. Sync merges by date with the latest updatedAt winning, and deletions
+ * travel as empty-text tombstones so a stale device cannot bring a deleted entry back.
  */
 
 import { formatDailyLearnCsv, parseDailyLearnCsv } from './dailyLearnCsv'
@@ -86,100 +87,89 @@ export function setSyncKey(key: string): void {
   else localStorage.removeItem(SYNC_KEY)
 }
 
-export const getSyncPassword = getSyncKey
-export const setSyncPassword = setSyncKey
-
 /** Effective user_id for API: sync password if set, else device user_id. */
 export function getEffectiveUserId(): string {
   const sk = getSyncKey()
   return sk ? sk : getOrCreateUserId()
 }
 
-/** Merge entries by date, keep latest updatedAt. Normalize text to capitalized first letter. */
-function mergeEntries(local: DailyLearnEntry[], remote: DailyLearnEntry[]): DailyLearnEntry[] {
-  const byDate = new Map<string, DailyLearnEntry>()
-  for (const e of [...local, ...remote]) {
-    const normalized = { ...e, text: capitalizeFirst(e.text) }
-    const existing = byDate.get(e.date)
-    if (!existing || new Date(e.updatedAt) > new Date(existing.updatedAt)) {
-      byDate.set(e.date, normalized)
-    }
-  }
-  return [...byDate.values()].sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0))
+/** Sorts entries newest date first. */
+function sortByDateDesc(entries: DailyLearnEntry[]): DailyLearnEntry[] {
+  return entries.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0))
 }
 
-/** Fetch entries from server for effective user_id. */
-export async function fetchEntriesFromServer(): Promise<DailyLearnEntry[]> {
-  const userId = getEffectiveUserId()
-  const res = await fetch(`/api/daily-learn/entries?userId=${encodeURIComponent(userId)}`)
-  if (!res.ok) return []
-  const data = (await res.json()) as { entries?: DailyLearnEntry[] }
-  const arr = Array.isArray(data.entries) ? data.entries : []
-  return arr.filter((e) => (e.text ?? '').trim().length > 0)
+/** Parses an ISO timestamp to epoch ms, treating missing or invalid values as 0 so they never win a merge. */
+function tsMs(iso: string | undefined): number {
+  const t = Date.parse(iso ?? '')
+  return Number.isNaN(t) ? 0 : t
+}
+
+/**
+ * Merges entries by date, keeping the latest updatedAt (ties keep the first list's copy).
+ * Empty-text entries are tombstones: they carry a deletion across devices instead of letting it resurrect.
+ */
+export function mergeEntries(local: DailyLearnEntry[], remote: DailyLearnEntry[]): DailyLearnEntry[] {
+  const byDate = new Map<string, DailyLearnEntry>()
+  for (const e of [...local, ...remote]) {
+    const prev = byDate.get(e.date)
+    if (!prev || tsMs(e.updatedAt) > tsMs(prev.updatedAt)) {
+      byDate.set(e.date, { ...e, text: capitalizeFirst((e.text ?? '').trim()) })
+    }
+  }
+  return sortByDateDesc([...byDate.values()])
+}
+
+/** Filters out tombstones, leaving the entries the UI (User Interface) shows. */
+function visible(entries: DailyLearnEntry[]): DailyLearnEntry[] {
+  return entries.filter((e) => e.text.trim().length > 0)
+}
+
+/** Reads every stored entry for the merge, tombstones included. */
+function loadAllEntries(): DailyLearnEntry[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const arr = JSON.parse(localStorage.getItem(DAILY_LEARN_ENTRIES_KEY) ?? '[]') as DailyLearnEntry[]
+    return Array.isArray(arr) ? sortByDateDesc(arr.filter((e) => e && typeof e.date === 'string')) : []
+  } catch {
+    return []
+  }
+}
+
+/** Fetches every row (tombstones included) for the effective user_id, or null when the request fails. */
+async function fetchEntriesFromServer(): Promise<DailyLearnEntry[] | null> {
+  try {
+    const res = await fetch(`/api/daily-learn/entries?userId=${encodeURIComponent(getEffectiveUserId())}`)
+    if (!res.ok) return null
+    const data = (await res.json()) as { entries?: DailyLearnEntry[] }
+    return Array.isArray(data.entries) ? data.entries : []
+  } catch {
+    return null
+  }
 }
 
 const PUSH_RETRIES = 3
 const RETRY_DELAY_MS = 500
 
+/** Pushes entries with their own updatedAt so the server only overwrites rows older than each one. */
 async function pushWithRetry(entries: DailyLearnEntry[]): Promise<boolean> {
-  const userId = getEffectiveUserId()
   const body = JSON.stringify({
-    userId,
-    entries: entries.map((e) => ({ date: e.date, text: capitalizeFirst(e.text) })),
+    userId: getEffectiveUserId(),
+    entries: entries.map((e) => ({ date: e.date, text: e.text, updatedAt: e.updatedAt })),
   })
-  let lastOk = false
   for (let i = 0; i < PUSH_RETRIES; i++) {
-    const res = await fetch('/api/daily-learn/entries', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body,
-    })
-    lastOk = res.ok
-    if (res.ok) return true
+    try {
+      const res = await fetch('/api/daily-learn/entries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      })
+      if (res.ok) return true
+    } catch {
+      /* retries on network errors */
+    }
     if (i < PUSH_RETRIES - 1) await new Promise((r) => setTimeout(r, RETRY_DELAY_MS))
   }
-  return lastOk
-}
-
-/** Delete entry on server for given date. */
-async function deleteEntryOnServer(date: string): Promise<boolean> {
-  const userId = getEffectiveUserId()
-  const res = await fetch('/api/daily-learn/entries', {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, date }),
-  })
-  return res.ok
-}
-
-/** Push entries to server. */
-export async function pushEntriesToServer(entries: DailyLearnEntry[]): Promise<boolean> {
-  const userId = getEffectiveUserId()
-  const res = await fetch('/api/daily-learn/entries', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      userId,
-      entries: entries.map((e) => ({ date: e.date, text: capitalizeFirst(e.text) })),
-    }),
-  })
-  return res.ok
-}
-
-/** Restore from server by userId (sync password or device user_id). Replaces local storage. */
-export async function restoreFromServer(userId: string): Promise<{ restored: number; error?: string }> {
-  if (typeof window === 'undefined') return { restored: 0 }
-  const key = userId.trim()
-  if (!key) return { restored: 0, error: 'Enter sync password or device ID' }
-  const res = await fetch(`/api/daily-learn/entries?userId=${encodeURIComponent(key)}`)
-  if (!res.ok) return { restored: 0, error: 'Failed to fetch' }
-  const data = (await res.json()) as { entries?: DailyLearnEntry[] }
-  const entries = Array.isArray(data.entries) ? data.entries : []
-  if (entries.length > 0) {
-    setSyncKey(key)
-    localStorage.setItem(DAILY_LEARN_ENTRIES_KEY, JSON.stringify(entries))
-  }
-  return { restored: entries.length }
+  return false
 }
 
 /** True when textarea content differs from the saved entry for that date. */
@@ -187,63 +177,44 @@ export function isEntryTextDirty(localText: string, saved?: DailyLearnEntry): bo
   return localText.trim() !== (saved?.text ?? '').trim()
 }
 
-/** Sync: fetch from server, merge with local, save local, push merged. Returns entries and whether push succeeded. */
+/**
+ * Fetches from the server, merges with local, saves local, and pushes the merge back.
+ * A failed fetch still pushes local data (the server keeps whichever copy is newer) but reports not ok.
+ */
 export async function syncWithServer(): Promise<{ entries: DailyLearnEntry[]; pushOk: boolean }> {
-  if (typeof window === 'undefined') return { entries: loadEntries(), pushOk: true }
-  const local = loadEntries()
+  if (typeof window === 'undefined') return { entries: [], pushOk: true }
   const remote = await fetchEntriesFromServer()
-  const merged = mergeEntries(local, remote)
-  const mergedJson = JSON.stringify(merged)
-  if (localStorage.getItem(DAILY_LEARN_ENTRIES_KEY) !== mergedJson) {
-    localStorage.setItem(DAILY_LEARN_ENTRIES_KEY, mergedJson)
-  }
-  const pushOk = await pushWithRetry(merged)
-  return { entries: merged, pushOk }
+  const merged = mergeEntries(loadAllEntries(), remote ?? [])
+  localStorage.setItem(DAILY_LEARN_ENTRIES_KEY, JSON.stringify(merged))
+  const pushOk = (await pushWithRetry(merged)) && remote !== null
+  return { entries: visible(merged), pushOk }
 }
 
+/**
+ * Sets the sync password (or device ID) and merges this browser's entries with that account's.
+ * Never replaces local data, so it is safe on a fresh browser and on one that already has entries.
+ */
+export async function connectSyncKey(key: string): Promise<{ entries: DailyLearnEntry[]; pushOk: boolean }> {
+  setSyncKey(key)
+  return syncWithServer()
+}
+
+/** Returns visible entries, newest first. */
 export function loadEntries(): DailyLearnEntry[] {
-  if (typeof window === 'undefined') return []
-  const stored = localStorage.getItem(DAILY_LEARN_ENTRIES_KEY)
-  if (!stored) return []
-  try {
-    const arr = JSON.parse(stored) as DailyLearnEntry[]
-    const filtered = Array.isArray(arr) ? arr.filter((e) => (e.text ?? '').trim().length > 0) : []
-    if (filtered.length !== (arr?.length ?? 0)) {
-      localStorage.setItem(DAILY_LEARN_ENTRIES_KEY, JSON.stringify(filtered))
-    }
-    return filtered.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0))
-  } catch {
-    return []
-  }
+  return visible(loadAllEntries())
 }
 
-/** Saves entry to localStorage and pushes to server (with retry). Returns false if push failed. */
+/** Saves an entry (empty text writes a tombstone) and syncs. Returns false if the sync failed. */
 export async function saveEntry(entry: { date: string; text: string }): Promise<boolean> {
   if (typeof window === 'undefined') return false
-  const entries = loadEntries()
-  const text = entry.text.trim()
-  const idx = entries.findIndex((e) => e.date === entry.date)
-  if (!text) {
-    if (idx >= 0) {
-      entries.splice(idx, 1)
-      localStorage.setItem(DAILY_LEARN_ENTRIES_KEY, JSON.stringify(entries))
-      for (let i = 0; i < PUSH_RETRIES; i++) {
-        if (await deleteEntryOnServer(entry.date)) return true
-        if (i < PUSH_RETRIES - 1) await new Promise((r) => setTimeout(r, RETRY_DELAY_MS))
-      }
-      return false
-    }
-    return true
-  }
-  const updated: DailyLearnEntry = {
-    ...entry,
-    text: capitalizeFirst(text),
-    updatedAt: new Date().toISOString(),
-  }
-  if (idx >= 0) entries[idx] = updated
-  else entries.push(updated)
-  entries.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0))
-  localStorage.setItem(DAILY_LEARN_ENTRIES_KEY, JSON.stringify(entries))
+  const all = loadAllEntries()
+  const text = capitalizeFirst(entry.text.trim())
+  const idx = all.findIndex((e) => e.date === entry.date)
+  if (!text && (idx < 0 || !all[idx]!.text.trim())) return true
+  const updated: DailyLearnEntry = { date: entry.date, text, updatedAt: new Date().toISOString() }
+  if (idx >= 0) all[idx] = updated
+  else all.push(updated)
+  localStorage.setItem(DAILY_LEARN_ENTRIES_KEY, JSON.stringify(sortByDateDesc(all)))
   const { pushOk } = await syncWithServer()
   return pushOk
 }
@@ -303,14 +274,14 @@ export async function importMergedCsv(csvText: string): Promise<{
       pushOk: false,
     }
   }
-  const prior = loadEntries()
+  const prior = loadAllEntries()
   const parsed = parseDailyLearnCsv(csvText)
   if (parsed.error) {
     return {
       success: false,
       parseError: parsed.error,
       rowsFromFile: 0,
-      mergedTotal: prior.length,
+      mergedTotal: visible(prior).length,
       pushOk: false,
     }
   }
@@ -321,7 +292,7 @@ export async function importMergedCsv(csvText: string): Promise<{
   return {
     success: true,
     rowsFromFile: fromFile.length,
-    mergedTotal: merged.length,
+    mergedTotal: visible(merged).length,
     pushOk,
   }
 }

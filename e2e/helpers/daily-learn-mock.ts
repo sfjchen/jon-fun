@@ -33,7 +33,7 @@ export async function setDailyLearnMockServerEntries(
   )
 }
 
-/** Avoid flaky E2E when Supabase/env is absent — stub daily-learn sync routes with in-memory store. */
+/** Stubs daily-learn sync routes with an in-memory store that mirrors the server's newest-updatedAt-wins rule. */
 export async function mockDailyLearnApi(
   page: Page,
   opts?: { serverEntries?: MockDailyLearnEntry[] },
@@ -73,7 +73,7 @@ export async function mockDailyLearnApi(
     if (method === 'POST') {
       const body = req.postDataJSON() as {
         userId?: string
-        entries?: Array<{ date: string; text: string }>
+        entries?: Array<{ date: string; text: string; updatedAt?: string }>
       }
       const userId = body.userId ?? 'default'
       const incoming = Array.isArray(body.entries) ? body.entries : []
@@ -85,11 +85,11 @@ export async function mockDailyLearnApi(
             if (!w[storeKey]) w[storeKey] = new Map()
             const list = [...(w[storeKey]!.get(uid) ?? [])]
             for (const row of rows) {
-              const text = (row.text ?? '').trim()
-              if (!text) continue
-              const updatedAt = new Date().toISOString()
+              const ms = Math.min(Date.parse(row.updatedAt ?? '') || 0, Date.now())
               const idx = list.findIndex((x) => x.date === row.date)
-              const entry = { date: row.date, text, updatedAt }
+              const cur = idx >= 0 ? Date.parse(list[idx]!.updatedAt) || 0 : -1
+              if (!ms || ms <= cur) continue
+              const entry = { date: row.date, text: (row.text ?? '').trim(), updatedAt: new Date(ms).toISOString() }
               if (idx >= 0) list[idx] = entry
               else list.push(entry)
             }
