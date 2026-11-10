@@ -5,7 +5,8 @@ The answer list keeps common, lowercase English words that appear in both ENABLE
 and SCOWL size 50, filtered by wordfreq Zipf frequency, without the letter S, with at least 4 letters and at most
 7 distinct letters, minus an offensive-word blocklist. The puzzle bank keeps every (center, 6 outer letters) set
 whose answer count and max score land in NYT-like ranges, skipping I+N+G
-and E+D sets so -ING and -ED forms don't flood the answers.
+and E+D sets so -ING and -ED forms don't flood the answers. For a fair difficulty it also needs a common pangram,
+a common median answer and at most 1 of J, Q, X, Z.
 
 Usage: pip install wordfreq, then
   python3 scripts/build-spelling-bee.py <enable1.txt> <scowl final dir> <blocklist.txt>
@@ -15,10 +16,12 @@ Sources: github.com/dolph/dictionary enable1.txt, wordlist.aspell.net SCOWL 2020
 import glob
 import json
 import os
+import statistics
 import sys
 from wordfreq import zipf_frequency
 
-MIN_WORDS, MAX_WORDS, MAX_SCORE = 20, 65, 300
+MIN_WORDS, MAX_WORDS, MAX_SCORE = 25, 55, 300
+MIN_PANGRAM_ZIPF, MIN_MEDIAN_ZIPF = 3.0, 3.0
 EXTRA_BLOCK = {'nigger', 'nigga', 'faggot', 'fagot', 'kike', 'chink', 'gook', 'wetback', 'raghead', 'tranny',
   'retard', 'retarded', 'coon', 'darky', 'dyke', 'honky', 'gyppo', 'gypped', 'injun', 'redneck', 'whore', 'hooker',
   'cunt', 'twat', 'prick', 'bitch', 'bitchy', 'boner', 'dildo', 'wank', 'wanker', 'jizz', 'porno', 'rape', 'raped',
@@ -64,7 +67,8 @@ def main():
     masks = {}
     for w in words:
         masks.setdefault(frozenset(w), []).append(w)
-    sets = {k for k in masks if len(k) == 7 and not set('ing') <= k and not set('ed') <= k}
+    sets = {k for k in masks if len(k) == 7 and not set('ing') <= k and not set('ed') <= k and
+        len(k & set('jqxz')) <= 1 and max(zipf_frequency(w, 'en') for w in masks[k]) >= MIN_PANGRAM_ZIPF}
     puzzles = []
     for st in sorted(sets, key=sorted):
         ls = sorted(st)
@@ -73,7 +77,8 @@ def main():
         for c in sorted(st):
             ans = [w for k, v in subs if c in k for w in v]
             pts = sum(score(w) for w in ans)
-            if MIN_WORDS <= len(ans) <= MAX_WORDS and pts <= MAX_SCORE:
+            if (MIN_WORDS <= len(ans) <= MAX_WORDS and pts <= MAX_SCORE and
+                statistics.median(zipf_frequency(w, 'en') for w in ans) >= MIN_MEDIAN_ZIPF):
                 puzzles.append(c + ''.join(sorted(st - {c})))
 
     out = os.path.join(os.path.dirname(__file__), '..', 'public', 'spelling-bee')

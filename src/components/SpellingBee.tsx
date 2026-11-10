@@ -7,6 +7,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { shuffle } from '@/lib/random'
 import {
   RANKS,
   addDays,
@@ -25,7 +26,7 @@ import {
 } from '@/lib/spelling-bee'
 
 type Data = { words: string[]; bank: string[] }
-type Modal = 'hints' | 'yesterday' | 'ranks' | 'rules' | null
+type Modal = 'hints' | 'yesterday' | 'ranks' | 'rules' | 'stats' | null
 
 const YELLOW = '#f7da21'
 const GRAY = '#e7e7e7'
@@ -62,6 +63,61 @@ function loadFound(id: string): string[] {
   } catch {
     return []
   }
+}
+
+/**
+ * Renders this browser's daily stats (days played, Genius days, current streak) and a copy-to-share button.
+ */
+function Stats({ data, now, share }: { data: Data; now: string; share: string }) {
+  const [copied, setCopied] = useState('')
+  const days = new Map<string, number>()
+  try {
+    Object.keys(localStorage).forEach((k) => {
+      const m = /^sb:(\d{4}-\d{2}-\d{2}):([a-z]{7})$/.exec(k)
+      if (!m) return
+      const pz = makePuzzle(m[2]!, data.words)
+      days.set(
+        m[1]!,
+        rankIdx(
+          loadFound(k.slice(3)).reduce((s, w) => s + score(w), 0),
+          pz.max,
+        ),
+      )
+    })
+  } catch {}
+  let streak = 0
+  for (let d = days.has(now) ? now : addDays(now, -1); days.has(d); d = addDays(d, -1)) streak++
+  const cells: [string, number][] = [
+    ['Days played', days.size],
+    ['Genius days', [...days.values()].filter((r) => r >= 8).length],
+    ['Day streak', streak],
+  ]
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-3 gap-2 text-center">
+        {cells.map(([l, v]) => (
+          <div key={l}>
+            <p className="text-2xl font-bold tabular-nums">{v}</p>
+            <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
+              {l}
+            </p>
+          </div>
+        ))}
+      </div>
+      <button
+        className="w-full rounded-full border px-5 py-2.5 text-[15px] font-medium"
+        style={{ borderColor: '#dcdcdc' }}
+        onClick={() =>
+          navigator.clipboard.writeText(share).then(
+            () => setCopied('Copied!'),
+            () => setCopied('Copy failed'),
+          )
+        }
+      >
+        {copied || 'Copy result to share'}
+      </button>
+    </div>
+  )
 }
 
 /**
@@ -123,8 +179,8 @@ function Hints({ pz, found }: { pz: Puzzle; found: string[] }) {
   return (
     <div className="space-y-4 text-sm">
       <p>
-        {left.length} words, {pz.max - found.reduce((s, w) => s + score(w), 0)}{' '}
-        points and {pgLeft} pangram{pgLeft === 1 ? '' : 's'} left.
+        {left.length} words, {pz.max - found.reduce((s, w) => s + score(w), 0)} points and {pgLeft} pangram
+        {pgLeft === 1 ? '' : 's'} left.
       </p>
       {left.length > 0 && (
         <>
@@ -196,6 +252,7 @@ export default function SpellingBee() {
   const [modal, setModal] = useState<Modal>(null)
   const [open, setOpen] = useState(false)
   const [revealed, setRevealed] = useState(false)
+  const [crowd, setCrowd] = useState<{ players: number; genius: number } | null>(null)
   const tRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const now = today()
@@ -208,10 +265,12 @@ export default function SpellingBee() {
 
   const pz = useMemo(() => {
     if (!data) return null
-    const id = practice && data.bank.includes(practice) ? practice : dailyId(date, data.bank)
-    return makePuzzle(id, data.words)
+    const p =
+      practice && /^[a-rt-z]{7}$/.test(practice) && new Set(practice).size === 7 && makePuzzle(practice, data.words)
+    return p && p.pangrams.length && p.answers.length >= 5 ? p : makePuzzle(dailyId(date, data.bank), data.words)
   }, [data, practice, date])
-  const key = pz && (practice ? pz.id : `${date}:${pz.id}`)
+  const isPractice = !!pz && pz.id === practice
+  const key = pz && (isPractice ? `p:${pz.id}` : `${date}:${pz.id}`)
 
   const [cur, setCur] = useState<string | null>(null)
   if (key !== cur) {
@@ -219,6 +278,7 @@ export default function SpellingBee() {
     setFound(key ? loadFound(key) : [])
     setEntry('')
     setRevealed(false)
+    setCrowd(null)
   }
 
   const pts = found.reduce((s, w) => s + score(w), 0)
@@ -240,8 +300,30 @@ export default function SpellingBee() {
     )
   }, [])
 
+  const n = found.length
+  useEffect(() => {
+    if (!pz || !key) return
+    const t = setTimeout(() => {
+      let device = ''
+      try {
+        device = localStorage.getItem('sb_device') ?? ''
+        if (!device) localStorage.setItem('sb_device', (device = crypto.randomUUID()))
+      } catch {}
+      fetch('/api/spelling-bee/stats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ device, puzzle: key, words: n, score: pts, max: pz.max }),
+      })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((c: { players: number; genius: number } | null) => c && setCrowd(c))
+        .catch(() => {})
+    }, 1500)
+    return () => clearTimeout(t)
+  }, [pz, key, n, pts])
+
+  const busy = toast?.ok === false
   const submit = useCallback(() => {
-    if (!pz || !key || !entry || toast) return
+    if (!pz || !key || !entry || busy) return
     const e = check(entry, pz, found)
     if (e) return flash(e, false)
     const nf = [...found, entry]
@@ -255,23 +337,16 @@ export default function SpellingBee() {
       localStorage.setItem(`sb:${key}`, JSON.stringify(nf))
     } catch {}
     flash(nr === RANKS.length - 1 ? 'Queen Bee! 👑' : praise(entry), true, score(entry))
-  }, [pz, key, entry, found, toast, flash])
+  }, [pz, key, entry, found, busy, flash])
 
   const type = useCallback(
     (c: string) => {
-      if (!toast) setEntry((v) => (v.length < 19 ? v + c : v))
+      if (!busy) setEntry((v) => (v.length < 19 ? v + c : v))
     },
-    [toast],
+    [busy],
   )
 
-  const reorder = () => {
-    const a = [...order]
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[a[i], a[j]] = [a[j]!, a[i]!]
-    }
-    setOrder(a)
-  }
+  const reorder = () => setOrder(shuffle(order))
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -300,7 +375,7 @@ export default function SpellingBee() {
   const yd = makePuzzle(dailyId(addDays(date, -1), data.bank), data.words)
   const btn = 'rounded-full border px-5 py-2.5 text-[15px] font-medium active:scale-95 transition'
   const link = 'text-sm underline underline-offset-2 disabled:opacity-30 disabled:no-underline'
-  const label = practice
+  const label = isPractice
     ? 'Practice puzzle'
     : new Date(`${date}T12:00`).toLocaleDateString(undefined, {
         weekday: 'long',
@@ -327,7 +402,7 @@ export default function SpellingBee() {
           </p>
         </div>
         <nav className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          {!practice && (
+          {!isPractice && (
             <>
               <button className={link} disabled={dayNum(date) <= 0} onClick={() => go(`?d=${addDays(date, -1)}`)}>
                 ‹ Prev
@@ -341,7 +416,7 @@ export default function SpellingBee() {
               </button>
             </>
           )}
-          {(practice || date !== now) && (
+          {(isPractice || date !== now) && (
             <button className={link} onClick={() => go('')}>
               Today
             </button>
@@ -352,11 +427,14 @@ export default function SpellingBee() {
           <button className={link} onClick={() => setModal('hints')}>
             Hints
           </button>
-          {!practice && dayNum(date) > 0 && (
+          {!isPractice && dayNum(date) > 0 && (
             <button className={link} onClick={() => setModal('yesterday')}>
               Yesterday
             </button>
           )}
+          <button className={link} onClick={() => setModal('stats')}>
+            Stats
+          </button>
           <button className={link} onClick={() => setModal('rules')}>
             Rules
           </button>
@@ -407,6 +485,7 @@ export default function SpellingBee() {
             viewBox="-135 -140 270 280"
             className="my-1 w-full max-w-[250px] md:my-3 md:max-w-[300px]"
             aria-label="Letter hive"
+            style={{ touchAction: 'manipulation' }}
           >
             {CELLS.map(([x, y], i) => [x, y, letters[i] ?? ''] as const).map(([x, y, c], i) => (
               <g
@@ -471,7 +550,7 @@ export default function SpellingBee() {
                 <div className="absolute inset-x-0 h-px" style={{ background: GRAY }} />
                 <div className="relative flex w-full justify-between">
                   {mins.slice(0, -1).map(([n], i) =>
-                    i === rk ? (
+                    i === Math.min(rk, 8) ? (
                       <span
                         key={n}
                         className="-my-1 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold"
@@ -497,6 +576,12 @@ export default function SpellingBee() {
               </p>
             )}
           </button>
+          {crowd && crowd.players > 0 && (
+            <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
+              {crowd.players} player{crowd.players === 1 ? '' : 's'}{' '}
+              {isPractice || date !== now ? 'on this puzzle' : 'today'} · {crowd.genius} reached Genius
+            </p>
+          )}
 
           <div className="rounded-lg border" style={{ borderColor: 'var(--ink-border)' }}>
             <button
@@ -519,7 +604,7 @@ export default function SpellingBee() {
             </button>
             <div className={`px-4 pb-4 ${open ? '' : 'max-md:hidden'}`}>
               {revealed ? <WordList words={pz.answers} found={new Set(found)} /> : <WordList words={sorted} />}
-              {practice && !revealed && found.length < pz.answers.length && (
+              {isPractice && !revealed && found.length < pz.answers.length && (
                 <button className={`${link} mt-3`} onClick={() => setRevealed(true)}>
                   Reveal all answers
                 </button>
@@ -559,6 +644,18 @@ export default function SpellingBee() {
               ))}
             </tbody>
           </table>
+        </Dialog>
+      )}
+      {modal === 'stats' && (
+        <Dialog title="Your stats" onClose={() => setModal(null)}>
+          <Stats
+            data={data}
+            now={now}
+            share={
+              `Spelling Bee ${isPractice ? 'practice' : date} · ${RANKS[rk]![0]} · ${pts}/${pz.max} points · ` +
+              `${n} words\nsfjc.dev/games/spelling-bee${isPractice ? `?p=${pz.id}` : `?d=${date}`}`
+            }
+          />
         </Dialog>
       )}
       {modal === 'rules' && (
