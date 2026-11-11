@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- doodly price line with a speech bubble at the jump -->
+  <path d="M8 52 H58" />
+  <path d="M8 44 L16 41 L22 43 L28 39 L32 40 L35 28 L41 31 L47 25 L56 22" />
+  <circle cx="35" cy="28" r="2" fill="#1a1a1a" />
+  <path d="M20 8 H44 Q48 8 48 12 V18 Q48 22 44 22 H33 L28 27 L29 22 H20 Q16 22 16 18 V12 Q16 8 20 8 Z" />
+  <path d="M22 13 H40" />
+  <path d="M22 17 H34" />
+</svg>

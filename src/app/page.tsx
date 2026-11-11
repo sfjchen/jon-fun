@@ -11,6 +11,14 @@ import { isOwnerDevice, subscribeSyncIdentity } from '@/lib/syncIdentity'
 const nb = '/doodles/notebook'
 const items: GameCardGame[] = [
   {
+    id: 'callmoves',
+    title: 'CallMoves',
+    description: 'Replay earnings calls next to the stock: the 5 moments that moved price vs its sector, minute by minute',
+    icon: `${nb}/callmoves.svg`,
+    href: 'https://callmoves.sfjc.dev',
+    available: true,
+  },
+  {
     id: 'e-reader',
     title: 'Web E-Reader',
     description: 'Import text or PDF files into a chapterized reader with typography controls, bookmarks, TTS, and local progress',
