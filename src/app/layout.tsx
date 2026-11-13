@@ -14,12 +14,14 @@ export const metadata: Metadata = {
   keywords: ['games', 'party games', 'puzzles', 'projects'],
   authors: [{ name: 'Jonathan Chen' }],
   robots: 'index, follow',
-  icons: { icon: '/icon.png' },
+  icons: { icon: '/icon.png', apple: '/apple-icon.png' },
+  appleWebApp: { capable: true, title: 'sfjc', statusBarStyle: 'default' },
 }
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  themeColor: '#fcf9f4',
 }
 
 export default function RootLayout({

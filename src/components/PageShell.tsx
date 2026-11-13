@@ -19,6 +19,7 @@ function isFullBleed(pathname: string, isChwaziMobile?: boolean): boolean {
   if (isChwaziMobile) return true
   return (
     pathname === '/games/pear-navigator' ||
+    pathname === '/games/anthropeum' ||
     pathname.startsWith('/games/poker/lobby/') ||
     pathname.startsWith('/games/poker/table/') ||
     isNotesPage(pathname)
@@ -54,7 +55,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
   const homeHref = '/'
   const useBigLogo = isNotebook && !pearNav
   /** Game-first routes keep a short header on phones so the board fits above the fold. */
-  const slimMobile = (pathname ?? '').startsWith('/games/spelling-bee')
+  const slimMobile = ['/games/spelling-bee', '/games/anthropeum'].some((p) => (pathname ?? '').startsWith(p))
 
   const notebookTypographyRoot = isNotebook && !pearNav
 

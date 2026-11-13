@@ -36,6 +36,7 @@ Single Next.js app at **`src/`** → [sfjc.dev](https://sfjc.dev) on **Vercel**.
 | **Party games** | quip-clash, fib-it, enough-about-you | sessionStorage + Realtime | `/api/party/*` |
 | **Connections** | `/games/connections` | Supabase shelf | `/api/connections/*` |
 | **Jeopardy** | `/games/jeopardy` | localStorage + optional Supabase buzzer | `/api/jeopardy/*` |
+| **Anthropeum** | `/games/anthropeum` | iframe of anthropeum.com (its own storage) | none |
 
 ## Why poker / reader / jeopardy are **not** one stack
 

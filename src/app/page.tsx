@@ -84,6 +84,14 @@ const items: GameCardGame[] = [
     href: '/games/spelling-bee',
     available: true,
   },
+  {
+    id: 'anthropeum',
+    title: 'Anthropeum',
+    description: 'Daily Met Museum artifacts: guess where and when each was made (official game, framed)',
+    icon: `${nb}/anthropeum.svg`,
+    href: '/games/anthropeum',
+    available: true,
+  },
   { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: `${nb}/game24.svg`, href: '/games/24', available: true },
   {
     id: 'mental-obstacle-course',
