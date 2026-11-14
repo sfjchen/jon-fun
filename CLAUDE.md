@@ -1,11 +1,12 @@
 # sfjc.dev (Jon-fun)
 
-Next.js 15 (App Router) + TypeScript + Tailwind v4 + Supabase, deployed to Vercel from `main`. Public repo, never commit secrets.
+Next.js 16 (App Router) + TypeScript + Tailwind v4 + Supabase, deployed to Vercel from `main`. Public repo, never commit secrets.
 
 ## Run
 - `npm install && npm run dev` (http://localhost:3000). Env in `.env.local`, names listed in `README.md`.
 - `npm run lint`, `npm run type-check`. `npm run build` before pushing risky changes.
 - `Veridian/` and `finance/` are separate nested repos, gitignored, not part of the build.
+- The repo sits in iCloud-synced Desktop. `node_modules` and `.next` are symlinks into `.deps.nosync/` so iCloud skips them, and `postinstall` restores the link after `npm install`. Files named `* 2.*` are iCloud conflict copies - compare, then delete.
 
 ## Test
 - Playwright CLI (`@playwright/test`), specs in `e2e/*.spec.ts`, config `playwright.config.ts`.
