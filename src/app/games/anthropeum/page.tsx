@@ -15,7 +15,7 @@ export default function AnthropeumPage() {
         allow="clipboard-write; web-share; fullscreen"
         className="min-h-0 w-full flex-1 border-0"
       />
-      <ScoreStrip source={SRC} />
+      <ScoreStrip game="anthropeum" source={SRC} />
     </>
   )
 }

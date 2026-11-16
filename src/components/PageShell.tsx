@@ -57,6 +57,8 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
   /** Every page but home gets the whole phone screen: no header below md, only a floating home icon where the page has no way home. */
   const gameRoute = !isHome
   const ownHome = ['pear-navigator', 'anthropeum'].some((p) => (pathname ?? '').startsWith(`/games/${p}`))
+  /** Official games framed from their own site never get the sfjc.dev header, at any width. */
+  const framed = pathname === '/games/anthropeum'
 
   const notebookTypographyRoot = isNotebook && !pearNav
 
@@ -110,7 +112,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
           className={`fixed right-2 top-[max(0.5rem,env(safe-area-inset-top))] z-50 md:hidden ${chwaziMobile ? '' : 'rounded-full bg-[var(--ink-bg)]/85'}`}
         />
       )}
-      <header className={`flex-none ${gameRoute ? 'max-md:hidden' : ''} ${headerPadding} ${!isHome && !outerLinePaper ? 'border-b' : ''} ${outerLinePaper ? `bg-[var(--ink-paper)] h-[90px] flex flex-col justify-center` : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
+      <header className={`flex-none ${framed ? 'hidden' : gameRoute ? 'max-md:hidden' : ''} ${headerPadding} ${!isHome && !outerLinePaper ? 'border-b' : ''} ${outerLinePaper ? `bg-[var(--ink-paper)] h-[90px] flex flex-col justify-center` : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
         <div className="mx-auto max-w-6xl flex w-full items-center justify-between">
           <div className="flex-1" />
           <Link

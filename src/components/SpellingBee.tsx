@@ -311,7 +311,7 @@ export default function SpellingBee() {
         .then((r) => (r.ok ? r.json() : null))
         .then((c: { players: number; genius: number } | null) => c && setCrowd(c))
         .catch(() => {})
-      if (pts > 0 && key.slice(0, 10) === localDay()) void logResult({ game: 'bee', score: pts })
+      if (pts > 0 && key.slice(0, 10) === localDay()) void logResult({ game: 'bee', score: pts, n })
     }, 1500)
     return () => clearTimeout(t)
   }, [pz, key, n, pts])
