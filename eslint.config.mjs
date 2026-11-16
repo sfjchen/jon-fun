@@ -6,7 +6,6 @@ const eslintConfig = [
     ignores: [
       "node_modules/**",
       ".next/**",
-      ".deps.nosync/**",
       ".vercel/**",
       "out/**",
       "build/**",
