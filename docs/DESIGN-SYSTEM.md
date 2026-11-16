@@ -30,11 +30,11 @@ Notebook maps from shared `--ink-*` tokens in `globals.css` via `data-theme="not
 
 - `.notebook-line-paper` on outer shell only; `background-attachment: fixed`.
 - Inner cards: transparent so lines show through.
-- Home grid: `gap-y-[30px]` + `pt-[30px]` for line alignment.
+- Home grid: 2 columns at every width, `gap-3` on phones.
 
 ### Navigation
 
-- Masthead **sfjc.dev** → `/`; subpages **← Home**.
+- Masthead **sfjc.dev** → `/` on home and on desktop. Below 768px every other page drops the masthead and shows only a floating home icon (top right).
 - Redirects: `/notebook/*` → `/*`; legacy `/theme2/*` → canonical routes (see `next.config.mjs`).
 
 ---

@@ -54,8 +54,9 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
   const pearNav = isPearNavigator(pathname ?? '')
   const homeHref = '/'
   const useBigLogo = isNotebook && !pearNav
-  /** Game-first routes keep a short header on phones so the board fits above the fold. */
-  const slimMobile = ['/games/spelling-bee', '/games/anthropeum'].some((p) => (pathname ?? '').startsWith(p))
+  /** Every page but home gets the whole phone screen: no header below md, only a floating home icon where the page has no way home. */
+  const gameRoute = !isHome
+  const ownHome = ['pear-navigator', 'anthropeum'].some((p) => (pathname ?? '').startsWith(`/games/${p}`))
 
   const notebookTypographyRoot = isNotebook && !pearNav
 
@@ -81,9 +82,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
   const outerLinePaper = isNotebook && !pearNav && !isHome
   const useCompactHeader = fullBleed && !useBigLogo
   const headerPadding = useCompactHeader ? 'px-3 py-2' : 'px-4 py-3 md:py-4'
-  const logoSize = useBigLogo ? `${slimMobile ? 'text-3xl' : 'text-5xl'} md:text-6xl lg:text-7xl` : useCompactHeader ? 'text-2xl sm:text-3xl' : 'text-3xl md:text-4xl'
-  /* Chwazi mobile: full-viewport fixed layer in main would paint over header without a stacking boost */
-  const headerStackClass = chwaziMobile ? 'relative z-50' : ''
+  const logoSize = useBigLogo ? 'text-5xl md:text-6xl lg:text-7xl' : useCompactHeader ? 'text-2xl sm:text-3xl' : 'text-3xl md:text-4xl'
   /** Tighter horizontal gutters on phone so e-reader text column uses more width. */
   const readerReadCompact = (pathname ?? '').startsWith('/games/e-reader/read')
   const mainPadX = readerReadCompact ? 'px-2 sm:px-4' : 'px-4'
@@ -105,7 +104,13 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
       className={`overflow-x-hidden ${fullBleed ? 'h-dynamic flex flex-col overflow-y-hidden' : 'min-h-screen'} ${outerLinePaper ? 'notebook-line-paper' : ''}`}
       style={outerLinePaper ? { color: 'var(--ink-text)' } : { backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
     >
-      <header className={`flex-none ${headerStackClass} ${headerPadding} ${!isHome && !outerLinePaper ? 'border-b' : ''} ${outerLinePaper ? `bg-[var(--ink-paper)] ${slimMobile ? 'h-[60px] md:h-[90px]' : 'h-[90px]'} flex flex-col justify-center` : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
+      {gameRoute && !ownHome && (
+        <HomeLink
+          variant={chwaziMobile ? 'dark' : 'default'}
+          className={`fixed right-2 top-[max(0.5rem,env(safe-area-inset-top))] z-50 md:hidden ${chwaziMobile ? '' : 'rounded-full bg-[var(--ink-bg)]/85'}`}
+        />
+      )}
+      <header className={`flex-none ${gameRoute ? 'max-md:hidden' : ''} ${headerPadding} ${!isHome && !outerLinePaper ? 'border-b' : ''} ${outerLinePaper ? `bg-[var(--ink-paper)] h-[90px] flex flex-col justify-center` : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
         <div className="mx-auto max-w-6xl flex w-full items-center justify-between">
           <div className="flex-1" />
           <Link
@@ -130,7 +135,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
                   : isHome
                     ? 'py-8'
                     : isNotebook && outerLinePaper
-                      ? slimMobile ? 'pt-3 pb-6 md:pt-[30px] md:pb-8' : 'pt-[30px] pb-8'
+                      ? gameRoute ? 'pt-3 pb-6 md:pt-[30px] md:pb-8' : 'pt-[30px] pb-8'
                       : 'py-6'
               } ${isNotebook ? 'min-h-[calc(100vh-6rem)]' : ''}`
         }

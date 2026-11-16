@@ -18,7 +18,7 @@ Single Next.js app at **`src/`** → [sfjc.dev](https://sfjc.dev) on **Vercel**.
 | `/` | Notebook home grid |
 | `/games/*` | All games and tools |
 | `/games/notes` | Notes vault (standalone Lato shell) |
-| `/leaderboards` | Leaderboards (parked copy) |
+| `/leaderboards` | Scores hub: paste official games' Share text, group boards |
 | `/admin/*` | Owner admin surfaces (TMR, Notes) |
 | `/veridian/*` | Rewrite → external whiteboard |
 | `/api/*` | Route handlers |
@@ -37,6 +37,7 @@ Single Next.js app at **`src/`** → [sfjc.dev](https://sfjc.dev) on **Vercel**.
 | **Connections** | `/games/connections` | Supabase shelf | `/api/connections/*` |
 | **Jeopardy** | `/games/jeopardy` | localStorage + optional Supabase buzzer | `/api/jeopardy/*` |
 | **Anthropeum** | `/games/anthropeum` | iframe of anthropeum.com (its own storage) | none |
+| **Scores** | `/leaderboards` | name + group code in localStorage, `game_results` in Supabase | `/api/results` |
 
 ## Why poker / reader / jeopardy are **not** one stack
 

@@ -8,6 +8,7 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { shuffle } from '@/lib/random'
+import { localDay, logResult } from '@/lib/results'
 import {
   RANKS,
   addDays,
@@ -310,6 +311,7 @@ export default function SpellingBee() {
         .then((r) => (r.ok ? r.json() : null))
         .then((c: { players: number; genius: number } | null) => c && setCrowd(c))
         .catch(() => {})
+      if (pts > 0 && key.slice(0, 10) === localDay()) void logResult({ game: 'bee', score: pts })
     }, 1500)
     return () => clearTimeout(t)
   }, [pz, key, n, pts])

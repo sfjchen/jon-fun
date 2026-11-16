@@ -49,7 +49,7 @@ function HomeTileContent({ game }: { game: GameCardGame }) {
         )}
       </div>
       <div
-        className="line-clamp-2 text-center font-lora text-lg font-semibold leading-tight sm:text-xl sm:leading-snug"
+        className="line-clamp-2 text-center font-lora text-base font-semibold leading-tight sm:text-xl sm:leading-snug"
         style={{ color: 'var(--ink-text)' }}
       >
         {game.title}
@@ -72,7 +72,7 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDesc
     (linePaper ? ' bg-transparent' : '') +
     (homeTile ? ' min-h-0 flex flex-col' : '') +
     (homeTile
-      ? ' h-full w-full min-h-[9.75rem] flex flex-col justify-center px-3 py-3 sm:min-h-[10.25rem] sm:px-4 sm:py-3.5'
+      ? ' h-full w-full min-h-[7rem] flex flex-col justify-center px-2 py-3 sm:min-h-[10.25rem] sm:px-4 sm:py-3.5'
       : useCompact
         ? ' p-6'
         : ' p-[30px]')
@@ -125,13 +125,17 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDesc
     )
   }
 
-  return (
-    <Link
-      href={game.href}
-      className={cardClass + (homeTile ? ' text-center' : '')}
-      aria-label={homeTile ? `Open ${game.title}` : undefined}
-    >
+  const linkProps = {
+    href: game.href,
+    className: cardClass + (homeTile ? ' text-center' : ''),
+    'aria-label': homeTile ? `Open ${game.title}` : undefined,
+  }
+  /* Official games on other sites open in the in-app browser sheet, so the home-screen app stays put. */
+  return game.href.startsWith('http') ? (
+    <a {...linkProps} target="_blank" rel="noopener noreferrer">
       {content}
-    </Link>
+    </a>
+  ) : (
+    <Link {...linkProps}>{content}</Link>
   )
 }

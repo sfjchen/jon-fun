@@ -92,6 +92,10 @@ const items: GameCardGame[] = [
     href: '/games/anthropeum',
     available: true,
   },
+  { id: 'krillion', title: 'Krillion', description: 'Official daily trivia dive, opens krillion.io', icon: `${nb}/krillion.svg`, href: 'https://krillion.io/', available: true },
+  { id: 'nyt-connections', title: 'NYT Connections', description: 'Official daily Connections, opens nytimes.com', icon: `${nb}/nyt-connections.svg`, href: 'https://www.nytimes.com/games/connections', available: true },
+  { id: 'nyt-mini', title: 'NYT Mini', description: 'Official Mini crossword, opens nytimes.com', icon: `${nb}/mini.svg`, href: 'https://www.nytimes.com/crosswords/game/mini', available: true },
+  { id: 'scores', title: 'Scores', description: 'Log daily results and compare with friends', icon: `${nb}/leaderboards.svg`, href: '/leaderboards', available: true },
   { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: `${nb}/game24.svg`, href: '/games/24', available: true },
   {
     id: 'mental-obstacle-course',
@@ -195,7 +199,7 @@ export default function Home() {
 
   return (
     <>
-      <ul className="mx-auto grid w-full max-w-5xl list-none grid-cols-1 gap-x-8 gap-y-10 p-0 sm:grid-cols-2 sm:gap-x-10 sm:gap-y-12">
+      <ul className="mx-auto grid w-full max-w-5xl list-none grid-cols-2 gap-3 p-0 sm:gap-x-10 sm:gap-y-12">
         {gridItems.map((item) => (
           <li key={item.id} className="min-h-0 flex">
             <GameCard

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { ScoreStrip } from '@/components/Scores'
 
 export const metadata: Metadata = { title: 'Anthropeum' }
 
@@ -14,12 +15,7 @@ export default function AnthropeumPage() {
         allow="clipboard-write; web-share; fullscreen"
         className="min-h-0 w-full flex-1 border-0"
       />
-      <p className="pb-safe flex-none px-3 py-1 text-center text-xs" style={{ color: 'var(--ink-muted)' }}>
-        Official game from{' '}
-        <a href={SRC} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: 'var(--ink-accent)' }}>
-          anthropeum.com
-        </a>
-      </p>
+      <ScoreStrip source={SRC} />
     </>
   )
 }
