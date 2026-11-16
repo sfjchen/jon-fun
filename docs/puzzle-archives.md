@@ -1,0 +1,22 @@
+# Historical puzzle archives
+
+Browse `/games/archives`, linked from the Connections library. Connections opens in the existing player without Supabase. Mini currently offers a grid, clues and an explicit answer reveal, rather than an interactive crossword solver. Download links expose each year's normalized games and the distinct answer/word lists.
+
+## Included snapshots
+
+| Game | Puzzles | Dates | Distinct words/answers | Source |
+| --- | ---: | --- | ---: | --- |
+| Connections | 628 | 2023-06-12 to 2025-02-28 | 5,296 | [eric27n/NYT-Connections](https://huggingface.co/datasets/eric27n/NYT-Connections) |
+| Mini | 3,737 | 2014-08-21 to 2024-11-12 | 12,490 | [timjkong/nyt-crossword-data](https://github.com/timjkong/nyt-crossword-data) |
+
+These are source snapshots, not complete archives through today. Connections has gaps in its source dates. Mini includes the full grids, clue-to-cell mappings, clues, solutions, constructors, editor and copyright metadata. Connections preserves categories, difficulty colors, words, puzzle numbers, dates and original starting word order (the existing player shuffles on play). Historical puzzles do not send play statistics to the community database.
+
+## Reproduce or refresh
+
+Run `python3 scripts/import-puzzle-archives.py`. Python's standard library is sufficient. Downloads are cached in `/tmp/puzzle-archives`; pass `--cache PATH` to use another cache directory. To fetch newer source versions, remove the cached downloads first. The importer validates group sizes, tiers, unique words, unique puzzle dates, grid sizes and clue cell references before writing. Generated JSON is sharded by year to avoid downloading the whole archive for one puzzle.
+
+`public/puzzle-archives/manifest.json` records source URLs, exact downloaded SHA-256 hashes, date coverage and counts. Reproducing exactly requires retaining the source downloads matching those hashes, because upstream URLs can change. No NYT credentials or live NYT endpoints are used. This is a manual snapshot importer; no recurring job is installed.
+
+## Attribution and source licensing
+
+Puzzles are credited to The New York Times. Connections is sourced from eric27n's dataset, whose dataset card declares Apache-2.0: [license text](https://www.apache.org/licenses/LICENSE-2.0). The importer transforms the CSV into grouped JSON. The Mini source repository declares no license. These source labels do not establish permission from The New York Times to republish its underlying puzzles. Preserve this distinction when considering public distribution; this change does not deploy the site or claim redistribution rights. The UI identifies the archive as independent and links both sources.

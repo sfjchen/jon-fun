@@ -91,6 +91,9 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Link href="/games/archives" className="rounded-lg border px-4 py-2 underline">
+            Historical archives
+          </Link>
           <Link
             href={`${basePath}/new`}
             className="rounded-lg px-4 py-2 text-white hover:opacity-95"
