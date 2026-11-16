@@ -169,7 +169,7 @@ export default function PokerPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 items-end gap-4">
                   <div>
                     <label htmlFor="poker-small-blind" className="block mb-2" style={{ color: 'var(--ink-text)' }}>Small Blind</label>
                     <input

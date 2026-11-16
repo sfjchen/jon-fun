@@ -143,7 +143,7 @@ export default function JeopardyPage() {
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleJoin() }}
-              placeholder="Paste link or code to join…"
+              placeholder="Link or code"
               className="min-w-0 flex-1 px-3 py-2 rounded-lg border outline-none"
               style={sunkStyle}
             />

@@ -106,12 +106,17 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
       className={`overflow-x-hidden ${fullBleed ? 'h-dynamic flex flex-col overflow-y-hidden' : 'min-h-screen'} ${outerLinePaper ? 'notebook-line-paper' : ''}`}
       style={outerLinePaper ? { color: 'var(--ink-text)' } : { backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
     >
-      {gameRoute && !ownHome && (
+      {/* Full-bleed pages float the home icon over their canvas; others get it in its own row so it never covers page controls. */}
+      {gameRoute && !ownHome && (fullBleed ? (
         <HomeLink
           variant={chwaziMobile ? 'dark' : 'default'}
           className={`fixed right-2 top-[max(0.5rem,env(safe-area-inset-top))] z-50 md:hidden ${chwaziMobile ? '' : 'rounded-full bg-[var(--ink-bg)]/85'}`}
         />
-      )}
+      ) : (
+        <div className="flex flex-none justify-end px-2 pt-[max(0.25rem,env(safe-area-inset-top))] md:hidden">
+          <HomeLink />
+        </div>
+      ))}
       <header className={`flex-none ${framed ? 'hidden' : gameRoute ? 'max-md:hidden' : ''} ${headerPadding} ${!isHome && !outerLinePaper ? 'border-b' : ''} ${outerLinePaper ? `bg-[var(--ink-paper)] h-[90px] flex flex-col justify-center` : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
         <div className="mx-auto max-w-6xl flex w-full items-center justify-between">
           <div className="flex-1" />
@@ -137,7 +142,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
                   : isHome
                     ? 'py-8'
                     : isNotebook && outerLinePaper
-                      ? gameRoute ? 'pt-3 pb-6 md:pt-[30px] md:pb-8' : 'pt-[30px] pb-8'
+                      ? gameRoute ? 'pt-0 pb-6 md:pt-[30px] md:pb-8' : 'pt-[30px] pb-8'
                       : 'py-6'
               } ${isNotebook ? 'min-h-[calc(100vh-6rem)]' : ''}`
         }
