@@ -3,7 +3,6 @@
 import Image from 'next/image'
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { GameCard } from '@/components/GameCard'
-import { PlayPrompt } from '@/components/Scores'
 import type { GameCardGame } from '@/components/GameCard'
 import Link from 'next/link'
 import { HOME_COMING_SOON_DEFAULTS, type HomeComingSoonCopy } from '@/data/home-coming-soon-defaults'
@@ -93,10 +92,6 @@ const items: GameCardGame[] = [
     href: '/games/anthropeum',
     available: true,
   },
-  { id: 'krillion', title: 'Krillion', description: 'Official daily trivia dive, opens krillion.io', icon: `${nb}/krillion.svg`, href: 'https://krillion.io/', available: true },
-  { id: 'nyt-connections', title: 'NYT Connections', description: 'Official daily Connections, opens nytimes.com', icon: `${nb}/nyt-connections.svg`, href: 'https://www.nytimes.com/games/connections', available: true },
-  { id: 'nyt-mini', title: 'NYT Mini', description: 'Official Mini crossword, opens nytimes.com', icon: `${nb}/mini.svg`, href: 'https://www.nytimes.com/crosswords/game/mini', available: true },
-  { id: 'nyt-bee', title: 'NYT Spelling Bee', description: 'Official Spelling Bee, opens nytimes.com', icon: `${nb}/nyt-bee.svg`, href: 'https://www.nytimes.com/puzzles/spelling-bee', available: true },
   { id: 'scores', title: 'Scores', description: 'Log daily results and compare with friends', icon: `${nb}/leaderboards.svg`, href: '/leaderboards', available: true },
   { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: `${nb}/game24.svg`, href: '/games/24', available: true },
   {
@@ -201,9 +196,6 @@ export default function Home() {
 
   return (
     <>
-      <div className="mx-auto max-w-5xl">
-        <PlayPrompt />
-      </div>
       <ul className="mx-auto grid w-full max-w-5xl list-none grid-cols-2 gap-3 p-0 sm:gap-x-10 sm:gap-y-12">
         {gridItems.map((item) => (
           <li key={item.id} className="min-h-0 flex">

@@ -3,7 +3,6 @@
 import { useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { GAMES, startPlay, type GameId } from '@/lib/results'
 
 export type GameCardGame = {
   id: string
@@ -131,14 +130,9 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDesc
     className: cardClass + (homeTile ? ' text-center' : ''),
     'aria-label': homeTile ? `Open ${game.title}` : undefined,
   }
-  /* Official games on other sites open in the in-app browser sheet, so the home-screen app stays put. */
+  /* Links to other sites open in the in-app browser sheet, so the home-screen app stays put. */
   return game.href.startsWith('http') ? (
-    <a
-      {...linkProps}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={() => game.id in GAMES && startPlay(game.id as GameId)}
-    >
+    <a {...linkProps} target="_blank" rel="noopener noreferrer">
       {content}
     </a>
   ) : (

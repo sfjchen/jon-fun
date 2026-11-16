@@ -168,15 +168,13 @@ export function setPlayer(p: Player): void {
 }
 
 const PLAY_KEY = 'sfjc_play'
-export const PLAY_CHANGED = 'sfjc-play-changed'
 
 /**
- * Notes that an official game was just opened, so its result can be asked for and timed on return.
+ * Notes that an official game was just opened, so its result can be timed when it is logged.
  */
 export function startPlay(game: GameId): void {
   try {
     localStorage.setItem(PLAY_KEY, JSON.stringify({ game, t: Date.now() }))
-    window.dispatchEvent(new Event(PLAY_CHANGED))
   } catch {}
 }
 
@@ -196,10 +194,9 @@ export function getPlay(): { game: GameId; secs: number } | null {
 /**
  * Forgets the opened game once its result is logged or dismissed.
  */
-export function endPlay(): void {
+function endPlay(): void {
   try {
     localStorage.removeItem(PLAY_KEY)
-    window.dispatchEvent(new Event(PLAY_CHANGED))
   } catch {}
 }
 

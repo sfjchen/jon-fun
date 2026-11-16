@@ -2,8 +2,8 @@
 
 /**
  * Scores hub UI: the name + group form, a paste box that logs any official game's Share text, a row for
- * typing a score by hand, the group's boards and each player's own stats per game, the prompt shown after
- * coming back from an official game, and the slim strip shown under a framed game.
+ * typing a score by hand, the group's boards and each player's own stats per game, and the slim strip
+ * shown under a framed game.
  */
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
@@ -12,11 +12,8 @@ import {
   GAMES,
   GAME_IDS,
   PLAYER_CHANGED,
-  PLAY_CHANGED,
-  endPlay,
   formatScore,
   formatTime,
-  getPlay,
   getPlayer,
   localDay,
   logResult,
@@ -38,11 +35,11 @@ const accent = { color: 'var(--ink-accent)' }
 const solid = { backgroundColor: 'var(--ink-accent)' }
 
 /**
- * Subscribes to changes of the saved player or the opened game, made in this tab or another one,
- * and to the page coming back into view.
+ * Subscribes to changes of the saved player, made in this tab or another one, and to the page coming
+ * back into view.
  */
 function subscribeStore(cb: () => void): () => void {
-  const evs = [PLAYER_CHANGED, PLAY_CHANGED, 'storage', 'focus']
+  const evs = [PLAYER_CHANGED, 'storage', 'focus']
   evs.forEach((e) => window.addEventListener(e, cb))
   document.addEventListener('visibilitychange', cb)
   return () => {
@@ -61,17 +58,6 @@ function usePlayer(): Player | null {
     () => 'null',
   )
   return useMemo(() => JSON.parse(raw) as Player | null, [raw])
-}
-
-/**
- * Returns the official game that was opened and not logged yet, or null.
- */
-function useOpenGame(): GameId | null {
-  return useSyncExternalStore(
-    subscribeStore,
-    () => getPlay()?.game ?? null,
-    () => null,
-  )
 }
 
 /**
@@ -325,32 +311,6 @@ function facts(game: GameId, own: BoardRow[], today: string, wins: number): [str
 }
 
 /**
- * Asks for the result of the official game that was just opened, on the page the player comes back to.
- */
-export function PlayPrompt({ onLogged }: { onLogged?: () => void }) {
-  const player = usePlayer()
-  const game = useOpenGame()
-  if (!game) return null
-  return (
-    <div className={`${card} mb-4`} style={cardStyle}>
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <p className="font-semibold">Finished {GAMES[game].title}? Tap Share there, then paste here.</p>
-        <button type="button" onClick={endPlay} className="text-sm underline" style={muted}>
-          Skip
-        </button>
-      </div>
-      {player ? (
-        <ScorePaste {...(onLogged ? { onLogged } : {})} />
-      ) : (
-        <Link href="/leaderboards" className="underline" style={accent}>
-          Set your name and group on Scores first
-        </Link>
-      )}
-    </div>
-  )
-}
-
-/**
  * Renders the Scores hub: player setup, links to the games, result entry, the group's boards and own stats.
  */
 export function ScoresHub() {
@@ -359,7 +319,6 @@ export function ScoresHub() {
   const [byHand, setByHand] = useState(false)
   const [copied, setCopied] = useState('')
   const [rows, setRows] = useState<BoardRow[] | null>(null)
-  const openGame = useOpenGame()
   const today = localDay()
   const group = player?.group
 
@@ -404,27 +363,22 @@ export function ScoresHub() {
       )}
 
       <div className="flex flex-wrap gap-2">
-        {GAME_IDS.map((g) => {
-          const ext = GAMES[g].url.startsWith('http')
-          return (
-            <a
-              key={g}
-              href={GAMES[g].url}
-              {...(ext ? { target: '_blank', rel: 'noopener noreferrer', onClick: () => startPlay(g) } : {})}
-              className="rounded-full border px-3 py-1 text-sm"
-              style={{ ...border, ...accent, backgroundColor: 'var(--ink-paper)' }}
-            >
-              {GAMES[g].title}
-              {ext ? ' ↗' : ''}
-            </a>
-          )
-        })}
+        {GAME_IDS.filter((g) => GAMES[g].url.startsWith('/')).map((g) => (
+          <Link
+            key={g}
+            href={GAMES[g].url}
+            className="rounded-full border px-3 py-1 text-sm"
+            style={{ ...border, ...accent, backgroundColor: 'var(--ink-paper)' }}
+          >
+            {GAMES[g].title}
+          </Link>
+        ))}
       </div>
 
       {player && !editing && (
         <>
           <div>
-            {openGame ? <PlayPrompt onLogged={load} /> : <ScorePaste onLogged={load} />}
+            <ScorePaste onLogged={load} />
             {byHand ? (
               <HandEntry onLogged={load} />
             ) : (
