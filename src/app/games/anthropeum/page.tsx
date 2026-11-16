@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { ScoreStrip } from '@/components/Scores'
+import { HomeLink } from '@/components/HomeLink'
 
 export const metadata: Metadata = { title: 'Anthropeum' }
 
@@ -15,7 +15,15 @@ export default function AnthropeumPage() {
         allow="clipboard-write; web-share; fullscreen"
         className="min-h-0 w-full flex-1 border-0"
       />
-      <ScoreStrip game="anthropeum" source={SRC} />
+      <div
+        className="pb-safe flex h-8 flex-none items-center justify-between border-t px-2"
+        style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+      >
+        <HomeLink />
+        <a href={SRC} target="_blank" rel="noopener noreferrer" className="px-2 text-sm" style={{ color: 'var(--ink-muted)' }}>
+          anthropeum.com ↗
+        </a>
+      </div>
     </>
   )
 }

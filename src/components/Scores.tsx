@@ -1,28 +1,21 @@
 'use client'
 
 /**
- * Scores hub UI: the name + group form, a paste box that logs any official game's Share text, a row for
- * typing a score by hand, the group's boards and each player's own stats per game, and the slim strip
- * shown under a framed game.
+ * Scores hub UI: the name + group form, the group's boards and each player's own stats per game.
+ * Scores arrive on their own from Spelling Bee and 24, so nothing here is typed or pasted.
  */
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
-import { HomeLink } from '@/components/HomeLink'
 import {
   GAMES,
   GAME_IDS,
   PLAYER_CHANGED,
   formatScore,
-  formatTime,
   getPlayer,
   localDay,
-  logResult,
   setPlayer,
-  startPlay,
   type BoardRow,
-  type GameId,
   type Player,
-  type Result,
 } from '@/lib/results'
 
 const field =
@@ -32,145 +25,18 @@ const cardStyle = { backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink
 const border = { borderColor: 'var(--ink-border)' }
 const muted = { color: 'var(--ink-muted)' }
 const accent = { color: 'var(--ink-accent)' }
-const solid = { backgroundColor: 'var(--ink-accent)' }
+const chip = { ...border, ...accent, backgroundColor: 'var(--ink-paper)' }
 
 /**
- * Subscribes to changes of the saved player, made in this tab or another one, and to the page coming
- * back into view.
+ * Subscribes to changes of the saved player, made in this tab or another one.
  */
-function subscribeStore(cb: () => void): () => void {
-  const evs = [PLAYER_CHANGED, 'storage', 'focus']
-  evs.forEach((e) => window.addEventListener(e, cb))
-  document.addEventListener('visibilitychange', cb)
+function subscribePlayer(cb: () => void): () => void {
+  window.addEventListener(PLAYER_CHANGED, cb)
+  window.addEventListener('storage', cb)
   return () => {
-    evs.forEach((e) => window.removeEventListener(e, cb))
-    document.removeEventListener('visibilitychange', cb)
+    window.removeEventListener(PLAYER_CHANGED, cb)
+    window.removeEventListener('storage', cb)
   }
-}
-
-/**
- * Returns the saved player, re-rendering when it changes. Null on the server and until one is saved.
- */
-function usePlayer(): Player | null {
-  const raw = useSyncExternalStore(
-    subscribeStore,
-    () => JSON.stringify(getPlayer()),
-    () => 'null',
-  )
-  return useMemo(() => JSON.parse(raw) as Player | null, [raw])
-}
-
-/**
- * Describes a stored result in 1 line for the status message.
- */
-function summary(r: Result, kept?: boolean): string {
-  const time = r.stats.secs ? ` in ${formatTime(r.stats.secs)}` : ''
-  return `${GAMES[r.game].title} - ${formatScore(r.game, r.score)}${time} ${kept ? 'was already logged for that day' : 'logged'}`
-}
-
-/**
- * Logs a result as soon as Share text is pasted. Typed text needs the Log button.
- */
-export function ScorePaste({ onLogged }: { onLogged?: () => void }) {
-  const [val, setVal] = useState('')
-  const [msg, setMsg] = useState('')
-
-  const send = useCallback(
-    async (text: string) => {
-      if (!text.trim()) return
-      setMsg('Saving...')
-      const r = await logResult({ text })
-      if (!r.result) return setMsg(r.error ?? 'Could not save')
-      setVal('')
-      setMsg(summary(r.result, r.kept))
-      onLogged?.()
-    },
-    [onLogged],
-  )
-
-  return (
-    <div>
-      <div className="flex items-stretch gap-2">
-        <textarea
-          value={val}
-          rows={2}
-          placeholder="Paste a game's Share text here"
-          aria-label="Paste a game result"
-          className={`${field} resize-none`}
-          style={border}
-          onChange={(e) => setVal(e.target.value)}
-          onPaste={(e) => {
-            const t = e.clipboardData.getData('text')
-            if (!t) return
-            e.preventDefault()
-            setVal(t)
-            void send(t)
-          }}
-        />
-        {val && (
-          <button type="button" onClick={() => void send(val)} className="rounded-md px-4 font-semibold text-white" style={solid}>
-            Log
-          </button>
-        )}
-      </div>
-      <p aria-live="polite" className="mt-1 min-h-5 text-sm" style={muted}>
-        {msg}
-      </p>
-    </div>
-  )
-}
-
-/**
- * Logs a score typed by hand, for games with no Share text (NYT Spelling Bee) or a lost clipboard.
- * Timed games take m:ss.
- */
-function HandEntry({ onLogged }: { onLogged: () => void }) {
-  const [game, setGame] = useState<GameId>('nyt-bee')
-  const [val, setVal] = useState('')
-  const [msg, setMsg] = useState('')
-  const def = GAMES[game]
-  const m = /^(\d+):(\d{2})$/.exec(val.trim())
-  const score = def.time && m ? Number(m[1]) * 60 + Number(m[2]) : /^\d+$/.test(val.trim()) ? Number(val) : null
-
-  return (
-    <form
-      className="space-y-1"
-      onSubmit={async (e) => {
-        e.preventDefault()
-        if (score === null) return
-        const r = await logResult({ game, score })
-        setMsg(r.result ? summary(r.result, r.kept) : (r.error ?? 'Could not save'))
-        if (!r.result) return
-        setVal('')
-        onLogged()
-      }}
-    >
-      <div className="flex gap-2">
-        <select value={game} onChange={(e) => setGame(e.target.value as GameId)} aria-label="Game" className={field} style={border}>
-          {GAME_IDS.filter((g) => GAMES[g].official).map((g) => (
-            <option key={g} value={g}>
-              {GAMES[g].title}
-            </option>
-          ))}
-        </select>
-        <input
-          value={val}
-          onChange={(e) => setVal(e.target.value)}
-          inputMode={def.time ? 'text' : 'numeric'}
-          placeholder={def.time ? 'm:ss' : game === 'nyt-connections' ? 'wrong guesses' : 'points'}
-          aria-label="Score"
-          className={`${field} max-w-32`}
-          style={border}
-        />
-        <button type="submit" disabled={score === null} className="rounded-md px-4 font-semibold text-white disabled:opacity-40" style={solid}>
-          Add
-        </button>
-      </div>
-      <p aria-live="polite" className="min-h-5 text-sm" style={muted}>
-        {msg}
-      </p>
-    </form>
-  )
 }
 
 /**
@@ -210,7 +76,12 @@ function PlayerForm({ player, onDone }: { player: Player | null; onDone: () => v
         />
         <span style={muted}>Friends who type the same code share one board. 3-32 letters, numbers or dashes.</span>
       </label>
-      <button type="submit" disabled={!ok} className="w-full rounded-md py-2 font-semibold text-white disabled:opacity-40" style={solid}>
+      <button
+        type="submit"
+        disabled={!ok}
+        className="w-full rounded-md py-2 font-semibold text-white disabled:opacity-40"
+        style={{ backgroundColor: 'var(--ink-accent)' }}
+      >
         Save
       </button>
     </form>
@@ -236,15 +107,14 @@ type Standing = { name: string; today: number | null; week: number | null; wins:
 /**
  * Ranks a game's players by today's score, then by their 7-day average, and counts days won against others.
  */
-function standings(game: GameId, rows: BoardRow[], today: string): Standing[] {
-  const sign = GAMES[game].lowerWins ? 1 : -1
+function standings(rows: BoardRow[], today: string): Standing[] {
   const weekAgo = shiftDay(today, -6)
   const wins = new Map<string, number>()
   for (const d of new Set(rows.map((r) => r.day))) {
     const day = rows.filter((r) => r.day === d)
     if (day.length < 2) continue
-    const top = Math.min(...day.map((r) => sign * r.score))
-    for (const r of day) if (sign * r.score === top) wins.set(r.name, (wins.get(r.name) ?? 0) + 1)
+    const top = Math.max(...day.map((r) => r.score))
+    for (const r of day) if (r.score === top) wins.set(r.name, (wins.get(r.name) ?? 0) + 1)
   }
   return [...new Set(rows.map((r) => r.name))]
     .map((name) => {
@@ -258,16 +128,14 @@ function standings(game: GameId, rows: BoardRow[], today: string): Standing[] {
     })
     .sort(
       (a, b) =>
-        Number(a.today === null) - Number(b.today === null) ||
-        sign * ((a.today ?? a.week ?? 0) - (b.today ?? b.week ?? 0)),
+        Number(a.today === null) - Number(b.today === null) || (b.today ?? b.week ?? 0) - (a.today ?? a.week ?? 0),
     )
 }
 
 /**
  * Builds one player's stats for a game as label and value pairs, in plain words.
  */
-function facts(game: GameId, own: BoardRow[], today: string, wins: number): [string, string][] {
-  const def = GAMES[game]
+function facts(own: BoardRow[], today: string, wins: number): [string, string][] {
   const days = new Set(own.map((r) => r.day))
   let streak = 0
   for (let d = days.has(today) ? today : shiftDay(today, -1); days.has(d); d = shiftDay(d, -1)) streak++
@@ -279,44 +147,29 @@ function facts(game: GameId, own: BoardRow[], today: string, wins: number): [str
     longest = Math.max(longest, run)
   }
   const scores = own.map((r) => r.score)
-  const best = def.lowerWins ? Math.min(...scores) : Math.max(...scores)
-  const out: [string, string][] = [
+  const words = own.flatMap((r) => (r.stats?.n ? [r.stats.n] : []))
+  return [
     ['Days played', String(days.size)],
     ['Day streak', String(streak)],
     ['Longest streak', String(longest)],
-    [def.time ? 'Fastest' : game === 'nyt-connections' ? 'Fewest wrong' : 'Best', formatScore(game, best)],
-    ['Average', game === 'nyt-connections' ? `${mean(scores).toFixed(1)} wrong` : formatScore(game, mean(scores))],
+    ['Best', formatScore(Math.max(...scores))],
+    ['Average', formatScore(mean(scores))],
     ['Days won', String(wins)],
+    ...(words.length ? [['Most words', String(Math.max(...words))] as [string, string]] : []),
   ]
-  const secs = own.flatMap((r) => (r.stats?.secs ? [r.stats.secs] : []))
-  if (secs.length) out.push(['Average time', formatTime(mean(secs))], ['Fastest time', formatTime(Math.min(...secs))])
-  if (game === 'nyt-connections') {
-    out.push(
-      ['Solved', `${scores.filter((s) => s < 4).length} of ${scores.length}`],
-      ['No mistakes', String(scores.filter((s) => s === 0).length)],
-      ['Purple first', String(own.filter((r) => r.stats?.first === 'purple').length)],
-    )
-  }
-  if (game === 'anthropeum') {
-    const pcts = own.flatMap((r) => (r.stats?.pct ? [r.stats.pct] : []))
-    const tops = own.flatMap((r) => (r.stats?.top === undefined ? [] : [r.stats.top]))
-    if (pcts.length) out.push(['Best rank', `top ${Math.min(...pcts)}%`])
-    if (tops.length) out.push(['Rounds 9,000+', `${mean(tops).toFixed(1)} of 10`])
-  }
-  if (game === 'bee') {
-    const words = own.flatMap((r) => (r.stats?.n ? [r.stats.n] : []))
-    if (words.length) out.push(['Most words', String(Math.max(...words))])
-  }
-  return out
 }
 
 /**
- * Renders the Scores hub: player setup, links to the games, result entry, the group's boards and own stats.
+ * Renders the Scores hub: player setup, links to the games, the group's boards and own stats.
  */
 export function ScoresHub() {
-  const player = usePlayer()
+  const raw = useSyncExternalStore(
+    subscribePlayer,
+    () => JSON.stringify(getPlayer()),
+    () => 'null',
+  )
+  const player = useMemo(() => JSON.parse(raw) as Player | null, [raw])
   const [editing, setEditing] = useState(false)
-  const [byHand, setByHand] = useState(false)
   const [copied, setCopied] = useState('')
   const [rows, setRows] = useState<BoardRow[] | null>(null)
   const today = localDay()
@@ -341,10 +194,7 @@ export function ScoresHub() {
   const mineToday = (rows ?? []).filter((r) => r.name === player?.name && r.day === today)
   const shareText = [
     `sfjc.dev scores - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
-    ...GAME_IDS.flatMap((g) => {
-      const r = mineToday.find((x) => x.game === g)
-      return r ? [`${GAMES[g].title}: ${formatScore(g, r.score)}${r.stats?.secs ? ` in ${formatTime(r.stats.secs)}` : ''}`] : []
-    }),
+    ...mineToday.map((r) => `${GAMES[r.game].title}: ${formatScore(r.score)}`),
   ].join('\n')
 
   return (
@@ -363,13 +213,8 @@ export function ScoresHub() {
       )}
 
       <div className="flex flex-wrap gap-2">
-        {GAME_IDS.filter((g) => GAMES[g].url.startsWith('/')).map((g) => (
-          <Link
-            key={g}
-            href={GAMES[g].url}
-            className="rounded-full border px-3 py-1 text-sm"
-            style={{ ...border, ...accent, backgroundColor: 'var(--ink-paper)' }}
-          >
+        {GAME_IDS.map((g) => (
+          <Link key={g} href={GAMES[g].url} className="rounded-full border px-3 py-1 text-sm" style={chip}>
             {GAMES[g].title}
           </Link>
         ))}
@@ -377,22 +222,11 @@ export function ScoresHub() {
 
       {player && !editing && (
         <>
-          <div>
-            <ScorePaste onLogged={load} />
-            {byHand ? (
-              <HandEntry onLogged={load} />
-            ) : (
-              <button type="button" className="text-sm underline" style={accent} onClick={() => setByHand(true)}>
-                Type a score instead
-              </button>
-            )}
-          </div>
-
           {mineToday.length > 0 && (
             <button
               type="button"
               className="w-full rounded-md border py-2 font-semibold"
-              style={{ ...border, ...accent, backgroundColor: 'var(--ink-paper)' }}
+              style={chip}
               onClick={() =>
                 navigator.clipboard.writeText(shareText).then(
                   () => setCopied('Copied'),
@@ -405,15 +239,12 @@ export function ScoresHub() {
           )}
 
           {rows && played.length === 0 && (
-            <p style={muted}>
-              No results yet. Finish a game, tap its Share button, then paste here. Spelling Bee and 24 on this site log
-              themselves.
-            </p>
+            <p style={muted}>No results yet. Play Spelling Bee or a 24 room and your score shows up here by itself.</p>
           )}
 
           {played.map((g) => {
             const gameRows = (rows ?? []).filter((r) => r.game === g)
-            const table = standings(g, gameRows, today)
+            const table = standings(gameRows, today)
             const own = gameRows.filter((r) => r.name === player.name)
             return (
               <section key={g} className={card} style={cardStyle}>
@@ -431,8 +262,8 @@ export function ScoresHub() {
                     {table.map((s) => (
                       <tr key={s.name} className="border-t" style={border}>
                         <td className="py-1.5 font-semibold">{s.name}</td>
-                        <td className="text-right tabular-nums">{s.today === null ? '-' : formatScore(g, s.today)}</td>
-                        <td className="text-right tabular-nums">{s.week === null ? '-' : formatScore(g, s.week)}</td>
+                        <td className="text-right tabular-nums">{s.today === null ? '-' : formatScore(s.today)}</td>
+                        <td className="text-right tabular-nums">{s.week === null ? '-' : formatScore(s.week)}</td>
                         <td className="text-right tabular-nums">{s.wins}</td>
                       </tr>
                     ))}
@@ -444,7 +275,7 @@ export function ScoresHub() {
                       Your stats, last 90 days
                     </summary>
                     <div className="mt-2 grid grid-cols-3 gap-x-2 gap-y-3 text-center">
-                      {facts(g, own, today, table.find((s) => s.name === player.name)?.wins ?? 0).map(([l, v]) => (
+                      {facts(own, today, table.find((s) => s.name === player.name)?.wins ?? 0).map(([l, v]) => (
                         <div key={l}>
                           <p className="text-lg font-bold tabular-nums">{v}</p>
                           <p className="text-xs" style={muted}>
@@ -460,46 +291,6 @@ export function ScoresHub() {
           })}
         </>
       )}
-    </div>
-  )
-}
-
-/**
- * Slim strip under a framed game: home, a paste box that slides up to log the score, the Scores link and
- * a credit link to the official site. Opening the page starts the game's play timer.
- */
-export function ScoreStrip({ game, source }: { game: GameId; source: string }) {
-  const player = usePlayer()
-  const [open, setOpen] = useState(false)
-  const link = 'px-2 py-1 text-sm underline-offset-2 hover:underline'
-
-  useEffect(() => startPlay(game), [game])
-
-  return (
-    <div className="pb-safe relative flex-none border-t" style={cardStyle}>
-      {open && (
-        <div className="absolute inset-x-0 bottom-full border-t p-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)]" style={cardStyle}>
-          {player ? (
-            <ScorePaste />
-          ) : (
-            <Link href="/leaderboards" className="underline" style={accent}>
-              Set your name and group on Scores first
-            </Link>
-          )}
-        </div>
-      )}
-      <div className="flex h-9 items-center justify-between px-2">
-        <HomeLink />
-        <button type="button" className={link} style={accent} aria-expanded={open} onClick={() => setOpen((o) => !o)}>
-          {open ? 'Close' : 'Log score'}
-        </button>
-        <Link href="/leaderboards" className={link} style={accent}>
-          Scores
-        </Link>
-        <a href={source} target="_blank" rel="noopener noreferrer" className={link} style={muted}>
-          {new URL(source).host} ↗
-        </a>
-      </div>
     </div>
   )
 }

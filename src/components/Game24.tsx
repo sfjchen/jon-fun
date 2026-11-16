@@ -782,7 +782,7 @@ export default function Game24() {
 
   const finished = room?.status === 'finished'
   useEffect(() => {
-    if (finished && displayedScore > 0) void logResult({ game: '24', score: displayedScore })
+    if (finished && displayedScore > 0) logResult('24', displayedScore)
   }, [finished, displayedScore])
 
   return (

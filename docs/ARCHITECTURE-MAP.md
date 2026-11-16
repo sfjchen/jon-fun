@@ -18,7 +18,7 @@ Single Next.js app at **`src/`** → [sfjc.dev](https://sfjc.dev) on **Vercel**.
 | `/` | Notebook home grid |
 | `/games/*` | All games and tools |
 | `/games/notes` | Notes vault (standalone Lato shell) |
-| `/leaderboards` | Scores hub: paste official games' Share text, group boards |
+| `/leaderboards` | Scores hub: group boards and stats, fed by Spelling Bee and 24 |
 | `/admin/*` | Owner admin surfaces (TMR, Notes) |
 | `/veridian/*` | Rewrite → external whiteboard |
 | `/api/*` | Route handlers |
