@@ -15,6 +15,7 @@ import {
   localDay,
   setPlayer,
   type BoardRow,
+  type GameId,
   type Player,
 } from '@/lib/results'
 
@@ -144,6 +145,100 @@ export function standings(rows: BoardRow[], today: string): Standing[] {
     )
 }
 
+type DayResult = { day: string; games: Partial<Record<GameId, { names: string[]; score: number }>>; winner: string | null }
+
+/**
+ * Lists each day where at least two players played the same game, newest first, with every game's top scorer
+ * and the day's overall winner: whoever won the most games that day, or null on a tie.
+ */
+function dayByDay(rows: BoardRow[]): DayResult[] {
+  return [...new Set(rows.map((r) => r.day))]
+    .sort()
+    .reverse()
+    .flatMap((day) => {
+      const games: DayResult['games'] = {}
+      const won = new Map<string, number>()
+      for (const g of GAME_IDS) {
+        const played = rows.filter((r) => r.day === day && r.game === g)
+        if (played.length < 2) continue
+        const score = Math.max(...played.map((r) => r.score))
+        const names = played.filter((r) => r.score === score).map((r) => r.name)
+        games[g] = { names, score }
+        for (const n of names) won.set(n, (won.get(n) ?? 0) + 1)
+      }
+      if (won.size === 0) return []
+      const top = Math.max(...won.values())
+      const leaders = [...won].filter(([, w]) => w === top)
+      return [{ day, games, winner: leaders.length === 1 ? leaders[0]![0] : null }]
+    })
+}
+
+/**
+ * Shows who won each game on each day and who won the day overall, with a running tally of days won.
+ */
+function DayByDay({ rows }: { rows: BoardRow[] }) {
+  const days = dayByDay(rows)
+  if (days.length === 0) return null
+  const games = GAME_IDS.filter((g) => days.some((d) => d.games[g]))
+  const tally = new Map<string, number>()
+  for (const d of days) if (d.winner) tally.set(d.winner, (tally.get(d.winner) ?? 0) + 1)
+  const label = (day: string) =>
+    new Date(`${day}T12:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+
+  return (
+    <section className={card} style={cardStyle} data-testid="scores-day-by-day">
+      <h2 className="font-lora text-lg font-semibold">Day by day</h2>
+      <p className="mb-2 text-sm" style={muted}>
+        Days won overall:{' '}
+        {[...tally]
+          .sort((a, b) => b[1] - a[1])
+          .map(([n, w]) => `${n} ${w}`)
+          .join(' · ') || 'none yet'}
+      </p>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead style={muted}>
+            <tr>
+              <th className="font-normal">Day</th>
+              {games.map((g) => (
+                <th key={g} className="font-normal">
+                  {GAMES[g].title}
+                </th>
+              ))}
+              <th className="font-normal">Winner</th>
+            </tr>
+          </thead>
+          <tbody>
+            {days.slice(0, 14).map((d) => (
+              <tr key={d.day} className="border-t" style={border}>
+                <td className="whitespace-nowrap py-1.5 pr-2">{label(d.day)}</td>
+                {games.map((g) => {
+                  const w = d.games[g]
+                  return (
+                    <td key={g} className="pr-2">
+                      {w ? (
+                        <>
+                          {w.names.join(' & ')}{' '}
+                          <span className="tabular-nums" style={muted}>
+                            {formatScore(w.score)}
+                          </span>
+                        </>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+                  )
+                })}
+                <td className="font-semibold">{d.winner ?? 'Tie'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}
+
 /**
  * Builds one player's stats for a game as label and value pairs, in plain words.
  */
@@ -248,6 +343,8 @@ export function ScoresHub() {
           {rows && played.length === 0 && (
             <p style={muted}>No results yet. Play Spelling Bee, daily Connections or a 24 room and your score shows up here by itself.</p>
           )}
+
+          {rows && <DayByDay rows={rows} />}
 
           {played.map((g) => {
             const gameRows = (rows ?? []).filter((r) => r.game === g)
