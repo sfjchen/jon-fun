@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
-import { logResult } from '@/lib/results'
 import { supabase } from '@/lib/supabase'
 import {
   GAME24_MAX_PLAYERS,
@@ -779,11 +778,6 @@ export default function Game24() {
     room && room.status !== 'waiting'
       ? players.find((p) => p.player_id === playerId)?.score ?? 0
       : offlineScore
-
-  const finished = room?.status === 'finished'
-  useEffect(() => {
-    if (finished && displayedScore > 0) logResult('24', displayedScore)
-  }, [finished, displayedScore])
 
   return (
     <div className="flex items-start lg:items-center">

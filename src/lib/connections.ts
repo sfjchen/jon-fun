@@ -19,6 +19,7 @@ export interface ConnectionsGroup {
 }
 
 export interface ConnectionsPuzzle {
+  difficultyKnown?: boolean
   id: string
   version: typeof CONNECTIONS_SCHEMA_VERSION
   slug: string

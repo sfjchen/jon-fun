@@ -1,412 +1,137 @@
 'use client'
-
-/**
- * Scores hub UI: the name + group form, the group's boards and each player's own stats per game.
- * Scores arrive on their own from Spelling Bee, 24 and daily Connections, so nothing here is typed or pasted.
- */
 import Link from 'next/link'
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
-import {
-  GAMES,
-  GAME_IDS,
-  PLAYER_CHANGED,
-  PUBLIC_GROUP,
-  boardName,
-  formatScore,
-  getPlayer,
-  localDay,
-  setPlayer,
-  type BoardRow,
-  type GameId,
-  type Player,
-} from '@/lib/results'
-
-const field =
-  'w-full rounded-md border bg-[var(--ink-bg)] px-3 py-2 text-base outline-none focus:border-[var(--ink-accent)]'
-const card = 'rounded-lg border p-3 sm:p-4'
-const cardStyle = { backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }
-const border = { borderColor: 'var(--ink-border)' }
-const muted = { color: 'var(--ink-muted)' }
-const accent = { color: 'var(--ink-accent)' }
-const chip = { ...border, ...accent, backgroundColor: 'var(--ink-paper)' }
-
-/**
- * Subscribes to changes of the saved player, made in this tab or another one.
- */
-function subscribePlayer(cb: () => void): () => void {
-  window.addEventListener(PLAYER_CHANGED, cb)
-  window.addEventListener('storage', cb)
-  return () => {
-    window.removeEventListener(PLAYER_CHANGED, cb)
-    window.removeEventListener('storage', cb)
-  }
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { GAMES, GAME_IDS, PLAYER_CHANGED, RESULTS_CHANGED, flushResults, formatScore, formatTime, getPlayer, localDay, setPlayer, PUBLIC_GROUP, boardName, type BoardRow, type GameId, type Player } from '@/lib/results'
+import { DAILY_EPOCH, shiftDay, validDay } from '@/lib/daily'
+import { average, overallDay, streaks, winners, winsByPlayer } from '@/lib/score-stats'
+const field = 'w-full rounded-lg border bg-[var(--ink-paper)] p-2'
+const card = 'rounded-xl border border-[var(--ink-border)] bg-[var(--ink-paper)] p-4'
+const muted = 'text-sm text-[var(--ink-muted)]'
+function subscribe(cb: () => void) {
+  window.addEventListener(PLAYER_CHANGED, cb); window.addEventListener('storage', cb)
+  return () => { window.removeEventListener(PLAYER_CHANGED, cb); window.removeEventListener('storage', cb) }
 }
-
-/**
- * Returns this browser's saved player and re-renders when it changes.
- */
-export function usePlayer(): Player | null {
-  const raw = useSyncExternalStore(
-    subscribePlayer,
-    () => JSON.stringify(getPlayer()),
-    () => 'null',
-  )
-  return useMemo(() => JSON.parse(raw) as Player | null, [raw])
+function PlayerForm({ player, onDone }: { player: Player | null; onDone: () => void }) {
+  const [name, setName] = useState(player?.name ?? ''), [group, setGroup] = useState(player?.group ?? PUBLIC_GROUP)
+  const [privateBoard, setPrivateBoard] = useState(!!player && player.group !== PUBLIC_GROUP)
+  return <form className={`${card} space-y-3`} onSubmit={e => { e.preventDefault(); if (name.trim() && /^[a-z0-9-]{3,32}$/.test(group.trim().toLowerCase())) { setPlayer({ name: name.trim(), group: group.trim().toLowerCase() }); onDone() } }}>
+    <label className="block text-sm">Your name<input className={field} value={name} maxLength={24} required onChange={e => setName(e.target.value)} /></label>
+    <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={privateBoard} onChange={e => { setPrivateBoard(e.target.checked); setGroup(e.target.checked ? '' : PUBLIC_GROUP) }} />Use a private group</label>
+    {privateBoard && <label className="block text-sm">Group code<input className={field} value={group} minLength={3} maxLength={32} pattern="[A-Za-z0-9-]{3,32}" required autoCapitalize="none" onChange={e => setGroup(e.target.value)} /></label>}
+    <p className={muted}>Pick a unique name for the public board, or use a private group code with friends. Use the same name and group on your other devices.</p>
+    <button className="rounded-lg bg-[var(--ink-accent)] px-5 py-2 text-white">Save</button>
+  </form>
 }
-
-/**
- * Collects the name results are filed under. Scores go on the public board unless the player keeps them
- * private under a group code shared only with friends.
- */
-export function PlayerForm({ player, onDone }: { player: Player | null; onDone: () => void }) {
-  const [name, setName] = useState(player?.name ?? '')
-  const [priv, setPriv] = useState(!!player && player.group !== PUBLIC_GROUP)
-  const [group, setGroup] = useState(player && player.group !== PUBLIC_GROUP ? player.group : '')
-  const code = priv ? group.trim().toLowerCase() : PUBLIC_GROUP
-  const ok = name.trim().length > 0 && (!priv || (/^[a-z0-9-]{3,32}$/.test(code) && code !== PUBLIC_GROUP))
-
-  return (
-    <form
-      className={`${card} space-y-3`}
-      style={cardStyle}
-      onSubmit={(e) => {
-        e.preventDefault()
-        if (!ok) return
-        setPlayer({ name: name.trim().slice(0, 24), group: code })
-        onDone()
-      }}
-    >
-      <label className="block text-sm">
-        Your name
-        <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} className={field} style={border} />
-        <span style={muted}>Your scores show on the public leaderboard under this name, so pick one nobody else uses.</span>
-      </label>
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={priv} onChange={(e) => setPriv(e.target.checked)} />
-        Keep my scores private
-      </label>
-      {priv && (
-        <label className="block text-sm">
-          Group code
-          <input
-            value={group}
-            onChange={(e) => setGroup(e.target.value)}
-            maxLength={32}
-            autoCapitalize="none"
-            autoCorrect="off"
-            className={field}
-            style={border}
-          />
-          <span style={muted}>
-            Only friends who type the same code see your scores. 3-32 letters, numbers or dashes.
-          </span>
-        </label>
-      )}
-      <button
-        type="submit"
-        disabled={!ok}
-        className="w-full rounded-md py-2 font-semibold text-white disabled:opacity-40"
-        style={{ backgroundColor: 'var(--ink-accent)' }}
-      >
-        Save
-      </button>
-    </form>
-  )
+function Trend({ rows, day }: { rows: BoardRow[]; day: string }) {
+  const dates = Array.from({ length: 14 }, (_, i) => shiftDay(day, i - 13))
+  const max = Math.max(1, ...rows.filter(r => dates.includes(r.day)).map(r => r.score))
+  const dots = dates.flatMap((d, i) => { const r = rows.find(r => r.day === d); return r ? [{ x: 15 + i * 24, y: 85 - r.score / max * 65, r }] : [] })
+  return <figure className="space-y-1"><figcaption className={muted}>Your last 14 days · gaps mean unplayed</figcaption>
+    <svg viewBox="0 0 345 105" role="img" aria-label="Your daily score trend over the last fourteen days" className="w-full max-w-xl">
+      <path d="M15 15V85H330" fill="none" stroke="var(--ink-border)" />
+      {dots.map((d, i) => { const prev = dots[i - 1]; return <g key={d.r.day}>{prev && shiftDay(prev.r.day, 1) === d.r.day && <line x1={prev.x} y1={prev.y} x2={d.x} y2={d.y} stroke="var(--ink-accent)" strokeWidth="2" />}<circle cx={d.x} cy={d.y} r="3.5" fill="var(--ink-accent)"><title>{d.r.day}: {d.r.score}</title></circle></g> })}
+      <text x="15" y="101" fontSize="9" fill="currentColor">{dates[0]}</text><text x="270" y="101" fontSize="9" fill="currentColor">{day}</text>
+    </svg>
+  </figure>
 }
-
-/**
- * Returns the day before or after a YYYY-MM-DD day.
- */
-function shiftDay(day: string, by: number): string {
-  return new Date(Date.parse(`${day}T12:00:00Z`) + by * 86400000).toISOString().slice(0, 10)
-}
-
-/**
- * Returns the average of a list, or 0 when it is empty.
- */
-function mean(xs: number[]): number {
-  return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0
-}
-
-export type Standing = { name: string; today: number | null; week: number | null; wins: number }
-
-/**
- * Ranks a game's players by today's score, then by their 7-day average, and counts days won against others.
- */
-export function standings(rows: BoardRow[], today: string): Standing[] {
-  const weekAgo = shiftDay(today, -6)
-  const wins = new Map<string, number>()
-  for (const d of new Set(rows.map((r) => r.day))) {
-    const day = rows.filter((r) => r.day === d)
-    if (day.length < 2) continue
-    const top = Math.max(...day.map((r) => r.score))
-    for (const r of day) if (r.score === top) wins.set(r.name, (wins.get(r.name) ?? 0) + 1)
-  }
-  return [...new Set(rows.map((r) => r.name))]
-    .map((name) => {
-      const week = rows.filter((r) => r.name === name && r.day >= weekAgo)
-      return {
-        name,
-        today: rows.find((r) => r.name === name && r.day === today)?.score ?? null,
-        week: week.length ? mean(week.map((r) => r.score)) : null,
-        wins: wins.get(name) ?? 0,
-      }
-    })
-    .sort(
-      (a, b) =>
-        Number(a.today === null) - Number(b.today === null) || (b.today ?? b.week ?? 0) - (a.today ?? a.week ?? 0),
-    )
-}
-
-type DayResult = { day: string; games: Partial<Record<GameId, { names: string[]; score: number }>>; winner: string | null }
-
-/**
- * Lists each day where at least two players played the same game, newest first, with every game's top scorer
- * and the day's overall winner: whoever won the most games that day, or null on a tie.
- */
-function dayByDay(rows: BoardRow[]): DayResult[] {
-  return [...new Set(rows.map((r) => r.day))]
-    .sort()
-    .reverse()
-    .flatMap((day) => {
-      const games: DayResult['games'] = {}
-      const won = new Map<string, number>()
-      for (const g of GAME_IDS) {
-        const played = rows.filter((r) => r.day === day && r.game === g)
-        if (played.length < 2) continue
-        const score = Math.max(...played.map((r) => r.score))
-        const names = played.filter((r) => r.score === score).map((r) => r.name)
-        games[g] = { names, score }
-        for (const n of names) won.set(n, (won.get(n) ?? 0) + 1)
-      }
-      if (won.size === 0) return []
-      const top = Math.max(...won.values())
-      const leaders = [...won].filter(([, w]) => w === top)
-      return [{ day, games, winner: leaders.length === 1 ? leaders[0]![0] : null }]
-    })
-}
-
-/**
- * Shows who won each game on each day and who won the day overall, with a running tally of days won.
- */
-function DayByDay({ rows }: { rows: BoardRow[] }) {
-  const days = dayByDay(rows)
-  if (days.length === 0) return null
-  const games = GAME_IDS.filter((g) => days.some((d) => d.games[g]))
-  const tally = new Map<string, number>()
-  for (const d of days) if (d.winner) tally.set(d.winner, (tally.get(d.winner) ?? 0) + 1)
-  const label = (day: string) =>
-    new Date(`${day}T12:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-
-  return (
-    <section className={card} style={cardStyle} data-testid="scores-day-by-day">
-      <h2 className="font-lora text-lg font-semibold">Day by day</h2>
-      <p className="mb-2 text-sm" style={muted}>
-        Days won overall:{' '}
-        {[...tally]
-          .sort((a, b) => b[1] - a[1])
-          .map(([n, w]) => `${n} ${w}`)
-          .join(' · ') || 'none yet'}
-      </p>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead style={muted}>
-            <tr>
-              <th className="font-normal">Day</th>
-              {games.map((g) => (
-                <th key={g} className="font-normal">
-                  {GAMES[g].title}
-                </th>
-              ))}
-              <th className="font-normal">Winner</th>
-            </tr>
-          </thead>
-          <tbody>
-            {days.slice(0, 14).map((d) => (
-              <tr key={d.day} className="border-t" style={border}>
-                <td className="whitespace-nowrap py-1.5 pr-2">{label(d.day)}</td>
-                {games.map((g) => {
-                  const w = d.games[g]
-                  return (
-                    <td key={g} className="pr-2">
-                      {w ? (
-                        <>
-                          {w.names.join(' & ')}{' '}
-                          <span className="tabular-nums" style={muted}>
-                            {formatScore(w.score)}
-                          </span>
-                        </>
-                      ) : (
-                        '-'
-                      )}
-                    </td>
-                  )
-                })}
-                <td className="font-semibold">{d.winner ?? 'Tie'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  )
-}
-
-/**
- * Builds one player's stats for a game as label and value pairs, in plain words.
- */
-function facts(own: BoardRow[], today: string, wins: number): [string, string][] {
-  const days = new Set(own.map((r) => r.day))
-  let streak = 0
-  for (let d = days.has(today) ? today : shiftDay(today, -1); days.has(d); d = shiftDay(d, -1)) streak++
-  let longest = 0
-  for (const d of days) {
-    if (days.has(shiftDay(d, -1))) continue
-    let run = 1
-    for (let n = shiftDay(d, 1); days.has(n); n = shiftDay(n, 1)) run++
-    longest = Math.max(longest, run)
-  }
-  const scores = own.map((r) => r.score)
-  const words = own.flatMap((r) => (r.stats?.n ? [r.stats.n] : []))
-  return [
-    ['Days played', String(days.size)],
-    ['Day streak', String(streak)],
-    ['Longest streak', String(longest)],
-    ['Best', formatScore(Math.max(...scores))],
-    ['Average', formatScore(mean(scores))],
-    ['Days won', String(wins)],
-    ...(words.length ? [['Most words', String(Math.max(...words))] as [string, string]] : []),
-  ]
-}
-
-/**
- * Renders the Scores hub: player setup, links to the games, the group's boards and own stats.
- */
 export function ScoresHub() {
-  const player = usePlayer()
+  const params = useSearchParams()
+  const router = useRouter()
+  const raw = useSyncExternalStore(subscribe, () => JSON.stringify(getPlayer()), () => 'null')
+  const player = useMemo(() => JSON.parse(raw) as Player | null, [raw])
   const [editing, setEditing] = useState(false)
-  const [copied, setCopied] = useState('')
-  const [rows, setRows] = useState<BoardRow[] | null>(null)
-  const today = localDay()
+  const initial = params.get('d')
+  const day = initial && validDay(initial) && initial >= DAILY_EPOCH ? initial : localDay()
+  const [calendar, setCalendar] = useState({ day, month: day.slice(0, 7) })
+  const month = calendar.day === day ? calendar.month : day.slice(0, 7)
+  const setMonth = (month: string) => setCalendar({ day, month })
+  const [game, setGame] = useState<GameId | 'all'>('all')
+  const [response, setResponse] = useState<{ group: string; rows: BoardRow[] } | null>(null)
+  const [error, setError] = useState('')
+  const [copied, setCopied] = useState(false)
   const group = player?.group ?? PUBLIC_GROUP
-
-  const load = useCallback(() => {
-    fetch(`/api/results?group=${encodeURIComponent(group)}&days=90`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d: { rows: BoardRow[] } | null) => d && setRows(d.rows))
-      .catch(() => {})
-  }, [group])
-
   useEffect(() => {
-    load()
-    const onShow = () => document.visibilityState === 'visible' && load()
-    document.addEventListener('visibilitychange', onShow)
-    return () => document.removeEventListener('visibilitychange', onShow)
-  }, [load])
-
-  const played = GAME_IDS.filter((g) => rows?.some((r) => r.game === g))
-  const mineToday = (rows ?? []).filter((r) => r.name === player?.name && r.day === today)
-  const shareText = [
-    `sfjc.dev scores - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
-    ...mineToday.map((r) => `${GAMES[r.game].title}: ${formatScore(r.score)}`),
-  ].join('\n')
-
-  return (
-    <div className="mx-auto max-w-2xl space-y-4">
-      <h1 className="font-lora text-2xl font-semibold">Leaderboard</h1>
-
-      {!player || editing ? (
-        <PlayerForm player={player} onDone={() => setEditing(false)} />
-      ) : (
-        <p className="text-sm" style={muted}>
-          {player.name} · {boardName(player.group)} ·{' '}
-          <button type="button" className="underline" style={accent} onClick={() => setEditing(true)}>
-            change
-          </button>
-        </p>
-      )}
-
-      <div className="flex flex-wrap gap-2">
-        {GAME_IDS.map((g) => (
-          <Link key={g} href={GAMES[g].url} className="rounded-full border px-3 py-1 text-sm" style={chip}>
-            {GAMES[g].title}
-          </Link>
-        ))}
-      </div>
-
-      {!editing && (
-        <>
-          {player && mineToday.length > 0 && (
-            <button
-              type="button"
-              className="w-full rounded-md border py-2 font-semibold"
-              style={chip}
-              onClick={() =>
-                navigator.clipboard.writeText(shareText).then(
-                  () => setCopied('Copied'),
-                  () => setCopied('Copy failed'),
-                )
-              }
-            >
-              {copied || "Copy today's results to share"}
-            </button>
-          )}
-
-          {rows && played.length === 0 && (
-            <p style={muted}>No results yet. Play Spelling Bee, daily Connections or a 24 room and your score shows up here by itself.</p>
-          )}
-
-          {rows && <DayByDay rows={rows} />}
-
-          {played.map((g) => {
-            const gameRows = (rows ?? []).filter((r) => r.game === g)
-            const table = standings(gameRows, today)
-            const own = gameRows.filter((r) => r.name === player?.name)
-            return (
-              <section key={g} className={card} style={cardStyle}>
-                <h2 className="mb-2 font-lora text-lg font-semibold">{GAMES[g].title}</h2>
-                <table className="w-full text-left text-sm">
-                  <thead style={muted}>
-                    <tr>
-                      <th className="font-normal">Player</th>
-                      <th className="text-right font-normal">Today</th>
-                      <th className="text-right font-normal">7-day average</th>
-                      <th className="text-right font-normal">Days won</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {table.map((s) => (
-                      <tr key={s.name} className="border-t" style={border}>
-                        <td className="py-1.5 font-semibold">{s.name}</td>
-                        <td className="text-right tabular-nums">{s.today === null ? '-' : formatScore(s.today)}</td>
-                        <td className="text-right tabular-nums">{s.week === null ? '-' : formatScore(s.week)}</td>
-                        <td className="text-right tabular-nums">{s.wins}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {own.length > 0 && (
-                  <details className="mt-3 border-t pt-2" style={border}>
-                    <summary className="cursor-pointer text-sm" style={accent}>
-                      Your stats, last 90 days
-                    </summary>
-                    <div className="mt-2 grid grid-cols-3 gap-x-2 gap-y-3 text-center">
-                      {facts(own, today, table.find((s) => s.name === player?.name)?.wins ?? 0).map(([l, v]) => (
-                        <div key={l}>
-                          <p className="text-lg font-bold tabular-nums">{v}</p>
-                          <p className="text-xs" style={muted}>
-                            {l}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </details>
-                )}
-              </section>
-            )
-          })}
-        </>
-      )}
+    if (!group) return
+    let cancelled = false
+    const controller = new AbortController()
+    const load = async () => {
+      try {
+        await flushResults()
+        const r = await fetch(`/api/results?group=${encodeURIComponent(group)}&days=4000`, { signal: controller.signal })
+        if (!r.ok) throw new Error('Could not load your group. Your saved scores will retry syncing automatically.')
+        const data = await r.json() as { rows: BoardRow[] }
+        if (!cancelled) { setResponse({ group, rows: data.rows.filter(r => GAME_IDS.includes(r.game)) }); setError('') }
+      } catch (e) { if (!cancelled) setError(e instanceof Error ? e.message : 'Could not load scores') }
+    }
+    void load()
+    const onChange = () => { void load() }
+    const timer = setInterval(onChange, 15000)
+    window.addEventListener('focus', onChange); window.addEventListener(RESULTS_CHANGED, onChange)
+    return () => { cancelled = true; controller.abort(); clearInterval(timer); window.removeEventListener('focus', onChange); window.removeEventListener(RESULTS_CHANGED, onChange) }
+  }, [group])
+  const rows = response?.group === group ? response!.rows : []
+  const filtered = rows.filter(r => game === 'all' || r.game === game)
+  const selected = filtered.filter(r => r.day === day)
+  const mine = filtered.filter(r => r.name === player?.name && r.day <= day)
+  const winCounts = winsByPlayer(filtered.filter(r => r.day <= day))
+  const overall = overallDay(rows.filter(r => r.day === day))
+  const dailyHistory = [...new Set(rows.filter(r => r.day <= day).map(r => r.day))].sort().reverse().map(d => ({ day: d, ...overallDay(rows.filter(r => r.day === d)) })).filter(d => d.names.length)
+  const overallTally = new Map<string, number>()
+  for (const d of dailyHistory) if (d.names.length === 1) overallTally.set(d.names[0]!, (overallTally.get(d.names[0]!) ?? 0) + 1)
+  const monthStart = `${month}-01`
+  const count = new Date(Number(month.slice(0, 4)), Number(month.slice(5)), 0).getDate()
+  const offset = new Date(`${monthStart}T12:00:00Z`).getUTCDay()
+  const available = new Set(filtered.map(r => r.day))
+  const personal = new Set(filtered.filter(r => r.name === player?.name).map(r => r.day))
+  const choose = (d: string) => { router.push(`/leaderboards?d=${d}`, { scroll: false }); setCopied(false) }
+  return <div className="mx-auto max-w-4xl space-y-5" data-testid="scores-hub">
+    <header className="space-y-2"><h1 className="font-lora text-3xl font-semibold">Leaderboard</h1><p className={muted}>One puzzle per game each day. Your best unassisted daily score syncs automatically. Calendar: Pacific time.</p></header>
+    {!player || editing ? <PlayerForm key={raw} player={player} onDone={() => setEditing(false)} /> : <p className={muted}>{player.name} · {boardName(player.group)} · <button className="underline" onClick={() => setEditing(true)}>change</button></p>}
+    <nav aria-label="Daily games" className="flex flex-wrap gap-2">{GAME_IDS.map(g => <Link key={g} className="rounded-full border px-4 py-2 text-sm" href={`${GAMES[g].url}?d=${day}`}>{GAMES[g].title}</Link>)}</nav>
+    {error && <p role="alert" className="rounded border border-red-300 p-3">{error}</p>}
+    {player && response?.group !== group && !error && <p>Loading group scores…</p>}
+    <div className="flex flex-wrap items-center gap-3"><label>Game <select aria-label="Leaderboard game" className="rounded border bg-[var(--ink-paper)] p-2" value={game} onChange={e => setGame(e.target.value as GameId | 'all')}><option value="all">All games</option>{GAME_IDS.map(g => <option value={g} key={g}>{GAMES[g].title}</option>)}</select></label><button className="underline" onClick={() => choose(localDay())}>Today</button><span className={muted}>Wins include ties and require at least two players.</span></div>
+    <div className="grid gap-5 md:grid-cols-[1fr_1fr]">
+      <section className={card} aria-label="Score calendar">
+        <div className="mb-4 flex items-center justify-between"><button aria-label="Previous month" className="rounded border px-3 py-1" disabled={month <= DAILY_EPOCH.slice(0, 7)} onClick={() => setMonth(shiftDay(monthStart, -1).slice(0, 7))}>←</button><h2 className="font-semibold">{new Date(`${monthStart}T12:00:00Z`).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })}</h2><button aria-label="Next month" className="rounded border px-3 py-1" onClick={() => setMonth(shiftDay(`${month}-${count}`, 1).slice(0, 7))}>→</button></div>
+        <div className="grid grid-cols-7 gap-1 text-center text-sm">{['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => <span className="py-1 text-xs" key={d}>{d}</span>)}{Array.from({length: offset}, (_, i) => <span key={`blank-${i}`} />)}{Array.from({length: count}, (_, i) => {
+          const d = `${month}-${String(i + 1).padStart(2, '0')}`
+          const won = GAME_IDS.some(g => winners(filtered.filter(r => r.day === d && r.game === g)).includes(player?.name ?? ''))
+          return <button key={d} aria-label={`${d}${personal.has(d) ? ', played' : ''}${won ? ', winner' : ''}`} aria-pressed={day === d} className={`aspect-square rounded-lg border ${day === d ? 'border-[var(--ink-accent)] font-bold ring-1 ring-[var(--ink-accent)]' : 'border-transparent'}`} onClick={() => choose(d)} disabled={d < DAILY_EPOCH}><span>{i + 1}</span><span className="block h-3 text-[9px] text-[var(--ink-accent)]">{won ? '★' : personal.has(d) ? '●' : available.has(d) ? '○' : ''}</span></button>
+        })}</div><p className={`${muted} mt-3`}>★ Your win · ● You played · ○ Group played</p>
+      </section>
+      <section className={`${card} space-y-3`}><h2 className="font-lora text-xl">{day === localDay() ? 'Today' : day} · winners</h2>
+        <p className="text-sm font-semibold">Overall: {overall.names.length === 1 ? overall.names[0] : overall.names.length ? `Tie — ${overall.names.join(' & ')}` : 'Waiting for competition'}</p>
+        {dailyHistory.length > 0 && <section className={`${card} space-y-3`} data-testid="scores-day-by-day">
+      <h2 className="font-lora text-xl">Day by day</h2><p className={muted}>Overall winner = most game wins that day. Tied overall days have no outright winner.</p>
+      <p className="text-sm">Days won overall: {[...overallTally].sort((a,b) => b[1]-a[1]).map(([name,n]) => `${name} ${n}`).join(' · ') || 'No outright winners yet'}</p>
+      <div className="space-y-2">{dailyHistory.slice(0,14).map(d => <div key={d.day} className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--ink-border)] pt-2 text-sm"><button className="underline" onClick={() => choose(d.day)}>{d.day}</button><strong>{d.names.length === 1 ? d.names[0] : `Tie — ${d.names.join(' & ')}`}</strong><span className={muted}>{[...d.gameWins].sort((a,b) => b[1]-a[1]).map(([name,n]) => `${name}: ${n} game ${n===1?'win':'wins'}`).join(' · ')}</span></div>)}</div>
+    </section>}
+    {(game === 'all' ? GAME_IDS : [game]).map(g => { const games = selected.filter(r => r.game === g); const names = winners(games); return <div key={g} className="flex items-start justify-between gap-2 border-b border-[var(--ink-border)] pb-2"><Link className="underline" href={`${GAMES[g].url}?d=${day}`}>{GAMES[g].title}</Link><span className="text-right text-sm">{names.length ? `${names.join(' & ')} · ${formatScore(Math.max(...games.map(r => r.score)))}` : games.length ? `${games[0]!.name} · waiting for a challenger` : day > localDay() ? 'Future practice' : 'No scores yet'}</span></div> })}
+        <p className={muted}>Each game has its own scoring. Scores from different games are kept separate.</p>
+        {mine.some(r => r.day === day) && <button className="underline text-sm" onClick={() => { void navigator.clipboard.writeText([`sfjc.dev · ${day}`, ...mine.filter(r => r.day === day).map(r => `${GAMES[r.game].title}: ${formatScore(r.score)}`)].join('\n')).then(() => setCopied(true)) }}>{copied ? 'Copied' : 'Copy results to share'}</button>}
+      </section>
     </div>
-  )
+    {dailyHistory.length > 0 && <section className={`${card} space-y-3`} data-testid="scores-day-by-day">
+      <h2 className="font-lora text-xl">Day by day</h2><p className={muted}>Overall winner = most game wins that day. Tied overall days have no outright winner.</p>
+      <p className="text-sm">Days won overall: {[...overallTally].sort((a,b) => b[1]-a[1]).map(([name,n]) => `${name} ${n}`).join(' · ') || 'No outright winners yet'}</p>
+      <div className="space-y-2">{dailyHistory.slice(0,14).map(d => <div key={d.day} className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--ink-border)] pt-2 text-sm"><button className="underline" onClick={() => choose(d.day)}>{d.day}</button><strong>{d.names.length === 1 ? d.names[0] : `Tie — ${d.names.join(' & ')}`}</strong><span className={muted}>{[...d.gameWins].sort((a,b) => b[1]-a[1]).map(([name,n]) => `${name}: ${n} game ${n===1?'win':'wins'}`).join(' · ')}</span></div>)}</div>
+    </section>}
+    {(game === 'all' ? GAME_IDS : [game]).map(g => {
+      const gameRows = rows.filter(r => r.game === g && r.day <= day)
+      const own = gameRows.filter(r => r.name === player?.name)
+      const streak = streaks(own, day)
+      const week = gameRows.filter(r => r.day >= shiftDay(day, -6))
+      const names = [...new Set(gameRows.map(r => r.name))].sort((a, b) => (selected.find(r => r.game === g && r.name === b)?.score ?? -1) - (selected.find(r => r.game === g && r.name === a)?.score ?? -1) || a.localeCompare(b))
+      const wins = winsByPlayer(gameRows)
+      const seconds = own.flatMap(r => r.stats.seconds === undefined ? [] : [r.stats.seconds])
+      const facts = [['Days played',String(own.length)], ['Current streak',String(streak.current)], ['Longest streak',String(streak.longest)], ['Best score',own.length ? formatScore(Math.max(...own.map(r => r.score))) : '—'], ['Average score',own.length ? formatScore(average(own.map(r => r.score))) : '—'], ['Days won',String(wins.get(player?.name ?? '') ?? 0)], ...(seconds.length ? [['Best time',formatTime(Math.min(...seconds))],['Average time',formatTime(Math.round(average(seconds)))]] : []), ...(g === 'bee' && own.length ? [['Most words',String(Math.max(...own.map(r => r.stats.n ?? 0)))]] : []), ...(g === 'connections' && own.length ? [['Solves',String(own.filter(r => r.stats.solved).length)],['Avg mistakes',average(own.map(r => r.stats.mistakes ?? 0)).toFixed(1)]] : [])]
+      return <section key={g} className={`${card} space-y-4`} data-testid={`board-${g}`}><div><h2 className="font-lora text-xl">{GAMES[g].title}</h2><p className={`${muted} mt-1`}>{GAMES[g].rules}</p></div>
+        {names.length ? <div className="overflow-x-auto"><table className="w-full min-w-[420px] text-left text-sm"><thead className="text-[var(--ink-muted)]"><tr><th className="py-2">Player</th><th className="text-right">Selected day</th><th className="text-right">7-day avg*</th><th className="text-right">Wins</th></tr></thead><tbody>{names.map(name => { const r = selected.find(r => r.game === g && r.name === name); const w = week.filter(r => r.name === name); return <tr key={name} className="border-t border-[var(--ink-border)]"><th className="py-2 font-medium">{name}</th><td className="text-right tabular-nums">{r ? `${formatScore(r.score)}${r.stats.seconds === undefined ? '' : ` · ${formatTime(r.stats.seconds)}`}` : '—'}</td><td className="text-right tabular-nums">{w.length ? formatScore(average(w.map(r => r.score))) : '—'}</td><td className="text-right">{wins.get(name) ?? 0}</td></tr> })}</tbody></table><p className={`${muted} mt-2`}>*Average over played days in the seven-day window.</p></div> : <p className={muted}>No scores yet. <Link className="underline" href={`${GAMES[g].url}?d=${day}`}>Play {GAMES[g].title}</Link> to start.</p>}
+        {own.length > 0 && <><Trend rows={own} day={day} /><div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{facts.map(([label,value]) => <div key={label}><p className="text-xl font-semibold tabular-nums">{value}</p><p className={muted}>{label}</p></div>)}</div></>}
+      </section>
+    })}
+    {player && <p className={muted}>Group: {new Set(rows.map(r => r.name)).size} players · {rows.length} game results · {winCounts.get(player.name) ?? 0} shared or outright daily wins.</p>}
+  </div>
 }

@@ -19,7 +19,6 @@ function isFullBleed(pathname: string, isChwaziMobile?: boolean): boolean {
   if (isChwaziMobile) return true
   return (
     pathname === '/games/pear-navigator' ||
-    pathname === '/games/anthropeum' ||
     pathname.startsWith('/games/poker/lobby/') ||
     pathname.startsWith('/games/poker/table/') ||
     isNotesPage(pathname)
@@ -56,9 +55,9 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
   const useBigLogo = isNotebook && !pearNav
   /** Every page but home gets the whole phone screen: no header below md, only a floating home icon where the page has no way home. */
   const gameRoute = !isHome
-  const ownHome = ['pear-navigator', 'anthropeum'].some((p) => (pathname ?? '').startsWith(`/games/${p}`))
+  const ownHome = ['pear-navigator'].some((p) => (pathname ?? '').startsWith(`/games/${p}`))
   /** Official games framed from their own site never get the sfjc.dev header, at any width. */
-  const framed = pathname === '/games/anthropeum'
+  const framed = false
 
   const notebookTypographyRoot = isNotebook && !pearNav
 

@@ -7,6 +7,9 @@ const nextConfig = {
    * serverless bundle, causing "pdf.worker.mjs not found" at runtime. Force-include the worker build.
    */
   outputFileTracingIncludes: {
+    '/api/krillion/*': ['./data/krillion/**/*'],
+    '/api/cron/krillion': ['./data/krillion/**/*'],
+    '/api/daily/*': ['./public/puzzle-archives/**/*', './data/anthropeum/**/*', './data/krillion/**/*'],
     '/api/reader/extract-pdf': [
       './node_modules/pdfjs-dist/legacy/build/**/*',
       './node_modules/pdf-parse/node_modules/pdfjs-dist/legacy/build/**/*',
