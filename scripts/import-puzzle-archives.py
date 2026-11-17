@@ -94,8 +94,7 @@ def main():
         write(output / kind / 'words.json', sorted(words))
         manifest['sources'][kind] = {'url': url, 'sha256': hashlib.sha256(cached.read_bytes()).hexdigest(),
             'puzzles': len(puzzles), 'uniqueWords': len(words), 'firstDate': puzzles[0]['date'],
-            'lastDate': puzzles[-1]['date'],
-            'upstreamLicense': 'apache-2.0 (dataset card)' if kind == 'connections' else 'No license declared in upstream repository'}
+            'lastDate': puzzles[-1]['date']}
     write(output / 'manifest.json', manifest)
     print(json.dumps(manifest, indent=2))
 
