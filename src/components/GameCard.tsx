@@ -72,7 +72,7 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDesc
     (linePaper ? ' bg-transparent' : '') +
     (homeTile ? ' min-h-0 flex flex-col' : '') +
     (homeTile
-      ? ' h-full w-full min-h-[7rem] flex flex-col justify-center px-2 py-3 sm:min-h-[10.25rem] sm:px-4 sm:py-3.5'
+      ? ' h-full w-full min-h-[6rem] flex flex-col justify-center px-2 py-2.5 sm:min-h-[8rem] sm:px-4 sm:py-3'
       : useCompact
         ? ' p-6'
         : ' p-[30px]')
