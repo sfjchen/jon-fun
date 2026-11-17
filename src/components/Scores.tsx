@@ -313,7 +313,7 @@ export function ScoresHub() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <h1 className="font-lora text-2xl font-semibold">Scores</h1>
+      <h1 className="font-lora text-2xl font-semibold">Leaderboard</h1>
 
       {!player || editing ? (
         <PlayerForm player={player} onDone={() => setEditing(false)} />

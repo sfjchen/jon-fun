@@ -85,7 +85,7 @@ function DailyScores({ score }: { score: number | null }) {
         </button>{' '}
         ·{' '}
         <Link href="/leaderboards" className="underline" style={accent}>
-          See all scores
+          See the leaderboard
         </Link>
       </p>
     </div>
