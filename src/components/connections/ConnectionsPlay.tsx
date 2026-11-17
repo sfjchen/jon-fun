@@ -6,21 +6,39 @@ import type { ConnectionsPuzzle } from '@/lib/connections'
 import { buildShareLines } from '@/lib/connections'
 import ConnectionsBoard, { type ConnectionsCompletePayload } from '@/components/connections/ConnectionsBoard'
 import ConnectionsResult from '@/components/connections/ConnectionsResult'
+import { dailyScore } from '@/lib/connections-daily'
+import type { ConnectionsProgress } from '@/lib/connections'
+import { logResult, markPracticeIfFuture, isPracticeResult } from '@/lib/results'
 import { SAMPLE_PUZZLE } from '@/lib/connections-sample'
 
 export type ConnectionsPlayProps = {
   basePath: string
   idOrSlug: string
+  initialPuzzle?: ConnectionsPuzzle
+  dailyDay?: string
 }
 
-export default function ConnectionsPlay({ basePath, idOrSlug }: ConnectionsPlayProps) {
-  const [puzzle, setPuzzle] = useState<ConnectionsPuzzle | null>(null)
+export default function ConnectionsPlay({ basePath, idOrSlug, initialPuzzle, dailyDay }: ConnectionsPlayProps) {
+  const [puzzle, setPuzzle] = useState<ConnectionsPuzzle | null>(initialPuzzle ?? null)
   const [err, setErr] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!initialPuzzle)
   const [result, setResult] = useState<ConnectionsCompletePayload | null>(null)
   const [runId, setRunId] = useState(0)
+  const progressKey = `connections:v2:${dailyDay ?? 'archive'}:${idOrSlug}`
+  const [initialProgress] = useState<ConnectionsProgress | undefined>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(progressKey) ?? 'null') as ConnectionsProgress | null
+      if (saved && Array.isArray(saved.guesses) && saved.guesses.every(g => Array.isArray(g) && g.length === 4 && g.every(w => typeof w === 'string'))) return saved
+    } catch {}
+    return undefined
+  })
+  const saveProgress = useCallback((progress: ConnectionsProgress) => {
+    markPracticeIfFuture('connections', dailyDay)
+    try { localStorage.setItem(progressKey, JSON.stringify(progress)) } catch {}
+  }, [progressKey, dailyDay])
 
   useEffect(() => {
+    if (initialPuzzle) return
     let cancelled = false
     ;(async () => {
       setLoading(true)
@@ -61,7 +79,7 @@ export default function ConnectionsPlay({ basePath, idOrSlug }: ConnectionsPlayP
     return () => {
       cancelled = true
     }
-  }, [idOrSlug])
+  }, [idOrSlug, initialPuzzle])
 
   useEffect(() => {
     if (!result || !puzzle || puzzle === SAMPLE_PUZZLE || puzzle.id.startsWith('nyt-archive-')) return
@@ -80,7 +98,8 @@ export default function ConnectionsPlay({ basePath, idOrSlug }: ConnectionsPlayP
 
   const onComplete = useCallback((p: ConnectionsCompletePayload) => {
     setResult(p)
-  }, [])
+    if (dailyDay) logResult('connections', dailyScore(p.won, p.wrongGuesses, p.solvedDifficulties.length), undefined, dailyDay, { solved: p.won, mistakes: p.wrongGuesses, n: p.solvedDifficulties.length, puzzleId: idOrSlug })
+  }, [dailyDay, idOrSlug])
 
   const replay = useCallback(() => {
     setResult(null)
@@ -115,7 +134,9 @@ export default function ConnectionsPlay({ basePath, idOrSlug }: ConnectionsPlayP
           Library
         </Link>
       </div>
-      <ConnectionsBoard key={`${puzzle.id}-${runId}`} puzzle={puzzle} onComplete={onComplete} />
+      {dailyDay && isPracticeResult('connections', dailyDay) && <p className="text-sm">Future preview · this run stays unranked.</p>}
+      {puzzle.difficultyKnown === false && <p className="text-xs text-[var(--ink-muted)]">Original difficulty colors are unavailable for this puzzle; all groups use a neutral color.</p>}
+      <ConnectionsBoard key={`${puzzle.id}-${runId}`} puzzle={puzzle} initialProgress={runId === 0 ? initialProgress : undefined} onProgress={saveProgress} onComplete={onComplete} />
       {result && (
         <ConnectionsResult
           title={puzzle.title}
@@ -123,7 +144,7 @@ export default function ConnectionsPlay({ basePath, idOrSlug }: ConnectionsPlayP
           wrongGuesses={result.wrongGuesses}
           shareLines={buildShareLines(new Set(result.solvedDifficulties), result.won)}
           basePath={basePath}
-          onReplay={replay}
+          {...(dailyDay ? {} : { onReplay: replay })}
         />
       )}
     </div>

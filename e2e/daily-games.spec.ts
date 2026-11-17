@@ -1,0 +1,172 @@
+import { test, expect, type Page } from '@playwright/test'
+import { siteDay, shiftDay } from '../src/lib/daily'
+import type { BoardRow } from '../src/lib/results'
+const today = siteDay()
+async function scoreMock(page: Page, player = true) {
+  const rows: BoardRow[] = []
+  if (player) await page.addInitScript(() => localStorage.setItem('sfjc_player', JSON.stringify({ name: 'Alice', group: 'daily-e2e' })))
+  await page.route('**/api/results**', async route => {
+    const request = route.request()
+    if (request.method() === 'POST') {
+      const b = request.postDataJSON()
+      const index = rows.findIndex(r => r.name === b.name && r.day === b.today && r.game === b.game)
+      const row = { name: b.name, day: b.today, game: b.game, score: b.score, stats: b.stats ?? {} }
+      if (index < 0) rows.push(row)
+      else if (rows[index]!.score < row.score) rows[index] = row
+      return route.fulfill({json:{ok:true}})
+    }
+    return route.fulfill({json:{rows}})
+  })
+  return rows
+}
+test('Mini solves, saves, restores, navigates dates, and ranks only unassisted play', async ({page}) => {
+  const rows = await scoreMock(page)
+  const api = await page.request.get(`/api/daily/mini?d=${today}`)
+  const { puzzle } = await api.json()
+  await page.goto('/games/mini')
+  const boxes = page.getByRole('textbox', { name: /^Row/ })
+  await expect(boxes.first()).toBeVisible()
+  await boxes.first().fill(puzzle.cells.find(Boolean))
+  await page.reload()
+  await expect(boxes.first()).toHaveValue(puzzle.cells.find(Boolean))
+  for (let i = 0; i < puzzle.cells.length; i++) if (puzzle.cells[i]) await page.getByRole('textbox', { name:new RegExp(`^Row ${Math.floor(i/puzzle.width)+1}, column ${i%puzzle.width+1}(,|$)`) }).fill(puzzle.cells[i])
+  await expect(page.getByRole('status').filter({hasText:'Puzzle solved!'})).toBeVisible()
+  await expect.poll(() => rows.find(r => r.game === 'mini')?.stats.solved).toBe(true)
+  await page.getByRole('link',{name:'Previous day',exact:true}).click()
+  await expect(page).toHaveURL(new RegExp(shiftDay(today,-1)))
+  await page.getByRole('button',{name:'Reveal answers',exact:true}).click()
+  await expect(page.getByText(/Assisted practice/)).toBeVisible()
+  expect(rows.filter(r => r.game === 'mini')).toHaveLength(1)
+  await page.goto(`/games/mini?d=${shiftDay(today,1)}`)
+  await expect(page.getByText('Future practice · previews stay unranked.')).toBeVisible()
+})
+test('Connections full daily solve syncs and survives reload', async ({page}) => {
+  const rows = await scoreMock(page)
+  const {puzzle} = await (await page.request.get(`/api/daily/connections?d=${today}`)).json()
+  await page.goto('/games/connections/daily')
+  for (const group of puzzle.groups) {
+    for (const word of group.words) await page.getByRole('button',{name:word,exact:true}).click()
+    await page.getByRole('button',{name:'Submit',exact:true}).click()
+  }
+  await expect(page.getByTestId('connections-result')).toBeVisible()
+  await expect.poll(() => rows.find(r => r.game === 'connections')?.score).toBe(100)
+  await page.reload()
+  await expect(page.getByTestId('connections-result')).toBeVisible()
+  await expect(page.getByTestId('connections-revealed-group')).toHaveCount(4)
+})
+test('historical Bee answers earn points and appear in calendar with no 24 board', async ({page}) => {
+  const rows = await scoreMock(page)
+  const {puzzle} = await (await page.request.get(`/api/daily/bee?d=${today}`)).json()
+  await page.goto('/games/spelling-bee')
+  await expect(page.getByRole('heading',{name:'Spelling Bee',exact:true})).toBeVisible()
+  await page.keyboard.type(puzzle.answers[0])
+  await page.keyboard.press('Enter')
+  await expect.poll(() => rows.find(r => r.game === 'bee')?.score ?? 0).toBeGreaterThan(0)
+  rows.push({name:'Bob',game:'bee',day:today,score:1,stats:{n:1}})
+  await page.goto('/leaderboards')
+  await expect(page.getByTestId('board-bee')).toContainText('Alice')
+  await expect(page.getByRole('button',{name:new RegExp(`^${today}, played`)})).toBeVisible()
+  await expect(page.getByRole('navigation',{name:'Daily games'}).getByRole('link')).toHaveCount(5)
+  await expect(page.getByRole('link',{name:'24',exact:true})).toHaveCount(0)
+  await page.getByRole('button',{name:'Next month'}).click()
+  await page.getByRole('button',{name:'Previous month'}).click()
+  await expect(page.getByRole('img',{name:/daily score trend/})).toBeVisible()
+})
+test('Anthropeum completes ten artifacts and syncs its result', async ({page}) => {
+  const rows = await scoreMock(page)
+  const {puzzle} = await (await page.request.get(`/api/daily/anthropeum?d=${today}`)).json()
+  await page.goto('/games/anthropeum')
+  for (let i=0;i<10;i++) {
+    const a=puzzle.artifacts[i]
+    await page.getByLabel('Latitude',{exact:true}).fill(String(a.target.lat))
+    await page.getByLabel('Longitude',{exact:true}).fill(String(a.target.lon))
+    await page.getByLabel('Exact year',{exact:true}).fill(String(Math.floor((a.beginYear+a.endYear)/2)))
+    await page.getByRole('button',{name:'Lock in guess',exact:true}).click()
+    if(i<9) await page.getByRole('button',{name:'Next artifact →',exact:true}).click()
+  }
+  await expect(page.getByTestId('anthropeum-result')).toBeVisible()
+  await expect.poll(() => rows.find(r => r.game === 'anthropeum')?.stats.solved).toBe(true)
+  await page.reload()
+  await expect(page.getByTestId('anthropeum-result')).toBeVisible()
+})
+test('Krillion local dive is timed and completes all seven prompts', async ({page}) => {
+  const rows = await scoreMock(page)
+  await page.goto('/games/krillion')
+  await page.getByRole('button',{name:'Begin dive',exact:true}).click()
+  for (const [index,answer] of ['Brazil','Excalibur','Plumber','Stephen King','Surfing','Carbon','Arm'].entries()) {
+    await page.getByLabel('Your answer',{exact:true}).fill(answer)
+    await page.getByRole('button',{name:'Submit answer',exact:true}).click()
+    if(index<6) await page.getByRole('button',{name:'Next prompt →',exact:true}).click()
+  }
+  await expect(page.getByTestId('krillion-result')).toContainText('7 / 7 correct')
+  // The initial capture has no previous-day snapshot, and therefore must not rank as the original day.
+  expect(rows.filter(r => r.game === 'krillion')).toHaveLength(0)
+})
+test('score delivery retries after a transient server failure', async ({page}) => {
+  let requests = 0
+  const rows = await scoreMock(page)
+  await page.route('**/api/results',async (route)=>{
+    if(route.request().method()!=='POST')return route.fallback()
+    requests++
+    if(requests===1)return route.fulfill({status:503,json:{error:'Temporary outage'}})
+    return route.fallback()
+  })
+  const {puzzle} = await (await page.request.get(`/api/daily/bee?d=${today}`)).json()
+  await page.goto('/games/spelling-bee')
+  await expect(page.getByRole('heading',{name:'Spelling Bee',exact:true})).toBeVisible()
+  await page.keyboard.type(puzzle.answers[0]);await page.keyboard.press('Enter')
+  await expect.poll(()=>requests).toBe(1)
+  await page.evaluate(()=>window.dispatchEvent(new Event('online')))
+  await expect.poll(()=>rows.find(r=>r.game==='bee')?.score??0).toBeGreaterThan(0)
+})
+
+test('guest result queues until a name is saved', async ({page}) => {
+  const rows = await scoreMock(page, false)
+  const {puzzle} = await (await page.request.get(`/api/daily/bee?d=${today}`)).json()
+  await page.goto('/games/spelling-bee')
+  await expect(page.getByRole('heading',{name:'Spelling Bee',exact:true})).toBeVisible()
+  await page.keyboard.type(puzzle.answers[0]);await page.keyboard.press('Enter')
+  await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('sfjc_results_queue_v2')??'[]').length)).toBe(1)
+  expect(rows).toHaveLength(0)
+  await page.goto('/leaderboards')
+  await page.getByLabel('Your name',{exact:true}).fill('GuestPlayer')
+  await page.getByRole('button',{name:'Save',exact:true}).click()
+  await expect.poll(()=>rows.find(r=>r.name==='GuestPlayer')?.score??0).toBeGreaterThan(0)
+})
+test('Krillion previous-day snapshot ranks when its scheduled day arrives', async ({page}) => {
+  const rows = await scoreMock(page)
+  await page.clock.install({time:new Date('2026-11-17T20:00:00Z')})
+  await page.goto('/games/krillion?d=2026-11-17')
+  await expect(page.getByText('Yesterday’s dive · 2026-11-16',{exact:true})).toBeVisible()
+  await page.getByRole('button',{name:'Begin dive',exact:true}).click()
+  for (const [index,answer] of ['Brazil','Excalibur','Plumber','Stephen King','Surfing','Carbon','Arm'].entries()) {
+    await page.getByLabel('Your answer',{exact:true}).fill(answer)
+    await page.getByRole('button',{name:'Submit answer',exact:true}).click()
+    if(index<6) await page.getByRole('button',{name:'Next prompt →',exact:true}).click()
+  }
+  await expect.poll(()=>rows.find(r=>r.game==='krillion')?.score).toBe(7000)
+})
+test('historical Bee hives stay practice and never post daily scores', async ({page}) => {
+  const rows = await scoreMock(page)
+  await page.goto('/games/spelling-bee?a=2023-01-01')
+  await expect(page.getByText('Historical hive · 2023-01-01 · practice scores stay off the daily leaderboard.')).toBeVisible()
+  await page.keyboard.type('acne');await page.keyboard.press('Enter')
+  await expect(page.getByRole('link',{name:'acne',exact:true})).toBeVisible()
+  await page.waitForTimeout(1800)
+  expect(rows).toHaveLength(0)
+})
+
+test('a future preview never becomes a ranked result after its date arrives', async ({page}) => {
+  const rows = await scoreMock(page)
+  await page.clock.install({time:new Date('2026-11-16T20:00:00Z')})
+  const {puzzle} = await (await page.request.get('/api/daily/mini?d=2026-11-17')).json()
+  await page.goto('/games/mini?d=2026-11-17')
+  await page.getByRole('textbox',{name:/^Row/}).first().fill(puzzle.cells.find(Boolean))
+  await expect.poll(()=>page.evaluate(()=>localStorage.getItem('sfjc_future_practice:mini:2026-11-17'))).toBe('1')
+  await page.clock.setFixedTime(new Date('2026-11-17T20:00:00Z'))
+  await page.reload()
+  for(let i=0;i<puzzle.cells.length;i++)if(puzzle.cells[i])await page.getByRole('textbox',{name:new RegExp(`^Row ${Math.floor(i/puzzle.width)+1}, column ${i%puzzle.width+1}(,|$)`)}).fill(puzzle.cells[i])
+  await expect(page.getByRole('status').filter({hasText:'Puzzle solved!'})).toBeVisible()
+  await page.waitForTimeout(300)
+  expect(rows).toHaveLength(0)
+})

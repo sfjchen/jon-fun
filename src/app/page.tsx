@@ -31,9 +31,9 @@ const items: GameCardGame[] = [
   {
     id: 'connections',
     title: 'Connections',
-    description: 'NYT-style groups of four; build puzzles and browse a public shelf',
+    description: 'Find four groups of four words; daily archive puzzles and friend leaderboards',
     icon: `${nb}/connections.svg`,
-    href: '/games/connections',
+    href: '/games/connections/daily',
     available: true,
   },
   {
@@ -47,12 +47,14 @@ const items: GameCardGame[] = [
   {
     id: 'anthropeum',
     title: 'Anthropeum',
-    description: 'Daily Met Museum artifacts: guess where and when each was made (official game, framed)',
+    description: 'Guess the place and date of ten museum artifacts; daily scores and friends',
     icon: `${nb}/anthropeum.svg`,
     href: '/games/anthropeum',
     available: true,
   },
-  { id: 'scores', title: 'Leaderboard', description: 'Compare daily Spelling Bee, Connections and 24 scores', icon: `${nb}/leaderboards.svg`, href: '/leaderboards', available: true },
+  { id: 'mini', title: 'Mini Crossword', description: 'A daily crossword from the archives; solve against the clock', icon: `${nb}/mini.svg`, href: '/games/mini', available: true },
+  { id: 'krillion', title: 'Krillion', description: 'Yesterday’s seven prompts, a 25-second clock and daily scores', icon: `${nb}/krillion.svg`, href: '/games/krillion', available: true },
+  { id: 'scores', title: 'Leaderboard', description: 'Daily games, calendar, winners, trends and friend scores', icon: `${nb}/leaderboards.svg`, href: '/leaderboards', available: true },
   { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: `${nb}/game24.svg`, href: '/games/24', available: true },
   { id: 'daily-log', title: '1 Sentence Everyday', description: 'One sentence per day; history, calendar, export', icon: `${nb}/daily.svg`, href: '/games/daily-log', available: true },
   { id: 'tmr', title: 'Focus Chimes', description: 'Recurring background chimes to stay on track and keep a sense of time', icon: `${nb}/tmr.svg`, href: '/games/tmr', available: true },

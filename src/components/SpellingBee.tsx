@@ -8,12 +8,14 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { shuffle } from '@/lib/random'
-import { localDay, logResult } from '@/lib/results'
+import { localDay, logResult, markPracticeIfFuture, isPracticeResult } from '@/lib/results'
+import { archiveDay, validDay } from '@/lib/daily'
+import DayNav from '@/components/daily/DayNav'
+import ScoreSync from '@/components/daily/ScoreSync'
 import {
   RANKS,
   addDays,
   check,
-  dailyId,
   dayNum,
   hints,
   isPangram,
@@ -22,11 +24,11 @@ import {
   rankIdx,
   rankMins,
   score,
-  today,
   type Puzzle,
 } from '@/lib/spelling-bee'
 
-type Data = { words: string[]; bank: string[] }
+type HistoricalPuzzle = Puzzle & { date: string }
+type Data = { words: string[]; bank: string[]; history: HistoricalPuzzle[] }
 type Modal = 'hints' | 'yesterday' | 'ranks' | 'rules' | 'stats' | null
 
 const YELLOW = '#f7da21'
@@ -51,7 +53,18 @@ function loadData() {
   cache ??= Promise.all([
     fetch('/spelling-bee/words.txt').then((r) => r.text()),
     fetch('/spelling-bee/puzzles.json').then((r) => r.json() as Promise<string[]>),
-  ]).then(([w, bank]) => ({ words: w.split('\n'), bank }))
+    fetch('/puzzle-archives/bee/index.json').then(async r => {
+      if (!r.ok) throw new Error('Historical hives unavailable')
+      const dates = await r.json() as string[]
+      const years = [...new Set(dates.map(d => d.slice(0, 4)))]
+      const data = await Promise.all(years.map(async year => {
+        const response = await fetch(`/puzzle-archives/bee/${year}.json`)
+        if (!response.ok) throw new Error('Historical hives unavailable')
+        return response.json() as Promise<HistoricalPuzzle[]>
+      }))
+      return data.flat().sort((a, b) => a.date.localeCompare(b.date))
+    }),
+  ]).then(([w, bank, history]) => ({ words: w.split('\n'), bank, history }))
   return cache
 }
 
@@ -249,9 +262,11 @@ export default function SpellingBee() {
   const [crowd, setCrowd] = useState<{ players: number; genius: number } | null>(null)
   const tRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
-  const now = today()
+  const now = localDay()
   const practice = params.get('p')
-  const date = params.get('d') && params.get('d')! <= now && dayNum(params.get('d')!) >= 0 ? params.get('d')! : now
+  const archive = params.get('a')
+  const requested = params.get('d')
+  const date = validDay(requested) && dayNum(requested) >= 0 && requested <= '2100-12-31' ? requested : now
 
   useEffect(() => {
     loadData().then(setData, () => setErr(true))
@@ -259,17 +274,19 @@ export default function SpellingBee() {
 
   const pz = useMemo(() => {
     if (!data) return null
+    const historic = data.history.find(p => p.date === archive)
+    if (historic) return historic
     const p =
       practice && /^[a-rt-z]{7}$/.test(practice) && new Set(practice).size === 7 && makePuzzle(practice, data.words)
-    return p && p.pangrams.length && p.answers.length >= 5 ? p : makePuzzle(dailyId(date, data.bank), data.words)
-  }, [data, practice, date])
-  const isPractice = !!pz && pz.id === practice
-  const key = pz && (isPractice ? `p:${pz.id}` : `${date}:${pz.id}`)
+    return p && p.pangrams.length && p.answers.length >= 5 ? p : data.history.find(p => p.date === archiveDay(date, data.history.map(p => p.date)))!
+  }, [data, practice, date, archive])
+  const isPractice = !!pz && (pz.id === practice || (pz as HistoricalPuzzle).date === archive)
+  const key = pz && (isPractice ? `p:${archive ?? "random"}:${pz.id}` : `${date}:${pz.id}`)
 
   const [cur, setCur] = useState<string | null>(null)
   if (key !== cur) {
     setCur(key)
-    setFound(key ? loadFound(key) : [])
+    setFound(key ? loadFound(key).filter(w => pz?.answers.includes(w)) : [])
     setEntry('')
     setRevealed(false)
     setCrowd(null)
@@ -311,16 +328,17 @@ export default function SpellingBee() {
         .then((r) => (r.ok ? r.json() : null))
         .then((c: { players: number; genius: number } | null) => c && setCrowd(c))
         .catch(() => {})
-      if (pts > 0 && key.slice(0, 10) === localDay()) logResult('bee', pts, n)
+      if (pts > 0 && !isPractice && !revealed) logResult('bee', pts, n, date, { max: pz.max, solved: pts === pz.max, puzzleId: pz.id, sourceDate: (pz as HistoricalPuzzle).date })
     }, 1500)
     return () => clearTimeout(t)
-  }, [pz, key, n, pts])
+  }, [pz, key, n, pts, isPractice, revealed, date])
 
   const busy = toast?.ok === false
   const submit = useCallback(() => {
     if (!pz || !key || !entry || busy) return
     const e = check(entry, pz, found)
     if (e) return flash(e, false)
+    if (!isPractice) markPracticeIfFuture('bee', date)
     const nf = [...found, entry]
     const nr = rankIdx(
       nf.reduce((s, w) => s + score(w), 0),
@@ -332,7 +350,7 @@ export default function SpellingBee() {
       localStorage.setItem(`sb:${key}`, JSON.stringify(nf))
     } catch {}
     flash(nr === RANKS.length - 1 ? 'Queen Bee! 👑' : praise(entry), true, score(entry))
-  }, [pz, key, entry, found, busy, flash])
+  }, [pz, key, entry, found, busy, flash, isPractice, date])
 
   const type = useCallback(
     (c: string) => {
@@ -367,17 +385,9 @@ export default function SpellingBee() {
       </p>
     )
 
-  const yd = makePuzzle(dailyId(addDays(date, -1), data.bank), data.words)
+  const yd = data.history.find(p => p.date === archiveDay(addDays(date, -1), data.history.map(p => p.date)))!
   const btn = 'rounded-full border px-5 py-2.5 text-[15px] font-medium active:scale-95 transition'
   const link = 'text-[13px] md:text-sm underline underline-offset-2 disabled:opacity-30 disabled:no-underline'
-  const label = isPractice
-    ? 'Practice puzzle'
-    : new Date(`${date}T12:00`).toLocaleDateString(undefined, {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
   const sorted = [...found].sort()
 
   return (
@@ -389,35 +399,20 @@ export default function SpellingBee() {
         75%{transform:translateX(8px)}}
         @keyframes sb-blink{50%{opacity:0}}`}</style>
 
+      {!isPractice && <DayNav day={date} path="/games/spelling-bee" sourceDate={(pz as HistoricalPuzzle).date} />}
+      {isPractice && <p className="text-sm">{archive ? `Historical hive · ${archive}` : 'Random practice'} · practice scores stay off the daily leaderboard.</p>}
+      <div className="my-3"><ScoreSync /></div>
+      {!isPractice && date <= now && isPracticeResult('bee', date) && <p className="text-sm">Started as a future preview · this hive remains unranked.</p>}
+      <details className="my-3 text-sm"><summary className="cursor-pointer underline">Historical NYT hives · {data.history.length} puzzles</summary>
+        <label className="mt-2 block">Archive hive <select aria-label="Archive hive" value={archive ?? ''} onChange={e => go(e.target.value ? `?a=${e.target.value}` : '')} className="ml-2 rounded border bg-[var(--ink-paper)] p-2"><option value="">Choose a historical date…</option>{[...data.history].reverse().map(p => <option key={p.date} value={p.date}>{p.date}</option>)}</select></label>
+      </details>
       <header
         className="mb-3 flex flex-col gap-1.5 border-b pb-2 md:mb-4 md:flex-row md:items-end md:justify-between md:pb-3"
         style={{ borderColor: 'var(--ink-border)' }}
       >
         <div className="flex items-baseline justify-between gap-3 md:block">
           <h1 className="font-lora text-lg font-bold md:text-2xl">Spelling Bee</h1>
-          <p className="flex items-center gap-2 text-xs md:text-sm" style={{ color: 'var(--ink-muted)' }}>
-            {!isPractice && (
-              <button
-                className="px-1 text-base leading-none disabled:opacity-30"
-                aria-label="Previous day"
-                disabled={dayNum(date) <= 0}
-                onClick={() => go(`?d=${addDays(date, -1)}`)}
-              >
-                ‹
-              </button>
-            )}
-            {label}
-            {!isPractice && (
-              <button
-                className="px-1 text-base leading-none disabled:opacity-30"
-                aria-label="Next day"
-                disabled={date >= now}
-                onClick={() => go(addDays(date, 1) >= now ? '' : `?d=${addDays(date, 1)}`)}
-              >
-                ›
-              </button>
-            )}
-          </p>
+
         </div>
         <nav className="flex flex-wrap items-center gap-x-3 gap-y-1 md:gap-x-4">
           {(isPractice || date !== now) && (

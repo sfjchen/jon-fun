@@ -208,7 +208,7 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
             >
               <div
                 className="flex items-center justify-between gap-2 px-3 py-2 text-sm font-semibold"
-                style={{ backgroundColor: TIER_BG[g.difficulty], color: '#111' }}
+                style={{ backgroundColor: puzzle.difficultyKnown === false ? '#d5dce4' : TIER_BG[g.difficulty], color: '#111' }}
               >
                 <span className="flex items-center gap-2">
                   <span
@@ -216,7 +216,7 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
                     style={{ backgroundColor: 'rgba(0,0,0,0.12)' }}
                     aria-hidden
                   >
-                    {TIER_LABEL[g.difficulty]}
+                    {puzzle.difficultyKnown === false ? 'Group' : TIER_LABEL[g.difficulty]}
                   </span>
                   {g.category}
                 </span>
@@ -225,7 +225,7 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
                 {g.words.map((w) => (
                   <div
                     key={wordKey(w)}
-                    className="rounded-md px-2 py-2 text-center text-sm font-medium"
+                    className="rounded-md px-1 py-2 text-center text-xs font-medium [overflow-wrap:anywhere] sm:px-2 sm:text-sm"
                     style={{ backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
                   >
                     {normalizeWord(w)}
@@ -240,7 +240,7 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
       {!done && (
         <>
           <div
-            className={`grid grid-cols-2 sm:grid-cols-4 gap-2 ${shake ? 'animate-pulse' : ''}`}
+            className={`grid grid-cols-4 gap-1.5 sm:gap-2 ${shake ? 'animate-pulse' : ''}`}
             style={{ animationDuration: shake ? '0.15s' : undefined }}
           >
             {pool.map((t) => {
@@ -249,8 +249,9 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
                 <button
                   key={`${wordKey(t.word)}-${t.word}`}
                   type="button"
+                  aria-pressed={sel}
                   onClick={() => toggleSel(t.word)}
-                  className="rounded-lg border-2 px-2 py-3 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2"
+                  className="min-h-20 rounded-lg border-2 px-1 py-2 text-[11px] font-medium [overflow-wrap:anywhere] transition-colors sm:px-2 sm:py-3 sm:text-sm focus:outline-none focus-visible:ring-2"
                   style={{
                     borderColor: sel ? 'var(--ink-accent)' : 'var(--ink-border)',
                     backgroundColor: sel ? 'var(--ink-bg)' : 'var(--ink-paper)',
