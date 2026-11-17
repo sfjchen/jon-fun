@@ -30,6 +30,16 @@ export default function ConnectionsPlay({ basePath, idOrSlug }: ConnectionsPlayP
           if (!cancelled) setPuzzle(SAMPLE_PUZZLE)
           return
         }
+        if (/^nyt-archive-\d{4}-\d{2}-\d{2}$/.test(idOrSlug)) {
+          const year = idOrSlug.slice(12, 16)
+          const response = await fetch(`/puzzle-archives/connections/${year}.json`)
+          if (!response.ok) throw new Error('Archive unavailable')
+          const archive = await response.json() as ConnectionsPuzzle[]
+          const found = archive.find((p) => p.slug === idOrSlug)
+          if (!found) throw new Error('Puzzle not found')
+          if (!cancelled) setPuzzle(found)
+          return
+        }
         const r = await fetch(`/api/connections/puzzles/${encodeURIComponent(idOrSlug)}`)
         if (r.status === 503) {
           if (!cancelled) setErr('Library offline — configure Supabase for this deployment.')
@@ -54,7 +64,7 @@ export default function ConnectionsPlay({ basePath, idOrSlug }: ConnectionsPlayP
   }, [idOrSlug])
 
   useEffect(() => {
-    if (!result || !puzzle || puzzle === SAMPLE_PUZZLE) return
+    if (!result || !puzzle || puzzle === SAMPLE_PUZZLE || puzzle.id.startsWith('nyt-archive-')) return
     void (async () => {
       try {
         await fetch(`/api/connections/puzzles/${encodeURIComponent(puzzle.id)}/record`, {
