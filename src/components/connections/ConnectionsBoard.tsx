@@ -21,10 +21,10 @@ const TIER_BG: Record<ConnectionsDifficulty, string> = {
 }
 
 const TIER_LABEL: Record<ConnectionsDifficulty, string> = {
-  yellow: 'Y',
-  green: 'G',
-  blue: 'B',
-  purple: 'P',
+  yellow: '1 · Easy',
+  green: '2',
+  blue: '3',
+  purple: '4 · Hard',
 }
 
 const MAX_MISTAKES = 4

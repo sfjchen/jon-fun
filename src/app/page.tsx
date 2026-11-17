@@ -52,6 +52,7 @@ const items: GameCardGame[] = [
     href: '/games/anthropeum',
     available: true,
   },
+  { id: 'scores', title: 'Scores', description: 'Daily leaderboard for Spelling Bee, Connections and 24', icon: `${nb}/leaderboards.svg`, href: '/leaderboards', available: true },
   { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: `${nb}/game24.svg`, href: '/games/24', available: true },
   { id: 'daily-log', title: '1 Sentence Everyday', description: 'One sentence per day; history, calendar, export', icon: `${nb}/daily.svg`, href: '/games/daily-log', available: true },
   { id: 'tmr', title: 'Focus Chimes', description: 'Recurring background chimes to stay on track and keep a sense of time', icon: `${nb}/tmr.svg`, href: '/games/tmr', available: true },

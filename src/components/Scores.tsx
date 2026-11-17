@@ -10,6 +10,8 @@ import {
   GAMES,
   GAME_IDS,
   PLAYER_CHANGED,
+  PUBLIC_GROUP,
+  boardName,
   formatScore,
   getPlayer,
   localDay,
@@ -53,13 +55,15 @@ export function usePlayer(): Player | null {
 }
 
 /**
- * Collects the name and group code that results are filed under.
+ * Collects the name results are filed under. Scores go on the public board unless the player keeps them
+ * private under a group code shared only with friends.
  */
 export function PlayerForm({ player, onDone }: { player: Player | null; onDone: () => void }) {
   const [name, setName] = useState(player?.name ?? '')
-  const [group, setGroup] = useState(player?.group ?? '')
-  const code = group.trim().toLowerCase()
-  const ok = name.trim().length > 0 && /^[a-z0-9-]{3,32}$/.test(code)
+  const [priv, setPriv] = useState(!!player && player.group !== PUBLIC_GROUP)
+  const [group, setGroup] = useState(player && player.group !== PUBLIC_GROUP ? player.group : '')
+  const code = priv ? group.trim().toLowerCase() : PUBLIC_GROUP
+  const ok = name.trim().length > 0 && (!priv || (/^[a-z0-9-]{3,32}$/.test(code) && code !== PUBLIC_GROUP))
 
   return (
     <form
@@ -75,20 +79,29 @@ export function PlayerForm({ player, onDone }: { player: Player | null; onDone: 
       <label className="block text-sm">
         Your name
         <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} className={field} style={border} />
+        <span style={muted}>Your scores show on the public leaderboard under this name, so pick one nobody else uses.</span>
       </label>
-      <label className="block text-sm">
-        Group code
-        <input
-          value={group}
-          onChange={(e) => setGroup(e.target.value)}
-          maxLength={32}
-          autoCapitalize="none"
-          autoCorrect="off"
-          className={field}
-          style={border}
-        />
-        <span style={muted}>Friends who type the same code share one board. 3-32 letters, numbers or dashes.</span>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" checked={priv} onChange={(e) => setPriv(e.target.checked)} />
+        Keep my scores private
       </label>
+      {priv && (
+        <label className="block text-sm">
+          Group code
+          <input
+            value={group}
+            onChange={(e) => setGroup(e.target.value)}
+            maxLength={32}
+            autoCapitalize="none"
+            autoCorrect="off"
+            className={field}
+            style={border}
+          />
+          <span style={muted}>
+            Only friends who type the same code see your scores. 3-32 letters, numbers or dashes.
+          </span>
+        </label>
+      )}
       <button
         type="submit"
         disabled={!ok}
@@ -275,10 +288,9 @@ export function ScoresHub() {
   const [copied, setCopied] = useState('')
   const [rows, setRows] = useState<BoardRow[] | null>(null)
   const today = localDay()
-  const group = player?.group
+  const group = player?.group ?? PUBLIC_GROUP
 
   const load = useCallback(() => {
-    if (!group) return
     fetch(`/api/results?group=${encodeURIComponent(group)}&days=90`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d: { rows: BoardRow[] } | null) => d && setRows(d.rows))
@@ -307,7 +319,7 @@ export function ScoresHub() {
         <PlayerForm player={player} onDone={() => setEditing(false)} />
       ) : (
         <p className="text-sm" style={muted}>
-          {player.name} · group {player.group} ·{' '}
+          {player.name} · {boardName(player.group)} ·{' '}
           <button type="button" className="underline" style={accent} onClick={() => setEditing(true)}>
             change
           </button>
@@ -322,9 +334,9 @@ export function ScoresHub() {
         ))}
       </div>
 
-      {player && !editing && (
+      {!editing && (
         <>
-          {mineToday.length > 0 && (
+          {player && mineToday.length > 0 && (
             <button
               type="button"
               className="w-full rounded-md border py-2 font-semibold"
@@ -349,7 +361,7 @@ export function ScoresHub() {
           {played.map((g) => {
             const gameRows = (rows ?? []).filter((r) => r.game === g)
             const table = standings(gameRows, today)
-            const own = gameRows.filter((r) => r.name === player.name)
+            const own = gameRows.filter((r) => r.name === player?.name)
             return (
               <section key={g} className={card} style={cardStyle}>
                 <h2 className="mb-2 font-lora text-lg font-semibold">{GAMES[g].title}</h2>
@@ -379,7 +391,7 @@ export function ScoresHub() {
                       Your stats, last 90 days
                     </summary>
                     <div className="mt-2 grid grid-cols-3 gap-x-2 gap-y-3 text-center">
-                      {facts(own, today, table.find((s) => s.name === player.name)?.wins ?? 0).map(([l, v]) => (
+                      {facts(own, today, table.find((s) => s.name === player?.name)?.wins ?? 0).map(([l, v]) => (
                         <div key={l}>
                           <p className="text-lg font-bold tabular-nums">{v}</p>
                           <p className="text-xs" style={muted}>

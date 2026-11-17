@@ -22,7 +22,7 @@ import {
   resolveDailyDate,
   saveDailyProgress,
 } from '@/lib/connections-daily'
-import { formatScore, localDay, logResult, type BoardRow } from '@/lib/results'
+import { boardName, formatScore, localDay, logResult, PUBLIC_GROUP, type BoardRow } from '@/lib/results'
 import { PlayerForm, standings, usePlayer, type Standing } from '@/components/Scores'
 import ConnectionsBoard, { type ConnectionsCompletePayload } from '@/components/connections/ConnectionsBoard'
 import ConnectionsResult from '@/components/connections/ConnectionsResult'
@@ -64,7 +64,7 @@ function DailyScores({ score }: { score: number | null }) {
     return (
       <div className="space-y-2" data-testid="connections-daily-join">
         <p className="text-sm" style={muted}>
-          Enter a name to put today&apos;s result on the Scores board and compete with friends in your group.
+          Enter a name to put today&apos;s result on the leaderboard and compete with everyone who plays.
         </p>
         <PlayerForm player={player} onDone={() => setEditing(false)} />
       </div>
@@ -74,12 +74,12 @@ function DailyScores({ score }: { score: number | null }) {
     <div className="space-y-1 text-sm" data-testid="connections-daily-scores">
       {score !== null && rank && (
         <p className="font-semibold" style={{ color: 'var(--ink-text)' }} data-testid="connections-daily-rank">
-          #{rank.place} of {rank.count} today in {player.group} · score {formatScore(score)} · 7-day average{' '}
+          #{rank.place} of {rank.count} today {player.group === PUBLIC_GROUP ? 'on' : 'in'} {boardName(player.group)} · score {formatScore(score)} · 7-day average{' '}
           {formatScore(rank.me.week ?? score)} · {rank.me.wins} {rank.me.wins === 1 ? 'day' : 'days'} won
         </p>
       )}
       <p style={muted}>
-        Playing as {player.name} · group {player.group} ·{' '}
+        Playing as {player.name} · {boardName(player.group)} ·{' '}
         <button type="button" className="underline" style={accent} onClick={() => setEditing(true)}>
           change
         </button>{' '}

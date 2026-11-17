@@ -98,6 +98,8 @@ test.describe('Connections', () => {
     await expect(page.getByTestId('connections-board')).toBeVisible()
     await expect(page.getByTestId('connections-revealed-group')).toHaveCount(4)
     await expect(page.getByText('Inner planets')).toBeVisible()
+    await expect(page.getByTestId('connections-revealed-group').first()).toContainText('1 · Easy')
+    await expect(page.getByTestId('connections-revealed-group').last()).toContainText('4 · Hard')
   })
 
   test('daily puzzle loads from the library and resumes after reload', async ({ page }) => {
@@ -145,13 +147,30 @@ test.describe('Connections', () => {
     await page.goto('/games/connections/daily', { waitUntil: 'domcontentloaded', timeout: 60_000 })
     await expect(page.getByTestId('connections-daily-join')).toBeVisible({ timeout: 25_000 })
     await page.getByLabel('Your name').fill('Tester')
-    await page.getByLabel('Group code').fill('e2e-group')
     await page.getByRole('button', { name: 'Save' }).click()
     await expect(page.getByTestId('connections-daily-scores')).toContainText('Playing as Tester')
 
     await page.getByRole('button', { name: 'Give up' }).click()
-    await expect(page.getByTestId('connections-daily-rank')).toHaveText(/^#2 of 2 today in e2e-group · score 0/)
-    expect(posts[0]).toMatchObject({ name: 'Tester', group: 'e2e-group', game: 'connections', score: 0 })
+    await expect(page.getByTestId('connections-daily-rank')).toHaveText(/^#2 of 2 today on the public board · score 0/)
+    expect(posts[0]).toMatchObject({ name: 'Tester', group: 'public', game: 'connections', score: 0 })
+  })
+
+  test('a private group code keeps the result off the public board', async ({ page }) => {
+    const posts: Record<string, unknown>[] = []
+    await page.route('**/api/results**', (route) => {
+      if (route.request().method() === 'POST') posts.push(route.request().postDataJSON() as Record<string, unknown>)
+      return route.fulfill({ json: route.request().method() === 'POST' ? { ok: true } : { rows: [] } })
+    })
+    page.on('dialog', (d) => void d.accept())
+    await page.goto('/games/connections/daily', { waitUntil: 'domcontentloaded', timeout: 60_000 })
+    await page.getByLabel('Your name').fill('Tester', { timeout: 25_000 })
+    await page.getByLabel('Keep my scores private').check()
+    await expect(page.getByRole('button', { name: 'Save' })).toBeDisabled()
+    await page.getByLabel('Group code').fill('Our-Group')
+    await page.getByRole('button', { name: 'Save' }).click()
+    await expect(page.getByTestId('connections-daily-scores')).toContainText('private group our-group')
+    await page.getByRole('button', { name: 'Give up' }).click()
+    await expect.poll(() => posts[0]?.group).toBe('our-group')
   })
 
   test('search with no matches shows empty search state', async ({ page }) => {

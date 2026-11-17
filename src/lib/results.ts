@@ -36,6 +36,16 @@ export function formatScore(score: number): string {
 
 export type Player = { name: string; group: string }
 
+/** The group everyone shares unless they keep their scores private under their own group code. */
+export const PUBLIC_GROUP = 'public'
+
+/**
+ * Names a player's board in plain words.
+ */
+export function boardName(group: string): string {
+  return group === PUBLIC_GROUP ? 'the public board' : `private group ${group}`
+}
+
 const PLAYER_KEY = 'sfjc_player'
 export const PLAYER_CHANGED = 'sfjc-player-changed'
 
