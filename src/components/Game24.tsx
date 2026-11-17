@@ -689,7 +689,7 @@ export default function Game24() {
 
         const solved = updated.length === 1 && Math.abs(updated[0]!.value - 24) < 0.001
         if (solved) {
-          setOfflineScore((prev) => prev + 1000)
+          setOfflineScore((prev) => prev + 1)
           practiceMessageRef.current = setTimeout(() => {
             showTemporaryMessage('Solved! New puzzle coming up.', 1800)
             generatePractice()
@@ -763,7 +763,7 @@ export default function Game24() {
   const showPracticeSolution = useCallback(() => {
     const solution = solver.getSolution(practiceNumbers)
     if (solution) {
-      showTemporaryMessage(`💡 Solution: ${solution}`)
+      showTemporaryMessage(`Solution: ${solution}`)
     } else {
       showTemporaryMessage('No solution found')
     }
@@ -785,7 +785,7 @@ export default function Game24() {
         className={`max-w-6xl mx-auto px-4 flex flex-col gap-6 w-full ${notebookLayout ? 'py-4 lg:py-6' : 'py-10 lg:py-14'}`}
       >
         <div className="grid lg:grid-cols-[320px_1fr] gap-6 order-1">
-          <aside className="rounded-lg border p-4 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
+          <aside className="order-2 rounded-lg border p-4 shadow-sm lg:order-1" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
             {!room && (
               <div className="space-y-4">
                 <div>
@@ -827,7 +827,7 @@ export default function Game24() {
                 >
                   Create Room
                 </button>
-                {error && <div className="text-red-300 text-sm">{error}</div>}
+                {error && <div className="text-red-600 text-sm">{error}</div>}
               </div>
             )}
 
@@ -872,7 +872,7 @@ export default function Game24() {
                           </div>
                           <div className="text-sm font-mono flex items-center gap-1" style={{ color: 'var(--ink-muted)' }}>
                             <span>{p.score ?? 0}</span>
-                            {showRoundScore && <span className="text-green-300 font-semibold">+{roundScore}</span>}
+                            {showRoundScore && <span className="text-green-700 font-semibold">+{roundScore}</span>}
                           </div>
                         </div>
                       )
@@ -912,15 +912,15 @@ export default function Game24() {
                   </button>
                 )}
 
-                {error && <div className="text-red-300 text-sm">{error}</div>}
+                {error && <div className="text-red-600 text-sm">{error}</div>}
               </div>
             )}
           </aside>
 
-          <main className="rounded-lg border p-4 relative overflow-hidden shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
+          <main className="order-1 rounded-lg border p-4 relative overflow-hidden shadow-sm lg:order-2" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
             <div className="flex items-center justify-between mb-6">
               <div className="text-center flex-1">
-                <div className="text-lg font-semibold">Your Score</div>
+                <div className="text-lg font-semibold">{room && room.status !== 'waiting' ? 'Your Score' : 'Solved'}</div>
                 <div className="rounded-lg px-4 py-2 mt-1 text-2xl font-bold" style={{ backgroundColor: 'var(--ink-bg)' }}>
                   {displayedScore}
                 </div>
@@ -982,7 +982,7 @@ export default function Game24() {
 
             {room?.status === 'finished' && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-20 rounded-lg" style={{ backgroundColor: 'rgba(0,0,0,0.75)' }}>
-                <div className="text-3xl font-bold">Final Rankings</div>
+                <div className="text-3xl font-bold text-white">Final Rankings</div>
                 <div className="w-full max-w-md space-y-2">
                   {sortedPlayers.map((p, idx) => {
                     const correct = playerCorrectCounts[p.player_id] ?? 0
@@ -1043,7 +1043,7 @@ export default function Game24() {
             </button>
           ))}
         </div>
-                    <div className="text-center text-gray-200 text-sm">
+                    <div className="text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
                       {hasSubmitted ? 'You submitted this round.' : 'Solve to score up to 2000 points (20s round).'}
           </div>
                   </>
@@ -1069,17 +1069,17 @@ export default function Game24() {
                         onClick={generatePractice}
             className="action-btn danger"
           >
-                        🔄 New Puzzle
+                        New puzzle
           </button>
           <button 
                         onClick={showPracticeSolution}
             className="action-btn primary"
           >
-                        💡 Solution
+                        Solution
           </button>
                     </div>
                     <div className="text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
-                      Free play while waiting/not in a room. Timer/solution disable only when a round is active.
+                      Tap a number, an operator, then another number. Combine all 4 into 24.
                     </div>
                   </>
                 )}
