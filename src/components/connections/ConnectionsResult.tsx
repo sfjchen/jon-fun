@@ -9,7 +9,8 @@ export type ConnectionsResultProps = {
   wrongGuesses: number
   shareLines: string[]
   basePath: string
-  onReplay: () => void
+  /** Shows a Play again button when set. */
+  onReplay?: () => void
 }
 
 export default function ConnectionsResult({
@@ -66,14 +67,16 @@ export default function ConnectionsResult({
         >
           {copied ? 'Copied' : 'Copy share text'}
         </button>
-        <button
-          type="button"
-          onClick={onReplay}
-          className="rounded-lg border px-4 py-2 hover:opacity-90"
-          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-        >
-          Play again
-        </button>
+        {onReplay && (
+          <button
+            type="button"
+            onClick={onReplay}
+            className="rounded-lg border px-4 py-2 hover:opacity-90"
+            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+          >
+            Play again
+          </button>
+        )}
         <Link
           href={basePath}
           className="inline-flex items-center rounded-lg border px-4 py-2 hover:opacity-90"

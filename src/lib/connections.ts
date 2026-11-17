@@ -47,6 +47,12 @@ export interface ConnectionsPuzzleSummary {
   updatedAt: string
 }
 
+/** A game in progress: every submitted guess (4 words each) and whether the player gave up. */
+export interface ConnectionsProgress {
+  guesses: string[][]
+  gaveUp: boolean
+}
+
 export function slugify(input: string): string {
   return (
     input
@@ -85,6 +91,11 @@ export function normalizeWord(w: string): string {
 
 export function wordKey(w: string): string {
   return normalizeWord(w).toLowerCase()
+}
+
+/** Order-independent key for a guess, so the same 4 words in any order match. */
+export function guessKey(words: string[]): string {
+  return words.map(wordKey).sort().join('|')
 }
 
 export function isConnectionsDifficulty(v: unknown): v is ConnectionsDifficulty {

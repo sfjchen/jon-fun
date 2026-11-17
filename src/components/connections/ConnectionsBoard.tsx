@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { shuffle } from '@/lib/random'
-import type { ConnectionsDifficulty, ConnectionsGroup, ConnectionsPuzzle } from '@/lib/connections'
+import type { ConnectionsDifficulty, ConnectionsGroup, ConnectionsProgress, ConnectionsPuzzle } from '@/lib/connections'
 import {
   CONNECTIONS_DIFFICULTIES,
   findMatchingGroup,
+  guessKey,
   isOneAway,
   normalizeWord,
   sortGroupsByDifficulty,
@@ -26,6 +27,8 @@ const TIER_LABEL: Record<ConnectionsDifficulty, string> = {
   purple: 'P',
 }
 
+const MAX_MISTAKES = 4
+
 type Tile = { word: string; difficulty: ConnectionsDifficulty; category: string }
 
 export type ConnectionsCompletePayload = {
@@ -37,9 +40,13 @@ export type ConnectionsCompletePayload = {
 export type ConnectionsBoardProps = {
   puzzle: ConnectionsPuzzle
   onComplete: (p: ConnectionsCompletePayload) => void
+  /** Restores a saved game. */
+  initialProgress?: ConnectionsProgress | undefined
+  /** Called after every guess or give-up so the caller can save the game. */
+  onProgress?: (p: ConnectionsProgress) => void
 }
 
-export default function ConnectionsBoard({ puzzle, onComplete }: ConnectionsBoardProps) {
+export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, onProgress }: ConnectionsBoardProps) {
   const allTiles = useMemo(() => {
     const tiles: Tile[] = []
     for (const g of puzzle.groups) {
@@ -50,110 +57,111 @@ export default function ConnectionsBoard({ puzzle, onComplete }: ConnectionsBoar
     return tiles
   }, [puzzle.groups])
 
-  const [pool, setPool] = useState<Tile[]>(() => shuffle(allTiles))
-  const [revealed, setRevealed] = useState<ConnectionsGroup[]>([])
+  const [order, setOrder] = useState<Tile[]>(() => shuffle(allTiles))
+  const [progress, setProgress] = useState<ConnectionsProgress>(
+    () => initialProgress ?? { guesses: [], gaveUp: false },
+  )
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(() => new Set())
-  const [wrongGuesses, setWrongGuesses] = useState(0)
-  const [done, setDone] = useState(false)
   const [shake, setShake] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
-  const [solvedDifficulties, setSolvedDifficulties] = useState<ConnectionsDifficulty[]>([])
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const finishedRef = useRef(false)
 
-  const mistakesRemaining = Math.max(0, 4 - wrongGuesses)
+  const solved = useMemo(
+    () =>
+      progress.guesses
+        .map((g) => findMatchingGroup(puzzle.groups, g))
+        .filter((g): g is ConnectionsGroup => g !== null),
+    [progress.guesses, puzzle.groups],
+  )
+  const wrongGuesses = progress.guesses.length - solved.length
+  const won = solved.length === puzzle.groups.length
+  const done = won || wrongGuesses >= MAX_MISTAKES || progress.gaveUp
+  const mistakesRemaining = Math.max(0, MAX_MISTAKES - wrongGuesses)
 
-  const toggleSel = useCallback((word: string) => {
-    if (done) return
-    const k = wordKey(word)
-    setSelectedKeys((prev) => {
-      const next = new Set(prev)
-      if (next.has(k)) next.delete(k)
-      else if (next.size < 4) next.add(k)
-      return next
-    })
-  }, [done])
+  const revealed = useMemo(() => {
+    if (!done || won) return solved
+    const rest = puzzle.groups.filter((g) => !solved.includes(g))
+    return [...solved, ...sortGroupsByDifficulty(rest)]
+  }, [done, won, solved, puzzle.groups])
+
+  const pool = useMemo(() => {
+    if (done) return []
+    const solvedKeys = new Set(solved.flatMap((g) => g.words.map(wordKey)))
+    return order.filter((t) => !solvedKeys.has(wordKey(t.word)))
+  }, [done, solved, order])
+
+  useEffect(() => {
+    if (!done || finishedRef.current) return
+    finishedRef.current = true
+    onComplete({ won, wrongGuesses, solvedDifficulties: solved.map((g) => g.difficulty) })
+  }, [done, won, wrongGuesses, solved, onComplete])
+
+  useEffect(() => () => clearTimeout(toastTimer.current), [])
+
+  const flash = useCallback((msg: string) => {
+    clearTimeout(toastTimer.current)
+    setToast(msg)
+    toastTimer.current = setTimeout(() => setToast(null), 2000)
+  }, [])
+
+  const commit = useCallback(
+    (next: ConnectionsProgress) => {
+      setProgress(next)
+      onProgress?.(next)
+    },
+    [onProgress],
+  )
+
+  const toggleSel = useCallback(
+    (word: string) => {
+      if (done) return
+      const k = wordKey(word)
+      setSelectedKeys((prev) => {
+        const next = new Set(prev)
+        if (next.has(k)) next.delete(k)
+        else if (next.size < 4) next.add(k)
+        return next
+      })
+    },
+    [done],
+  )
 
   const submit = useCallback(() => {
     if (done) return
-    const keys = [...selectedKeys]
-    if (keys.length !== 4) return
-    const selectedWords = keys.map((k) => pool.find((t) => wordKey(t.word) === k)?.word).filter(Boolean) as string[]
+    const selectedWords = [...selectedKeys]
+      .map((k) => pool.find((t) => wordKey(t.word) === k)?.word)
+      .filter((w): w is string => Boolean(w))
     if (selectedWords.length !== 4) return
 
-    const match = findMatchingGroup(puzzle.groups, selectedWords)
-    if (match) {
-      const nextRevealed = [...revealed, match]
-      const nextSolved = [...solvedDifficulties, match.difficulty]
-      setRevealed(nextRevealed)
-      setSolvedDifficulties(nextSolved)
-      setPool((p) => p.filter((t) => !selectedWords.some((sw) => wordKey(sw) === wordKey(t.word))))
-      setSelectedKeys(new Set())
-      if (nextRevealed.length >= 4) {
-        setDone(true)
-        if (!finishedRef.current) {
-          finishedRef.current = true
-          onComplete({ won: true, wrongGuesses, solvedDifficulties: nextSolved })
-        }
-      }
+    const key = guessKey(selectedWords)
+    if (progress.guesses.some((g) => guessKey(g) === key)) {
+      flash('Already guessed!')
       return
     }
 
+    commit({ ...progress, guesses: [...progress.guesses, selectedWords] })
+    setSelectedKeys(new Set())
+    if (findMatchingGroup(puzzle.groups, selectedWords)) return
+
     setShake(true)
     setTimeout(() => setShake(false), 420)
-    const nextWrong = wrongGuesses + 1
-    setWrongGuesses(nextWrong)
-    if (isOneAway(puzzle.groups, selectedWords)) {
-      setToast('One away!')
-      setTimeout(() => setToast(null), 2000)
-    }
-    setSelectedKeys(new Set())
-
-    if (nextWrong >= 4) {
-      setDone(true)
-      const rest = puzzle.groups.filter((g) => !revealed.some((r) => r.difficulty === g.difficulty))
-      const ordered = sortGroupsByDifficulty(rest)
-      setRevealed((r) => [...r, ...ordered])
-      setPool([])
-      if (!finishedRef.current) {
-        finishedRef.current = true
-        onComplete({
-          won: false,
-          wrongGuesses: nextWrong,
-          solvedDifficulties: [...solvedDifficulties],
-        })
-      }
-    }
-  }, [
-    done,
-    selectedKeys,
-    pool,
-    puzzle.groups,
-    revealed,
-    wrongGuesses,
-    solvedDifficulties,
-    onComplete,
-  ])
+    if (isOneAway(puzzle.groups, selectedWords)) flash('One away!')
+  }, [done, selectedKeys, pool, progress, puzzle.groups, commit, flash])
 
   const deselectAll = useCallback(() => setSelectedKeys(new Set()), [])
 
   const shufflePool = useCallback(() => {
     if (done) return
-    setPool((p) => shuffle(p))
+    setOrder((p) => shuffle(p))
   }, [done])
 
   const giveUp = useCallback(() => {
     if (done) return
     if (!window.confirm('Reveal all groups and end this run?')) return
-    setDone(true)
-    const rest = puzzle.groups.filter((g) => !revealed.some((r) => r.difficulty === g.difficulty))
-    setRevealed((r) => [...r, ...sortGroupsByDifficulty(rest)])
-    setPool([])
     setSelectedKeys(new Set())
-    if (!finishedRef.current) {
-      finishedRef.current = true
-      onComplete({ won: false, wrongGuesses, solvedDifficulties: [...solvedDifficulties] })
-    }
-  }, [done, revealed, puzzle.groups, wrongGuesses, solvedDifficulties, onComplete])
+    commit({ ...progress, gaveUp: true })
+  }, [done, progress, commit])
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -194,6 +202,7 @@ export default function ConnectionsBoard({ puzzle, onComplete }: ConnectionsBoar
           {revealed.map((g) => (
             <div
               key={`${g.difficulty}-${g.category}`}
+              data-testid="connections-revealed-group"
               className="rounded-lg border overflow-hidden"
               style={{ borderColor: 'var(--ink-border)' }}
             >
@@ -228,70 +237,70 @@ export default function ConnectionsBoard({ puzzle, onComplete }: ConnectionsBoar
         </div>
       )}
 
-      <div
-        className={`grid grid-cols-2 sm:grid-cols-4 gap-2 ${shake ? 'animate-pulse' : ''}`}
-        style={{ animationDuration: shake ? '0.15s' : undefined }}
-      >
-        {pool.map((t) => {
-          const sel = selectedKeys.has(wordKey(t.word))
-          return (
-            <button
-              key={`${wordKey(t.word)}-${t.word}`}
-              type="button"
-              disabled={done}
-              onClick={() => toggleSel(t.word)}
-              className="rounded-lg border-2 px-2 py-3 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2"
-              style={{
-                borderColor: sel ? 'var(--ink-accent)' : 'var(--ink-border)',
-                backgroundColor: sel ? 'var(--ink-bg)' : 'var(--ink-paper)',
-                color: 'var(--ink-text)',
-                boxShadow: sel ? '0 0 0 2px var(--ink-accent)' : undefined,
-              }}
-            >
-              {normalizeWord(t.word)}
-            </button>
-          )
-        })}
-      </div>
+      {!done && (
+        <>
+          <div
+            className={`grid grid-cols-2 sm:grid-cols-4 gap-2 ${shake ? 'animate-pulse' : ''}`}
+            style={{ animationDuration: shake ? '0.15s' : undefined }}
+          >
+            {pool.map((t) => {
+              const sel = selectedKeys.has(wordKey(t.word))
+              return (
+                <button
+                  key={`${wordKey(t.word)}-${t.word}`}
+                  type="button"
+                  onClick={() => toggleSel(t.word)}
+                  className="rounded-lg border-2 px-2 py-3 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2"
+                  style={{
+                    borderColor: sel ? 'var(--ink-accent)' : 'var(--ink-border)',
+                    backgroundColor: sel ? 'var(--ink-bg)' : 'var(--ink-paper)',
+                    color: 'var(--ink-text)',
+                    boxShadow: sel ? '0 0 0 2px var(--ink-accent)' : undefined,
+                  }}
+                >
+                  {normalizeWord(t.word)}
+                </button>
+              )
+            })}
+          </div>
 
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          disabled={done || selectedKeys.size !== 4}
-          onClick={submit}
-          className="rounded-lg px-4 py-2 text-white disabled:opacity-40"
-          style={{ backgroundColor: 'var(--ink-accent)' }}
-        >
-          Submit
-        </button>
-        <button
-          type="button"
-          disabled={done}
-          onClick={deselectAll}
-          className="rounded-lg border px-4 py-2 disabled:opacity-40"
-          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-        >
-          Deselect all
-        </button>
-        <button
-          type="button"
-          disabled={done}
-          onClick={shufflePool}
-          className="rounded-lg border px-4 py-2 disabled:opacity-40"
-          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-        >
-          Shuffle
-        </button>
-        <button
-          type="button"
-          disabled={done}
-          onClick={giveUp}
-          className="rounded-lg border px-4 py-2 disabled:opacity-40"
-          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-        >
-          Give up
-        </button>
-      </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={selectedKeys.size !== 4}
+              onClick={submit}
+              className="rounded-lg px-4 py-2 text-white disabled:opacity-40"
+              style={{ backgroundColor: 'var(--ink-accent)' }}
+            >
+              Submit
+            </button>
+            <button
+              type="button"
+              onClick={deselectAll}
+              className="rounded-lg border px-4 py-2 disabled:opacity-40"
+              style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+            >
+              Deselect all
+            </button>
+            <button
+              type="button"
+              onClick={shufflePool}
+              className="rounded-lg border px-4 py-2 disabled:opacity-40"
+              style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+            >
+              Shuffle
+            </button>
+            <button
+              type="button"
+              onClick={giveUp}
+              className="rounded-lg border px-4 py-2 disabled:opacity-40"
+              style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+            >
+              Give up
+            </button>
+          </div>
+        </>
+      )}
 
       {toast && (
         <div
@@ -301,7 +310,6 @@ export default function ConnectionsBoard({ puzzle, onComplete }: ConnectionsBoar
           {toast}
         </div>
       )}
-
     </div>
   )
 }

@@ -105,22 +105,6 @@ export default function ConnectionsPlay({ basePath, idOrSlug }: ConnectionsPlayP
     )
   }
 
-  if (result) {
-    const shareLines = buildShareLines(new Set(result.solvedDifficulties), result.won)
-    return (
-      <div className="mx-auto w-full max-w-xl space-y-6">
-        <ConnectionsResult
-          title={puzzle.title}
-          won={result.won}
-          wrongGuesses={result.wrongGuesses}
-          shareLines={shareLines}
-          basePath={basePath}
-          onReplay={replay}
-        />
-      </div>
-    )
-  }
-
   return (
     <div className="mx-auto w-full max-w-xl space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -132,6 +116,16 @@ export default function ConnectionsPlay({ basePath, idOrSlug }: ConnectionsPlayP
         </Link>
       </div>
       <ConnectionsBoard key={`${puzzle.id}-${runId}`} puzzle={puzzle} onComplete={onComplete} />
+      {result && (
+        <ConnectionsResult
+          title={puzzle.title}
+          won={result.won}
+          wrongGuesses={result.wrongGuesses}
+          shareLines={buildShareLines(new Set(result.solvedDifficulties), result.won)}
+          basePath={basePath}
+          onReplay={replay}
+        />
+      )}
     </div>
   )
 }

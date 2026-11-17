@@ -104,6 +104,25 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
         </div>
       </div>
 
+      <Link
+        href={`${basePath}/daily`}
+        data-testid="connections-daily-card"
+        className="flex items-center justify-between gap-4 rounded-lg border p-4 shadow-sm transition-opacity hover:opacity-95"
+        style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+      >
+        <div>
+          <p className="font-lora text-lg font-semibold" style={{ color: 'var(--ink-text)' }}>
+            Today&apos;s puzzle
+          </p>
+          <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+            A new puzzle every day, with an archive of past days.
+          </p>
+        </div>
+        <span className="shrink-0 rounded-lg px-4 py-2 text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>
+          Play
+        </span>
+      </Link>
+
       {offline && (
         <div
           className="rounded-lg border p-4 text-sm"

@@ -65,6 +65,66 @@ test.describe('Connections', () => {
     await expect(page.getByText('One away!')).toBeVisible({ timeout: 5000 })
   })
 
+  test('repeating a wrong guess does not cost a life', async ({ page }) => {
+    await page.goto(`/games/connections/play/${CONNECTIONS_E2E_SLUG}`, {
+      waitUntil: 'domcontentloaded',
+      timeout: 60_000,
+    })
+    await expect(page.getByTestId('connections-board')).toBeVisible({ timeout: 25_000 })
+
+    for (const order of [
+      ['Mercury', 'Venus', 'Earth', 'King'],
+      ['King', 'Earth', 'Venus', 'Mercury'],
+    ]) {
+      for (const w of order) await page.getByRole('button', { name: w, exact: true }).click()
+      await page.getByRole('button', { name: 'Submit' }).click()
+    }
+    await expect(page.getByText('Already guessed!')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('3 lives left')).toBeVisible()
+  })
+
+  test('losing keeps the board with every group revealed', async ({ page }) => {
+    await page.goto(`/games/connections/play/${CONNECTIONS_E2E_SLUG}`, {
+      waitUntil: 'domcontentloaded',
+      timeout: 60_000,
+    })
+    await expect(page.getByTestId('connections-board')).toBeVisible({ timeout: 25_000 })
+
+    for (const fourth of ['King', 'Queen', 'Rook', 'Knight']) {
+      for (const w of ['Mercury', 'Venus', 'Earth', fourth]) await page.getByRole('button', { name: w, exact: true }).click()
+      await page.getByRole('button', { name: 'Submit' }).click()
+    }
+    await expect(page.getByTestId('connections-result')).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByTestId('connections-board')).toBeVisible()
+    await expect(page.getByTestId('connections-revealed-group')).toHaveCount(4)
+    await expect(page.getByText('Inner planets')).toBeVisible()
+  })
+
+  test('daily puzzle loads from the library and resumes after reload', async ({ page }) => {
+    await page.goto('/games/connections', { waitUntil: 'domcontentloaded', timeout: 60_000 })
+    await page.getByTestId('connections-daily-card').click()
+    await expect(page).toHaveURL(/\/games\/connections\/daily$/)
+    await expect(page.getByTestId('connections-board')).toBeVisible({ timeout: 25_000 })
+    await expect(page.getByRole('button', { name: 'Next day' })).toBeDisabled()
+
+    const tiles = page.getByTestId('connections-board').locator('.grid button')
+    await expect(tiles).toHaveCount(16)
+    for (let j = 0; j < 4; j++) await tiles.nth(j).click()
+    await page.getByRole('button', { name: 'Submit' }).click()
+    const lives = await page.getByText(/lives? left/).textContent()
+    const solved = await page.getByTestId('connections-revealed-group').count()
+    expect(lives === '3 lives left' || solved === 1).toBe(true)
+
+    await page.reload()
+    await expect(page.getByTestId('connections-board')).toBeVisible({ timeout: 25_000 })
+    await expect(page.getByText(/lives? left/)).toHaveText(lives ?? '')
+    await expect(page.getByTestId('connections-revealed-group')).toHaveCount(solved)
+
+    await page.getByRole('button', { name: 'Previous day' }).click()
+    await expect(page).toHaveURL(/\/games\/connections\/daily\?d=\d{4}-\d{2}-\d{2}$/)
+    await expect(page.getByText('4 lives left')).toBeVisible()
+  })
+
   test('search with no matches shows empty search state', async ({ page }) => {
     await page.goto('/games/connections', { waitUntil: 'domcontentloaded', timeout: 60_000 })
     await expect(page.getByTestId('connections-library-card')).toHaveCount(1, { timeout: 25_000 })
