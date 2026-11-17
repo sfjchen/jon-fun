@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { GAMES, GAME_IDS, PLAYER_CHANGED, RESULTS_CHANGED, flushResults, formatScore, formatTime, getPlayer, localDay, setPlayer, PUBLIC_GROUP, boardName, type BoardRow, type GameId, type Player } from '@/lib/results'
+import { GAMES, GAME_IDS, PLAYER_CHANGED, RESULTS_CHANGED, flushResults, formatScore, formatTime, formatGameScore, bestGameScore, compareResults, resultLabel, getPlayer, localDay, setPlayer, PUBLIC_GROUP, boardName, type BoardRow, type GameId, type Player } from '@/lib/results'
 import { DAILY_EPOCH, shiftDay, validDay } from '@/lib/daily'
 import { average, overallDay, streaks, winners, winsByPlayer } from '@/lib/score-stats'
 const field = 'w-full rounded-lg border bg-[var(--ink-paper)] p-2'
@@ -27,10 +27,10 @@ function Trend({ rows, day }: { rows: BoardRow[]; day: string }) {
   const dates = Array.from({ length: 14 }, (_, i) => shiftDay(day, i - 13))
   const max = Math.max(1, ...rows.filter(r => dates.includes(r.day)).map(r => r.score))
   const dots = dates.flatMap((d, i) => { const r = rows.find(r => r.day === d); return r ? [{ x: 15 + i * 24, y: 85 - r.score / max * 65, r }] : [] })
-  return <figure className="space-y-1"><figcaption className={muted}>Your last 14 days · gaps mean unplayed</figcaption>
+  return <figure className="space-y-1"><figcaption className={muted}>Your last 14 days · gaps mean unplayed{rows[0]?.game==='mini'?' · lower time is better':''}</figcaption>
     <svg viewBox="0 0 345 105" role="img" aria-label="Your daily score trend over the last fourteen days" className="w-full max-w-xl">
       <path d="M15 15V85H330" fill="none" stroke="var(--ink-border)" />
-      {dots.map((d, i) => { const prev = dots[i - 1]; return <g key={d.r.day}>{prev && shiftDay(prev.r.day, 1) === d.r.day && <line x1={prev.x} y1={prev.y} x2={d.x} y2={d.y} stroke="var(--ink-accent)" strokeWidth="2" />}<circle cx={d.x} cy={d.y} r="3.5" fill="var(--ink-accent)"><title>{d.r.day}: {d.r.score}</title></circle></g> })}
+      {dots.map((d, i) => { const prev = dots[i - 1]; return <g key={d.r.day}>{prev && shiftDay(prev.r.day, 1) === d.r.day && <line x1={prev.x} y1={prev.y} x2={d.x} y2={d.y} stroke="var(--ink-accent)" strokeWidth="2" />}<circle cx={d.x} cy={d.y} r="3.5" fill="var(--ink-accent)"><title>{d.r.day}: {formatGameScore(d.r.game,d.r.score)}</title></circle></g> })}
       <text x="15" y="101" fontSize="9" fill="currentColor">{dates[0]}</text><text x="270" y="101" fontSize="9" fill="currentColor">{day}</text>
     </svg>
   </figure>
@@ -47,7 +47,7 @@ export function ScoresHub() {
   const month = calendar.day === day ? calendar.month : day.slice(0, 7)
   const setMonth = (month: string) => setCalendar({ day, month })
   const [game, setGame] = useState<GameId | 'all'>('all')
-  const [response, setResponse] = useState<{ group: string; rows: BoardRow[] } | null>(null)
+  const [response, setResponse] = useState<{ group: string; rows: BoardRow[]; legacyRows: BoardRow[] } | null>(null)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
   const group = player?.group ?? PUBLIC_GROUP
@@ -60,8 +60,8 @@ export function ScoresHub() {
         await flushResults()
         const r = await fetch(`/api/results?group=${encodeURIComponent(group)}&days=4000`, { signal: controller.signal })
         if (!r.ok) throw new Error('Could not load your group. Your saved scores will retry syncing automatically.')
-        const data = await r.json() as { rows: BoardRow[] }
-        if (!cancelled) { setResponse({ group, rows: data.rows.filter(r => GAME_IDS.includes(r.game)) }); setError('') }
+        const data = await r.json() as { rows: BoardRow[]; legacyRows?: BoardRow[] }
+        if (!cancelled) { setResponse({ group, rows: data.rows.filter(r => GAME_IDS.includes(r.game)), legacyRows: data.legacyRows ?? [] }); setError('') }
       } catch (e) { if (!cancelled) setError(e instanceof Error ? e.message : 'Could not load scores') }
     }
     void load()
@@ -86,7 +86,7 @@ export function ScoresHub() {
   const personal = new Set(filtered.filter(r => r.name === player?.name).map(r => r.day))
   const choose = (d: string) => { router.push(`/leaderboards?d=${d}`, { scroll: false }); setCopied(false) }
   return <div className="mx-auto max-w-4xl space-y-5" data-testid="scores-hub">
-    <header className="space-y-2"><h1 className="font-lora text-3xl font-semibold">Leaderboard</h1><p className={muted}>One puzzle per game each day. Your best unassisted daily score syncs automatically. Calendar: Pacific time.</p></header>
+    <header className="space-y-2"><h1 className="font-lora text-3xl font-semibold">Leaderboard</h1><p className={muted}>One puzzle per game each day. Results sync automatically. Mini keeps your first unassisted solve time. Calendar: Pacific time.</p></header>
     {!player || editing ? <PlayerForm key={raw} player={player} onDone={() => setEditing(false)} /> : <p className={muted}>{player.name} · {boardName(player.group)} · <button className="underline" onClick={() => setEditing(true)}>change</button></p>}
     <nav aria-label="Daily games" className="flex flex-wrap gap-2">{GAME_IDS.map(g => <Link key={g} className="rounded-full border px-4 py-2 text-sm" href={`${GAMES[g].url}?d=${day}`}>{GAMES[g].title}</Link>)}</nav>
     {error && <p role="alert" className="rounded border border-red-300 p-3">{error}</p>}
@@ -108,9 +108,9 @@ export function ScoresHub() {
       <p className="text-sm">Days won overall: {[...overallTally].sort((a,b) => b[1]-a[1]).map(([name,n]) => `${name} ${n}`).join(' · ') || 'No outright winners yet'}</p>
       <div className="space-y-2">{dailyHistory.slice(0,14).map(d => <div key={d.day} className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--ink-border)] pt-2 text-sm"><button className="underline" onClick={() => choose(d.day)}>{d.day}</button><strong>{d.names.length === 1 ? d.names[0] : `Tie — ${d.names.join(' & ')}`}</strong><span className={muted}>{[...d.gameWins].sort((a,b) => b[1]-a[1]).map(([name,n]) => `${name}: ${n} game ${n===1?'win':'wins'}`).join(' · ')}</span></div>)}</div>
     </section>}
-    {(game === 'all' ? GAME_IDS : [game]).map(g => { const games = selected.filter(r => r.game === g); const names = winners(games); return <div key={g} className="flex items-start justify-between gap-2 border-b border-[var(--ink-border)] pb-2"><Link className="underline" href={`${GAMES[g].url}?d=${day}`}>{GAMES[g].title}</Link><span className="text-right text-sm">{names.length ? `${names.join(' & ')} · ${formatScore(Math.max(...games.map(r => r.score)))}` : games.length ? `${games[0]!.name} · waiting for a challenger` : day > localDay() ? 'Future practice' : 'No scores yet'}</span></div> })}
+    {(game === 'all' ? GAME_IDS : [game]).map(g => { const games = selected.filter(r => r.game === g); const names = winners(games); return <div key={g} className="flex items-start justify-between gap-2 border-b border-[var(--ink-border)] pb-2"><Link className="underline" href={`${GAMES[g].url}?d=${day}`}>{GAMES[g].title}</Link><span className="text-right text-sm">{names.length ? `${names.join(' & ')} · ${formatGameScore(g,bestGameScore(g,games.map(r => r.score)))}` : games.length ? `${games[0]!.name} · waiting for a challenger` : day > localDay() ? 'Future practice' : 'No scores yet'}</span></div> })}
         <p className={muted}>Each game has its own scoring. Scores from different games are kept separate.</p>
-        {mine.some(r => r.day === day) && <button className="underline text-sm" onClick={() => { void navigator.clipboard.writeText([`sfjc.dev · ${day}`, ...mine.filter(r => r.day === day).map(r => `${GAMES[r.game].title}: ${formatScore(r.score)}`)].join('\n')).then(() => setCopied(true)) }}>{copied ? 'Copied' : 'Copy results to share'}</button>}
+        {mine.some(r => r.day === day) && <button className="underline text-sm" onClick={() => { void navigator.clipboard.writeText([`sfjc.dev · ${day}`, ...mine.filter(r => r.day === day).map(r => `${GAMES[r.game].title}: ${resultLabel(r)}`)].join('\n')).then(() => setCopied(true)) }}>{copied ? 'Copied' : 'Copy results to share'}</button>}
       </section>
     </div>
     {dailyHistory.length > 0 && <section className={`${card} space-y-3`} data-testid="scores-day-by-day">
@@ -123,15 +123,19 @@ export function ScoresHub() {
       const own = gameRows.filter(r => r.name === player?.name)
       const streak = streaks(own, day)
       const week = gameRows.filter(r => r.day >= shiftDay(day, -6))
-      const names = [...new Set(gameRows.map(r => r.name))].sort((a, b) => (selected.find(r => r.game === g && r.name === b)?.score ?? -1) - (selected.find(r => r.game === g && r.name === a)?.score ?? -1) || a.localeCompare(b))
+      const names = [...new Set(gameRows.map(r => r.name))].sort((a,b)=>{
+        const first=selected.find(r=>r.game===g&&r.name===a),second=selected.find(r=>r.game===g&&r.name===b)
+        return Number(!first)-Number(!second)||(first&&second?compareResults(first,second):0)||a.localeCompare(b)
+      })
       const wins = winsByPlayer(gameRows)
       const seconds = own.flatMap(r => r.stats.seconds === undefined ? [] : [r.stats.seconds])
-      const facts = [['Days played',String(own.length)], ['Current streak',String(streak.current)], ['Longest streak',String(streak.longest)], ['Best score',own.length ? formatScore(Math.max(...own.map(r => r.score))) : '—'], ['Average score',own.length ? formatScore(average(own.map(r => r.score))) : '—'], ['Days won',String(wins.get(player?.name ?? '') ?? 0)], ...(seconds.length ? [['Best time',formatTime(Math.min(...seconds))],['Average time',formatTime(Math.round(average(seconds)))]] : []), ...(g === 'bee' && own.length ? [['Most words',String(Math.max(...own.map(r => r.stats.n ?? 0)))]] : []), ...(g === 'connections' && own.length ? [['Solves',String(own.filter(r => r.stats.solved).length)],['Avg mistakes',average(own.map(r => r.stats.mistakes ?? 0)).toFixed(1)]] : [])]
+      const facts = [['Days played',String(own.length)], ['Current streak',String(streak.current)], ['Longest streak',String(streak.longest)], [g==='mini'?'First-solve best':'Best score',own.length ? formatGameScore(g,bestGameScore(g,own.map(r => r.score))) : '—'], [g==='mini'?'Average time':'Average score',own.length ? formatGameScore(g,average(own.map(r => r.score))) : '—'], ['Days won',String(wins.get(player?.name ?? '') ?? 0)], ...(seconds.length && g!=='mini' ? [['Best time',formatTime(Math.min(...seconds))],['Average time',formatTime(Math.round(average(seconds)))]] : []), ...(g === 'bee' && own.length ? [['Most words',String(Math.max(...own.map(r => r.stats.n ?? 0)))]] : []), ...(g === 'connections' && own.length ? [['Solves',String(own.filter(r => r.stats.solved).length)],['Avg mistakes',average(own.map(r => r.stats.mistakes ?? 0)).toFixed(1)]] : [])]
       return <section key={g} className={`${card} space-y-4`} data-testid={`board-${g}`}><div><h2 className="font-lora text-xl">{GAMES[g].title}</h2><p className={`${muted} mt-1`}>{GAMES[g].rules}</p></div>
-        {names.length ? <div className="overflow-x-auto"><table className="w-full min-w-[420px] text-left text-sm"><thead className="text-[var(--ink-muted)]"><tr><th className="py-2">Player</th><th className="text-right">Selected day</th><th className="text-right">7-day avg*</th><th className="text-right">Wins</th></tr></thead><tbody>{names.map(name => { const r = selected.find(r => r.game === g && r.name === name); const w = week.filter(r => r.name === name); return <tr key={name} className="border-t border-[var(--ink-border)]"><th className="py-2 font-medium">{name}</th><td className="text-right tabular-nums">{r ? `${formatScore(r.score)}${r.stats.seconds === undefined ? '' : ` · ${formatTime(r.stats.seconds)}`}` : '—'}</td><td className="text-right tabular-nums">{w.length ? formatScore(average(w.map(r => r.score))) : '—'}</td><td className="text-right">{wins.get(name) ?? 0}</td></tr> })}</tbody></table><p className={`${muted} mt-2`}>*Average over played days in the seven-day window.</p></div> : <p className={muted}>No scores yet. <Link className="underline" href={`${GAMES[g].url}?d=${day}`}>Play {GAMES[g].title}</Link> to start.</p>}
+        {names.length ? <div className="overflow-x-auto"><table className="w-full min-w-[420px] text-left text-sm"><thead className="text-[var(--ink-muted)]"><tr><th className="py-2">Player</th><th className="text-right">Selected day</th><th className="text-right">7-day avg*</th><th className="text-right">Wins</th></tr></thead><tbody>{names.map(name => { const r = selected.find(r => r.game === g && r.name === name); const w = week.filter(r => r.name === name); return <tr key={name} className="border-t border-[var(--ink-border)]"><th className="py-2 font-medium">{name}</th><td className="text-right tabular-nums">{r ? resultLabel(r) : '—'}</td><td className="text-right tabular-nums">{w.length ? formatGameScore(g,average(w.map(r => r.score))) : '—'}</td><td className="text-right">{wins.get(name) ?? 0}</td></tr> })}</tbody></table><p className={`${muted} mt-2`}>*Average over played days in the seven-day window.</p></div> : <p className={muted}>No scores yet. <Link className="underline" href={`${GAMES[g].url}?d=${day}`}>Play {GAMES[g].title}</Link> to start.</p>}
         {own.length > 0 && <><Trend rows={own} day={day} /><div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{facts.map(([label,value]) => <div key={label}><p className="text-xl font-semibold tabular-nums">{value}</p><p className={muted}>{label}</p></div>)}</div></>}
       </section>
     })}
+    {!!response?.legacyRows.length && <details className={card}><summary className="cursor-pointer text-sm">Earlier local-scoring results ({response.legacyRows.length})</summary><p className={`${muted} my-2`}>Preserved for history. These used different scoring rules and are kept out of the current standings.</p><ul className="space-y-1 text-sm">{response.legacyRows.map(r=><li key={`${r.game}:${r.day}:${r.name}`}>{r.day} · {r.name} · {GAMES[r.game].title}: {formatScore(r.score)} legacy points</li>)}</ul></details>}
     {player && <p className={muted}>Group: {new Set(rows.map(r => r.name)).size} players · {rows.length} game results · {winCounts.get(player.name) ?? 0} shared or outright daily wins.</p>}
   </div>
 }

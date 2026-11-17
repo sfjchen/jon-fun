@@ -16,7 +16,7 @@
     },
     {
       "path": "/api/cron/krillion",
-      "schedule": "30 4 * * *"
+      "schedule": "10 5 * * *"
     }
   ]
 }

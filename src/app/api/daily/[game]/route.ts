@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { dailyPuzzle } from '@/lib/daily/server'
 import { DAILY_EPOCH, siteDay, validDay } from '@/lib/daily'
 import { GAME_IDS, type GameId } from '@/lib/results'
+export const maxDuration=60
 export async function GET(req: Request, { params }: { params: Promise<{ game: string }> }) {
   const { game } = await params
   const day = new URL(req.url).searchParams.get('d') ?? siteDay()

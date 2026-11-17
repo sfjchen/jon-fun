@@ -53,7 +53,7 @@ const items: GameCardGame[] = [
     available: true,
   },
   { id: 'mini', title: 'Mini Crossword', description: 'A daily crossword from the archives; solve against the clock', icon: `${nb}/mini.svg`, href: '/games/mini', available: true },
-  { id: 'krillion', title: 'Krillion', description: 'Yesterday’s seven prompts, a 25-second clock and daily scores', icon: `${nb}/krillion.svg`, href: '/games/krillion', available: true },
+  { id: 'krillion', title: 'Krillion', description: 'Today’s seven prompts, original answer sets, rarity scoring and a 25-second clock', icon: `${nb}/krillion.svg`, href: '/games/krillion', available: true },
   { id: 'scores', title: 'Leaderboard', description: 'Daily games, calendar, winners, trends and friend scores', icon: `${nb}/leaderboards.svg`, href: '/leaderboards', available: true },
   { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: `${nb}/game24.svg`, href: '/games/24', available: true },
   { id: 'daily-log', title: '1 Sentence Everyday', description: 'One sentence per day; history, calendar, export', icon: `${nb}/daily.svg`, href: '/games/daily-log', available: true },

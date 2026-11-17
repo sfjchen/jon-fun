@@ -1,4 +1,4 @@
-"""Refresh historical Connections / Bee banks and capture public Krillion prompts for yesterday's daily."""
+"""Refresh historical banks and capture the current-day original Krillion answer review."""
 import collections
 import datetime
 import json
@@ -74,11 +74,17 @@ def bee():
     print('Bee:', len(games))
 
 def krillion():
+    import gzip
     game = fetch('https://krillion.io/api/today')
-    assert len(game['prompts']) == 7
-    # Capture today's free prompts now; tomorrow's local daily reads this dated snapshot.
+    review = fetch('https://krillion.io/api/reveal?date=' + game['date'])
+    assert review['date'] == game['date'] and len(review['prompts']) == 7
+    for prompt in review['prompts']:
+        assert prompt['answers'] and all(a['score'] in [10,15,30,60,85,100] for a in prompt['answers'])
     write(ROOT / 'data/krillion/prompts' / (game['date']+'.json'), game)
-    print('Krillion captured:', game['date'])
+    target = ROOT / 'data/krillion/review' / (game['date']+'.json.gz')
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(gzip.compress(json.dumps(review, ensure_ascii=False,separators=(',',':')).encode(),mtime=0))
+    print('Krillion original review captured:', game['date'], sum(len(p['answers']) for p in review['prompts']), 'answers')
 
 if __name__ == '__main__':
     import sys
