@@ -34,7 +34,7 @@ Notebook maps from shared `--ink-*` tokens in `globals.css` via `data-theme="not
 
 ### Navigation
 
-- Masthead **sfjc.dev** → `/` on home and on desktop. Below 768px every other page drops the masthead and shows only a floating home icon (top right).
+- Masthead **sfjc.dev** → `/` on home and on desktop. Below 768px every other page drops the masthead for a home icon in its own top-right row (floating only on full-bleed pages).
 - Redirects: `/notebook/*` → `/*`; legacy `/theme2/*` → canonical routes (see `next.config.mjs`).
 
 ---

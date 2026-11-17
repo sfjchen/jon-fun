@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-  <!-- doodly question mark -->
-  <path d="M26 16 Q24 10 32 8 Q40 10 38 18 Q36 24 32 26 L32 36" />
-  <circle cx="32" cy="48" r="4" fill="#1a1a1a" />
+  <rect x="12" y="4" width="40" height="56" rx="4" fill="#3b5bd6" />
+  <path d="M26 16 Q24 10 32 8 Q40 10 38 18 Q36 24 32 26 L32 36" stroke="#f7da21" />
+  <circle cx="32" cy="48" r="4" fill="#f7da21" stroke="none" />
 </svg>

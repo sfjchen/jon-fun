@@ -19,22 +19,6 @@ const items: GameCardGame[] = [
     available: true,
   },
   {
-    id: 'e-reader',
-    title: 'Web E-Reader',
-    description: 'Import text or PDF files into a chapterized reader with typography controls, bookmarks, TTS, and local progress',
-    icon: `${nb}/ereader.svg`,
-    href: '/games/e-reader',
-    available: true,
-  },
-  {
-    id: 'notes',
-    title: 'Notes',
-    description: 'Meeting shorthand + ? AI lookups; notes live in collapsible side panel',
-    icon: `${nb}/daily.svg`,
-    href: '/games/notes',
-    available: true,
-  },
-  {
     id: 'quip-clash',
     title: 'Quip Clash',
     description: 'PIN room party game: paired prompts, head-to-head votes, final round (Supabase + Realtime)',

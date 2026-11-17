@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-  <!-- doodly card with spade -->
-  <path d="M14 8 L48 8 Q52 10 48 12 L16 12 L14 56 L48 56 Q52 54 48 52 L16 52 Z" />
-  <path d="M32 26 L36 34 L32 32 L28 34 Z" />
-  <path d="M28 34 L36 34 L34 42 L30 42 Z" />
+  <path d="M14 8 L48 8 Q52 10 48 12 L16 12 L14 56 L48 56 Q52 54 48 52 L16 52 Z" fill="#fdf8ef" />
+  <rect x="18" y="16" width="28" height="32" rx="2" fill="#9fd3a8" stroke="none" />
+  <path d="M32 26 L36 34 L32 32 L28 34 Z" fill="#1a1a1a" />
+  <path d="M28 34 L36 34 L34 42 L30 42 Z" fill="#1a1a1a" />
   <path d="M30 42 L32 52 L34 42" />
 </svg>
