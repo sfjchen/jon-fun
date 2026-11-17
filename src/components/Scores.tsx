@@ -2,7 +2,7 @@
 
 /**
  * Scores hub UI: the name + group form, the group's boards and each player's own stats per game.
- * Scores arrive on their own from Spelling Bee and 24, so nothing here is typed or pasted.
+ * Scores arrive on their own from Spelling Bee, 24 and daily Connections, so nothing here is typed or pasted.
  */
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
@@ -40,9 +40,21 @@ function subscribePlayer(cb: () => void): () => void {
 }
 
 /**
+ * Returns this browser's saved player and re-renders when it changes.
+ */
+export function usePlayer(): Player | null {
+  const raw = useSyncExternalStore(
+    subscribePlayer,
+    () => JSON.stringify(getPlayer()),
+    () => 'null',
+  )
+  return useMemo(() => JSON.parse(raw) as Player | null, [raw])
+}
+
+/**
  * Collects the name and group code that results are filed under.
  */
-function PlayerForm({ player, onDone }: { player: Player | null; onDone: () => void }) {
+export function PlayerForm({ player, onDone }: { player: Player | null; onDone: () => void }) {
   const [name, setName] = useState(player?.name ?? '')
   const [group, setGroup] = useState(player?.group ?? '')
   const code = group.trim().toLowerCase()
@@ -102,12 +114,12 @@ function mean(xs: number[]): number {
   return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0
 }
 
-type Standing = { name: string; today: number | null; week: number | null; wins: number }
+export type Standing = { name: string; today: number | null; week: number | null; wins: number }
 
 /**
  * Ranks a game's players by today's score, then by their 7-day average, and counts days won against others.
  */
-function standings(rows: BoardRow[], today: string): Standing[] {
+export function standings(rows: BoardRow[], today: string): Standing[] {
   const weekAgo = shiftDay(today, -6)
   const wins = new Map<string, number>()
   for (const d of new Set(rows.map((r) => r.day))) {
@@ -163,12 +175,7 @@ function facts(own: BoardRow[], today: string, wins: number): [string, string][]
  * Renders the Scores hub: player setup, links to the games, the group's boards and own stats.
  */
 export function ScoresHub() {
-  const raw = useSyncExternalStore(
-    subscribePlayer,
-    () => JSON.stringify(getPlayer()),
-    () => 'null',
-  )
-  const player = useMemo(() => JSON.parse(raw) as Player | null, [raw])
+  const player = usePlayer()
   const [editing, setEditing] = useState(false)
   const [copied, setCopied] = useState('')
   const [rows, setRows] = useState<BoardRow[] | null>(null)
@@ -239,7 +246,7 @@ export function ScoresHub() {
           )}
 
           {rows && played.length === 0 && (
-            <p style={muted}>No results yet. Play Spelling Bee or a 24 room and your score shows up here by itself.</p>
+            <p style={muted}>No results yet. Play Spelling Bee, daily Connections or a 24 room and your score shows up here by itself.</p>
           )}
 
           {played.map((g) => {

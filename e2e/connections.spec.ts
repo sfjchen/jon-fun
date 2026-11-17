@@ -125,6 +125,35 @@ test.describe('Connections', () => {
     await expect(page.getByText('4 lives left')).toBeVisible()
   })
 
+  test('daily result goes to the Scores board with a name and shows the rank', async ({ page }) => {
+    const posts: Record<string, unknown>[] = []
+    await page.route('**/api/results**', async (route) => {
+      const req = route.request()
+      if (req.method() === 'POST') {
+        posts.push(req.postDataJSON() as Record<string, unknown>)
+        return route.fulfill({ json: { ok: true } })
+      }
+      const mine = posts.at(-1)
+      const rows = [
+        { name: 'Friend', game: 'connections', day: mine?.today, score: 80, stats: {} },
+        ...(mine ? [{ name: mine.name, game: 'connections', day: mine.today, score: mine.score, stats: {} }] : []),
+      ]
+      return route.fulfill({ json: { rows } })
+    })
+    page.on('dialog', (d) => void d.accept())
+
+    await page.goto('/games/connections/daily', { waitUntil: 'domcontentloaded', timeout: 60_000 })
+    await expect(page.getByTestId('connections-daily-join')).toBeVisible({ timeout: 25_000 })
+    await page.getByLabel('Your name').fill('Tester')
+    await page.getByLabel('Group code').fill('e2e-group')
+    await page.getByRole('button', { name: 'Save' }).click()
+    await expect(page.getByTestId('connections-daily-scores')).toContainText('Playing as Tester')
+
+    await page.getByRole('button', { name: 'Give up' }).click()
+    await expect(page.getByTestId('connections-daily-rank')).toHaveText(/^#2 of 2 today in e2e-group · score 0/)
+    expect(posts[0]).toMatchObject({ name: 'Tester', group: 'e2e-group', game: 'connections', score: 0 })
+  })
+
   test('search with no matches shows empty search state', async ({ page }) => {
     await page.goto('/games/connections', { waitUntil: 'domcontentloaded', timeout: 60_000 })
     await expect(page.getByTestId('connections-library-card')).toHaveCount(1, { timeout: 25_000 })

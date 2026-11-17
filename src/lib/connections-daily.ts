@@ -101,3 +101,11 @@ export function saveDailyProgress(date: string, p: ConnectionsProgress): void {
     localStorage.setItem(PROGRESS_PREFIX + date, JSON.stringify(p))
   } catch {}
 }
+
+/**
+ * Scores a finished daily game out of 100 for the Scores hub: a win is worth 100 minus 20 per mistake, and a
+ * loss 10 per group found, so any win outranks any loss.
+ */
+export function dailyScore(won: boolean, wrongGuesses: number, solvedGroups: number): number {
+  return won ? 100 - 20 * wrongGuesses : 10 * solvedGroups
+}

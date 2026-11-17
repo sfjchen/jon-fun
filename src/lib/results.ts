@@ -3,12 +3,13 @@
  * (name + group code) that results are filed under. Runs on both the client and the /api/results route.
  */
 
-export type GameId = 'bee' | '24'
+export type GameId = 'bee' | '24' | 'connections'
 
 /** Each game's title, page and highest accepted score. */
 export const GAMES: Record<GameId, { title: string; url: string; max: number }> = {
   bee: { title: 'Spelling Bee', url: '/games/spelling-bee', max: 1000 },
   '24': { title: '24', url: '/games/24', max: 16000 },
+  connections: { title: 'Connections', url: '/games/connections/daily', max: 100 },
 }
 
 export const GAME_IDS = Object.keys(GAMES) as GameId[]
@@ -59,14 +60,18 @@ export function setPlayer(p: Player): void {
 }
 
 /**
- * Sends a game's score for today to the group's board. Does nothing until a player is saved.
+ * Sends a game's score for today to the group's board, resolving once it is stored. Does nothing until a
+ * player is saved.
  */
-export function logResult(game: GameId, score: number, n?: number): void {
+export function logResult(game: GameId, score: number, n?: number): Promise<void> {
   const p = getPlayer()
-  if (!p) return
-  fetch('/api/results', {
+  if (!p) return Promise.resolve()
+  return fetch('/api/results', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ...p, today: localDay(), game, score, n }),
-  }).catch(() => {})
+  }).then(
+    () => {},
+    () => {},
+  )
 }
