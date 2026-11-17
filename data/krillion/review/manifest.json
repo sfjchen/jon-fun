@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-17",
+  "source": "https://krillion.io/api/reveal?date=2026-11-17",
+  "sha256": "46e5f9d29542cfe0ac9c9902d789147963f12bc477910ec7138275d6b1a2f9c3",
+  "prompts": [
+    {
+      "id": "p1",
+      "answers": 4501
+    },
+    {
+      "id": "p2",
+      "answers": 3133
+    },
+    {
+      "id": "p3",
+      "answers": 73295
+    },
+    {
+      "id": "p4",
+      "answers": 25158
+    },
+    {
+      "id": "p5",
+      "answers": 3325
+    },
+    {
+      "id": "p6",
+      "answers": 453
+    },
+    {
+      "id": "p7",
+      "answers": 288
+    }
+  ],
+  "verifiedReferenceScore": 90
+}

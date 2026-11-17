@@ -141,8 +141,10 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
     }
 
     commit({ ...progress, guesses: [...progress.guesses, selectedWords] })
-    setSelectedKeys(new Set())
-    if (findMatchingGroup(puzzle.groups, selectedWords)) return
+    if (findMatchingGroup(puzzle.groups, selectedWords)) {
+      setSelectedKeys(new Set())
+      return
+    }
 
     setShake(true)
     setTimeout(() => setShake(false), 420)

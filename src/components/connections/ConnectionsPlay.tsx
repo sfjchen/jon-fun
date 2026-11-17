@@ -6,7 +6,6 @@ import type { ConnectionsPuzzle } from '@/lib/connections'
 import { buildShareLines } from '@/lib/connections'
 import ConnectionsBoard, { type ConnectionsCompletePayload } from '@/components/connections/ConnectionsBoard'
 import ConnectionsResult from '@/components/connections/ConnectionsResult'
-import { dailyScore } from '@/lib/connections-daily'
 import type { ConnectionsProgress } from '@/lib/connections'
 import { logResult, markPracticeIfFuture, isPracticeResult } from '@/lib/results'
 import { SAMPLE_PUZZLE } from '@/lib/connections-sample'
@@ -98,7 +97,7 @@ export default function ConnectionsPlay({ basePath, idOrSlug, initialPuzzle, dai
 
   const onComplete = useCallback((p: ConnectionsCompletePayload) => {
     setResult(p)
-    if (dailyDay) logResult('connections', dailyScore(p.won, p.wrongGuesses, p.solvedDifficulties.length), undefined, dailyDay, { solved: p.won, mistakes: p.wrongGuesses, n: p.solvedDifficulties.length, puzzleId: idOrSlug })
+    if (dailyDay) logResult('connections', p.solvedDifficulties.length, p.solvedDifficulties.length, dailyDay, { solved: p.won, mistakes: p.wrongGuesses, n: p.solvedDifficulties.length, puzzleId: idOrSlug })
   }, [dailyDay, idOrSlug])
 
   const replay = useCallback(() => {

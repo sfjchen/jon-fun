@@ -288,7 +288,7 @@ export default function SpellingBee() {
     setCur(key)
     setFound(key ? loadFound(key).filter(w => pz?.answers.includes(w)) : [])
     setEntry('')
-    setRevealed(false)
+    try { setRevealed(Boolean(key && localStorage.getItem(`sb:revealed:${key}`))) } catch { setRevealed(false) }
     setCrowd(null)
   }
 
@@ -335,7 +335,7 @@ export default function SpellingBee() {
 
   const busy = toast?.ok === false
   const submit = useCallback(() => {
-    if (!pz || !key || !entry || busy) return
+    if (!pz || !key || !entry || busy || revealed) return
     const e = check(entry, pz, found)
     if (e) return flash(e, false)
     if (!isPractice) markPracticeIfFuture('bee', date)
@@ -350,20 +350,23 @@ export default function SpellingBee() {
       localStorage.setItem(`sb:${key}`, JSON.stringify(nf))
     } catch {}
     flash(nr === RANKS.length - 1 ? 'Queen Bee! 👑' : praise(entry), true, score(entry))
-  }, [pz, key, entry, found, busy, flash, isPractice, date])
+  }, [pz, key, entry, found, busy, flash, isPractice, date, revealed])
 
   const type = useCallback(
     (c: string) => {
-      if (!busy) setEntry((v) => (v.length < 19 ? v + c : v))
+      if (!busy && !revealed) setEntry((v) => (v.length < 19 ? v + c : v))
     },
-    [busy],
+    [busy, revealed],
   )
 
   const reorder = () => setOrder(shuffle(order))
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (modal || e.metaKey || e.ctrlKey || e.altKey) return
+      if (revealed || modal || e.metaKey || e.ctrlKey || e.altKey) return
+      const target = e.target as HTMLElement | null
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
+      if ((e.key === 'Enter' || e.key === ' ') && target?.closest('button, a')) return
       if (e.key === 'Enter') submit()
       else if (e.key === 'Backspace' || e.key === 'Delete') setEntry((v) => v.slice(0, -1))
       else if (e.key === ' ') reorder()
@@ -605,9 +608,10 @@ export default function SpellingBee() {
               <span className="md:hidden">{open ? '▲' : '▼'}</span>
             </button>
             <div className={`px-4 pb-4 ${open ? '' : 'max-md:hidden'}`}>
+              {revealed && <p className="mb-3 text-sm">Answers revealed · this puzzle is finished.</p>}
               {revealed ? <WordList words={pz.answers} found={new Set(found)} /> : <WordList words={sorted} />}
-              {isPractice && !revealed && found.length < pz.answers.length && (
-                <button className={`${link} mt-3`} onClick={() => setRevealed(true)}>
+              {(isPractice || date < now) && !revealed && found.length < pz.answers.length && (
+                <button className={`${link} mt-3`} onClick={() => { if (!isPractice && pts > 0) logResult('bee', pts, found.length, date, {max:pz.max,puzzleId:pz.id,sourceDate:(pz as HistoricalPuzzle).date}); setRevealed(true); try { localStorage.setItem(`sb:revealed:${key}`, '1') } catch {} }}>
                   Reveal all answers
                 </button>
               )}
