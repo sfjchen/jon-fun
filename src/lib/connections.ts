@@ -46,6 +46,8 @@ export interface ConnectionsPuzzleSummary {
   totalMistakes: number
   createdAt: string
   updatedAt: string
+  /** True when this browser published the puzzle. */
+  mine?: boolean
 }
 
 /** A game in progress: every submitted guess (4 words each) and whether the player gave up. */
@@ -232,18 +234,11 @@ const TIER_EMOJI: Record<ConnectionsDifficulty, string> = {
   purple: '🟪',
 }
 
-/** One row per group in Y→G→B→P order: four emojis if that group was solved by player, else four ⬜. */
-export function buildShareLines(
-  solvedDifficulties: Set<ConnectionsDifficulty>,
-  won: boolean,
-): string[] {
-  const lines: string[] = []
-  for (const d of CONNECTIONS_DIFFICULTIES) {
-    const e = solvedDifficulties.has(d) ? TIER_EMOJI[d] : '⬜'
-    lines.push(`${e}${e}${e}${e}`)
-  }
-  if (!won) lines.push('💔')
-  return lines
+/**
+ * Builds the share grid: one row of 4 colored squares per guess, in the order guessed.
+ */
+export function buildShareLines(guesses: ConnectionsDifficulty[][]): string[] {
+  return guesses.map((g) => g.map((d) => TIER_EMOJI[d]).join(''))
 }
 
 /** Check if selected 4 words match exactly one group (by normalized word set). */

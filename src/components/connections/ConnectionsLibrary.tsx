@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import type { ConnectionsDifficulty, ConnectionsPuzzleSummary } from '@/lib/connections'
-import { CONNECTIONS_DIFFICULTIES, summaryAvgMistakes, summarySolveRate } from '@/lib/connections'
+import { CONNECTIONS_DIFFICULTIES, getOrCreateConnectionsClientId, summaryAvgMistakes, summarySolveRate } from '@/lib/connections'
 import { SAMPLE_PUZZLE } from '@/lib/connections-sample'
 
 const TIER_DOT: Record<ConnectionsDifficulty, string> = {
@@ -30,7 +30,9 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
   useEffect(() => {
     void (async () => {
       try {
-        const r = await fetch('/api/connections/puzzles?sort=newest&limit=300')
+        const r = await fetch('/api/connections/puzzles?sort=newest&limit=300', {
+          headers: { 'x-connections-client': getOrCreateConnectionsClientId() },
+        })
         if (r.status === 503) {
           setOffline(true)
           setItems([])
@@ -262,6 +264,7 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
                 >
                   Play
                 </Link>
+                {it.mine && (
                 <Link
                   href={`${basePath}/edit/${it.id}`}
                   className="rounded-lg border px-3 py-1.5 text-sm"
@@ -269,6 +272,7 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
                 >
                   Edit
                 </Link>
+                )}
               </div>
             </li>
           ))}

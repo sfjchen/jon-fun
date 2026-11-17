@@ -3,12 +3,22 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { formatTime, logResult, isPracticeResult, markPracticeIfFuture } from '@/lib/results'
 import { emptyMini, miniElapsed, pauseMini, resumeMini, finishMini, restoreMini, type MiniPuzzle, type MiniRun } from '@/lib/mini'
 export type { MiniPuzzle } from '@/lib/mini'
+/**
+ * Renders a small dropdown of actions that closes after a pick or an outside click.
+ */
+function Menu({label,items}:{label:string;items:[string,()=>void][]}){
+  const [open,setOpen]=useState(false),box=useRef<HTMLDivElement>(null)
+  useEffect(()=>{if(!open)return;const close=(e:PointerEvent)=>{if(!box.current?.contains(e.target as Node))setOpen(false)};document.addEventListener('pointerdown',close);return()=>document.removeEventListener('pointerdown',close)},[open])
+  return <div ref={box} className="relative"><button className="rounded-full px-3 py-2 text-sm font-medium hover:bg-[var(--ink-border)]/40" aria-expanded={open} onClick={()=>setOpen(o=>!o)}>{label} ▾</button>
+    {open&&<div role="menu" className="absolute right-0 top-10 z-30 min-w-36 rounded-lg border bg-[var(--ink-paper)] py-1 shadow-lg">{items.map(([name,run])=><button key={name} role="menuitem" className="block w-full px-4 py-2 text-left text-sm hover:bg-[var(--ink-border)]/40" onClick={()=>{setOpen(false);run()}}>{name}</button>)}</div>}</div>
+}
+
 export default function MiniPlay({puzzle,dailyDay}:{puzzle:MiniPuzzle;dailyDay?:string}){
   const storageKey=`mini:v3:${dailyDay??'archive'}:${puzzle.date}`
   const [run,setRun]=useState<MiniRun>(()=>{try{return restoreMini(JSON.parse(localStorage.getItem(storageKey)??'null'),puzzle)}catch{return emptyMini(puzzle)}})
   const current=useRef(run),inputs=useRef<(HTMLInputElement|null)[]>([])
   const [active,setActive]=useState(()=>puzzle.cells.findIndex(Boolean)),[direction,setDirection]=useState('Across'),[clock,setClock]=useState(()=>Date.now())
-  const [scope,setScope]=useState('puzzle'),[pencil,setPencil]=useState(false),[autocheck,setAutocheck]=useState(false),[rebus,setRebus]=useState(false)
+  const [pencil,setPencil]=useState(false),[autocheck,setAutocheck]=useState(false),[rebus,setRebus]=useState(false)
   const [wrong,setWrong]=useState<number[]>([]),[message,setMessage]=useState('')
   const save=useCallback((r:MiniRun)=>{try{localStorage.setItem(storageKey,JSON.stringify(pauseMini(r,Date.now())))}catch{}},[storageKey])
   const commit=useCallback((r:MiniRun)=>{current.current=r;setRun(()=>r);save(r)},[save])
@@ -37,7 +47,7 @@ export default function MiniPlay({puzzle,dailyDay}:{puzzle:MiniPuzzle;dailyDay?:
     commit(finishMini(next,puzzle,Date.now()));setClock(Date.now());setMessage('');setWrong(previous=>autocheck&&text&&text!==puzzle.cells[i]?[...new Set([...previous,i])]:previous.filter(j=>j!==i))
     if(text&&!rebus)advance()
   }
-  function help(reveal:boolean){
+  function help(reveal:boolean,scope:string){
     const indices=scope==='square'?[active]:scope==='word'?(clue?.cells??[active]):puzzle.cells.flatMap((a,i)=>a?[i]:[])
     const r=current.current,entries=reveal?r.entries.map((v,i)=>indices.includes(i)?puzzle.cells[i]??'':v):r.entries
     const confirmed=[...new Set([...r.confirmed,...indices.filter(i=>entries[i]&&entries[i]===puzzle.cells[i])])]
@@ -52,19 +62,25 @@ export default function MiniPlay({puzzle,dailyDay}:{puzzle:MiniPuzzle;dailyDay?:
     commit(resumeMini(r,Date.now()));setClock(Date.now());setWrong([]);setMessage('');focus(puzzle.cells.findIndex(Boolean))
   }
   useEffect(()=>{if(!paused&&!run.complete)inputs.current[active]?.focus()},[paused,run.complete,active])
-  const header=<><h2 className="text-xl">Mini · {puzzle.date}</h2><p className="text-sm">By {puzzle.constructors.join(', ')}</p><p className="tabular-nums">Time: {formatTime(seconds)}{run.assisted?' · Assisted solve':dailyDay?isPracticeResult('mini',dailyDay)?' · Future preview · practice only':' · First unassisted solve counts':' · Archive practice'}</p></>
-  if(paused)return <section className="space-y-5">{header}<div className="rounded-xl border bg-[var(--ink-paper)] p-8 text-center space-y-4" role="dialog" aria-label="Mini paused"><h3 className="font-lora text-2xl">{run.started?'Puzzle paused':'Ready to solve?'}</h3><p>The timer runs while the puzzle is open. Leaving the puzzle or pausing hides the grid and stops the timer.</p><button className="rounded-lg bg-[var(--ink-accent)] px-6 py-3 text-white" onClick={()=>{setClock(Date.now());commit(resumeMini(current.current,Date.now()))}}>{run.started?'Continue puzzle':'Start puzzle'}</button></div></section>
-  return <section className="space-y-4">{header}
-    <div className="flex flex-wrap items-center gap-3">{!run.complete&&<button className="rounded border px-4 py-2" onClick={()=>{setClock(Date.now());commit(pauseMini(current.current,Date.now()))}}>Pause puzzle</button>}
-      <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={pencil} onChange={e=>setPencil(e.target.checked)} />Pencil</label>
-      <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={autocheck} onChange={e=>{setAutocheck(e.target.checked);if(e.target.checked)commit({...current.current,assisted:true})}} />Autocheck</label>
-      <label className="text-sm">Help scope<select aria-label="Help scope" className="ml-2 rounded border bg-[var(--ink-paper)] p-2" value={scope} onChange={e=>setScope(e.target.value)}><option value="square">Square</option><option value="word">Word</option><option value="puzzle">Puzzle</option></select></label>
-      <button disabled={run.complete} className="rounded border px-3 py-2 text-sm disabled:opacity-40" onClick={()=>help(false)}>Check answers</button><button disabled={run.complete} className="rounded border px-3 py-2 text-sm disabled:opacity-40" onClick={()=>help(true)}>Reveal answers</button>
-      <button className="rounded border px-3 py-2 text-sm" onClick={clearPuzzle}>Clear puzzle</button>
+  const status=run.complete?run.assisted?'Solved with help · not ranked':`Solved in ${formatTime(seconds)}!`:''
+  const tool='rounded-full px-3 py-2 text-sm font-medium hover:bg-[var(--ink-border)]/40 disabled:opacity-30'
+  const toolbar=<div className="flex items-center gap-1 border-b pb-2" style={{borderColor:'var(--ink-border)'}}>
+    <button className={`${tool} tabular-nums`} disabled={run.complete} title={paused?'Resume':'Pause'} aria-label={paused?'Resume puzzle':'Pause puzzle'} onClick={()=>{setClock(Date.now());commit(paused?resumeMini(current.current,Date.now()):pauseMini(current.current,Date.now()))}}>{run.complete?'':paused?'▶ ':'❚❚ '}{formatTime(seconds)}</button>
+    <span className="mr-auto text-xs text-[var(--ink-muted)]">{run.assisted&&!run.complete?'Assisted · not ranked':dailyDay&&isPracticeResult('mini',dailyDay)?'Practice':''}</span>
+    {!paused&&!run.complete&&<>
+      <button className={tool} aria-pressed={pencil} title="Pencil: gray, tentative letters" style={pencil?{background:'var(--ink-text)',color:'var(--ink-bg)'}:undefined} onClick={()=>setPencil(v=>!v)}>✏️</button>
+      <Menu label="Check" items={[['Autocheck'+(autocheck?' ✓':''),()=>{const on=!autocheck;setAutocheck(on);if(on)commit({...current.current,assisted:true})}],['Square',()=>help(false,'square')],['Word',()=>help(false,'word')],['Puzzle',()=>help(false,'puzzle')]]} />
+      <Menu label="Reveal" items={[['Square',()=>help(true,'square')],['Word',()=>help(true,'word')],['Puzzle',()=>help(true,'puzzle')],['Clear puzzle',clearPuzzle]]} />
+    </>}
+  </div>
+  if(paused)return <section className="space-y-4">{toolbar}<div className="space-y-4 rounded-xl border bg-[var(--ink-paper)] p-8 text-center" role="dialog" aria-label="Mini paused"><h3 className="font-lora text-2xl">{run.started?'Paused':'Ready?'}</h3><p className="text-sm text-[var(--ink-muted)]">By {puzzle.constructors.join(', ')}</p><button className="rounded-full bg-[var(--ink-text)] px-8 py-3 font-semibold text-[var(--ink-bg)]" aria-label={run.started?'Continue puzzle':'Start puzzle'} onClick={()=>{setClock(Date.now());commit(resumeMini(current.current,Date.now()))}}>{run.started?'Continue':'Play'}</button></div></section>
+  return <section className="space-y-3">{toolbar}
+    {rebus&&<p className="text-sm">Rebus: type several letters, then Enter. Escape exits.</p>}
+    <div className="mx-auto w-full max-w-sm space-y-2">
+    <div role="status" aria-live="polite" className="flex min-h-12 items-center gap-1 rounded-lg px-1 text-sm font-medium" style={{background:'#dce7fa',color:'#111'}}>
+      {status?<span className="flex-1 px-2 text-center font-semibold">{status}</span>:<><button className="px-2 py-2 text-lg" aria-label="Previous clue" onClick={()=>nextClue(-1)}>‹</button><span className="flex-1">{message||<><strong>{clue?.number}{clue?.direction[0]}</strong> {clue?.text}</>}</span><button className="px-2 py-2 text-lg" aria-label="Next clue" onClick={()=>nextClue(1)}>›</button></>}
     </div>
-    <p role="status" aria-live="polite">{run.complete?run.assisted?'Puzzle complete · assisted.':'Puzzle solved!':message||`${clue?.number??''} ${clue?.direction??''}: ${clue?.text??'Choose a square'}`}</p>
-    {rebus&&<p className="text-sm">Rebus entry: enter multiple letters, then press Enter. Escape exits.</p>}
-    <div className="grid w-full max-w-sm border" style={{gridTemplateColumns:`repeat(${puzzle.width},minmax(0,1fr))`}}>
+    <div className="grid w-full border-2 border-black" style={{gridTemplateColumns:`repeat(${puzzle.width},minmax(0,1fr))`}}>
       {puzzle.cells.map((answer,i)=>{const number=puzzle.clues.find(c=>c.cells[0]===i)?.number;return <div key={i} className="relative aspect-square border" style={{background:answer?i===active?'#f9df6d':clue?.cells.includes(i)?'#dce7fa':'var(--ink-paper)':'#222'}}>{number&&<span className="pointer-events-none absolute left-1 top-0 z-10 text-xs text-black">{number}</span>}{answer&&<input ref={e=>{inputs.current[i]=e}} aria-label={`Row ${Math.floor(i/puzzle.width)+1}, column ${i%puzzle.width+1}${number?`, ${number}`:''}`} aria-invalid={wrong.includes(i)} autoComplete="off" autoCapitalize="characters" spellCheck={false} readOnly={run.complete} value={run.entries[i]} className="h-full w-full min-w-0 bg-transparent pt-2 text-center text-xl font-semibold outline-offset-[-3px]" style={{color:wrong.includes(i)?'#b91c1c':run.confirmed.includes(i)?'#1d4ed8':run.pencil.includes(i)?'#71717a':'#222'}} onFocus={e=>{setActive(i);e.currentTarget.select()}} onPointerDown={e=>{if(document.activeElement===e.currentTarget)setDirection(d=>d==='Across'?'Down':'Across')}} onChange={e=>enter(i,e.target.value)} onKeyDown={e=>{
         if(e.key==='Tab'){e.preventDefault();nextClue(e.shiftKey?-1:1);return}
         if(e.key==='Escape'){e.preventDefault();setRebus(v=>!v);return}
@@ -76,7 +92,7 @@ export default function MiniPlay({puzzle,dailyDay}:{puzzle:MiniPuzzle;dailyDay?:
         if(e.key==='Backspace'&&!rebus){e.preventDefault();const indices=clue?.cells??[i],previous=indices[indices.indexOf(i)-1];if(!run.entries[i]&&previous!==undefined){enter(previous,'');focus(previous)}else{enter(i,'');if(previous!==undefined)focus(previous)}}
       }} />}{wrong.includes(i)&&<span aria-hidden="true" className="pointer-events-none absolute bottom-0 right-1 text-xs text-red-700">×</span>}</div>})}
     </div>
+    </div>
     <div className="grid gap-6 sm:grid-cols-2">{['Across','Down'].map(d=><div key={d}><h3 className="text-lg font-semibold">{d}</h3><ul className="space-y-2">{puzzle.clues.filter(c=>c.direction===d).map(c=><li key={c.number}><button className="w-full rounded p-1 text-left hover:underline" aria-pressed={clue===c} style={{background:clue===c?'var(--ink-bg)':undefined}} onClick={()=>focus(c.cells.find(i=>!run.entries[i])??c.cells[0]!,d)}><strong>{c.number}.</strong> {c.text}</button></li>)}</ul></div>)}</div>
-    <p className="text-xs text-[var(--ink-muted)]">Tab / Shift+Tab: next / previous clue · Space: change direction · Pencil: gray notes · Checks or reveals make the solve assisted.</p>
   </section>
 }

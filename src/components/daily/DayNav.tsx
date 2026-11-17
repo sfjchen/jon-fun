@@ -1,16 +1,144 @@
 'use client'
+
+/**
+ * Renders the one shared header for every daily game: title, leaderboard and info icons, the day picker,
+ * game-specific actions and, only when it matters, a note about score syncing.
+ */
+
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
+import ScoreSync from '@/components/daily/ScoreSync'
 import { DAILY_EPOCH, shiftDay, siteDay } from '@/lib/daily'
-export default function DayNav({ day, path, sourceDate }: { day: string; path: string; sourceDate?: string | undefined }) {
-  const href = (d: string) => `${path}?d=${d}`
-  return <div className="space-y-2">
-    <nav aria-label="Puzzle date" className="flex flex-wrap items-center gap-3 text-sm">
-      {day > DAILY_EPOCH ? <Link className="rounded border px-3 py-2" aria-label="Previous day" href={href(shiftDay(day, -1))}>←</Link> : <span className="px-3 opacity-30">←</span>}
-      <label className="flex items-center gap-2">Date <input aria-label="Puzzle date" className="rounded border bg-[var(--ink-paper)] p-2" type="date" min={DAILY_EPOCH} value={day} onChange={e => { if (e.target.value >= DAILY_EPOCH && /^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) window.location.assign(href(e.target.value)) }} /></label>
-      <Link className="rounded border px-3 py-2" aria-label="Next day" href={href(shiftDay(day, 1))}>→</Link>
-      <Link className="underline" href={path}>Today</Link><Link className="underline" href={`/leaderboards?d=${day}`}>Scores</Link>
-    </nav>
-    {day > siteDay() && <p className="text-sm">Future practice · previews stay unranked.</p>}
-    {sourceDate && sourceDate !== day && <p className="text-xs text-[var(--ink-muted)]">Daily selection from the {sourceDate} archive puzzle. Everyone gets the same puzzle.</p>}
-  </div>
+
+const icon =
+  'inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-[var(--ink-border)]/40 ' +
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)]'
+export const action = 'rounded-full px-2 py-1.5 text-[13px] hover:bg-[var(--ink-border)]/40 disabled:opacity-30 sm:px-2.5 sm:text-sm'
+
+/**
+ * Renders an ⓘ button that opens a small panel and closes on outside click or Escape.
+ */
+export function Info({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false)
+  const box = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const close = (e: Event) => {
+      if (e instanceof KeyboardEvent ? e.key === 'Escape' : !box.current?.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('pointerdown', close)
+    document.addEventListener('keydown', close)
+    return () => {
+      document.removeEventListener('pointerdown', close)
+      document.removeEventListener('keydown', close)
+    }
+  }, [open])
+  return (
+    <div ref={box} className="relative">
+      <button
+        type="button"
+        className={icon}
+        aria-label="How to play"
+        title="How to play"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 11v6M12 7.5v.5" strokeLinecap="round" />
+        </svg>
+      </button>
+      {open && (
+        <div
+          role="dialog"
+          aria-label="How to play"
+          className="absolute right-0 top-11 z-40 w-[min(20rem,calc(100vw-2rem))] space-y-2 rounded-xl border p-4 text-sm shadow-lg"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
+type DayNavProps = {
+  title: string
+  path: string
+  /** The puzzle day. Omitted for practice puzzles, which show `label` instead. */
+  day?: string | undefined
+  label?: string
+  /** Rules and notes shown in the ⓘ panel. */
+  info: React.ReactNode
+  /** Game-specific actions shown on the day row. */
+  children?: React.ReactNode
+}
+
+/**
+ * Renders the header. Day arrows step one day, the date field jumps anywhere, and Today returns to today.
+ */
+export default function DayNav({ title, path, day, label, info, children }: DayNavProps) {
+  const router = useRouter()
+  const today = siteDay()
+  const go = (d: string) => router.push(d === today ? path : `${path}?d=${d}`, { scroll: false })
+  return (
+    <header className="mb-3 space-y-1 border-b pb-2" style={{ borderColor: 'var(--ink-border)' }}>
+      <div className="flex items-center gap-1">
+        <h1 className="mr-auto font-lora text-xl font-bold md:text-2xl">{title}</h1>
+        <Link href={day ? `/leaderboards?d=${day}` : '/leaderboards'} className={icon} aria-label="Leaderboard" title="Leaderboard">
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
+            <path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 20h8" />
+          </svg>
+        </Link>
+        <Info>{info}</Info>
+      </div>
+      <div className="flex flex-wrap items-center gap-x-1 gap-y-1">
+        {day ? (
+          <nav aria-label="Puzzle date" className="mr-auto flex items-center text-sm">
+            <button
+              type="button"
+              className={action}
+              aria-label="Previous day"
+              title="Previous day"
+              disabled={day <= DAILY_EPOCH}
+              onClick={() => go(shiftDay(day, -1))}
+            >
+              ‹
+            </button>
+            <input
+              type="date"
+              aria-label="Puzzle date"
+              title="Pick a day"
+              className="w-[7.5rem] rounded-md bg-transparent py-1 text-[13px] sm:w-auto sm:px-1 sm:text-sm"
+              min={DAILY_EPOCH}
+              value={day}
+              onChange={(e) => e.target.value >= DAILY_EPOCH && go(e.target.value)}
+            />
+            <button
+              type="button"
+              className={action}
+              aria-label="Next day"
+              title="Next day"
+              onClick={() => go(shiftDay(day, 1))}
+            >
+              ›
+            </button>
+            {day !== today && (
+              <button type="button" className={`${action} underline`} onClick={() => go(today)}>
+                Today
+              </button>
+            )}
+          </nav>
+        ) : (
+          <p className="mr-auto text-sm" style={{ color: 'var(--ink-muted)' }}>
+            {label}
+          </p>
+        )}
+        {children}
+      </div>
+      {day && day > today && <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>Future preview · practice only, not ranked</p>}
+      <ScoreSync />
+    </header>
+  )
 }

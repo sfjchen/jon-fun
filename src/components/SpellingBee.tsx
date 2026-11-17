@@ -10,8 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { shuffle } from '@/lib/random'
 import { localDay, logResult, markPracticeIfFuture, isPracticeResult } from '@/lib/results'
 import { archiveDay, validDay } from '@/lib/daily'
-import DayNav from '@/components/daily/DayNav'
-import ScoreSync from '@/components/daily/ScoreSync'
+import DayNav, { action } from '@/components/daily/DayNav'
 import {
   RANKS,
   addDays,
@@ -29,7 +28,7 @@ import {
 
 type HistoricalPuzzle = Puzzle & { date: string }
 type Data = { words: string[]; bank: string[]; history: HistoricalPuzzle[] }
-type Modal = 'hints' | 'yesterday' | 'ranks' | 'rules' | 'stats' | null
+type Modal = 'hints' | 'yesterday' | 'ranks' | 'stats' | null
 
 const YELLOW = '#f7da21'
 const GRAY = '#e7e7e7'
@@ -402,46 +401,64 @@ export default function SpellingBee() {
         75%{transform:translateX(8px)}}
         @keyframes sb-blink{50%{opacity:0}}`}</style>
 
-      {!isPractice && <DayNav day={date} path="/games/spelling-bee" sourceDate={(pz as HistoricalPuzzle).date} />}
-      {isPractice && <p className="text-sm">{archive ? `Historical hive · ${archive}` : 'Random practice'} · practice scores stay off the daily leaderboard.</p>}
-      <div className="my-3"><ScoreSync /></div>
-      {!isPractice && date <= now && isPracticeResult('bee', date) && <p className="text-sm">Started as a future preview · this hive remains unranked.</p>}
-      <details className="my-3 text-sm"><summary className="cursor-pointer underline">Historical NYT hives · {data.history.length} puzzles</summary>
-        <label className="mt-2 block">Archive hive <select aria-label="Archive hive" value={archive ?? ''} onChange={e => go(e.target.value ? `?a=${e.target.value}` : '')} className="ml-2 rounded border bg-[var(--ink-paper)] p-2"><option value="">Choose a historical date…</option>{[...data.history].reverse().map(p => <option key={p.date} value={p.date}>{p.date}</option>)}</select></label>
-      </details>
-      <header
-        className="mb-3 flex flex-col gap-1.5 border-b pb-2 md:mb-4 md:flex-row md:items-end md:justify-between md:pb-3"
-        style={{ borderColor: 'var(--ink-border)' }}
+      <DayNav
+        title="Spelling Bee"
+        path="/games/spelling-bee"
+        day={isPractice ? undefined : date}
+        label={archive ? `Past hive · ${archive} · practice` : 'Random hive · practice'}
+        info={
+          <>
+            <ul className="list-disc space-y-1 pl-4">
+              <li>Make words of 4+ letters from the hive. Every word uses the center letter. Letters can repeat.</li>
+              <li>4-letter words score 1. Longer words score 1 per letter. A pangram uses all 7 letters: +7.</li>
+              <li>Type or tap letters. Enter submits, Space shuffles.</li>
+              <li>Hints shows a grid of words left by first letter and length.</li>
+            </ul>
+            <label className="block" style={{ color: 'var(--ink-muted)' }}>
+              Play a past hive ({data.history.length})
+              <select
+                aria-label="Archive hive"
+                value={archive ?? ''}
+                onChange={(e) => go(e.target.value ? `?a=${e.target.value}` : '')}
+                className="mt-1 block w-full rounded border bg-[var(--ink-paper)] p-2"
+              >
+                <option value="">Choose a date…</option>
+                {[...data.history].reverse().map((p) => (
+                  <option key={p.date} value={p.date}>
+                    {p.date}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              className="underline"
+              onClick={() => go(`?p=${data.bank[Math.floor(Math.random() * data.bank.length)]}`)}
+            >
+              Play a random practice hive
+            </button>
+          </>
+        }
       >
-        <div className="flex items-baseline justify-between gap-3 md:block">
-          <h1 className="font-lora text-lg font-bold md:text-2xl">Spelling Bee</h1>
-
-        </div>
-        <nav className="flex flex-wrap items-center gap-x-3 gap-y-1 md:gap-x-4">
-          {(isPractice || date !== now) && (
-            <button className={link} onClick={() => go('')}>
-              Today
-            </button>
-          )}
-          <button className={link} onClick={() => go(`?p=${data.bank[Math.floor(Math.random() * data.bank.length)]}`)}>
-            Random
+        {isPractice && (
+          <button className={action} onClick={() => go('')}>
+            Today
           </button>
-          <button className={link} onClick={() => setModal('hints')}>
-            Hints
+        )}
+        <button className={action} title="Words left by letter and length" onClick={() => setModal('hints')}>
+          Hints
+        </button>
+        {!isPractice && dayNum(date) > 0 && (
+          <button className={action} title="Yesterday's answers" onClick={() => setModal('yesterday')}>
+            Yesterday
           </button>
-          {!isPractice && dayNum(date) > 0 && (
-            <button className={link} onClick={() => setModal('yesterday')}>
-              Yesterday
-            </button>
-          )}
-          <button className={link} onClick={() => setModal('stats')}>
-            Stats
-          </button>
-          <button className={link} onClick={() => setModal('rules')}>
-            Rules
-          </button>
-        </nav>
-      </header>
+        )}
+        <button className={action} title="Your stats and share" onClick={() => setModal('stats')}>
+          Stats
+        </button>
+      </DayNav>
+      {!isPractice && date <= now && isPracticeResult('bee', date) && (
+        <p className="mb-2 text-xs" style={{ color: 'var(--ink-muted)' }}>Started as a future preview · not ranked</p>
+      )}
 
       <div className="grid gap-3 md:grid-cols-[1fr_1fr] md:gap-10">
         <section className="order-2 flex flex-col items-center md:order-1">
@@ -661,18 +678,6 @@ export default function SpellingBee() {
               `${n} words\nsfjc.dev/games/spelling-bee${isPractice ? `?p=${pz.id}` : `?d=${date}`}`
             }
           />
-        </Dialog>
-      )}
-      {modal === 'rules' && (
-        <Dialog title="How to play" onClose={() => setModal(null)}>
-          <ul className="list-disc space-y-1.5 pl-5 text-[15px]">
-            <li>Make words of at least 4 letters from the 7 in the hive.</li>
-            <li>Every word must use the center letter. Letters can repeat.</li>
-            <li>No proper nouns, hyphenated or obscure words.</li>
-            <li>4-letter words score 1 point. Longer words score 1 point per letter.</li>
-            <li>Each puzzle has at least 1 pangram, which uses all 7 letters and earns 7 bonus points.</li>
-            <li>A new daily puzzle starts at midnight. Random gives unlimited practice puzzles.</li>
-          </ul>
         </Dialog>
       )}
     </div>

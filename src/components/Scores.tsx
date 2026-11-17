@@ -1,141 +1,535 @@
 'use client'
+
+/**
+ * Renders the leaderboard: a game filter, a month calendar with play and win ticks, the picked day's
+ * results, a standings table (games played, average, best, wins) and the player's own stats.
+ */
+
 import Link from 'next/link'
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { GAMES, GAME_IDS, PLAYER_CHANGED, RESULTS_CHANGED, flushResults, formatScore, formatTime, formatGameScore, bestGameScore, compareResults, resultLabel, getPlayer, localDay, setPlayer, PUBLIC_GROUP, boardName, type BoardRow, type GameId, type Player } from '@/lib/results'
+import { Info } from '@/components/daily/DayNav'
+import {
+  GAMES,
+  GAME_IDS,
+  PLAYER_CHANGED,
+  PUBLIC_GROUP,
+  RESULTS_CHANGED,
+  bestGameScore,
+  boardName,
+  compareResults,
+  flushResults,
+  formatGameScore,
+  formatScore,
+  getPlayer,
+  localDay,
+  resultLabel,
+  setPlayer,
+  type BoardRow,
+  type GameId,
+  type Player,
+} from '@/lib/results'
 import { DAILY_EPOCH, shiftDay, validDay } from '@/lib/daily'
 import { average, overallDay, streaks, winners, winsByPlayer } from '@/lib/score-stats'
-const field = 'w-full rounded-lg border bg-[var(--ink-paper)] p-2'
-const card = 'rounded-xl border border-[var(--ink-border)] bg-[var(--ink-paper)] p-4'
-const muted = 'text-sm text-[var(--ink-muted)]'
+
+const card = 'rounded-xl border border-[var(--ink-border)] bg-[var(--ink-paper)] p-3 sm:p-4'
+const muted = 'text-[var(--ink-muted)]'
+const pill = 'shrink-0 rounded-full border px-3 py-1.5 text-sm'
+type Tab = GameId | 'all'
+
+/**
+ * Subscribes to changes of the saved player, made in this tab or another one.
+ */
 function subscribe(cb: () => void) {
-  window.addEventListener(PLAYER_CHANGED, cb); window.addEventListener('storage', cb)
-  return () => { window.removeEventListener(PLAYER_CHANGED, cb); window.removeEventListener('storage', cb) }
+  window.addEventListener(PLAYER_CHANGED, cb)
+  window.addEventListener('storage', cb)
+  return () => {
+    window.removeEventListener(PLAYER_CHANGED, cb)
+    window.removeEventListener('storage', cb)
+  }
 }
+
+/**
+ * Collects the name and, optionally, a private group code that results are filed under.
+ */
 function PlayerForm({ player, onDone }: { player: Player | null; onDone: () => void }) {
-  const [name, setName] = useState(player?.name ?? ''), [group, setGroup] = useState(player?.group ?? PUBLIC_GROUP)
-  const [privateBoard, setPrivateBoard] = useState(!!player && player.group !== PUBLIC_GROUP)
-  return <form className={`${card} space-y-3`} onSubmit={e => { e.preventDefault(); if (name.trim() && /^[a-z0-9-]{3,32}$/.test(group.trim().toLowerCase())) { setPlayer({ name: name.trim(), group: group.trim().toLowerCase() }); onDone() } }}>
-    <label className="block text-sm">Your name<input className={field} value={name} maxLength={24} required onChange={e => setName(e.target.value)} /></label>
-    <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={privateBoard} onChange={e => { setPrivateBoard(e.target.checked); setGroup(e.target.checked ? '' : PUBLIC_GROUP) }} />Use a private group</label>
-    {privateBoard && <label className="block text-sm">Group code<input className={field} value={group} minLength={3} maxLength={32} pattern="[A-Za-z0-9-]{3,32}" required autoCapitalize="none" onChange={e => setGroup(e.target.value)} /></label>}
-    <p className={muted}>Pick a unique name for the public board, or use a private group code with friends. Use the same name and group on your other devices.</p>
-    <button className="rounded-lg bg-[var(--ink-accent)] px-5 py-2 text-white">Save</button>
-  </form>
+  const [name, setName] = useState(player?.name ?? '')
+  const [group, setGroup] = useState(player && player.group !== PUBLIC_GROUP ? player.group : '')
+  const code = group.trim().toLowerCase() || PUBLIC_GROUP
+  const ok = name.trim().length > 0 && /^[a-z0-9-]{3,32}$/.test(code)
+  const field = 'mt-1 block w-full rounded-lg border bg-[var(--ink-bg)] p-2'
+  return (
+    <form
+      className={`${card} grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end`}
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (!ok) return
+        setPlayer({ name: name.trim(), group: code })
+        onDone()
+      }}
+    >
+      <label className="text-sm">
+        Your name
+        <input className={field} value={name} maxLength={24} required onChange={(e) => setName(e.target.value)} />
+      </label>
+      <label className="text-sm" title="Friends who type the same code share a private board. Leave empty for the public board.">
+        Group code <span className={muted}>(optional)</span>
+        <input
+          className={field}
+          value={group}
+          maxLength={32}
+          placeholder="public"
+          autoCapitalize="none"
+          autoCorrect="off"
+          onChange={(e) => setGroup(e.target.value)}
+        />
+      </label>
+      <button disabled={!ok} className="rounded-lg bg-[var(--ink-accent)] px-5 py-2 text-white disabled:opacity-40">
+        Save
+      </button>
+    </form>
+  )
 }
+
+/**
+ * Draws one player's last 14 days for a game as a small line chart.
+ */
 function Trend({ rows, day }: { rows: BoardRow[]; day: string }) {
   const dates = Array.from({ length: 14 }, (_, i) => shiftDay(day, i - 13))
-  const max = Math.max(1, ...rows.filter(r => dates.includes(r.day)).map(r => r.score))
-  const dots = dates.flatMap((d, i) => { const r = rows.find(r => r.day === d); return r ? [{ x: 15 + i * 24, y: 85 - r.score / max * 65, r }] : [] })
-  return <figure className="space-y-1"><figcaption className={muted}>Your last 14 days · gaps mean unplayed{rows[0]?.game==='mini'?' · lower time is better':''}</figcaption>
-    <svg viewBox="0 0 345 105" role="img" aria-label="Your daily score trend over the last fourteen days" className="w-full max-w-xl">
+  const max = Math.max(1, ...rows.filter((r) => dates.includes(r.day)).map((r) => r.score))
+  const dots = dates.flatMap((d, i) => {
+    const r = rows.find((x) => x.day === d)
+    return r ? [{ x: 15 + i * 24, y: 85 - (r.score / max) * 65, r }] : []
+  })
+  return (
+    <svg viewBox="0 0 345 100" role="img" aria-label="Your last 14 days" className="w-full max-w-xl">
       <path d="M15 15V85H330" fill="none" stroke="var(--ink-border)" />
-      {dots.map((d, i) => { const prev = dots[i - 1]; return <g key={d.r.day}>{prev && shiftDay(prev.r.day, 1) === d.r.day && <line x1={prev.x} y1={prev.y} x2={d.x} y2={d.y} stroke="var(--ink-accent)" strokeWidth="2" />}<circle cx={d.x} cy={d.y} r="3.5" fill="var(--ink-accent)"><title>{d.r.day}: {formatGameScore(d.r.game,d.r.score)}</title></circle></g> })}
-      <text x="15" y="101" fontSize="9" fill="currentColor">{dates[0]}</text><text x="270" y="101" fontSize="9" fill="currentColor">{day}</text>
+      {dots.map((d, i) => {
+        const prev = dots[i - 1]
+        return (
+          <g key={d.r.day}>
+            {prev && shiftDay(prev.r.day, 1) === d.r.day && (
+              <line x1={prev.x} y1={prev.y} x2={d.x} y2={d.y} stroke="var(--ink-accent)" strokeWidth="2" />
+            )}
+            <circle cx={d.x} cy={d.y} r="4" fill="var(--ink-accent)">
+              <title>
+                {d.r.day}: {formatGameScore(d.r.game, d.r.score)}
+              </title>
+            </circle>
+          </g>
+        )
+      })}
+      <text x="15" y="98" fontSize="9" fill="currentColor">
+        {dates[0]!.slice(5)}
+      </text>
+      <text x="305" y="98" fontSize="9" fill="currentColor">
+        {day.slice(5)}
+      </text>
     </svg>
-  </figure>
+  )
 }
+
+/**
+ * Renders the month calendar. Each day shows ★ for a win, ✓ for a day you played and · for a day only others played.
+ */
+function Calendar({
+  rows,
+  me,
+  day,
+  onPick,
+}: {
+  rows: BoardRow[]
+  me: string
+  day: string
+  onPick: (d: string) => void
+}) {
+  const [month, setMonth] = useState(day.slice(0, 7))
+  const [shown, setShown] = useState(day)
+  if (shown !== day) {
+    setShown(day)
+    setMonth(day.slice(0, 7))
+  }
+  const first = `${month}-01`
+  const count = new Date(Number(month.slice(0, 4)), Number(month.slice(5)), 0).getDate()
+  const offset = new Date(`${first}T12:00:00Z`).getUTCDay()
+  const today = localDay()
+  return (
+    <section className={card} aria-label="Calendar">
+      <div className="mb-2 flex items-center justify-between">
+        <button
+          aria-label="Previous month"
+          className="h-9 w-9 rounded-full hover:bg-[var(--ink-border)]/40 disabled:opacity-30"
+          disabled={month <= DAILY_EPOCH.slice(0, 7)}
+          onClick={() => setMonth(shiftDay(first, -1).slice(0, 7))}
+        >
+          ‹
+        </button>
+        <h2 className="font-semibold">
+          {new Date(`${first}T12:00:00Z`).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })}
+        </h2>
+        <button
+          aria-label="Next month"
+          className="h-9 w-9 rounded-full hover:bg-[var(--ink-border)]/40 disabled:opacity-30"
+          disabled={month >= today.slice(0, 7)}
+          onClick={() => setMonth(shiftDay(`${month}-${count}`, 1).slice(0, 7))}
+        >
+          ›
+        </button>
+      </div>
+      <div className="grid grid-cols-7 gap-0.5 text-center text-sm">
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+          <span key={i} className={`py-1 text-xs ${muted}`}>
+            {d}
+          </span>
+        ))}
+        {Array.from({ length: offset }, (_, i) => (
+          <span key={`b${i}`} />
+        ))}
+        {Array.from({ length: count }, (_, i) => {
+          const d = `${month}-${String(i + 1).padStart(2, '0')}`
+          const dayRows = rows.filter((r) => r.day === d)
+          const played = dayRows.some((r) => r.name === me)
+          const won = GAME_IDS.some((g) => winners(dayRows.filter((r) => r.game === g)).includes(me))
+          const mark = won ? '★' : played ? '✓' : dayRows.length ? '·' : ''
+          const what = won ? 'you won' : played ? 'you played' : dayRows.length ? 'others played' : 'no scores'
+          return (
+            <button
+              key={d}
+              title={`${d}: ${what}`}
+              aria-label={`${d}, ${what}`}
+              aria-pressed={day === d}
+              disabled={d < DAILY_EPOCH || d > today}
+              onClick={() => onPick(d)}
+              className={`flex aspect-square flex-col items-center justify-center rounded-lg leading-none disabled:opacity-30 ${
+                day === d ? 'bg-[var(--ink-accent)] text-white' : d === today ? 'ring-1 ring-[var(--ink-accent)]' : 'hover:bg-[var(--ink-border)]/40'
+              }`}
+            >
+              {i + 1}
+              <span className="mt-0.5 h-3 text-[10px]">{mark}</span>
+            </button>
+          )
+        })}
+      </div>
+      <p className={`mt-2 text-xs ${muted}`}>★ you won · ✓ you played · · others played</p>
+    </section>
+  )
+}
+
+/**
+ * Renders the leaderboard page.
+ */
 export function ScoresHub() {
   const params = useSearchParams()
   const router = useRouter()
   const raw = useSyncExternalStore(subscribe, () => JSON.stringify(getPlayer()), () => 'null')
   const player = useMemo(() => JSON.parse(raw) as Player | null, [raw])
+  const me = player?.name ?? ''
   const [editing, setEditing] = useState(false)
-  const initial = params.get('d')
-  const day = initial && validDay(initial) && initial >= DAILY_EPOCH ? initial : localDay()
-  const [calendar, setCalendar] = useState({ day, month: day.slice(0, 7) })
-  const month = calendar.day === day ? calendar.month : day.slice(0, 7)
-  const setMonth = (month: string) => setCalendar({ day, month })
-  const [game, setGame] = useState<GameId | 'all'>('all')
+  const asked = params.get('d')
+  const day = asked && validDay(asked) && asked >= DAILY_EPOCH ? asked : localDay()
+  const [tab, setTab] = useState<Tab>('all')
+  const [span, setSpan] = useState<30 | 0>(30)
   const [response, setResponse] = useState<{ group: string; rows: BoardRow[]; legacyRows: BoardRow[] } | null>(null)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
   const group = player?.group ?? PUBLIC_GROUP
+
   useEffect(() => {
-    if (!group) return
     let cancelled = false
     const controller = new AbortController()
     const load = async () => {
       try {
         await flushResults()
         const r = await fetch(`/api/results?group=${encodeURIComponent(group)}&days=4000`, { signal: controller.signal })
-        if (!r.ok) throw new Error('Could not load your group. Your saved scores will retry syncing automatically.')
-        const data = await r.json() as { rows: BoardRow[]; legacyRows?: BoardRow[] }
-        if (!cancelled) { setResponse({ group, rows: data.rows.filter(r => GAME_IDS.includes(r.game)), legacyRows: data.legacyRows ?? [] }); setError('') }
-      } catch (e) { if (!cancelled) setError(e instanceof Error ? e.message : 'Could not load scores') }
+        if (!r.ok) throw new Error('Could not load scores. Saved scores retry on their own.')
+        const data = (await r.json()) as { rows: BoardRow[]; legacyRows?: BoardRow[] }
+        if (cancelled) return
+        setResponse({ group, rows: data.rows.filter((x) => GAME_IDS.includes(x.game)), legacyRows: data.legacyRows ?? [] })
+        setError('')
+      } catch (e) {
+        if (!cancelled && !controller.signal.aborted) setError(e instanceof Error ? e.message : 'Could not load scores')
+      }
     }
     void load()
-    const onChange = () => { void load() }
-    const timer = setInterval(onChange, 15000)
-    window.addEventListener('focus', onChange); window.addEventListener(RESULTS_CHANGED, onChange)
-    return () => { cancelled = true; controller.abort(); clearInterval(timer); window.removeEventListener('focus', onChange); window.removeEventListener(RESULTS_CHANGED, onChange) }
+    const reload = () => void load()
+    const timer = setInterval(reload, 15000)
+    window.addEventListener('focus', reload)
+    window.addEventListener(RESULTS_CHANGED, reload)
+    return () => {
+      cancelled = true
+      controller.abort()
+      clearInterval(timer)
+      window.removeEventListener('focus', reload)
+      window.removeEventListener(RESULTS_CHANGED, reload)
+    }
   }, [group])
-  const rows = response?.group === group ? response!.rows : []
-  const filtered = rows.filter(r => game === 'all' || r.game === game)
-  const selected = filtered.filter(r => r.day === day)
-  const mine = filtered.filter(r => r.name === player?.name && r.day <= day)
-  const winCounts = winsByPlayer(filtered.filter(r => r.day <= day))
-  const overall = overallDay(rows.filter(r => r.day === day))
-  const dailyHistory = [...new Set(rows.filter(r => r.day <= day).map(r => r.day))].sort().reverse().map(d => ({ day: d, ...overallDay(rows.filter(r => r.day === d)) })).filter(d => d.names.length)
-  const overallTally = new Map<string, number>()
-  for (const d of dailyHistory) if (d.names.length === 1) overallTally.set(d.names[0]!, (overallTally.get(d.names[0]!) ?? 0) + 1)
-  const monthStart = `${month}-01`
-  const count = new Date(Number(month.slice(0, 4)), Number(month.slice(5)), 0).getDate()
-  const offset = new Date(`${monthStart}T12:00:00Z`).getUTCDay()
-  const available = new Set(filtered.map(r => r.day))
-  const personal = new Set(filtered.filter(r => r.name === player?.name).map(r => r.day))
-  const choose = (d: string) => { router.push(`/leaderboards?d=${d}`, { scroll: false }); setCopied(false) }
-  return <div className="mx-auto max-w-4xl space-y-5" data-testid="scores-hub">
-    <header className="space-y-2"><h1 className="font-lora text-3xl font-semibold">Leaderboard</h1><p className={muted}>One puzzle per game each day. Results sync automatically. Mini keeps your first unassisted solve time. Calendar: Pacific time.</p></header>
-    {!player || editing ? <PlayerForm key={raw} player={player} onDone={() => setEditing(false)} /> : <p className={muted}>{player.name} · {boardName(player.group)} · <button className="underline" onClick={() => setEditing(true)}>change</button></p>}
-    <nav aria-label="Daily games" className="flex flex-wrap gap-2">{GAME_IDS.map(g => <Link key={g} className="rounded-full border px-4 py-2 text-sm" href={`${GAMES[g].url}?d=${day}`}>{GAMES[g].title}</Link>)}</nav>
-    {error && <p role="alert" className="rounded border border-red-300 p-3">{error}</p>}
-    {player && response?.group !== group && !error && <p>Loading group scores…</p>}
-    <div className="flex flex-wrap items-center gap-3"><label>Game <select aria-label="Leaderboard game" className="rounded border bg-[var(--ink-paper)] p-2" value={game} onChange={e => setGame(e.target.value as GameId | 'all')}><option value="all">All games</option>{GAME_IDS.map(g => <option value={g} key={g}>{GAMES[g].title}</option>)}</select></label><button className="underline" onClick={() => choose(localDay())}>Today</button><span className={muted}>Wins include ties and require at least two players.</span></div>
-    <div className="grid gap-5 md:grid-cols-[1fr_1fr]">
-      <section className={card} aria-label="Score calendar">
-        <div className="mb-4 flex items-center justify-between"><button aria-label="Previous month" className="rounded border px-3 py-1" disabled={month <= DAILY_EPOCH.slice(0, 7)} onClick={() => setMonth(shiftDay(monthStart, -1).slice(0, 7))}>←</button><h2 className="font-semibold">{new Date(`${monthStart}T12:00:00Z`).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })}</h2><button aria-label="Next month" className="rounded border px-3 py-1" onClick={() => setMonth(shiftDay(`${month}-${count}`, 1).slice(0, 7))}>→</button></div>
-        <div className="grid grid-cols-7 gap-1 text-center text-sm">{['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => <span className="py-1 text-xs" key={d}>{d}</span>)}{Array.from({length: offset}, (_, i) => <span key={`blank-${i}`} />)}{Array.from({length: count}, (_, i) => {
-          const d = `${month}-${String(i + 1).padStart(2, '0')}`
-          const won = GAME_IDS.some(g => winners(filtered.filter(r => r.day === d && r.game === g)).includes(player?.name ?? ''))
-          return <button key={d} aria-label={`${d}${personal.has(d) ? ', played' : ''}${won ? ', winner' : ''}`} aria-pressed={day === d} className={`aspect-square rounded-lg border ${day === d ? 'border-[var(--ink-accent)] font-bold ring-1 ring-[var(--ink-accent)]' : 'border-transparent'}`} onClick={() => choose(d)} disabled={d < DAILY_EPOCH}><span>{i + 1}</span><span className="block h-3 text-[9px] text-[var(--ink-accent)]">{won ? '★' : personal.has(d) ? '●' : available.has(d) ? '○' : ''}</span></button>
-        })}</div><p className={`${muted} mt-3`}>★ Your win · ● You played · ○ Group played</p>
-      </section>
-      <section className={`${card} space-y-3`}><h2 className="font-lora text-xl">{day === localDay() ? 'Today' : day} · winners</h2>
-        <p className="text-sm font-semibold">Overall: {overall.names.length === 1 ? overall.names[0] : overall.names.length ? `Tie — ${overall.names.join(' & ')}` : 'Waiting for competition'}</p>
-        {dailyHistory.length > 0 && <section className={`${card} space-y-3`} data-testid="scores-day-by-day">
-      <h2 className="font-lora text-xl">Day by day</h2><p className={muted}>Overall winner = most game wins that day. Tied overall days have no outright winner.</p>
-      <p className="text-sm">Days won overall: {[...overallTally].sort((a,b) => b[1]-a[1]).map(([name,n]) => `${name} ${n}`).join(' · ') || 'No outright winners yet'}</p>
-      <div className="space-y-2">{dailyHistory.slice(0,14).map(d => <div key={d.day} className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--ink-border)] pt-2 text-sm"><button className="underline" onClick={() => choose(d.day)}>{d.day}</button><strong>{d.names.length === 1 ? d.names[0] : `Tie — ${d.names.join(' & ')}`}</strong><span className={muted}>{[...d.gameWins].sort((a,b) => b[1]-a[1]).map(([name,n]) => `${name}: ${n} game ${n===1?'win':'wins'}`).join(' · ')}</span></div>)}</div>
-    </section>}
-    {(game === 'all' ? GAME_IDS : [game]).map(g => { const games = selected.filter(r => r.game === g); const names = winners(games); return <div key={g} className="flex items-start justify-between gap-2 border-b border-[var(--ink-border)] pb-2"><Link className="underline" href={`${GAMES[g].url}?d=${day}`}>{GAMES[g].title}</Link><span className="text-right text-sm">{names.length ? `${names.join(' & ')} · ${formatGameScore(g,bestGameScore(g,games.map(r => r.score)))}` : games.length ? `${games[0]!.name} · waiting for a challenger` : day > localDay() ? 'Future practice' : 'No scores yet'}</span></div> })}
-        <p className={muted}>Each game has its own scoring. Scores from different games are kept separate.</p>
-        {mine.some(r => r.day === day) && <button className="underline text-sm" onClick={() => { void navigator.clipboard.writeText([`sfjc.dev · ${day}`, ...mine.filter(r => r.day === day).map(r => `${GAMES[r.game].title}: ${resultLabel(r)}`)].join('\n')).then(() => setCopied(true)) }}>{copied ? 'Copied' : 'Copy results to share'}</button>}
-      </section>
-    </div>
-    {dailyHistory.length > 0 && <section className={`${card} space-y-3`} data-testid="scores-day-by-day">
-      <h2 className="font-lora text-xl">Day by day</h2><p className={muted}>Overall winner = most game wins that day. Tied overall days have no outright winner.</p>
-      <p className="text-sm">Days won overall: {[...overallTally].sort((a,b) => b[1]-a[1]).map(([name,n]) => `${name} ${n}`).join(' · ') || 'No outright winners yet'}</p>
-      <div className="space-y-2">{dailyHistory.slice(0,14).map(d => <div key={d.day} className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--ink-border)] pt-2 text-sm"><button className="underline" onClick={() => choose(d.day)}>{d.day}</button><strong>{d.names.length === 1 ? d.names[0] : `Tie — ${d.names.join(' & ')}`}</strong><span className={muted}>{[...d.gameWins].sort((a,b) => b[1]-a[1]).map(([name,n]) => `${name}: ${n} game ${n===1?'win':'wins'}`).join(' · ')}</span></div>)}</div>
-    </section>}
-    {(game === 'all' ? GAME_IDS : [game]).map(g => {
-      const gameRows = rows.filter(r => r.game === g && r.day <= day)
-      const own = gameRows.filter(r => r.name === player?.name)
-      const streak = streaks(own, day)
-      const week = gameRows.filter(r => r.day >= shiftDay(day, -6))
-      const names = [...new Set(gameRows.map(r => r.name))].sort((a,b)=>{
-        const first=selected.find(r=>r.game===g&&r.name===a),second=selected.find(r=>r.game===g&&r.name===b)
-        return Number(!first)-Number(!second)||(first&&second?compareResults(first,second):0)||a.localeCompare(b)
+
+  const rows = response?.group === group ? response.rows : []
+  const games = tab === 'all' ? GAME_IDS : [tab]
+  const shown = rows.filter((r) => games.includes(r.game))
+  const picked = shown.filter((r) => r.day === day)
+  const since = span ? shiftDay(day, 1 - span) : DAILY_EPOCH
+  const windowRows = shown.filter((r) => r.day >= since && r.day <= day)
+  const pick = (d: string) => {
+    router.push(`/leaderboards?d=${d}`, { scroll: false })
+    setCopied(false)
+  }
+
+  const table = (() => {
+    const wins = winsByPlayer(windowRows)
+    const dayWins = new Map<string, number>()
+    if (tab === 'all') {
+      for (const d of new Set(windowRows.map((r) => r.day))) {
+        const o = overallDay(windowRows.filter((r) => r.day === d))
+        if (o.names.length === 1) dayWins.set(o.names[0]!, (dayWins.get(o.names[0]!) ?? 0) + 1)
+      }
+    }
+    return [...new Set(windowRows.map((r) => r.name))]
+      .map((name) => {
+        const own = windowRows.filter((r) => r.name === name)
+        const scores = own.map((r) => r.score)
+        return {
+          name,
+          played: tab === 'all' ? new Set(own.map((r) => r.day)).size : own.length,
+          avg: tab === 'all' ? null : average(scores),
+          best: tab === 'all' ? null : bestGameScore(tab, scores),
+          wins: wins.get(name) ?? 0,
+          dayWins: dayWins.get(name) ?? 0,
+        }
       })
-      const wins = winsByPlayer(gameRows)
-      const seconds = own.flatMap(r => r.stats.seconds === undefined ? [] : [r.stats.seconds])
-      const facts = [['Days played',String(own.length)], ['Current streak',String(streak.current)], ['Longest streak',String(streak.longest)], [g==='mini'?'First-solve best':'Best score',own.length ? formatGameScore(g,bestGameScore(g,own.map(r => r.score))) : '—'], [g==='mini'?'Average time':'Average score',own.length ? formatGameScore(g,average(own.map(r => r.score))) : '—'], ['Days won',String(wins.get(player?.name ?? '') ?? 0)], ...(seconds.length && g!=='mini' ? [['Best time',formatTime(Math.min(...seconds))],['Average time',formatTime(Math.round(average(seconds)))]] : []), ...(g === 'bee' && own.length ? [['Most words',String(Math.max(...own.map(r => r.stats.n ?? 0)))]] : []), ...(g === 'connections' && own.length ? [['Solves',String(own.filter(r => r.stats.solved).length)],['Avg mistakes',average(own.map(r => r.stats.mistakes ?? 0)).toFixed(1)]] : [])]
-      return <section key={g} className={`${card} space-y-4`} data-testid={`board-${g}`}><div><h2 className="font-lora text-xl">{GAMES[g].title}</h2><p className={`${muted} mt-1`}>{GAMES[g].rules}</p></div>
-        {names.length ? <div className="overflow-x-auto"><table className="w-full min-w-[420px] text-left text-sm"><thead className="text-[var(--ink-muted)]"><tr><th className="py-2">Player</th><th className="text-right">Selected day</th><th className="text-right">7-day avg*</th><th className="text-right">Wins</th></tr></thead><tbody>{names.map(name => { const r = selected.find(r => r.game === g && r.name === name); const w = week.filter(r => r.name === name); return <tr key={name} className="border-t border-[var(--ink-border)]"><th className="py-2 font-medium">{name}</th><td className="text-right tabular-nums">{r ? resultLabel(r) : '—'}</td><td className="text-right tabular-nums">{w.length ? formatGameScore(g,average(w.map(r => r.score))) : '—'}</td><td className="text-right">{wins.get(name) ?? 0}</td></tr> })}</tbody></table><p className={`${muted} mt-2`}>*Average over played days in the seven-day window.</p></div> : <p className={muted}>No scores yet. <Link className="underline" href={`${GAMES[g].url}?d=${day}`}>Play {GAMES[g].title}</Link> to start.</p>}
-        {own.length > 0 && <><Trend rows={own} day={day} /><div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{facts.map(([label,value]) => <div key={label}><p className="text-xl font-semibold tabular-nums">{value}</p><p className={muted}>{label}</p></div>)}</div></>}
+      .sort((a, b) => b.dayWins - a.dayWins || b.wins - a.wins || b.played - a.played || a.name.localeCompare(b.name))
+  })()
+
+  const mine = shown.filter((r) => r.name === me && r.day <= day)
+  const mineToday = rows.filter((r) => r.name === me && r.day === day)
+  const streak = streaks(mine, day)
+  const overall = overallDay(rows.filter((r) => r.day === day))
+  const dayLabel = day === localDay() ? 'Today' : new Date(`${day}T12:00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+
+  return (
+    <div className="mx-auto max-w-4xl space-y-3" data-testid="scores-hub">
+      <header className="flex items-center gap-2">
+        <h1 className="mr-auto font-lora text-2xl font-semibold sm:text-3xl">Leaderboard</h1>
+        <Info>
+          <ul className="list-disc space-y-1 pl-4">
+            {GAME_IDS.map((g) => (
+              <li key={g}>
+                <strong>{GAMES[g].title}:</strong> {GAMES[g].rules}
+              </li>
+            ))}
+          </ul>
+          <p className={muted}>
+            A day&apos;s win needs at least 2 players; ties share it. The overall winner of a day won the most games.
+            Days follow Pacific time.
+          </p>
+        </Info>
+      </header>
+
+      {!player || editing ? (
+        <PlayerForm key={raw} player={player} onDone={() => setEditing(false)} />
+      ) : (
+        <p className={`text-sm ${muted}`}>
+          {player.name} · {boardName(player.group)} ·{' '}
+          <button className="underline" onClick={() => setEditing(true)}>
+            change
+          </button>
+        </p>
+      )}
+
+      <nav aria-label="Game" className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1">
+        {(['all', ...GAME_IDS] as Tab[]).map((g) => (
+          <button
+            key={g}
+            aria-pressed={tab === g}
+            onClick={() => setTab(g)}
+            className={`${pill} ${tab === g ? 'border-[var(--ink-text)] bg-[var(--ink-text)] text-[var(--ink-bg)]' : 'border-[var(--ink-border)]'}`}
+          >
+            {g === 'all' ? 'All games' : GAMES[g].title}
+          </button>
+        ))}
+      </nav>
+
+      {error && (
+        <p role="alert" className="rounded-lg border border-red-300 p-3 text-sm">
+          {error}
+        </p>
+      )}
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <Calendar rows={shown} me={me} day={day} onPick={pick} />
+
+        <section className={`${card} space-y-2`} aria-label="Day results">
+          <div className="flex items-baseline justify-between gap-2">
+            <h2 className="font-lora text-lg font-semibold">{dayLabel}</h2>
+            {tab === 'all' && overall.names.length > 0 && (
+              <span className="text-sm" title="Most game wins that day">
+                🏆 {overall.names.join(' & ')}
+              </span>
+            )}
+          </div>
+          {!response && !error && <p className={`text-sm ${muted}`}>Loading…</p>}
+          {tab === 'all'
+            ? GAME_IDS.map((g) => {
+                const gr = picked.filter((r) => r.game === g)
+                const top = winners(gr)
+                const own = gr.find((r) => r.name === me)
+                return (
+                  <Link
+                    key={g}
+                    href={`${GAMES[g].url}?d=${day}`}
+                    title={`Play ${GAMES[g].title} for this day`}
+                    className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-[var(--ink-border)]/30"
+                  >
+                    <span className="font-medium">{GAMES[g].title}</span>
+                    <span className="text-right">
+                      {top.length ? `🏆 ${top.join(' & ')} · ${formatGameScore(g, bestGameScore(g, gr.map((r) => r.score)))}` : ''}
+                      {own ? (
+                        <span className={`block text-xs ${muted}`}>You: {resultLabel(own)}</span>
+                      ) : (
+                        <span className={`block text-xs ${muted}`}>{gr.length ? `${gr.length} played` : 'Play →'}</span>
+                      )}
+                    </span>
+                  </Link>
+                )
+              })
+            : (() => {
+                const ranked = [...picked].sort(compareResults)
+                return ranked.length ? (
+                  <ol className="space-y-1">
+                    {ranked.map((r, i) => (
+                      <li
+                        key={r.name}
+                        className={`flex justify-between rounded-lg px-2 py-1.5 text-sm ${r.name === me ? 'bg-[var(--ink-border)]/40 font-semibold' : ''}`}
+                      >
+                        <span>
+                          <span className={`mr-2 inline-block w-5 tabular-nums ${muted}`}>{i + 1}</span>
+                          {r.name}
+                        </span>
+                        <span className="tabular-nums">{resultLabel(r)}</span>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className={`text-sm ${muted}`}>
+                    No scores this day.{' '}
+                    <Link className="underline" href={`${GAMES[tab].url}?d=${day}`}>
+                      Play {GAMES[tab].title}
+                    </Link>
+                  </p>
+                )
+              })()}
+          {mineToday.length > 0 && (
+            <button
+              className="text-sm underline"
+              onClick={() =>
+                void navigator.clipboard
+                  .writeText([`sfjc.dev · ${day}`, ...mineToday.map((r) => `${GAMES[r.game].title}: ${resultLabel(r)}`)].join('\n'))
+                  .then(() => setCopied(true))
+              }
+            >
+              {copied ? 'Copied' : 'Copy my results'}
+            </button>
+          )}
+        </section>
+      </div>
+
+      <section className={`${card} space-y-2`} aria-label="Standings" data-testid={tab === 'all' ? 'standings' : `board-${tab}`}>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="font-lora text-lg font-semibold">Standings</h2>
+          <div className="flex gap-1 text-sm">
+            {([30, 0] as const).map((s) => (
+              <button
+                key={s}
+                aria-pressed={span === s}
+                onClick={() => setSpan(s)}
+                className={`${pill} py-1 ${span === s ? 'border-[var(--ink-text)]' : 'border-transparent'}`}
+              >
+                {s ? '30 days' : 'All time'}
+              </button>
+            ))}
+          </div>
+        </div>
+        {table.length ? (
+          <div className="-mx-1 overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className={muted}>
+                <tr>
+                  <th className="px-1 py-1 font-normal">Player</th>
+                  <th className="px-1 text-right font-normal" title={tab === 'all' ? 'Days with any score' : 'Days played'}>
+                    Played
+                  </th>
+                  {tab === 'all' ? (
+                    <th className="px-1 text-right font-normal" title="Days with the most game wins">
+                      Day wins
+                    </th>
+                  ) : (
+                    <>
+                      <th className="px-1 text-right font-normal">Avg</th>
+                      <th className="px-1 text-right font-normal">{GAMES[tab].lowerIsBetter ? 'Fastest' : 'Best'}</th>
+                    </>
+                  )}
+                  <th className="px-1 text-right font-normal" title="Game-days won, ties included">
+                    Wins
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {table.map((p) => (
+                  <tr key={p.name} className={`border-t border-[var(--ink-border)] ${p.name === me ? 'font-semibold' : ''}`}>
+                    <td className="px-1 py-1.5">{p.name}</td>
+                    <td className="px-1 text-right tabular-nums">{p.played}</td>
+                    {tab === 'all' ? (
+                      <td className="px-1 text-right tabular-nums">{p.dayWins}</td>
+                    ) : (
+                      <>
+                        <td className="px-1 text-right tabular-nums">{formatGameScore(tab, p.avg ?? 0)}</td>
+                        <td className="px-1 text-right tabular-nums">{formatGameScore(tab, p.best ?? 0)}</td>
+                      </>
+                    )}
+                    <td className="px-1 text-right tabular-nums">{p.wins}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className={`text-sm ${muted}`}>No scores in this period yet.</p>
+        )}
       </section>
-    })}
-    {!!response?.legacyRows.length && <details className={card}><summary className="cursor-pointer text-sm">Earlier local-scoring results ({response.legacyRows.length})</summary><p className={`${muted} my-2`}>Preserved for history. These used different scoring rules and are kept out of the current standings.</p><ul className="space-y-1 text-sm">{response.legacyRows.map(r=><li key={`${r.game}:${r.day}:${r.name}`}>{r.day} · {r.name} · {GAMES[r.game].title}: {formatScore(r.score)} legacy points</li>)}</ul></details>}
-    {player && <p className={muted}>Group: {new Set(rows.map(r => r.name)).size} players · {rows.length} game results · {winCounts.get(player.name) ?? 0} shared or outright daily wins.</p>}
-  </div>
+
+      {mine.length > 0 && (
+        <details className={card}>
+          <summary className="cursor-pointer font-lora text-lg font-semibold">Your stats</summary>
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+            {(
+              [
+                ['Days played', new Set(mine.map((r) => r.day)).size],
+                ['Streak', streak.current],
+                ['Longest', streak.longest],
+              ] as const
+            ).map(([l, v]) => (
+              <div key={l}>
+                <p className="text-xl font-semibold tabular-nums">{v}</p>
+                <p className={`text-xs ${muted}`}>{l}</p>
+              </div>
+            ))}
+          </div>
+          {tab !== 'all' && <Trend rows={mine} day={day} />}
+        </details>
+      )}
+
+      {!!response?.legacyRows.length && (
+        <details className={`text-xs ${muted}`}>
+          <summary className="cursor-pointer">Older results under earlier scoring ({response.legacyRows.length})</summary>
+          <ul className="mt-1 space-y-0.5">
+            {response.legacyRows.map((r) => (
+              <li key={`${r.game}:${r.day}:${r.name}`}>
+                {r.day} · {r.name} · {GAMES[r.game].title}: {formatScore(r.score)}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </div>
+  )
 }

@@ -19,7 +19,7 @@ async function fetchRowByParam(idOrSlug: string) {
   return { data, error }
 }
 
-export async function GET(_request: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+export async function GET(request: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   if (!connectionsBackendReady()) {
     return NextResponse.json({ error: 'connections_unavailable' }, { status: 503 })
   }
@@ -28,7 +28,9 @@ export async function GET(_request: NextRequest, ctx: { params: Promise<{ id: st
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!data) return NextResponse.json({ error: 'not_found' }, { status: 404 })
   try {
-    return NextResponse.json(dbRowToPuzzle(data as ConnectionsDbRow))
+    const puzzle = dbRowToPuzzle(data as ConnectionsDbRow)
+    const own = request.headers.get('x-connections-client')
+    return NextResponse.json({ ...puzzle, authorFingerprint: own && own === puzzle.authorFingerprint ? own : '' })
   } catch (caught) {
     const msg = caught instanceof Error ? caught.message : 'parse_error'
     return NextResponse.json({ error: msg }, { status: 500 })

@@ -7,7 +7,7 @@ import { buildShareLines } from '@/lib/connections'
 import ConnectionsBoard, { type ConnectionsCompletePayload } from '@/components/connections/ConnectionsBoard'
 import ConnectionsResult from '@/components/connections/ConnectionsResult'
 import type { ConnectionsProgress } from '@/lib/connections'
-import { logResult, markPracticeIfFuture, isPracticeResult } from '@/lib/results'
+import { logResult, markPracticeIfFuture } from '@/lib/results'
 import { SAMPLE_PUZZLE } from '@/lib/connections-sample'
 
 export type ConnectionsPlayProps = {
@@ -125,24 +125,23 @@ export default function ConnectionsPlay({ basePath, idOrSlug, initialPuzzle, dai
 
   return (
     <div className="mx-auto w-full max-w-xl space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      {!dailyDay && <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="font-lora text-xl font-semibold" style={{ color: 'var(--ink-text)' }}>
           {puzzle.title}
         </h1>
         <Link href={basePath} className="text-sm underline" style={{ color: 'var(--ink-accent)' }}>
           Library
         </Link>
-      </div>
-      {dailyDay && isPracticeResult('connections', dailyDay) && <p className="text-sm">Future preview · this run stays unranked.</p>}
-      {puzzle.difficultyKnown === false && <p className="text-xs text-[var(--ink-muted)]">Original difficulty colors are unavailable for this puzzle; all groups use a neutral color.</p>}
+      </div>}
       <ConnectionsBoard key={`${puzzle.id}-${runId}`} puzzle={puzzle} initialProgress={runId === 0 ? initialProgress : undefined} onProgress={saveProgress} onComplete={onComplete} />
       {result && (
         <ConnectionsResult
           title={puzzle.title}
           won={result.won}
           wrongGuesses={result.wrongGuesses}
-          shareLines={buildShareLines(new Set(result.solvedDifficulties), result.won)}
+          shareLines={buildShareLines(result.guessColors)}
           basePath={basePath}
+          daily={Boolean(dailyDay)}
           {...(dailyDay ? {} : { onReplay: replay })}
         />
       )}

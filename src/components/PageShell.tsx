@@ -7,8 +7,6 @@ import { HomeLink } from '@/components/HomeLink'
 
 type PageShellProps = {
   children: React.ReactNode
-  title?: string
-  showBack?: boolean
 }
 
 function isNotesPage(pathname: string): boolean {
@@ -33,7 +31,7 @@ function isChwaziPath(pathname: string): boolean {
   return pathname?.includes('/games/chwazi') ?? false
 }
 
-export function PageShell({ children, title, showBack }: PageShellProps) {
+export function PageShell({ children }: PageShellProps) {
   const pathname = usePathname()
   const notesPage = isNotesPage(pathname ?? '')
   const isMobile = useSyncExternalStore(
@@ -48,16 +46,13 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
   const chwaziMobile = isChwaziPath(pathname ?? '') && isMobile
   const isNotebook = !chwaziMobile && !notesPage
   const isHome = pathname === '/'
-  const showBackLink = showBack ?? (!isHome && !notesPage)
   const fullBleed = isFullBleed(pathname ?? '', chwaziMobile)
   const pearNav = isPearNavigator(pathname ?? '')
   const homeHref = '/'
   const useBigLogo = isNotebook && !pearNav
-  /** Every page but home gets the whole phone screen: no header below md, only a floating home icon where the page has no way home. */
+  /** Only home shows the sfjc.dev header. Every other page gets the full screen and a small home icon. */
   const gameRoute = !isHome
-  const ownHome = ['pear-navigator'].some((p) => (pathname ?? '').startsWith(`/games/${p}`))
-  /** Official games framed from their own site never get the sfjc.dev header, at any width. */
-  const framed = false
+  const ownHome = (pathname ?? '').startsWith('/games/pear-navigator')
 
   const notebookTypographyRoot = isNotebook && !pearNav
 
@@ -109,14 +104,14 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
       {gameRoute && !ownHome && (fullBleed ? (
         <HomeLink
           variant={chwaziMobile ? 'dark' : 'default'}
-          className={`fixed right-2 top-[max(0.5rem,env(safe-area-inset-top))] z-50 md:hidden ${chwaziMobile ? '' : 'rounded-full bg-[var(--ink-bg)]/85'}`}
+          className={`fixed right-2 top-[max(0.5rem,env(safe-area-inset-top))] z-50 ${chwaziMobile ? '' : 'rounded-full bg-[var(--ink-bg)]/85'}`}
         />
       ) : (
-        <div className="flex flex-none justify-end px-2 pt-[max(0.25rem,env(safe-area-inset-top))] md:hidden">
+        <div className="mx-auto flex w-full max-w-6xl flex-none justify-end px-2 pt-[max(0.25rem,env(safe-area-inset-top))] md:px-4 md:pt-3">
           <HomeLink />
         </div>
       ))}
-      <header className={`flex-none ${framed ? 'hidden' : gameRoute ? 'max-md:hidden' : ''} ${headerPadding} ${!isHome && !outerLinePaper ? 'border-b' : ''} ${outerLinePaper ? `bg-[var(--ink-paper)] h-[90px] flex flex-col justify-center` : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
+      <header className={`flex-none ${gameRoute ? 'hidden' : ''} ${headerPadding} ${!isHome && !outerLinePaper ? 'border-b' : ''} ${outerLinePaper ? `bg-[var(--ink-paper)] h-[90px] flex flex-col justify-center` : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
         <div className="mx-auto max-w-6xl flex w-full items-center justify-between">
           <div className="flex-1" />
           <Link
@@ -126,9 +121,7 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
           >
             sfjc.dev
           </Link>
-          <div className="flex flex-1 items-center justify-end gap-4">
-            {showBackLink && <HomeLink />}
-          </div>
+          <div className="flex-1" />
         </div>
       </header>
       <main
@@ -141,16 +134,11 @@ export function PageShell({ children, title, showBack }: PageShellProps) {
                   : isHome
                     ? 'py-8'
                     : isNotebook && outerLinePaper
-                      ? gameRoute ? 'pt-0 pb-6 md:pt-[30px] md:pb-8' : 'pt-[30px] pb-8'
+                      ? gameRoute ? 'pt-0 pb-6 md:pb-8' : 'pt-[30px] pb-8'
                       : 'py-6'
               } ${isNotebook ? 'min-h-[calc(100vh-6rem)]' : ''}`
         }
       >
-        {title && !isHome && (
-          <h1 className="mb-6 font-lora text-2xl font-semibold">
-            {title}
-          </h1>
-        )}
         {children}
       </main>
     </div>

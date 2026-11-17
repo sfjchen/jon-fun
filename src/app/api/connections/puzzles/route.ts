@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(500, Math.max(1, Number(request.nextUrl.searchParams.get('limit')) || 200))
 
   let q = supabaseAdmin.from('connections_puzzles').select(
-    'id, slug, title, description, tags, groups, author_display, play_count, solve_count, total_mistakes, created_at, updated_at',
+    'id, slug, title, description, tags, groups, author_display, author_fingerprint, play_count, solve_count, total_mistakes, created_at, updated_at',
   )
 
   if (sort === 'plays') {
@@ -36,7 +36,11 @@ export async function GET(request: NextRequest) {
   const { data, error } = await q
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   try {
-    const summaries = (data ?? []).map((row) => dbRowToSummary(row as ConnectionsDbRow))
+    const own = request.headers.get('x-connections-client')
+    const summaries = (data ?? []).map((row) => ({
+      ...dbRowToSummary(row as ConnectionsDbRow),
+      mine: Boolean(own) && own === row.author_fingerprint,
+    }))
     return NextResponse.json(summaries)
   } catch (caught) {
     const msg = caught instanceof Error ? caught.message : 'parse_error'

@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { shuffle } from '@/lib/random'
 import type { ConnectionsDifficulty, ConnectionsGroup, ConnectionsProgress, ConnectionsPuzzle } from '@/lib/connections'
 import {
-  CONNECTIONS_DIFFICULTIES,
   findMatchingGroup,
   guessKey,
   isOneAway,
@@ -35,7 +34,22 @@ export type ConnectionsCompletePayload = {
   won: boolean
   wrongGuesses: number
   solvedDifficulties: ConnectionsDifficulty[]
+  /** Each guess as the difficulty of its 4 words, in the order guessed, for the share grid. */
+  guessColors: ConnectionsDifficulty[][]
 }
+
+/**
+ * Picks a tile font size that keeps the longest word of a tile on one line in a 4-column phone grid.
+ */
+function tileText(word: string): string {
+  const longest = Math.max(...word.split(/\s+/).map((w) => w.length))
+  if (longest <= 6) return 'text-[15px] sm:text-lg'
+  if (longest <= 8) return 'text-[13px] sm:text-base'
+  if (longest <= 10) return 'text-[11.5px] sm:text-[15px]'
+  return 'text-[10px] sm:text-sm'
+}
+
+const pill = 'rounded-full border px-4 py-2.5 text-sm font-semibold transition active:scale-95 disabled:opacity-40'
 
 export type ConnectionsBoardProps = {
   puzzle: ConnectionsPuzzle
@@ -94,8 +108,14 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
   useEffect(() => {
     if (!done || finishedRef.current) return
     finishedRef.current = true
-    onComplete({ won, wrongGuesses, solvedDifficulties: solved.map((g) => g.difficulty) })
-  }, [done, won, wrongGuesses, solved, onComplete])
+    const tier = new Map(allTiles.map((t) => [wordKey(t.word), t.difficulty]))
+    onComplete({
+      won,
+      wrongGuesses,
+      solvedDifficulties: solved.map((g) => g.difficulty),
+      guessColors: progress.guesses.map((g) => g.map((w) => tier.get(wordKey(w)) ?? 'yellow')),
+    })
+  }, [done, won, wrongGuesses, solved, onComplete, allTiles, progress.guesses])
 
   useEffect(() => () => clearTimeout(toastTimer.current), [])
 
@@ -148,7 +168,7 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
 
     setShake(true)
     setTimeout(() => setShake(false), 420)
-    if (isOneAway(puzzle.groups, selectedWords)) flash('One away!')
+    if (isOneAway(puzzle.groups, selectedWords)) flash('One away...')
   }, [done, selectedKeys, pool, progress, puzzle.groups, commit, flash])
 
   const deselectAll = useCallback(() => setSelectedKeys(new Set()), [])
@@ -157,13 +177,6 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
     if (done) return
     setOrder((p) => shuffle(p))
   }, [done])
-
-  const giveUp = useCallback(() => {
-    if (done) return
-    if (!window.confirm('Reveal all groups and end this run?')) return
-    setSelectedKeys(new Set())
-    commit({ ...progress, gaveUp: true })
-  }, [done, progress, commit])
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -179,139 +192,96 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
     return () => window.removeEventListener('keydown', onKey)
   }, [done, selectedKeys.size, submit])
 
+  const neutral = puzzle.difficultyKnown === false
   return (
-    <div className="w-full max-w-xl mx-auto space-y-4" data-testid="connections-board">
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex gap-1" aria-label="Mistakes remaining">
-          {CONNECTIONS_DIFFICULTIES.map((_, i) => (
-            <span
-              key={i}
-              className="h-3 w-3 rounded-full border-2"
-              style={{
-                borderColor: 'var(--ink-border)',
-                backgroundColor: i < mistakesRemaining ? 'var(--ink-accent)' : 'transparent',
-              }}
-            />
-          ))}
-        </div>
-        <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-          {mistakesRemaining} {mistakesRemaining === 1 ? 'life' : 'lives'} left
-        </p>
-      </div>
-
-      {revealed.length > 0 && (
-        <div className="space-y-2">
-          {revealed.map((g) => (
-            <div
-              key={`${g.difficulty}-${g.category}`}
-              data-testid="connections-revealed-group"
-              className="rounded-lg border overflow-hidden"
-              style={{ borderColor: 'var(--ink-border)' }}
-            >
-              <div
-                className="flex items-center justify-between gap-2 px-3 py-2 text-sm font-semibold"
-                style={{ backgroundColor: puzzle.difficultyKnown === false ? '#d5dce4' : TIER_BG[g.difficulty], color: '#111' }}
-              >
-                <span className="flex items-center gap-2">
-                  <span
-                    className="rounded px-1 text-xs font-bold"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.12)' }}
-                    aria-hidden
-                  >
-                    {puzzle.difficultyKnown === false ? 'Group' : TIER_LABEL[g.difficulty]}
-                  </span>
-                  {g.category}
-                </span>
-              </div>
-              <div className="grid grid-cols-4 gap-1 p-2" style={{ backgroundColor: 'var(--ink-bg)' }}>
-                {g.words.map((w) => (
-                  <div
-                    key={wordKey(w)}
-                    className="rounded-md px-1 py-2 text-center text-xs font-medium [overflow-wrap:anywhere] sm:px-2 sm:text-sm"
-                    style={{ backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
-                  >
-                    {normalizeWord(w)}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+    <div className="relative mx-auto w-full max-w-[600px] select-none space-y-3" data-testid="connections-board">
+      <style>{`@keyframes cx-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}
+        75%{transform:translateX(6px)}}`}</style>
+      {toast && (
+        <div
+          role="status"
+          className="absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-full rounded-md px-3 py-1.5 text-sm font-semibold"
+          style={{ background: '#121212', color: '#fff' }}
+        >
+          {toast}
         </div>
       )}
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+        {revealed.map((g) => (
+          <div
+            key={`${g.difficulty}-${g.category}`}
+            data-testid="connections-revealed-group"
+            title={neutral ? undefined : `Difficulty ${TIER_LABEL[g.difficulty]}`}
+            className="col-span-4 flex min-h-[72px] flex-col items-center justify-center rounded-md px-2 py-1 text-center sm:min-h-20"
+            style={{ backgroundColor: neutral ? '#d5dce4' : TIER_BG[g.difficulty], color: '#000' }}
+          >
+            <p className="text-sm font-bold uppercase sm:text-base">{g.category}</p>
+            <p className="text-xs uppercase sm:text-sm">{g.words.map(normalizeWord).join(', ')}</p>
+          </div>
+        ))}
+        {pool.map((t) => {
+          const sel = selectedKeys.has(wordKey(t.word))
+          return (
+            <button
+              key={`${wordKey(t.word)}-${t.word}`}
+              type="button"
+              aria-pressed={sel}
+              onClick={() => toggleSel(t.word)}
+              className={`flex h-[72px] items-center justify-center rounded-md px-0.5 text-center font-bold uppercase
+                leading-tight transition-colors focus:outline-none focus-visible:ring-2 sm:h-20 ${tileText(t.word)}`}
+              style={{
+                backgroundColor: sel ? '#5a594e' : '#efefe6',
+                color: sel ? '#fff' : '#000',
+                animation: sel && shake ? 'cx-shake .2s 2' : undefined,
+              }}
+            >
+              {normalizeWord(t.word)}
+            </button>
+          )
+        })}
+      </div>
 
       {!done && (
         <>
-          <div
-            className={`grid grid-cols-4 gap-1.5 sm:gap-2 ${shake ? 'animate-pulse' : ''}`}
-            style={{ animationDuration: shake ? '0.15s' : undefined }}
-          >
-            {pool.map((t) => {
-              const sel = selectedKeys.has(wordKey(t.word))
-              return (
-                <button
-                  key={`${wordKey(t.word)}-${t.word}`}
-                  type="button"
-                  aria-pressed={sel}
-                  onClick={() => toggleSel(t.word)}
-                  className="min-h-20 rounded-lg border-2 px-1 py-2 text-[11px] font-medium [overflow-wrap:anywhere] transition-colors sm:px-2 sm:py-3 sm:text-sm focus:outline-none focus-visible:ring-2"
-                  style={{
-                    borderColor: sel ? 'var(--ink-accent)' : 'var(--ink-border)',
-                    backgroundColor: sel ? 'var(--ink-bg)' : 'var(--ink-paper)',
-                    color: 'var(--ink-text)',
-                    boxShadow: sel ? '0 0 0 2px var(--ink-accent)' : undefined,
-                  }}
-                >
-                  {normalizeWord(t.word)}
-                </button>
-              )
-            })}
+          <div className="flex items-center justify-center gap-2 text-sm" aria-label={`${mistakesRemaining} mistakes remaining`}>
+            Mistakes remaining:
+            {[0, 1, 2, 3].map((i) => (
+              <span
+                key={i}
+                className="h-3 w-3 rounded-full transition-opacity"
+                style={{ backgroundColor: '#5a594e', opacity: i < mistakesRemaining ? 1 : 0 }}
+              />
+            ))}
           </div>
-
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled={selectedKeys.size !== 4}
-              onClick={submit}
-              className="rounded-lg px-4 py-2 text-white disabled:opacity-40"
-              style={{ backgroundColor: 'var(--ink-accent)' }}
-            >
-              Submit
+          <div className="flex justify-center gap-2">
+            <button type="button" title="Shuffle the tiles" className={pill} style={{ borderColor: 'currentColor' }} onClick={shufflePool}>
+              Shuffle
             </button>
             <button
               type="button"
+              className={pill}
+              style={{ borderColor: 'currentColor' }}
+              disabled={!selectedKeys.size}
               onClick={deselectAll}
-              className="rounded-lg border px-4 py-2 disabled:opacity-40"
-              style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
             >
               Deselect all
             </button>
             <button
               type="button"
-              onClick={shufflePool}
-              className="rounded-lg border px-4 py-2 disabled:opacity-40"
-              style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+              title="Submit (Enter)"
+              className={pill}
+              disabled={selectedKeys.size !== 4}
+              onClick={submit}
+              style={
+                selectedKeys.size === 4
+                  ? { backgroundColor: 'var(--ink-text)', borderColor: 'var(--ink-text)', color: 'var(--ink-bg)' }
+                  : { borderColor: 'currentColor' }
+              }
             >
-              Shuffle
-            </button>
-            <button
-              type="button"
-              onClick={giveUp}
-              className="rounded-lg border px-4 py-2 disabled:opacity-40"
-              style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-            >
-              Give up
+              Submit
             </button>
           </div>
         </>
-      )}
-
-      {toast && (
-        <div
-          className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg border px-4 py-2 shadow-lg"
-          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-        >
-          {toast}
-        </div>
       )}
     </div>
   )

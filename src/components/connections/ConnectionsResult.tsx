@@ -1,7 +1,11 @@
 'use client'
 
+/**
+ * Renders the end-of-game card under the finished board: a short verdict, the guess grid and share/next actions.
+ */
+
 import Link from 'next/link'
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 
 export type ConnectionsResultProps = {
   title: string
@@ -11,8 +15,15 @@ export type ConnectionsResultProps = {
   basePath: string
   /** Shows a Play again button when set. */
   onReplay?: () => void
+  /** Links to the leaderboard instead of the puzzle library. */
+  daily?: boolean
 }
 
+const VERDICT = ['Perfect!', 'Great!', 'Solid!', 'Phew!']
+
+/**
+ * Renders the result card and shares through the phone share sheet, or copies on desktop.
+ */
 export default function ConnectionsResult({
   title,
   won,
@@ -20,69 +31,41 @@ export default function ConnectionsResult({
   shareLines,
   basePath,
   onReplay,
+  daily,
 }: ConnectionsResultProps) {
   const [copied, setCopied] = useState(false)
-
-  const shareText = [
-    `sfjc.dev — Connections`,
-    title,
-    won ? 'Solved!' : `Out (${wrongGuesses} wrong)`,
-    ...shareLines,
-  ].join('\n')
-
-  const copy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(shareText)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      setCopied(false)
-    }
-  }, [shareText])
+  const text = [`Connections · ${title}`, ...shareLines].join('\n')
+  const share = async () => {
+    if (navigator.share && matchMedia('(pointer: coarse)').matches) return navigator.share({ text }).catch(() => {})
+    await navigator.clipboard.writeText(text).then(() => setCopied(true), () => {})
+  }
+  const btn = 'rounded-full border px-5 py-2.5 text-sm font-semibold'
 
   return (
-    <div
-      className="mx-auto w-full max-w-lg rounded-lg border p-6 shadow-sm"
-      data-testid="connections-result"
-      style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
-    >
-      <h2 className="font-lora text-2xl font-semibold mb-2" style={{ color: 'var(--ink-text)' }}>
-        {won ? 'Nice!' : 'Nice try'}
-      </h2>
-      <p className="mb-4 text-sm" style={{ color: 'var(--ink-muted)' }}>
-        {title} — {wrongGuesses} wrong {wrongGuesses === 1 ? 'guess' : 'guesses'}
+    <div className="mx-auto w-full max-w-sm space-y-3 text-center" data-testid="connections-result">
+      <h2 className="font-lora text-2xl font-semibold">{won ? VERDICT[wrongGuesses] : 'Next time!'}</h2>
+      <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+        {won ? `Solved with ${wrongGuesses} mistake${wrongGuesses === 1 ? '' : 's'}` : 'Out of mistakes'}
       </p>
-      <pre
-        className="mb-4 rounded-md border p-3 font-mono text-sm whitespace-pre-wrap"
-        style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-      >
-        {shareText}
-      </pre>
-      <div className="flex flex-wrap gap-3">
+      <p className="whitespace-pre font-mono text-xl leading-6" aria-label="Your guesses">
+        {shareLines.join('\n')}
+      </p>
+      <div className="flex flex-wrap justify-center gap-2">
         <button
           type="button"
-          onClick={copy}
-          className="rounded-lg px-4 py-2 text-white hover:opacity-95"
-          style={{ backgroundColor: 'var(--ink-accent)' }}
+          onClick={share}
+          className={btn}
+          style={{ backgroundColor: 'var(--ink-text)', borderColor: 'var(--ink-text)', color: 'var(--ink-bg)' }}
         >
-          {copied ? 'Copied' : 'Copy share text'}
+          {copied ? 'Copied' : 'Share'}
         </button>
         {onReplay && (
-          <button
-            type="button"
-            onClick={onReplay}
-            className="rounded-lg border px-4 py-2 hover:opacity-90"
-            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-          >
+          <button type="button" onClick={onReplay} className={btn} style={{ borderColor: 'currentColor' }}>
             Play again
           </button>
         )}
-        <Link
-          href={basePath}
-          className="inline-flex items-center rounded-lg border px-4 py-2 hover:opacity-90"
-          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-        >
-          Library
+        <Link href={daily ? '/leaderboards' : basePath} className={btn} style={{ borderColor: 'currentColor' }}>
+          {daily ? 'Leaderboard' : 'Library'}
         </Link>
       </div>
     </div>

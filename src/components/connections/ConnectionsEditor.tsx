@@ -43,7 +43,6 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
   const [saving, setSaving] = useState(false)
   const [notOwner, setNotOwner] = useState(false)
 
-  const fp = useMemo(() => (typeof window !== 'undefined' ? getOrCreateConnectionsClientId() : ''), [])
   const checklist = useMemo(() => editorChecklist(puzzle), [puzzle])
   const canPublish = checklist.pass
 
@@ -54,7 +53,9 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
       setLoading(true)
       setLoadErr(null)
       try {
-        const r = await fetch(`/api/connections/puzzles/${encodeURIComponent(editId)}`)
+        const r = await fetch(`/api/connections/puzzles/${encodeURIComponent(editId)}`, {
+          headers: { 'x-connections-client': getOrCreateConnectionsClientId() },
+        })
         if (r.status === 503) {
           setLoadErr('Library offline')
           return
@@ -64,7 +65,7 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
         if (cancelled) return
         setPuzzle(p)
         const local = getOrCreateConnectionsClientId()
-        setNotOwner(Boolean(p.authorFingerprint && local && p.authorFingerprint !== local))
+        setNotOwner(!local || p.authorFingerprint !== local)
       } catch (e) {
         if (!cancelled) setLoadErr(e instanceof Error ? e.message : 'Load failed')
       } finally {
@@ -271,11 +272,11 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
           className="rounded-lg border p-3 text-sm"
           style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
         >
-          This browser isn&apos;t the original author fingerprint — publishing changes will be blocked. Duplicate via{' '}
+          Only the browser that published this puzzle can change it. To make your own version, start a{' '}
           <Link href={`${basePath}/new`} className="underline font-medium">
-            New puzzle
+            new puzzle
           </Link>{' '}
-          + import JSON.
+          and import its JSON.
         </div>
       )}
 
@@ -480,10 +481,6 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
           </button>
         )}
       </div>
-
-      <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
-        Fingerprint on this device: {fp ? `${fp.slice(0, 8)}…` : '(server render)'}
-      </p>
     </div>
   )
 }
