@@ -68,6 +68,12 @@ const formatSeconds = (seconds: number) => {
   return clamped.toFixed(1).replace(/\.0$/, '')
 }
 
+const TOOLBAR = [
+  { key: 'reset', label: 'Start over', d: 'M3 12a9 9 0 1 0 3-6.7M3 4v5h5' },
+  { key: 'new', label: 'New puzzle', d: 'M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5' },
+  { key: 'solution', label: 'Show solution', d: 'M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z' },
+]
+
 export default function Game24() {
   const notebookLayout = true
   const solver = useMemo(() => new Solver24(), [])
@@ -784,7 +790,7 @@ export default function Game24() {
   return (
     <div className="flex items-start lg:items-center">
       <div
-        className={`max-w-6xl mx-auto px-4 flex flex-col gap-6 w-full ${notebookLayout ? 'py-4 lg:py-6' : 'py-10 lg:py-14'}`}
+        className={`max-w-6xl mx-auto px-3 sm:px-4 flex flex-col gap-6 w-full ${notebookLayout ? 'py-4 lg:py-6' : 'py-10 lg:py-14'}`}
       >
         <div className="grid lg:grid-cols-[320px_1fr] gap-6 order-1">
           <aside className="order-2 rounded-lg border p-4 shadow-sm lg:order-1" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
@@ -919,17 +925,31 @@ export default function Game24() {
             )}
           </aside>
 
-          <main className="order-1 rounded-lg border p-4 relative overflow-hidden shadow-sm lg:order-2" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
-            <div className="flex items-center justify-between mb-6">
-              <div className="text-center flex-1">
-                <div className="text-lg font-semibold">{room && room.status !== 'waiting' ? 'Your Score' : 'Solved'}</div>
-                <div className="rounded-lg px-4 py-2 mt-1 text-2xl font-bold" style={{ backgroundColor: 'var(--ink-bg)' }}>
-                  {displayedScore}
-                </div>
+          <main className="order-1 rounded-lg border p-3 sm:p-4 relative overflow-hidden shadow-sm lg:order-2" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
+            <div className="mb-4 flex items-center gap-2">
+              <div className="flex h-11 items-center gap-2 rounded-lg px-3" style={{ backgroundColor: 'var(--ink-bg)' }}>
+                <span className="text-sm font-semibold" style={{ color: 'var(--ink-muted)' }}>
+                  {room && room.status !== 'waiting' ? 'Score' : 'Solved'}
+                </span>
+                <span className="text-xl font-bold tabular-nums">{displayedScore}</span>
               </div>
-              <button onClick={resetSelections} className="text-2xl min-w-11 min-h-11 rounded-lg flex items-center justify-center hover:opacity-80" style={{ backgroundColor: 'var(--ink-accent)', color: 'white' }} aria-label="Reset selection">
-                ↻
-              </button>
+              <div className="ml-auto flex gap-2">
+                {TOOLBAR.filter((b) => b.key === 'reset' || phase !== 'active')
+                  .map((b) => (
+                    <button
+                      key={b.label}
+                      onClick={() => (b.key === 'reset' ? resetSelections() : b.key === 'new' ? generatePractice() : showPracticeSolution())}
+                      className="flex h-11 w-11 items-center justify-center rounded-lg border hover:opacity-80"
+                      style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                      aria-label={b.label}
+                      title={b.label}
+                    >
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d={b.d} />
+                      </svg>
+                    </button>
+                  ))}
+              </div>
             </div>
 
             {(room?.status === 'active' || room?.status === 'intermission') && (
@@ -1015,7 +1035,7 @@ export default function Game24() {
       </div>
             )}
 
-            <div className="max-w-xl mx-auto p-4 space-y-8">
+            <div className="max-w-xl mx-auto sm:p-4">
               <div
                 onClick={(e) => {
                   const t = e.target as HTMLElement
@@ -1032,7 +1052,7 @@ export default function Game24() {
                     <div className="game-board mb-4">
                       {[0, 1, 2, 3].map((position) => renderCardAtPosition(position))}
         </div>
-                    <div className="flex justify-center gap-4 mb-4">
+                    <div className="mx-auto flex max-w-[26rem] justify-between gap-2 px-1 mb-4 sm:justify-center sm:gap-4">
           {OPERATORS.map(({ op, class: className, symbol }) => (
             <button
               key={op}
@@ -1045,16 +1065,18 @@ export default function Game24() {
             </button>
           ))}
         </div>
-                    <div className="text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
-                      {hasSubmitted ? 'You submitted this round.' : 'Solve to score up to 2000 points (20s round).'}
-          </div>
+                    {hasSubmitted && (
+                      <div className="text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
+                        Submitted. Waiting for the round to end.
+                      </div>
+                    )}
                   </>
                 ) : (
                   <>
                     <div className="game-board mb-4">
                       {[0, 1, 2, 3].map((position) => renderPracticeCard(position))}
           </div>
-                    <div className="flex justify-center gap-4 mb-4">
+                    <div className="mx-auto flex max-w-[26rem] justify-between gap-2 px-1 mb-4 sm:justify-center sm:gap-4">
                       {OPERATORS.map(({ op, class: className, symbol }) => (
                         <button
                           key={op}
@@ -1066,23 +1088,6 @@ export default function Game24() {
                         </button>
                       ))}
         </div>
-                    <div className="flex justify-center gap-3 mb-2">
-          <button 
-                        onClick={generatePractice}
-            className="action-btn danger"
-          >
-                        New puzzle
-          </button>
-          <button 
-                        onClick={showPracticeSolution}
-            className="action-btn primary"
-          >
-                        Solution
-          </button>
-                    </div>
-                    <div className="text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
-                      Tap a number, an operator, then another number. Combine all 4 into 24.
-                    </div>
                   </>
                 )}
               </div>

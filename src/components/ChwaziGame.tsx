@@ -218,16 +218,13 @@ export default function ChwaziGame() {
               ? 'Selecting…'
               : status === 'winner'
                 ? 'Winner chosen'
-                : 'Place and hold your fingers'}
+                : 'Chwazi'}
           </div>
         </div>
 
         {touches.size === 0 && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none">
-            <p className="text-gray-400 text-xl font-semibold tracking-wide animate-pulse">
-              Place your fingers on the screen
-            </p>
-            <p className="text-gray-500 text-sm">Everyone holds 1 finger down, then it picks a winner.</p>
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <p className="text-gray-400 text-xl font-semibold tracking-wide animate-pulse">Everyone hold 1 finger down</p>
           </div>
         )}
 

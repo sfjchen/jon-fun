@@ -338,7 +338,7 @@ export function ScoresHub() {
         </div>
       )}
 
-      <nav aria-label="Game" className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1">
+      <nav aria-label="Game" className="flex flex-wrap gap-1.5">
         {(['all', ...GAME_IDS] as Tab[]).map((g) => (
           <button
             key={g}

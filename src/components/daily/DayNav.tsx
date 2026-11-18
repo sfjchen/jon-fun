@@ -139,8 +139,10 @@ export default function DayNav({ title, path, day, label, info, children }: DayN
             {label}
           </p>
         )}
-        <PlayerName />
-        {children}
+        <div className="ml-auto flex items-center gap-x-1">
+          <PlayerName />
+          {children}
+        </div>
       </div>
       {day && today && day > today && <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>Future preview · practice only, not ranked</p>}
       <ScoreSync />

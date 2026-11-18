@@ -113,10 +113,10 @@ export default function PokerPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl py-2">
+    <div className="mx-auto max-w-5xl px-4 py-2">
       <div className="mx-auto max-w-2xl">
         <header className="text-center mb-8">
-          <h1 className="text-5xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>🃏 Texas Hold&apos;em</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold font-lora mb-3" style={{ color: 'var(--ink-text)' }}>🃏 Texas Hold&apos;em</h1>
           <p className="text-xl" style={{ color: 'var(--ink-muted)' }}>Poker Chip Tracker</p>
           <p className="text-sm mt-2" style={{ color: 'var(--ink-muted)' }}>
             2+ players, each on their own phone. Solo? Create a room, then join its PIN from a 2nd tab.
@@ -127,7 +127,7 @@ export default function PokerPage() {
             <div className="flex gap-4 mb-6">
               <button
                 onClick={() => setMode('create')}
-                className={`flex-1 py-3 px-4 rounded-lg font-semibold ${
+                className={`flex-1 whitespace-nowrap py-3 px-3 rounded-lg font-semibold ${
                   mode === 'create'
                     ? 'text-white'
                     : ''
@@ -138,7 +138,7 @@ export default function PokerPage() {
               </button>
               <button
                 onClick={() => setMode('join')}
-                className={`flex-1 py-3 px-4 rounded-lg font-semibold ${
+                className={`flex-1 whitespace-nowrap py-3 px-3 rounded-lg font-semibold ${
                   mode === 'join'
                     ? 'text-white'
                     : ''
@@ -172,9 +172,9 @@ export default function PokerPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-3 items-end gap-4">
+                <div className="grid grid-cols-3 items-end gap-3 sm:gap-4">
                   <div>
-                    <label htmlFor="poker-small-blind" className="block mb-2" style={{ color: 'var(--ink-text)' }}>Small Blind</label>
+                    <label htmlFor="poker-small-blind" className="block mb-2 whitespace-nowrap text-sm sm:text-base" style={{ color: 'var(--ink-text)' }}>Small Blind</label>
                     <input
                       id="poker-small-blind"
                       type="number"
@@ -187,7 +187,7 @@ export default function PokerPage() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="poker-big-blind" className="block mb-2" style={{ color: 'var(--ink-text)' }}>Big Blind</label>
+                    <label htmlFor="poker-big-blind" className="block mb-2 whitespace-nowrap text-sm sm:text-base" style={{ color: 'var(--ink-text)' }}>Big Blind</label>
                     <input
                       id="poker-big-blind"
                       type="number"
@@ -200,7 +200,7 @@ export default function PokerPage() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="poker-timer" className="block mb-2" style={{ color: 'var(--ink-text)' }}>Timer (seconds)</label>
+                    <label htmlFor="poker-timer" className="block mb-2 whitespace-nowrap text-sm sm:text-base" style={{ color: 'var(--ink-text)' }}>Timer (s)</label>
                     <input
                       id="poker-timer"
                       type="number"
