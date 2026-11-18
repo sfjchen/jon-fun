@@ -623,7 +623,7 @@ export default function Game24() {
     const savedPin = sessionStorage.getItem('game24_pin') || ''
     const savedPlayerId = sessionStorage.getItem('game24_playerId') || ''
     const savedHostId = sessionStorage.getItem('game24_hostId') || ''
-    const savedName = sessionStorage.getItem('game24_playerName') || getDevicePlayer()?.name || ''
+    const savedName = getDevicePlayer()?.name || sessionStorage.getItem('game24_playerName') || ''
 
     // Prefill but do NOT auto-rejoin; require explicit join/resume.
     if (savedPin && savedPlayerId) {

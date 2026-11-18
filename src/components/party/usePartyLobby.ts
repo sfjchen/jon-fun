@@ -38,7 +38,7 @@ export function usePartyLobby(gameKind: PartyGameKind, onPayload: (data: unknown
       setPinInput(p)
       setPlayerId(pid)
       setHostId(hid || null)
-      setNameInput(n ?? '')
+      setNameInput(getDevicePlayer()?.name || n || '')
     }
   }
 
