@@ -6,6 +6,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useRouter } from 'next/navigation'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import TriplesBoard from '@/components/triples/TriplesBoard'
 import { cardLabel } from '@/components/triples/TriplesCard'
@@ -48,6 +49,7 @@ async function call(url: string, body: object): Promise<{ room: TriplesRoom | nu
  * Renders the lobby form, then the waiting room, the shared board and the final ranking.
  */
 export default function TriplesRoomPlay({ initialPin }: { initialPin: string }) {
+  const router=useRouter()
   const hydrated = useSyncExternalStore(() => () => {}, () => true, () => false)
   const [session, setSession] = useState<Session | null>(null)
   const [room, setRoom] = useState<TriplesRoom | null>(null)
@@ -85,7 +87,7 @@ export default function TriplesRoomPlay({ initialPin }: { initialPin: string }) 
       setRoom(null)
       setSession(null)
       try {
-        sessionStorage.removeItem(SESSION_KEY)
+        if(readSession()?.pin===p)sessionStorage.removeItem(SESSION_KEY)
       } catch {}
       return
     }
@@ -147,6 +149,7 @@ export default function TriplesRoomPlay({ initialPin }: { initialPin: string }) 
       saveDevicePlayer({name:n,group:getDevicePlayer()?.group??'public'})
       setRoom(data.room)
       save({ pin: data.room.pin, playerId: data.playerId,playerToken:data.playerToken })
+      router.replace(`/games/triples?pin=${data.room.pin}`,{scroll:false})
       if (!create) {
         const ch = supabase.channel(`triples:${data.room.pin}`)
         ch.subscribe((status) => {

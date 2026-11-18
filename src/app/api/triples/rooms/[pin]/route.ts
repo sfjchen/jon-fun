@@ -47,7 +47,7 @@ export async function POST(request: NextRequest, { params }: Params) {
         if (!name) return fail('Enter your name')
         if (row.players.length >= TRIPLES_MAX_PLAYERS) return fail(`Room is full (${TRIPLES_MAX_PLAYERS} players)`)
         joinedId ||= uuidv4()
-        return { players: [...row.players, { id: joinedId, name, score: 0, misses: 0 }] }
+        return { players: [...row.players, { id: joinedId, name, score: 0, misses: 0, authVersion:2 }] }
       }
       case 'start': {
         if (me !== row.host_id) return fail('Only the host can start', 403)

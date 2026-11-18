@@ -9,7 +9,8 @@ test('room storage failures are retryable, missing rooms are 404, and roster IDs
   const {GET,POST}=await import('../src/app/api/triples/rooms/[pin]/route')
   const descriptor=Object.getOwnPropertyDescriptor(supabaseAdmin,'from')
   let failed=true
-  const builder={select(){return this},eq(){return this},async maybeSingle(){return {data:null,error:failed?{message:'Simulated database outage'}:null}}}
+  let data:unknown=null
+  const builder={select(){return this},eq(){return this},async maybeSingle(){return {data,error:failed?{message:'Simulated database outage'}:null}}}
   Object.defineProperty(supabaseAdmin,'from',{value:()=>builder,configurable:true})
   const params={params:Promise.resolve({pin:'1234'})}
   try{
@@ -22,6 +23,9 @@ test('room storage failures are retryable, missing rooms are 404, and roster IDs
     assert.equal((await POST(request({action:'start',playerId:'host',playerToken:token}),params)).status,503)
     assert.equal((await POST(request({action:'start',playerId:'host'}),params)).status,403)
     failed=false
+    data={host_id:'legacy-host',players:[{id:'legacy-host',name:'Legacy Alice',score:0,misses:0}]}
+    assert.equal((await GET(new NextRequest('http://localhost/api/triples/rooms/1234'),params)).status,404,'Uncredentialed legacy rooms are explicitly retired')
+    data=null
     assert.equal((await GET(new NextRequest('http://localhost/api/triples/rooms/1234'),params)).status,404)
   }finally{if(descriptor)Object.defineProperty(supabaseAdmin,'from',descriptor);else Reflect.deleteProperty(supabaseAdmin,'from')}
 })
