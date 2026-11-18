@@ -32,6 +32,7 @@ function useDaily() {
   const raw = useSyncExternalStore(subscribe, () => JSON.stringify(getPlayer()), () => 'null')
   const player = JSON.parse(raw) as ReturnType<typeof getPlayer>
   const group = player?.group ?? PUBLIC_GROUP
+  const named = !!player
   const [remote, setRemote] = useState<BoardRow[]>(() => cache.get(group)?.rows ?? [])
   const [tick, setTick] = useState(0)
   useEffect(() => {
@@ -41,7 +42,7 @@ function useDaily() {
     return () => events.forEach((e) => window.removeEventListener(e, bump))
   }, [])
   useEffect(() => {
-    if (!player) return
+    if (!named) return
     const ctl = new AbortController()
     fetch(`/api/results?group=${encodeURIComponent(group)}&days=60`, { signal: ctl.signal })
       .then((r) => (r.ok ? r.json() : null))
@@ -52,7 +53,7 @@ function useDaily() {
       })
       .catch(() => {})
     return () => ctl.abort()
-  }, [group, player, tick])
+  }, [group, named, tick])
   const day = localDay()
   const rows: BoardRow[] = []
   if (player) {
