@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { TRIPLES_MAX_PLAYERS, isOver, isTriple, newDeal, removeTriple, validateRoomPin } from '@/lib/triples'
+import { recordMatch } from '@/lib/match-results'
 import { playerToken,validPlayerToken,loadRoom, mutateRoom, toRoom, type Failure, type RoomRow } from '@/lib/triples-server'
 
 type Params = { params: Promise<{ pin: string }> }
@@ -89,5 +90,11 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   const result = await mutateRoom(pin, change)
   if ('error' in result) return NextResponse.json({ error: result.error }, { status: result.status })
+  const done = result.row
+  if (body.action === 'claim' && done?.status === 'finished' && done.started_at) {
+    await recordMatch('set', pin, done.started_at, done.players.map((p) => (
+      { id: p.id, name: p.name, score: p.score, sets: p.score + p.misses, misses: p.misses }
+    )))
+  }
   return NextResponse.json({ room: result.row && toRoom(result.row), ...(joinedId ? { playerId: joinedId,playerToken:playerToken(pin,joinedId) } : {}) })
 }

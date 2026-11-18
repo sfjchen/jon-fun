@@ -8,6 +8,7 @@ import {
   Game24Status,
   validateRoomPin,
 } from '@/lib/game24'
+import { recordMatch } from '@/lib/match-results'
 import { Solver24 } from '@/lib/solver24'
 
 const solver = new Solver24()
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
       }
 
       if (room.round_number >= GAME24_MAX_ROUNDS) {
-        await supabase
+        const { data: done } = await supabase
           .from('game24_rooms')
           .update({
             status: 'finished' as Game24Status,
@@ -98,6 +99,35 @@ export async function POST(request: NextRequest) {
             updated_at: nowIso,
           })
           .eq('pin', pin)
+          .eq('status', 'intermission')
+          .select('pin')
+
+        // Only the request that wins the status change records the match.
+        if (done?.length) {
+          const [{ data: rounds }, { data: ps }, { data: subs }] = await Promise.all([
+            supabase.from('game24_rounds').select('round_number, started_at').eq('room_pin', pin),
+            supabase.from('game24_players').select('player_id, name, score').eq('room_pin', pin),
+            supabase
+              .from('game24_submissions')
+              .select('player_id, round_number, submitted_at')
+              .eq('room_pin', pin)
+              .eq('is_correct', true),
+          ])
+          const starts = new Map((rounds ?? []).map((r) => [r.round_number, new Date(r.started_at).getTime()]))
+          const startedAt = new Date(Math.min(...starts.values())).toISOString()
+          await recordMatch('24', pin, startedAt, (ps ?? []).map((p) => {
+            const ms = (subs ?? [])
+              .filter((s) => s.player_id === p.player_id && starts.has(s.round_number))
+              .map((s) => new Date(s.submitted_at).getTime() - starts.get(s.round_number)!)
+            return {
+              id: p.player_id,
+              name: p.name,
+              score: p.score ?? 0,
+              best: ms.length ? Math.min(...ms) : null,
+              avg: ms.length ? Math.round(ms.reduce((a, b) => a + b, 0) / ms.length) : null,
+            }
+          }))
+        }
 
         return NextResponse.json({ status: 'finished' as Game24Status })
       }
