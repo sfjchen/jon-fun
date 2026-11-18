@@ -1,6 +1,6 @@
 
 /* Daily surfaces use one clean sans system with a distinct accent per game, separate from the notebook look. */
-[data-game-theme] { --g-set:#6d28d9; --g-bee:#c2410c; --g-connections:#0f766e; --g-mini:#4338ca; --g-krillion:#0e7490; --g-anthropeum:#9f1239; --game-color:#111318; --ink-bg:#fff; --ink-paper:#f5f6f8; --ink-text:#111318; --ink-muted:#5d6370; --ink-accent:var(--game-color); --ink-border:#e1e4ea; font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif; font-size:16px; letter-spacing:normal; line-height:1.45; }
+[data-game-theme] { --g-set:#6d28d9; --g-bee:#c2410c; --g-connections:#0f766e; --g-mini:#1d4ed8; --g-krillion:#0e7490; --g-anthropeum:#9f1239; --game-color:#111318; --ink-bg:#fff; --ink-paper:#f5f6f8; --ink-text:#111318; --ink-muted:#5d6370; --ink-accent:var(--game-color); --ink-border:#e1e4ea; font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif; font-size:16px; letter-spacing:normal; line-height:1.45; }
 [data-game-theme] .font-lora { font-family:inherit; letter-spacing:-.02em; }
 [data-game-theme] button,[data-game-theme] input,[data-game-theme] select { font-family:inherit; }
 [data-game-theme] .daily-heading h1 { font-size:clamp(1.4rem,3vw,2rem); font-weight:700; letter-spacing:-.02em; }

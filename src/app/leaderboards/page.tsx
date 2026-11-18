@@ -14,7 +14,7 @@ export default async function LeaderboardsPage({ searchParams }: { searchParams:
     `rounded-full px-4 py-1.5 text-sm ${on ? 'bg-[var(--ink-accent)] text-white' : 'border border-[var(--ink-border)]'}`
   return (
     <>
-      <nav className="mx-auto flex max-w-3xl gap-2 px-4 pt-4">
+      <nav className="mx-auto mb-3 flex max-w-4xl gap-2">
         <Link href="/leaderboards" className={tab(!multi)}>Daily</Link>
         <Link href="/leaderboards?tab=multiplayer" className={tab(multi)}>Multiplayer</Link>
       </nav>

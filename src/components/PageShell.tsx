@@ -119,7 +119,7 @@ export function PageShell({ children }: PageShellProps) {
       ))}
       <header className={`flex-none ${gameRoute ? 'hidden' : ''} ${headerPadding} ${!isHome && !outerLinePaper ? 'border-b' : ''} ${outerLinePaper ? `bg-[var(--ink-paper)] h-[90px] flex flex-col justify-center` : ''}`} style={{ borderColor: 'var(--ink-border)' }}>
         <div className="mx-auto max-w-6xl flex w-full items-center justify-between">
-          <div className="flex-1" />
+          <div className={isHome ? "hidden flex-1 sm:block" : "flex-1"} />
           <Link
             href={homeHref}
             className={`font-lora font-semibold hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded shrink-0 ${logoSize}`}

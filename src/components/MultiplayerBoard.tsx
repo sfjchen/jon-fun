@@ -7,9 +7,10 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import type { MatchRow } from '@/app/api/match-results/route'
+import { HomeLink } from '@/components/HomeLink'
 import { getDevicePlayer } from '@/lib/syncIdentity'
 
-const GAMES = [{ id: '24', label: '24', href: '/games/24' }, { id: 'set', label: 'SET', href: '/games/set' }]
+const GAMES = [{ id: '24', label: '24', href: '/games/24' }, { id: 'set', label: 'SET', href: '/games/triples' }]
 const WINDOWS = [{ days: 30, label: '30 days' }, { days: 0, label: 'All time' }]
 
 /**
@@ -40,7 +41,11 @@ export function MultiplayerBoard() {
     `rounded-full px-3 py-1 text-sm ${on ? 'bg-[var(--ink-accent)] text-white' : 'border border-[var(--ink-border)]'}`
   const is24 = game.id === '24'
   return (
-    <section className="mx-auto max-w-3xl p-4">
+    <section className="mx-auto max-w-4xl space-y-3">
+      <header className="flex items-center gap-2">
+        <HomeLink className="inline-flex h-10 w-10 shrink-0 items-center justify-center" />
+        <h1 className="font-lora text-2xl font-bold sm:text-3xl">Multiplayer leaderboard</h1>
+      </header>
       <div className="flex flex-wrap justify-between gap-2">
         <div className="flex gap-2">
           {GAMES.map((g) => <button key={g.id} onClick={() => setGame(g)} className={pill(g.id === game.id)}>{g.label}</button>)}
@@ -50,12 +55,12 @@ export function MultiplayerBoard() {
         </div>
       </div>
       {rows && !rows.length ? (
-        <p className="mt-6 text-[var(--ink-muted)]">
+        <p className="text-[var(--ink-muted)]">
           No finished matches yet. Play a room of <Link className="underline" href="/games/24">24</Link> or{' '}
-          <Link className="underline" href="/games/set">SET</Link> with friends.
+          <Link className="underline" href="/games/triples">SET</Link> with friends.
         </p>
       ) : (
-        <table className="mt-4 w-full text-left text-sm">
+        <table className="w-full text-left text-sm">
           <thead className="text-[var(--ink-muted)]">
             <tr>
               <th className="py-1">#</th><th>Player</th><th>Wins</th><th>Win %</th><th>Games</th>
