@@ -20,14 +20,15 @@ const field = 'w-full rounded-lg border bg-[var(--ink-bg)] px-3 py-2'
 const pill = 'rounded-full border px-4 py-2 text-sm font-semibold active:scale-95 disabled:opacity-40'
 const solid = { backgroundColor: 'var(--ink-text)', borderColor: 'var(--ink-text)', color: 'var(--ink-bg)' }
 
-type Session = { pin: string; playerId: string }
+type Session = { pin: string; playerId: string; playerToken:string }
 
 /**
  * Reads the saved room session for this tab.
  */
 function readSession(): Session | null {
   try {
-    return JSON.parse(sessionStorage.getItem(SESSION_KEY) ?? 'null') as Session | null
+    const saved=JSON.parse(sessionStorage.getItem(SESSION_KEY)??'null') as Session|null
+    return saved?.playerToken?saved:null
   } catch {
     return null
   }
@@ -36,7 +37,7 @@ function readSession(): Session | null {
 /**
  * Sends an action to the room API and returns its JSON, throwing the server's message on failure.
  */
-async function call(url: string, body: object): Promise<{ room: TriplesRoom | null; playerId?: string }> {
+async function call(url: string, body: object): Promise<{ room: TriplesRoom | null; playerId?: string; playerToken?:string }> {
   const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
   const data = await r.json().catch(() => ({}))
   if (!r.ok) throw new Error(data.error ?? 'Something went wrong')
@@ -62,7 +63,8 @@ export default function TriplesRoomPlay({ initialPin }: { initialPin: string }) 
 
   if (hydrated && !ready) {
     setReady(true)
-    setSession(readSession())
+    const saved=readSession()
+    setSession(saved&&(!initialPin||saved.pin===initialPin)?saved:null)
     try {
       restoreName(localStorage.getItem(NAME_KEY) ?? '')
     } catch {}
@@ -77,6 +79,7 @@ export default function TriplesRoomPlay({ initialPin }: { initialPin: string }) 
   }
 
   const load = useCallback(async (p: string) => {
+    try{
     const r = await fetch(`/api/triples/rooms/${p}`)
     if (r.status === 404) {
       setRoom(null)
@@ -90,6 +93,7 @@ export default function TriplesRoomPlay({ initialPin }: { initialPin: string }) 
       const next = ((await r.json()) as { room: TriplesRoom }).room
       setRoom((cur) => (cur && cur.version > next.version ? cur : next))
     }
+    }catch{/* Keep the seat and last board while the next poll retries. */}
   }, [])
 
   const roomPin = session?.pin
@@ -116,7 +120,7 @@ export default function TriplesRoomPlay({ initialPin }: { initialPin: string }) 
   const act = async (body: object) => {
     if (!session) return null
     try {
-      const data = await call(`/api/triples/rooms/${session.pin}`, { ...body, playerId: session.playerId })
+      const data = await call(`/api/triples/rooms/${session.pin}`, { ...body, playerId: session.playerId,playerToken:session.playerToken })
       if (data.room) setRoom(data.room)
       void channel.current?.send({ type: 'broadcast', event: 'sync', payload: {} })
       return data
@@ -139,10 +143,10 @@ export default function TriplesRoomPlay({ initialPin }: { initialPin: string }) 
       const data = create
         ? await call('/api/triples/rooms', { name: n })
         : await call(`/api/triples/rooms/${pin}`, { action: 'join', name: n })
-      if (!data.room || !data.playerId) throw new Error('Could not join')
+      if (!data.room || !data.playerId || !data.playerToken) throw new Error('Could not join')
       saveDevicePlayer({name:n,group:getDevicePlayer()?.group??'public'})
       setRoom(data.room)
-      save({ pin: data.room.pin, playerId: data.playerId })
+      save({ pin: data.room.pin, playerId: data.playerId,playerToken:data.playerToken })
       if (!create) {
         const ch = supabase.channel(`triples:${data.room.pin}`)
         ch.subscribe((status) => {

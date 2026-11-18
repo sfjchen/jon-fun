@@ -75,14 +75,14 @@ test('full-deck practice can finish and multiplayer players see the same success
   const created=page.waitForResponse(r=>r.url().endsWith('/api/triples/rooms')&&r.request().method()==='POST')
   await page.getByRole('button',{name:'Create a room',exact:true}).click()
   const host=await(await created).json(),pin=host.room.pin
-  const guest=await context.newPage();let guestId=''
+  const guest=await context.newPage();let guestId='',guestToken=''
   try{
     await mockSyncIdentity(guest)
     await guest.addInitScript(()=>localStorage.setItem('sfjc_player',JSON.stringify({name:'Set Guest',group:'set-test'})))
     await guest.goto(`/games/triples?pin=${pin}`,{waitUntil:'domcontentloaded'})
     const joined=guest.waitForResponse(r=>r.url().endsWith(`/api/triples/rooms/${pin}`)&&r.request().method()==='POST')
     await guest.getByRole('button',{name:'Join',exact:true}).click()
-    guestId=(await(await joined).json()).playerId
+    const joinedData=await(await joined).json();guestId=joinedData.playerId;guestToken=joinedData.playerToken
     await expect(page.getByRole('list',{name:'Scores'})).toContainText('Set Guest')
     await page.getByRole('button',{name:'Start game',exact:true}).click()
     await expect(guest.locator('button[data-card]').first()).toBeVisible()
@@ -92,8 +92,24 @@ test('full-deck practice can finish and multiplayer players see the same success
     await expect(guest.getByRole('list',{name:'Scores'})).toContainText('Set Host 1')
     await page.reload();await expect(page.getByRole('list',{name:'Scores'})).toContainText('Set Host 1')
   }finally{
-    if(guestId)await page.request.post(`/api/triples/rooms/${pin}`,{data:{action:'leave',playerId:guestId}})
-    await page.request.post(`/api/triples/rooms/${pin}`,{data:{action:'leave',playerId:host.playerId}})
+    if(guestId)await page.request.post(`/api/triples/rooms/${pin}`,{data:{action:'leave',playerId:guestId,playerToken:guestToken}})
+    await page.request.post(`/api/triples/rooms/${pin}`,{data:{action:'leave',playerId:host.playerId,playerToken:host.playerToken}})
     await guest.close()
   }
+})
+
+
+test('temporary room failures retain the seat and a different invite opens its requested lobby',async({page})=>{
+  await mockSyncIdentity(page)
+  await page.addInitScript(()=>{sessionStorage.setItem('triples_session',JSON.stringify({pin:'1234',playerId:'host',playerToken:'private-seat'}));localStorage.setItem('sfjc_player',JSON.stringify({name:'Alice',group:'public'}))})
+  let reads=0
+  await page.route('**/api/triples/rooms/1234',async route=>{reads++;if(reads===1)return route.fulfill({status:503,json:{error:'Temporary storage failure'}});return route.fulfill({json:{room:{pin:'1234',hostId:'host',status:'waiting',board:[],deckCount:0,players:[{id:'host',name:'Alice',score:0,misses:0}],lastClaim:null,version:0,startedAt:null}}})})
+  await page.goto('/games/triples',{waitUntil:'domcontentloaded'})
+  await expect(page.getByRole('button',{name:'Start game',exact:true})).toBeVisible()
+  expect(reads).toBeGreaterThanOrEqual(2)
+  expect(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('triples_session')!).playerId)).toBe('host')
+  await page.goto('/games/triples?pin=5678',{waitUntil:'domcontentloaded'})
+  await expect(page.getByRole('textbox',{name:'Room PIN'})).toHaveValue('5678')
+  await expect(page.getByRole('button',{name:'Join',exact:true})).toBeVisible()
+  expect(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('triples_session')!).pin)).toBe('1234')
 })

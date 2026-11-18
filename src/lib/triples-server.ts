@@ -3,6 +3,7 @@
  * applies changes as versioned updates, so 2 players claiming at once can never both take the same cards.
  */
 
+import { createHmac, timingSafeEqual } from 'node:crypto'
 import { supabaseAdmin } from '@/lib/supabase'
 import type { TriplesClaim, TriplesPlayer, TriplesRoom } from '@/lib/triples'
 
@@ -24,7 +25,8 @@ export type Failure = { error: string; status: number }
  * Loads a room row, or null when it does not exist.
  */
 export async function loadRoom(pin: string): Promise<RoomRow | null> {
-  const { data } = await supabaseAdmin.from('triples_rooms').select('*').eq('pin', pin).maybeSingle()
+  const { data,error } = await supabaseAdmin.from('triples_rooms').select('*').eq('pin', pin).maybeSingle()
+  if(error)throw Error('Room storage unavailable')
   return (data as RoomRow | null) ?? null
 }
 
@@ -54,7 +56,8 @@ export async function mutateRoom(
   change: (row: RoomRow) => Partial<RoomRow> | null | Failure,
 ): Promise<{ row: RoomRow | null } | Failure> {
   for (let attempt = 0; attempt < 6; attempt++) {
-    const row = await loadRoom(pin)
+    let row:RoomRow|null
+    try{row=await loadRoom(pin)}catch{return {error:'Room storage unavailable. Try again.',status:503}}
     if (!row) return { error: 'Room not found', status: 404 }
     const next = change(row)
     if (next && 'error' in next) return next
@@ -64,14 +67,27 @@ export async function mutateRoom(
       if(deleted.data)return {row:null}
       continue
     }
-    const { data } = await supabaseAdmin
+    const { data,error } = await supabaseAdmin
       .from('triples_rooms')
       .update({ ...next, version: row.version + 1, last_activity: new Date().toISOString() })
       .eq('pin', pin)
       .eq('version', row.version)
       .select()
       .maybeSingle()
+    if(error)return {error:'Room storage unavailable. Try again.',status:503}
     if (data) return { row: data as RoomRow }
   }
   return { error: 'The room is busy. Try again.', status: 409 }
+}
+
+/** Private seat capability; public roster IDs cannot authorize room actions. */
+export function playerToken(pin:string,playerId:string):string {
+  const secret=process.env.SUPABASE_SERVICE_ROLE_KEY
+  if(!secret)throw Error('Room credentials unavailable')
+  return createHmac('sha256',secret).update(`set-seat-v1:${pin}:${playerId}`).digest('base64url')
+}
+export function validPlayerToken(pin:string,playerId:string,token:unknown):boolean {
+  if(typeof token!=='string'||!playerId)return false
+  const expected=Buffer.from(playerToken(pin,playerId)),given=Buffer.from(token)
+  return expected.length===given.length&&timingSafeEqual(expected,given)
 }

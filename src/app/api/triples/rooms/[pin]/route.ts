@@ -5,10 +5,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { TRIPLES_MAX_PLAYERS, isOver, isTriple, newDeal, removeTriple, validateRoomPin } from '@/lib/triples'
-import { loadRoom, mutateRoom, toRoom, type Failure, type RoomRow } from '@/lib/triples-server'
+import { playerToken,validPlayerToken,loadRoom, mutateRoom, toRoom, type Failure, type RoomRow } from '@/lib/triples-server'
 
 type Params = { params: Promise<{ pin: string }> }
-type Body = { action?: string; playerId?: string; name?: string; cards?: unknown }
+type Body = { action?: string; playerId?: string; playerToken?:string; name?: string; cards?: unknown }
 
 /**
  * Returns the room for clients, or 404.
@@ -16,7 +16,8 @@ type Body = { action?: string; playerId?: string; name?: string; cards?: unknown
 export async function GET(_request: NextRequest, { params }: Params) {
   const { pin } = await params
   if (!validateRoomPin(pin)) return NextResponse.json({ error: 'Invalid PIN' }, { status: 400 })
-  const row = await loadRoom(pin)
+  let row:RoomRow|null
+  try{row=await loadRoom(pin)}catch{return NextResponse.json({error:'Room storage unavailable. Try again.'},{status:503})}
   return row ? NextResponse.json({ room: toRoom(row) },{headers:{'Cache-Control':'no-store'}}) : NextResponse.json({ error: 'Room not found' }, { status: 404 })
 }
 
@@ -35,6 +36,7 @@ export async function POST(request: NextRequest, { params }: Params) {
   if (!validateRoomPin(pin)) return NextResponse.json({ error: 'Invalid PIN' }, { status: 400 })
   const body = ((await request.json().catch(() => null)) ?? {}) as Body
   const me = body.playerId ?? ''
+  if(body.action!=='join'&&!validPlayerToken(pin,me,body.playerToken))return NextResponse.json({error:'Rejoin this room to continue.'},{status:403})
   let joinedId = ''
 
   const change = (row: RoomRow): Partial<RoomRow> | null | Failure => {
@@ -62,7 +64,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       case 'claim': {
         if (!player) return fail('You are not in this room', 403)
         if (row.status !== 'active') return fail('The game is not running')
-        const cards = Array.isArray(body.cards) ? body.cards.filter((c): c is number => Number.isInteger(c)) : []
+        const cards = Array.isArray(body.cards)&&body.cards.every(c=>Number.isInteger(c)&&c>=0&&c<81) ? body.cards as number[] : []
         if (cards.length!==3 || new Set(cards).size !== 3) return fail('Pick 3 cards')
         if (!cards.every((c) => row.board.includes(c))) return fail('Too slow, those cards are gone', 409)
         const ok = isTriple(cards[0]!, cards[1]!, cards[2]!)
@@ -87,5 +89,5 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   const result = await mutateRoom(pin, change)
   if ('error' in result) return NextResponse.json({ error: result.error }, { status: result.status })
-  return NextResponse.json({ room: result.row && toRoom(result.row), ...(joinedId ? { playerId: joinedId } : {}) })
+  return NextResponse.json({ room: result.row && toRoom(result.row), ...(joinedId ? { playerId: joinedId,playerToken:playerToken(pin,joinedId) } : {}) })
 }
