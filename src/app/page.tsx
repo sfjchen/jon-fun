@@ -10,6 +10,7 @@ import { isOwnerDevice, subscribeSyncIdentity } from '@/lib/syncIdentity'
 
 const nb = '/doodles/notebook'
 const items: GameCardGame[] = [
+  { id: 'daily-log', title: '1 Sentence Everyday', description: 'One sentence per day; history, calendar, export', icon: `${nb}/daily.svg`, href: '/games/daily-log', available: true },
   {
     id: 'callmoves',
     title: 'CallMoves',
@@ -18,8 +19,6 @@ const items: GameCardGame[] = [
     href: 'https://callmoves.sfjc.dev',
     available: true,
   },
-  { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom boards locally', icon: `${nb}/jeopardy.svg`, href: '/games/jeopardy', available: true },
-  { id: 'poker', title: 'Texas Hold\'em chip tracker', description: 'Chip tracker with multiplayer lobbies', icon: `${nb}/poker.svg`, href: '/games/poker', available: true },
   {
     id: 'veridian',
     title: 'Veridian Whiteboard',
@@ -28,37 +27,19 @@ const items: GameCardGame[] = [
     href: '/veridian',
     available: true,
   },
-  {
-    id: 'connections',
-    title: 'Connections',
-    description: 'Find four groups of four words; daily archive puzzles and friend leaderboards',
-    icon: `${nb}/connections.svg`,
-    href: '/games/connections/daily',
-    available: true,
-  },
-  {
-    id: 'spelling-bee',
-    title: 'Spelling Bee',
-    description: 'Make words from 7 letters around a center letter; daily puzzle, archive and unlimited practice',
-    icon: `${nb}/bee.svg`,
-    href: '/games/spelling-bee',
-    available: true,
-  },
-  {
-    id: 'anthropeum',
-    title: 'Anthropeum',
-    description: 'Guess the place and date of ten museum artifacts; daily scores and friends',
-    icon: `${nb}/anthropeum.svg`,
-    href: '/games/anthropeum',
-    available: true,
-  },
-  { id: 'mini', title: 'Mini Crossword', description: 'A daily crossword from the archives; solve against the clock', icon: `${nb}/mini.svg`, href: '/games/mini', available: true },
-  { id: 'krillion', title: 'Krillion', description: 'Today’s seven prompts, original answer sets, rarity scoring and a 25-second clock', icon: `${nb}/krillion.svg`, href: '/games/krillion', available: true },
-  { id: 'set', title: 'SET', description: 'Find the six daily sets, clear a full deck or race with friends', icon: `${nb}/triples.svg`, href: '/games/set', available: true },
-  { id: 'scores', title: 'Leaderboard', description: 'Daily games, calendar, winners, trends and friend scores', icon: `${nb}/leaderboards.svg`, href: '/leaderboards', available: true },
-  { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: `${nb}/game24.svg`, href: '/games/24', available: true },
-  { id: 'daily-log', title: '1 Sentence Everyday', description: 'One sentence per day; history, calendar, export', icon: `${nb}/daily.svg`, href: '/games/daily-log', available: true },
   { id: 'tmr', title: 'Focus Chimes', description: 'Recurring background chimes to stay on track and keep a sense of time', icon: `${nb}/tmr.svg`, href: '/games/tmr', available: true },
+  {
+    id: 'e-reader',
+    title: 'Web E-Reader',
+    description: 'Import text or PDF files into a chapterized reader with typography controls, bookmarks, TTS, and local progress',
+    icon: `${nb}/ereader.svg`,
+    href: '/games/e-reader',
+    available: true,
+  },
+  { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: `${nb}/game24.svg`, href: '/games/24', available: true },
+  { id: 'poker', title: 'Texas Hold\'em chip tracker', description: 'Chip tracker with multiplayer lobbies', icon: `${nb}/poker.svg`, href: '/games/poker', available: true },
+  { id: 'set', title: 'SET', description: 'Race friends in a room, or clear a full deck', icon: `${nb}/triples.svg`, href: '/games/triples', available: true },
+  { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom boards locally', icon: `${nb}/jeopardy.svg`, href: '/games/jeopardy', available: true },
   { id: 'chwazi', title: 'Chwazi Finger Chooser', description: 'Touch screen to pick a winner', icon: `${nb}/chwazi.svg`, href: '/games/chwazi', available: true },
   { id: 'coming-soon', title: 'Coming Soon', description: 'More brain games in development', icon: `${nb}/coming-soon.svg`, href: '#', available: false },
 ]

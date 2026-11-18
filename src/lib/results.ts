@@ -38,7 +38,8 @@ export function setPlayer(p: Player): void {
   void flushResults()
 }
 type Queued = Result & { player: Player | null }
-function queue(): Queued[] {
+/** Reads the results saved on this device that are not yet synced. */
+export function queue(): Queued[] {
   try { return JSON.parse(localStorage.getItem(QUEUE_KEY) ?? '[]') as Queued[] } catch { return [] }
 }
 let flushing = false

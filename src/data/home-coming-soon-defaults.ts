@@ -10,7 +10,6 @@ export const HOME_COMING_SOON_DEFAULTS: HomeComingSoonCopy = {
   intro: "We're working hard to bring you these exciting new features:",
   bullets: [
     'Notes: meeting shorthand with ? AI lookups in a side panel',
-    'Web E-Reader: cleaner imports, smoother offline reading and sharper reading UX',
     'Quip Clash: answer prompts head-to-head and vote for the funnier one',
     'Fib It: bluff-the-truth trivia where your fake answers fool friends',
     'Enough About You: bluff about each other, then spot the truth in the final round',

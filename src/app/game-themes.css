@@ -1,19 +1,19 @@
 
-/* Game surfaces deliberately escape the notebook font and paper background. */
-[data-game-theme] { --ink-bg:#fff; --ink-paper:#fff; --ink-text:#121212; --ink-muted:#666; --ink-accent:#121212; --ink-border:#ddd; font-family:Arial,Helvetica,sans-serif; font-size:16px; letter-spacing:normal; line-height:1.45; }
-[data-game-theme] .font-lora { font-family:Georgia,'Times New Roman',serif; letter-spacing:-.035em; }
+/* Daily surfaces use one clean sans system with a distinct accent per game, separate from the notebook look. */
+[data-game-theme] { --g-set:#6d28d9; --g-bee:#c2410c; --g-connections:#0f766e; --g-mini:#4338ca; --g-krillion:#0e7490; --g-anthropeum:#9f1239; --game-color:#111318; --ink-bg:#fff; --ink-paper:#f5f6f8; --ink-text:#111318; --ink-muted:#5d6370; --ink-accent:var(--game-color); --ink-border:#e1e4ea; font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif; font-size:16px; letter-spacing:normal; line-height:1.45; }
+[data-game-theme] .font-lora { font-family:inherit; letter-spacing:-.02em; }
 [data-game-theme] button,[data-game-theme] input,[data-game-theme] select { font-family:inherit; }
-[data-game-theme] .daily-heading h1 { font-size:clamp(1.45rem,3vw,2.2rem); font-weight:800; }
-[data-game-theme] .daily-heading { padding-block:8px; }
-[data-game-theme='bee'] { --game-color:#f7da21; }
-[data-game-theme='connections'] { --game-color:#b4a8ff; }
-[data-game-theme='mini'] { --game-color:#95bdf0; }
-[data-game-theme='bee'] .daily-heading,[data-game-theme='connections'] .daily-heading,[data-game-theme='mini'] .daily-heading { border-top:5px solid var(--game-color); }
-[data-game-theme='mini'] input[aria-label^='Row'] { font-family:Arial,Helvetica,sans-serif; font-weight:500; font-size:clamp(22px,5vw,38px); }
+[data-game-theme] .daily-heading h1 { font-size:clamp(1.4rem,3vw,2rem); font-weight:700; letter-spacing:-.02em; }
+[data-game-theme] .daily-heading { padding-block:8px; border-top:3px solid var(--game-color); }
+[data-game-theme='set'] { --game-color:var(--g-set); }
+[data-game-theme='bee'] { --game-color:var(--g-bee); }
+[data-game-theme='connections'] { --game-color:var(--g-connections); }
+[data-game-theme='mini'] { --game-color:var(--g-mini); }
+[data-game-theme='mini'] input[aria-label^='Row'] { font-family:inherit; font-weight:500; font-size:clamp(22px,5vw,38px); }
 [data-game-theme='connections'] [data-testid='connections-board'] { margin-top:24px; }
 [data-game-theme='connections'] [data-testid='connections-board'] button { letter-spacing:-.025em; }
 
-[data-game-theme='krillion'] { --ink-bg:#070f1b; --ink-paper:#101d33; --ink-text:#e8f1ff; --ink-muted:#9bafd0; --ink-accent:#28c9e8; --ink-border:#29415f; background:linear-gradient(#080f1b,#071627); font-family:'VT323',ui-monospace,monospace; font-size:20px; }
+[data-game-theme='krillion'] { --game-color:var(--g-krillion); --ink-bg:#070f1b; --ink-paper:#101d33; --ink-text:#e8f1ff; --ink-muted:#9bafd0; --ink-accent:#28c9e8; --ink-border:#29415f; background:linear-gradient(#080f1b,#071627); font-family:'VT323',ui-monospace,monospace; font-size:20px; }
 [data-game-theme='krillion'] .font-lora { font-family:inherit; letter-spacing:.04em; }
 [data-game-theme='krillion'] .daily-heading h1 { font-family:inherit; letter-spacing:.15em; text-transform:uppercase; font-weight:400; color:#e8f1ff; }
 [data-game-theme='krillion'] .daily-heading { border-bottom:1px solid #29415f; }
@@ -39,7 +39,7 @@
 [data-game-theme='krillion'] [data-testid='krillion-review'] { margin-top:24px; background:#101d33; border-color:#29415f; font-size:18px; }
 [data-game-theme='krillion'] [data-testid='krillion-review'] h3 { color:#43d8ef; }
 
-[data-game-theme='anthropeum'] { --ink-bg:#f7f3ea; --ink-paper:#f7f3ea; --ink-text:#4a4337; --ink-muted:#8a795b; --ink-accent:#7a1f1a; --ink-border:#dcd2bc; font-family:'EB Garamond',Georgia,serif; font-size:18px; }
+[data-game-theme='anthropeum'] { --game-color:var(--g-anthropeum); --ink-bg:#f7f3ea; --ink-paper:#f7f3ea; --ink-text:#4a4337; --ink-muted:#8a795b; --ink-accent:#7a1f1a; --ink-border:#dcd2bc; font-family:'EB Garamond',Georgia,serif; font-size:18px; }
 [data-game-theme='anthropeum'] .font-lora,[data-game-theme='anthropeum'] h1 { font-family:'Playfair Display',Georgia,serif; color:#7a1f1a; font-weight:400; }
 [data-game-theme='anthropeum'] .game-page-main { padding-inline:0; padding-bottom:0; }
 [data-game-theme='anthropeum'] .daily-game > header { padding-inline:20px; margin-bottom:0; }
@@ -88,15 +88,13 @@
 [data-game-theme='krillion'] input[type='date'] { color-scheme:dark; }
 [data-game-theme='anthropeum'] .daily-heading h1 { font-weight:400; }
 
-[data-game-theme='set'] { --ink-bg:#fff; --ink-paper:#f7f7f7; --ink-text:#242424; --ink-muted:#68616d; --ink-accent:#72268d; --ink-border:#ded9e2; font-family:Arial,Helvetica,sans-serif; }
-[data-game-theme='set'] .daily-heading { border-top:5px solid #72268d; }
-[data-game-theme='set'] .daily-heading h1 { font-family:Arial,Helvetica,sans-serif; color:#72268d; font-weight:900; font-style:italic; letter-spacing:-.04em; }
-.set-wordmark { color:#72268d; font:bold italic 68px/1 Arial,sans-serif; letter-spacing:-.06em; }
-.set-start { text-align:center; padding:32px 20px 40px; background:#f7f5f8; border-radius:8px; }
+[data-game-theme='set'] .daily-heading h1 { color:var(--game-color); font-weight:800; letter-spacing:-.03em; }
+.set-wordmark { color:var(--game-color); font-weight:800; font-size:68px; line-height:1; letter-spacing:-.05em; }
+.set-start { text-align:center; padding:32px 20px 40px; background:var(--ink-paper); border-radius:8px; }
 .set-start h2 { font-size:26px; font-weight:700; margin:20px 0 12px; }
 .set-start p:not(.set-wordmark) { max-width:380px; margin:0 auto 24px; line-height:1.6; }
-.set-primary { padding:12px 24px; color:white; background:#72268d; border-radius:5px; font-weight:700; }
-.set-secondary { border:1px solid #72268d; color:#72268d; padding:8px 20px; border-radius:5px; font-size:14px; }
+.set-primary { padding:12px 24px; color:white; background:var(--game-color); border-radius:5px; font-weight:700; }
+.set-secondary { border:1px solid var(--game-color); color:var(--game-color); padding:8px 20px; border-radius:5px; font-size:14px; }
 .set-secondary:disabled { opacity:.4; }
-.set-mode-active { border-bottom:2px solid #72268d; padding-bottom:6px; font-weight:700; }
-.set-complete { padding:24px; background:#f1ebf4; color:#522069; text-align:center; }
+.set-mode-active { border-bottom:2px solid var(--game-color); padding-bottom:6px; font-weight:700; }
+.set-complete { padding:24px; background:var(--ink-paper); color:var(--ink-text); text-align:center; }

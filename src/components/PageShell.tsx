@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useSyncExternalStore } from 'react'
+import { DailyHeader } from '@/components/daily/DailyDrawer'
 import { HomeLink } from '@/components/HomeLink'
 import { ensureSyncIdentity } from '@/lib/syncIdentity'
 
@@ -36,7 +37,7 @@ export function PageShell({ children }: PageShellProps) {
   useEffect(() => { void ensureSyncIdentity() }, [])
   const pathname = usePathname()
   const ownDailyHeader = ['/games/set','/games/triples','/games/mini','/games/krillion','/games/anthropeum','/games/spelling-bee','/games/connections/daily','/leaderboards','/games/daily-log'].includes(pathname ?? '')
-  const gameTheme = ['/games/set','/games/triples'].includes(pathname??'') ? 'set' : pathname?.startsWith('/games/connections') ? 'connections' : pathname === '/games/mini' ? 'mini' : pathname === '/games/spelling-bee' ? 'bee' : pathname === '/games/krillion' ? 'krillion' : pathname === '/games/anthropeum' ? 'anthropeum' : undefined
+  const gameTheme = ['/games/set','/games/triples'].includes(pathname??'') ? 'set' : pathname?.startsWith('/games/connections') ? 'connections' : pathname === '/games/mini' ? 'mini' : pathname === '/leaderboards' ? 'daily' : pathname === '/games/spelling-bee' ? 'bee' : pathname === '/games/krillion' ? 'krillion' : pathname === '/games/anthropeum' ? 'anthropeum' : undefined
   const notesPage = isNotesPage(pathname ?? '')
   const isMobile = useSyncExternalStore(
     (cb) => {
@@ -126,7 +127,7 @@ export function PageShell({ children }: PageShellProps) {
           >
             sfjc.dev
           </Link>
-          <div className="flex-1" />
+          <div className="flex flex-1 justify-end">{isHome && <DailyHeader />}</div>
         </div>
       </header>
       <main

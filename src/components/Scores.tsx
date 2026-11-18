@@ -34,7 +34,7 @@ import {
 import { DAILY_EPOCH, shiftDay, validDay } from '@/lib/daily'
 import { average, overallDay, streaks, winners, winsByPlayer } from '@/lib/score-stats'
 
-const card = 'rounded-xl border border-[var(--ink-border)] bg-[var(--ink-paper)] p-3 sm:p-4'
+const card = 'rounded-2xl border border-[var(--ink-border)] bg-[var(--ink-bg)] p-3 shadow-sm sm:p-4'
 const muted = 'text-[var(--ink-muted)]'
 const pill = 'shrink-0 rounded-full border px-3 py-1.5 text-sm'
 type Tab = GameId | 'all'
@@ -312,7 +312,7 @@ export function ScoresHub() {
     <div className="mx-auto max-w-4xl space-y-3" data-testid="scores-hub">
       <header className="flex items-center gap-2">
         <HomeLink className="inline-flex h-10 w-10 shrink-0 items-center justify-center" />
-        <h1 className="mr-auto font-lora text-2xl font-semibold sm:text-3xl">Leaderboard</h1>
+        <h1 className="mr-auto font-lora text-2xl font-bold sm:text-3xl">Daily leaderboard</h1>
         <Info>
           <ul className="list-disc space-y-1 pl-4">
             {GAME_IDS.map((g) => (
