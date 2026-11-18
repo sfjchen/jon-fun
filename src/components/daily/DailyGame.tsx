@@ -86,7 +86,7 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
     </>
   )
   return (
-    <div className="mx-auto w-full max-w-3xl" data-testid={`daily-${game}`}>
+    <div className={`daily-game mx-auto w-full ${game==='anthropeum'?'max-w-none':game==='krillion'?'max-w-5xl':'max-w-4xl'}`} data-testid={`daily-${game}`}>
       <DayNav title={GAMES[game].title} path={GAMES[game].url} day={day} info={info} />
       {data && day <= siteDay() && isPracticeResult(game, day) && (
         <p className="mb-2 text-xs" style={{ color: 'var(--ink-muted)' }}>

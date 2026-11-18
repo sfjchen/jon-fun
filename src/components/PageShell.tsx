@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useSyncExternalStore } from 'react'
 import { HomeLink } from '@/components/HomeLink'
+import { ensureSyncIdentity } from '@/lib/syncIdentity'
 
 type PageShellProps = {
   children: React.ReactNode
@@ -32,7 +33,10 @@ function isChwaziPath(pathname: string): boolean {
 }
 
 export function PageShell({ children }: PageShellProps) {
+  useEffect(() => { void ensureSyncIdentity() }, [])
   const pathname = usePathname()
+  const ownDailyHeader = ['/games/mini','/games/krillion','/games/anthropeum','/games/spelling-bee','/games/connections/daily','/leaderboards','/games/daily-log'].includes(pathname ?? '')
+  const gameTheme = pathname?.startsWith('/games/connections') ? 'connections' : pathname === '/games/mini' ? 'mini' : pathname === '/games/spelling-bee' ? 'bee' : pathname === '/games/krillion' ? 'krillion' : pathname === '/games/anthropeum' ? 'anthropeum' : undefined
   const notesPage = isNotesPage(pathname ?? '')
   const isMobile = useSyncExternalStore(
     (cb) => {
@@ -44,7 +48,7 @@ export function PageShell({ children }: PageShellProps) {
     () => false,
   )
   const chwaziMobile = isChwaziPath(pathname ?? '') && isMobile
-  const isNotebook = !chwaziMobile && !notesPage
+  const isNotebook = !chwaziMobile && !notesPage && !gameTheme
   const isHome = pathname === '/'
   const fullBleed = isFullBleed(pathname ?? '', chwaziMobile)
   const pearNav = isPearNavigator(pathname ?? '')
@@ -97,17 +101,18 @@ export function PageShell({ children }: PageShellProps) {
   return (
     <div
       data-theme={isNotebook ? 'notebook' : undefined}
+      data-game-theme={gameTheme}
       className={`overflow-x-hidden ${fullBleed ? 'h-dynamic flex flex-col overflow-y-hidden' : 'min-h-screen'} ${outerLinePaper ? 'notebook-line-paper' : ''}`}
       style={outerLinePaper ? { color: 'var(--ink-text)' } : { backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
     >
       {/* Full-bleed pages float the home icon over their canvas; others get it in its own row so it never covers page controls. */}
-      {gameRoute && !ownHome && (fullBleed ? (
+      {gameRoute && !ownHome && !ownDailyHeader && (fullBleed ? (
         <HomeLink
           variant={chwaziMobile ? 'dark' : 'default'}
-          className={`fixed right-2 top-[max(0.5rem,env(safe-area-inset-top))] z-50 ${chwaziMobile ? '' : 'rounded-full bg-[var(--ink-bg)]/85'}`}
+          className={`fixed left-2 top-[max(0.5rem,env(safe-area-inset-top))] z-50 ${chwaziMobile ? '' : 'rounded-full bg-[var(--ink-bg)]/85'}`}
         />
       ) : (
-        <div className="mx-auto flex w-full max-w-6xl flex-none justify-end px-2 pt-[max(0.25rem,env(safe-area-inset-top))] md:px-4 md:pt-3">
+        <div className="mx-auto flex w-full max-w-6xl flex-none justify-start px-2 pt-[max(0.25rem,env(safe-area-inset-top))] md:px-4 md:pt-3">
           <HomeLink />
         </div>
       ))}
@@ -128,7 +133,7 @@ export function PageShell({ children }: PageShellProps) {
         className={
           fullBleed
             ? 'flex-1 min-h-0 w-full max-w-none px-0 flex flex-col'
-            : `mx-auto max-w-6xl ${mainPadX} ${
+            : gameTheme ? 'game-page-main mx-auto w-full max-w-none px-4 pb-8 pt-[max(0.25rem,env(safe-area-inset-top))]' : `mx-auto max-w-6xl ${mainPadX} ${
                 isHome && outerLinePaper
                   ? 'pt-[30px] pb-8'
                   : isHome

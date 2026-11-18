@@ -5,7 +5,7 @@ import { DAILY_EPOCH, siteDay, validDay } from '@/lib/daily'
 import { supabaseAdmin } from '@/lib/supabase'
 const group=z.string().regex(/^[a-z0-9-]{3,32}$/)
 const stats=z.object({n:z.number().int().min(0).max(500).optional(),seconds:z.number().int().min(0).max(864000).optional(),mistakes:z.number().int().min(0).max(100).optional(),solved:z.boolean().optional(),max:z.number().int().min(1).max(100000).optional(),sourceDate:z.string().refine(validDay).optional(),puzzleId:z.string().max(100).optional(),scoringVersion:z.number().int().min(1).max(2).optional()})
-const schema=z.object({group,name:z.string().trim().min(1).max(24),today:z.string().refine(validDay),game:z.enum(GAME_IDS as [GameId,...GameId[]]),score:z.number().int().min(0),n:z.number().int().min(0).max(500).optional(),stats:stats.optional()})
+const schema=z.object({group,name:z.string().trim().min(1).max(24),deviceId:z.string().uuid().optional(),today:z.string().refine(validDay),game:z.enum(GAME_IDS as [GameId,...GameId[]]),score:z.number().int().min(0),n:z.number().int().min(0).max(500).optional(),stats:stats.optional()})
 export async function POST(req:Request){
   const parsed=schema.safeParse(await req.json().catch(()=>null))
   if(!parsed.success)return NextResponse.json({error:'Invalid result'},{status:400})
@@ -19,7 +19,7 @@ export async function POST(req:Request){
   const maximum=version===1&&b.game==='connections'?100:version===1&&b.game==='krillion'?7000:version===1&&b.game==='anthropeum'?10000:GAMES[b.game].max
   if(score>maximum||b.today<DAILY_EPOCH||b.today>siteDay())return NextResponse.json({error:'Score or date out of range'},{status:400})
   const key={group_code:b.group,name:b.name,game:b.game,day:b.today,scoring_version:version}
-  const value={...key,score,stats:{...b.stats,scoringVersion:version,...(b.n===undefined?{}:{n:b.n})}}
+  const value={...key,score,...(b.deviceId?{device_id:b.deviceId}:{}),stats:{...b.stats,scoringVersion:version,...(b.n===undefined?{}:{n:b.n})}}
   const inserted=await supabaseAdmin.from('game_results').insert(value)
   if(inserted.error&&inserted.error.code!=='23505')return NextResponse.json({error:'Could not save score. It remains queued on your device.'},{status:503})
   if(inserted.error?.code==='23505'&&b.game!=='mini'){

@@ -1,5 +1,6 @@
 // Per-device collaborator identity & recent-boards list, persisted to localStorage.
 import { v4 as uuidv4 } from 'uuid'
+import { getDevicePlayer, saveDevicePlayer } from '@/lib/syncIdentity'
 
 const ID_KEY = 'jeopardy:editor-id'
 const NAME_KEY = 'jeopardy:editor-name'
@@ -29,13 +30,14 @@ export function getOrCreateIdentity(): EditorIdentity {
     color = COLORS[Math.floor(Math.random() * COLORS.length)]!
     localStorage.setItem(COLOR_KEY, color)
   }
-  const name = (localStorage.getItem(NAME_KEY) || '').trim()
+  const name = getDevicePlayer()?.name || (localStorage.getItem(NAME_KEY) || '').trim()
   return { id, name, color }
 }
 
 export function setEditorName(name: string): void {
   if (typeof window === 'undefined') return
   localStorage.setItem(NAME_KEY, name.trim().slice(0, 40))
+  if (name.trim()) saveDevicePlayer({ name, group: getDevicePlayer()?.group ?? 'public' })
 }
 
 export interface RecentBoard {

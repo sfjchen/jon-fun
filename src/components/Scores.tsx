@@ -9,6 +9,8 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Info } from '@/components/daily/DayNav'
+import { HomeLink } from '@/components/HomeLink'
+import PlayerName, { PencilIcon } from '@/components/PlayerName'
 import {
   GAMES,
   GAME_IDS,
@@ -309,6 +311,7 @@ export function ScoresHub() {
   return (
     <div className="mx-auto max-w-4xl space-y-3" data-testid="scores-hub">
       <header className="flex items-center gap-2">
+        <HomeLink className="inline-flex h-10 w-10 shrink-0 items-center justify-center" />
         <h1 className="mr-auto font-lora text-2xl font-semibold sm:text-3xl">Leaderboard</h1>
         <Info>
           <ul className="list-disc space-y-1 pl-4">
@@ -325,15 +328,14 @@ export function ScoresHub() {
         </Info>
       </header>
 
-      {!player || editing ? (
+      {editing ? (
         <PlayerForm key={raw} player={player} onDone={() => setEditing(false)} />
       ) : (
-        <p className={`text-sm ${muted}`}>
-          {player.name} · {boardName(player.group)} ·{' '}
-          <button className="underline" onClick={() => setEditing(true)}>
-            change
-          </button>
-        </p>
+        <div className={`flex flex-wrap items-center gap-2 text-sm ${muted}`}>
+          <PlayerName />
+          <span>{boardName(player?.group ?? PUBLIC_GROUP)}</span>
+          <button aria-label="Edit leaderboard group" title="Edit leaderboard group" className="inline-flex h-8 w-8 items-center justify-center" onClick={() => setEditing(true)}><PencilIcon /></button>
+        </div>
       )}
 
       <nav aria-label="Game" className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1">

@@ -5,12 +5,11 @@
  * The app passes its own merge as onSync.
  */
 import { useEffect, useState } from 'react'
+import PlayerName from '@/components/PlayerName'
 import {
   connectSyncKey,
   ensureSyncIdentity,
-  getDeviceLabel,
   getSyncKey,
-  setDeviceLabel,
   SYNC_IDENTITY_CHANGED,
 } from '@/lib/syncIdentity'
 
@@ -57,14 +56,6 @@ export default function SyncSettings({ onSync, testIdPrefix: t }: Props) {
     setBusy(false)
   }
 
-  /**
-   * Prompts for a new device name and saves it.
-   */
-  async function rename() {
-    const next = window.prompt('Name this device', getDeviceLabel())
-    if (next !== null) await setDeviceLabel(next)
-  }
-
   const btn = 'shrink-0 rounded px-3 py-1.5 text-sm disabled:opacity-50'
   return (
     <div data-testid={`${t}-sync-settings`} style={{ color: C.text }}>
@@ -101,13 +92,11 @@ export default function SyncSettings({ onSync, testIdPrefix: t }: Props) {
           {status.message}
         </p>
       )}
-      <p className="text-sm" data-testid={`${t}-device-status`}>
-        This device: <button type="button" onClick={() => void rename()} className="underline">
-          {getDeviceLabel() || 'Unnamed'}
-        </button>
+      <div className="flex items-center gap-1 text-sm" data-testid={`${t}-device-status`}>
+        <PlayerName />
         {' · '}
         {key ? 'synced' : 'not synced (local only)'}
-      </p>
+      </div>
     </div>
   )
 }

@@ -9,10 +9,11 @@ import { scoringVersion, type GameId, type BoardRow } from '../src/lib/results'
 loadEnvConfig(process.cwd())
 const base = process.env.VERIFY_DAILY_BASE ?? 'http://127.0.0.1:3117'
 const group = `verify-${randomUUID().slice(0,8)}`
+const deviceId = randomUUID()
 const client = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.SUPABASE_SERVICE_ROLE_KEY!)
 const today = siteDay()
 async function post(score:number,game='connections',day=today,extra:Record<string,unknown>={}) {
-  return fetch(`${base}/api/results`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({group,name:'Verification',game,today:day,score,stats:{solved:true,scoringVersion:scoringVersion(game as GameId),...(game==='mini'?{seconds:score}:{}),...(game==='connections'?{n:score,mistakes:2}:{}),...extra}})})
+  return fetch(`${base}/api/results`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({group,deviceId,name:'Verification',game,today:day,score,stats:{solved:true,scoringVersion:scoringVersion(game as GameId),...(game==='mini'?{seconds:score}:{}),...(game==='connections'?{n:score,mistakes:2}:{}),...extra}})})
 }
 async function main() {
   assert.equal(validDay('2026-02-30'),false)
@@ -45,6 +46,9 @@ async function main() {
   assert.deepEqual(overallDay([...example,{...example[0]!,game:'anthropeum',score:20},{...example[1]!,game:'anthropeum',score:10}]).names,['Alice'])
   assert.deepEqual(streaks([example[0]!,{...example[0]!,day:shiftDay(today,-1)}],today),{current:2,longest:2})
   assert.deepEqual(winners([{...example[0]!,game:'mini',score:0},{...example[1]!,game:'mini',score:30}]),['Alice'])
+  const deviceRows=await client.from('game_results').select('device_id').eq('group_code',group)
+  assert.equal(deviceRows.error,null)
+  assert.ok(deviceRows.data!.length>0&&deviceRows.data!.every(r=>r.device_id===deviceId))
   console.log('PASS: dates, archive selection, ties, streaks, five real database score flows, history, group isolation, atomic best score, and future/24 rejection')
 }
 main().finally(async()=>{const result=await client.from('game_results').delete().eq('group_code',group);if(result.error)throw Error('Could not remove isolated verification rows')}).catch(e=>{console.error(e.message);process.exitCode=1})

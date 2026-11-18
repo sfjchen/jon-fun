@@ -1,6 +1,7 @@
 'use client'
 
 import { v4 as uuidv4 } from 'uuid'
+import { getDevicePlayer, saveDevicePlayer } from '@/lib/syncIdentity'
 
 const FP_KEY = 'reader-comment-fingerprint-v1'
 const NAME_KEY = 'reader-comment-display-name-v1'
@@ -22,13 +23,13 @@ export function getReaderCommentFingerprint(): string {
 
 export function getReaderCommentDisplayName(): string {
   if (typeof window === 'undefined') return 'Reader'
-  return window.localStorage.getItem(NAME_KEY) ?? 'Reader'
+  return getDevicePlayer()?.name || window.localStorage.getItem(NAME_KEY) || 'Reader'
 }
 
 export function setReaderCommentDisplayName(name: string): void {
   if (typeof window === 'undefined') return
   const t = name.trim().slice(0, 64)
-  if (t) window.localStorage.setItem(NAME_KEY, t)
+  if (t) { window.localStorage.setItem(NAME_KEY, t); saveDevicePlayer({ name: t, group: getDevicePlayer()?.group ?? 'public' }) }
   else window.localStorage.removeItem(NAME_KEY)
 }
 

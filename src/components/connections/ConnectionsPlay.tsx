@@ -133,6 +133,7 @@ export default function ConnectionsPlay({ basePath, idOrSlug, initialPuzzle, dai
           Library
         </Link>
       </div>}
+      {!result&&<p className="text-center text-base">Create four groups of four!</p>}
       <ConnectionsBoard key={`${puzzle.id}-${runId}`} puzzle={puzzle} initialProgress={runId === 0 ? initialProgress : undefined} onProgress={saveProgress} onComplete={onComplete} />
       {result && (
         <ConnectionsResult

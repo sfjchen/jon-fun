@@ -1,4 +1,6 @@
 'use client'
+import { useDeviceName } from '@/lib/use-device-name'
+import { getDevicePlayer, saveDevicePlayer } from '@/lib/syncIdentity'
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -77,7 +79,7 @@ export default function Game24() {
   })
   const [message, setMessage] = useState<string | null>(null)
   const [pinInput, setPinInput] = useState('')
-  const [nameInput, setNameInput] = useState('')
+  const [nameInput, setNameInput] = useDeviceName()
   const [room, setRoom] = useState<Room | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
   const [round, setRound] = useState<RoundData | null>(null)
@@ -120,7 +122,7 @@ export default function Game24() {
       if (data.pin) sessionStorage.setItem('game24_pin', data.pin)
       if (data.playerId) sessionStorage.setItem('game24_playerId', data.playerId)
       if (data.hostId !== undefined) sessionStorage.setItem('game24_hostId', data.hostId ?? '')
-      if (data.playerName) sessionStorage.setItem('game24_playerName', data.playerName)
+      if (data.playerName) { sessionStorage.setItem('game24_playerName', data.playerName); saveDevicePlayer({ name: data.playerName, group: getDevicePlayer()?.group ?? 'public' }) }
     },
     []
   )
@@ -621,7 +623,7 @@ export default function Game24() {
     const savedPin = sessionStorage.getItem('game24_pin') || ''
     const savedPlayerId = sessionStorage.getItem('game24_playerId') || ''
     const savedHostId = sessionStorage.getItem('game24_hostId') || ''
-    const savedName = sessionStorage.getItem('game24_playerName') || ''
+    const savedName = sessionStorage.getItem('game24_playerName') || getDevicePlayer()?.name || ''
 
     // Prefill but do NOT auto-rejoin; require explicit join/resume.
     if (savedPin && savedPlayerId) {

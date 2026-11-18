@@ -1,4 +1,6 @@
 'use client'
+import { useDeviceName } from '@/lib/use-device-name'
+import { getDevicePlayer, saveDevicePlayer } from '@/lib/syncIdentity'
 
 import { useState, useEffect } from 'react'
 
@@ -11,7 +13,7 @@ interface PokerJoinFormProps {
 }
 
 export default function PokerJoinForm({ pin, onJoin, onCancel, loading, error }: PokerJoinFormProps) {
-  const [playerName, setPlayerName] = useState('')
+  const [playerName, setPlayerName] = useDeviceName()
   const [selectedPosition, setSelectedPosition] = useState<number | null>(null)
   const [occupiedPositions, setOccupiedPositions] = useState<Set<number>>(new Set())
 
@@ -43,6 +45,7 @@ export default function PokerJoinForm({ pin, onJoin, onCancel, loading, error }:
     e.preventDefault()
     if (selectedPosition !== null && playerName.trim()) {
       await onJoin(playerName.trim(), selectedPosition)
+      saveDevicePlayer({ name: playerName, group: getDevicePlayer()?.group ?? 'public' })
     }
   }
 
