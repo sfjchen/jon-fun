@@ -7,7 +7,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 const bodySchema = z.object({
   password: z.string().min(1),
   headline: z.string().min(1).max(200),
-  intro: z.string().min(1).max(800),
+  intro: z.string().max(800),
   bullets: z.array(z.string().min(1).max(600)).min(1).max(20),
 })
 
@@ -46,7 +46,7 @@ export async function GET() {
       .select('headline, intro, bullets')
       .eq('id', 1)
       .maybeSingle()
-    if (!error && data?.headline && data.intro && Array.isArray(data.bullets)) {
+    if (!error && data?.headline && typeof data.intro === 'string' && Array.isArray(data.bullets)) {
       return NextResponse.json(jsonCopy(data as HomeComingSoonCopy))
     }
   } catch {

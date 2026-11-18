@@ -62,7 +62,7 @@ export default function Home() {
     fetch('/api/home/coming-soon')
       .then((r) => (r.ok ? r.json() : null))
       .then((data: HomeComingSoonCopy | null) => {
-        if (cancelled || !data?.headline || !data.intro || !Array.isArray(data.bullets)) return
+        if (cancelled || !data?.headline || typeof data.intro !== 'string' || !Array.isArray(data.bullets)) return
         setCopy(data)
       })
       .catch(() => {})
@@ -168,9 +168,11 @@ export default function Home() {
               </button>
             </div>
 
-            <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>
-              {copy.intro}
-            </p>
+            {copy.intro.trim() && (
+              <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>
+                {copy.intro}
+              </p>
+            )}
 
             <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-2">
               {copy.bullets.map((feature, index) => (
@@ -223,7 +225,7 @@ export default function Home() {
                   />
                 </label>
                 <label className="block text-sm font-medium" style={{ color: 'var(--ink-text)' }}>
-                  Intro paragraph
+                  Intro paragraph (optional)
                   <textarea
                     value={editIntro}
                     onChange={(e) => setEditIntro(e.target.value)}
