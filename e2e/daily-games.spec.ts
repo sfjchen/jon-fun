@@ -73,7 +73,7 @@ test('historical Bee answers earn points and appear in calendar with no 24 board
   await page.getByRole('navigation',{name:'Game',exact:true}).getByRole('button',{name:'Spelling Bee',exact:true}).click()
   await expect(page.getByTestId('board-bee')).toContainText('Alice')
   await expect(page.getByRole('button',{name:new RegExp(`^${today}, you won`)})).toBeVisible()
-  await expect(page.getByRole('navigation',{name:'Game',exact:true}).getByRole('button')).toHaveCount(6)
+  await expect(page.getByRole('navigation',{name:'Game',exact:true}).getByRole('button')).toHaveCount(7)
   await expect(page.getByRole('link',{name:'24',exact:true})).toHaveCount(0)
   await expect(page.getByRole('button',{name:'Next month'})).toBeDisabled()
   await page.getByText('Your stats',{exact:true}).click()

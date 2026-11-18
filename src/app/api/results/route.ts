@@ -18,11 +18,12 @@ export async function POST(req:Request){
   if(b.game==='connections'&&b.stats?.n!==undefined&&b.stats.mistakes!==undefined){score=b.stats.n;version=2}
   const maximum=version===1&&b.game==='connections'?100:version===1&&b.game==='krillion'?7000:version===1&&b.game==='anthropeum'?10000:GAMES[b.game].max
   if(score>maximum||b.today<DAILY_EPOCH||b.today>siteDay())return NextResponse.json({error:'Score or date out of range'},{status:400})
+  if(b.game==='set'&&(score!==6||!b.stats?.solved||b.stats.seconds===undefined))return NextResponse.json({error:'SET needs a completed unassisted daily time'},{status:400})
   const key={group_code:b.group,name:b.name,game:b.game,day:b.today,scoring_version:version}
   const value={...key,score,...(b.deviceId?{device_id:b.deviceId}:{}),stats:{...b.stats,scoringVersion:version,...(b.n===undefined?{}:{n:b.n})}}
   const inserted=await supabaseAdmin.from('game_results').insert(value)
   if(inserted.error&&inserted.error.code!=='23505')return NextResponse.json({error:'Could not save score. It remains queued on your device.'},{status:503})
-  if(inserted.error?.code==='23505'&&b.game!=='mini'){
+  if(inserted.error?.code==='23505'&&b.game!=='mini'&&b.game!=='set'){
     const update=await supabaseAdmin.from('game_results').update({score,stats:value.stats}).match(key).lt('score',score)
     if(update.error)return NextResponse.json({error:'Could not sync score'},{status:503})
     if(b.game==='connections'&&b.stats?.mistakes!==undefined){

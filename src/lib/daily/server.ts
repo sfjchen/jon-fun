@@ -5,6 +5,7 @@ import type { GameId } from '@/lib/results'
 const root = process.cwd()
 export async function readJson<T>(relative: string): Promise<T> { return JSON.parse(await readFile(path.join(root, relative), 'utf8')) as T }
 export async function dailyPuzzle(game: GameId, day: string): Promise<{ day: string; sourceDate: string; puzzle: unknown }> {
+  if(game==='set'){const {dailySetBoard}=await import('@/lib/set-daily');return {day,sourceDate:day,puzzle:{date:day,board:dailySetBoard(day),generated:true}}}
   if (game === 'anthropeum') {
     let data: { date: string; artifacts: unknown[] } | undefined
     try { data = await readJson(`data/anthropeum/${day}.json`) } catch {}

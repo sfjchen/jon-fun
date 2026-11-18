@@ -79,7 +79,7 @@ export default function Game24() {
   })
   const [message, setMessage] = useState<string | null>(null)
   const [pinInput, setPinInput] = useState('')
-  const [nameInput, setNameInput] = useDeviceName()
+  const [nameInput, setNameInput, restoreName] = useDeviceName()
   const [room, setRoom] = useState<Room | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
   const [round, setRound] = useState<RoundData | null>(null)
@@ -631,7 +631,7 @@ export default function Game24() {
       setPlayerId(savedPlayerId)
       setHostId(savedHostId || null)
     }
-    setNameInput(savedName)
+    restoreName(savedName)
     generatePractice()
   }
 

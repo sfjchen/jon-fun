@@ -1,7 +1,8 @@
 import { siteDay } from '@/lib/daily'
 import { getDevicePlayer, saveDevicePlayer, ensureSyncIdentity, getDeviceId } from '@/lib/syncIdentity'
-export type GameId = 'bee' | 'connections' | 'mini' | 'krillion' | 'anthropeum'
+export type GameId = 'bee' | 'connections' | 'mini' | 'krillion' | 'anthropeum' | 'set'
 export const GAMES: Record<GameId, { title: string; url: string; max: number; unit: string; rules: string; lowerIsBetter?: boolean }> = {
+  set: { title: 'SET', url: '/games/set', max: 6, unit: 'sets', rules: 'Find all six sets on the daily board. Faster unassisted completion wins ties.' },
   bee: { title: 'Spelling Bee', url: '/games/spelling-bee', max: 1000, unit: 'points', rules: 'Word points; pangrams earn a 7-point bonus.' },
   connections: { title: 'Connections', url: '/games/connections/daily', max: 4, unit: 'matches', rules: 'Four groups, four mistakes maximum. Standings compare groups solved, then fewer mistakes.' },
   mini: { title: 'Mini Crossword', url: '/games/mini', max: 864000, unit: 'time', lowerIsBetter: true, rules: 'First unassisted solve time; lower is better. The clock pauses when you pause or leave. Checks and reveals are unranked.' },
@@ -13,13 +14,13 @@ export type Stats = { n?: number; seconds?: number; mistakes?: number; solved?: 
 export type Result = { game: GameId; day: string; score: number; stats: Stats }
 export type BoardRow = Result & { name: string }
 export function scoringVersion(game: GameId): number { return ['mini','connections','krillion','anthropeum'].includes(game) ? 2 : 1 }
-export function formatGameScore(game: GameId, score: number): string { return game === 'mini' ? formatTime(Math.round(score)) : game === 'connections' ? `${Number.isInteger(score)?score:score.toFixed(1)}/4` : formatScore(score) }
+export function formatGameScore(game: GameId, score: number): string { return game === 'mini' ? formatTime(Math.round(score)) : game === 'set' ? `${score}/6` : game === 'connections' ? `${Number.isInteger(score)?score:score.toFixed(1)}/4` : formatScore(score) }
 export function bestGameScore(game: GameId, scores: number[]): number { return GAMES[game].lowerIsBetter ? Math.min(...scores) : Math.max(...scores) }
 export function compareResults(a: Result, b: Result): number {
   const score=(a.score-b.score)*(GAMES[a.game].lowerIsBetter?1:-1)
-  return score || (a.game==='connections'?(a.stats.mistakes??4)-(b.stats.mistakes??4):0)
+  return score || (a.game==='connections'?(a.stats.mistakes??4)-(b.stats.mistakes??4):a.game==='set'?(a.stats.seconds??Number.MAX_SAFE_INTEGER)-(b.stats.seconds??Number.MAX_SAFE_INTEGER):0)
 }
-export function resultLabel(r: Result): string { return formatGameScore(r.game,r.score)+(r.game==='connections'?` · ${r.stats.mistakes??'—'} mistakes`:'') }
+export function resultLabel(r: Result): string { return formatGameScore(r.game,r.score)+(r.game==='connections'?` · ${r.stats.mistakes??'—'} mistakes`:r.game==='set'&&r.stats.seconds!==undefined?` · ${formatTime(r.stats.seconds)}`:'') }
 export const localDay = siteDay
 export function formatScore(score: number): string { return Math.round(score).toLocaleString('en-US') }
 export function formatTime(seconds: number): string { return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` }
