@@ -13,7 +13,7 @@ export const TRIPLES_MAX_PLAYERS = 12
 export const BOARD_SIZE = 12
 
 export type Deal = { deck: number[]; board: number[] }
-export type TriplesPlayer = { id: string; name: string; score: number; misses: number }
+export type TriplesPlayer = { id: string; name: string; score: number; misses: number; found?: number }
 export type TriplesClaim = { by: string; name: string; cards: number[]; ok: boolean; at: string }
 export type TriplesRoom = {
   pin: string

@@ -59,7 +59,7 @@ export async function POST(request: NextRequest, { params }: Params) {
           status: 'active',
           started_at: new Date().toISOString(),
           last_claim: null,
-          players: row.players.map((p) => ({ ...p, score: 0, misses: 0 })),
+          players: row.players.map((p) => ({ ...p, score: 0, misses: 0, found: 0 })),
         }
       }
       case 'claim': {
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest, { params }: Params) {
         const ok = isTriple(cards[0]!, cards[1]!, cards[2]!)
         const claim = { by: me, name: player.name, cards, ok, at: new Date().toISOString() }
         const players = row.players.map((p) =>
-          p.id !== me ? p : ok ? { ...p, score: p.score + 1 } : { ...p, score: Math.max(0, p.score - 1), misses: p.misses + 1 },
+          p.id !== me ? p : ok ? { ...p, score: p.score + 1, found: (p.found ?? 0) + 1 } : { ...p, score: Math.max(0, p.score - 1), misses: p.misses + 1 },
         )
         if (!ok) return { players, last_claim: claim }
         const deal = removeTriple({ deck: row.deck, board: row.board }, cards)
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest, { params }: Params) {
   const done = result.row
   if (body.action === 'claim' && done?.status === 'finished' && done.started_at) {
     await recordMatch('set', pin, done.started_at, done.players.map((p) => (
-      { id: p.id, name: p.name, score: p.score, sets: p.score + p.misses, misses: p.misses }
+      { id: p.id, name: p.name, score: p.score, sets: p.found ?? 0, misses: p.misses }
     )))
   }
   return NextResponse.json({ room: result.row && toRoom(result.row), ...(joinedId ? { playerId: joinedId,playerToken:playerToken(pin,joinedId) } : {}) })
