@@ -19,7 +19,7 @@ import KrillionPlay, { type KrillionPuzzle } from '@/components/daily/KrillionPl
 type Daily = { day: string; sourceDate: string; puzzle: unknown }
 
 /** How each game plays, in the order a new player needs it. */
-const HOW: Record<Exclude<GameId, 'bee'>, string[]> = {
+const HOW: Record<Exclude<GameId, 'bee' | 'set'>, string[]> = {
   connections: [
     'Find 4 groups of 4 words that share something.',
     'Select 4 words and tap Submit. A wrong guess costs 1 of your 4 mistakes.',
@@ -45,7 +45,7 @@ const HOW: Record<Exclude<GameId, 'bee'>, string[]> = {
 /**
  * Renders the daily game for the `?d=` day, or today.
  */
-export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
+export default function DailyGame({ game }: { game: Exclude<GameId, 'bee' | 'set'> }) {
   const params = useSearchParams()
   const raw = params.get('d')
   const day = validDay(raw) && raw >= DAILY_EPOCH && raw <= '2100-12-31' ? raw : siteDay()

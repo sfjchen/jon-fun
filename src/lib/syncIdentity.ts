@@ -111,7 +111,7 @@ export function syncCredentials(): { userId: string; deviceUserId: string } {
 
 /** Returns the custom device name, or '' when unset. */
 export function getDeviceLabel(): string {
-  return read(LABEL).trim()
+  return getDevicePlayer()?.name || read(LABEL).trim()
 }
 
 /**
@@ -170,6 +170,7 @@ export function ensureSyncIdentity(): Promise<void> {
     }
     for (const k of [...LEGACY_KEYS, ...LEGACY_IDS]) write(k, '')
     const profile = getDevicePlayer()
+    if (profile) write(LABEL,profile.name)
     const r = await call<{ syncKey: string; player?: DevicePlayer }>('POST', {
       syncKey: getSyncKey(),
       deviceId: getDeviceId(),

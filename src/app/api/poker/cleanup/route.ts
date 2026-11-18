@@ -27,10 +27,11 @@ async function runCleanup(): Promise<NextResponse<CleanupResponse | ErrorRespons
     const inactiveFilter = `last_activity.is.null,last_activity.lt.${cutoff}`
 
     // Find inactive rooms across all game types in parallel
-    const [pokerRes, game24Res, partyRes] = await Promise.all([
+    const [pokerRes, game24Res, partyRes, triplesRes] = await Promise.all([
       supabase.from('poker_rooms').select('pin').or(inactiveFilter),
       supabase.from('game24_rooms').select('pin').or(inactiveFilter),
       supabase.from('party_rooms').select('pin').or(inactiveFilter),
+      supabase.from('triples_rooms').select('pin').or(inactiveFilter),
     ])
 
     if (pokerRes.error) {
@@ -43,6 +44,9 @@ async function runCleanup(): Promise<NextResponse<CleanupResponse | ErrorRespons
       return NextResponse.json({ error: 'Failed to fetch party rooms' }, { status: 500 })
     }
 
+    if(triplesRes.error)return NextResponse.json({error:'Failed to fetch SET rooms'},{status:500})
+    const triplesPins=triplesRes.data?.map(r=>r.pin)??[]
+    if(triplesPins.length){const removed=await supabase.from('triples_rooms').delete().in('pin',triplesPins);if(removed.error)return NextResponse.json({error:'Failed to delete SET rooms'},{status:500})}
     const pins = pokerRes.data?.map(r => r.pin) ?? []
     const game24Pins = game24Res.data?.map(r => r.pin) ?? []
     const partyPins = partyRes.data?.map(r => r.pin) ?? []
@@ -86,7 +90,7 @@ async function runCleanup(): Promise<NextResponse<CleanupResponse | ErrorRespons
       }
     }
 
-    const deletedCount = pins.length + game24Pins.length + partyPins.length
+    const deletedCount = pins.length + game24Pins.length + partyPins.length + triplesPins.length
 
     return NextResponse.json({
       deleted: deletedCount,

@@ -18,7 +18,7 @@ export function usePartyLobby(gameKind: PartyGameKind, onPayload: (data: unknown
   const keys = sessionKeys(gameKind)
 
   const [pinInput, setPinInput] = useState('')
-  const [nameInput, setNameInput] = useDeviceName()
+  const [nameInput, setNameInput, restoreName] = useDeviceName()
   const [playerId, setPlayerId] = useState<string | null>(null)
   const [hostId, setHostId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -38,7 +38,7 @@ export function usePartyLobby(gameKind: PartyGameKind, onPayload: (data: unknown
       setPinInput(p)
       setPlayerId(pid)
       setHostId(hid || null)
-      setNameInput(getDevicePlayer()?.name || n || '')
+      restoreName(n || '')
     }
   }
 
