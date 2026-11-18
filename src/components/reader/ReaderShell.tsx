@@ -105,7 +105,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   const [searchDraft, setSearchDraft] = useState('')
   const [searchActiveQuery, setSearchActiveQuery] = useState('')
   const [hitIndex, setHitIndex] = useState(0)
-  const [tocOpen, setTocOpen] = useState(true)
+  const [tocOpen, setTocOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [rankedSearchHits, setRankedSearchHits] = useState<{
     publication: ReaderPublication
@@ -756,8 +756,8 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   }, [goToChapter, hits.length, mobile, nextChapterId, nextHit, prevChapterId, prevHit, runFind])
 
   const handleReset = useCallback(() => {
-    setPrefs({ ...defaultReaderPreferences, panelOpen: mobile ? false : true })
-  }, [mobile])
+    setPrefs({ ...defaultReaderPreferences })
+  }, [])
 
   const handleSaveBookmark = useCallback(() => {
     if (!chapter) return
@@ -823,9 +823,9 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   }
 
   return (
-    <section style={cssVars} className="notebook-line-paper pb-safe" data-reader-ui={prefs.uiMode}>
+    <section style={cssVars} className="reader-workspace pb-safe" data-reader-ui={prefs.uiMode}>
       <div
-        className="sticky top-0 z-30 mb-3 rounded-2xl border px-2 py-3 shadow-sm sm:mb-4 sm:rounded-3xl sm:py-4 md:mb-5 md:px-6"
+        className="reader-toolbar sticky top-0 z-30 mb-3 rounded-2xl border px-2 py-3 shadow-sm sm:mb-4 sm:rounded-3xl sm:py-4 md:mb-5 md:px-6"
         style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
       >
         <div className="flex flex-col gap-2 md:hidden">
@@ -1190,6 +1190,17 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
                 onStrokeEnd={onPenStrokeEnd}
                 getBlockIdAtPoint={getBlockIdAtPoint}
                 rootRef={annotationRootRef}
+              />
+            </div>
+            <div className="mx-auto mt-8" style={{ maxWidth: 'var(--reader-max-width)' }}>
+              <ReaderChapterEndNav
+                chapters={chapters}
+                chapterId={chapter.id}
+                currentIndex={currentIndex}
+                canGoPrev={canGoPrev}
+                canGoNext={canGoNext}
+                onGoToChapter={(id) => goToChapter(id)}
+                readerThemeVars={cssVars}
               />
             </div>
           </div>

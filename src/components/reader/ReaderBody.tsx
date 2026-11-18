@@ -7,7 +7,7 @@ import type { ChapterAnnotationBundle, CommentAnchor, ReaderCommentThread } from
 import { buildTextSegments } from '@/lib/reader/annotation-segments'
 import { normalizeParagraphText, resolveQuoteInParagraph } from '@/lib/reader/chapter-annotations'
 import type { ReaderChapter, ReaderPreferences } from '@/lib/reader/types'
-import { escapeRegex } from '@/lib/reader/search-book'
+import { formattedReaderText, ReaderIllustration } from './ReaderFormattedText'
 import { getTextOffsetInElement, wordRangeInParagraph } from '@/lib/reader/reader-gestures'
 
 type LegacyCommentGutter = {
@@ -44,70 +44,6 @@ type ReaderBodyProps = {
   focusBand?: boolean
   commentGutter?: LegacyCommentGutter
   inContext?: ReaderInContextHandlers
-}
-
-function bionicSplit(word: string): { lead: string; tail: string } {
-  const plain = word.trim()
-  if (!plain) return { lead: '', tail: '' }
-  const cutoff = Math.max(1, Math.ceil(plain.length * 0.45))
-  return {
-    lead: plain.slice(0, cutoff),
-    tail: plain.slice(cutoff),
-  }
-}
-
-function renderBionicInToken(word: string) {
-  if (!word.trim()) return word
-  const { lead, tail } = bionicSplit(word)
-  return (
-    <>
-      <strong>{lead}</strong>
-      {tail}
-    </>
-  )
-}
-
-function renderBionicParagraphText(paragraph: string) {
-  return paragraph.split(/(\s+)/).map((token, tokenIndex) => {
-    if (!token.trim()) return <Fragment key={tokenIndex}>{token}</Fragment>
-    return <span key={tokenIndex}>{renderBionicInToken(token)}</span>
-  })
-}
-
-function renderSearchThenBionic(
-  part: string,
-  useBionic: boolean,
-  highlightQuery: string,
-  prefs: ReaderPreferences,
-  isMatch: boolean,
-  key: number,
-): ReactNode {
-  if (isMatch) {
-    return (
-      <mark key={key} className="reader-search-match">
-        {part}
-      </mark>
-    )
-  }
-  return <Fragment key={key}>{useBionic && prefs.bionic ? renderBionicParagraphText(part) : part}</Fragment>
-}
-
-function renderParagraphContentLegacy(
-  paragraph: string,
-  prefs: ReaderPreferences,
-  highlightQuery: string,
-) {
-  const q = highlightQuery.trim()
-  if (!q) {
-    return prefs.bionic ? renderBionicParagraphText(paragraph) : paragraph
-  }
-  const re = new RegExp(`(${escapeRegex(q)})`, 'gi')
-  const parts = paragraph.split(re)
-  return parts.map((part, i) => {
-    if (part === '') return null
-    const isMatch = i % 2 === 1
-    return renderSearchThenBionic(part, true, highlightQuery, prefs, isMatch, i)
-  })
 }
 
 const HL_CLASS: Record<string, string> = {
@@ -365,6 +301,8 @@ export function ReaderBody({
       >
         {chapter.paragraphs.map((paragraph, index) => {
           const blockId = readerBlockIdForParagraph(chapter.id, index)
+          const block = chapter.blocks?.[index]
+          if (block?.kind === 'image') return <div key={blockId} data-block-id={blockId}><ReaderIllustration block={block} /></div>
           const ptext = normalizeParagraphText(paragraph)
           const hls = b.highlights.filter((h) => h.blockId === blockId)
           const rTs = rangeThreadsInBlock(b, blockId)
@@ -436,6 +374,10 @@ export function ReaderBody({
               ) : null}
 
               <p
+                id={block?.anchorId}
+                data-reader-kind={block?.kind}
+                role={block?.kind === 'heading' ? 'heading' : undefined}
+                aria-level={block?.kind === 'heading' ? block.level ?? 2 : undefined}
                 data-search-paragraph={index}
                 data-block-id={blockId}
                 className="min-w-0"
@@ -477,18 +419,7 @@ export function ReaderBody({
                   if (!piece) return null
                   const hasHl = seg.layers.some((l) => l.kind === 'h')
                   const cLayer = seg.layers.find((l) => l.kind === 'c')
-                  const q = highlightQuery.trim()
-                  let inner: ReactNode
-                  if (q) {
-                    const re = new RegExp(`(${escapeRegex(q)})`, 'gi')
-                    const parts = piece.split(re)
-                    inner = parts.map((part, j) => {
-                      if (part === '') return null
-                      return renderSearchThenBionic(part, useBionic, highlightQuery, prefs, j % 2 === 1, j)
-                    })
-                  } else {
-                    inner = useBionic && prefs.bionic ? renderBionicParagraphText(piece) : piece
-                  }
+                  let inner: ReactNode = formattedReaderText(ptext, block, prefs, highlightQuery, seg.start, seg.end, useBionic)
                   if (hasHl) {
                     const id = seg.layers.find((l) => l.kind === 'h')?.id
                     const h = b.highlights.find((x) => x.id === id)
@@ -586,10 +517,12 @@ export function ReaderBody({
     >
       {chapter.paragraphs.map((paragraph, index) => {
         const blockId = readerBlockIdForParagraph(chapter.id, index)
+        const block = chapter.blocks?.[index]
+        if (block?.kind === 'image') return <div key={blockId} data-block-id={blockId}><ReaderIllustration block={block} /></div>
         const cCount = commentGutter?.countsByBlock[blockId] ?? 0
         const row = (
-          <p key={`${chapter.id}-${index}`} data-search-paragraph={index} data-block-id={blockId} className={commentGutter ? 'min-w-0 flex-1' : undefined}>
-            {renderParagraphContentLegacy(paragraph, prefs, highlightQuery)}
+          <p key={`${chapter.id}-${index}`} id={block?.anchorId} data-reader-kind={block?.kind} role={block?.kind === 'heading' ? 'heading' : undefined} aria-level={block?.kind === 'heading' ? block.level ?? 2 : undefined} data-search-paragraph={index} data-block-id={blockId} className={commentGutter ? 'min-w-0 flex-1' : undefined}>
+            {formattedReaderText(paragraph, block, prefs, highlightQuery)}
           </p>
         )
         if (!commentGutter) return row

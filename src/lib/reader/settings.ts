@@ -67,17 +67,17 @@ const FONT_MAP: Record<ReaderFontPreset, string> = {
 
 export const defaultReaderPreferences: ReaderPreferences = {
   fontPreset: 'default',
-  fontSize: 19,
+  fontSize: 20,
   lineHeight: 1.78,
-  paragraphGap: 28,
-  maxWidth: 980,
+  paragraphGap: 20,
+  maxWidth: 760,
   textAlign: 'left',
   textIndent: false,
   bionic: false,
   copyEnabled: true,
   theme: 'paper',
   accent: 'sky',
-  panelOpen: true,
+  panelOpen: false,
   autoScrollEnabled: false,
   autoScrollSpeed: 1.4,
   autoNextChapter: false,
@@ -109,7 +109,13 @@ export function loadReaderPreferences(): ReaderPreferences {
   try {
     const raw = window.localStorage.getItem(PREFS_KEY)
     if (!raw) return defaultReaderPreferences
-    const parsed = JSON.parse(raw) as Partial<ReaderPreferences>
+    const parsed = JSON.parse(raw) as Partial<ReaderPreferences> & { layoutVersion?: number }
+    if (!parsed.layoutVersion) {
+      if (parsed.fontSize === 19) parsed.fontSize = defaultReaderPreferences.fontSize
+      if (parsed.paragraphGap === 28) parsed.paragraphGap = defaultReaderPreferences.paragraphGap
+      if (parsed.maxWidth === 980) parsed.maxWidth = defaultReaderPreferences.maxWidth
+      if (parsed.uiMode !== 'study') parsed.panelOpen = false
+    }
     return { ...defaultReaderPreferences, ...parsed }
   } catch {
     return defaultReaderPreferences
@@ -118,7 +124,7 @@ export function loadReaderPreferences(): ReaderPreferences {
 
 export function saveReaderPreferences(prefs: ReaderPreferences) {
   if (!isBrowser()) return
-  window.localStorage.setItem(PREFS_KEY, JSON.stringify(prefs))
+  window.localStorage.setItem(PREFS_KEY, JSON.stringify({ ...prefs, layoutVersion: 2 }))
 }
 
 export function readerCssVariables(prefs: ReaderPreferences): ReaderCssVariables {

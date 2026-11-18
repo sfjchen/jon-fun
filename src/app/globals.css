@@ -176,9 +176,21 @@ html.notebook-theme-root {
     max-width: min(var(--reader-max-width), var(--reader-layout-cap));
     margin-inline: auto;
     box-sizing: border-box;
-    letter-spacing: 0.012em;
-    word-spacing: 0.04em;
+    letter-spacing: normal;
+    word-spacing: normal;
     text-wrap: pretty;
+    overflow-wrap: anywhere;
+  }
+
+  .reader-workspace {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: normal;
+  }
+
+  @media (min-width: 768px) {
+    .reader-workspace[data-reader-ui="novel"] .reader-toolbar {
+      position: static;
+    }
   }
 
   .reader-prose[data-indent="true"] p + p {
@@ -193,6 +205,78 @@ html.notebook-theme-root {
   .reader-prose p:last-child {
     margin-bottom: 0;
   }
+
+  .reader-prose [data-reader-kind="heading"] {
+    margin-block: 2em 1em;
+    font-weight: 600;
+    font-size: 1.15em;
+    line-height: 1.45;
+    text-align: center;
+    text-indent: 0;
+    text-wrap: balance;
+    scroll-margin-top: 7rem;
+  }
+
+  .reader-prose [data-reader-kind="preformatted"] {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 0.8em;
+    line-height: 1.45;
+    white-space: pre;
+    overflow-x: auto;
+    overflow-wrap: normal;
+    text-indent: 0;
+    text-align: left;
+  }
+
+  .reader-prose [data-reader-kind="quote"] {
+    padding-inline-start: 1.2em;
+    border-inline-start: 2px solid var(--reader-border);
+  }
+
+  .reader-prose [id] { scroll-margin-top: 7rem; }
+  .reader-prose em { font-style: italic; }
+  .reader-prose strong { font-weight: 700; }
+  .reader-prose sup { vertical-align: super; font-size: 0.75em; }
+  .reader-prose sub { vertical-align: sub; font-size: 0.75em; }
+  .reader-prose a { color: var(--reader-accent); text-decoration: underline; text-underline-offset: 0.15em; }
+
+  .reader-illustration {
+    margin: 1.8em auto;
+    text-align: center;
+  }
+
+  .reader-illustration > button {
+    max-width: 100%;
+    cursor: zoom-in;
+    border-radius: 0.4rem;
+  }
+
+  .reader-illustration img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: auto;
+    background: white;
+    border-radius: 0.25rem;
+  }
+
+  .reader-image-dialog {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100dvh - 2rem);
+    overflow: auto;
+    padding: 1rem;
+    border: 1px solid var(--reader-border);
+    border-radius: 0.75rem;
+    color: var(--reader-text);
+    background: var(--reader-panel);
+  }
+
+  .reader-image-dialog::backdrop { background: rgb(0 0 0 / 75%); }
+  .reader-image-dialog > button { display: block; margin: 0 0 1rem auto; padding: 0.5rem 1rem; }
+  .reader-image-dialog img { max-height: 80dvh; width: auto; object-fit: contain; }
 
   .reader-prose mark.reader-search-match {
     background: color-mix(in srgb, var(--reader-accent) 38%, transparent);

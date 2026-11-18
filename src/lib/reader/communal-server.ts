@@ -40,11 +40,32 @@ function isChapter(v: unknown): v is ReaderChapter {
   const paras = c.paragraphs as string[]
   if (c.blocks !== undefined) {
     if (!Array.isArray(c.blocks) || c.blocks.length !== paras.length) return false
-    for (const b of c.blocks) {
+    for (const [index, b] of c.blocks.entries()) {
       if (!b || typeof b !== 'object') return false
       const bk = b as Record<string, unknown>
-      if (typeof bk.id !== 'string' || typeof bk.text !== 'string') return false
-      if (bk.kind !== undefined && bk.kind !== 'paragraph' && bk.kind !== 'heading') return false
+      if (typeof bk.id !== 'string' || bk.text !== paras[index]) return false
+      if (bk.kind !== undefined && !['paragraph', 'heading', 'image', 'preformatted', 'quote'].includes(String(bk.kind))) return false
+      if (bk.anchorId !== undefined && (typeof bk.anchorId !== 'string' || !/^[\w-]+$/.test(bk.anchorId))) return false
+      if (bk.level !== undefined && (!Number.isInteger(bk.level) || Number(bk.level) < 1 || Number(bk.level) > 6)) return false
+      if (bk.runs !== undefined) {
+        if (!Array.isArray(bk.runs)) return false
+        for (const run of bk.runs) {
+          if (!run || typeof run !== 'object' || typeof run.text !== 'string') return false
+          for (const flag of ['italic', 'bold', 'superscript', 'subscript']) {
+            if (run[flag] !== undefined && typeof run[flag] !== 'boolean') return false
+          }
+          if (run.href !== undefined && typeof run.href !== 'string') return false
+          if (run.anchorId !== undefined && (typeof run.anchorId !== 'string' || !/^[\w-]+$/.test(run.anchorId))) return false
+        }
+        if (bk.runs.map((run) => run.text).join('') !== bk.text) return false
+      }
+      if (bk.image !== undefined) {
+        if (!bk.image || typeof bk.image !== 'object') return false
+        const image = bk.image as Record<string, unknown>
+        if (typeof image.src !== 'string' || typeof image.alt !== 'string') return false
+        if (!/^data:image\/(?:png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(image.src)) return false
+      }
+      if (bk.kind === 'image' && !bk.image) return false
     }
   }
   return true

@@ -18,12 +18,26 @@ export type ReaderThemeTokens = {
 }
 
 /** Block-level text unit (v2 canonical model); optional on disk — derived from `paragraphs` when absent. */
-export type ReaderBlockKind = 'paragraph' | 'heading'
+export type ReaderBlockKind = 'paragraph' | 'heading' | 'image' | 'preformatted' | 'quote'
+
+export type ReaderTextRun = {
+  text: string
+  italic?: boolean
+  bold?: boolean
+  superscript?: boolean
+  subscript?: boolean
+  href?: string
+  anchorId?: string
+}
 
 export type ReaderBlock = {
   id: string
   kind: ReaderBlockKind
   text: string
+  runs?: ReaderTextRun[]
+  level?: number
+  anchorId?: string
+  image?: { src: string; alt: string }
 }
 
 /** Import / extract quality hints (ingest pipeline). */
