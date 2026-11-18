@@ -1,0 +1,89 @@
+
+/* Game surfaces deliberately escape the notebook font and paper background. */
+[data-game-theme] { --ink-bg:#fff; --ink-paper:#fff; --ink-text:#121212; --ink-muted:#666; --ink-accent:#121212; --ink-border:#ddd; font-family:Arial,Helvetica,sans-serif; font-size:16px; letter-spacing:normal; line-height:1.45; }
+[data-game-theme] .font-lora { font-family:Georgia,'Times New Roman',serif; letter-spacing:-.035em; }
+[data-game-theme] button,[data-game-theme] input,[data-game-theme] select { font-family:inherit; }
+[data-game-theme] .daily-heading h1 { font-size:clamp(1.45rem,3vw,2.2rem); font-weight:800; }
+[data-game-theme] .daily-heading { padding-block:8px; }
+[data-game-theme='bee'] { --game-color:#f7da21; }
+[data-game-theme='connections'] { --game-color:#b4a8ff; }
+[data-game-theme='mini'] { --game-color:#95bdf0; }
+[data-game-theme='bee'] .daily-heading,[data-game-theme='connections'] .daily-heading,[data-game-theme='mini'] .daily-heading { border-top:5px solid var(--game-color); }
+[data-game-theme='mini'] input[aria-label^='Row'] { font-family:Arial,Helvetica,sans-serif; font-weight:500; font-size:clamp(22px,5vw,38px); }
+[data-game-theme='connections'] [data-testid='connections-board'] { margin-top:24px; }
+[data-game-theme='connections'] [data-testid='connections-board'] button { letter-spacing:-.025em; }
+
+[data-game-theme='krillion'] { --ink-bg:#070f1b; --ink-paper:#101d33; --ink-text:#e8f1ff; --ink-muted:#9bafd0; --ink-accent:#28c9e8; --ink-border:#29415f; background:linear-gradient(#080f1b,#071627); font-family:'VT323',ui-monospace,monospace; font-size:20px; }
+[data-game-theme='krillion'] .font-lora { font-family:inherit; letter-spacing:.04em; }
+[data-game-theme='krillion'] .daily-heading h1 { font-family:inherit; letter-spacing:.15em; text-transform:uppercase; font-weight:400; color:#e8f1ff; }
+[data-game-theme='krillion'] .daily-heading { border-bottom:1px solid #29415f; }
+[data-game-theme='krillion'] :is(button,input,select) { border-radius:0; }
+[data-game-theme='krillion'] .krillion-stage { position:relative; min-height:640px; isolation:isolate; overflow:hidden; background:radial-gradient(ellipse at 50% 0,#12436b 0,transparent 65%),#060e19; border:1px solid #29415f; }
+.krillion-stage::after { content:''; pointer-events:none; position:absolute; inset:0; z-index:4; opacity:.09; background:repeating-linear-gradient(transparent 0 2px,#07111d 2px 3px); }
+.krillion-sky { height:300px; position:relative; overflow:hidden; background:linear-gradient(#73bbd4,#c4e7ed); color:#fff; text-align:center; }
+.krillion-sky svg { position:absolute; inset:0; width:100%; height:100%; image-rendering:pixelated; }
+.krillion-title { position:relative; padding-top:60px; font-size:clamp(64px,12vw,110px); letter-spacing:.06em; line-height:1; text-shadow:-4px 3px #ff4e8b,4px -2px #2de0ff; }
+.krillion-subtitle { position:relative; margin-top:16px; font-size:20px; letter-spacing:.28em; color:#167798; }
+.krillion-hud { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid #29415f; color:#9bafd0; font-size:16px; letter-spacing:.1em; text-transform:uppercase; }
+.krillion-hud strong { display:block; font-size:30px; font-weight:400; color:#e8f1ff; line-height:1.15; }
+.krillion-console { position:relative; z-index:2; max-width:640px; margin:32px auto; padding:0 24px 28px; }
+.krillion-console h2 { font-size:clamp(28px,5vw,40px); line-height:1.15; }
+.krillion-console p { color:#b3c5df; }
+.krillion-action { border:2px solid #29c6e8; outline:2px solid #10253d; outline-offset:2px; background:#101d33; color:#e8f1ff; min-height:52px; padding:10px 24px; text-transform:uppercase; letter-spacing:.1em; font-size:24px; box-shadow:0 0 20px #27c7e51a; }
+.krillion-action:hover { background:#17364c; }
+.krillion-action:disabled { opacity:.4; }
+.krillion-timer { color:#50d4ed; font-size:64px!important; line-height:1; }
+.krillion-rounds { display:flex; justify-content:center; gap:10px; margin-bottom:24px; }
+.krillion-rounds span { width:10px; height:10px; border:1px solid #5e7596; }
+.krillion-rounds span[data-complete='true'] { background:#29c6e8; border-color:#29c6e8; }
+[data-game-theme='krillion'] [data-testid='krillion-review'] { margin-top:24px; background:#101d33; border-color:#29415f; font-size:18px; }
+[data-game-theme='krillion'] [data-testid='krillion-review'] h3 { color:#43d8ef; }
+
+[data-game-theme='anthropeum'] { --ink-bg:#f7f3ea; --ink-paper:#f7f3ea; --ink-text:#4a4337; --ink-muted:#8a795b; --ink-accent:#7a1f1a; --ink-border:#dcd2bc; font-family:'EB Garamond',Georgia,serif; font-size:18px; }
+[data-game-theme='anthropeum'] .font-lora,[data-game-theme='anthropeum'] h1 { font-family:'Playfair Display',Georgia,serif; color:#7a1f1a; font-weight:400; }
+[data-game-theme='anthropeum'] .game-page-main { padding-inline:0; padding-bottom:0; }
+[data-game-theme='anthropeum'] .daily-game > header { padding-inline:20px; margin-bottom:0; }
+.anthro-landing { max-width:640px; margin:auto; padding:64px 24px 80px; text-align:center; }
+.anthro-eyebrow { font-family:'Cinzel',Georgia,serif; font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:#8a795b; }
+.anthro-landing h2 { font:400 clamp(54px,9vw,100px)/1.2 'Playfair Display',Georgia,serif; color:#7a1f1a; letter-spacing:-.04em; margin:26px 0; }
+.anthro-landing .anthro-question { max-width:470px; margin:0 auto 32px; font-size:25px; font-style:italic; line-height:1.3; }
+.anthro-button { background:#7a1f1a; color:#f7f3ea; padding:14px 24px; font:600 13px/1.4 Arial,sans-serif; letter-spacing:.12em; text-transform:uppercase; border-radius:5px; }
+.anthro-button:disabled { background:#ded4be; color:#97896b; }
+.anthro-topline { padding:8px 24px; display:flex; justify-content:space-between; align-items:center; background:#f7f3ea; }
+.anthro-timeline { padding:12px 24px; background:#ede7d7; border-block:1px solid #dcd2bc; }
+.anthro-ticks { display:flex; justify-content:space-between; font-size:11px; margin-top:4px; }
+.anthro-arena { position:relative; min-height:650px; background:#ccd8dc; }
+.anthro-map { position:absolute; inset:0; }
+.anthro-map > div { height:100%; }
+.anthro-map svg { height:100%; width:100%; min-height:650px; border:0; border-radius:0; background:#ccd8dc; }
+.anthro-map > div > div:first-child { position:absolute; top:12px; left:12px; z-index:2; background:#f7f3ea; padding:5px; box-shadow:0 1px 4px #0002; }
+.anthro-map > div > p:last-child { position:absolute; bottom:8px; left:16px; background:#f7f3eae6; padding:4px 8px; }
+.anthro-artifact { position:relative; z-index:3; width:340px; margin-left:auto; margin-right:16px; top:16px; background:#f7f3ea; box-shadow:0 1px 8px #44371e22; border:1px solid #dcd2bc; }
+.anthro-artifact-image { background:#29261f; position:relative; display:flex; align-items:center; justify-content:center; min-height:310px; }
+.anthro-artifact-image img { width:100%; max-height:430px; object-fit:contain; }
+.anthro-artifact-copy { padding:12px 16px; border-top:1px solid #dcd2bc; font-size:16px; }
+.anthro-submit { position:absolute; bottom:36px; left:calc((100% - 356px)/2); transform:translateX(-50%); z-index:3; }
+.anthro-coordinates { display:flex; flex-wrap:wrap; gap:12px; align-items:center; padding:12px 24px; border-top:1px solid #dcd2bc; font-size:14px; }
+.anthro-coordinates input { width:85px; border-bottom:1px solid #8a795b; margin-left:8px; padding:2px; }
+.anthro-results { max-width:900px; margin:auto; padding:32px 24px; }
+@media(max-width:767px) {
+  .krillion-sky { height:245px; }
+  .krillion-title { padding-top:54px; }
+  .krillion-console { margin-block:24px; padding-inline:18px; }
+  .krillion-hud { padding-inline:18px; }
+  .anthro-landing { padding-top:40px; }
+  .anthro-arena { min-height:0; display:flex; flex-direction:column; }
+  .anthro-map { position:relative; height:310px; order:2; }
+  .anthro-map svg { min-height:310px; }
+  .anthro-artifact { top:0; width:100%; margin:0; border-inline:0; order:1; box-shadow:none; }
+  .anthro-artifact-image { min-height:190px; }
+  .anthro-artifact-image img { height:230px; width:auto; max-width:100%; }
+  .anthro-artifact-copy { padding:8px 16px; }
+  .anthro-submit { position:relative; order:3; bottom:auto; left:auto; transform:none; width:100%; border-radius:0; }
+  .anthro-timeline { padding-inline:16px; }
+  [data-game-theme] .daily-heading h1 { font-size:1.4rem; }
+}
+@media(prefers-reduced-motion:reduce) { .krillion-stage * { animation:none!important; transition:none!important; } }
+
+[data-game-theme='krillion'] input[type='date'] { color-scheme:dark; }
+[data-game-theme='anthropeum'] .daily-heading h1 { font-weight:400; }

@@ -1,4 +1,5 @@
 import { siteDay } from '@/lib/daily'
+import { getDevicePlayer, saveDevicePlayer, ensureSyncIdentity, getDeviceId } from '@/lib/syncIdentity'
 export type GameId = 'bee' | 'connections' | 'mini' | 'krillion' | 'anthropeum'
 export const GAMES: Record<GameId, { title: string; url: string; max: number; unit: string; rules: string; lowerIsBetter?: boolean }> = {
   bee: { title: 'Spelling Bee', url: '/games/spelling-bee', max: 1000, unit: 'points', rules: 'Word points; pangrams earn a 7-point bonus.' },
@@ -25,16 +26,14 @@ export function formatTime(seconds: number): string { return `${Math.floor(secon
 export type Player = { name: string; group: string }
 export const PUBLIC_GROUP = 'public'
 export function boardName(group: string): string { return group === PUBLIC_GROUP ? 'the public board' : `group ${group}` }
-const PLAYER_KEY = 'sfjc_player'
 const QUEUE_KEY = 'sfjc_results_queue_v2'
 export const PLAYER_CHANGED = 'sfjc-player-changed'
 export const RESULTS_CHANGED = 'sfjc-results-changed'
 export function getPlayer(): Player | null {
-  try { const p = JSON.parse(localStorage.getItem(PLAYER_KEY) ?? 'null') as Player | null; return p?.name && p.group ? p : null } catch { return null }
+  return getDevicePlayer()
 }
 export function setPlayer(p: Player): void {
-  localStorage.setItem(PLAYER_KEY, JSON.stringify(p))
-  window.dispatchEvent(new Event(PLAYER_CHANGED))
+  saveDevicePlayer(p)
   void flushResults()
 }
 type Queued = Result & { player: Player | null }
@@ -43,6 +42,7 @@ function queue(): Queued[] {
 }
 let flushing = false
 export async function flushResults(): Promise<void> {
+  await ensureSyncIdentity()
   const player = getPlayer()
   if (!player || flushing) return
   flushing = true
@@ -50,7 +50,7 @@ export async function flushResults(): Promise<void> {
     for (const item of queue()) {
       if (item.day > localDay()) continue
       const owner = item.player ?? player
-      const response = await fetch('/api/results', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...owner, today: item.day, game: item.game, score: item.score, stats: item.stats }) })
+      const response = await fetch('/api/results', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...owner, deviceId: getDeviceId(), today: item.day, game: item.game, score: item.score, stats: item.stats }) })
       if (!response.ok) { if (response.status >= 500) break; continue }
       // Re-read: a newer result may have arrived while this request was in flight.
       const remaining = queue().filter(q => !(q.game === item.game && q.day === item.day && (item.game === 'mini' ? q.score === item.score : q.score <= item.score) && JSON.stringify(q.player) === JSON.stringify(item.player)))

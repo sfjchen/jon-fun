@@ -1,4 +1,6 @@
 'use client'
+import { useDeviceName } from '@/lib/use-device-name'
+import { getDevicePlayer, saveDevicePlayer } from '@/lib/syncIdentity'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -8,7 +10,7 @@ export default function PokerPage() {
   const router = useRouter()
   const base = ''
   const [mode, setMode] = useState<'create' | 'join'>('create')
-  const [hostName, setHostName] = useState('')
+  const [hostName, setHostName] = useDeviceName()
   const [joinPin, setJoinPin] = useState('')
   const [smallBlind, setSmallBlind] = useState(5)
   const [bigBlind, setBigBlind] = useState(10)
@@ -43,6 +45,7 @@ export default function PokerPage() {
       sessionStorage.setItem('poker_hostId', data.hostId)
       sessionStorage.setItem('poker_playerId', data.playerId || data.hostId)
       sessionStorage.setItem('poker_playerName', hostName.trim())
+      saveDevicePlayer({ name: hostName, group: getDevicePlayer()?.group ?? 'public' })
 
       router.push(`${base}/games/poker/lobby/${data.pin}`)
     } catch (err) {

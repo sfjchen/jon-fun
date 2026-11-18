@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef, useSyncExternalStore, type ChangeEvent } from 'react'
 import { usePathname } from 'next/navigation'
+import PlayerName from '@/components/PlayerName'
+import { HomeLink } from '@/components/HomeLink'
 import {
   loadEntries,
   saveEntry,
@@ -236,7 +238,8 @@ export default function DailyLearnManager() {
   const layout = (title: string, children: React.ReactNode) => (
     <div className={`max-w-5xl mx-auto ${shellPadClass}`}>
       {syncFailedBanner}
-      <h1 className="mb-4 font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>{title}</h1>
+      <div className="mb-2 flex items-center gap-2"><HomeLink className="h-10 w-10 justify-center" /><h1 className="font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>{title}</h1></div>
+      <div className="mb-4"><PlayerName /></div>
       {children}
     </div>
   )
@@ -301,11 +304,12 @@ export default function DailyLearnManager() {
     return (
       <div className={`max-w-5xl mx-auto ${shellPadClass}`}>
         {syncFailedBanner}
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>1 Sentence Everyday</h1>
+        <div className="flex items-center gap-2 mb-1">
+          <HomeLink className="h-10 w-10 justify-center" />
+          <h1 className="mr-auto font-lora text-2xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>1 Sentence Everyday</h1>
           {syncing && <span className="text-sm" style={{ color: 'var(--ink-muted)' }}>Syncing…</span>}
         </div>
-
+        <div className="mb-3"><PlayerName /></div>
         {entries.length === 0 && (
           <div className="rounded-lg border p-4 mb-4" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
             <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>

@@ -15,7 +15,7 @@ export default function ScoreSync() {
   const [status, setStatus] = useState('')
   useEffect(() => {
     const refresh = () =>
-      setStatus(!getPlayer() ? 'Add your name to rank on the leaderboard' : pendingResults() ? 'Score saved here · syncing…' : '')
+      setStatus(!getPlayer() ? '' : pendingResults() ? 'Score saved here · syncing…' : '')
     const sync = () => void flushResults().then(refresh)
     refresh()
     sync()

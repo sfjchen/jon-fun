@@ -1,6 +1,8 @@
 'use client'
 
 import { useCallback, useState, useSyncExternalStore } from 'react'
+import { useDeviceName } from '@/lib/use-device-name'
+import { getDevicePlayer, saveDevicePlayer } from '@/lib/syncIdentity'
 import { partyFetch, sessionKeys } from '@/lib/party/constants'
 import type { PartyGameKind } from '@/lib/party/types'
 
@@ -16,7 +18,7 @@ export function usePartyLobby(gameKind: PartyGameKind, onPayload: (data: unknown
   const keys = sessionKeys(gameKind)
 
   const [pinInput, setPinInput] = useState('')
-  const [nameInput, setNameInput] = useState('')
+  const [nameInput, setNameInput] = useDeviceName()
   const [playerId, setPlayerId] = useState<string | null>(null)
   const [hostId, setHostId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -36,7 +38,7 @@ export function usePartyLobby(gameKind: PartyGameKind, onPayload: (data: unknown
       setPinInput(p)
       setPlayerId(pid)
       setHostId(hid || null)
-      setNameInput(n ?? '')
+      setNameInput(getDevicePlayer()?.name || n || '')
     }
   }
 
@@ -46,7 +48,7 @@ export function usePartyLobby(gameKind: PartyGameKind, onPayload: (data: unknown
       if (d.pin !== undefined) sessionStorage.setItem(keys.pin, d.pin)
       if (d.playerId !== undefined) sessionStorage.setItem(keys.playerId, d.playerId)
       if (d.hostId !== undefined) sessionStorage.setItem(keys.hostId, d.hostId ?? '')
-      if (d.playerName !== undefined) sessionStorage.setItem(keys.playerName, d.playerName)
+      if (d.playerName !== undefined) { sessionStorage.setItem(keys.playerName, d.playerName); saveDevicePlayer({ name: d.playerName, group: getDevicePlayer()?.group ?? 'public' }) }
     },
     [keys.hostId, keys.pin, keys.playerId, keys.playerName],
   )
