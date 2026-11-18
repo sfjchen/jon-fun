@@ -7,7 +7,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import ScoreSync from '@/components/daily/ScoreSync'
 import { HomeLink } from '@/components/HomeLink'
 import PlayerName from '@/components/PlayerName'
@@ -82,7 +82,8 @@ type DayNavProps = {
  */
 export default function DayNav({ title, path, day, label, info, children }: DayNavProps) {
   const router = useRouter()
-  const today = siteDay()
+  /** Read only in the browser, so a server on another day (or a test clock) never mismatches the page. */
+  const today = useSyncExternalStore(() => () => {}, siteDay, () => '')
   const go = (d: string) => router.push(d === today ? path : `${path}?d=${d}`, { scroll: false })
   return (
     <header className="mb-3 space-y-1 border-b pb-2" style={{ borderColor: 'var(--ink-border)' }}>
@@ -127,7 +128,7 @@ export default function DayNav({ title, path, day, label, info, children }: DayN
             >
               ›
             </button>
-            {day !== today && (
+            {today && day !== today && (
               <button type="button" className={`${action} underline`} onClick={() => go(today)}>
                 Today
               </button>
@@ -141,7 +142,7 @@ export default function DayNav({ title, path, day, label, info, children }: DayN
         <PlayerName />
         {children}
       </div>
-      {day && day > today && <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>Future preview · practice only, not ranked</p>}
+      {day && today && day > today && <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>Future preview · practice only, not ranked</p>}
       <ScoreSync />
     </header>
   )
