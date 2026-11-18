@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   for (let attempt = 0; attempt < 8; attempt++) {
     const { data, error } = await supabaseAdmin
       .from('triples_rooms')
-      .insert({ pin: generateRoomPin(), host_id: playerId, players: [{ id: playerId, name, score: 0, misses: 0 }] })
+      .insert({ pin: generateRoomPin(), host_id: playerId, players: [{ id: playerId, name, score: 0, misses: 0, authVersion:2 }] })
       .select()
       .single()
     if (data) return NextResponse.json({ playerId, playerToken:playerToken(data.pin,playerId), room: toRoom(data as RoomRow) })

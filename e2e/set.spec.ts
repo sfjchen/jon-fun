@@ -72,9 +72,14 @@ test('full-deck practice can finish and multiplayer players see the same success
   }
   await expect(page.getByText(/Deck cleared in/)).toBeVisible()
   await page.getByRole('tab',{name:'With friends',exact:true}).click()
+  await page.goto('/games/triples?pin=1234',{waitUntil:'domcontentloaded'})
   const created=page.waitForResponse(r=>r.url().endsWith('/api/triples/rooms')&&r.request().method()==='POST')
   await page.getByRole('button',{name:'Create a room',exact:true}).click()
   const host=await(await created).json(),pin=host.room.pin
+  await expect(page).toHaveURL(new RegExp(`pin=${pin}`))
+  await page.getByRole('tab',{name:'Solo',exact:true}).click()
+  await page.getByRole('tab',{name:'With friends',exact:true}).click()
+  await expect(page.getByRole('list',{name:'Scores'})).toContainText('Set Host')
   const guest=await context.newPage();let guestId='',guestToken=''
   try{
     await mockSyncIdentity(guest)

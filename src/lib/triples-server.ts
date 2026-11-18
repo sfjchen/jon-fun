@@ -13,7 +13,7 @@ export type RoomRow = {
   status: TriplesRoom['status']
   deck: number[]
   board: number[]
-  players: TriplesPlayer[]
+  players: (TriplesPlayer & {authVersion?:number})[]
   last_claim: TriplesClaim | null
   version: number
   started_at: string | null
@@ -27,6 +27,8 @@ export type Failure = { error: string; status: number }
 export async function loadRoom(pin: string): Promise<RoomRow | null> {
   const { data,error } = await supabaseAdmin.from('triples_rooms').select('*').eq('pin', pin).maybeSingle()
   if(error)throw Error('Room storage unavailable')
+  // Unauthenticated pre-release rooms are retired rather than granting seats from public IDs.
+  if(data&&!data.players.some((p:TriplesPlayer&{authVersion?:number})=>p.id===data.host_id&&p.authVersion===2))return null
   return (data as RoomRow | null) ?? null
 }
 
