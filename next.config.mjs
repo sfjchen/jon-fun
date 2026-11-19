@@ -9,7 +9,7 @@ const nextConfig = {
   outputFileTracingIncludes: {
     '/api/krillion/*': ['./data/krillion/**/*'],
     '/api/cron/krillion': ['./data/krillion/**/*'],
-    '/api/daily/*': ['./public/puzzle-archives/**/*', './data/anthropeum/**/*', './data/krillion/**/*'],
+    '/api/daily/*': ['./public/puzzle-archives/**/*', './data/anthropeum/**/*', './data/krillion/**/*', './data/fivefold/**/*'],
     '/api/reader/extract-pdf': [
       './node_modules/pdfjs-dist/legacy/build/**/*',
       './node_modules/pdf-parse/node_modules/pdfjs-dist/legacy/build/**/*',

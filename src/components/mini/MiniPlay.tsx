@@ -15,7 +15,8 @@ function Menu({label,items}:{label:string;items:[string,()=>void][]}){
 
 export default function MiniPlay({puzzle,dailyDay}:{puzzle:MiniPuzzle;dailyDay?:string}){
   const storageKey=`mini:v3:${dailyDay??'archive'}:${puzzle.date}`
-  const [run,setRun]=useState<MiniRun>(()=>{try{return restoreMini(JSON.parse(localStorage.getItem(storageKey)??'null'),puzzle)}catch{return emptyMini(puzzle)}})
+  // A fresh puzzle starts its clock on load; only a puzzle paused by leaving the page asks to continue.
+  const [run,setRun]=useState<MiniRun>(()=>{let r:MiniRun;try{r=restoreMini(JSON.parse(localStorage.getItem(storageKey)??'null'),puzzle)}catch{r=emptyMini(puzzle)};return r.started?r:resumeMini(r,Date.now())})
   const current=useRef(run),inputs=useRef<(HTMLInputElement|null)[]>([])
   const [active,setActive]=useState(()=>puzzle.cells.findIndex(Boolean)),[direction,setDirection]=useState('Across'),[clock,setClock]=useState(()=>Date.now())
   const [pencil,setPencil]=useState(false),[autocheck,setAutocheck]=useState(false),[rebus,setRebus]=useState(false)
@@ -73,7 +74,7 @@ export default function MiniPlay({puzzle,dailyDay}:{puzzle:MiniPuzzle;dailyDay?:
       <Menu label="Reveal" items={[['Square',()=>help(true,'square')],['Word',()=>help(true,'word')],['Puzzle',()=>help(true,'puzzle')],['Clear puzzle',clearPuzzle]]} />
     </>}
   </div>
-  if(paused)return <section className="space-y-4">{toolbar}<div className="space-y-4 rounded-xl border bg-[var(--ink-paper)] p-8 text-center" role="dialog" aria-label="Mini paused"><h3 className="font-lora text-2xl">{run.started?'Paused':'Ready?'}</h3><p className="text-sm text-[var(--ink-muted)]">By {puzzle.constructors.join(', ')}</p><button className="rounded-full bg-[var(--ink-text)] px-8 py-3 font-semibold text-[var(--ink-bg)]" aria-label={run.started?'Continue puzzle':'Start puzzle'} onClick={()=>{setClock(Date.now());commit(resumeMini(current.current,Date.now()))}}>{run.started?'Continue':'Play'}</button></div></section>
+  if(paused)return <section className="space-y-4">{toolbar}<div className="space-y-4 rounded-xl border bg-[var(--ink-paper)] p-8 text-center" role="dialog" aria-label="Mini paused"><h3 className="font-lora text-2xl">Paused</h3><p className="text-sm text-[var(--ink-muted)]">By {puzzle.constructors.join(', ')}</p><button className="rounded-full bg-[var(--ink-text)] px-8 py-3 font-semibold text-[var(--ink-bg)]" aria-label="Continue puzzle" onClick={()=>{setClock(Date.now());commit(resumeMini(current.current,Date.now()))}}>Continue</button></div></section>
   return <section className="space-y-3">{toolbar}
     {rebus&&<p className="text-sm">Rebus: type several letters, then Enter. Escape exits.</p>}
     <div className="mx-auto w-full max-w-sm space-y-2">

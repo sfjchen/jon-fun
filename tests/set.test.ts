@@ -15,7 +15,7 @@ test('daily boards are reproducible and contain exactly six sets across 100 days
 test('full-deck deals never lose or duplicate cards and eventually end with no set',()=>{
   for(let i=0;i<20;i++){let deal=newDeal();const claimed:number[]=[];while(!isOver(deal)){const cards=findTriple(deal.board);assert.ok(cards);claimed.push(...cards);deal=removeTriple(deal,cards);assert.equal(new Set([...claimed,...deal.board,...deal.deck]).size,81);assert.equal(claimed.length+deal.board.length+deal.deck.length,81)}assert.equal(findTriple(deal.board),null)}
 })
-test('daily SET ties use the lower unassisted completion time',()=>{
-  const a={name:'Alice',game:'set' as const,day:'2026-11-17',score:6,stats:{seconds:100}},b={...a,name:'Bob',stats:{seconds:80}}
+test('Fivefold ties use the lower completion time',()=>{
+  const a={name:'Alice',game:'fivefold' as const,day:'2026-11-17',score:4,stats:{seconds:100}},b={...a,name:'Bob',stats:{seconds:80}}
   assert.deepEqual(winners([a,b]),['Bob']);assert.deepEqual(winners([a,{...b,stats:{seconds:100}}]),['Alice','Bob'])
 })

@@ -23,6 +23,7 @@ import {
   flushResults,
   formatGameScore,
   formatScore,
+  formatTime,
   getPlayer,
   localDay,
   resultLabel,
@@ -295,6 +296,7 @@ export function ScoresHub() {
           played: tab === 'all' ? new Set(own.map((r) => r.day)).size : own.length,
           avg: tab === 'all' ? null : average(scores),
           best: tab === 'all' ? null : bestGameScore(tab, scores),
+          time: (() => { const t = own.flatMap((r) => (r.stats.seconds === undefined ? [] : [r.stats.seconds])); return t.length ? Math.round(average(t)) : null })(),
           wins: wins.get(name) ?? 0,
           dayWins: dayWins.get(name) ?? 0,
         }
@@ -302,6 +304,7 @@ export function ScoresHub() {
       .sort((a, b) => b.dayWins - a.dayWins || b.wins - a.wins || b.played - a.played || a.name.localeCompare(b.name))
   })()
 
+  const timed = tab === 'connections' || tab === 'fivefold'
   const mine = shown.filter((r) => r.name === me && r.day <= day)
   const mineToday = rows.filter((r) => r.name === me && r.day === day)
   const streak = streaks(mine, day)
@@ -468,6 +471,7 @@ export function ScoresHub() {
                     <>
                       <th className="px-1 text-right font-normal">Avg</th>
                       <th className="px-1 text-right font-normal">{GAMES[tab].lowerIsBetter ? 'Fastest' : 'Best'}</th>
+                      {timed && <th className="px-1 text-right font-normal" title="Average solve time">Time</th>}
                     </>
                   )}
                   <th className="px-1 text-right font-normal" title="Game-days won, ties included">
@@ -486,6 +490,7 @@ export function ScoresHub() {
                       <>
                         <td className="px-1 text-right tabular-nums">{formatGameScore(tab, p.avg ?? 0)}</td>
                         <td className="px-1 text-right tabular-nums">{formatGameScore(tab, p.best ?? 0)}</td>
+                        {timed && <td className="px-1 text-right tabular-nums">{p.time === null ? '-' : formatTime(p.time)}</td>}
                       </>
                     )}
                     <td className="px-1 text-right tabular-nums">{p.wins}</td>

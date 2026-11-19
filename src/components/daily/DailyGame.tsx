@@ -15,11 +15,12 @@ import { GAMES, isPracticeResult, type GameId } from '@/lib/results'
 import type { ConnectionsPuzzle } from '@/lib/connections'
 import AnthropeumPlay, { type ArtifactDay } from '@/components/daily/AnthropeumPlay'
 import KrillionPlay, { type KrillionPuzzle } from '@/components/daily/KrillionPlay'
+import FivefoldPlay, { type FivefoldPuzzle } from '@/components/daily/FivefoldPlay'
 
 type Daily = { day: string; sourceDate: string; puzzle: unknown }
 
 /** How each game plays, in the order a new player needs it. */
-const HOW: Record<Exclude<GameId, 'bee' | 'set'>, string[]> = {
+const HOW: Record<Exclude<GameId, 'bee'>, string[]> = {
   connections: [
     'Find 4 groups of 4 words that share something.',
     'Select 4 words and tap Submit. A wrong guess costs 1 of your 4 mistakes.',
@@ -36,6 +37,11 @@ const HOW: Record<Exclude<GameId, 'bee' | 'set'>, string[]> = {
     'Name 1 answer per prompt. Rarer accepted answers score more, up to 100.',
     'Wrong answers can be retried while the clock runs.',
   ],
+  fivefold: [
+    'Find the hidden 5-letter word in 6 tries. Type or tap letters, then Enter.',
+    'A filled tile is in the right spot. A tinted tile with a dot is in the word but elsewhere. A gray tile is not in the word.',
+    'The clock starts with your first key and pauses when you leave the page.',
+  ],
   anthropeum: [
     '10 museum artifacts. Pin where each was made and pick a 250-year period.',
     'Each artifact scores up to 5,000 for place and 5,000 for time.',
@@ -45,7 +51,7 @@ const HOW: Record<Exclude<GameId, 'bee' | 'set'>, string[]> = {
 /**
  * Renders the daily game for the `?d=` day, or today.
  */
-export default function DailyGame({ game }: { game: Exclude<GameId, 'bee' | 'set'> }) {
+export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
   const params = useSearchParams()
   const raw = params.get('d')
   const day = validDay(raw) && raw >= DAILY_EPOCH && raw <= '2100-12-31' ? raw : siteDay()
@@ -86,7 +92,7 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee' | 'set
     </>
   )
   return (
-    <div className={`daily-game mx-auto w-full ${game==='anthropeum'?'max-w-none':game==='krillion'?'max-w-5xl':'max-w-4xl'}`} data-testid={`daily-${game}`}>
+    <div className={`daily-game mx-auto w-full ${game==='anthropeum'?'max-w-none':game==='krillion'?'max-w-5xl':game==='fivefold'?'max-w-lg':'max-w-4xl'}`} data-testid={`daily-${game}`}>
       <DayNav title={GAMES[game].title} path={GAMES[game].url} day={day} info={info} />
       {data && day <= siteDay() && isPracticeResult(game, day) && (
         <p className="mb-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
@@ -110,6 +116,7 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee' | 'set
         />
       )}
       {data && game === 'anthropeum' && <AnthropeumPlay key={key} puzzle={data.puzzle as ArtifactDay} dailyDay={day} />}
+      {data && game === 'fivefold' && <FivefoldPlay key={key} puzzle={data.puzzle as FivefoldPuzzle} dailyDay={day} />}
       {data && game === 'krillion' && <KrillionPlay key={key} puzzle={data.puzzle as KrillionPuzzle} dailyDay={day} />}
     </div>
   )

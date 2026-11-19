@@ -3,7 +3,7 @@ import { dailySetBoard, allSets } from '../src/lib/set-daily'
 import { siteDay } from '../src/lib/daily'
 import { mockSyncIdentity } from './helpers/sync-identity-mock'
 const day=siteDay()
-test('daily SET solves six unique sets, restores progress and posts its time under the saved device name',async({page})=>{
+test('SET puzzle solves six unique sets, restores progress and stays off the daily board',async({page})=>{
   await mockSyncIdentity(page)
   const results:Record<string,unknown>[]=[]
   await page.addInitScript(()=>localStorage.setItem('sfjc_player',JSON.stringify({name:'SetPlayer',group:'set-test'})))
@@ -18,18 +18,16 @@ test('daily SET solves six unique sets, restores progress and posts its time und
   await page.reload();await page.getByRole('button',{name:'Continue puzzle'}).click()
   for(const cards of sets.slice(1))for(const c of cards)await page.locator(`[data-card="${c}"]`).first().click()
   await expect(page.getByTestId('set-result')).toContainText('All six sets found')
-  await expect.poll(()=>results.length).toBeGreaterThan(0)
-  expect(results[0]).toMatchObject({name:'SetPlayer',game:'set',score:6,stats:{solved:true,n:6}})
-  expect((results[0]!.stats as {seconds:number}).seconds).toBeGreaterThanOrEqual(0)
+  expect(results).toHaveLength(0)
   await page.reload();await expect(page.getByTestId('set-result')).toBeVisible()
 })
-test('SET hints stay unranked and Home aligns with controls on mobile',async({page})=>{
+test('SET hints show and Home aligns with controls on mobile',async({page})=>{
   await page.setViewportSize({width:390,height:844});await mockSyncIdentity(page)
   const posts:unknown[]=[]
   await page.route('**/api/results**',async route=>{if(route.request().method()==='POST')posts.push(route.request().postDataJSON());await route.fulfill({json:{rows:[],ok:true}})})
   await page.goto('/games/set');await page.getByRole('button',{name:'Play daily puzzle'}).click();await page.getByRole('button',{name:'Hint',exact:true}).click()
   for(const cards of allSets(dailySetBoard(day)))for(const c of cards)await page.locator(`[data-card="${c}"]`).first().click()
-  await expect(page.getByTestId('set-result')).toContainText('Assisted practice');expect(posts).toHaveLength(0)
+  await expect(page.getByTestId('set-result')).toContainText('With hints');expect(posts).toHaveLength(0)
   const home=await page.getByRole('link',{name:'Home',exact:true}).boundingBox(),scores=await page.getByRole('link',{name:'Leaderboard',exact:true}).boundingBox()
   expect(Math.abs(home!.y+home!.height/2-scores!.y-scores!.height/2)).toBeLessThan(3)
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(390)

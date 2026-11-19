@@ -1,11 +1,10 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
-import { archiveDay } from '@/lib/daily'
+import { archiveDay, dayIndex } from '@/lib/daily'
 import type { GameId } from '@/lib/results'
 const root = process.cwd()
 export async function readJson<T>(relative: string): Promise<T> { return JSON.parse(await readFile(path.join(root, relative), 'utf8')) as T }
 export async function dailyPuzzle(game: GameId, day: string): Promise<{ day: string; sourceDate: string; puzzle: unknown }> {
-  if(game==='set'){const {dailySetBoard}=await import('@/lib/set-daily');return {day,sourceDate:day,puzzle:{date:day,board:dailySetBoard(day),generated:true}}}
   if (game === 'anthropeum') {
     let data: { date: string; artifacts: unknown[] } | undefined
     try { data = await readJson(`data/anthropeum/${day}.json`) } catch {}
@@ -37,6 +36,10 @@ export async function dailyPuzzle(game: GameId, day: string): Promise<{ day: str
       catch { data = await readJson('data/anthropeum/2026-11-16.json') }
     }
     return { day, sourceDate: data!.date, puzzle: data }
+  }
+  if (game === 'fivefold') {
+    const answers = await readJson<string[]>('data/fivefold/answers.json')
+    return { day, sourceDate: day, puzzle: { answer: answers[((dayIndex(day) % answers.length) + answers.length) % answers.length]! } }
   }
   if (game === 'krillion') {
     const { krillionForDay } = await import('@/lib/daily/krillion')
