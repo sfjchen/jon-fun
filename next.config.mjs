@@ -8,6 +8,7 @@ const nextConfig = {
    */
   outputFileTracingIncludes: {
     '/api/krillion/*': ['./data/krillion/**/*'],
+    '/api/cron/nyt': ['./public/puzzle-archives/**/*'],
     '/api/cron/krillion': ['./data/krillion/**/*'],
     '/api/daily/*': ['./public/puzzle-archives/**/*', './data/anthropeum/**/*', './data/krillion/**/*', './data/fivefold/**/*'],
     '/api/reader/extract-pdf': [

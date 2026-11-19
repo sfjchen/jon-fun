@@ -122,7 +122,7 @@ export default function ConnectionsPlay({ basePath, idOrSlug, initialPuzzle, dai
     try { localStorage.setItem(timeKey, JSON.stringify({ ms: c.ms, done: true })) } catch {}
     const secs = Math.round(c.ms / 1000)
     setSeconds(secs)
-    logResult('connections', p.solvedDifficulties.length, p.solvedDifficulties.length, dailyDay, { solved: p.won, mistakes: p.wrongGuesses, n: p.solvedDifficulties.length, puzzleId: idOrSlug, ...(secs ? { seconds: secs } : {}) })
+    logResult('connections', p.solvedDifficulties.length, p.solvedDifficulties.length, dailyDay, { solved: p.won, mistakes: p.wrongGuesses, n: p.solvedDifficulties.length, puzzleId: idOrSlug, sourceDate: dailyDay, seconds: secs })
   }, [dailyDay, idOrSlug, timeKey])
 
   const replay = useCallback(() => {

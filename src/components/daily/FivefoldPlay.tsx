@@ -46,7 +46,7 @@ const elapsed = (r: Run, now: number) => r.elapsedMs + (r.activeSince === null ?
  */
 export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuzzle; dailyDay: string }) {
   const answer = puzzle.answer
-  const storageKey = `fivefold:v1:${dailyDay}`
+  const storageKey = `fivefold:nyt-v2:${dailyDay}:${answer}`
   const [run, setRun] = useState<Run>(() => {
     try {
       const r = JSON.parse(localStorage.getItem(storageKey) ?? 'null') as Run | null
@@ -113,7 +113,7 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
       if (/^[a-z]$/.test(key)) return setDraft((d) => (d.length < 5 ? d + key : d))
       if (key !== '↵' && key !== 'enter') return
       if (draft.length < 5) return flash('Not enough letters')
-      if (!(await words)?.has(draft)) return flash('Not in the word list')
+      if (draft !== answer && !(await words)?.has(draft)) return flash('Not in the word list')
       const latest = current.current
       const guesses = [...latest.guesses, draft]
       const over = draft === answer || guesses.length >= TRIES
@@ -123,7 +123,7 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
       commit(final)
       // Logged once, when the last guess lands, so reloading a finished board never re-sends it.
       const hit = draft === answer
-      logResult('fivefold', hit ? TRIES + 1 - guesses.length : 0, guesses.length, dailyDay, { solved: hit, seconds: Math.floor(final.elapsedMs / 1000), puzzleId: `fivefold:${dailyDay}` })
+      logResult('fivefold', hit ? TRIES + 1 - guesses.length : 0, guesses.length, dailyDay, { solved: hit, seconds: Math.floor(final.elapsedMs / 1000), sourceDate: dailyDay, puzzleId: `nyt-wordle:${dailyDay}` })
     },
     [done, draft, answer, commit, dailyDay],
   )
@@ -152,9 +152,9 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
   const share = () => {
     const icon: Record<Mark, string> = { hit: '🟢', near: '🟡', miss: '⚪' }
     const text = [
-      `Fivefold ${dailyDay} ${won ? run.guesses.length : 'X'}/6 · ${formatTime(Math.floor(run.elapsedMs / 1000))}`,
+      `Wordle ${dailyDay} ${won ? run.guesses.length : 'X'}/6 · ${formatTime(Math.floor(run.elapsedMs / 1000))}`,
       ...run.guesses.map((g) => marks(g, answer).map((m) => icon[m]).join('')),
-      'sfjc.dev/games/fivefold',
+      'sfjc.dev/games/wordle',
     ].join('\n')
     void navigator.clipboard.writeText(text).then(() => setCopied(true))
   }

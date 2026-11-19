@@ -67,6 +67,8 @@ export function Info({ children }: { children: React.ReactNode }) {
 
 type DayNavProps = {
   title: string
+  minDay?: string
+  publishedOnly?: boolean
   path: string
   /** The puzzle day. Omitted for practice puzzles, which show `label` instead. */
   day?: string | undefined
@@ -80,7 +82,7 @@ type DayNavProps = {
 /**
  * Renders the header. Day arrows step one day, the date field jumps anywhere, and Today returns to today.
  */
-export default function DayNav({ title, path, day, label, info, children }: DayNavProps) {
+export default function DayNav({ title, path, day, label, info, children, minDay = DAILY_EPOCH, publishedOnly = false }: DayNavProps) {
   const router = useRouter()
   /** Read only in the browser, so a server on another day (or a test clock) never mismatches the page. */
   const today = useSyncExternalStore(() => () => {}, siteDay, () => '')
@@ -105,7 +107,7 @@ export default function DayNav({ title, path, day, label, info, children }: DayN
               className={action}
               aria-label="Previous day"
               title="Previous day"
-              disabled={day <= DAILY_EPOCH}
+              disabled={day <= minDay}
               onClick={() => go(shiftDay(day, -1))}
             >
               ‹
@@ -115,15 +117,17 @@ export default function DayNav({ title, path, day, label, info, children }: DayN
               aria-label="Puzzle date"
               title="Pick a day"
               className="w-[7.5rem] rounded-md bg-transparent py-1 text-[13px] sm:w-auto sm:px-1 sm:text-sm"
-              min={DAILY_EPOCH}
+              max={publishedOnly ? today : undefined}
+              min={minDay}
               value={day}
-              onChange={(e) => e.target.value >= DAILY_EPOCH && go(e.target.value)}
+              onChange={(e) => e.target.value >= minDay && (!publishedOnly || e.target.value <= today) && go(e.target.value)}
             />
             <button
               type="button"
               className={action}
               aria-label="Next day"
               title="Next day"
+              disabled={publishedOnly && day >= today}
               onClick={() => go(shiftDay(day, 1))}
             >
               ›

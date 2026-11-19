@@ -19,6 +19,8 @@ export interface ConnectionsGroup {
 }
 
 export interface ConnectionsPuzzle {
+  tileImages?: Record<string, { url: string; alt: string }>
+  startingWords?: string[]
   difficultyKnown?: boolean
   id: string
   version: typeof CONNECTIONS_SCHEMA_VERSION

@@ -38,7 +38,7 @@ const items: GameCardGame[] = [
   },
   { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: `${nb}/game24.svg`, href: '/games/24', available: true },
   { id: 'poker', title: 'Texas Hold\'em chip tracker', description: 'Chip tracker with multiplayer lobbies', icon: `${nb}/poker.svg`, href: '/games/poker', available: true },
-  { id: 'set', title: 'SET', description: 'Race friends in a room, or clear a full deck', icon: `${nb}/triples.svg`, href: '/games/triples', available: true },
+  { id: 'set', title: 'Set', description: 'Race friends in a room, or clear a full deck', icon: `${nb}/triples.svg`, href: '/games/triples', available: true },
   { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom boards locally', icon: `${nb}/jeopardy.svg`, href: '/games/jeopardy', available: true },
   { id: 'chwazi', title: 'Chwazi Finger Chooser', description: 'Touch screen to pick a winner', icon: `${nb}/chwazi.svg`, href: '/games/chwazi', available: true },
   { id: 'coming-soon', title: 'Coming Soon', description: 'More brain games in development', icon: `${nb}/coming-soon.svg`, href: '#', available: false },

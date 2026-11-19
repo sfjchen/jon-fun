@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import PlayerName from '@/components/PlayerName'
 import {
-  GAMES, GAME_IDS, PLAYER_CHANGED, PUBLIC_GROUP, RESULTS_CHANGED, compareResults, formatGameScore, getPlayer, localDay, queue,
+  GAMES, GAME_IDS, PLAYER_CHANGED, PUBLIC_GROUP, RESULTS_CHANGED, compareResults, getPlayer, localDay, queue,
   resultLabel,
   type BoardRow,
 } from '@/lib/results'
@@ -103,16 +103,6 @@ export function DailyHeader() {
       >
         {label}
       </button>
-      <Link
-        href="/leaderboards"
-        aria-label="Daily leaderboard"
-        title="Daily leaderboard"
-        className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--ink-text)] text-white hover:opacity-90"
-      >
-        <svg aria-hidden viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-          <path d="M5 20v-7M12 20V4M19 20v-11" />
-        </svg>
-      </Link>
       {open && (
         <div data-game-theme="daily" className="fixed inset-0 z-50">
           <button type="button" tabIndex={-1} aria-label="Close daily drawer" onClick={close} className="absolute inset-0 bg-black/40" />
@@ -175,7 +165,7 @@ export function DailyHeader() {
                         <span className="min-w-0 flex-1 text-[var(--ink-muted)]">
                           {ranked.slice(0, 3).map((r, i) => (
                             <span key={r.name} className={r.name === player?.name ? 'font-semibold text-[var(--ink-text)]' : ''}>
-                              {i ? ' · ' : ''}{r.name} {formatGameScore(g, r.score)}
+                              {i ? ' · ' : ''}{r.name} {resultLabel(r)}
                             </span>
                           ))}
                           {ranked.length > 3 && ` +${ranked.length - 3}`}
@@ -188,13 +178,7 @@ export function DailyHeader() {
                 <p className="text-sm text-[var(--ink-muted)]">No scores yet today.</p>
               )}
             </section>
-            <Link
-              href="/leaderboards"
-              onClick={close}
-              className="mt-4 block rounded-xl bg-[var(--ink-text)] py-2.5 text-center text-sm font-semibold text-white hover:opacity-90"
-            >
-              Daily leaderboard
-            </Link>
+
           </div>
         </div>
       )}

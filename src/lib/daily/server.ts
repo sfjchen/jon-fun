@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
-import { archiveDay, dayIndex } from '@/lib/daily'
+import { isNytGame } from '@/lib/daily/nyt-puzzles'
+import { nytPuzzle } from '@/lib/daily/nyt'
 import type { GameId } from '@/lib/results'
 const root = process.cwd()
 export async function readJson<T>(relative: string): Promise<T> { return JSON.parse(await readFile(path.join(root, relative), 'utf8')) as T }
@@ -33,24 +34,15 @@ export async function dailyPuzzle(game: GameId, day: string): Promise<{ day: str
     } catch { /* fall back to the local checked snapshot */ }
     if (!data) {
       try { data = await readJson(`data/anthropeum/${day}.json`) }
-      catch { data = await readJson('data/anthropeum/2026-11-16.json') }
+      catch { throw Error(`The original Anthropeum collection for ${day} is unavailable. Choose another published date.`) }
     }
     return { day, sourceDate: data!.date, puzzle: data }
-  }
-  if (game === 'fivefold') {
-    const answers = await readJson<string[]>('data/fivefold/answers.json')
-    return { day, sourceDate: day, puzzle: { answer: answers[((dayIndex(day) % answers.length) + answers.length) % answers.length]! } }
   }
   if (game === 'krillion') {
     const { krillionForDay } = await import('@/lib/daily/krillion')
     const puzzle = await krillionForDay(day)
     return { day, sourceDate: puzzle.date, puzzle }
   }
-  const kind = game === 'bee' ? 'bee' : game
-  const dates = await readJson<string[]>(`public/puzzle-archives/${kind}/index.json`)
-  const sourceDate = archiveDay(day, dates)
-  const year = await readJson<{ date: string }[]>(`public/puzzle-archives/${kind}/${sourceDate.slice(0, 4)}.json`)
-  const puzzle = year.find(p => p.date === sourceDate)
-  if (!puzzle) throw new Error('Puzzle missing from archive')
-  return { day, sourceDate, puzzle }
+  if (isNytGame(game)) return { day, sourceDate: day, puzzle: await nytPuzzle(game, day) }
+  throw new Error('Unknown daily game')
 }

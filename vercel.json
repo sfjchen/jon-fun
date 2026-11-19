@@ -17,6 +17,10 @@
     {
       "path": "/api/cron/krillion",
       "schedule": "10 5 * * *"
+    },
+    {
+      "path": "/api/cron/nyt",
+      "schedule": "15 8 * * *"
     }
   ]
 }

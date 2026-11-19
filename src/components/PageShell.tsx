@@ -36,8 +36,8 @@ function isChwaziPath(pathname: string): boolean {
 export function PageShell({ children }: PageShellProps) {
   useEffect(() => { void ensureSyncIdentity() }, [])
   const pathname = usePathname()
-  const ownDailyHeader = ['/games/set','/games/triples','/games/mini','/games/krillion','/games/anthropeum','/games/fivefold','/games/spelling-bee','/games/connections/daily','/leaderboards','/games/daily-log'].includes(pathname ?? '')
-  const gameTheme = ['/games/set','/games/triples'].includes(pathname??'') ? 'set' : pathname?.startsWith('/games/connections') ? 'connections' : pathname === '/games/mini' ? 'mini' : pathname === '/leaderboards' ? 'daily' : pathname === '/games/spelling-bee' ? 'bee' : pathname === '/games/krillion' ? 'krillion' : pathname === '/games/anthropeum' ? 'anthropeum' : pathname === '/games/fivefold' ? 'fivefold' : undefined
+  const ownDailyHeader = ['/games/set','/games/triples','/games/mini','/games/krillion','/games/anthropeum','/games/wordle','/games/spelling-bee','/games/connections/daily','/leaderboards','/games/daily-log'].includes(pathname ?? '')
+  const gameTheme = ['/games/set','/games/triples'].includes(pathname??'') ? 'set' : pathname?.startsWith('/games/connections') ? 'connections' : pathname === '/games/mini' ? 'mini' : pathname === '/leaderboards' ? 'daily' : pathname === '/games/spelling-bee' ? 'bee' : pathname === '/games/krillion' ? 'krillion' : pathname === '/games/anthropeum' ? 'anthropeum' : pathname === '/games/wordle' ? 'fivefold' : undefined
   const notesPage = isNotesPage(pathname ?? '')
   const isMobile = useSyncExternalStore(
     (cb) => {

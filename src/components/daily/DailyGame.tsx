@@ -17,6 +17,8 @@ import AnthropeumPlay, { type ArtifactDay } from '@/components/daily/AnthropeumP
 import KrillionPlay, { type KrillionPuzzle } from '@/components/daily/KrillionPlay'
 import FivefoldPlay, { type FivefoldPuzzle } from '@/components/daily/FivefoldPlay'
 
+import { isNytGame, NYT_FIRST_DAY } from '@/lib/daily/nyt-puzzles'
+
 type Daily = { day: string; sourceDate: string; puzzle: unknown }
 
 /** How each game plays, in the order a new player needs it. */
@@ -54,7 +56,7 @@ const HOW: Record<Exclude<GameId, 'bee'>, string[]> = {
 export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
   const params = useSearchParams()
   const raw = params.get('d')
-  const day = validDay(raw) && raw >= DAILY_EPOCH && raw <= '2100-12-31' ? raw : siteDay()
+  const day = validDay(raw) && raw >= (isNytGame(game) ? NYT_FIRST_DAY[game] : DAILY_EPOCH) && raw <= '2100-12-31' ? raw : siteDay()
   const [response, setResponse] = useState<{ key: string; data?: Daily; error?: string } | null>(null)
   const key = `${game}:${day}`
   useEffect(() => {
@@ -79,12 +81,13 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
           <li key={l}>{l}</li>
         ))}
       </ul>
+      {isNytGame(game) && <p>Original NYT puzzle for the selected publication date.</p>}
       <p style={{ color: 'var(--ink-muted)' }}>Scoring: {GAMES[game].rules}</p>
       <p style={{ color: 'var(--ink-muted)' }}>
         Everyone gets the same puzzle each day (Pacific time)
         {data?.sourceDate && data.sourceDate !== day ? `, picked from the ${data.sourceDate} archive.` : '.'}
       </p>
-      {(game === 'mini' || game === 'connections') && (
+      {(game === 'mini' || game === 'connections' || game === 'fivefold') && (
         <Link className="block underline" href="/games/archives">
           Browse past puzzles
         </Link>
@@ -92,8 +95,8 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
     </>
   )
   return (
-    <div className={`daily-game mx-auto w-full ${game==='anthropeum'?'max-w-none':game==='krillion'?'max-w-5xl':game==='fivefold'?'max-w-lg':'max-w-4xl'}`} data-testid={`daily-${game}`}>
-      <DayNav title={GAMES[game].title} path={GAMES[game].url} day={day} info={info} />
+    <div className={`daily-game mx-auto w-full ${game==='anthropeum'||game==='krillion'?'max-w-none':game==='fivefold'?'max-w-lg':'max-w-4xl'}`} data-testid={`daily-${game}`}>
+      <DayNav title={GAMES[game].title} path={GAMES[game].url} day={day} publishedOnly={isNytGame(game)} minDay={isNytGame(game) ? NYT_FIRST_DAY[game] : DAILY_EPOCH} info={info} />
       {data && day <= siteDay() && isPracticeResult(game, day) && (
         <p className="mb-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
           Started as a future preview · not ranked

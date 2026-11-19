@@ -9,13 +9,13 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { shuffle } from '@/lib/random'
 import { localDay, logResult, markPracticeIfFuture, isPracticeResult } from '@/lib/results'
-import { archiveDay, validDay } from '@/lib/daily'
+import { validDay } from '@/lib/daily'
+import { NYT_FIRST_DAY } from '@/lib/daily/nyt-puzzles'
 import DayNav, { action } from '@/components/daily/DayNav'
 import {
   RANKS,
   addDays,
   check,
-  dayNum,
   hints,
   isPangram,
   makePuzzle,
@@ -265,20 +265,42 @@ export default function SpellingBee() {
   const practice = params.get('p')
   const archive = params.get('a')
   const requested = params.get('d')
-  const date = validDay(requested) && dayNum(requested) >= 0 && requested <= '2100-12-31' ? requested : now
+  const date = validDay(requested) && requested >= NYT_FIRST_DAY.bee && requested <= '2100-12-31' ? requested : now
 
   useEffect(() => {
     loadData().then(setData, () => setErr(true))
   }, [])
 
+  const selectedDay = validDay(archive) ? archive : date
+  const [official, setOfficial] = useState<{ day: string; puzzle?: HistoricalPuzzle; error?: string } | null>(null)
+  const [previousError,setPreviousError]=useState('')
+  const [previous, setPrevious] = useState<HistoricalPuzzle | null>(null)
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch(`/api/daily/bee?d=${selectedDay}`, { signal: controller.signal }).then(async r => {
+      const value = await r.json()
+      if (!r.ok) throw Error(value.error ?? 'Original hive unavailable')
+      setOfficial({ day: selectedDay, puzzle: value.puzzle })
+    }).catch(e => { if (!controller.signal.aborted) setOfficial({ day: selectedDay, error: e.message }) })
+    return () => controller.abort()
+  }, [selectedDay, practice])
+  useEffect(() => {
+    const yesterday = addDays(date, -1)
+    if (modal !== 'yesterday' || data?.history.some(p => p.date === yesterday)) return
+    const controller = new AbortController()
+    fetch(`/api/daily/bee?d=${yesterday}`, { signal: controller.signal }).then(async r => {
+      if (r.ok) { setPrevious((await r.json()).puzzle); setPreviousError('') }
+      else setPreviousError('The original previous hive is unavailable.')
+    }).catch(() => {if(!controller.signal.aborted)setPreviousError('Could not load the previous hive.')})
+    return () => controller.abort()
+  }, [modal, date, data])
+
   const pz = useMemo(() => {
     if (!data) return null
-    const historic = data.history.find(p => p.date === archive)
-    if (historic) return historic
     const p =
       practice && /^[a-rt-z]{7}$/.test(practice) && new Set(practice).size === 7 && makePuzzle(practice, data.words)
-    return p && p.pangrams.length && p.answers.length >= 5 ? p : data.history.find(p => p.date === archiveDay(date, data.history.map(p => p.date)))!
-  }, [data, practice, date, archive])
+    return p && p.pangrams.length && p.answers.length >= 5 ? p : official?.day === selectedDay ? official.puzzle ?? null : null
+  }, [data, practice, official, selectedDay])
   const isPractice = !!pz && (pz.id === practice || (pz as HistoricalPuzzle).date === archive)
   const key = pz && (isPractice ? `p:${archive ?? "random"}:${pz.id}` : `${date}:${pz.id}`)
 
@@ -379,6 +401,7 @@ export default function SpellingBee() {
 
   const go = (q: string) => router.replace(`/games/spelling-bee${q}`, { scroll: false })
 
+  if (!isPractice && official?.day === selectedDay && official.error) return <><DayNav title="Spelling Bee" path="/games/spelling-bee" day={selectedDay} publishedOnly minDay={NYT_FIRST_DAY.bee} info={<>Original NYT puzzles by publication date.</>} /><p role="alert">{official.error}</p></>
   if (err) return <p className="text-center">Couldn&apos;t load the word list. Refresh to try again.</p>
   if (!pz || !data)
     return (
@@ -387,7 +410,7 @@ export default function SpellingBee() {
       </p>
     )
 
-  const yd = data.history.find(p => p.date === archiveDay(addDays(date, -1), data.history.map(p => p.date)))!
+  const yd = data.history.find(p => p.date === addDays(date, -1)) ?? (previous?.date === addDays(date, -1) ? previous : null)
   const btn = 'rounded-full border px-5 py-2.5 text-[15px] font-medium active:scale-95 transition'
   const link = 'text-[13px] md:text-sm underline underline-offset-2 disabled:opacity-30 disabled:no-underline'
   const sorted = [...found].sort()
@@ -402,6 +425,7 @@ export default function SpellingBee() {
         @keyframes sb-blink{50%{opacity:0}}`}</style>
 
       <DayNav
+        publishedOnly minDay={NYT_FIRST_DAY.bee}
         title="Spelling Bee"
         path="/games/spelling-bee"
         day={isPractice ? undefined : date}
@@ -447,7 +471,7 @@ export default function SpellingBee() {
         <button className={action} title="Words left by letter and length" onClick={() => setModal('hints')}>
           Hints
         </button>
-        {!isPractice && dayNum(date) > 0 && (
+        {!isPractice && date > NYT_FIRST_DAY.bee && (
           <button className={action} title="Yesterday's answers" onClick={() => setModal('yesterday')}>
             Yesterday
           </button>
@@ -645,7 +669,7 @@ export default function SpellingBee() {
           <Hints pz={pz} found={found} />
         </Dialog>
       )}
-      {modal === 'yesterday' && (
+      {modal === 'yesterday' && yd && (
         <Dialog title="Yesterday's answers" onClose={() => setModal(null)}>
           <p className="mb-3 text-2xl font-bold uppercase tracking-widest">
             <span style={{ color: '#d4ac0d' }}>{yd.center}</span>
@@ -654,6 +678,7 @@ export default function SpellingBee() {
           <WordList words={yd.answers} found={new Set(loadFound(`${addDays(date, -1)}:${yd.id}`))} />
         </Dialog>
       )}
+      {modal === 'yesterday' && !yd && <Dialog title="Yesterday's answers" onClose={() => setModal(null)}>{previousError||'Loading the original previous hive…'}</Dialog>}
       {modal === 'ranks' && (
         <Dialog title="Rankings" onClose={() => setModal(null)}>
           <p className="mb-3 text-sm">Ranks are based on a percentage of possible points in a puzzle.</p>

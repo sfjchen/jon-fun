@@ -4,8 +4,8 @@ export type GameId = 'bee' | 'connections' | 'mini' | 'krillion' | 'anthropeum' 
 export const GAMES: Record<GameId, { title: string; url: string; max: number; unit: string; rules: string; lowerIsBetter?: boolean }> = {
   krillion: { title: 'Krillion', url: '/games/krillion', max: 700, unit: 'points', rules: 'Seven 25-second rounds. Original rarity scores: 10, 15, 30, 60, 85 or 100 points per answer. Maximum 700.' },
   anthropeum: { title: 'Anthropeum', url: '/games/anthropeum', max: 100000, unit: 'points', rules: 'Ten artifacts, 250-year guesses, up to 5,000 location and 5,000 time points each. Original scoring formulas.' },
-  connections: { title: 'Connections', url: '/games/connections/daily', max: 4, unit: 'matches', rules: 'Four groups, four mistakes maximum. Standings compare groups solved, then fewer mistakes.' },
-  fivefold: { title: 'Fivefold', url: '/games/fivefold', max: 6, unit: 'points', rules: 'Guess the 5-letter word in 6 tries. Fewer guesses score more (6 points for 1 guess, 0 for a miss); faster time breaks ties.' },
+  connections: { title: 'Connections', url: '/games/connections/daily', max: 4, unit: 'matches', rules: 'Four groups, four mistakes maximum. Complete the puzzle to rank. Faster completion time wins; mistakes do not break ties.' },
+  fivefold: { title: 'Wordle', url: '/games/wordle', max: 6, unit: 'points', rules: 'Guess the 5-letter word in 6 tries. Ranked by fewest guesses; equal guess counts share the rank.' },
   mini: { title: 'Mini Crossword', url: '/games/mini', max: 864000, unit: 'time', lowerIsBetter: true, rules: 'First unassisted solve time; lower is better. The clock pauses when you pause or leave. Checks and reveals are unranked.' },
   bee: { title: 'Spelling Bee', url: '/games/spelling-bee', max: 1000, unit: 'points', rules: 'Word points; pangrams earn a 7-point bonus.' },
 }
@@ -13,15 +13,22 @@ export const GAME_IDS = Object.keys(GAMES) as GameId[]
 export type Stats = { n?: number; seconds?: number; mistakes?: number; solved?: boolean; max?: number; sourceDate?: string; puzzleId?: string; scoringVersion?: number }
 export type Result = { game: GameId; day: string; score: number; stats: Stats }
 export type BoardRow = Result & { name: string }
-export function scoringVersion(game: GameId): number { return ['mini','connections','krillion','anthropeum'].includes(game) ? 2 : 1 }
+export function scoringVersion(game: GameId): number { return ['mini','connections','krillion','anthropeum','fivefold','bee'].includes(game) ? 2 : 1 }
 export function formatGameScore(game: GameId, score: number): string { return game === 'mini' ? formatTime(Math.round(score)) : game === 'connections' ? `${Number.isInteger(score)?score:score.toFixed(1)}/4` : game === 'fivefold' ? (score > 0 ? `${Number.isInteger(score)?7-score:(7-score).toFixed(1)}/6` : 'X/6') : formatScore(score) }
 export function bestGameScore(game: GameId, scores: number[]): number { return GAMES[game].lowerIsBetter ? Math.min(...scores) : Math.max(...scores) }
 export function compareResults(a: Result, b: Result): number {
-  const score=(a.score-b.score)*(GAMES[a.game].lowerIsBetter?1:-1)
-  const time=(a.stats.seconds??Number.MAX_SAFE_INTEGER)-(b.stats.seconds??Number.MAX_SAFE_INTEGER)
-  return score || (a.game==='connections'?(a.stats.mistakes??4)-(b.stats.mistakes??4)||time:a.game==='fivefold'?time:0)
+  if(a.game==='connections'){
+    const complete=(r:Result)=>r.score===4&&typeof r.stats.seconds==='number'
+    const ac=complete(a),bc=complete(b)
+    if(ac!==bc)return ac?-1:1
+    return ac&&bc?a.stats.seconds!-b.stats.seconds!:b.score-a.score
+  }
+  return (a.score-b.score)*(GAMES[a.game].lowerIsBetter?1:-1)
 }
-export function resultLabel(r: Result): string { return formatGameScore(r.game,r.score)+(r.game==='connections'?` · ${r.stats.mistakes??'—'} mistakes`:'')+((r.game==='connections'||r.game==='fivefold')&&r.stats.seconds!==undefined?` · ${formatTime(r.stats.seconds)}`:'') }
+export function resultLabel(r: Result): string {
+  if(r.game==='connections')return r.score===4&&r.stats.seconds!==undefined?`${formatTime(r.stats.seconds)} · solved`:`${r.stats.n??r.score}/4 · incomplete`
+  return formatGameScore(r.game,r.score)
+}
 export const localDay = siteDay
 export function formatScore(score: number): string { return Math.round(score).toLocaleString('en-US') }
 export function formatTime(seconds: number): string { return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` }
@@ -77,7 +84,7 @@ export function isPracticeResult(game: GameId, day: string): boolean {
 /** Persist before sending; results earned before setting a player are sent after setup. */
 export function logResult(game: GameId, score: number, n?: number, day = localDay(), stats: Stats = {}): void {
   markPracticeIfFuture(game, day)
-  if (isPracticeResult(game, day) || !Number.isFinite(score)) return
+  if (isPracticeResult(game, day) || !Number.isFinite(score) || (stats.sourceDate && stats.sourceDate !== day)) return
   try {
     const player = getPlayer()
     if (game === 'connections' && n !== undefined) score = n

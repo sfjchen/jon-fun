@@ -10,7 +10,7 @@ import type { MatchRow } from '@/app/api/match-results/route'
 import { HomeLink } from '@/components/HomeLink'
 import { getDevicePlayer } from '@/lib/syncIdentity'
 
-const GAMES = [{ id: '24', label: '24', href: '/games/24' }, { id: 'set', label: 'SET', href: '/games/triples' }]
+const GAMES = [{ id: '24', label: '24', href: '/games/24' }, { id: 'set', label: 'Set', href: '/games/triples' }]
 const WINDOWS = [{ days: 30, label: '30 days' }, { days: 0, label: 'All time' }]
 
 /**
@@ -57,10 +57,10 @@ export function MultiplayerBoard() {
       {rows && !rows.length ? (
         <p className="text-[var(--ink-muted)]">
           No finished matches yet. Play a room of <Link className="underline" href="/games/24">24</Link> or{' '}
-          <Link className="underline" href="/games/triples">SET</Link> with friends.
+          <Link className="underline" href="/games/triples">Set</Link> with friends.
         </p>
       ) : (
-        <table className="w-full text-left text-sm">
+        <table className="w-full text-left text-sm [&_th]:px-2 [&_th]:py-3 [&_th]:font-normal [&_td]:px-2 [&_td]:py-4">
           <thead className="text-[var(--ink-muted)]">
             <tr>
               <th className="py-1">#</th><th>Player</th><th>Wins</th><th>Win %</th><th>Games</th>

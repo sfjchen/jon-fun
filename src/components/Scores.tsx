@@ -37,7 +37,6 @@ import { average, overallDay, streaks, winners, winsByPlayer } from '@/lib/score
 
 const card = 'rounded-2xl border border-[var(--ink-border)] bg-[var(--ink-bg)] p-3 shadow-sm sm:p-4'
 const muted = 'text-[var(--ink-muted)]'
-const pill = 'shrink-0 rounded-full border px-3 py-1.5 text-sm'
 type Tab = GameId | 'all'
 
 /**
@@ -99,10 +98,11 @@ function PlayerForm({ player, onDone }: { player: Player | null; onDone: () => v
  */
 function Trend({ rows, day }: { rows: BoardRow[]; day: string }) {
   const dates = Array.from({ length: 14 }, (_, i) => shiftDay(day, i - 13))
-  const max = Math.max(1, ...rows.filter((r) => dates.includes(r.day)).map((r) => r.score))
+  const value=(r:BoardRow)=>r.game==='connections'?r.stats.seconds??0:r.score
+  const max = Math.max(1, ...rows.filter((r) => dates.includes(r.day)).map(value))
   const dots = dates.flatMap((d, i) => {
     const r = rows.find((x) => x.day === d)
-    return r ? [{ x: 15 + i * 24, y: 85 - (r.score / max) * 65, r }] : []
+    return r ? [{ x: 15 + i * 24, y: r.game==='connections'||r.game==='mini'?15+(value(r)/max)*65:85-(value(r)/max)*65, r }] : []
   })
   return (
     <svg viewBox="0 0 345 100" role="img" aria-label="Your last 14 days" className="w-full max-w-xl">
@@ -116,7 +116,7 @@ function Trend({ rows, day }: { rows: BoardRow[]; day: string }) {
             )}
             <circle cx={d.x} cy={d.y} r="4" fill="var(--ink-accent)">
               <title>
-                {d.r.day}: {formatGameScore(d.r.game, d.r.score)}
+                {d.r.day}: {resultLabel(d.r)}
               </title>
             </circle>
           </g>
@@ -162,7 +162,7 @@ function Calendar({
         <button
           aria-label="Previous month"
           className="h-9 w-9 rounded-full hover:bg-[var(--ink-border)]/40 disabled:opacity-30"
-          disabled={month <= DAILY_EPOCH.slice(0, 7)}
+          disabled={month <= '2014-08'}
           onClick={() => setMonth(shiftDay(first, -1).slice(0, 7))}
         >
           ‹
@@ -201,7 +201,7 @@ function Calendar({
               title={`${d}: ${what}`}
               aria-label={`${d}, ${what}`}
               aria-pressed={day === d}
-              disabled={d < DAILY_EPOCH || d > today}
+              disabled={d < '2014-08-21' || d > today}
               onClick={() => onPick(d)}
               className={`flex aspect-square flex-col items-center justify-center rounded-lg leading-none disabled:opacity-30 ${
                 day === d ? 'bg-[var(--ink-accent)] text-white' : d === today ? 'ring-1 ring-[var(--ink-accent)]' : 'hover:bg-[var(--ink-border)]/40'
@@ -229,8 +229,9 @@ export function ScoresHub() {
   const me = player?.name ?? ''
   const [editing, setEditing] = useState(false)
   const asked = params.get('d')
-  const day = asked && validDay(asked) && asked >= DAILY_EPOCH ? asked : localDay()
+  const day = asked && validDay(asked) && asked >= '2014-08-21' ? asked : localDay()
   const [tab, setTab] = useState<Tab>('all')
+  const [view, setView] = useState<'day' | 'standings' | 'stats'>('day')
   const [span, setSpan] = useState<30 | 0>(30)
   const [response, setResponse] = useState<{ group: string; rows: BoardRow[]; legacyRows: BoardRow[] } | null>(null)
   const [error, setError] = useState('')
@@ -243,7 +244,7 @@ export function ScoresHub() {
     const load = async () => {
       try {
         await flushResults()
-        const r = await fetch(`/api/results?group=${encodeURIComponent(group)}&days=4000`, { signal: controller.signal })
+        const r = await fetch(`/api/results?group=${encodeURIComponent(group)}&days=6000`, { signal: controller.signal })
         if (!r.ok) throw new Error('Could not load scores. Saved scores retry on their own.')
         const data = (await r.json()) as { rows: BoardRow[]; legacyRows?: BoardRow[] }
         if (cancelled) return
@@ -280,263 +281,59 @@ export function ScoresHub() {
 
   const table = (() => {
     const wins = winsByPlayer(windowRows)
-    const dayWins = new Map<string, number>()
-    if (tab === 'all') {
-      for (const d of new Set(windowRows.map((r) => r.day))) {
-        const o = overallDay(windowRows.filter((r) => r.day === d))
-        if (o.names.length === 1) dayWins.set(o.names[0]!, (dayWins.get(o.names[0]!) ?? 0) + 1)
-      }
-    }
     return [...new Set(windowRows.map((r) => r.name))]
       .map((name) => {
         const own = windowRows.filter((r) => r.name === name)
-        const scores = own.map((r) => r.score)
+        const scores = (tab === 'connections' ? own.filter(r => r.score === 4 && r.stats.seconds !== undefined).map(r => r.stats.seconds!) : tab === 'fivefold' ? own.filter(r => r.score > 0).map(r => r.score) : own.map(r => r.score))
         return {
           name,
           played: tab === 'all' ? new Set(own.map((r) => r.day)).size : own.length,
-          avg: tab === 'all' ? null : average(scores),
-          best: tab === 'all' ? null : bestGameScore(tab, scores),
-          time: (() => { const t = own.flatMap((r) => (r.stats.seconds === undefined ? [] : [r.stats.seconds])); return t.length ? Math.round(average(t)) : null })(),
+          avg: tab === 'all' || !scores.length ? null : average(scores),
+          best: tab === 'all' || !scores.length ? null : tab === 'connections' ? Math.min(...scores) : bestGameScore(tab, scores),
           wins: wins.get(name) ?? 0,
-          dayWins: dayWins.get(name) ?? 0,
         }
       })
-      .sort((a, b) => b.dayWins - a.dayWins || b.wins - a.wins || b.played - a.played || a.name.localeCompare(b.name))
+      .sort((a, b) => b.wins - a.wins || b.played - a.played || a.name.localeCompare(b.name))
   })()
 
-  const timed = tab === 'connections' || tab === 'fivefold'
   const mine = shown.filter((r) => r.name === me && r.day <= day)
   const mineToday = rows.filter((r) => r.name === me && r.day === day)
   const streak = streaks(mine, day)
   const overall = overallDay(rows.filter((r) => r.day === day))
   const dayLabel = day === localDay() ? 'Today' : new Date(`${day}T12:00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 
-  return (
-    <div className="mx-auto max-w-4xl space-y-3" data-testid="scores-hub">
-      <header className="flex items-center gap-2">
-        <HomeLink className="inline-flex h-10 w-10 shrink-0 items-center justify-center" />
-        <h1 className="mr-auto font-lora text-2xl font-bold sm:text-3xl">Daily leaderboard</h1>
-        <Info>
-          <ul className="list-disc space-y-1 pl-4">
-            {GAME_IDS.map((g) => (
-              <li key={g}>
-                <strong>{GAMES[g].title}:</strong> {GAMES[g].rules}
-              </li>
-            ))}
-          </ul>
-          <p className={muted}>
-            A day&apos;s win needs at least 2 players; ties share it. The overall winner of a day won the most games.
-            Days follow Pacific time.
-          </p>
-        </Info>
-      </header>
-
-      {editing ? (
-        <PlayerForm key={raw} player={player} onDone={() => setEditing(false)} />
-      ) : (
-        <div className={`flex flex-wrap items-center gap-2 text-sm ${muted}`}>
-          <PlayerName />
-          <span>{boardName(player?.group ?? PUBLIC_GROUP)}</span>
-          <button aria-label="Edit leaderboard group" title="Edit leaderboard group" className="inline-flex h-8 w-8 items-center justify-center" onClick={() => setEditing(true)}><PencilIcon /></button>
-        </div>
-      )}
-
-      <nav aria-label="Game" className="flex flex-wrap gap-1.5">
-        {(['all', ...GAME_IDS] as Tab[]).map((g) => (
-          <button
-            key={g}
-            aria-pressed={tab === g}
-            onClick={() => setTab(g)}
-            className={`${pill} ${tab === g ? 'border-[var(--ink-text)] bg-[var(--ink-text)] text-[var(--ink-bg)]' : 'border-[var(--ink-border)]'}`}
-          >
-            {g === 'all' ? 'All games' : GAMES[g].title}
-          </button>
-        ))}
-      </nav>
-
-      {error && (
-        <p role="alert" className="rounded-lg border border-red-300 p-3 text-sm">
-          {error}
-        </p>
-      )}
-
-      <div className="grid gap-3 md:grid-cols-2">
-        <Calendar rows={shown} me={me} day={day} onPick={pick} />
-
-        <section className={`${card} space-y-2`} aria-label="Day results">
-          <div className="flex items-baseline justify-between gap-2">
-            <h2 className="font-lora text-lg font-semibold">{dayLabel}</h2>
-            {tab === 'all' && overall.names.length > 0 && (
-              <span className="text-sm" title="Most game wins that day">
-                🏆 {overall.names.join(' & ')}
-              </span>
-            )}
-          </div>
-          {!response && !error && <p className={`text-sm ${muted}`}>Loading…</p>}
-          {tab === 'all'
-            ? GAME_IDS.map((g) => {
-                const gr = picked.filter((r) => r.game === g)
-                const top = winners(gr)
-                const own = gr.find((r) => r.name === me)
-                return (
-                  <Link
-                    key={g}
-                    href={`${GAMES[g].url}?d=${day}`}
-                    title={`Play ${GAMES[g].title} for this day`}
-                    className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-[var(--ink-border)]/30"
-                  >
-                    <span className="font-medium">{GAMES[g].title}</span>
-                    <span className="text-right">
-                      {top.length ? `🏆 ${top.join(' & ')} · ${formatGameScore(g, bestGameScore(g, gr.map((r) => r.score)))}` : ''}
-                      {own ? (
-                        <span className={`block text-xs ${muted}`}>You: {resultLabel(own)}</span>
-                      ) : (
-                        <span className={`block text-xs ${muted}`}>{gr.length ? `${gr.length} played` : 'Play →'}</span>
-                      )}
-                    </span>
-                  </Link>
-                )
-              })
-            : (() => {
-                const ranked = [...picked].sort(compareResults)
-                return ranked.length ? (
-                  <ol className="space-y-1">
-                    {ranked.map((r, i) => (
-                      <li
-                        key={r.name}
-                        className={`flex justify-between rounded-lg px-2 py-1.5 text-sm ${r.name === me ? 'bg-[var(--ink-border)]/40 font-semibold' : ''}`}
-                      >
-                        <span>
-                          <span className={`mr-2 inline-block w-5 tabular-nums ${muted}`}>{i + 1}</span>
-                          {r.name}
-                        </span>
-                        <span className="tabular-nums">{resultLabel(r)}</span>
-                      </li>
-                    ))}
-                  </ol>
-                ) : (
-                  <p className={`text-sm ${muted}`}>
-                    No scores this day.{' '}
-                    <Link className="underline" href={`${GAMES[tab].url}?d=${day}`}>
-                      Play {GAMES[tab].title}
-                    </Link>
-                  </p>
-                )
-              })()}
-          {mineToday.length > 0 && (
-            <button
-              className="text-sm underline"
-              onClick={() =>
-                void navigator.clipboard
-                  .writeText([`sfjc.dev · ${day}`, ...mineToday.map((r) => `${GAMES[r.game].title}: ${resultLabel(r)}`)].join('\n'))
-                  .then(() => setCopied(true))
-              }
-            >
-              {copied ? 'Copied' : 'Copy my results'}
-            </button>
-          )}
-        </section>
-      </div>
-
-      <section className={`${card} space-y-2`} aria-label="Standings" data-testid={tab === 'all' ? 'standings' : `board-${tab}`}>
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="font-lora text-lg font-semibold">Standings</h2>
-          <div className="flex gap-1 text-sm">
-            {([30, 0] as const).map((s) => (
-              <button
-                key={s}
-                aria-pressed={span === s}
-                onClick={() => setSpan(s)}
-                className={`${pill} py-1 ${span === s ? 'border-[var(--ink-text)]' : 'border-transparent'}`}
-              >
-                {s ? '30 days' : 'All time'}
-              </button>
-            ))}
-          </div>
-        </div>
-        {table.length ? (
-          <div className="-mx-1 overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className={muted}>
-                <tr>
-                  <th className="px-1 py-1 font-normal">Player</th>
-                  <th className="px-1 text-right font-normal" title={tab === 'all' ? 'Days with any score' : 'Days played'}>
-                    Played
-                  </th>
-                  {tab === 'all' ? (
-                    <th className="px-1 text-right font-normal" title="Days with the most game wins">
-                      Day wins
-                    </th>
-                  ) : (
-                    <>
-                      <th className="px-1 text-right font-normal">Avg</th>
-                      <th className="px-1 text-right font-normal">{GAMES[tab].lowerIsBetter ? 'Fastest' : 'Best'}</th>
-                      {timed && <th className="px-1 text-right font-normal" title="Average solve time">Time</th>}
-                    </>
-                  )}
-                  <th className="px-1 text-right font-normal" title="Game-days won, ties included">
-                    Wins
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {table.map((p) => (
-                  <tr key={p.name} className={`border-t border-[var(--ink-border)] ${p.name === me ? 'font-semibold' : ''}`}>
-                    <td className="px-1 py-1.5">{p.name}</td>
-                    <td className="px-1 text-right tabular-nums">{p.played}</td>
-                    {tab === 'all' ? (
-                      <td className="px-1 text-right tabular-nums">{p.dayWins}</td>
-                    ) : (
-                      <>
-                        <td className="px-1 text-right tabular-nums">{formatGameScore(tab, p.avg ?? 0)}</td>
-                        <td className="px-1 text-right tabular-nums">{formatGameScore(tab, p.best ?? 0)}</td>
-                        {timed && <td className="px-1 text-right tabular-nums">{p.time === null ? '-' : formatTime(p.time)}</td>}
-                      </>
-                    )}
-                    <td className="px-1 text-right tabular-nums">{p.wins}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className={`text-sm ${muted}`}>No scores in this period yet.</p>
-        )}
-      </section>
-
-      {mine.length > 0 && (
-        <details className={card}>
-          <summary className="cursor-pointer font-lora text-lg font-semibold">Your stats</summary>
-          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-            {(
-              [
-                ['Days played', new Set(mine.map((r) => r.day)).size],
-                ['Streak', streak.current],
-                ['Longest', streak.longest],
-              ] as const
-            ).map(([l, v]) => (
-              <div key={l}>
-                <p className="text-xl font-semibold tabular-nums">{v}</p>
-                <p className={`text-xs ${muted}`}>{l}</p>
-              </div>
-            ))}
-          </div>
-          {tab !== 'all' && <Trend rows={mine} day={day} />}
-        </details>
-      )}
-
-      {!!response?.legacyRows.length && (
-        <details className={`text-xs ${muted}`}>
-          <summary className="cursor-pointer">Older results under earlier scoring ({response.legacyRows.length})</summary>
-          <ul className="mt-1 space-y-0.5">
-            {response.legacyRows.map((r) => (
-              <li key={`${r.game}:${r.day}:${r.name}`}>
-                {r.day} · {r.name} · {GAMES[r.game].title}: {formatScore(r.score)}
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
+  const metricLabel = tab === 'connections' || tab === 'mini' ? 'Solve time' : tab === 'fivefold' ? 'Guesses' : 'Points'
+  const metric = (value: number | null) => value === null ? '—' : tab === 'connections' ? formatTime(Math.round(value)) : tab === 'all' ? String(value) : formatGameScore(tab, value)
+  const ranking = (g: GameId, values: BoardRow[], compact = false) => {
+    const ranked = [...values].sort(compareResults), top = winners(values)
+    return ranked.length ? <ol className="divide-y divide-[var(--ink-border)]">{(compact ? ranked.slice(0,3) : ranked).map(r => {
+      const rank = ranked.findIndex(other => compareResults(other,r) === 0)+1
+      return <li key={r.name} className={`flex items-center gap-3 rounded-lg px-2 py-3 text-sm ${r.name===me?'bg-[var(--ink-border)]/30':''}`}>
+        <span className={`w-5 text-right tabular-nums ${muted}`}>{rank}</span>
+        <span className="min-w-0 flex-1 truncate font-medium">{r.name}{r.name===me&&<span className={`ml-1 text-xs font-normal ${muted}`}>(you)</span>}</span>
+        {top.includes(r.name)&&<span className="text-xs text-amber-700" title="Daily winner" aria-label="Daily winner">★</span>}
+        <span className="text-right tabular-nums">{resultLabel(r)}</span>
+      </li>
+    })}</ol> : <p className={`py-5 text-sm ${muted}`}>No results yet. <Link href={`${GAMES[g].url}?d=${day}`} className="underline">Play {GAMES[g].title} →</Link></p>
+  }
+  return <div className="scores-hub mx-auto max-w-4xl space-y-5" data-testid="scores-hub">
+    <header className="flex items-center gap-2"><HomeLink className="inline-flex h-10 w-10 shrink-0 items-center justify-center"/><div className="mr-auto"><h1 className="text-2xl font-semibold tracking-tight">Leaderboard</h1><p className={`mt-1 text-xs ${muted}`}>{boardName(group)}</p></div><PlayerName/><button aria-label="Edit leaderboard group" title="Edit leaderboard group" className="h-9 w-9 rounded-full p-2 hover:bg-[var(--ink-border)]/40" onClick={()=>setEditing(v=>!v)}><PencilIcon/></button><Info><ul className="space-y-2">{GAME_IDS.map(g=><li key={g}><strong>{GAMES[g].title}:</strong> {GAMES[g].rules}</li>)}</ul><p>Daily wins require two players. Equal results share the rank.</p></Info></header>
+    {editing&&<PlayerForm key={raw} player={player} onDone={()=>setEditing(false)}/>}
+    <div className="flex flex-wrap items-end gap-3 border-y border-[var(--ink-border)] py-4">
+      <label className="mr-auto min-w-40 text-xs text-[var(--ink-muted)]">Game<select aria-label="Game" value={tab} onChange={e=>setTab(e.target.value as Tab)} className="mt-1 block w-full rounded-lg border border-[var(--ink-border)] bg-[var(--ink-paper)] px-3 py-2 text-sm text-[var(--ink-text)]"><option value="all">All games</option>{GAME_IDS.map(g=><option key={g} value={g}>{GAMES[g].title}</option>)}</select></label>
+      <div className="flex items-center gap-1"><button aria-label="Previous day" onClick={()=>pick(shiftDay(day,-1))} className="h-10 w-8">‹</button><label className="sr-only" htmlFor="scores-date">Results date</label><input id="scores-date" type="date" value={day} max={localDay()} min="2014-08-21" onChange={e=>validDay(e.target.value)&&pick(e.target.value)} className="rounded-lg border border-[var(--ink-border)] bg-transparent px-2 py-2 text-sm"/><button aria-label="Next day" disabled={day>=localDay()} onClick={()=>pick(shiftDay(day,1))} className="h-10 w-8 disabled:opacity-30">›</button>{day!==localDay()&&<button className="px-2 text-xs underline" onClick={()=>pick(localDay())}>Today</button>}</div>
     </div>
-  )
+    <nav aria-label="Leaderboard views" className="flex gap-5 border-b border-[var(--ink-border)] text-sm">{([['day','Daily results'],['standings','Standings'],['stats','Your stats']] as const).map(([id,label])=><button key={id} aria-pressed={view===id} onClick={()=>setView(id)} className={`border-b-2 pb-3 ${view===id?'border-[var(--ink-accent)] font-semibold':'border-transparent text-[var(--ink-muted)]'}`}>{label}</button>)}</nav>
+    {error&&<p role="alert" className="rounded-lg border border-red-200 p-3 text-sm">{error}</p>}
+    {!response&&!error&&<p role="status" className={`py-8 text-center text-sm ${muted}`}>Loading results…</p>}
+    {view==='day'&&<section aria-label="Day results" className="space-y-4"><div className="flex items-center justify-between"><h2 className="text-lg font-semibold">{dayLabel}</h2>{tab==='all'&&overall.names.length>0&&<span className={`text-xs ${muted}`}>Most wins: {overall.names.join(' & ')}</span>}</div>
+      {tab==='all'?<div className="grid gap-x-7 gap-y-5 sm:grid-cols-2">{GAME_IDS.map(g=><section key={g} className="min-w-0 rounded-xl border border-[var(--ink-border)] p-4"><Link href={`${GAMES[g].url}?d=${day}`} className="flex items-center justify-between text-sm font-semibold">{GAMES[g].title}<span className={muted}>↗</span></Link>{ranking(g,picked.filter(r=>r.game===g),true)}</section>)}</div>:<div className="rounded-xl border border-[var(--ink-border)] p-4"><p className={`mb-2 text-xs ${muted}`}>{GAMES[tab].rules}</p>{ranking(tab,picked)}</div>}
+      {mineToday.length>0&&<button className={`text-xs underline ${muted}`} onClick={()=>void navigator.clipboard.writeText([`sfjc.dev · ${day}`,...mineToday.map(r=>`${GAMES[r.game].title}: ${resultLabel(r)}`)].join('\n')).then(()=>setCopied(true))}>{copied?'Copied':'Copy my results'}</button>}
+    </section>}
+    {view==='standings'&&<section aria-label="Standings" data-testid={tab==='all'?'standings':`board-${tab}`} className="space-y-4"><div className="flex items-center justify-between"><h2 className="text-lg font-semibold">Standings</h2><div className="flex rounded-lg bg-[var(--ink-border)]/35 p-1 text-xs">{([30,0]as const).map(n=><button key={n} aria-pressed={span===n} onClick={()=>setSpan(n)} className={`rounded-md px-3 py-1.5 ${span===n?'bg-[var(--ink-paper)] shadow-sm':''}`}>{n?'30 days':'All time'}</button>)}</div></div><p className={`text-xs ${muted}`}>Ranked by daily game wins. Each day compares the same puzzle.</p>
+      {table.length?<div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className={`border-b border-[var(--ink-border)] text-xs ${muted}`}><tr><th className="py-3 font-normal">Player</th><th className="p-3 text-right font-normal">Played</th><th className="p-3 text-right font-normal">Wins</th>{tab!=='all'&&<><th className="p-3 text-right font-normal">Avg {metricLabel.toLowerCase()}</th><th className="p-3 text-right font-normal">Best</th></>}</tr></thead><tbody>{table.map(p=><tr key={p.name} className={`border-b border-[var(--ink-border)] ${p.name===me?'font-semibold':''}`}><td className="py-4">{p.name}</td><td className="p-3 text-right tabular-nums">{p.played}</td><td className="p-3 text-right tabular-nums">{p.wins}</td>{tab!=='all'&&<><td className="p-3 text-right tabular-nums">{metric(p.avg)}</td><td className="p-3 text-right tabular-nums">{metric(p.best)}</td></>}</tr>)}</tbody></table></div>:<p className={`py-8 text-center text-sm ${muted}`}>No results in this period yet.</p>}
+    </section>}
+    {view==='stats'&&<section aria-label="Your stats" className="space-y-5">{me?<><h2 className="text-lg font-semibold">Your progress</h2><div className="grid grid-cols-3 gap-3 rounded-xl border border-[var(--ink-border)] py-6 text-center">{[['Days played',new Set(mine.map(r=>r.day)).size],['Current streak',streak.current],['Longest streak',streak.longest]].map(([label,value])=><div key={label}><p className="text-3xl font-semibold tabular-nums tracking-tight">{value}</p><p className={`mt-2 text-xs ${muted}`}>{label}</p></div>)}</div>{tab!=='all'&&<div><h3 className={`mb-3 text-xs ${muted}`}>Last 14 days · {metricLabel.toLowerCase()}</h3><Trend rows={mine} day={day}/></div>}<Calendar rows={shown} me={me} day={day} onPick={pick}/></>:<p className={`py-8 text-sm ${muted}`}>Add your name above to track your progress and streaks.</p>}</section>}
+    {!!response?.legacyRows.length&&<details className={`border-t border-[var(--ink-border)] pt-3 text-xs ${muted}`}><summary className="cursor-pointer">Earlier scoring versions ({response.legacyRows.length})</summary><ul className="mt-2 space-y-1">{response.legacyRows.map(r=><li key={`${r.game}:${r.day}:${r.name}`}>{r.day} · {r.name} · {GAMES[r.game].title}: {formatScore(r.score)}</li>)}</ul></details>}
+  </div>
 }

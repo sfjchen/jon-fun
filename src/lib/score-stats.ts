@@ -2,8 +2,10 @@ import { shiftDay } from '@/lib/daily'
 import { compareResults, type BoardRow } from '@/lib/results'
 export function winners(rows: BoardRow[]): string[] {
   if (new Set(rows.map(r => r.name)).size < 2) return []
-  const best = [...rows].sort(compareResults)[0]!
-  return best.score > 0 || best.game === 'mini' ? rows.filter(r => compareResults(r,best)===0).map(r=>r.name) : []
+  const eligible=rows.filter(r=>r.game!=='connections'||r.score===4&&typeof r.stats.seconds==='number')
+  if(!eligible.length)return []
+  const best = [...eligible].sort(compareResults)[0]!
+  return best.score > 0 || best.game === 'mini' ? eligible.filter(r => compareResults(r,best)===0).map(r=>r.name) : []
 }
 export function streaks(rows: BoardRow[], day: string): { current: number; longest: number } {
   const days = new Set(rows.filter(r => r.day <= day).map(r => r.day))

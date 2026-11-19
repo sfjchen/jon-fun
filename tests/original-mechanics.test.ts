@@ -40,10 +40,10 @@ test('Anthropeum matches original interval and polygon-edge scoring formulas',()
   const later=artifactScore({...a,beginYear:500,endYear:500},{lat:0,lon:0},0)
   assert.equal(later.years,250);assert.equal(later.time,Math.round(5000*Math.exp(-0.25)))
 })
-test('Mini winners use lower time, Connections uses matches then mistakes; zero-second Mini is valid',()=>{
+test('Mini winners use lower time, Connections uses completion time; zero-second Mini is valid',()=>{
   const row={day:'2026-11-17',game:'mini' as const,stats:{},name:'Alice',score:0}
   assert.deepEqual(winners([row,{...row,name:'Bob',score:20}]),['Alice'])
-  assert.deepEqual(winners([{...row,game:'connections',score:4,stats:{mistakes:1}},{...row,game:'connections',name:'Bob',score:4,stats:{mistakes:0}}]),['Bob'])
+  assert.deepEqual(winners([{...row,game:'connections',score:4,stats:{mistakes:1,seconds:80}},{...row,game:'connections',name:'Bob',score:4,stats:{mistakes:0,seconds:100}}]),['Alice'])
 })
 test('Bee scoring, center-letter requirements, duplicate checks, and Genius/Queen ranks',()=>{
   assert.equal(score('acne'),1);assert.equal(score('alone'),5);assert.equal(score('abcdefg'),14)

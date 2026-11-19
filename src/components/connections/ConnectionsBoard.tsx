@@ -71,7 +71,11 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
     return tiles
   }, [puzzle.groups])
 
-  const [order, setOrder] = useState<Tile[]>(() => shuffle(allTiles))
+  const [order, setOrder] = useState<Tile[]>(() => {
+    const tiles = new Map(allTiles.map(t => [wordKey(t.word), t]))
+    const original = puzzle.startingWords?.map(w => tiles.get(wordKey(w))).filter((t): t is Tile => !!t)
+    return original?.length === 16 && new Set(original.map(t => wordKey(t.word))).size === 16 ? original : shuffle(allTiles)
+  })
   const [progress, setProgress] = useState<ConnectionsProgress>(
     () => initialProgress ?? { guesses: [], gaveUp: false },
   )
@@ -235,7 +239,10 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
                 animation: sel && shake ? 'cx-shake .2s 2' : undefined,
               }}
             >
-              {normalizeWord(t.word)}
+              {puzzle.tileImages?.[t.word] ? (
+                // eslint-disable-next-line @next/next/no-img-element -- Original NYT picture tile; preserve SVG artwork.
+                <img src={puzzle.tileImages[t.word]!.url} alt={puzzle.tileImages[t.word]!.alt} className="h-14 max-w-full rounded bg-white object-contain p-1" />
+              ) : normalizeWord(t.word)}
             </button>
           )
         })}
