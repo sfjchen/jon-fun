@@ -13,7 +13,7 @@ test.describe('Home page', () => {
     await expect(page.getByText('1 Sentence Everyday')).toBeVisible()
     await expect(page.getByRole('link', { name: /24/ })).toBeVisible()
     await expect(page.getByRole('link', { name: /Leaderboard/i })).toBeVisible()
-    await expect(page.getByRole('link', { name: /Open Connections/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /^Daily/ })).toBeVisible()
   })
 
   test('hides Coming Soon from strangers', async ({ page }) => {

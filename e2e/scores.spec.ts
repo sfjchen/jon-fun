@@ -53,12 +53,15 @@ test('public results are readable without naming a player and the group editor s
   await expect(page.getByTestId('device-player-name')).toHaveText('Tester')
   await expect(page.getByText('group our-group', { exact: true })).toBeVisible()
 })
-test('home shelf uses Set and Wordle and has no daily leaderboard redirect', async ({ page }) => {
+test('home shelf uses Set and Wordle and links the leaderboard beside Daily', async ({ page }) => {
   await mockSyncIdentity(page)
   await page.route('**/api/results**', (r) => r.fulfill({ json: { rows: [] } }))
   await page.goto('/')
   await expect(page.getByRole('link', { name: 'Open Set', exact: true })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Daily leaderboard', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Daily leaderboard', exact: true })).toHaveAttribute(
+    'href',
+    '/leaderboards',
+  )
   await page.getByRole('button', { name: 'Daily', exact: true }).click()
   const shelf = page.getByRole('dialog', { name: 'Daily games' })
   await expect(shelf.getByRole('link', { name: 'Wordle', exact: true })).toHaveAttribute('href', '/games/wordle')

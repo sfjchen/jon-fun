@@ -190,9 +190,11 @@ test('guest result queues until a name is saved', async ({ page }) => {
 })
 test('Krillion rejects can be retried; reload keeps the deadline and expiry submits the draft', async ({ page }) => {
   await scoreMock(page)
+  // The clock pauses only after load: React reveals streamed content on a timer, so a paused clock leaves it hidden.
   await page.clock.install({ time: new Date('2026-11-17T20:00:00Z') })
-  await page.clock.pauseAt(new Date('2026-11-17T20:00:00Z'))
   await page.goto('/games/krillion?d=2026-11-17')
+  await expect(page.getByRole('button', { name: 'Begin dive', exact: true })).toBeVisible()
+  await page.clock.pauseAt(new Date('2026-11-17T20:01:00Z'))
   await page.getByRole('button', { name: 'Begin dive', exact: true }).click()
   await page.clock.runFor(3100)
   await page.getByLabel('Your answer', { exact: true }).fill('qzxqzxqzxqzx')
@@ -202,6 +204,8 @@ test('Krillion rejects can be retried; reload keeps the deadline and expiry subm
   await page.clock.runFor(4000)
   const remaining = await page.getByRole('timer').innerText()
   await page.reload()
+  // Steps the paused clock in small ticks until React reveals the streamed page, well under the timer's 1-second display.
+  await expect.poll(async () => (await page.clock.runFor(50), page.getByRole('timer').count())).toBe(1)
   await expect(page.getByRole('timer')).toHaveText(remaining)
   await page.getByLabel('Your answer', { exact: true }).fill('Zootopia')
   await page.clock.runFor(26000)
@@ -298,8 +302,7 @@ test('an idle daily page switches puzzle at Pacific midnight and retries a late 
 
 test('a daily game in progress keeps its date across midnight', async ({ page }) => {
   await scoreMock(page)
-  await page.clock.install({ time: new Date('2026-11-20T07:59:45Z') })
-  await page.clock.pauseAt(new Date('2026-11-20T07:59:55Z'))
+  await page.clock.install({ time: new Date('2026-11-20T07:59:00Z') })
   await page.route('**/api/daily/fivefold?*', (route) => {
     const day = new URL(route.request().url()).searchParams.get('d')
     return route.fulfill({ json: { day, sourceDate: day, puzzle: { date: day, answer: 'arose', id: 1, number: 1 } } })
@@ -308,6 +311,7 @@ test('a daily game in progress keeps its date across midnight', async ({ page })
   const picker = page.locator('input[type=date]').first()
   await expect(picker).toHaveValue('2026-11-19')
   await expect(page.getByRole('button', { name: 'Enter', exact: true })).toBeVisible()
+  await page.clock.pauseAt(new Date('2026-11-20T07:59:55Z'))
   await page.keyboard.type('aros')
   await page.clock.runFor(5100)
   await expect(picker).toHaveValue('2026-11-19')

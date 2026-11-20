@@ -85,7 +85,7 @@ test('Home shares the first control row and each daily game uses its own surface
       b = await scores.boundingBox()
     expect(Math.abs(a!.y + a!.height / 2 - (b!.y + b!.height / 2))).toBeLessThan(3)
     expect(a!.x).toBeLessThan(b!.x)
-    await expect(page.locator('[data-game-theme]')).toHaveCSS('background-color', bg)
+    await expect(page.locator('[data-game-theme]').first()).toHaveCSS('background-color', bg)
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
   }
 })
