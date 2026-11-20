@@ -96,8 +96,10 @@ function PlayerForm({ player, onDone }: { player: Player | null; onDone: () => v
 /**
  * Draws one player's last 14 days for a game as a small line chart.
  */
-function Trend({ rows, day }: { rows: BoardRow[]; day: string }) {
+function Trend({ rows: all, day }: { rows: BoardRow[]; day: string }) {
   const dates = Array.from({ length: 14 }, (_, i) => shiftDay(day, i - 13))
+  // Connections plots solve time, so unfinished runs, which have no ranked time, stay off the chart.
+  const rows = all.filter((r) => r.game !== 'connections' || (r.score === 4 && r.stats.seconds !== undefined))
   const value=(r:BoardRow)=>r.game==='connections'?r.stats.seconds??0:r.score
   const max = Math.max(1, ...rows.filter((r) => dates.includes(r.day)).map(value))
   const dots = dates.flatMap((d, i) => {
