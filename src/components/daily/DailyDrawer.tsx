@@ -1,7 +1,7 @@
 'use client'
 
 /*
- * Home header Daily button and drawer: today's progress, streak, and a day picker that shows any day's links to the
+ * Home header Daily button and drawer: today's progress, streak, and a day picker beside the title that shows any day's links to the
  * 6 daily games and everyone's scores that day. Done state merges the synced board rows with the unsynced local queue
  * for the saved player.
  */
@@ -214,20 +214,20 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
               'sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-96 sm:rounded-l-2xl sm:rounded-tr-none'
             }
           >
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex items-center gap-1">
               <h2 className="text-xl font-bold tracking-tight">Daily</h2>
-              <button type="button" onClick={close} aria-label="Close" className="h-9 w-9 rounded-full text-xl hover:bg-[var(--ink-paper)]">×</button>
+              <DayPicker day={sel} today={now} minDay={FIRST_DAY} go={setPicked} className="ml-auto" />
+              <button type="button" onClick={close} aria-label="Close" className="-mr-2 h-9 w-9 shrink-0 rounded-full text-xl hover:bg-[var(--ink-paper)]">×</button>
             </div>
             {player ? (
               <p className="mb-4 text-sm text-[var(--ink-muted)]">
-                {today.size}/{GAME_IDS.length} today · {streak ? `🔥 ${streak} day streak` : 'No streak yet'} · <PlayerName />
+                {today.size}/{GAME_IDS.length} today · <span title={`${streak} day streak`} aria-label={`${streak} day streak`}>🔥{streak}</span> · <PlayerName />
               </p>
             ) : (
               <p className="mb-4 flex flex-wrap items-center gap-1 rounded-xl bg-[var(--ink-paper)] p-3 text-sm">
                 Set your name to track scores and streaks: <PlayerName />
               </p>
             )}
-            <DayPicker day={sel} today={now} minDay={FIRST_DAY} go={setPicked} className="-mx-2 mb-3" />
             <ul className="space-y-2">
               {GAME_IDS.map((g) => {
                 const r = done.get(g)

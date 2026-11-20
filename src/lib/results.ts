@@ -1,5 +1,5 @@
 import { siteDay } from '@/lib/daily'
-import { getDevicePlayer, saveDevicePlayer, ensureSyncIdentity, getDeviceId } from '@/lib/syncIdentity'
+import { getDevicePlayer, saveDevicePlayer, ensureSyncIdentity, getDeviceId, deviceKind, type DeviceKind } from '@/lib/syncIdentity'
 export type GameId = 'bee' | 'connections' | 'mini' | 'krillion' | 'anthropeum' | 'fivefold'
 export const GAMES: Record<GameId, { title: string; url: string; max: number; unit: string; rules: string; lowerIsBetter?: boolean }> = {
   krillion: { title: 'Krillion', url: '/games/krillion', max: 700, unit: 'points', rules: 'Seven 25-second rounds. Original rarity scores: 10, 15, 30, 60, 85 or 100 points per answer. Maximum 700. Your first finished dive counts.' },
@@ -12,7 +12,7 @@ export const GAMES: Record<GameId, { title: string; url: string; max: number; un
 export const GAME_IDS = Object.keys(GAMES) as GameId[]
 export type Stats = { n?: number; seconds?: number; mistakes?: number; solved?: boolean; max?: number; sourceDate?: string; puzzleId?: string; scoringVersion?: number; hard?: boolean; moves?: unknown }
 export type Result = { game: GameId; day: string; score: number; stats: Stats }
-export type BoardRow = Result & { name: string }
+export type BoardRow = Result & { name: string; device?: DeviceKind }
 export function scoringVersion(game: GameId): number { return ['mini','connections','krillion','anthropeum','fivefold','bee'].includes(game) ? 2 : 1 }
 export function formatGameScore(game: GameId, score: number): string { return game === 'mini' ? formatTime(Math.round(score)) : game === 'connections' ? `${Number.isInteger(score)?score:score.toFixed(1)}/4` : game === 'fivefold' ? (score > 0 ? `${Number.isInteger(score)?7-score:(7-score).toFixed(1)}/6` : 'X/6') : formatScore(score) }
 export function bestGameScore(game: GameId, scores: number[]): number { return GAMES[game].lowerIsBetter ? Math.min(...scores) : Math.max(...scores) }
@@ -70,9 +70,13 @@ export async function flushResults(): Promise<void> {
     for (const item of queue()) {
       if (item.day > localDay()) continue
       const owner = item.player ?? player
-      const response = await fetch('/api/results', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...owner, deviceId: getDeviceId(), today: item.day, game: item.game, score: item.score, stats: item.stats }) })
+      const response = await fetch('/api/results', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...owner, deviceId: getDeviceId(), device: deviceKind(), today: item.day, game: item.game, score: item.score, stats: item.stats }) })
       // A server or rate-limit error retries later; any other rejection is final, so the result leaves the queue.
       if (response.status >= 500 || response.status === 429) break
+      // The board keeps 1 spelling per name, so adopt its spelling when this device typed the name in another case.
+      const saved = response.ok ? ((await response.json()) as { name?: string }).name : undefined
+      const current = getPlayer()
+      if (saved && saved !== owner.name && current?.name === owner.name && current.group === owner.group) saveDevicePlayer({ ...current, name: saved })
       // Re-read: a newer result may have arrived while this request was in flight.
       const remaining = queue().filter(q => !(q.game === item.game && q.day === item.day && (item.game === 'mini' ? q.score === item.score : q.score <= item.score) && JSON.stringify(q.player) === JSON.stringify(item.player)))
       localStorage.setItem(QUEUE_KEY, JSON.stringify(remaining))

@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { canonicalKey, getDevice, SYNC_DEVICES_TABLE, type SyncDevice } from '@/lib/syncAccess'
+import { DEVICE_KINDS, type DeviceKind } from '@/lib/syncIdentity'
 
 const COOKIE = 'sfjc_ids'
 const MAX_AGE_S = 400 * 24 * 60 * 60
@@ -30,12 +31,23 @@ export async function GET(request: NextRequest) {
 }
 
 /**
+ * Saves the device's kind and tags its earlier untagged daily results with it, so scores played before kinds were
+ * recorded still split by device.
+ */
+async function tagKind(did: string, kind: DeviceKind) {
+  await Promise.all([
+    supabaseAdmin.from(SYNC_DEVICES_TABLE).update({ device_kind: kind }).eq('device_id', did),
+    supabaseAdmin.from('game_results').update({ device_kind: kind }).eq('device_id', did).is('device_kind', null),
+  ])
+}
+
+/**
  * Ties the device to its sync key on the server and refreshes the cookie. A device that arrives without a key
  * gets back the key it was tied to before, so wiped storage restores itself. Keyless devices store no row.
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as { syncKey?: string; deviceId?: string; label?: string; player?: {name?: string;group?: string} }
+    const body = (await request.json()) as { syncKey?: string; deviceId?: string; label?: string; kind?: string; player?: {name?: string;group?: string} }
     const did = (body.deviceId ?? '').trim()
     if (!ID_RE.test(did) || (body.syncKey ?? '').length > MAX_KEY) {
       return NextResponse.json({ error: 'Invalid ids' }, { status: 400 })
@@ -44,9 +56,11 @@ export async function POST(request: NextRequest) {
     const key = canonicalKey(body.syncKey) || prev?.sync_key || ''
     if (body.player && (typeof body.player.name !== 'string' || !body.player.name.trim() || body.player.name.length > 24 || typeof body.player.group !== 'string' || !/^[a-z0-9-]{3,32}$/.test(body.player.group))) return NextResponse.json({error:'Invalid player'},{status:400})
     const player = body.player ? {name:body.player.name!.trim(),group:body.player.group!} : prev?.player_name ? {name:prev.player_name,group:prev.player_group || 'public'} : undefined
+    const kind = DEVICE_KINDS.find((k) => k === body.kind)
+    if (kind) await tagKind(did, kind)
     if (key || player) {
       const label = (body.label ?? '').trim().slice(0, 80) || prev?.label || ''
-      const row: SyncDevice = { device_id: did, sync_key: key || null, label: player?.name || label, last_seen: new Date().toISOString(), ...(player ? {player_name:player.name,player_group:player.group} : {}) }
+      const row: SyncDevice = { device_id: did, sync_key: key || null, label: player?.name || label, ...(kind ? { device_kind: kind } : {}), last_seen: new Date().toISOString(), ...(player ? {player_name:player.name,player_group:player.group} : {}) }
       const { error } = await supabaseAdmin.from(SYNC_DEVICES_TABLE).upsert(row, { onConflict: 'device_id' })
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     }

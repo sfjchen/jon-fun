@@ -259,6 +259,7 @@ export default function SpellingBee() {
   const [modal, setModal] = useState<Modal>(null)
   const [open, setOpen] = useState(false)
   const [revealed, setRevealed] = useState(false)
+  const [giveUp, setGiveUp] = useState(false)
   const [crowd, setCrowd] = useState<{ players: number; genius: number } | null>(null)
   const tRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
@@ -414,7 +415,6 @@ export default function SpellingBee() {
 
   const yd = data.history.find(p => p.date === addDays(date, -1)) ?? (previous?.date === addDays(date, -1) ? previous : null)
   const btn = 'rounded-full border px-5 py-2.5 text-[15px] font-medium active:scale-95 transition'
-  const link = 'text-[13px] md:text-sm underline underline-offset-2 disabled:opacity-30 disabled:no-underline'
   const sorted = [...found].sort()
 
   return (
@@ -667,9 +667,24 @@ export default function SpellingBee() {
               {revealed && <p className="mb-3 text-sm">Answers revealed · this puzzle is finished.</p>}
               {revealed ? <WordList words={pz.answers} found={new Set(found)} /> : <WordList words={sorted} />}
               {(isPractice || date < now) && !revealed && found.length < pz.answers.length && (
-                <button className={`${link} mt-3`} onClick={() => { if (!isPractice && pts > 0) logResult('bee', pts, found.length, date, {moves:found,max:pz.max,puzzleId:pz.id,sourceDate:(pz as HistoricalPuzzle).date}); setRevealed(true); try { localStorage.setItem(`sb:revealed:${key}`, '1') } catch {} }}>
-                  Reveal all answers
-                </button>
+                // Giving up sits apart from the word list as faint text and needs a 2nd confirming tap, so it is
+                // hard to hit by accident or by a passing temptation.
+                <div className="mt-8 border-t pt-3 text-xs" style={{ borderColor: 'var(--ink-border)' }}>
+                  {giveUp ? (
+                    <p className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                      <span>Show every answer and end this puzzle?</span>
+                      <button className="rounded-md border px-2.5 py-1" style={{ borderColor: 'var(--ink-border)' }}
+                        onClick={() => { if (!isPractice && pts > 0) logResult('bee', pts, found.length, date, {moves:found,max:pz.max,puzzleId:pz.id,sourceDate:(pz as HistoricalPuzzle).date}); setRevealed(true); try { localStorage.setItem(`sb:revealed:${key}`, '1') } catch {} }}>
+                        Reveal
+                      </button>
+                      <button className="rounded-md bg-[var(--ink-text)] px-2.5 py-1 font-semibold text-[var(--ink-bg)]" onClick={() => setGiveUp(false)}>
+                        Keep playing
+                      </button>
+                    </p>
+                  ) : (
+                    <button className="opacity-50 hover:opacity-100" onClick={() => setGiveUp(true)}>Give up…</button>
+                  )}
+                </div>
               )}
             </div>
           </div>

@@ -126,6 +126,21 @@ function defaultLabel(): string {
   return `${browser} on ${os}`
 }
 
+export const DEVICE_KINDS = ['phone', 'tablet', 'computer'] as const
+export type DeviceKind = (typeof DEVICE_KINDS)[number]
+
+/**
+ * Classifies this browser as a phone, tablet or computer. iPads in desktop mode report a Mac user agent, so a Mac
+ * with a touch screen counts as a tablet.
+ */
+export function deviceKind(): DeviceKind {
+  const ua = navigator.userAgent
+  const hint = (navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData?.mobile
+  if (hint || /iPhone|iPod|Android.+Mobile|Mobile.+Firefox|Windows Phone/.test(ua)) return 'phone'
+  if (/iPad|Android|Tablet/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'tablet'
+  return 'computer'
+}
+
 let ready: Promise<void> | null = null
 
 /**
@@ -175,6 +190,7 @@ export function ensureSyncIdentity(): Promise<void> {
       syncKey: getSyncKey(),
       deviceId: getDeviceId(),
       label: getDeviceLabel() || defaultLabel(),
+      kind: deviceKind(),
       ...(profile ? { player: profile } : {}),
     })
     if (!r) throw new Error('link failed')
