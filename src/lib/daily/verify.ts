@@ -32,6 +32,12 @@ function verifier<T>(moves: z.ZodType<T>, check: (day: string, moves: T, sent: S
 
 let words: Promise<Set<string>> | null = null
 
+/**
+ * Solve times cannot be replayed, so these floors only turn away times no person can reach, such as a posted 0:00.
+ * They sit well under record pace: about 4 seconds for a 5x5 Mini and 4 seconds for a 4-guess Connections.
+ */
+const MIN_CELL_SECONDS = 0.15, MIN_GUESS_SECONDS = 1
+
 export const VERIFIERS: Record<GameId, Verifier> = {
   // Wordle replays each guess for its marks, word list and hard-mode rule, scoring 7 minus guesses (0 for a loss).
   fivefold: verifier(z.array(z.string().regex(/^[a-z]{5}$/)).min(1).max(6), async (day, guesses, stats) => {
@@ -51,9 +57,9 @@ export const VERIFIERS: Record<GameId, Verifier> = {
     return { score: pts, stats: { n: uniq.length, max: pz.max, solved: pts === pz.max, puzzleId: pz.id } }
   }),
   // Connections replays the guesses in order until all 4 groups are found, 4 mistakes are made or the player gives
-  // up. The solve time cannot be replayed, so it is kept as sent.
+  // up. The solve time cannot be replayed, so it is kept as sent unless it is impossibly fast.
   connections: verifier(z.object({ guesses: z.array(z.array(z.string().max(60)).length(4)).max(7), gaveUp: z.boolean() }),
-    async (day, { guesses, gaveUp }) => {
+    async (day, { guesses, gaveUp }, stats) => {
       const pz = (await dailyPuzzle('connections', day)).puzzle as ConnectionsPuzzle
       const found = new Set<string>(), seen = new Set<string>()
       let mistakes = 0
@@ -67,6 +73,9 @@ export const VERIFIERS: Record<GameId, Verifier> = {
         else mistakes++
       }
       if (found.size < 4 && mistakes < 4 && !gaveUp) return 'The game is not finished'
+      if (found.size === 4 && stats.seconds !== undefined && stats.seconds < guesses.length * MIN_GUESS_SECONDS) {
+        return 'That solve time is too fast to count'
+      }
       return { score: found.size, stats: { n: found.size, mistakes, solved: found.size === 4, puzzleId: pz.id } }
     }),
   // The Mini's grid must match the solution. Its time cannot be replayed, so the sent unassisted time is the score.
@@ -74,6 +83,7 @@ export const VERIFIERS: Record<GameId, Verifier> = {
     const pz = (await dailyPuzzle('mini', day)).puzzle as MiniPuzzle
     if (stats.seconds === undefined) return 'Mini needs a completed solve time'
     if (entries.length !== pz.cells.length || pz.cells.some((a, i) => a && entries[i] !== a)) return 'The grid is not solved'
+    if (stats.seconds < pz.cells.filter(Boolean).length * MIN_CELL_SECONDS) return 'That solve time is too fast to count'
     return { score: stats.seconds, stats: { solved: true } }
   }),
   // Anthropeum rescores every pin and period with the original formulas against the day's 10 artifacts.

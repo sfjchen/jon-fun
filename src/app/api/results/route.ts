@@ -29,6 +29,7 @@ export async function POST(req:Request){
   if(game.score>GAMES[b.game].max)return NextResponse.json({error:'Score out of range'},{status:400})
   const version=SCORING_VERSION,score=game.score
   // Names are unique per board regardless of case and spacing, so "jon" on a phone files under an existing "Jon".
+  // A unique index on the lowercased name backs this when 2 devices post a new name at the same moment.
   const clean=b.name.replace(/\s+/g,' ')
   const same=await supabaseAdmin.from('game_results').select('name').eq('group_code',b.group).ilike('name',likeName(clean)).order('created_at').limit(1)
   if(same.error)return NextResponse.json({error:'Could not save score. It remains queued on your device.'},{status:503})
@@ -41,11 +42,13 @@ export async function POST(req:Request){
   if(inserted.error&&inserted.error.code!=='23505')return NextResponse.json({error:'Could not save score. It remains queued on your device.'},{status:503})
   if(inserted.error?.code==='23505'&&words){
     // Another device already filed this day, so the saved words grow to cover both and the score follows them.
-    const old=await supabaseAdmin.from('game_results').select('score,words').match(key).single()
-    if(old.error)return NextResponse.json({error:'Could not sync score'},{status:503})
-    const all=[...new Set([...(old.data.words as string[]|null??[]),...words])],pts=all.reduce((t,w)=>t+beeScore(w),0)
-    const update=await supabaseAdmin.from('game_results').update({words:all,
-      ...(pts>old.data.score?{score:pts,stats:{...value.stats,n:all.length,solved:pts===value.stats.max}}:{})}).match(key)
+    // merge_bee_words adds the words in 1 statement, so 2 devices syncing at once cannot drop each other's.
+    const merged=await supabaseAdmin.rpc('merge_bee_words',{p_group:b.group,p_name:name,p_day:b.today,p_version:version,p_words:words})
+    if(merged.error||!merged.data)return NextResponse.json({error:'Could not sync score'},{status:503})
+    const all=merged.data as string[],pts=all.reduce((t,w)=>t+beeScore(w),0)
+    // The score only rises: a request holding a smaller merged list never overwrites a larger one's score.
+    const update=await supabaseAdmin.from('game_results').update({score:pts,stats:{...value.stats,n:all.length,solved:pts===value.stats.max}})
+      .eq('group_code',b.group).ilike('name',likeName(name)).eq('game','bee').eq('day',b.today).eq('scoring_version',version).lt('score',pts)
     if(update.error)return NextResponse.json({error:'Could not sync score'},{status:503})
   }
   // Every game's first finished result is immutable, so clearing a board or browser data cannot replace it. Spelling

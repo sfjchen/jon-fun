@@ -57,13 +57,13 @@ Adding a daily game - add it to `GAMES`, give it a verifier (the build fails wit
 
 - Every result sends its moves (`stats.moves`). `/api/results` replays them against the day's puzzle and stores its own score, so a hand-made score cannot be posted.
 - Wordle - guesses, word list, hard mode. Bee - found words. Connections - guesses and give-up. Anthropeum - pins and periods. Krillion - each round's accepted answer, judged again. Mini - the solved grid.
-- Solve times (Mini, Connections) and Krillion's round clock cannot be replayed and stay as sent.
+- Solve times (Mini, Connections) and Krillion's round clock cannot be replayed and stay as sent. Mini and Connections times under a floor no person can reach (0.15 s per Mini cell, 1 s per Connections guess) are rejected.
 - Moves are dropped after the check, so stored results never reveal answers.
 
 ## Players
 
 - Games share the device ID of Daily Log and Notes ([SYNC.md](SYNC.md)). The name is stored locally and on the server, and comes back with the device cookie if local storage is cleared.
-- Names are unique per board regardless of case. Editing a name does not rewrite earlier results.
+- Names are unique per board regardless of case, backed by a unique index on the lowercased name. Editing a name does not rewrite earlier results.
 
 ## Scripts and tests
 
