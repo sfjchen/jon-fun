@@ -16,7 +16,6 @@ import {
   GAMES,
   GAME_IDS,
   PUBLIC_GROUP,
-  RESULTS_CHANGED,
   bestGameScore,
   boardName,
   compareResults,
@@ -32,6 +31,7 @@ import {
 } from '@/lib/results'
 import { DAILY_EPOCH, FIRST_DAY, shiftDay, siteDay, validDay } from '@/lib/daily'
 import { usePlayer } from '@/lib/use-player'
+import { useBoard } from '@/lib/use-board'
 import { average, overallDay, streaks, winners, winsByPlayer } from '@/lib/score-stats'
 import { DEVICE_KINDS } from '@/lib/syncIdentity'
 import { useHoverTip } from '@/components/HoverTip'
@@ -347,40 +347,17 @@ export function ScoresHub() {
   const [tab, setTab] = useState<Tab>(() => GAME_IDS.includes(game as GameId) ? game as GameId : 'all')
   const [view, setView] = useState<'day' | 'standings' | 'stats'>('day')
   const [span, setSpan] = useState<30 | 0>(30)
-  const [response, setResponse] = useState<{ group: string; rows: BoardRow[]; legacyRows: BoardRow[] } | null>(null)
-  const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
   const group = player?.group ?? PUBLIC_GROUP
+  const { rows, legacyRows, loaded, error } = useBoard(group, 6000, day)
 
+  // Results saved on this device sync on load and on every live refresh, and a synced one reloads the board.
   useEffect(() => {
-    let cancelled = false
-    const controller = new AbortController()
-    const load = async () => {
-      try {
-        await flushResults()
-        const r = await fetch(`/api/results?group=${encodeURIComponent(group)}&days=6000`, { signal: controller.signal })
-        if (!r.ok) throw new Error('Could not load scores. Saved scores retry on their own.')
-        const data = (await r.json()) as { rows: BoardRow[]; legacyRows?: BoardRow[] }
-        if (cancelled) return
-        setResponse({ group, rows: data.rows.filter((x) => GAME_IDS.includes(x.game)), legacyRows: data.legacyRows ?? [] })
-        setError('')
-      } catch (e) {
-        if (!cancelled && !controller.signal.aborted) setError(e instanceof Error ? e.message : 'Could not load scores')
-      }
-    }
-    void load()
-    const reload = () => void load()
-    const stopRefresh = onLiveRefresh(reload)
-    window.addEventListener(RESULTS_CHANGED, reload)
-    return () => {
-      cancelled = true
-      controller.abort()
-      stopRefresh()
-      window.removeEventListener(RESULTS_CHANGED, reload)
-    }
+    const sync = () => void flushResults()
+    sync()
+    return onLiveRefresh(sync)
   }, [group])
 
-  const rows = response?.group === group ? response.rows : []
   const color = playerColors(rows, me)
   const games = tab === 'all' ? GAME_IDS : [tab]
   const shown = rows.filter((r) => games.includes(r.game))
@@ -439,7 +416,7 @@ export function ScoresHub() {
     </div>
     <nav aria-label="Leaderboard views" className="flex gap-5 border-b border-[var(--ink-border)] text-sm">{([['day','Daily results'],['standings','Standings'],['stats','Your stats']] as const).map(([id,label])=><button key={id} data-hotkey={String(['day','standings','stats'].indexOf(id)+1)} aria-pressed={view===id} onClick={()=>setView(id)} className={`border-b-2 pb-3 ${view===id?'border-[var(--ink-accent)] font-semibold':'border-transparent text-[var(--ink-muted)]'}`}>{label}</button>)}</nav>
     {error&&<p role="alert" className="rounded-lg border border-red-200 p-3 text-sm">{error}</p>}
-    {!response&&!error&&<p role="status" className={`py-8 text-center text-sm ${muted}`}>Loading results…</p>}
+    {!loaded&&!error&&<p role="status" className={`py-8 text-center text-sm ${muted}`}>Loading results…</p>}
     {view==='day'&&<section aria-label="Day results" className="space-y-4"><div className="flex items-center justify-between"><h2 className="text-lg font-semibold">{dayLabel}</h2>{tab==='all'&&overall.names.length>0&&<span className={`text-xs ${muted}`}>Most wins: {overall.names.join(' & ')}</span>}</div>
       {tab==='all'?<div className="grid gap-x-7 gap-y-5 sm:grid-cols-2">{GAME_IDS.map(g=><section key={g} className="min-w-0 rounded-xl border border-[var(--ink-border)] p-4"><Link href={`${GAMES[g].url}?d=${day}`} className="flex items-center justify-between text-sm font-semibold">{GAMES[g].title}<span className={muted}>↗</span></Link>{ranking(g,picked.filter(r=>r.game===g),true)}</section>)}</div>:<div className="rounded-xl border border-[var(--ink-border)] p-4"><p className={`mb-2 text-xs ${muted}`}>{GAMES[tab].rules}</p>{ranking(tab,picked)}</div>}
       {mineToday.length>0&&<button className={`text-xs underline ${muted}`} onClick={()=>void navigator.clipboard.writeText([`sfjc.dev · ${day}`,...mineToday.map(r=>`${GAMES[r.game].title}: ${resultLabel(r)}`)].join('\n')).then(()=>setCopied(true))}>{copied?'Copied':'Copy my results'}</button>}
@@ -448,6 +425,6 @@ export function ScoresHub() {
       {table.length?<div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className={`border-b border-[var(--ink-border)] text-xs ${muted}`}><tr><th className="py-3 font-normal">Player</th><th className="p-3 text-right font-normal">Played</th><th className="p-3 text-right font-normal">Wins</th>{tab!=='all'&&<><th className="p-3 text-right font-normal">Avg {metricLabel.toLowerCase()}</th><th className="p-3 text-right font-normal">Best</th></>}</tr></thead><tbody>{table.map(p=><tr key={p.name} className={`border-b border-[var(--ink-border)] ${p.name===me?'font-semibold':''}`}><td className="py-4"><span className="flex items-center gap-2"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{backgroundColor:color(p.name)}}/>{p.name}</span></td><td className="p-3 text-right tabular-nums">{p.played}</td><td className="p-3 text-right tabular-nums">{p.wins}</td>{tab!=='all'&&<><td className="p-3 text-right tabular-nums">{metric(p.avg)}</td><td className="p-3 text-right tabular-nums">{metric(p.best)}</td></>}</tr>)}</tbody></table></div>:<p className={`py-8 text-center text-sm ${muted}`}>No results in this period yet.</p>}
     </section>}
     {view==='stats'&&<section aria-label="Your stats" className="space-y-5">{me?<><h2 className="text-lg font-semibold">Your progress</h2><div className="grid grid-cols-3 gap-3 rounded-xl border border-[var(--ink-border)] py-6 text-center">{[['Days played',new Set(mine.map(r=>r.day)).size],['Current streak',streak.current],['Longest streak',streak.longest]].map(([label,value])=><div key={label}><p className="text-3xl font-semibold tabular-nums tracking-tight">{value}</p><p className={`mt-2 text-xs ${muted}`}>{label}</p></div>)}</div>{tab!=='all'&&<div><h3 className={`mb-3 text-xs ${muted}`}>Last 14 days · {metricLabel.toLowerCase()}</h3><Trend rows={mine} day={day}/></div>}<Calendar rows={shown} me={me} day={day} color={color} onPick={pick}/><div><h3 className="mb-3 text-lg font-semibold">Phone vs computer</h3><DeviceSplit rows={mine} games={games}/></div></>:<p className={`py-8 text-sm ${muted}`}>Add your name above to track your progress and streaks.</p>}</section>}
-    {!!response?.legacyRows.length&&<details className={`border-t border-[var(--ink-border)] pt-3 text-xs ${muted}`}><summary className="cursor-pointer">Earlier scoring versions ({response.legacyRows.length})</summary><ul className="mt-2 space-y-1">{response.legacyRows.map(r=><li key={`${r.game}:${r.day}:${r.name}`}>{r.day} · {r.name} · {GAMES[r.game].title}: {formatScore(r.score)}</li>)}</ul></details>}
+    {!!legacyRows.length&&<details className={`border-t border-[var(--ink-border)] pt-3 text-xs ${muted}`}><summary className="cursor-pointer">Earlier scoring versions ({legacyRows.length})</summary><ul className="mt-2 space-y-1">{legacyRows.map(r=><li key={`${r.game}:${r.day}:${r.name}`}>{r.day} · {r.name} · {GAMES[r.game].title}: {formatScore(r.score)}</li>)}</ul></details>}
   </div>
 }

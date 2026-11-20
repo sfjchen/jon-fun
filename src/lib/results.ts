@@ -93,6 +93,7 @@ export async function flushResults(): Promise<void> {
       // Re-read: a newer result may have arrived while this request was in flight.
       const remaining = queue().filter(q => !(q.game === item.game && q.day === item.day && (item.game === 'mini' ? q.score === item.score : q.score <= item.score) && JSON.stringify(q.player) === JSON.stringify(item.player)))
       localStorage.setItem(QUEUE_KEY, JSON.stringify(remaining))
+      sessionStorage.setItem(POSTED_KEY, String(Date.now()))
       window.dispatchEvent(new CustomEvent(RESULTS_CHANGED, { detail: { game: item.game, day: item.day } }))
     }
   } catch { /* Keep the queue for the next connection/focus. */ }
@@ -128,6 +129,18 @@ export function logResult(game: GameId, score: number, n?: number, day = siteDay
   } catch { /* Storage can be disabled in a private browser. */ }
 }
 export function pendingResults(): number { return queue().length }
+const POSTED_KEY = 'sfjc_posted_at'
+/**
+ * Builds the address of a board read. The server shares each read between visitors for about 10 seconds, so for a
+ * minute after this device posts a result its reads carry the post time, which skips copies saved before the post.
+ */
+export function boardUrl(query: Record<string, string | number>): string {
+  const q = new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)]))
+  let at = 0
+  try { at = Number(sessionStorage.getItem(POSTED_KEY)) } catch {}
+  if (Date.now() - at < 60000) q.set('v', String(at))
+  return `/api/results?${q}`
+}
 /**
  * Calls reload whenever other players' results may have changed: every 15 seconds while the page is visible, and when
  * the tab becomes visible, regains focus, comes back online or is restored from the back-forward cache (Safari

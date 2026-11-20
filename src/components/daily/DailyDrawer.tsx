@@ -14,48 +14,29 @@ import { useHoverTip } from '@/components/HoverTip'
 import { FIRST_DAY, firstDay, isNytGame, siteDay } from '@/lib/daily'
 import { useSiteDay } from '@/lib/play-day'
 import { usePlayer } from '@/lib/use-player'
+import { useBoard } from '@/lib/use-board'
 import {
-  GAMES, GAME_IDS, PUBLIC_GROUP, RESULTS_CHANGED, RESULT_QUEUED, compareResults, formatTime, queue,
-  isPracticeResult, onLiveRefresh, resultLabel,
+  GAMES, GAME_IDS, PUBLIC_GROUP, RESULT_QUEUED, compareResults, formatTime, queue, isPracticeResult, resultLabel,
   type BoardRow,
 } from '@/lib/results'
 import { streaks } from '@/lib/score-stats'
 
-const cache = new Map<string, { rows: BoardRow[] }>()
-
 /**
- * Loads the group's results back to at least 60 days or the selected day, cached per group so remounts show the last
- * rows at once, then merges the player's unsynced local queue. Returns the player's done state today and on the
+ * Loads the group's last 60 days once for the button's count and streak, and polls the selected day only while the
+ * drawer is open, then merges the player's unsynced local queue. Returns the player's done state today and on the
  * selected day, the streak, and everyone's scores on the selected day.
  */
-function useDaily(sel: string) {
+function useDaily(sel: string, open: boolean) {
   const player = usePlayer()
   const group = player?.group ?? PUBLIC_GROUP
-  const [remote, setRemote] = useState<BoardRow[]>(() => cache.get(group)?.rows ?? [])
-  const [tick, setTick] = useState(0)
+  const [, setTick] = useState(0)
   useEffect(() => {
     const bump = () => setTick((t) => t + 1)
-    const events = [RESULTS_CHANGED, RESULT_QUEUED]
-    events.forEach((e) => window.addEventListener(e, bump))
-    const stopRefresh = onLiveRefresh(bump)
-    return () => { stopRefresh(); events.forEach((e) => window.removeEventListener(e, bump)) }
+    window.addEventListener(RESULT_QUEUED, bump)
+    return () => window.removeEventListener(RESULT_QUEUED, bump)
   }, [])
   const day = siteDay()
-  // Days before the selected one are still needed back to 60 for the streak, so the span only grows past that.
-  const span = Math.max(60, Math.round((Date.parse(day) - Date.parse(sel)) / 86400000) + 2)
-  useEffect(() => {
-    const ctl = new AbortController()
-    fetch(`/api/results?group=${encodeURIComponent(group)}&days=${span}`, { signal: ctl.signal })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d: { rows?: BoardRow[] } | null) => {
-        if (!d?.rows) return
-        cache.set(group, { rows: d.rows })
-        setRemote(d.rows)
-      })
-      .catch(() => {})
-    return () => ctl.abort()
-  }, [group, span, tick])
-  const rows = remote.filter((r) => GAMES[r.game])
+  const rows = [...useBoard(group, 60, sel, open).rows]
   if (player) {
     const local = queue().filter((q) => (!q.player || q.player.name === player.name) && q.day <= day && GAMES[q.game])
     local.forEach((q) => {
@@ -145,8 +126,8 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
   const now = useSiteDay()
   const [picked, setPicked] = useState('')
   const sel = picked || now || siteDay()
-  const { player, today, picked: done, everyone, streak } = useDaily(sel)
   const [open, setOpen] = useState(false)
+  const { player, today, picked: done, everyone, streak } = useDaily(sel, open)
   const btn = useRef<HTMLButtonElement>(null)
   const panel = useRef<HTMLDivElement>(null)
   const close = useCallback(() => { setOpen(false); btn.current?.focus() }, [])

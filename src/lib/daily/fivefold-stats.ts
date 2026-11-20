@@ -3,7 +3,7 @@
  */
 
 import { shiftDay, siteDay } from '@/lib/daily'
-import { getPlayer, isPracticeResult } from '@/lib/results'
+import { boardUrl, getPlayer, isPracticeResult } from '@/lib/results'
 
 export type FivefoldStats = { played: number; wins: number; cur: number; max: number; dist: number[] }
 
@@ -19,7 +19,7 @@ export async function loadFivefoldStats(): Promise<FivefoldStats> {
   const player = getPlayer()
   try {
     if (player) {
-      const res = await fetch(`/api/results?group=${encodeURIComponent(player.group)}&days=3000`)
+      const res = await fetch(boardUrl({ group: player.group, game: 'fivefold', days: 3000 }))
       const { rows } = (await res.json()) as { rows: Row[] }
       for (const r of rows) {
         if (r.game !== 'fivefold' || r.name !== player.name || !r.stats.n) continue

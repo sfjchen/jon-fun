@@ -6,7 +6,7 @@ import { artifactScore, ARTIFACT_TIME_WINDOW, historicalYear, type Artifact, typ
 import { ANTHROPEUM_BUCKET_SIZE, anthropeumPlacement, type AnthropeumDistribution } from '@/lib/daily/anthropeum-stats'
 import { shiftDay, siteDay } from '@/lib/daily'
 import { usePlayer } from '@/lib/use-player'
-import { formatScore, isPracticeResult, onLiveRefresh, PUBLIC_GROUP, RESULTS_CHANGED, type BoardRow } from '@/lib/results'
+import { boardUrl, formatScore, isPracticeResult, onLiveRefresh, PUBLIC_GROUP, RESULTS_CHANGED, type BoardRow } from '@/lib/results'
 
 export type ArtifactGuess = { pin: Pin; year: number; total: number }
 
@@ -20,8 +20,7 @@ function PlayerBoard({ day, score }: { day: string; score: number }) {
       request?.abort()
       const controller = new AbortController()
       request = controller
-      const params = new URLSearchParams({ group, game: 'anthropeum', day })
-      fetch(`/api/results?${params}`, { signal: controller.signal })
+      fetch(boardUrl({ group, game: 'anthropeum', day }), { signal: controller.signal })
         .then(async r => r.ok ? (await r.json() as { rows: BoardRow[] }).rows : null)
         .catch(() => null)
         .then(rows => {

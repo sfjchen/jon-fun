@@ -52,6 +52,9 @@ export async function POST(req:Request){
   // Bee only grows, since its score rises as more words are found the same day.
   return NextResponse.json({ok:true,name})
 }
+// Boards are shared reads, so the CDN keeps each one for 10 seconds and many open pages cost 1 database read. A device
+// that just posted adds its post time to the address (boardUrl), which skips any copy saved before its result.
+const CACHE='public, max-age=0, s-maxage=10, stale-while-revalidate=20'
 export async function GET(req:Request){
   const q=new URL(req.url).searchParams,g=group.safeParse(q.get('group'))
   if(!g.success)return NextResponse.json({error:'Invalid group'},{status:400})
@@ -62,7 +65,8 @@ export async function GET(req:Request){
   const days=Math.min(6000,Math.max(1,Number(q.get('days'))||400)),since=new Date(Date.now()-(days+1)*86400000).toISOString().slice(0,10)
   type Row={name:string;game:GameId;day:string;score:number;stats:Record<string,unknown>;scoring_version:number;device_kind:string|null}
   const all:Row[]=[]
-  for(let offset=0;offset<100000;offset+=1000){
+  // 20 pages of 1,000 rows is far past any board's history and bounds the work of 1 read.
+  for(let offset=0;offset<20000;offset+=1000){
     const query = supabaseAdmin.from('game_results').select('name,game,day,score,stats,scoring_version,device_kind')
       .eq('group_code',g.data).in('game',game ? [game] : GAME_IDS)
     const dated = day ? query.eq('day',day) : query.gte('day',since)
@@ -74,5 +78,5 @@ export async function GET(req:Request){
   const exact=(r:Row)=>!isNytGame(r.game)||(!r.stats.sourceDate||r.stats.sourceDate===r.day)&&(!(typeof r.stats.puzzleId==='string'&&r.stats.puzzleId.startsWith('nyt-archive-'))||r.stats.puzzleId.slice(12)===r.day)
   const current=(r:Row)=>r.scoring_version===SCORING_VERSION&&exact(r)
   const out=(r:Row)=>{const {device_kind,...rest}=r;return device_kind?{...rest,device:device_kind}:rest}
-  return NextResponse.json({rows:all.filter(current).map(out),legacyRows:all.filter(r=>!current(r)).map(out)},{headers:{'Cache-Control':'no-store'}})
+  return NextResponse.json({rows:all.filter(current).map(out),legacyRows:all.filter(r=>!current(r)).map(out)},{headers:{'Cache-Control':CACHE}})
 }
