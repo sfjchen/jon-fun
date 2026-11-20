@@ -118,8 +118,9 @@ export async function POST(req: Request) {
   // Bee only grows, since its score rises as more words are found the same day.
   return NextResponse.json({ ok: true, name })
 }
-// Boards are shared reads, so the CDN keeps each one for 10 seconds and many open pages cost 1 database read. A device
-// that just posted adds its post time to the address (boardUrl), which skips any copy saved before its result.
+// History reads are large and shared, so the CDN keeps each one for 10 seconds and many open pages cost 1 database
+// read. A device that just posted adds its post time to the address (boardUrl), which skips any copy saved before its
+// result. The small reads of 1 day are the live poll, so they are never cached and show a new result within 1 poll.
 const CACHE = 'public, max-age=0, s-maxage=10, stale-while-revalidate=20'
 export async function GET(req: Request) {
   const q = new URL(req.url).searchParams,
@@ -172,6 +173,6 @@ export async function GET(req: Request) {
   }
   return NextResponse.json(
     { rows: all.filter(current).map(out), legacyRows: all.filter((r) => !current(r)).map(out) },
-    { headers: { 'Cache-Control': CACHE } },
+    { headers: { 'Cache-Control': day ? 'no-store' : CACHE } },
   )
 }
