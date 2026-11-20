@@ -486,7 +486,7 @@ export default function SpellingBee() {
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2 md:gap-10">
         <section className="order-2 flex flex-col items-center md:order-1">
-          <div className="relative flex h-12 w-full items-center justify-center md:h-16">
+          <div className="relative flex h-12 w-full items-center justify-center [container-type:inline-size] md:h-16">
             {toast && (
               <div
                 className="absolute -top-1 rounded-md px-3 py-1.5 text-sm font-semibold shadow"
@@ -506,8 +506,12 @@ export default function SpellingBee() {
             )}
             <p
               data-testid="sb-entry"
-              className="mt-4 text-3xl font-bold uppercase tracking-wide md:mt-6"
-              style={{ animation: shake ? 'sb-shake .3s 2' : undefined }}
+              className="mt-4 max-w-full whitespace-nowrap text-3xl font-bold uppercase tracking-wide md:mt-6"
+              style={{
+                animation: shake ? 'sb-shake .3s 2' : undefined,
+                // Long entries shrink to fit the column instead of spilling off a phone screen.
+                fontSize: entry.length > 8 ? `min(1.875rem, ${(110 / entry.length).toFixed(1)}cqw)` : undefined,
+              }}
             >
               {[...entry].map((c, i) => (
                 <span
@@ -626,13 +630,13 @@ export default function SpellingBee() {
             </p>
           </button>
 
-          <div className="rounded-lg border" style={{ borderColor: 'var(--ink-border)' }}>
+          <div className="relative rounded-lg border" style={{ borderColor: 'var(--ink-border)' }}>
             <button
               className={
                 'flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm ' +
                   'md:pointer-events-none md:px-4 md:py-3 md:text-base'
               }
-              onClick={() => setOpen((o) => !o)}
+              onClick={(e) => { setOpen((o) => !o); e.currentTarget.blur() }}
             >
               <span className="min-w-0 truncate">
                 {open || found.length === 0 ? (
@@ -648,7 +652,16 @@ export default function SpellingBee() {
               </span>
               <span className="md:hidden">{open ? '▲' : '▼'}</span>
             </button>
-            <div className={`px-4 pb-4 ${open ? '' : 'max-md:hidden'}`}>
+            <div
+              className={
+                'px-4 pb-4 ' +
+                  (open
+                    ? 'max-md:absolute max-md:inset-x-[-1px] max-md:top-full max-md:z-20 max-md:max-h-[60svh] ' +
+                      'max-md:overflow-y-auto max-md:rounded-b-lg max-md:border max-md:pt-2 max-md:shadow-lg'
+                    : 'max-md:hidden')
+              }
+              style={{ background: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}
+            >
               {revealed && <p className="mb-3 text-sm">Answers revealed · this puzzle is finished.</p>}
               {revealed ? <WordList words={pz.answers} found={new Set(found)} /> : <WordList words={sorted} />}
               {(isPractice || date < now) && !revealed && found.length < pz.answers.length && (

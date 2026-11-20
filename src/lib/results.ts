@@ -10,7 +10,7 @@ export const GAMES: Record<GameId, { title: string; url: string; max: number; un
   bee: { title: 'Spelling Bee', url: '/games/spelling-bee', max: 1000, unit: 'points', rules: 'Word points; pangrams earn a 7-point bonus.' },
 }
 export const GAME_IDS = Object.keys(GAMES) as GameId[]
-export type Stats = { n?: number; seconds?: number; mistakes?: number; solved?: boolean; max?: number; sourceDate?: string; puzzleId?: string; scoringVersion?: number }
+export type Stats = { n?: number; seconds?: number; mistakes?: number; solved?: boolean; max?: number; sourceDate?: string; puzzleId?: string; scoringVersion?: number; hard?: boolean }
 export type Result = { game: GameId; day: string; score: number; stats: Stats }
 export type BoardRow = Result & { name: string }
 export function scoringVersion(game: GameId): number { return ['mini','connections','krillion','anthropeum','fivefold','bee'].includes(game) ? 2 : 1 }
@@ -27,7 +27,8 @@ export function compareResults(a: Result, b: Result): number {
 }
 export function resultLabel(r: Result): string {
   if(r.game==='connections')return r.score===4&&r.stats.seconds!==undefined?`${formatTime(r.stats.seconds)} · solved`:`${r.stats.n??r.score}/4 · incomplete`
-  return formatGameScore(r.game,r.score)
+  // Hard-mode Wordle results carry the same * that Wordle puts on its own share text.
+  return formatGameScore(r.game,r.score)+(r.game==='fivefold'&&r.stats.hard?'*':'')
 }
 export const localDay = siteDay
 export function formatScore(score: number): string { return Math.round(score).toLocaleString('en-US') }

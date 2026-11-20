@@ -23,9 +23,10 @@ export default function KrillionPlay({puzzle,dailyDay}:{puzzle:KrillionPuzzle;da
   useEffect(()=>{if(run.phase==='answering')input.current?.focus()},[run.phase,run.index])
   const submit=useCallback(async(final=false)=>{
     const state=current.current
-    if(state.phase!=='answering'||pending.current)return
-    pending.current=true;submittedAt.current=Date.now();setBusy(true);setMessage('')
     const answer=state.draft.trim(),index=state.index
+    // A blank answer only goes to the judge when time runs out, so it can close the round.
+    if(state.phase!=='answering'||pending.current||(!answer&&!final))return
+    pending.current=true;submittedAt.current=Date.now();setBusy(true);setMessage('')
     const controller=new AbortController();abort.current=controller
     const timeout=setTimeout(()=>controller.abort(),5000)
     try{
@@ -35,7 +36,7 @@ export default function KrillionPlay({puzzle,dailyDay}:{puzzle:KrillionPuzzle;da
       if(!r.ok)throw Error(data.error??'Signal lost. Resend your answer.')
       if(data.accepted){finish(data);return}
       if(final||Date.now()>=(current.current.endsAt??0))finish({...data,answer,score:0})
-      else{setMessage(`“${answer}” wasn’t accepted. Try again — the clock is still running.`);input.current?.focus();input.current?.select()}
+      else{setMessage(`“${answer.length>40?`${answer.slice(0,40)}…`:answer}” wasn’t accepted. Try again — the clock is still running.`);input.current?.focus();input.current?.select()}
     }catch(e){
       if(controller.signal.aborted&&current.current.phase!=='answering')return
       if(final)finish({answer,accepted:false,score:0,reason:'Connection timed out before this answer could be verified.'})

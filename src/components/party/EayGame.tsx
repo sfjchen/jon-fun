@@ -140,7 +140,7 @@ export default function EayGame() {
       )}
 
       {room && (
-        <div className="grid lg:grid-cols-[260px_1fr] gap-6">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[260px_1fr]">
           <aside className="rounded-lg border p-4 h-fit shadow-sm" style={cardStyle}>
             <div className="text-xl font-bold tracking-widest mb-2" data-testid="party-room-pin">
               {room.pin}

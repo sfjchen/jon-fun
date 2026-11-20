@@ -123,8 +123,8 @@ export default function PokerPage() {
           </p>
         </header>
 
-        <div className="rounded-lg p-8 border shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-            <div className="flex gap-4 mb-6">
+        <div className="rounded-lg border p-5 shadow-sm sm:p-8" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+            <div className="mb-6 flex gap-3 sm:gap-4">
               <button
                 onClick={() => setMode('create')}
                 className={`flex-1 whitespace-nowrap py-3 px-3 rounded-lg font-semibold ${

@@ -5,7 +5,7 @@ import { DAILY_EPOCH, siteDay, validDay } from '@/lib/daily'
 import { isNytGame, NYT_FIRST_DAY } from '@/lib/daily/nyt-puzzles'
 import { supabaseAdmin } from '@/lib/supabase'
 const group=z.string().regex(/^[a-z0-9-]{3,32}$/)
-const stats=z.object({n:z.number().int().min(0).max(500).optional(),seconds:z.number().int().min(0).max(864000).optional(),mistakes:z.number().int().min(0).max(100).optional(),solved:z.boolean().optional(),max:z.number().int().min(1).max(100000).optional(),sourceDate:z.string().refine(validDay).optional(),puzzleId:z.string().max(100).optional(),scoringVersion:z.number().int().min(1).max(2).optional()})
+const stats=z.object({n:z.number().int().min(0).max(500).optional(),seconds:z.number().int().min(0).max(864000).optional(),mistakes:z.number().int().min(0).max(100).optional(),solved:z.boolean().optional(),max:z.number().int().min(1).max(100000).optional(),sourceDate:z.string().refine(validDay).optional(),puzzleId:z.string().max(100).optional(),scoringVersion:z.number().int().min(1).max(2).optional(),hard:z.boolean().optional()})
 const schema=z.object({group,name:z.string().trim().min(1).max(24),deviceId:z.string().uuid().optional(),today:z.string().refine(validDay),game:z.enum(GAME_IDS as [GameId,...GameId[]]),score:z.number().int().min(0),n:z.number().int().min(0).max(500).optional(),stats:stats.optional()})
 export async function POST(req:Request){
   const parsed=schema.safeParse(await req.json().catch(()=>null))

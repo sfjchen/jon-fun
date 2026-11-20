@@ -300,7 +300,7 @@ export default function BuzzerHostPanel({ slug, playState, dispatchPlayOp, award
         <div className="px-4 py-2 text-sm" style={{ backgroundColor: '#fee2e2', color: '#991b1b' }}>{error}</div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-6 p-6">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 md:grid-cols-2 p-6">
         {/* Left: PIN + QR */}
         <div className="flex flex-col items-center gap-4">
           <div className="text-sm uppercase tracking-wider" style={{ color: 'var(--ink-muted)' }}>Join PIN</div>

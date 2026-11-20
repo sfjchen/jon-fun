@@ -150,6 +150,8 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
       if (draft.length < 5) return flash('Not enough letters')
       if (draft !== answer && !(await words)?.has(draft)) return flash('Not in the word list')
       const latest = current.current
+      // A repeated Enter from before the last re-render sees the board already moved on and drops its stale draft.
+      if (latest.guesses.length !== run.guesses.length) return
       const fail = latest.hard || (!latest.guesses.length && hardPref) ? hardError(draft, latest.guesses, answer) : ''
       if (fail) return flash(fail)
       const guesses = [...latest.guesses, draft]
@@ -161,9 +163,9 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
       setStatsOpen(true)
       // Logged once, when the last guess lands, so reloading a finished board never re-sends it.
       const hit = draft === answer
-      logResult('fivefold', hit ? TRIES + 1 - guesses.length : 0, guesses.length, dailyDay, { solved: hit, seconds: Math.floor(final.elapsedMs / 1000), sourceDate: dailyDay, puzzleId: `nyt-wordle:${dailyDay}` })
+      logResult('fivefold', hit ? TRIES + 1 - guesses.length : 0, guesses.length, dailyDay, { solved: hit, seconds: Math.floor(final.elapsedMs / 1000), sourceDate: dailyDay, puzzleId: `nyt-wordle:${dailyDay}`, ...(final.hard ? { hard: true } : {}) })
     },
-    [done, draft, answer, commit, dailyDay, hardPref],
+    [done, draft, answer, commit, dailyDay, hardPref, run.guesses.length],
   )
 
   useEffect(() => {
@@ -188,9 +190,12 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
   }
   const rows = Array.from({ length: TRIES }, (_, i) => run.guesses[i] ?? (i === run.guesses.length && !done ? draft : ''))
   const toggleHard = () => {
-    if (run.guesses.length) return flash('Hard mode can only be turned on at the start of the day')
-    setHardPref(!hardPref)
-    try { localStorage.setItem(HARD_KEY, hardPref ? '0' : '1') } catch {}
+    // Like Wordle, hard mode can be dropped mid-game but only picked up before the first guess.
+    if (done) return
+    if (run.guesses.length && !hard) return flash('Hard mode can only be turned on at the start of the day')
+    if (run.guesses.length) commit({ ...current.current, hard: false })
+    setHardPref(!hard)
+    try { localStorage.setItem(HARD_KEY, hard ? '0' : '1') } catch {}
   }
   const share = () => {
     const icon: Record<Mark, string> = { hit: '🟩', near: '🟨', miss: '⬛' }
@@ -231,7 +236,7 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
       </div>
       {done ? (
         <div className="space-y-2 rounded-xl bg-[var(--ink-paper)] p-4 text-center" data-testid="fivefold-result">
-          <h2 className="text-xl font-bold">{won ? `Found in ${run.guesses.length}/6` : `The word was ${answer.toUpperCase()}`}</h2>
+          <h2 className="text-xl font-bold">{won ? `Found in ${run.guesses.length}/6${run.hard ? '*' : ''}` : `The word was ${answer.toUpperCase()}`}</h2>
           <p className="text-sm text-[var(--ink-muted)]">
             {formatTime(Math.floor(run.elapsedMs / 1000))} · {isPracticeResult('fivefold', dailyDay) ? 'Future preview · practice only' : 'Saved to your daily scores'}
           </p>

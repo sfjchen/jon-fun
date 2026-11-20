@@ -120,7 +120,7 @@ export default function QuiplashGame() {
       </p>
 
       {!room && (
-        <div className="grid lg:grid-cols-[320px_1fr] gap-6">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[320px_1fr]">
           <PartyLobbyForm
             variant="labeled"
             createLabel="Create room"
@@ -139,7 +139,7 @@ export default function QuiplashGame() {
       )}
 
       {room && (
-        <div className="grid lg:grid-cols-[280px_1fr] gap-6">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[280px_1fr]">
           <aside className="rounded-lg border p-4 shadow-sm h-fit" style={cardStyle}>
             <div className="text-sm" style={{ color: 'var(--ink-muted)' }}>PIN</div>
             <div className="text-2xl font-bold tracking-widest mb-2" data-testid="party-room-pin">

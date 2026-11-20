@@ -792,7 +792,7 @@ export default function Game24() {
       <div
         className={`max-w-6xl mx-auto px-3 sm:px-4 flex flex-col gap-6 w-full ${notebookLayout ? 'py-4 lg:py-6' : 'py-10 lg:py-14'}`}
       >
-        <div className="grid lg:grid-cols-[320px_1fr] gap-6 order-1">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[320px_1fr] order-1">
           <aside className="order-2 rounded-lg border p-4 shadow-sm lg:order-1" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
             {!room && (
               <div className="space-y-4">
