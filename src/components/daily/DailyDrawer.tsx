@@ -160,6 +160,14 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
     first?.focus()
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') return close()
+      // Up and down walk the list of games, so Enter opens the one in focus.
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        const rows = [...(panel.current?.querySelectorAll<HTMLElement>('ul a') ?? [])]
+        const at = rows.indexOf(document.activeElement as HTMLElement), step = e.key === 'ArrowDown' ? 1 : -1
+        if (!rows.length || (document.activeElement as HTMLElement | null)?.tagName === 'INPUT') return
+        e.preventDefault()
+        return rows[at < 0 ? (step > 0 ? 0 : rows.length - 1) : (at + step + rows.length) % rows.length]?.focus()
+      }
       if (e.key !== 'Tab') return
       const items = [...(panel.current?.querySelectorAll<HTMLElement>('a[href],button:not([disabled]),input') ?? [])]
       const last = items[items.length - 1]
@@ -216,7 +224,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
           >
             <div className="mb-4 flex items-center gap-1">
               <h2 className="text-xl font-bold tracking-tight">Daily</h2>
-              <DayPicker day={sel} today={now} minDay={FIRST_DAY} go={setPicked} className="ml-auto" />
+              <DayPicker day={sel} today={now} minDay={FIRST_DAY} go={setPicked} className="ml-auto" keys />
               <button type="button" onClick={close} aria-label="Close" className="-mr-2 h-9 w-9 shrink-0 rounded-full text-xl hover:bg-[var(--ink-paper)]">×</button>
             </div>
             {player ? (

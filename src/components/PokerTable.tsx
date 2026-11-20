@@ -463,7 +463,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
             <div className="flex flex-wrap gap-2 sm:gap-3 justify-center mb-4">
               <button
-                onClick={() => handleAction('fold')}
+                data-hotkey="f" onClick={() => handleAction('fold')}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-3 sm:px-6 min-h-11 rounded-lg font-semibold text-sm sm:text-base"
               >
                 Fold
@@ -471,14 +471,14 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
               {callAmount === 0 ? (
                 <button
-                  onClick={() => handleAction('check')}
+                  data-hotkey="c Space" onClick={() => handleAction('check')}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 sm:px-6 min-h-11 rounded-lg font-semibold text-sm sm:text-base"
                 >
                   Check
                 </button>
               ) : (
                 <button
-                  onClick={() => handleAction('call')}
+                  data-hotkey="c" onClick={() => handleAction('call')}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 sm:px-6 min-h-11 rounded-lg font-semibold text-sm sm:text-base"
                 >
                   Call ${callAmount}
@@ -496,14 +496,14 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
                 />
                 {canOpenBet ? (
                   <button
-                    onClick={() => handleAction('bet')}
+                    data-hotkey="b" onClick={() => handleAction('bet')}
                     className="bg-green-600 hover:bg-green-700 text-white px-4 py-3 sm:px-6 min-h-11 rounded-lg font-semibold text-sm sm:text-base"
                   >
                     Bet ${betAmount || minBet}
                   </button>
                 ) : (
                   <button
-                    onClick={() => handleAction('raise')}
+                    data-hotkey="r" onClick={() => handleAction('raise')}
                     className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-3 sm:px-6 min-h-11 rounded-lg font-semibold text-sm sm:text-base"
                   >
                     Raise ${betAmount || minBet}
@@ -550,7 +550,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
                   ))}
                 </select>
                 <button
-                  onClick={handleNextHand}
+                  data-hotkey="n Enter" onClick={handleNextHand}
                   disabled={!nextHandWinner || startingNextHand}
                   className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white font-semibold px-6 py-3 min-h-11 rounded-lg"
                 >

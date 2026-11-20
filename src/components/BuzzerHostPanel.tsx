@@ -322,21 +322,21 @@ export default function BuzzerHostPanel({ slug, playState, dispatchPlayOp, award
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-3 gap-2">
             <button
-              onClick={() => doPatch('arm')}
+              data-hotkey="a" onClick={() => doPatch('arm')}
               disabled={pendingOp}
               className="px-4 py-4 rounded-lg text-white font-bold text-lg shadow disabled:opacity-50"
               style={{ backgroundColor: armed ? '#15803d' : '#16a34a' }}>
               {armed ? 'Re-Arm (New Round)' : 'Arm'}
             </button>
             <button
-              onClick={() => doPatch(status === 'locked' ? 'unlock' : 'lock')}
+              data-hotkey="l" onClick={() => doPatch(status === 'locked' ? 'unlock' : 'lock')}
               disabled={pendingOp || status === 'idle'}
               className="px-4 py-4 rounded-lg text-white font-bold text-lg shadow disabled:opacity-40"
               style={{ backgroundColor: '#dc2626' }}>
               {status === 'locked' ? 'Unlock' : 'Lock'}
             </button>
             <button
-              onClick={() => doPatch('clear')}
+              data-hotkey="c" onClick={() => doPatch('clear')}
               disabled={pendingOp}
               className="px-4 py-4 rounded-lg font-bold text-lg shadow border disabled:opacity-50"
               style={{ backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)', borderColor: 'var(--ink-border)' }}>

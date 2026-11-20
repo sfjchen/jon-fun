@@ -82,7 +82,7 @@ export default function MiniPlay({puzzle,dailyDay}:{puzzle:MiniPuzzle;dailyDay?:
       <Menu label="Reveal" items={[['Square',()=>help(true,'square')],['Word',()=>help(true,'word')],['Puzzle',()=>help(true,'puzzle')],['Clear puzzle',clearPuzzle]]} />
     </>}
   </div>
-  if(paused)return <section className="space-y-4">{toolbar}<div className="space-y-4 rounded-xl border bg-[var(--ink-paper)] p-8 text-center" role="dialog" aria-label="Mini paused"><h3 className="font-lora text-2xl">Paused</h3><p className="text-sm text-[var(--ink-muted)]">By {puzzle.constructors.join(', ')}</p><button className="rounded-full bg-[var(--ink-text)] px-8 py-3 font-semibold text-[var(--ink-bg)]" aria-label="Continue puzzle" onClick={()=>{setClock(Date.now());commit(resumeMini(current.current,Date.now()))}}>Continue</button></div></section>
+  if(paused)return <section className="space-y-4">{toolbar}<div className="space-y-4 rounded-xl border bg-[var(--ink-paper)] p-8 text-center" role="dialog" aria-label="Mini paused"><h3 className="font-lora text-2xl">Paused</h3><p className="text-sm text-[var(--ink-muted)]">By {puzzle.constructors.join(', ')}</p><button className="rounded-full bg-[var(--ink-text)] px-8 py-3 font-semibold text-[var(--ink-bg)]" aria-label="Continue puzzle" data-hotkey="Enter Space" onClick={()=>{setClock(Date.now());commit(resumeMini(current.current,Date.now()))}}>Continue</button></div></section>
   return <section className="space-y-3">{toolbar}
     {rebus&&<p className="text-sm">Rebus: type several letters, then Enter. Escape exits.</p>}
     <div className="mx-auto w-full max-w-sm space-y-2">

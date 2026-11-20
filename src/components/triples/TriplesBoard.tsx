@@ -1,9 +1,11 @@
 'use client'
 
 /**
- * Lays out the cards on the table, 3 across on phones and 4 on wider screens, and handles picking 3.
+ * Lays out the cards on the table, 3 across on phones and 4 on wider screens, and handles picking 3. Each card also
+ * answers to the key at its place in the 1234 / QWER / ASDF / ZXCV block.
  */
 
+import { gridKeyIndex, useHotkeys } from '@/lib/keyboard'
 import TriplesCard, { StripeDefs } from '@/components/triples/TriplesCard'
 
 type Props = {
@@ -19,6 +21,10 @@ type Props = {
  * Renders the grid. Shake applies to the selected cards after a miss.
  */
 export default function TriplesBoard({ board, selected, hinted = [], shake, disabled, onPick }: Props) {
+  useHotkeys((k) => {
+    const card = disabled ? undefined : board[gridKeyIndex(k, matchMedia('(min-width: 640px)').matches ? 4 : 3)]
+    if (card !== undefined) return onPick(card), true
+  })
   return (
     <div className="mx-auto w-full max-w-xl">
       <StripeDefs />

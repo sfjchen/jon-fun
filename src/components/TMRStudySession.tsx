@@ -205,7 +205,7 @@ export default function TMRStudySession({ onBack }: { onBack: () => void }) {
             </div>
 
             <button
-              onClick={startSession}
+              data-hotkey="Enter" onClick={startSession}
               className="w-full text-white px-6 py-3 rounded-lg text-lg font-bold hover:opacity-90"
               style={{ backgroundColor: 'var(--ink-accent)' }}
             >

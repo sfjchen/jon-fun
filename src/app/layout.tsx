@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
 import { Suspense } from 'react'
+import Hotkeys from '@/components/Hotkeys'
 import { PageShell } from '@/components/PageShell'
 import './globals.css'
 
@@ -39,6 +40,7 @@ export default function RootLayout({
         >
           <PageShell>{children}</PageShell>
         </Suspense>
+        <Hotkeys />
         <Analytics />
         <SpeedInsights />
       </body>

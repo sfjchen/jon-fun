@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { gridKeyIndex, useHotkeys } from '@/lib/keyboard'
 import { shuffle } from '@/lib/random'
 import type { ConnectionsDifficulty, ConnectionsGroup, ConnectionsProgress, ConnectionsPuzzle } from '@/lib/connections'
 import {
@@ -199,6 +200,24 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
     return () => window.removeEventListener('keydown', onKey)
   }, [done, selectedKeys.size, submit])
 
+  // Tiles map to the 1234 / QWER / ASDF / ZXCV key block by position, arrows walk the tiles, Backspace or Escape
+  // clears the picks and Space shuffles.
+  useHotkeys((k) => {
+    if (done) return
+    const tiles = [...document.querySelectorAll<HTMLElement>('[data-cx-tile]')]
+    if (k.startsWith('Arrow')) {
+      const at = tiles.indexOf(document.activeElement as HTMLElement)
+      const to = at < 0 ? 0 : at + (k === 'ArrowLeft' ? -1 : k === 'ArrowRight' ? 1 : k === 'ArrowUp' ? -4 : 4)
+      if (at >= 0 && (k === 'ArrowLeft' || k === 'ArrowRight') && Math.floor(to / 4) !== Math.floor(at / 4)) return true
+      tiles[to]?.focus()
+      return true
+    }
+    if (k === 'Backspace' || k === 'Escape') return deselectAll(), true
+    if (k === ' ') return shufflePool(), true
+    const t = pool[gridKeyIndex(k, 4)]
+    if (t) return toggleSel(t.word), true
+  })
+
   const neutral = puzzle.difficultyKnown === false
   return (
     <div className="relative mx-auto w-full max-w-[600px] select-none space-y-3" data-testid="connections-board">
@@ -233,6 +252,7 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
               key={`${wordKey(t.word)}-${t.word}`}
               type="button"
               aria-pressed={sel}
+              data-cx-tile
               onClick={() => toggleSel(t.word)}
               className={`flex h-[72px] items-center justify-center rounded-md px-0.5 text-center font-bold uppercase
                 leading-tight transition-colors focus:outline-none focus-visible:ring-2 sm:h-20 ${tileText(t.word)}`}

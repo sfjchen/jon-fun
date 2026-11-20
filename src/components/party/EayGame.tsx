@@ -160,7 +160,7 @@ export default function EayGame() {
             {phase === 'lobby' && isHost && (
               <button
                 type="button"
-                onClick={startGame}
+                data-hotkey="Enter" onClick={startGame}
                 disabled={players.length < 3}
                 className="mt-4 w-full py-2 rounded text-white disabled:opacity-50"
                 style={{ backgroundColor: 'var(--ink-accent)' }}
@@ -169,12 +169,12 @@ export default function EayGame() {
               </button>
             )}
             {(phase === 'eay_scores' || phase === 'eay_final_scores') && isHost && (
-              <button type="button" onClick={() => postEay({ action: 'advance' })} className="mt-4 w-full py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>
+              <button type="button" data-hotkey="Enter" onClick={() => postEay({ action: 'advance' })} className="mt-4 w-full py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>
                 Next
               </button>
             )}
             {phase === 'finished' && isHost && (
-              <button type="button" onClick={() => void playAgain()} className="mt-4 w-full py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>
+              <button type="button" data-hotkey="Enter" onClick={() => void playAgain()} className="mt-4 w-full py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>
                 Play again
               </button>
             )}
@@ -235,7 +235,8 @@ export default function EayGame() {
                           disabled={!!myPick}
                           className="w-full text-left px-3 py-2 rounded border disabled:opacity-60"
                           style={{ borderColor: 'var(--ink-border)' }}
-                          onClick={() => postEay({ action: 'submitPick', pickedIndex: i })}
+                          data-hotkey={String(i + 1)}
+                      onClick={() => postEay({ action: 'submitPick', pickedIndex: i })}
                         >
                           {opt.text}
                         </button>
@@ -289,7 +290,8 @@ export default function EayGame() {
                         type="button"
                         className="text-left px-3 py-2 rounded border"
                         style={{ borderColor: 'var(--ink-accent)' }}
-                        onClick={() => postEay({ action: 'submitFinalPick', choiceIndex: i })}
+                        data-hotkey={String(i + 1)}
+                      onClick={() => postEay({ action: 'submitFinalPick', choiceIndex: i })}
                       >
                         {slot.text}
                       </button>

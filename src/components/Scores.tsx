@@ -407,9 +407,9 @@ export function ScoresHub() {
     {editing&&<PlayerForm key={raw} player={player} onDone={()=>setEditing(false)}/>}
     <div className="flex flex-wrap items-end gap-3 border-y border-[var(--ink-border)] py-4">
       <label className="mr-auto min-w-40 text-xs text-[var(--ink-muted)]">Game<select aria-label="Game" value={tab} onChange={e=>setTab(e.target.value as Tab)} className="mt-1 block w-full rounded-lg border border-[var(--ink-border)] bg-[var(--ink-paper)] px-3 py-2 text-sm text-[var(--ink-text)]"><option value="all">All games</option>{GAME_IDS.map(g=><option key={g} value={g}>{GAMES[g].title}</option>)}</select></label>
-      <DayPicker day={day} today={localDay()} minDay="2014-08-21" maxDay={localDay()} go={pick}/>
+      <DayPicker day={day} today={localDay()} minDay="2014-08-21" maxDay={localDay()} go={pick} keys/>
     </div>
-    <nav aria-label="Leaderboard views" className="flex gap-5 border-b border-[var(--ink-border)] text-sm">{([['day','Daily results'],['standings','Standings'],['stats','Your stats']] as const).map(([id,label])=><button key={id} aria-pressed={view===id} onClick={()=>setView(id)} className={`border-b-2 pb-3 ${view===id?'border-[var(--ink-accent)] font-semibold':'border-transparent text-[var(--ink-muted)]'}`}>{label}</button>)}</nav>
+    <nav aria-label="Leaderboard views" className="flex gap-5 border-b border-[var(--ink-border)] text-sm">{([['day','Daily results'],['standings','Standings'],['stats','Your stats']] as const).map(([id,label])=><button key={id} data-hotkey={String(['day','standings','stats'].indexOf(id)+1)} aria-pressed={view===id} onClick={()=>setView(id)} className={`border-b-2 pb-3 ${view===id?'border-[var(--ink-accent)] font-semibold':'border-transparent text-[var(--ink-muted)]'}`}>{label}</button>)}</nav>
     {error&&<p role="alert" className="rounded-lg border border-red-200 p-3 text-sm">{error}</p>}
     {!response&&!error&&<p role="status" className={`py-8 text-center text-sm ${muted}`}>Loading results…</p>}
     {view==='day'&&<section aria-label="Day results" className="space-y-4"><div className="flex items-center justify-between"><h2 className="text-lg font-semibold">{dayLabel}</h2>{tab==='all'&&overall.names.length>0&&<span className={`text-xs ${muted}`}>Most wins: {overall.names.join(' & ')}</span>}</div>

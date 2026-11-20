@@ -4,6 +4,7 @@ import { getDevicePlayer, saveDevicePlayer } from '@/lib/syncIdentity'
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useHotkeys } from '@/lib/keyboard'
 import {
   GAME24_MAX_PLAYERS,
   GAME24_MAX_ROUNDS,
@@ -776,6 +777,29 @@ export default function Game24() {
       showTemporaryMessage('No solution found')
     }
   }, [practiceNumbers, solver, showTemporaryMessage])
+
+  // 1-4 pick the card in that seat, + - * / (or X) pick the operator, Backspace or Escape drops the selection,
+  // R starts the puzzle over and N deals a new practice puzzle.
+  useHotkeys((k) => {
+    const press = (sel: string, n = 0) => {
+      const el = document.querySelectorAll<HTMLButtonElement>(sel)[n]
+      if (el?.tagName === 'BUTTON' && !el.disabled) el.click()
+      return true
+    }
+    if (/^[1-4]$/.test(k)) return press('.game-board > *', Number(k) - 1)
+    const op = { '+': 'plus', '=': 'plus', '-': 'minus', '*': 'multiply', x: 'multiply', '/': 'divide' }[k]
+    if (op) return press(`.operator-btn.${op}`)
+    if (k === 'r') return resetSelections(), true
+    if (k === 'n' && phase !== 'active') return generatePractice(), true
+    if (k === 'Backspace' || k === 'Escape') {
+      if (phase === 'active') clearSelections()
+      else {
+        setPracticeSelected(null)
+        setPracticePendingOp(null)
+      }
+      return true
+    }
+  })
 
   const roundProgressRatio =
     room?.status === 'active' && GAME24_ROUND_DURATION_MS > 0

@@ -339,7 +339,7 @@ export default function BuzzerPlayer({ pin, initialSession, initialQueue, boardT
 
       {/* Big button */}
       <button
-        onClick={handleBuzz}
+        data-hotkey="Space Enter" onClick={handleBuzz}
         disabled={!canBuzz}
         className="flex-1 w-full text-white font-extrabold transition-transform active:scale-[0.97]"
         style={{

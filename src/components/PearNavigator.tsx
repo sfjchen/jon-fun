@@ -1161,7 +1161,7 @@ export default function PearNavigator() {
                     )})}
                   </div>
                   <button
-                    onClick={handleStart}
+                    data-hotkey="Enter" onClick={handleStart}
                     disabled={!taskId}
                     className="w-full py-1 sm:py-2 lg:py-3 min-h-[28px] sm:min-h-[36px] lg:min-h-[48px] rounded-md lg:rounded-lg bg-[#34c759] text-black font-semibold text-[10px] sm:text-xs lg:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity touch-manipulation"
                   >
@@ -1187,13 +1187,14 @@ export default function PearNavigator() {
                   </p>
                   <div className="flex gap-0.5 sm:gap-1 flex-wrap">
                     <button
-                      onClick={() => setShowHighlight((h) => !h)}
+                      data-hotkey="h" onClick={() => setShowHighlight((h) => !h)}
                       className="flex-1 min-w-[60px] min-h-[26px] sm:min-h-[32px] py-1 sm:py-1.5 rounded border border-white/20 bg-white/5 text-white font-medium text-[9px] sm:text-[10px] hover:bg-white/10 transition-colors touch-manipulation"
                     >
                       {showHighlight ? 'Hide' : 'Show'} highlight
                     </button>
                     {!isFirstStep && (
                       <button
+                        data-hotkey="ArrowLeft"
                         onClick={handlePrev}
                         className="min-h-[26px] sm:min-h-[32px] py-1 sm:py-1.5 px-1.5 sm:px-3 rounded border border-white/20 bg-white/5 text-white font-medium text-[9px] sm:text-[10px] hover:bg-white/10 transition-colors touch-manipulation"
                         aria-label="Previous step"
@@ -1204,6 +1205,7 @@ export default function PearNavigator() {
                   </div>
                   {isVariantB && (
                     <button
+                      data-hotkey="ArrowRight Enter Space"
                       onClick={handleNext}
                       className="w-full mt-1 sm:mt-2 py-2 sm:py-3 min-h-[40px] sm:min-h-[48px] rounded-lg bg-[#34c759] text-black font-semibold text-sm sm:text-base hover:opacity-90 transition-opacity touch-manipulation relative ring-4 ring-red-500 ring-offset-2 ring-offset-[#1a1a1a] shadow-[0_0_0_2px_rgba(239,68,68,0.9)]"
                       aria-label="Next step - tap to advance"
@@ -1264,6 +1266,7 @@ export default function PearNavigator() {
                 {(['meh', 'good', 'great'] as const).map((r) => (
                   <button
                     key={r}
+                    data-hotkey={String(['meh', 'good', 'great'].indexOf(r) + 1)}
                     onClick={() => handleFeedback(r)}
                     className="min-h-[44px] sm:min-h-[48px] px-4 sm:px-6 py-2 sm:py-3 rounded-lg border border-white/20 bg-white/10 text-white font-medium text-sm sm:text-base hover:bg-white/20 transition-colors touch-manipulation capitalize"
                   >

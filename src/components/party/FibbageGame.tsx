@@ -127,13 +127,13 @@ export default function FibbageGame() {
               </div>
             ))}
             {phase === 'lobby' && isHost && (
-              <button type="button" onClick={startGame} disabled={players.length < 2} className="mt-4 w-full py-2 rounded text-white disabled:opacity-50" style={{ backgroundColor: 'var(--ink-accent)' }}>Start</button>
+              <button type="button" data-hotkey="Enter" onClick={startGame} disabled={players.length < 2} className="mt-4 w-full py-2 rounded text-white disabled:opacity-50" style={{ backgroundColor: 'var(--ink-accent)' }}>Start</button>
             )}
             {phase === 'fibbage_scores' && isHost && (
-              <button type="button" onClick={() => postFib({ action: 'advance' })} className="mt-4 w-full py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>Next</button>
+              <button type="button" data-hotkey="Enter" onClick={() => postFib({ action: 'advance' })} className="mt-4 w-full py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>Next</button>
             )}
             {phase === 'finished' && isHost && (
-              <button type="button" onClick={() => void playAgain()} className="mt-4 w-full py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>Play again</button>
+              <button type="button" data-hotkey="Enter" onClick={() => void playAgain()} className="mt-4 w-full py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>Play again</button>
             )}
           </aside>
           <main className="rounded-lg border p-4 shadow-sm space-y-4" style={cardStyle}>
@@ -169,6 +169,7 @@ export default function FibbageGame() {
                       disabled={!!myPick}
                       className="w-full text-left px-3 py-2 rounded border disabled:opacity-60"
                       style={{ borderColor: 'var(--ink-border)' }}
+                      data-hotkey={String(i + 1)}
                       onClick={() => postFib({ action: 'submitPick', pickedIndex: i })}
                     >
                       {opt.text}

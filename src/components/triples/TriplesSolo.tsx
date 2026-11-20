@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 import TriplesBoard from '@/components/triples/TriplesBoard'
 import { brokenFeatures, findTriple, isOver, isTriple, newDeal, removeTriple, type Deal } from '@/lib/triples'
 import { formatTime } from '@/lib/results'
+import { useHotkeys } from '@/lib/keyboard'
 
 const BEST_KEY = 'triples_best_seconds'
 const pill = 'rounded-full border px-4 py-2 text-sm font-semibold active:scale-95 disabled:opacity-40'
@@ -65,6 +66,20 @@ export default function TriplesSolo() {
     return () => clearInterval(t)
   }, [endedAt])
 
+  /** Highlights 1 more card of a set on the table, up to all 3. */
+  const hint = () => {
+    const t = deal && findTriple(deal.board)
+    if (!t) return
+    setHints((h) => h + 1)
+    setHinted(t.slice(0, Math.min(3, hinted.length + 1)))
+  }
+  // H hints, Backspace or Escape clears the picked cards, and Enter deals again once the deck is cleared.
+  useHotkeys((k) => {
+    if (endedAt) return k === 'Enter' ? (restart(Date.now()), true) : false
+    if (k === 'h' || k === '?') return hint(), true
+    if (k === 'Backspace' || k === 'Escape') return setSelected([]), true
+  })
+
   if (!deal) return <p style={{ color: 'var(--ink-muted)' }}>Dealing…</p>
 
   const seconds = Math.max(0, Math.floor(((endedAt || now || startedAt) - startedAt) / 1000))
@@ -102,12 +117,6 @@ export default function TriplesSolo() {
     }, 450)
   }
 
-  const hint = () => {
-    const t = findTriple(deal.board)
-    if (!t) return
-    setHints((h) => h + 1)
-    setHinted(t.slice(0, Math.min(3, hinted.length + 1)))
-  }
 
   return (
     <div className="space-y-3">

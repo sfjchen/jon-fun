@@ -10,6 +10,7 @@ import { brokenFeatures, isTriple } from '@/lib/triples'
 import { DAILY_EPOCH, validDay } from '@/lib/daily'
 import { usePlayDay } from '@/lib/play-day'
 import { formatTime } from '@/lib/results'
+import { useHotkeys } from '@/lib/keyboard'
 type Run={found:number[][];assisted:boolean;elapsedMs:number;activeSince:number|null;started:boolean}
 const fresh=():Run=>({found:[],assisted:false,elapsedMs:0,activeSince:null,started:false})
 const elapsed=(r:Run,now:number)=>r.elapsedMs+(r.activeSince===null?0:Math.max(0,now-r.activeSince))
@@ -33,8 +34,18 @@ function DailyPlay({day}:{day:string}){
     const found=[...run.found,cards],r=current.current
     commit({...r,found,...(found.length===6?{elapsedMs:elapsed(r,Date.now()),activeSince:null}:{})});setMessage(found.length===6?'All six sets found!':'Set found!')
   }
-  return <section className="space-y-5" data-testid="set-play"><div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3 text-sm"><strong>{run.found.length} / 6 sets found</strong><span className="tabular-nums" role="timer">{formatTime(Math.floor(elapsed(run,clock)/1000))}</span>{!paused&&!done&&<button className="underline" onClick={()=>{const r=current.current;commit({...r,elapsedMs:elapsed(r,Date.now()),activeSince:null})}}>Pause</button>}</div>
-    {paused?<div className="set-start"><p className="set-wordmark">SET</p><h2>{run.started?'Puzzle paused':'Find the six sets'}</h2><p>Twelve cards. Six different sets. Every feature must be all alike or all different.</p><button className="set-primary" onClick={resume}>{run.started?'Continue puzzle':'Play daily puzzle'}</button></div>:<><p role="status" className="min-h-6 text-center text-sm">{message||'Select three cards to make a set.'}</p><TriplesBoard board={board} selected={selected} hinted={hinted} disabled={done} onPick={pick}/>{!done&&<div className="flex justify-center gap-3"><button className="set-secondary" onClick={()=>{const next=allSets(board).find(c=>!run.found.some(f=>setKey(f)===setKey(c)));if(next){commit({...current.current,assisted:true});setHinted(next);setMessage('Hint shown.')}}}>Hint</button><button className="set-secondary" onClick={()=>setSelected([])} disabled={!selected.length}>Deselect</button></div>}</>}
+  const pause=()=>{const r=current.current;commit({...r,elapsedMs:elapsed(r,Date.now()),activeSince:null})}
+  const hint=()=>{const next=allSets(board).find(c=>!run.found.some(f=>setKey(f)===setKey(c)));if(next){commit({...current.current,assisted:true});setHinted(next);setMessage('Hint shown.')}}
+  // Enter or Space starts and resumes, P pauses, H hints, and Backspace or Escape clears the picked cards.
+  useHotkeys(k=>{
+    if(done)return
+    if(paused)return k==='Enter'||k===' '||k==='p'?(resume(),true):false
+    if(k==='p')return pause(),true
+    if(k==='h'||k==='?')return hint(),true
+    if(k==='Backspace'||k==='Escape')return setSelected([]),true
+  })
+  return <section className="space-y-5" data-testid="set-play"><div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3 text-sm"><strong>{run.found.length} / 6 sets found</strong><span className="tabular-nums" role="timer">{formatTime(Math.floor(elapsed(run,clock)/1000))}</span>{!paused&&!done&&<button className="underline" onClick={pause}>Pause</button>}</div>
+    {paused?<div className="set-start"><p className="set-wordmark">SET</p><h2>{run.started?'Puzzle paused':'Find the six sets'}</h2><p>Twelve cards. Six different sets. Every feature must be all alike or all different.</p><button className="set-primary" onClick={resume}>{run.started?'Continue puzzle':'Play daily puzzle'}</button></div>:<><p role="status" className="min-h-6 text-center text-sm">{message||'Select three cards to make a set.'}</p><TriplesBoard board={board} selected={selected} hinted={hinted} disabled={done} onPick={pick}/>{!done&&<div className="flex justify-center gap-3"><button className="set-secondary" onClick={hint}>Hint</button><button className="set-secondary" onClick={()=>setSelected([])} disabled={!selected.length}>Deselect</button></div>}</>}
     {done&&<div className="set-complete space-y-2" data-testid="set-result"><h2 className="text-2xl font-bold">All six sets found!</h2><p>Time: {formatTime(Math.floor(run.elapsedMs/1000))}{run.assisted?' · With hints':''}</p></div>}
     {run.found.length>0&&<details open={done}><summary className="cursor-pointer text-sm font-semibold">Your found sets ({run.found.length})</summary><ol className="mt-3 grid gap-3 sm:grid-cols-2">{run.found.map(cards=><li key={setKey(cards)} className="grid grid-cols-3 gap-1 rounded border p-2">{cards.map(card=><TriplesCard key={card} card={card} selected={false} disabled onPick={()=>{}}/>)}</li>)}</ol></details>}
     <p className="text-center text-xs text-[var(--ink-muted)]">Daily boards generated on sfjc.dev · classic SET rules</p>

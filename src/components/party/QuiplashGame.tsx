@@ -157,7 +157,7 @@ export default function QuiplashGame() {
             {phase === 'lobby' && isHost && (
               <button
                 type="button"
-                onClick={startGame}
+                data-hotkey="Enter" onClick={startGame}
                 disabled={players.length < 3 || loading}
                 className="w-full py-2 rounded text-white mb-2 disabled:opacity-50"
                 style={{ backgroundColor: 'var(--ink-accent)' }}
@@ -168,7 +168,7 @@ export default function QuiplashGame() {
             {(phase === 'quiplash_1_scores' || phase === 'quiplash_2_scores' || phase === 'quiplash_final_scores') && isHost && (
               <button
                 type="button"
-                onClick={() => postQuiplash({ action: 'advanceScoreboard' })}
+                data-hotkey="Enter" onClick={() => postQuiplash({ action: 'advanceScoreboard' })}
                 className="w-full py-2 rounded text-white mb-2"
                 style={{ backgroundColor: 'var(--ink-accent)' }}
               >
@@ -178,7 +178,7 @@ export default function QuiplashGame() {
             {phase === 'finished' && isHost && (
               <button
                 type="button"
-                onClick={() => void playAgain()}
+                data-hotkey="Enter" onClick={() => void playAgain()}
                 className="w-full py-2 rounded text-white"
                 style={{ backgroundColor: 'var(--ink-accent)' }}
               >
@@ -233,7 +233,8 @@ export default function QuiplashGame() {
                           type="button"
                           className="text-left px-4 py-2 rounded border w-full"
                           style={{ borderColor: 'var(--ink-accent)' }}
-                          onClick={() => postQuiplash({ action: 'submitVote', choice: idx })}
+                          data-hotkey={String(idx + 1)}
+                        onClick={() => postQuiplash({ action: 'submitVote', choice: idx })}
                         >
                           <span className="text-xs block" style={{ color: 'var(--ink-muted)' }}>{nameOf(pid)}</span>
                           {ans?.body ?? '…'}
