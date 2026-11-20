@@ -110,15 +110,25 @@ def labels():
     return out
 
 
-write(os.path.join(OUT, 'world-lo.json'), {
-    'land': layer('ne_50m_land', 0.02, 2),
-    'borders': layer('ne_50m_admin_0_boundary_lines_land', 0.02, 2),
-    'lakes': layer('ne_50m_lakes', 0.02, 2),
-})
+# Land and lakes are drawn fill-only, with their shorelines as separate lines: clipping a line adds no edges, so
+# tile seams and the antimeridian split never show as stray strokes.
+WORLD = box(-179.999, -89.9, 179.999, 90)
+
+
+def tiers(res):
+    """
+    Returns 1 resolution's land, lakes, borders and coastline geometries.
+    """
+    g = {k: shape(layer(f'ne_{res}_{k}' if k != 'borders' else f'ne_{res}_admin_0_boundary_lines_land', 0, 6))
+         for k in ('land', 'lakes', 'borders')}
+    g['coast'] = unary_union([g['land'].boundary, g['lakes'].boundary]).intersection(WORLD)
+    return g
+
+
+lo = tiers('50m')
+write(os.path.join(OUT, 'world-lo.json'), {k: finish(g, 0.02, 2) for k, g in lo.items()})
 write(os.path.join(OUT, 'labels.json'), labels())
-detail = {k: layer(f'ne_10m_{k}' if k != 'borders' else 'ne_10m_admin_0_boundary_lines_land', 0, 6)
-          for k in ('land', 'borders', 'lakes')}
-detail = {k: shape(v) for k, v in detail.items()}
+detail = tiers('10m')
 cells = []
 for col in range(360 // CELL):
     for row in range(180 // CELL):

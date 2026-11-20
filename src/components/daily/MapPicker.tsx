@@ -10,16 +10,17 @@ import type * as LT from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { Pin } from '@/lib/artifact-scoring'
 
-type Basemap = { land?: GeoJSON.Geometry; borders?: GeoJSON.Geometry; lakes?: GeoJSON.Geometry }
+type Basemap = { land?: GeoJSON.Geometry; borders?: GeoJSON.Geometry; lakes?: GeoJSON.Geometry; coast?: GeoJSON.Geometry }
 type Label = { n: string; x: number; y: number; z: number; r: number; m?: number; k?: string; c?: 1 }
 type Labels = Record<'countries' | 'states' | 'places' | 'marine' | 'physio' | 'islands', Label[]>
 type Manifest = { deg: number; cells: string[] }
 type Candidate = Label & { cls: string; fs: number; w: number; p: number }
 
-const BASE = '/maps/basemap', OFFSETS = [-360, 0, 360], DETAIL_ZOOM = 4, MAX_ZOOM = 8, LABEL_BIAS = 1
+const BASE = '/maps/basemap', OFFSETS = [-360, 0, 360], DETAIL_ZOOM = 4, MAX_ZOOM = 8, LABEL_BIAS = 0.5
 const STYLES = {
-  land: { fillColor: '#f5f0e5', fillOpacity: 1, color: '#bcb4a2', weight: 0.6 },
-  lakes: { fillColor: '#ccd8dc', fillOpacity: 1, color: '#bcb4a2', weight: 0.5 },
+  land: { fillColor: '#f5f0e5', fillOpacity: 1, stroke: false },
+  lakes: { fillColor: '#ccd8dc', fillOpacity: 1, stroke: false },
+  coast: { color: '#bcb4a2', weight: 0.6, fill: false },
   borders: { color: '#bcb4a2', weight: 0.8, fill: false },
 } as const
 
@@ -62,7 +63,7 @@ function loadShared() {
  */
 function drawBasemap(L: typeof LT, data: Basemap, offset: number, renderer: LT.Renderer, pane: string) {
   const group = L.layerGroup()
-  for (const key of ['land', 'lakes', 'borders'] as const) {
+  for (const key of ['land', 'lakes', 'coast', 'borders'] as const) {
     const geom = data[key]
     if (geom) L.geoJSON(geom, {
       style: STYLES[key], renderer, pane, interactive: false,
@@ -106,19 +107,20 @@ export default function MapPicker({ pin, onChange, target, region }: { pin: Pin 
       const detail = new Map<string, LT.LayerGroup>()
       let data: [Basemap, Candidate[], Manifest] | null = null
 
-      // Places labels by priority, skipping any whose box overlaps one already placed.
+      // Places labels by priority, skipping any that would sit within a small gap of one already placed, up to a cap
+      // scaled to the map's area so the map stays readable.
       const relabel = () => {
         labels.clearLayers()
         if (!data) return
         const z = map.getZoom(), size = map.getSize(), placed: number[][] = []
         for (const l of data[1]) {
           if (l.z - LABEL_BIAS > z || (l.m !== undefined && z > l.m + 1)) continue
-          if (placed.length >= 260) break
+          if (placed.length >= size.x * size.y / 7000) break
           for (const off of OFFSETS) {
             const pt = map.latLngToContainerPoint([l.y, l.x + off]), dot = l.cls === 'place' || l.cls === 'capital'
             const b = dot ? [pt.x - 3, pt.y - l.fs / 2, pt.x + 6 + l.w, pt.y + l.fs / 2] : [pt.x - l.w / 2, pt.y - l.fs / 2, pt.x + l.w / 2, pt.y + l.fs / 2]
             if (b[2]! < 0 || b[0]! > size.x || b[3]! < 0 || b[1]! > size.y) continue
-            if (placed.some(q => b[0]! < q[2]! + 4 && b[2]! + 4 > q[0]! && b[1]! < q[3]! + 2 && b[3]! + 2 > q[1]!)) continue
+            if (placed.some(q => b[0]! < q[2]! + 12 && b[2]! + 12 > q[0]! && b[1]! < q[3]! + 6 && b[3]! + 6 > q[1]!)) continue
             placed.push(b)
             L.marker([l.y, l.x + off], {
               pane: 'anthroLabels', interactive: false, keyboard: false,
