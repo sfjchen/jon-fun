@@ -151,18 +151,33 @@
 .krillion-stage:not([data-phase='ready']) .krillion-console { position:relative; display:flex; flex-direction:column; min-height:calc(100svh - 170px); padding:160px 24px 28px; margin:0 auto; }
 .krillion-stage:not([data-phase='ready']) .krillion-rounds { position:absolute; left:50%; transform:translateX(-50%); top:24px; }
 .krillion-stage:not([data-phase='ready']) .krillion-console > h2 { max-width:540px; background:#101d33eb; border:6px solid #07111d; padding:24px; box-shadow:5px 5px 0 #07111d; }
-.krillion-answer-form { display:grid; grid-template-columns:64px minmax(0,1fr) auto; gap:10px; align-items:center; margin-top:auto!important; padding-top:40px; }
-.krillion-answer-form .krillion-timer { font-size:30px!important; border:2px solid #28c9e8; border-radius:50%; width:60px; height:60px; display:grid; place-items:center; }
-.krillion-answer-form > .h-1 { display:none; }
+.krillion-answer-form { display:grid; grid-template-columns:58px minmax(0,1fr) auto; gap:10px; align-items:center; margin-top:auto!important; padding-top:40px; }
+.krillion-answer-form .krillion-timer { position:relative; overflow:hidden; font-size:26px!important; color:#4de3ff; text-shadow:0 0 8px #4de3ff80; border:2px solid #28c9e8; border-radius:50%; width:58px; height:58px; display:grid; place-items:center; }
+.krillion-sweep { position:absolute; inset:0; background:conic-gradient(from 0deg,#4de3ff59,transparent 30%); animation:krillion-sweep 2.4s linear infinite; }
+.krillion-timer[data-hot='true'] { color:#ff5d8f; border-color:#ff5d8f; text-shadow:0 0 12px #ff5d8fb3; }
+.krillion-timer[data-hot='true'] .krillion-sweep { background:conic-gradient(from 0deg,#ff5d8f66,transparent 30%); animation-duration:.7s; }
+@keyframes krillion-sweep { to { transform:rotate(1turn); } }
+@media (prefers-reduced-motion:reduce) { .krillion-sweep { animation:none; } }
+.krillion-fuse { position:absolute; left:0; right:0; bottom:-8px; height:4px; background:#10253d; pointer-events:none; }
+.krillion-fuse i { display:block; height:100%; background:#4de3ff; transform-origin:0 50%; }
+.krillion-fuse[data-hot='true'] i { background:#ff5d8f; }
 .krillion-answer-form input { margin-top:0; border:2px solid #28c9e8; min-height:54px; background:#07111dcc; }
 .krillion-answer-form > p { grid-column:1/-1; }
+.krillion-input { position:relative; display:block; min-width:0; }
+.krillion-input input { padding-right:48px; }
+.krillion-clear { position:absolute; right:4px; top:50%; transform:translateY(-50%); width:44px; height:44px; border-radius:50%; color:#b3c5df; font-size:26px; line-height:1; }
+.krillion-clear:hover,.krillion-clear:active { color:#e8f1ff; background:#17364c; }
+.krillion-saved { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:8px; }
+.krillion-chip { max-width:100%; min-height:36px; padding:4px 12px; border:1px solid #29415f; border-radius:999px; background:#101d33; color:#e8f1ff; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.krillion-chip:first-child { border-color:#28c9e8; color:#50d4ed; }
+.krillion-chip:disabled { opacity:.4; }
 .anthro-artifact .anthro-artifact-image img { cursor:zoom-in; }
 @media(max-width:767px) {
   .krillion-stage:not([data-phase='ready']) .krillion-console { min-height:calc(100svh - 170px); padding-top:155px; padding-inline:16px; }
   .krillion-stage:not([data-phase='ready']) .krillion-hud { left:12px; right:12px; }
   .krillion-stage:not([data-phase='ready']) .krillion-hud > span:first-child,.krillion-stage:not([data-phase='ready']) .krillion-hud > span:last-child { padding:6px 10px; font-size:12px; }
-  .krillion-answer-form { grid-template-columns:42px minmax(0,1fr) auto; gap:7px; }
-  .krillion-answer-form .krillion-timer { width:40px; height:40px; font-size:24px!important; }
+  .krillion-answer-form { grid-template-columns:48px minmax(0,1fr) auto; gap:7px; }
+  .krillion-answer-form .krillion-timer { width:48px; height:48px; font-size:22px!important; }
   .krillion-answer-form .krillion-action { padding:8px 12px; font-size:22px; }
   .krillion-depth-ruler { right:3%; }
   .krillion-tagline { padding-inline:24px; font-size:16px; }

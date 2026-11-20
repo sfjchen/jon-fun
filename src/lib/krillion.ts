@@ -27,6 +27,37 @@ export function editDistance(a: string, b: string, limit: number): number {
   }
   return prev[b.length]!
 }
+/** Indexes every normalized answer and alias of a prompt, keeping the first entry on a duplicate key. */
+export function answerLookup(answers: KrillionAnswer[]): Map<string, KrillionAnswer> {
+  const lookup = new Map<string, KrillionAnswer>()
+  for (const entry of answers) for (const alias of [entry.answer, ...entry.aliases ?? []]) {
+    const key = answerKey(alias)
+    if (key && !lookup.has(key)) lookup.set(key, entry)
+  }
+  return lookup
+}
+/**
+ * Judges an answer against a prompt's lookup: an exact normalized match, else a silent autocorrect to the single
+ * closest answer within 1 edit (keys under 8 letters) or 2 edits, rejecting ties between different answers.
+ */
+export function judgeWith(lookup: Map<string, KrillionAnswer>, answer: string): KrillionJudgment {
+  const key = answerKey(answer)
+  let matched = key ? lookup.get(key) : undefined
+  if (!matched && key.length >= 4) {
+    const max = key.length < 8 ? 1 : 2
+    let distance = max + 1, ambiguous = false
+    for (const [alias, entry] of lookup) {
+      if (Math.abs(alias.length - key.length) > max) continue
+      const d = editDistance(key, alias, max)
+      if (d < distance) { distance = d; matched = entry; ambiguous = false }
+      else if (d === distance && matched?.answer !== entry.answer) ambiguous = true
+    }
+    if (ambiguous || distance > max) matched = undefined
+  }
+  if (!matched) return { answer, accepted: false, score: 0, reason: answer.trim() ? 'Not in this prompt’s accepted answer set.' : 'No answer before the clock ran out.' }
+  return { answer, accepted: true, score: matched.score, tier: matched.tier, matchedAnswer: matched.answer,
+    ...(matched.quip ? { quip: matched.quip } : {}), reason: `${KRILLION_TIERS[matched.tier].name} · ${matched.score} points` }
+}
 export type KrillionRun = { phase:'ready'|'answering'|'feedback'|'done'; index:number; endsAt:number|null; draft:string; outcomes:KrillionResult[] }
 export function newKrillionRun():KrillionRun { return {phase:'ready',index:0,endsAt:null,draft:'',outcomes:[]} }
 export function beginKrillionRound(run:KrillionRun,now:number):KrillionRun { return {...run,phase:'answering',index:run.outcomes.length,endsAt:now+25000,draft:''} }

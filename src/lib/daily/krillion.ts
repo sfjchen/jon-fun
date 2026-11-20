@@ -3,7 +3,7 @@ import { gunzipSync, gzipSync } from 'node:zlib'
 import path from 'node:path'
 import { supabaseAdmin } from '@/lib/supabase'
 import { siteDay, validDay } from '@/lib/daily'
-import { answerKey, editDistance, KRILLION_TIERS, type KrillionReview, type KrillionPuzzle, type KrillionJudgment, type KrillionAnswer } from '@/lib/krillion'
+import { answerLookup, judgeWith, KRILLION_TIERS, type KrillionReview, type KrillionPuzzle, type KrillionJudgment, type KrillionAnswer } from '@/lib/krillion'
 const cache=new Map<string,Promise<KrillionReview>>()
 function checked(value: unknown, date: string): KrillionReview {
   const r=value as KrillionReview
@@ -53,18 +53,7 @@ const indices=new WeakMap<object,Map<string,KrillionAnswer>>()
 export async function judgeAnswer(date:string,index:number,answer:string):Promise<KrillionJudgment> {
   const prompt=(await krillionReview(date)).prompts[index]
   if(!prompt)throw Error('Invalid prompt')
-  const miss={answer,accepted:false,score:0,reason:answer.trim()?'Not in this prompt’s accepted answer set.':'No answer before the clock ran out.'}
-  const key=answerKey(answer)
-  if(!key)return miss
   let lookup=indices.get(prompt)
-  if(!lookup){lookup=new Map();for(const entry of prompt.answers)for(const alias of [entry.answer,...entry.aliases??[]]){const normalized=answerKey(alias);if(normalized&&!lookup.has(normalized))lookup.set(normalized,entry)}indices.set(prompt,lookup)}
-  let matched=lookup.get(key)
-  if(!matched&&key.length>=4){
-    const max=key.length<8?1:2
-    let distance=max+1,ambiguous=false
-    for(const [alias,entry] of lookup){if(Math.abs(alias.length-key.length)>max)continue;const d=editDistance(key,alias,max);if(d<distance){distance=d;matched=entry;ambiguous=false}else if(d===distance&&matched?.answer!==entry.answer)ambiguous=true}
-    if(ambiguous||distance>max)matched=undefined
-  }
-  if(matched)return {answer,accepted:true,score:matched.score,tier:matched.tier,matchedAnswer:matched.answer,...(matched.quip?{quip:matched.quip}:{}),reason:`${KRILLION_TIERS[matched.tier].name} · ${matched.score} points`}
-  return miss
+  if(!lookup){lookup=answerLookup(prompt.answers);indices.set(prompt,lookup)}
+  return judgeWith(lookup,answer)
 }
