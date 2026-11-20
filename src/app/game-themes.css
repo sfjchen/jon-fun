@@ -79,7 +79,22 @@
 .anthro-arena { position:relative; min-height:650px; background:#ccd8dc; display:grid; grid-template-columns:minmax(0,1fr) 340px; }
 .anthro-map { position:relative; }
 .anthro-map > div { position:absolute; inset:0; }
-.anthro-map svg { height:100%; width:100%; min-height:650px; border:0; border-radius:0; background:#ccd8dc; }
+.anthro-leaflet { position:absolute; inset:0; z-index:0; background:#ccd8dc; font-family:Georgia,serif; }
+.anthro-leaflet:focus { outline:none; }
+.anthro-leaflet:focus-visible { outline:2px solid #7a1f1a; outline-offset:-2px; }
+.anthro-leaflet.leaflet-container { cursor:crosshair; }
+.anthro-leaflet.leaflet-dragging .leaflet-grab { cursor:grabbing; }
+.anthro-label { position:absolute; transform:translate(-50%,-50%); white-space:nowrap; font-family:Georgia,serif; color:#665d4d; text-shadow:0 0 2px #f5f0e5,0 0 2px #f5f0e5; line-height:1; }
+.anthro-label-continent { font-size:16px; letter-spacing:.25em; color:#928165; font-weight:600; }
+.anthro-label-ocean { font-size:14px; letter-spacing:.2em; font-style:italic; color:#7b919b; text-shadow:none; }
+.anthro-label-sea { font-size:11px; font-style:italic; color:#7b919b; text-shadow:none; }
+.anthro-label-country { font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#7a6c55; }
+.anthro-label-state { font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#a3967c; }
+.anthro-label-physio { font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-style:italic; color:#9a8664; }
+.anthro-label-island { font-size:10px; font-style:italic; color:#7a6c55; }
+.anthro-label-place,.anthro-label-capital { transform:translate(-3px,-50%); font-size:11px; color:#4a4337; }
+.anthro-label-capital { font-size:12px; font-weight:600; }
+.anthro-label-place::before,.anthro-label-capital::before { content:''; display:inline-block; width:4px; height:4px; margin-right:4px; border-radius:50%; background:#665d4d; vertical-align:middle; }
 .anthro-map > div > div:first-child { position:absolute; top:12px; left:12px; z-index:2; background:#f7f3ea; padding:5px; box-shadow:0 1px 4px #0002; }
 .anthro-map > div > p:last-child { position:absolute; bottom:8px; left:16px; background:#f7f3eae6; padding:4px 8px; }
 .anthro-artifact { position:relative; z-index:3; background:#f7f3ea; border-left:1px solid #dcd2bc; }
@@ -98,13 +113,14 @@
   .anthro-landing { padding-top:40px; }
   .anthro-arena { min-height:0; display:flex; flex-direction:column; }
   .anthro-map { position:relative; height:310px; order:2; }
-  .anthro-map svg { min-height:310px; }
   .anthro-artifact { width:100%; border-inline:0; order:1; }
   .anthro-artifact-image { min-height:190px; }
   .anthro-artifact-image img { height:230px; width:auto; max-width:100%; }
   .anthro-artifact-copy { padding:8px 16px; }
   .anthro-submit { position:relative; order:3; bottom:auto; left:auto; transform:none; width:100%; border-radius:0; }
   .anthro-timeline { padding-inline:16px; }
+  .anthro-label-continent { font-size:12px; letter-spacing:.18em; }
+  .anthro-label-ocean { font-size:11px; letter-spacing:.12em; }
   [data-game-theme] .daily-heading h1 { font-size:1.4rem; }
 }
 @media(prefers-reduced-motion:reduce) { .krillion-stage * { animation:none!important; transition:none!important; } }
