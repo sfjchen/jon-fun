@@ -3,7 +3,7 @@ import { gunzipSync, gzipSync } from 'node:zlib'
 import path from 'node:path'
 import { supabaseAdmin } from '@/lib/supabase'
 import { siteDay, validDay } from '@/lib/daily'
-import { answerLookup, judgeWith, KRILLION_TIERS, type KrillionReview, type KrillionPuzzle, type KrillionJudgment, type KrillionAnswer } from '@/lib/krillion'
+import { answerLookup, judgeWith, type AnswerLookup, KRILLION_TIERS, type KrillionReview, type KrillionPuzzle, type KrillionJudgment } from '@/lib/krillion'
 const cache=new Map<string,Promise<KrillionReview>>()
 function checked(value: unknown, date: string): KrillionReview {
   const r=value as KrillionReview
@@ -49,13 +49,13 @@ export async function krillionForDay(day:string):Promise<KrillionPuzzle> {
   const review=await krillionReview(day)
   return {date:review.date,prompts:review.prompts.map(({id,text})=>({id,text})),answerMs:25000,officialScoring:true}
 }
-const indices=new WeakMap<object,Map<string,KrillionAnswer>>()
-export async function judgeAnswer(date:string,index:number,answer:string):Promise<KrillionJudgment> {
+const indices=new WeakMap<object,AnswerLookup>()
+export async function judgeAnswer(date:string,index:number,answer:string,preview=false):Promise<KrillionJudgment> {
   const prompt=(await krillionReview(date)).prompts[index]
   if(!prompt)throw Error('Invalid prompt')
   let lookup=indices.get(prompt)
   if(!lookup){lookup=answerLookup(prompt.answers);indices.set(prompt,lookup)}
-  return judgeWith(lookup,answer)
+  return judgeWith(lookup,answer,preview)
 }
 export type KrillionPercentile={betterThan:number;dist:number[];sample?:number;live:boolean}
 /**

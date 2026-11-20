@@ -206,3 +206,6 @@
 .krillion-tsub { font-size:14px; letter-spacing:.14em; color:#7d93b8!important; }
 .krillion-landed .krillion-action { margin-top:16px; }
 @media(min-width:768px) { .krillion-tans { font-size:24px; } .krillion-tpts { font-size:28px; } .krillion-tsub { font-size:17px; } }
+.krillion-fix { display:flex; flex-wrap:wrap; gap:4px 12px; align-items:baseline; }
+.krillion-fix span:first-child { padding:2px 10px; border:1px solid #4de3ff; color:#e8f1ff; }
+.krillion-fix span:last-child { font-size:14px; letter-spacing:.12em; color:#7d93b8; }

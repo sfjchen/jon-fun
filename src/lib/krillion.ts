@@ -25,8 +25,12 @@ export type KrillionPrompt = { id: string; text: string; answers: KrillionAnswer
 export type KrillionReview = { date: string; prompts: KrillionPrompt[] }
 export type KrillionPuzzle = { date: string; dayNumber?: number; prompts: { id: string; text: string }[]; answerMs: number; officialScoring: true }
 export type KrillionResult = { answer: string; accepted: boolean; score: number; tier?: KrillionTier; matchedAnswer?: string; quip?: string; reason: string }
-export type KrillionJudgment = KrillionResult
-export function answerKey(text: string): string { return text.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '') }
+/** A judgment, with the suggested answer when a close typo waits for the player to confirm it. */
+export type KrillionJudgment = KrillionResult & { correction?: { from: string; to: string } }
+/** Normalizes like the original: no accents or case, punctuation as single spaces, and no leading "the". */
+export function answerKey(text: string): string {
+  return text.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim().replace(/^the /, '')
+}
 /** Bounded edit distance for a conservative silent autocorrect. */
 export function editDistance(a: string, b: string, limit: number): number {
   if (Math.abs(a.length-b.length)>limit) return limit+1
@@ -39,34 +43,46 @@ export function editDistance(a: string, b: string, limit: number): number {
   }
   return prev[b.length]!
 }
-/** Indexes every normalized answer and alias of a prompt, keeping the first entry on a duplicate key. */
-export function answerLookup(answers: KrillionAnswer[]): Map<string, KrillionAnswer> {
-  const lookup = new Map<string, KrillionAnswer>()
-  for (const entry of answers) for (const alias of [entry.answer, ...entry.aliases ?? []]) {
+export type AnswerLookup = {
+  exact: Map<string, KrillionAnswer>
+  compact: Map<string, KrillionAnswer>
+  keys: { key: string; entry: KrillionAnswer; canonical: boolean }[]
+}
+/** Indexes every normalized answer and alias of a prompt, in list order, keeping the first entry on a duplicate. */
+export function answerLookup(answers: KrillionAnswer[]): AnswerLookup {
+  const lookup: AnswerLookup = { exact: new Map(), compact: new Map(), keys: [] }
+  for (const entry of answers) [entry.answer, ...entry.aliases ?? []].forEach((alias, i) => {
     const key = answerKey(alias)
-    if (key && !lookup.has(key)) lookup.set(key, entry)
-  }
+    if (!key || lookup.exact.has(key)) return
+    lookup.exact.set(key, entry)
+    if (!lookup.compact.has(key.replaceAll(' ', ''))) lookup.compact.set(key.replaceAll(' ', ''), entry)
+    lookup.keys.push({ key, entry, canonical: i === 0 })
+  })
   return lookup
 }
 /**
- * Judges an answer against a prompt's lookup: an exact normalized match, else a silent autocorrect to the single
- * closest answer within 1 edit (keys under 8 letters) or 2 edits, rejecting ties between different answers.
+ * Judges an answer the way probes of the original game showed it works. An exact normalized match to an answer
+ * or alias scores at once. Otherwise, from 5 letters up, the closest answer or alias within min(3, 0.28 × its
+ * length) Levenshtein edits wins, with spaces counted and ties going to a canonical answer, then list order. The
+ * same text without spaces also counts as close. A close match comes back as a correction to the canonical
+ * answer while `preview` is on, and scores directly once the player confirms it or the clock runs out.
  */
-export function judgeWith(lookup: Map<string, KrillionAnswer>, answer: string): KrillionJudgment {
-  const key = answerKey(answer)
-  let matched = key ? lookup.get(key) : undefined
-  if (!matched && key.length >= 4) {
-    const max = key.length < 8 ? 1 : 2
-    let distance = max + 1, ambiguous = false
-    for (const [alias, entry] of lookup) {
-      if (Math.abs(alias.length - key.length) > max) continue
-      const d = editDistance(key, alias, max)
-      if (d < distance) { distance = d; matched = entry; ambiguous = false }
-      else if (d === distance && matched?.answer !== entry.answer) ambiguous = true
+export function judgeWith(lookup: AnswerLookup, answer: string, preview = false): KrillionJudgment {
+  const key = answerKey(answer), compact = key.replaceAll(' ', '')
+  let matched = key ? lookup.exact.get(key) : undefined
+  const exact = !!matched
+  if (!matched && compact) matched = lookup.compact.get(compact)
+  if (!matched && compact.length >= 5) {
+    let best = { d: 4, canonical: false }
+    for (const c of lookup.keys) {
+      const max = Math.min(3, Math.floor(c.key.length * .28))
+      if (!max || Math.abs(c.key.length - key.length) > max) continue
+      const d = editDistance(key, c.key, max)
+      if (d <= max && (d < best.d || (d === best.d && c.canonical && !best.canonical))) { best = { d, canonical: c.canonical }; matched = c.entry }
     }
-    if (ambiguous || distance > max) matched = undefined
   }
   if (!matched) return { answer, accepted: false, score: 0, reason: answer.trim() ? 'Not in this prompt’s accepted answer set.' : 'No answer before the clock ran out.' }
+  if (!exact && preview) return { answer, accepted: false, score: 0, correction: { from: answer, to: matched.answer }, reason: 'Submit again to confirm' }
   return { answer, accepted: true, score: matched.score, tier: matched.tier, matchedAnswer: matched.answer,
     ...(matched.quip ? { quip: matched.quip } : {}), reason: `${KRILLION_TIERS[matched.tier].name} · ${matched.score} points` }
 }

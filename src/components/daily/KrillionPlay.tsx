@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { logResult, markPracticeIfFuture, isPracticeResult } from '@/lib/results'
 import {
   answerLookup, beginKrillionRound, completeKrillionRound, judgeWith, krillionDiveNumber, newKrillionRun, restoreKrillionRun,
-  KRILLION_BANDS, KRILLION_MISS, KRILLION_TIERS, type KrillionAnswer, type KrillionRun, type KrillionResult, type KrillionJudgment,
+  KRILLION_BANDS, KRILLION_MISS, KRILLION_TIERS, type AnswerLookup, type KrillionAnswer, type KrillionRun, type KrillionResult, type KrillionJudgment,
 } from '@/lib/krillion'
 import { shiftDay, siteDay } from '@/lib/daily'
 import KrillionReview from './KrillionReview'
@@ -12,8 +12,8 @@ import type { KrillionPuzzle } from '@/lib/krillion'
 export default function KrillionPlay({puzzle,dailyDay}:{puzzle:KrillionPuzzle;dailyDay:string}){
   const storageKey=`krillion:v3:${dailyDay}:${puzzle.date}`
   const [run,setRunState]=useState<KrillionRun>(()=>{try{return restoreKrillionRun(JSON.parse(localStorage.getItem(storageKey)??'null'),Date.now())}catch{return newKrillionRun()}})
-  const [clock,setClock]=useState(()=>Date.now()),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[copied,setCopied]=useState(false),[saved,setSaved]=useState<{index:number;list:string[]}>({index:-1,list:[]}),[sheet,setSheet]=useState(0),[pct,setPct]=useState<{score:number;betterThan:number;dist:number[]}|null>(null)
-  const current=useRef(run),pending=useRef(false),submittedAt=useRef(0),abort=useRef<AbortController|null>(null),input=useRef<HTMLInputElement>(null),lookups=useRef(new Map<number,Map<string,KrillionAnswer>>()),loading=useRef(new Set<number>())
+  const [clock,setClock]=useState(()=>Date.now()),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[copied,setCopied]=useState(false),[saved,setSaved]=useState<{index:number;list:string[]}>({index:-1,list:[]}),[sheet,setSheet]=useState(0),[fix,setFix]=useState<{from:string;to:string}|null>(null),[pct,setPct]=useState<{score:number;betterThan:number;dist:number[]}|null>(null)
+  const current=useRef(run),pending=useRef(false),submittedAt=useRef(0),abort=useRef<AbortController|null>(null),input=useRef<HTMLInputElement>(null),lookups=useRef(new Map<number,AnswerLookup>()),loading=useRef(new Set<number>())
   const setRun=useCallback((value:KrillionRun|((r:KrillionRun)=>KrillionRun))=>{const next=typeof value==='function'?value(current.current):value;current.current=next;setRunState(next)},[])
   const remaining=Math.max(0,(run.endsAt??clock)-clock),total=run.outcomes.reduce((sum,r)=>sum+r.score,0),feedback=run.outcomes.at(-1)
   const finish=useCallback((result:KrillionResult)=>{setRun(r=>completeKrillionRound(r,result));setBusy(false);pending.current=false;setMessage('')},[setRun])
@@ -46,20 +46,25 @@ export default function KrillionPlay({puzzle,dailyDay}:{puzzle:KrillionPuzzle;da
     const answer=state.draft.trim(),index=state.index
     // A blank answer only gets judged when time runs out, so it can close the round.
     if(state.phase!=='answering'||pending.current||(!answer&&!final))return
+    // A close typo first shows the original's correction; sending the same text again confirms it, and the clock
+    // running out confirms it automatically.
+    const preview=!final&&fix?.from!==answer
     const apply=(data:KrillionJudgment)=>{
+      setFix(null)
+      if(data.correction&&!final&&Date.now()<(current.current.endsAt??0)){setFix(data.correction);input.current?.focus();return}
       if(data.accepted)return finish(data)
       if(final||Date.now()>=(current.current.endsAt??0))return finish({...data,answer,score:0})
       setMessage(`"${answer.length>40?`${answer.slice(0,40)}…`:answer}": no echo. try again`)
       input.current?.focus();input.current?.select()
     }
     const local=lookups.current.get(index)
-    if(local){setMessage('');apply(judgeWith(local,answer));return}
+    if(local){setMessage('');apply(judgeWith(local,answer,preview));return}
     // Without the key yet, the server judges the answer instead.
     pending.current=true;submittedAt.current=Date.now();setBusy(true);setMessage('')
     const controller=new AbortController();abort.current=controller
     const timeout=setTimeout(()=>controller.abort(),5000)
     try{
-      const r=await fetch('/api/krillion/judge',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({day:dailyDay,index,answer})})
+      const r=await fetch('/api/krillion/judge',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({day:dailyDay,index,answer,preview})})
       const data=await r.json() as KrillionJudgment&{error?:string}
       if(current.current.phase!=='answering'||current.current.index!==index)return
       if(!r.ok)throw Error(data.error??'Signal lost. Resend your answer.')
@@ -69,7 +74,7 @@ export default function KrillionPlay({puzzle,dailyDay}:{puzzle:KrillionPuzzle;da
       if(final)finish({answer,accepted:false,score:0,reason:'Connection timed out before this answer could be verified.'})
       else setMessage('signal lost. resend')
     }finally{clearTimeout(timeout);pending.current=false;setBusy(false)}
-  },[dailyDay,finish])
+  },[dailyDay,finish,fix])
   useEffect(()=>{
     const frame=requestAnimationFrame(()=>{
       if(run.phase==='answering'&&run.endsAt!==null&&clock>=run.endsAt){
@@ -157,7 +162,7 @@ export default function KrillionPlay({puzzle,dailyDay}:{puzzle:KrillionPuzzle;da
       <p className="krillion-tpts"><span style={{color:tierOf(feedback).color}}>+{feedback.score} PTS</span>{feedback.score?` · sink ${(feedback.score*10).toLocaleString()}m`:''}</p>
       <p className="krillion-tsub">{feedback.accepted?feedback.quip??tierOf(feedback).blurb:feedback.reason&&!/accepted answer set|before the clock/.test(feedback.reason)?feedback.reason:feedback.answer?'never made it onto the reef.':'the clock beat you to it.'}</p>
       <button className={button} onClick={next}>{run.outcomes.length===7?'SURFACE ▲':'DESCEND ▼'}</button></div>:
-    <><span>Prompt {run.index+1} / 7</span><h2 className="font-lora text-2xl">{puzzle.prompts[run.index]?.text}</h2><form className="krillion-answer-form" onSubmit={e=>{e.preventDefault();void submit(remaining<=0)}}><div role="timer" aria-label="Seconds remaining" className="krillion-timer tabular-nums" data-hot={hot}><span className="krillion-sweep" aria-hidden="true"/><span className="relative">{Math.ceil(remaining/1000)}</span></div><label className="krillion-input"><span className="sr-only">Your answer</span><input ref={input} aria-label="Your answer" placeholder="type one answer…" autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false} enterKeyHint="go" maxLength={256} readOnly={busy} disabled={remaining<=0} value={run.draft} onChange={e=>setRun(r=>({...r,draft:e.target.value}))} className="block w-full rounded border bg-[var(--ink-bg)] p-3" /><span className="krillion-fuse" data-hot={hot} aria-hidden="true"><i style={{transform:`scaleX(${remaining/puzzle.answerMs})`}}/></span>{run.draft&&!busy&&<button type="button" aria-label="Clear answer" className="krillion-clear" onPointerDown={e=>e.preventDefault()} onClick={()=>{setRun(r=>({...r,draft:''}));setMessage('');input.current?.focus()}}>×</button>}</label><button aria-label="Dive · submit answer" className={button} disabled={busy||remaining<=0}>{busy?'Checking…':'DIVE'}</button>{message&&<p role="status">{message}</p>}<div className="krillion-saved" aria-label="Saved answers"><button type="button" className="krillion-chip" disabled={!run.draft.trim()||shelf.includes(run.draft.trim())} onPointerDown={e=>e.preventDefault()} onClick={()=>{const a=run.draft.trim();setSaved({index:run.index,list:[a,...shelf].slice(0,5)});input.current?.focus()}}>☆ Save</button>{shelf.map(a=><button key={a} type="button" title={a} className="krillion-chip" onPointerDown={e=>e.preventDefault()} onClick={()=>{setRun(r=>({...r,draft:a}));setMessage('');input.current?.focus()}}>{a}</button>)}</div></form></>}
+    <><span>Prompt {run.index+1} / 7</span><h2 className="font-lora text-2xl">{puzzle.prompts[run.index]?.text}</h2><form className="krillion-answer-form" onSubmit={e=>{e.preventDefault();void submit(remaining<=0)}}><div role="timer" aria-label="Seconds remaining" className="krillion-timer tabular-nums" data-hot={hot}><span className="krillion-sweep" aria-hidden="true"/><span className="relative">{Math.ceil(remaining/1000)}</span></div><label className="krillion-input"><span className="sr-only">Your answer</span><input ref={input} aria-label="Your answer" placeholder="type one answer…" autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false} enterKeyHint="go" maxLength={256} readOnly={busy} disabled={remaining<=0} value={run.draft} onChange={e=>{setFix(null);setRun(r=>({...r,draft:e.target.value}))}} className="block w-full rounded border bg-[var(--ink-bg)] p-3" /><span className="krillion-fuse" data-hot={hot} aria-hidden="true"><i style={{transform:`scaleX(${remaining/puzzle.answerMs})`}}/></span>{run.draft&&!busy&&<button type="button" aria-label="Clear answer" className="krillion-clear" onPointerDown={e=>e.preventDefault()} onClick={()=>{setRun(r=>({...r,draft:''}));setMessage('');setFix(null);input.current?.focus()}}>×</button>}</label><button aria-label="Dive · submit answer" className={button} disabled={busy||remaining<=0}>{busy?'Checking…':'DIVE'}</button>{fix&&fix.from===run.draft.trim()?<p role="status" className="krillion-fix"><span>“{fix.from}” → “{fix.to}”</span><span>submit again to confirm · or edit</span></p>:message&&<p role="status">{message}</p>}<div className="krillion-saved" aria-label="Saved answers"><button type="button" className="krillion-chip" disabled={!run.draft.trim()||shelf.includes(run.draft.trim())} onPointerDown={e=>e.preventDefault()} onClick={()=>{const a=run.draft.trim();setSaved({index:run.index,list:[a,...shelf].slice(0,5)});input.current?.focus()}}>☆ Save</button>{shelf.map(a=><button key={a} type="button" title={a} className="krillion-chip" onPointerDown={e=>e.preventDefault()} onClick={()=>{setRun(r=>({...r,draft:a}));setMessage('');setFix(null);input.current?.focus()}}>{a}</button>)}</div></form></>}
   </div></div>
   {run.outcomes.length>0&&run.phase!=='done'&&<details><summary className="cursor-pointer underline">Your completed rounds</summary><ol className="mt-3 space-y-3">{run.outcomes.map((r,i)=><li key={i} className="rounded border p-3"><strong>{i+1}. {puzzle.prompts[i]?.text}</strong><p>{r.matchedAnswer??r.answer??'No answer'} · {tierOf(r).name} · {r.score} points</p></li>)}</ol></details>}
   {run.phase==='done'&&<KrillionReview key={sheet} date={puzzle.date} prompts={puzzle.prompts} index={sheet} onIndex={setSheet} />}
