@@ -6,7 +6,6 @@ export const CONNECTIONS_MAX_BODY_CHARS = 32_000
 
 export const CONNECTIONS_CLIENT_ID_KEY = 'connections:clientId'
 export const CONNECTIONS_DRAFT_KEY = 'connections:draft'
-export const CONNECTIONS_RECORD_GUARD_PREFIX = 'connections:recorded:'
 
 export type ConnectionsDifficulty = 'yellow' | 'green' | 'blue' | 'purple'
 

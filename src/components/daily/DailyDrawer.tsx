@@ -7,32 +7,21 @@
  */
 import Image from 'next/image'
 import Link from 'next/link'
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import DayPicker from '@/components/daily/DayPicker'
 import PlayerName from '@/components/PlayerName'
 import { useHoverTip } from '@/components/HoverTip'
-import { DAILY_EPOCH } from '@/lib/daily'
+import { FIRST_DAY, firstDay, isNytGame, siteDay } from '@/lib/daily'
 import { useSiteDay } from '@/lib/play-day'
-import { NYT_FIRST_DAY, isNytGame } from '@/lib/daily/nyt-puzzles'
+import { usePlayer } from '@/lib/use-player'
 import {
-  GAMES, GAME_IDS, PLAYER_CHANGED, PUBLIC_GROUP, RESULTS_CHANGED, compareResults, formatTime, getPlayer, localDay, queue,
+  GAMES, GAME_IDS, PUBLIC_GROUP, RESULTS_CHANGED, RESULT_QUEUED, compareResults, formatTime, queue,
   isPracticeResult, onLiveRefresh, resultLabel,
   type BoardRow,
 } from '@/lib/results'
 import { streaks } from '@/lib/score-stats'
 
 const cache = new Map<string, { rows: BoardRow[] }>()
-/** The earliest day any daily game has a puzzle, so the drawer can step back to it. */
-const FIRST_DAY = [DAILY_EPOCH, ...Object.values(NYT_FIRST_DAY)].sort()[0]!
-
-/**
- * Subscribes to player and result changes made in this tab or another one.
- */
-function subscribe(cb: () => void) {
-  const events = [PLAYER_CHANGED, RESULTS_CHANGED, 'sfjc-score-queued', 'storage']
-  events.forEach((e) => window.addEventListener(e, cb))
-  return () => events.forEach((e) => window.removeEventListener(e, cb))
-}
 
 /**
  * Loads the group's results back to at least 60 days or the selected day, cached per group so remounts show the last
@@ -40,19 +29,18 @@ function subscribe(cb: () => void) {
  * selected day, the streak, and everyone's scores on the selected day.
  */
 function useDaily(sel: string) {
-  const raw = useSyncExternalStore(subscribe, () => JSON.stringify(getPlayer()), () => 'null')
-  const player = JSON.parse(raw) as ReturnType<typeof getPlayer>
+  const player = usePlayer()
   const group = player?.group ?? PUBLIC_GROUP
   const [remote, setRemote] = useState<BoardRow[]>(() => cache.get(group)?.rows ?? [])
   const [tick, setTick] = useState(0)
   useEffect(() => {
     const bump = () => setTick((t) => t + 1)
-    const events = [RESULTS_CHANGED, 'sfjc-score-queued']
+    const events = [RESULTS_CHANGED, RESULT_QUEUED]
     events.forEach((e) => window.addEventListener(e, bump))
     const stopRefresh = onLiveRefresh(bump)
     return () => { stopRefresh(); events.forEach((e) => window.removeEventListener(e, bump)) }
   }, [])
-  const day = localDay()
+  const day = siteDay()
   // Days before the selected one are still needed back to 60 for the streak, so the span only grows past that.
   const span = Math.max(60, Math.round((Date.parse(day) - Date.parse(sel)) / 86400000) + 2)
   useEffect(() => {
@@ -156,7 +144,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
   /** Read only in the browser, so a server on another day (or a test clock) never mismatches the page. */
   const now = useSiteDay()
   const [picked, setPicked] = useState('')
-  const sel = picked || now || localDay()
+  const sel = picked || now || siteDay()
   const { player, today, picked: done, everyone, streak } = useDaily(sel)
   const [open, setOpen] = useState(false)
   const btn = useRef<HTMLButtonElement>(null)
@@ -250,7 +238,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                 const row = 'flex items-center gap-3 rounded-xl border border-[var(--ink-border)] p-2.5'
                 const icon = <Image src={`/doodles/notebook/${g}.svg`} alt="" width={36} height={36} className="h-9 w-9" />
                 // NYT games have no puzzle before their first day or after today, and the rest none before the epoch.
-                if (sel < (isNytGame(g) ? NYT_FIRST_DAY[g] : DAILY_EPOCH) || (isNytGame(g) && now && sel > now)) {
+                if (sel < firstDay(g) || (isNytGame(g) && now && sel > now)) {
                   return (
                     <li key={g} className={`${row} opacity-40`}>
                       {icon}

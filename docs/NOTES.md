@@ -52,10 +52,10 @@ e2e/notes*.spec.ts          E2E, mocks in e2e/helpers/notes-mock.ts
 ## Verify
 ```bash
 npm run verify:notes-triggers && npm run verify:notes-attachments && npm run verify:notes-tables && npm run type-check
-lsof -ti:3001 | xargs kill -9 2>/dev/null; npm run test:e2e:notes
+lsof -ti:3001 | xargs kill -9 2>/dev/null; npm run test:e2e -- notes
 ```
 - Dev server 500 or missing `routes-manifest.json`: `rm -rf .next && npm run build`, retry.
-- Deploy suite: `npm run test:e2e:notes-deploy`, `npm run smoke:notes-llm`.
+- Deploy suite: `npm run test:e2e:deploy -- notes`, `npm run smoke:notes-llm`.
 
 ## Gotchas
 - Restore: `SyncPanel` calls `onSynced({ skipPersist: true })`, `refreshFromServer` must use `loadActiveSession()`.

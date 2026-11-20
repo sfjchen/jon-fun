@@ -1,4 +1,4 @@
-import { isNytGame } from '@/lib/daily/nyt-puzzles'
+import { isNytGame } from '@/lib/daily'
 import { nytPuzzle } from '@/lib/daily/nyt'
 import type { GameId } from '@/lib/results'
 export async function dailyPuzzle(game: GameId, day: string): Promise<{ day: string; sourceDate: string; puzzle: unknown }> {

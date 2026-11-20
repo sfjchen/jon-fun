@@ -31,11 +31,11 @@ html, body { scroll-behavior: auto !important; }
 type FontFaceSet = { ready: Promise<unknown>; check?: (font: string) => boolean }
 
 /**
- * Theme2 imports `Patrick Hand`, `Charter`, `Lora`, `Caveat` via Google Fonts CSS `@import` with
+ * Theme2 imports `Patrick Hand`, `Charter`, `Lora` via Google Fonts CSS `@import` with
  * `display=swap` — fallback cursive renders first, real font swaps in later, causing layout-shift
  * flake on snapshots. We explicitly poll `document.fonts.check` for each.
  */
-const REQUIRED_FONTS = ['1em "Patrick Hand"', '1em "Lora"', '1em "Charter"', '1em "Caveat"']
+const REQUIRED_FONTS = ['1em "Patrick Hand"', '1em "Lora"', '1em "Charter"']
 
 /**
  * Robust page-ready helper for visual snapshots. Flake sources we explicitly fight:

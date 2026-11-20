@@ -222,10 +222,3 @@ export async function connectSyncKey(key: string): Promise<void> {
   ready = null
   await ensureSyncIdentity()
 }
-
-/**
- * Renames this device locally and on the server.
- */
-export async function setDeviceLabel(label: string): Promise<void> {
-  if (label.trim()) saveDevicePlayer({ name: label, group: getDevicePlayer()?.group ?? 'public' })
-}

@@ -1,7 +1,4 @@
 # Exclude non-Next.js folders (reduces upload size)
-Smart OverlayEye
-TMR_audio
-sports-talent-research
 docs/five-can-sorting
 e2e/fixtures
 node_modules

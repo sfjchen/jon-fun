@@ -4,21 +4,34 @@
  * Loads one day's puzzle for a daily game and renders it under the shared header.
  */
 
+import dynamic from 'next/dynamic'
+import { useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import DayNav from '@/components/daily/DayNav'
-import MiniPlay, { type MiniPuzzle } from '@/components/mini/MiniPlay'
-import ConnectionsPlay from '@/components/connections/ConnectionsPlay'
-import { DAILY_EPOCH, siteDay, validDay } from '@/lib/daily'
+import type { MiniPuzzle } from '@/components/mini/MiniPlay'
+import { firstDay, isNytGame, playableDay, siteDay } from '@/lib/daily'
 import { usePlayDay } from '@/lib/play-day'
 import { useDailyPuzzle } from '@/lib/use-daily-puzzle'
 import { GAMES, isPracticeResult, type GameId } from '@/lib/results'
 import type { ConnectionsPuzzle } from '@/lib/connections'
-import AnthropeumPlay, { type ArtifactDay } from '@/components/daily/AnthropeumPlay'
-import KrillionPlay, { type KrillionPuzzle } from '@/components/daily/KrillionPlay'
-import FivefoldPlay, { type FivefoldPuzzle } from '@/components/daily/FivefoldPlay'
+import type { ArtifactDay } from '@/components/daily/AnthropeumPlay'
+import type { KrillionPuzzle } from '@/components/daily/KrillionPlay'
+import type { FivefoldPuzzle } from '@/components/daily/FivefoldPlay'
 
-import { isNytGame, NYT_FIRST_DAY } from '@/lib/daily/nyt-puzzles'
+/** Each game page downloads only its own player, so Wordle does not carry the Anthropeum map or the Mini grid. */
+const LOAD = {
+  mini: () => import('@/components/mini/MiniPlay'),
+  connections: () => import('@/components/connections/ConnectionsPlay'),
+  anthropeum: () => import('@/components/daily/AnthropeumPlay'),
+  krillion: () => import('@/components/daily/KrillionPlay'),
+  fivefold: () => import('@/components/daily/FivefoldPlay'),
+}
+const MiniPlay = dynamic(LOAD.mini)
+const ConnectionsPlay = dynamic(LOAD.connections)
+const AnthropeumPlay = dynamic(LOAD.anthropeum)
+const KrillionPlay = dynamic(LOAD.krillion)
+const FivefoldPlay = dynamic(LOAD.fivefold)
 
 /** How each game plays, in the order a new player needs it. */
 const HOW: Record<Exclude<GameId, 'bee'>, string[]> = {
@@ -55,10 +68,11 @@ const HOW: Record<Exclude<GameId, 'bee'>, string[]> = {
 export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
   const params = useSearchParams()
   const raw = params.get('d')
-  const min = isNytGame(game) ? NYT_FIRST_DAY[game] : DAILY_EPOCH
-  const day = usePlayDay(validDay(raw) && raw >= min && raw <= '2100-12-31' ? raw : null, game)
+  const day = usePlayDay(playableDay(game, raw) ? raw : null, game)
   const key = `${game}:${day}`
   const { data, error, retry } = useDailyPuzzle(game, day)
+  // Fetches the player's code alongside the puzzle instead of after it.
+  useEffect(() => void LOAD[game](), [game])
   const info = (
     <>
       <ul className="list-disc space-y-1 pl-4">
@@ -68,11 +82,8 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
       </ul>
       {isNytGame(game) && <p>Original NYT puzzle for the selected publication date.</p>}
       <p style={{ color: 'var(--ink-muted)' }}>Scoring: {GAMES[game].rules}</p>
-      <p style={{ color: 'var(--ink-muted)' }}>
-        Everyone gets the same puzzle each day (Pacific time)
-        {data?.sourceDate && data.sourceDate !== day ? `, picked from the ${data.sourceDate} archive.` : '.'}
-      </p>
-      {(game === 'mini' || game === 'connections' || game === 'fivefold') && (
+      <p style={{ color: 'var(--ink-muted)' }}>Everyone gets the same puzzle each day (Pacific time).</p>
+      {isNytGame(game) && (
         <Link className="block underline" href="/games/archives">
           Browse past puzzles
         </Link>
@@ -81,7 +92,7 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
   )
   return (
     <div className={`daily-game mx-auto w-full ${game==='anthropeum'||game==='krillion'?'max-w-none':game==='fivefold'?'max-w-lg':'max-w-4xl'}`} data-testid={`daily-${game}`}>
-      <DayNav title={GAMES[game].title} path={GAMES[game].url} day={day} publishedOnly={isNytGame(game)} minDay={isNytGame(game) ? NYT_FIRST_DAY[game] : DAILY_EPOCH} info={info} />
+      <DayNav title={GAMES[game].title} path={GAMES[game].url} day={day} publishedOnly={isNytGame(game)} minDay={firstDay(game)} info={info} />
       {data && day <= siteDay() && isPracticeResult(game, day) && (
         <p className="mb-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
           Started as a future preview · not ranked

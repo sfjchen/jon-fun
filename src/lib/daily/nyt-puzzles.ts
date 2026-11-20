@@ -1,9 +1,7 @@
 import { z } from 'zod'
+import type { NytGame } from '@/lib/daily'
 import { score } from '@/lib/spelling-bee'
 
-export const NYT_FIRST_DAY = { fivefold: '2021-06-19', bee: '2018-05-06', mini: '2014-08-21', connections: '2023-06-12' } as const
-export type NytGame = keyof typeof NYT_FIRST_DAY
-export function isNytGame(game: string): game is NytGame { return Object.hasOwn(NYT_FIRST_DAY, game) }
 export const NYT_PATH: Record<NytGame, string> = { fivefold: 'wordle/v2', bee: 'spelling-bee/v1', mini: 'crosswords/v6/puzzle/mini', connections: 'connections/v2' }
 const word = z.string().regex(/^[a-z]+$/)
 const dated = z.object({ print_date: z.string() })

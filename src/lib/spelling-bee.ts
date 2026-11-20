@@ -18,8 +18,6 @@ export const RANKS: [string, number][] = [
   ['Genius', 0.7],
   ['Queen Bee', 1],
 ]
-/** Day 0 of the daily archive (local calendar date). */
-export const EPOCH = '2026-11-01'
 
 /**
  * Returns whether w uses all 7 letters.
@@ -89,36 +87,6 @@ export function check(entry: string, pz: Puzzle, found: string[]): string | null
  */
 export const praise = (w: string) =>
   isPangram(w) ? 'Pangram!' : w.length === 4 ? 'Good!' : w.length < 7 ? 'Nice!' : 'Awesome!'
-
-/**
- * Returns the day number of a YYYY-MM-DD date since EPOCH.
- */
-export const dayNum = (d: string) => Math.round((Date.parse(d) - Date.parse(EPOCH)) / 864e5)
-
-/**
- * Returns today's local date as YYYY-MM-DD.
- */
-export function today() {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-/**
- * Shifts a YYYY-MM-DD date by n days.
- */
-export const addDays = (d: string, n: number) => new Date(Date.parse(d) + n * 864e5).toISOString().slice(0, 10)
-
-/**
- * Picks the puzzle id for a date with a fixed stride walk over the bank, so no puzzle repeats for years
- * and consecutive days land far apart. The stride must stay coprime with the bank size.
- */
-export function dailyId(date: string, bank: string[]) {
-  const n = bank.length
-  let st = 7919
-  const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a)
-  while (gcd(st, n) !== 1) st += 2
-  return bank[(((dayNum(date) * st + 1234) % n) + n) % n]!
-}
 
 /**
  * Builds the hint grid (first letter x word length counts) and two-letter start counts for the remaining words,

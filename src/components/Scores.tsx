@@ -6,7 +6,7 @@
  */
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Info } from '@/components/daily/DayNav'
 import DayPicker from '@/components/daily/DayPicker'
@@ -15,7 +15,6 @@ import PlayerName, { PencilIcon } from '@/components/PlayerName'
 import {
   GAMES,
   GAME_IDS,
-  PLAYER_CHANGED,
   PUBLIC_GROUP,
   RESULTS_CHANGED,
   bestGameScore,
@@ -25,15 +24,14 @@ import {
   formatGameScore,
   formatScore,
   formatTime,
-  getPlayer,
-  localDay,
   onLiveRefresh, resultLabel,
   setPlayer,
   type BoardRow,
   type GameId,
   type Player,
 } from '@/lib/results'
-import { DAILY_EPOCH, shiftDay, validDay } from '@/lib/daily'
+import { DAILY_EPOCH, FIRST_DAY, shiftDay, siteDay, validDay } from '@/lib/daily'
+import { usePlayer } from '@/lib/use-player'
 import { average, overallDay, streaks, winners, winsByPlayer } from '@/lib/score-stats'
 import { DEVICE_KINDS } from '@/lib/syncIdentity'
 import { useHoverTip } from '@/components/HoverTip'
@@ -41,18 +39,6 @@ import { useHoverTip } from '@/components/HoverTip'
 const card = 'rounded-2xl border border-[var(--ink-border)] bg-[var(--ink-bg)] p-3 shadow-sm sm:p-4'
 const muted = 'text-[var(--ink-muted)]'
 type Tab = GameId | 'all'
-
-/**
- * Subscribes to changes of the saved player, made in this tab or another one.
- */
-function subscribe(cb: () => void) {
-  window.addEventListener(PLAYER_CHANGED, cb)
-  window.addEventListener('storage', cb)
-  return () => {
-    window.removeEventListener(PLAYER_CHANGED, cb)
-    window.removeEventListener('storage', cb)
-  }
-}
 
 /**
  * Collects the name and, optionally, a private group code that results are filed under.
@@ -182,7 +168,7 @@ function Calendar({ rows, me, day, color, onPick }: {
   const first = `${month}-01`
   const count = new Date(Number(month.slice(0, 4)), Number(month.slice(5)), 0).getDate()
   const offset = new Date(`${first}T12:00:00Z`).getUTCDay()
-  const today = localDay()
+  const today = siteDay()
   const monthRows = rows.filter((r) => r.day.startsWith(month))
   const days = Array.from({ length: count }, (_, i) => {
     const d = `${month}-${String(i + 1).padStart(2, '0')}`
@@ -260,7 +246,7 @@ function Calendar({ rows, me, day, color, onPick }: {
               key={d}
               aria-label={`${d}, ${what}`}
               aria-pressed={day === d}
-              disabled={d < '2014-08-21' || d > today}
+              disabled={d < FIRST_DAY || d > today}
               onClick={() => onPick(d)}
               {...tip.on(detail)}
               style={fill ? { background: fill } : undefined}
@@ -352,12 +338,11 @@ function DeviceSplit({ rows, games }: { rows: BoardRow[]; games: GameId[] }) {
 export function ScoresHub() {
   const params = useSearchParams()
   const router = useRouter()
-  const raw = useSyncExternalStore(subscribe, () => JSON.stringify(getPlayer()), () => 'null')
-  const player = useMemo(() => JSON.parse(raw) as Player | null, [raw])
+  const player = usePlayer()
   const me = player?.name ?? ''
   const [editing, setEditing] = useState(false)
   const asked = params.get('d')
-  const day = asked && validDay(asked) && asked >= '2014-08-21' ? asked : localDay()
+  const day = asked && validDay(asked) && asked >= FIRST_DAY ? asked : siteDay()
   const game = params.get('game')
   const [tab, setTab] = useState<Tab>(() => GAME_IDS.includes(game as GameId) ? game as GameId : 'all')
   const [view, setView] = useState<'day' | 'standings' | 'stats'>('day')
@@ -429,7 +414,7 @@ export function ScoresHub() {
   const mineToday = rows.filter((r) => r.name === me && r.day === day)
   const streak = streaks(mine, day)
   const overall = overallDay(rows.filter((r) => r.day === day))
-  const dayLabel = day === localDay() ? 'Today' : new Date(`${day}T12:00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+  const dayLabel = day === siteDay() ? 'Today' : new Date(`${day}T12:00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 
   const metricLabel = tab === 'connections' || tab === 'mini' ? 'Solve time' : tab === 'fivefold' ? 'Guesses' : 'Points'
   const metric = (value: number | null) => value === null ? '—' : tab === 'connections' ? formatTime(Math.round(value)) : tab === 'all' ? String(value) : formatGameScore(tab, value)
@@ -447,10 +432,10 @@ export function ScoresHub() {
   }
   return <div className="scores-hub mx-auto max-w-4xl space-y-5" data-testid="scores-hub">
     <header className="flex flex-wrap items-center gap-x-2 gap-y-1"><HomeLink className="inline-flex h-10 w-10 shrink-0 items-center justify-center"/><div className="mr-auto"><h1 className="text-2xl font-semibold tracking-tight">Leaderboard</h1><p className={`flex items-center gap-1 text-xs ${muted}`}>{boardName(group)}<button aria-label="Edit leaderboard group" title="Edit leaderboard group" className="-my-2 h-8 w-8 rounded-full p-2 hover:bg-[var(--ink-border)]/40" onClick={()=>setEditing(v=>!v)}><PencilIcon/></button></p></div><PlayerName/><Info><ul className="space-y-2">{GAME_IDS.map(g=><li key={g}><strong>{GAMES[g].title}:</strong> {GAMES[g].rules}</li>)}</ul><p>Daily wins require two players. Equal results share the rank.</p></Info></header>
-    {editing&&<PlayerForm key={raw} player={player} onDone={()=>setEditing(false)}/>}
+    {editing&&<PlayerForm key={`${player?.name}:${player?.group}`} player={player} onDone={()=>setEditing(false)}/>}
     <div className="flex flex-wrap items-end gap-3 border-y border-[var(--ink-border)] py-4">
       <label className="mr-auto min-w-40 text-xs text-[var(--ink-muted)]">Game<select aria-label="Game" value={tab} onChange={e=>setTab(e.target.value as Tab)} className="mt-1 block w-full rounded-lg border border-[var(--ink-border)] bg-[var(--ink-paper)] px-3 py-2 text-sm text-[var(--ink-text)]"><option value="all">All games</option>{GAME_IDS.map(g=><option key={g} value={g}>{GAMES[g].title}</option>)}</select></label>
-      <DayPicker day={day} today={localDay()} minDay="2014-08-21" maxDay={localDay()} go={pick} keys/>
+      <DayPicker day={day} today={siteDay()} minDay={FIRST_DAY} maxDay={siteDay()} go={pick} keys/>
     </div>
     <nav aria-label="Leaderboard views" className="flex gap-5 border-b border-[var(--ink-border)] text-sm">{([['day','Daily results'],['standings','Standings'],['stats','Your stats']] as const).map(([id,label])=><button key={id} data-hotkey={String(['day','standings','stats'].indexOf(id)+1)} aria-pressed={view===id} onClick={()=>setView(id)} className={`border-b-2 pb-3 ${view===id?'border-[var(--ink-accent)] font-semibold':'border-transparent text-[var(--ink-muted)]'}`}>{label}</button>)}</nav>
     {error&&<p role="alert" className="rounded-lg border border-red-200 p-3 text-sm">{error}</p>}

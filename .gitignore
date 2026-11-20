@@ -35,8 +35,6 @@ yarn-error.log*
 
 # env files
 !.env*
-openclaw-hybrid/config/env.cloud
-openclaw-hybrid/state/
 
 # vercel
 .vercel
@@ -54,22 +52,14 @@ node_modules
 # local e-reader portable export (may contain full book text)
 /reader-library-portable.json
 
-# separate nested git repos / workstreams
-/Veridian/
-
 # Optional large local-only e-reader E2E fixtures (keep minimal-reader-test.epub tracked or generate in CI)
 e2e/fixtures/*.pdf
 e2e/fixtures/*.epub
 e2e/fixtures/dokumen.pub*.epub
 
 .claude/
-/finance/
 
 # owner's non-site work, kept on disk
-/Smart OverlayEye/
-/TMR_audio/
-/sports-talent-research/
-/openclaw-hybrid/
 /scripts/openclaw-hybrid/
 /docs/openclaw-hybrid/
 /docs/image/

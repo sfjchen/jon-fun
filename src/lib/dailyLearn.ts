@@ -5,7 +5,7 @@
  */
 
 import { formatDailyLearnCsv, parseDailyLearnCsv } from './dailyLearnCsv'
-import { connectSyncKey, ensureSyncIdentity, syncCredentials } from './syncIdentity'
+import { ensureSyncIdentity, syncCredentials } from './syncIdentity'
 
 export interface DailyLearnEntry {
   date: string // 'YYYY-MM-DD'
@@ -153,15 +153,6 @@ export async function syncWithServer(): Promise<{ entries: DailyLearnEntry[]; pu
   return { entries: visible(merged), pushOk }
 }
 
-/**
- * Sets the sync password (or device ID) and merges this browser's entries with that account's.
- * Never replaces local data, so it is safe on a fresh browser and on one that already has entries.
- */
-export async function connectAndSync(key: string): Promise<{ entries: DailyLearnEntry[]; pushOk: boolean }> {
-  await connectSyncKey(key)
-  return syncWithServer()
-}
-
 /** Returns visible entries, newest first. */
 export function loadEntries(): DailyLearnEntry[] {
   return visible(loadAllEntries())
@@ -208,11 +199,6 @@ export function getCounts(): DailyLearnCounts {
     if (ed >= monthStart) thisMonth++
   }
   return { total: entries.length, thisWeek, thisMonth }
-}
-
-export function getCalendarData(): Set<string> {
-  const entries = loadEntries()
-  return new Set(entries.map((e) => e.date))
 }
 
 export function exportAsText(): string {

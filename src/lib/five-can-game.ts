@@ -1,6 +1,3 @@
-/** Five distinct cans as labels (analysis paper uses A–E). */
-export const CAN_LABELS = ['A', 'B', 'C', 'D', 'E'] as const
-
 /** Parody names aligned with `FiveCanDoodle` body colors: red, blue, maroon, green, orange. */
 export const CAN_BRAND_NAMES = ['Cola', 'Pepsy', 'Dr. Prepper', 'Spritz', 'Fantuh'] as const
 

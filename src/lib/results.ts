@@ -1,5 +1,7 @@
 import { siteDay } from '@/lib/daily'
-import { getDevicePlayer, saveDevicePlayer, ensureSyncIdentity, getDeviceId, deviceKind, type DeviceKind } from '@/lib/syncIdentity'
+import {
+  getDevicePlayer, saveDevicePlayer, ensureSyncIdentity, getDeviceId, deviceKind, PLAYER_IDENTITY_CHANGED, type DeviceKind,
+} from '@/lib/syncIdentity'
 export type GameId = 'bee' | 'connections' | 'mini' | 'krillion' | 'anthropeum' | 'fivefold'
 export const GAMES: Record<GameId, { title: string; url: string; max: number; unit: string; rules: string; lowerIsBetter?: boolean }> = {
   krillion: { title: 'Krillion', url: '/games/krillion', max: 700, unit: 'points', rules: 'Seven 25-second rounds. Original rarity scores: 10, 15, 30, 60, 85 or 100 points per answer. Maximum 700. Your first finished dive counts.' },
@@ -13,7 +15,8 @@ export const GAME_IDS = Object.keys(GAMES) as GameId[]
 export type Stats = { n?: number; seconds?: number; mistakes?: number; solved?: boolean; max?: number; sourceDate?: string; puzzleId?: string; scoringVersion?: number; hard?: boolean; moves?: unknown }
 export type Result = { game: GameId; day: string; score: number; stats: Stats }
 export type BoardRow = Result & { name: string; device?: DeviceKind }
-export function scoringVersion(game: GameId): number { return ['mini','connections','krillion','anthropeum','fivefold','bee'].includes(game) ? 2 : 1 }
+/** The version of the scoring rules that current results use. Rows stored under an older one stay off the boards. */
+export const SCORING_VERSION = 2
 export function formatGameScore(game: GameId, score: number): string { return game === 'mini' ? formatTime(Math.round(score)) : game === 'connections' ? `${Number.isInteger(score)?score:score.toFixed(1)}/4` : game === 'fivefold' ? (score > 0 ? `${Number.isInteger(score)?7-score:(7-score).toFixed(1)}/6` : 'X/6') : formatScore(score) }
 export function bestGameScore(game: GameId, scores: number[]): number { return GAMES[game].lowerIsBetter ? Math.min(...scores) : Math.max(...scores) }
 export function compareResults(a: Result, b: Result): number {
@@ -35,7 +38,6 @@ export function resultLabel(r: Result): string {
   // Hard-mode Wordle results carry the same * that Wordle puts on its own share text.
   return formatGameScore(r.game,r.score)+(r.game==='fivefold'&&r.stats.hard?'*':'')
 }
-export const localDay = siteDay
 export function formatScore(score: number): string { return Math.round(score).toLocaleString('en-US') }
 export function formatTime(seconds: number): string { return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` }
 export type Player = { name: string; group: string }
@@ -46,8 +48,10 @@ export function boardName(group: string): string { return group === PUBLIC_GROUP
 const QUEUE_KEY = 'sfjc_results_queue_v2'
 /** Marks the day a player is mid-game on, per game, so usePlayDay can resume it after a reload past midnight. */
 export const PLAYING_KEY = 'sfjc_playing:'
-export const PLAYER_CHANGED = 'sfjc-player-changed'
+export const PLAYER_CHANGED = PLAYER_IDENTITY_CHANGED
 export const RESULTS_CHANGED = 'sfjc-results-changed'
+/** Fires when a result is saved on this device, before it syncs. */
+export const RESULT_QUEUED = 'sfjc-score-queued'
 export function getPlayer(): Player | null {
   return getDevicePlayer()
 }
@@ -70,9 +74,16 @@ export async function flushResults(): Promise<void> {
   flushing = true
   try {
     for (const item of queue()) {
-      if (item.day > localDay()) continue
+      if (item.day > siteDay()) continue
       const owner = item.player ?? player
-      const response = await fetch('/api/results', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...owner, deviceId: getDeviceId(), device: deviceKind(), today: item.day, game: item.game, score: item.score, stats: item.stats }) })
+      // A hung request times out, so it cannot hold the queue until the page reloads.
+      const response = await fetch('/api/results', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(20000),
+        body: JSON.stringify({
+          ...owner, deviceId: getDeviceId(), device: deviceKind(), today: item.day, game: item.game, score: item.score,
+          stats: item.stats,
+        }),
+      })
       // A server or rate-limit error retries later; any other rejection is final, so the result leaves the queue.
       if (response.status >= 500 || response.status === 429) break
       // The board keeps 1 spelling per name, so adopt its spelling when this device typed the name in another case.
@@ -89,22 +100,22 @@ export async function flushResults(): Promise<void> {
 }
 /** Future previews stay practice even after their calendar date arrives. */
 export function markPracticeIfFuture(game: GameId, day?: string): void {
-  if (!day || day <= localDay()) return
+  if (!day || day <= siteDay()) return
   try { localStorage.setItem(`sfjc_future_practice:${game}:${day}`, '1') } catch {}
 }
 export function isPracticeResult(game: GameId, day: string): boolean {
-  if (day > localDay()) return true
+  if (day > siteDay()) return true
   try { return localStorage.getItem(`sfjc_future_practice:${game}:${day}`) === '1' } catch { return false }
 }
 /** Persist before sending; results earned before setting a player are sent after setup. */
-export function logResult(game: GameId, score: number, n?: number, day = localDay(), stats: Stats = {}): void {
+export function logResult(game: GameId, score: number, n?: number, day = siteDay(), stats: Stats = {}): void {
   markPracticeIfFuture(game, day)
   try { localStorage.setItem(PLAYING_KEY + game, JSON.stringify({ day, at: 0 })) } catch {}
   if (isPracticeResult(game, day) || !Number.isFinite(score) || (stats.sourceDate && stats.sourceDate !== day)) return
   try {
     const player = getPlayer()
     if (game === 'connections' && n !== undefined) score = n
-    const item: Queued = { game, day, score, stats: { scoringVersion: scoringVersion(game), ...stats, ...(n === undefined ? {} : { n }) }, player }
+    const item: Queued = { game, day, score, stats: { scoringVersion: SCORING_VERSION, ...stats, ...(n === undefined ? {} : { n }) }, player }
     const saved = queue()
     const index = saved.findIndex(q => q.game === game && q.day === day && JSON.stringify(q.player) === JSON.stringify(player))
     // Every game keeps its first finished result. Spelling Bee is the exception: its score grows through the day.
@@ -112,7 +123,7 @@ export function logResult(game: GameId, score: number, n?: number, day = localDa
     if (index >= 0) saved[index] = item
     else saved.push(item)
     localStorage.setItem(QUEUE_KEY, JSON.stringify(saved))
-    window.dispatchEvent(new Event('sfjc-score-queued'))
+    window.dispatchEvent(new Event(RESULT_QUEUED))
     void flushResults()
   } catch { /* Storage can be disabled in a private browser. */ }
 }

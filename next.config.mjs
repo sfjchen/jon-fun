@@ -1,5 +1,5 @@
-/** Every daily puzzle source the server reads: NYT archives and the Anthropeum, Krillion and Wordle snapshots. */
-const PUZZLES = ['./public/puzzle-archives/**/*', './data/anthropeum/**/*', './data/krillion/**/*', './data/fivefold/**/*']
+/** Every daily puzzle source the server reads: the NYT archives and the Anthropeum and Krillion snapshots. */
+const PUZZLES = ['./public/puzzle-archives/**/*', './data/anthropeum/**/*', './data/krillion/review/**/*']
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -10,11 +10,11 @@ const nextConfig = {
    * serverless bundle, causing "pdf.worker.mjs not found" at runtime. Force-include the worker build.
    */
   outputFileTracingIncludes: {
-    '/api/krillion/*': ['./data/krillion/**/*'],
+    '/api/krillion/*': ['./data/krillion/review/**/*'],
     // The results API replays every daily game's moves against the same puzzles, plus the Wordle word list.
     '/api/results': [...PUZZLES, './public/fivefold/words.json'],
-    '/api/cron/nyt': ['./public/puzzle-archives/**/*'],
-    '/api/cron/krillion': ['./data/krillion/**/*'],
+    '/api/cron/daily': PUZZLES,
+    '/api/cron/krillion': ['./data/krillion/review/**/*'],
     '/api/daily/*': PUZZLES,
     '/api/reader/extract-pdf': [
       './node_modules/pdfjs-dist/legacy/build/**/*',

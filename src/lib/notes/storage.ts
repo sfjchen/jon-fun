@@ -288,11 +288,6 @@ async function fetchRawSessionsFromServer(): Promise<{ sessions: NoteSession[]; 
   }
 }
 
-export async function fetchSessionsFromServer(): Promise<NoteSession[]> {
-  const { sessions } = await fetchRawSessionsFromServer()
-  return withNormalizedTitles(sessions)
-}
-
 async function pushWithRetry(sessions: NoteSession[]): Promise<PushResult> {
   const toSend = sessionsForPush(sessions)
   const slim = toSend.map((s) => ({

@@ -80,7 +80,6 @@ def krillion():
     assert review['date'] == game['date'] and len(review['prompts']) == 7
     for prompt in review['prompts']:
         assert prompt['answers'] and all(a['score'] in [10,15,30,60,85,100] for a in prompt['answers'])
-    write(ROOT / 'data/krillion/prompts' / (game['date']+'.json'), game)
     target = ROOT / 'data/krillion/review' / (game['date']+'.json.gz')
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_bytes(gzip.compress(json.dumps(review, ensure_ascii=False,separators=(',',':')).encode(),mtime=0))

@@ -1,26 +1,17 @@
 'use client'
 
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { artifactScore, ARTIFACT_TIME_WINDOW, historicalYear, type Artifact, type Pin } from '@/lib/artifact-scoring'
 import { ANTHROPEUM_BUCKET_SIZE, anthropeumPlacement, type AnthropeumDistribution } from '@/lib/daily/anthropeum-stats'
 import { shiftDay, siteDay } from '@/lib/daily'
-import { formatScore, getPlayer, isPracticeResult, onLiveRefresh, PLAYER_CHANGED, PUBLIC_GROUP, RESULTS_CHANGED, type BoardRow } from '@/lib/results'
+import { usePlayer } from '@/lib/use-player'
+import { formatScore, isPracticeResult, onLiveRefresh, PUBLIC_GROUP, RESULTS_CHANGED, type BoardRow } from '@/lib/results'
 
 export type ArtifactGuess = { pin: Pin; year: number; total: number }
 
-function subscribePlayer(update: () => void) {
-  window.addEventListener(PLAYER_CHANGED, update)
-  window.addEventListener('storage', update)
-  return () => {
-    window.removeEventListener(PLAYER_CHANGED, update)
-    window.removeEventListener('storage', update)
-  }
-}
-
 function PlayerBoard({ day, score }: { day: string; score: number }) {
-  const identity = useSyncExternalStore(subscribePlayer, () => JSON.stringify(getPlayer()), () => 'null')
-  const player = JSON.parse(identity) as ReturnType<typeof getPlayer>
+  const player = usePlayer()
   const group = player?.group ?? PUBLIC_GROUP
   const [board, setBoard] = useState<{ group: string; day: string; rows: BoardRow[] | null }>()
   useEffect(() => {

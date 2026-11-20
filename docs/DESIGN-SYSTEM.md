@@ -1,12 +1,12 @@
 # sfjc.dev Design System
 
-**For AI agents:** Product/UX principles → README **[Core design principles](../README.md#core-design-principles)**. **This file** = tokens, typography, layout. **`docs/ARCHITECTURE-MAP.md`** = routes and stack boundaries.
+Tokens, typography and layout. Routes and stack boundaries are in [`ARCHITECTURE-MAP.md`](ARCHITECTURE-MAP.md).
 
 ---
 
-## Single public theme: Notebook
+## Default theme: Notebook
 
-**Deployed at `/` and all `/games/*` routes.** Applied via `data-theme="notebook"` on the shell (Patrick Hand, cream line paper, Stanford-adjacent red accent).
+`PageShell` sets `data-theme="notebook"` (Patrick Hand, cream line paper, Stanford-adjacent red accent) on the home page and every route without its own theme. Game-themed routes, Notes and Chwazi on phones do not get it.
 
 ### Color palette (notebook)
 
@@ -19,12 +19,14 @@
 | `--nb-border` | `#eee9e2` | Dividers |
 | `--nb-paper` | `#faf6f0` | Cards |
 
-Notebook maps from shared `--ink-*` tokens in `globals.css` via `data-theme="notebook"`.
+Under `data-theme="notebook"` the shared `--ink-*` tokens resolve to these `--nb-*` values (`globals.css`), so components only use `--ink-*`.
 
 ### Typography
 
-- **All text:** Patrick Hand (handwritten). Sizes in `globals.css`.
-- **Notes app:** Lato — exception at `/games/notes`.
+- **Notebook pages:** Patrick Hand (handwritten). Sizes in `globals.css`.
+- **Game-themed pages:** system sans, VT323 for Krillion, EB Garamond and Playfair Display for Anthropeum (`game-themes.css`).
+- **Notes app:** Lato, loaded with `next/font` in its layout.
+- Web fonts load from 1 Google Fonts request at the top of `globals.css`. Add a family there, not in a new `@import`.
 
 ### Line paper
 
@@ -34,7 +36,7 @@ Notebook maps from shared `--ink-*` tokens in `globals.css` via `data-theme="not
 
 ### Navigation
 
-- Masthead **sfjc.dev** → `/` on home and on desktop. Below 768px every other page drops the masthead for a home icon in its own top-right row (floating only on full-bleed pages).
+- Only the home page shows the **sfjc.dev** masthead. Every other page gets the full screen and a small home icon (floating on full-bleed pages).
 - Redirects: `/notebook/*` → `/*`; legacy `/theme2/*` → canonical routes (see `next.config.mjs`).
 
 ---
@@ -53,6 +55,12 @@ Used by party games, Connections, and components that predate notebook mapping:
 | `--ink-paper` | `#f5f1eb` | Cards |
 
 On notebook pages these resolve through `--nb-*` where mapped.
+
+---
+
+## Game themes
+
+Daily games, SET, Connections and the leaderboard set `data-game-theme` (`PageShell`, styles in `game-themes.css`): white surfaces, sans-serif controls, and 1 accent per game in `--game-color` (from `--g-set`, `--g-bee`, `--g-connections`, `--g-mini`, `--g-fivefold`, `--g-krillion`). Shared pieces are `.daily-heading` (header with the accent rule) and the per-game button classes (`.set-primary`, `.krillion-action`, `.anthro-button`). Krillion keeps its pixel ocean look and Anthropeum its parchment and burgundy.
 
 ---
 

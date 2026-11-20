@@ -28,7 +28,6 @@ export interface SeatPlayer {
 }
 
 export const BETTING_ROUNDS = ['pre-flop', 'flop', 'turn', 'river'] as const
-export type BettingRound = (typeof BETTING_ROUNDS)[number]
 
 export { randomPin as generateRoomPin } from '@/lib/random'
 

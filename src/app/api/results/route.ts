@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { GAMES, GAME_IDS, likeName, scoringVersion, type GameId } from '@/lib/results'
+import { GAMES, GAME_IDS, SCORING_VERSION, likeName, type GameId } from '@/lib/results'
 import { score as beeScore } from '@/lib/spelling-bee'
-import { DAILY_EPOCH, siteDay, validDay } from '@/lib/daily'
-import { isNytGame, NYT_FIRST_DAY } from '@/lib/daily/nyt-puzzles'
+import { firstDay, isNytGame, siteDay, validDay } from '@/lib/daily'
+import { rateLimited } from '@/lib/api-guards'
 import { supabaseAdmin } from '@/lib/supabase'
 import { VERIFIERS } from '@/lib/daily/verify'
 import { DEVICE_KINDS } from '@/lib/syncIdentity'
@@ -11,10 +11,12 @@ const group=z.string().regex(/^[a-z0-9-]{3,32}$/)
 const stats=z.object({n:z.number().int().min(0).max(500).optional(),seconds:z.number().int().min(0).max(864000).optional(),mistakes:z.number().int().min(0).max(100).optional(),solved:z.boolean().optional(),max:z.number().int().min(1).max(100000).optional(),sourceDate:z.string().refine(validDay).optional(),puzzleId:z.string().max(100).optional(),scoringVersion:z.number().int().min(1).max(2).optional(),hard:z.boolean().optional(),moves:z.unknown().optional()})
 const schema=z.object({group,name:z.string().trim().min(1).max(24),deviceId:z.string().uuid().optional(),device:z.enum(DEVICE_KINDS).optional(),today:z.string().refine(validDay),game:z.enum(GAME_IDS as [GameId,...GameId[]]),score:z.number().int().min(0),n:z.number().int().min(0).max(500).optional(),stats:stats.optional()})
 export async function POST(req:Request){
+  // Each post replays a game and may fetch its puzzle, so a burst from 1 address waits. The device queue retries a 429.
+  if(rateLimited(req,'results',60))return NextResponse.json({error:'Too many results at once. They remain queued on your device.'},{status:429})
   const parsed=schema.safeParse(await req.json().catch(()=>null))
   if(!parsed.success)return NextResponse.json({error:'Invalid result'},{status:400})
   const b=parsed.data
-  if(b.today<(isNytGame(b.game)?NYT_FIRST_DAY[b.game]:DAILY_EPOCH)||b.today>siteDay())return NextResponse.json({error:'Date out of range'},{status:400})
+  if(b.today<firstDay(b.game)||b.today>siteDay())return NextResponse.json({error:'Date out of range'},{status:400})
   if(isNytGame(b.game)&&b.stats?.sourceDate&&b.stats.sourceDate!==b.today)return NextResponse.json({error:'Puzzle source date does not match the result date'},{status:400})
   // Every score is recomputed from the game's moves against the day's puzzle, so a hand-made score cannot be posted.
   // The moves are checked, then dropped, since stored moves would reveal the answers to anyone reading scores.
@@ -25,7 +27,7 @@ export async function POST(req:Request){
   catch{return NextResponse.json({error:'Could not check this result. It remains queued on your device.'},{status:503})}
   if(typeof game==='string')return NextResponse.json({error:game},{status:400})
   if(game.score>GAMES[b.game].max)return NextResponse.json({error:'Score out of range'},{status:400})
-  const version=scoringVersion(b.game),score=game.score
+  const version=SCORING_VERSION,score=game.score
   // Names are unique per board regardless of case and spacing, so "jon" on a phone files under an existing "Jon".
   const clean=b.name.replace(/\s+/g,' ')
   const same=await supabaseAdmin.from('game_results').select('name').eq('group_code',b.group).ilike('name',likeName(clean)).order('created_at').limit(1)
@@ -70,6 +72,7 @@ export async function GET(req:Request){
     if(!data||data.length<1000)break
   }
   const exact=(r:Row)=>!isNytGame(r.game)||(!r.stats.sourceDate||r.stats.sourceDate===r.day)&&(!(typeof r.stats.puzzleId==='string'&&r.stats.puzzleId.startsWith('nyt-archive-'))||r.stats.puzzleId.slice(12)===r.day)
+  const current=(r:Row)=>r.scoring_version===SCORING_VERSION&&exact(r)
   const out=(r:Row)=>{const {device_kind,...rest}=r;return device_kind?{...rest,device:device_kind}:rest}
-  return NextResponse.json({rows:all.filter(r=>r.scoring_version===scoringVersion(r.game)&&exact(r)).map(out),legacyRows:all.filter(r=>r.scoring_version!==scoringVersion(r.game)||!exact(r)).map(out)},{headers:{'Cache-Control':'no-store'}})
+  return NextResponse.json({rows:all.filter(current).map(out),legacyRows:all.filter(r=>!current(r)).map(out)},{headers:{'Cache-Control':'no-store'}})
 }

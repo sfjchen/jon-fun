@@ -1,88 +1,66 @@
 # sfjc.dev architecture map
 
-Single Next.js app at **`src/`** → [sfjc.dev](https://sfjc.dev) on **Vercel**. **One public theme: Notebook** (`/` + `/games/*`). **Supabase** (PostgreSQL + Realtime) for sync/multiplayer. **Veridian** whiteboard is external (rewrite).
+1 Next.js 16 app in `src/`, deployed to [sfjc.dev](https://sfjc.dev) on Vercel from `main`. Supabase (Postgres + Realtime) holds sync, multiplayer rooms and scores. The Veridian whiteboard is a separate app behind a rewrite.
 
-## Agent reading order
-
-| Priority | Doc | When |
-|----------|-----|------|
-| 1 | [`README.md`](../README.md) | Games list, verify loops, design principles |
-| 2 | **This file** | Routes, shared libs, perf, stack boundaries |
-| 3 | [`docs/NOTES.md`](NOTES.md) | Notes editor / AI / sync |
-| 4 | [`docs/SYNC.md`](SYNC.md) | Shared sync identity, device approval, owner access |
+Reading order: [`README.md`](../README.md) (projects, scripts, env), this file, then the doc for the area - [`DAILY-GAMES.md`](DAILY-GAMES.md), [`NOTES.md`](NOTES.md), [`SYNC.md`](SYNC.md), [`DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md), [`supabase/README.md`](../supabase/README.md).
 
 ## Routes
 
 | Prefix | Purpose |
 |--------|---------|
-| `/` | Notebook home grid |
-| `/games/*` | All games and tools |
-| `/games/notes` | Notes vault (standalone Lato shell) |
-| `/leaderboards` | Scores hub: group boards and stats, fed by Spelling Bee and 24 |
-| `/admin/*` | Owner admin surfaces (TMR, Notes) |
-| `/veridian/*` | Rewrite → external whiteboard |
+| `/` | Home grid and the Daily drawer |
+| `/games/*` | Every game and tool |
+| `/leaderboards` | Daily results, standings and stats per group |
+| `/admin/*` | Owner admin (TMR, Notes) |
+| `/veridian/*` | Rewrite to the external whiteboard (`VERIDIAN_ORIGIN`) |
 | `/api/*` | Route handlers |
 
-**Legacy redirects** (permanent): `/theme2` → `/`, `/theme2/games/:path*` → `/games/:path*`, `/notebook` → `/`.
+Old `/notebook` and `/theme2` URLs redirect in `next.config.mjs`.
 
-## Projects / backends
+## Projects and backends
 
 | Project | Routes | State | Backend |
 |---------|--------|-------|---------|
-| **Notes** | `/games/notes` | localStorage + Supabase | `/api/notes/*` |
-| **E-reader** | `/games/e-reader` | IndexedDB + optional Supabase | `/api/reader/*` |
-| **Daily log** | `/games/daily-log` | localStorage + Supabase | `/api/daily-learn/*` |
-| **Poker** | `/games/poker/*` | session + Supabase rooms | `/api/poker/*` |
-| **Party games** | quip-clash, fib-it, enough-about-you | sessionStorage + Realtime | `/api/party/*` |
-| **Connections** | `/games/connections` | Supabase shelf | `/api/connections/*` |
-| **Jeopardy** | `/games/jeopardy` | localStorage + optional Supabase buzzer | `/api/jeopardy/*` |
-| **Anthropeum** | `/games/anthropeum` | local player of the original's artifacts, regions and scoring (`AnthropeumPlay`, `lib/artifact-scoring.ts`) | `game_results` |
-| **Scores** | `/leaderboards` | name + group code in localStorage, `game_results` in Supabase | `/api/results` |
+| Daily games | `/games/{wordle,mini,connections/daily,spelling-bee,krillion,anthropeum}`, `/games/archives` | localStorage progress, `game_results`, `daily_game_content` | `/api/daily`, `/api/results`, `/api/cron`, `/api/krillion`, `/api/anthropeum`, `/api/spelling-bee` |
+| SET and Triples | `/games/set`, `/games/triples` | localStorage, `triples_rooms` | `/api/triples`, `/api/match-results` |
+| Notes | `/games/notes` | localStorage + Supabase | `/api/notes/*` |
+| E-reader | `/games/e-reader` | IndexedDB + optional Supabase | `/api/reader/*` |
+| Daily log | `/games/daily-log` | localStorage + Supabase | `/api/daily-learn/*` |
+| Poker | `/games/poker/*` | session + Supabase rooms | `/api/poker/*` |
+| Party games | quip-clash, fib-it, enough-about-you | sessionStorage + Realtime | `/api/party/*` |
+| Connections shelf | `/games/connections` | Supabase shelf | `/api/connections/*` |
+| Jeopardy | `/games/jeopardy` | localStorage + optional buzzer room | `/api/jeopardy/*` |
+| 24 | `/games/24` | Supabase rooms | `/api/game24/*`, `/api/match-results` |
+| Focus Chimes | `/games/tmr` | localStorage + Supabase | `/api/tmr/*` |
 
-## Why poker / reader / jeopardy are **not** one stack
+Devices and sync keys are shared by all of them through `/api/sync` (see `SYNC.md`).
 
-| Concern | Poker | Reader | Jeopardy |
-|---------|-------|--------|----------|
-| **Primary state** | Supabase room + chip stacks | IndexedDB books/chapters | localStorage boards + buzzer room |
-| **Realtime** | Postgres changes on seats/pot | Optional communal reading_state | Buzzer + host sync |
-| **Heavy deps** | Minimal UI | pdf.js, EPUB, TTS | Board JSON, passcode library API |
-| **Shell** | Full-bleed felt table | Standalone reader chrome | Game board + editor |
+## Shared pieces
 
-**Shared infra only:** `src/lib/supabase.ts`, `partyFetch` pattern (party games), `PageShell` where applicable. Merging into one “game engine” would add abstraction without reducing code — each product has different persistence and UX. **Do not unify.**
+- `src/lib/supabase.ts` - browser client and the server-only admin client.
+- `src/lib/api-guards.ts` - cron bearer check and a per-address rate limit.
+- `src/components/PageShell.tsx` - picks the shell per route: notebook, game-themed (`data-game-theme`), Notes, full-bleed. A new daily route goes in its `ownDailyHeader` and `gameTheme` lists.
+- `src/components/Hotkeys.tsx` + `src/lib/keyboard.ts` - 1 keydown listener for the site. Mark a control with `data-hotkey="k"`, or a grid with `data-arrows`, instead of adding a listener.
+- Party games share `PartyLobbyForm`, `usePartyLobby`, `usePartyRoomActions`, `usePartyRoomData` (Realtime with a 2-second poll fallback) and `partyFetch`.
 
-## Shared party architecture
-
-```
-PartyLobbyForm.tsx       ← create/join UI
-usePartyLobby.ts         ← sessionStorage, create/join/loadOnce
-usePartyRoomActions.ts   ← host start / play-again
-usePartyRoomData.ts      ← Supabase Realtime + 2s poll fallback
-partyFetch               ← src/lib/party/constants.ts
-```
+Poker, the reader and Jeopardy keep separate state and shells on purpose (rooms and chips, IndexedDB books, local boards with a buzzer). Do not merge them into 1 engine.
 
 ## Notes performance
 
-- **Editor:** single Tiptap instance; `sessionId` prop swaps markdown in-place (no `key=` remount on note switch)
-- **Switch path:** optimistic `LOAD_SESSION` dispatch; dirty-note save + sync deferred via `queueMicrotask`
-- **Dynamic import:** `EditorShell` → `TiptapNoteEditor` (`ssr: false`)
+- 1 Tiptap instance. The `sessionId` prop swaps markdown in place, with no remount on note switch.
+- Note switch dispatches `LOAD_SESSION` at once. The save and sync of a dirty note are deferred with `queueMicrotask`.
+- `EditorShell` loads `TiptapNoteEditor` with a dynamic import (`ssr: false`).
 
 ## Verify
 
 ```bash
-npm run type-check && npm run build
-npm run test:e2e:notes
-npm run test:e2e -- party-games connections
-npm run test:e2e -- --project=visual-desktop site-visual   # first run: --update-snapshots
+npm run type-check && npm test && npm run build
+npm run test:e2e -- notes
+npm run test:e2e -- party-games connections daily-games
+npm run test:e2e:visual
 ```
 
 ## Dependencies
 
-- **`@supabase/ssr` removed** — unused (client uses `@supabase/supabase-js` + service routes)
-- **`pdfjs-dist` pinned** at 5.4.x — must match `pdf-parse` tracing in `next.config.mjs`
-- **Next 16** — upgraded with `eslint-config-next@16`; run official codemods if build warns
-
-## MCP (agents)
-
-- **Supabase:** project `nzviiorrlsdtwzvzodpg`
-- **Vercel:** `jon-fun`
-- **Playwright:** CLI for regression; plugin for ad-hoc smoke only
+- `pdfjs-dist` is pinned at 5.4.x and must match the `pdf-parse` tracing in `next.config.mjs`.
+- Server routes that read files with `fs` need their folders listed in `outputFileTracingIncludes`, or Vercel leaves them out of the function.

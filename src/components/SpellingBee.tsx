@@ -8,16 +8,14 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { shuffle } from '@/lib/random'
-import { PUBLIC_GROUP, RESULTS_CHANGED, getPlayer, localDay, logResult, markPracticeIfFuture, isPracticeResult } from '@/lib/results'
+import { PUBLIC_GROUP, RESULTS_CHANGED, getPlayer, logResult, markPracticeIfFuture, isPracticeResult } from '@/lib/results'
 import { useDeviceName } from '@/lib/use-device-name'
-import { validDay } from '@/lib/daily'
+import { NYT_FIRST_DAY, playableDay, shiftDay, siteDay, validDay } from '@/lib/daily'
 import { usePlayDay } from '@/lib/play-day'
 import { useDailyPuzzle } from '@/lib/use-daily-puzzle'
-import { NYT_FIRST_DAY } from '@/lib/daily/nyt-puzzles'
 import DayNav, { action } from '@/components/daily/DayNav'
 import {
   RANKS,
-  addDays,
   check,
   hints,
   includePublishedPangrams,
@@ -114,7 +112,7 @@ function Stats({ now, share }: { now: string; share: string }) {
     })
   } catch {}
   let streak = 0
-  for (let d = days.has(now) ? now : addDays(now, -1); days.has(d); d = addDays(d, -1)) streak++
+  for (let d = days.has(now) ? now : shiftDay(now, -1); days.has(d); d = shiftDay(d, -1)) streak++
   const cells: [string, number][] = [
     ['Days played', days.size],
     ['Avg words', days.size ? Math.round([...days.values()].reduce((a, b) => a + b, 0) / days.size) : 0],
@@ -285,12 +283,12 @@ export default function SpellingBee() {
   const [crowd, setCrowd] = useState<{ players: number; genius: number } | null>(null)
   const tRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
-  const now = localDay()
+  const now = siteDay()
   const practice = params.get('p')
   const archive = params.get('a')
   const requested = params.get('d')
   const date = usePlayDay(
-    validDay(requested) && requested >= NYT_FIRST_DAY.bee && requested <= '2100-12-31' ? requested : null, 'bee')
+    playableDay('bee', requested) ? requested : null, 'bee')
 
   useEffect(() => {
     loadData().then(setData, () => setErr(true))
@@ -301,7 +299,7 @@ export default function SpellingBee() {
   const [previousError,setPreviousError]=useState('')
   const [previous, setPrevious] = useState<HistoricalPuzzle | null>(null)
   useEffect(() => {
-    const yesterday = addDays(date, -1)
+    const yesterday = shiftDay(date, -1)
     if (modal !== 'yesterday' || data?.history.some(p => p.date === yesterday)) return
     const controller = new AbortController()
     fetch(`/api/daily/bee?d=${yesterday}`, { signal: controller.signal }).then(async r => {
@@ -348,7 +346,7 @@ export default function SpellingBee() {
   useEffect(() => {
     if (modal !== 'yesterday') return
     let live = true
-    void remoteFound(addDays(date, -1)).then((ws) => { if (live) setYdFound(ws) })
+    void remoteFound(shiftDay(date, -1)).then((ws) => { if (live) setYdFound(ws) })
     return () => { live = false }
   }, [modal, date, name])
   // Sends this browser's earlier days once, so words found before devices shared them reach the others.
@@ -462,7 +460,7 @@ export default function SpellingBee() {
       </p>
     )
 
-  const yd = data.history.find(p => p.date === addDays(date, -1)) ?? (previous?.date === addDays(date, -1) ? previous : null)
+  const yd = data.history.find(p => p.date === shiftDay(date, -1)) ?? (previous?.date === shiftDay(date, -1) ? previous : null)
   const btn = 'rounded-full border px-5 py-2.5 text-[15px] font-medium active:scale-95 transition'
   const sorted = [...found].sort()
 
@@ -754,7 +752,7 @@ export default function SpellingBee() {
             <span style={{ color: '#d4ac0d' }}>{yd.center}</span>
             {yd.outer.join('')}
           </p>
-          <WordList words={yd.answers} found={new Set([...loadFound(`${addDays(date, -1)}:${yd.id}`), ...ydFound])} />
+          <WordList words={yd.answers} found={new Set([...loadFound(`${shiftDay(date, -1)}:${yd.id}`), ...ydFound])} />
         </Dialog>
       )}
       {modal === 'yesterday' && !yd && <Dialog title="Yesterday's answers" onClose={() => setModal(null)}>{previousError||'Loading the original previous hive…'}</Dialog>}

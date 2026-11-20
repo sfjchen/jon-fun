@@ -15,16 +15,32 @@
       "schedule": "0 0 * * *"
     },
     {
-      "path": "/api/cron/krillion",
-      "schedule": "10 5 * * *"
+      "path": "/api/cron/daily?utc=07",
+      "schedule": "0 7 * * *"
     },
     {
-      "path": "/api/cron/krillion?dist=1",
+      "path": "/api/cron/daily?utc=08",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/daily?utc=09",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/daily?utc=10",
+      "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/cron/daily?utc=11",
+      "schedule": "0 11 * * *"
+    },
+    {
+      "path": "/api/cron/krillion?utc=03",
+      "schedule": "55 3 * * *"
+    },
+    {
+      "path": "/api/cron/krillion?utc=04",
       "schedule": "55 4 * * *"
-    },
-    {
-      "path": "/api/cron/nyt",
-      "schedule": "15 8 * * *"
     }
   ]
 }

@@ -2,24 +2,19 @@
  * Computes Wordle stats for this device from the saved per-day runs, merged with the player's synced results.
  */
 
-import { getPlayer, isPracticeResult, localDay } from '@/lib/results'
+import { shiftDay, siteDay } from '@/lib/daily'
+import { getPlayer, isPracticeResult } from '@/lib/results'
 
 export type FivefoldStats = { played: number; wins: number; cur: number; max: number; dist: number[] }
 
 type Row = { name: string; game: string; day: string; stats: { n?: number; solved?: boolean } }
 const RUN_PREFIX = 'fivefold:nyt-v2:'
-const DAY_MS = 86400000
-
-/**
- * Returns a day string shifted by a number of days.
- */
-const shift = (day: string, n: number) => new Date(Date.parse(day) + n * DAY_MS).toISOString().slice(0, 10)
 
 /**
  * Loads each official finished day as a guess count, with 0 for a loss. Saved runs win over synced rows.
  */
 export async function loadFivefoldStats(): Promise<FivefoldStats> {
-  const today = localDay()
+  const today = siteDay()
   const days = new Map<string, number>()
   const player = getPlayer()
   try {
@@ -49,10 +44,10 @@ export async function loadFivefoldStats(): Promise<FivefoldStats> {
     played++
     if (n) dist[n - 1]!++
     wins += n ? 1 : 0
-    run = n && days.get(shift(day, -1)) ? run + 1 : n ? 1 : 0
+    run = n && days.get(shiftDay(day, -1)) ? run + 1 : n ? 1 : 0
     max = Math.max(max, run)
   }
   let cur = 0
-  for (let d = days.get(today) ? today : shift(today, -1); days.get(d); d = shift(d, -1)) cur++
+  for (let d = days.get(today) ? today : shiftDay(today, -1); days.get(d); d = shiftDay(d, -1)) cur++
   return { played, wins, cur, max, dist }
 }

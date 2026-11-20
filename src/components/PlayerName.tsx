@@ -1,19 +1,15 @@
 'use client'
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ensureSyncIdentity } from '@/lib/syncIdentity'
-import { getPlayer, setPlayer, PLAYER_CHANGED } from '@/lib/results'
+import { setPlayer } from '@/lib/results'
+import { usePlayer } from '@/lib/use-player'
 
 export function PencilIcon() {
   return <svg aria-hidden="true" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="m15 5 4 4M4 20l4-1 12-12a2.8 2.8 0 0 0-4-4L4 15z" /></svg>
 }
-function subscribe(cb:()=>void) {
-  window.addEventListener(PLAYER_CHANGED,cb); window.addEventListener('storage',cb)
-  return ()=>{window.removeEventListener(PLAYER_CHANGED,cb);window.removeEventListener('storage',cb)}
-}
 /** Small, shared name editor. A save immediately applies across the device. */
 export default function PlayerName() {
-  const raw=useSyncExternalStore(subscribe,()=>JSON.stringify(getPlayer()),()=> 'null')
-  const player=JSON.parse(raw) as ReturnType<typeof getPlayer>
+  const player=usePlayer()
   const [editing,setEditing]=useState(false),[draft,setDraft]=useState('')
   const input=useRef<HTMLInputElement>(null)
   useEffect(()=>{void ensureSyncIdentity()},[])

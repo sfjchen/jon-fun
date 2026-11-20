@@ -1,18 +1,39 @@
+/**
+ * Serves each NYT daily by its exact publication date: from the bundled year archive, then the stored snapshot,
+ * then the NYT's own dated endpoint, saving what it fetches. Never substitutes another day's puzzle.
+ */
+
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { supabaseAdmin } from '@/lib/supabase'
 import { includePublishedPangrams, type Puzzle } from '@/lib/spelling-bee'
-import { siteDay, validDay } from '@/lib/daily'
-import { NYT_FIRST_DAY, NYT_PATH, normalizeNytPuzzle, type NytGame } from './nyt-puzzles'
+import { NYT_FIRST_DAY, siteDay, validDay, type NytGame } from '@/lib/daily'
+import { NYT_PATH, normalizeNytPuzzle } from './nyt-puzzles'
 
 const pending = new Map<string, Promise<unknown>>()
+const years = new Map<string, Promise<Map<string, { date: string }>>>()
 const configured = () => Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)
+
+/**
+ * Reads a day's puzzle from the bundled archive. Each year file is parsed once per server instance, since the results
+ * API replays every posted game against it.
+ */
 async function exactSnapshot(game: NytGame, day: string): Promise<unknown | null> {
+  const key = `${game}/${day.slice(0, 4)}`
+  let year = years.get(key)
+  if (!year) {
+    year = readFile(path.join(process.cwd(), 'public/puzzle-archives', `${key}.json`), 'utf8')
+      .then(text => new Map((JSON.parse(text) as { date: string }[]).map(p => [p.date, p])))
+    years.set(key, year)
+  }
   try {
-    const puzzles = JSON.parse(await readFile(path.join(process.cwd(), 'public/puzzle-archives', game, `${day.slice(0,4)}.json`), 'utf8')) as { date: string }[]
-    const puzzle = puzzles.find(p => p.date === day)
+    const puzzle = (await year).get(day)
     return puzzle && game === 'bee' ? includePublishedPangrams(puzzle as Puzzle & { date: string }) : puzzle ?? null
-  } catch { return null }
+  } catch {
+    // A missing file is the current year before its first sync, so the next request looks again.
+    years.delete(key)
+    return null
+  }
 }
 async function load(game: NytGame, day: string): Promise<unknown> {
   const local = await exactSnapshot(game, day)
@@ -46,8 +67,4 @@ export function nytPuzzle(game: NytGame, day: string): Promise<unknown> {
   let request = pending.get(key)
   if (!request) { request = load(game, day).finally(() => pending.delete(key)); pending.set(key, request) }
   return request
-}
-export async function captureNytDaily() {
-  const day = siteDay()
-  return Promise.allSettled((Object.keys(NYT_FIRST_DAY) as NytGame[]).map(game => nytPuzzle(game, day)))
 }

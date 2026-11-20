@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { hasBearer } from '@/lib/api-guards'
 import { supabaseAdmin as supabase } from '@/lib/supabase'
 
 interface CleanupResponse {
@@ -12,11 +13,6 @@ interface ErrorResponse {
 
 function unauthorized(): NextResponse<ErrorResponse> {
   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-}
-
-function isAuthorized(request: NextRequest, secret: string | undefined): boolean {
-  if (!secret) return false
-  return request.headers.get('authorization') === `Bearer ${secret}`
 }
 
 async function runCleanup(): Promise<NextResponse<CleanupResponse | ErrorResponse>> {
@@ -104,16 +100,15 @@ async function runCleanup(): Promise<NextResponse<CleanupResponse | ErrorRespons
 // Vercel cron (vercel.json) calls GET with `Authorization: Bearer ${CRON_SECRET}`.
 // Fails closed: if CRON_SECRET is unset, the cron route rejects every request.
 export async function GET(request: NextRequest) {
-  if (!isAuthorized(request, process.env.CRON_SECRET)) {
+  if (!hasBearer(request, process.env.CRON_SECRET)) {
     return unauthorized()
   }
   return runCleanup()
 }
 
-// Manual trigger. Requires `Authorization: Bearer ${CLEANUP_API_KEY}` when that var is set.
+// Manual trigger with `Authorization: Bearer ${CLEANUP_API_KEY}`. Fails closed like the cron route.
 export async function POST(request: NextRequest) {
-  const expectedKey = process.env.CLEANUP_API_KEY
-  if (expectedKey && !isAuthorized(request, expectedKey)) {
+  if (!hasBearer(request, process.env.CLEANUP_API_KEY)) {
     return unauthorized()
   }
   return runCleanup()

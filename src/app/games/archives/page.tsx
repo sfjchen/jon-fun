@@ -2,8 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { siteDay, validDay } from '@/lib/daily'
-import { NYT_FIRST_DAY, type NytGame } from '@/lib/daily/nyt-puzzles'
+import { NYT_FIRST_DAY, siteDay, validDay, type NytGame } from '@/lib/daily'
 
 const games: Record<NytGame, { label: string; path: string }> = {
   fivefold: { label: 'Wordle', path: '/games/wordle' },

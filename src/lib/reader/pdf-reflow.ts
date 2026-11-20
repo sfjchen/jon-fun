@@ -1,11 +1,5 @@
 import { isStructuredChapterHeadingLine } from '@/lib/reader/text-chapters'
 
-export type PdfPositionedItem = {
-  text: string
-  x: number
-  y: number
-}
-
 /** Repair pdf.js run breaks (e.g. “B” + “ook” → “B ook”); restores the word “Book”, not an abbreviation rewrite. */
 export function normalizePdfTextArtifacts(text: string): string {
   return text.replace(/\bB\s+ook\b/gi, 'Book')
