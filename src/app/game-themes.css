@@ -16,11 +16,21 @@
 .fivefold-tile[data-mark='near'] { background:#d1a92c; border-color:#d1a92c; color:#fff; }
 .fivefold-tile[data-mark='miss'] { background:#8a8f98; border-color:#8a8f98; color:#fff; }
 .fivefold-key { min-width:28px; flex:1 1 0; max-width:44px; height:50px; border-radius:8px; background:var(--ink-paper); border:1px solid var(--ink-border); font-weight:600; text-transform:uppercase; font-size:14px; }
-.fivefold-key.px-3 { max-width:66px; flex-grow:1.5; font-size:12px; }
+.fivefold-key.px-3 { max-width:66px; flex-grow:1.5; padding-inline:2px; font-size:clamp(10px,2.8vw,12px); }
 .fivefold-key[data-mark='hit'] { background:var(--g-fivefold); border-color:var(--g-fivefold); color:#fff; }
 .fivefold-key[data-mark='near'] { background:#d1a92c; border-color:#d1a92c; color:#fff; }
 .fivefold-key[data-mark='miss'] { background:#8a8f98; color:#fff; opacity:.6; }
 .fivefold-shake { animation:fivefold-shake .35s; }
+.fivefold-hard { display:flex; align-items:center; gap:6px; font-size:12px; }
+.fivefold-hard i { width:28px; height:16px; border-radius:8px; background:#8a8f98; position:relative; transition:background .15s; }
+.fivefold-hard i::after { content:''; position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; transition:left .15s; }
+.fivefold-hard i[data-on='true'] { background:var(--g-fivefold); }
+.fivefold-hard i[data-on='true']::after { left:14px; }
+.fivefold-link { font-size:12px; font-weight:600; text-decoration:underline; }
+.fivefold-overlay { position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.45); padding:16px; }
+.fivefold-dialog { width:100%; max-width:380px; display:grid; gap:12px; border-radius:14px; background:var(--ink-bg); color:var(--ink-text); padding:20px; box-shadow:0 10px 40px rgba(0,0,0,.3); }
+.fivefold-bar { background:#8a8f98; color:#fff; font-size:12px; font-weight:700; text-align:right; padding:1px 6px; }
+.fivefold-bar[data-today='true'] { background:var(--g-fivefold); }
 @keyframes fivefold-shake { 25% { transform:translateX(-6px) } 75% { transform:translateX(6px) } }
 [data-game-theme='mini'] input[aria-label^='Row'] { font-family:inherit; font-weight:500; font-size:clamp(22px,5vw,38px); }
 [data-game-theme='connections'] [data-testid='connections-board'] { margin-top:24px; }

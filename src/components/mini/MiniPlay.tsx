@@ -20,7 +20,7 @@ export default function MiniPlay({puzzle,dailyDay}:{puzzle:MiniPuzzle;dailyDay?:
   const current=useRef(run),inputs=useRef<(HTMLInputElement|null)[]>([])
   const [active,setActive]=useState(()=>puzzle.cells.findIndex(Boolean)),[direction,setDirection]=useState('Across'),[clock,setClock]=useState(()=>Date.now())
   const [pencil,setPencil]=useState(false),[autocheck,setAutocheck]=useState(false),[rebus,setRebus]=useState(false)
-  const [wrong,setWrong]=useState<number[]>([]),[message,setMessage]=useState('')
+  const [wrong,setWrong]=useState<number[]>([]),[message,setMessage]=useState(''),[copied,setCopied]=useState(false)
   const save=useCallback((r:MiniRun)=>{try{localStorage.setItem(storageKey,JSON.stringify(pauseMini(r,Date.now())))}catch{}},[storageKey])
   const commit=useCallback((r:MiniRun)=>{current.current=r;setRun(()=>r);save(r)},[save])
   const clue=puzzle.clues.find(c=>c.direction===direction&&c.cells.includes(active))??puzzle.clues.find(c=>c.cells.includes(active))
@@ -63,7 +63,15 @@ export default function MiniPlay({puzzle,dailyDay}:{puzzle:MiniPuzzle;dailyDay?:
     commit(resumeMini(r,Date.now()));setClock(Date.now());setWrong([]);setMessage('');focus(puzzle.cells.findIndex(Boolean))
   }
   useEffect(()=>{if(!paused&&!run.complete)inputs.current[active]?.focus()},[paused,run.complete,active])
-  const status=run.complete?run.assisted?'Solved with help · not ranked':`Solved in ${formatTime(seconds)}!`:''
+  const status=run.complete?'Puzzle solved':''
+  /**
+   * Shares the solve time through the phone share sheet, or copies it on desktop.
+   */
+  async function share(){
+    const text=[`Mini ${puzzle.date}`,`Solved in ${formatTime(seconds)}${run.assisted?' · assisted':''}`,'sfjc.dev/games/mini'].join('\n')
+    if(navigator.share&&matchMedia('(pointer: coarse)').matches)return navigator.share({text}).catch(()=>{})
+    await navigator.clipboard.writeText(text).then(()=>setCopied(true),()=>{})
+  }
   const tool='rounded-full px-3 py-2 text-sm font-medium hover:bg-[var(--ink-border)]/40 disabled:opacity-30'
   const toolbar=<div className="flex items-center gap-1 border-b pb-2" style={{borderColor:'var(--ink-border)'}}>
     <button className={`${tool} tabular-nums`} disabled={run.complete} title={paused?'Resume':'Pause'} aria-label={paused?'Resume puzzle':'Pause puzzle'} onClick={()=>{setClock(Date.now());commit(paused?resumeMini(current.current,Date.now()):pauseMini(current.current,Date.now()))}}>{run.complete?'':paused?'▶ ':'❚❚ '}{formatTime(seconds)}</button>
@@ -94,6 +102,7 @@ export default function MiniPlay({puzzle,dailyDay}:{puzzle:MiniPuzzle;dailyDay?:
       }} />}{wrong.includes(i)&&<span aria-hidden="true" className="pointer-events-none absolute bottom-0 right-1 text-xs text-red-700">×</span>}</div>})}
     </div>
     </div>
+    {run.complete&&<div className="mx-auto w-full max-w-sm space-y-2 rounded-xl border bg-[var(--ink-paper)] p-5 text-center" data-testid="mini-result"><h3 className="font-lora text-2xl">Congratulations!</h3><p className="text-3xl tabular-nums">{formatTime(seconds)}</p><p className="text-sm text-[var(--ink-muted)]">{run.assisted?'Assisted · not ranked':'Solved without help'}</p><button className="rounded-full bg-[var(--ink-text)] px-6 py-2.5 text-sm font-semibold text-[var(--ink-bg)]" onClick={share}>{copied?'Copied':'Share'}</button></div>}
     <div className="grid gap-6 sm:grid-cols-2">{['Across','Down'].map(d=><div key={d}><h3 className="text-lg font-semibold">{d}</h3><ul className="space-y-2">{puzzle.clues.filter(c=>c.direction===d).map(c=><li key={c.number}><button className="w-full rounded p-1 text-left hover:underline" aria-pressed={clue===c} style={{background:clue===c?'var(--ink-bg)':undefined}} onClick={()=>focus(c.cells.find(i=>!run.entries[i])??c.cells[0]!,d)}><strong>{c.number}.</strong> {c.text}</button></li>)}</ul></div>)}</div>
   </section>
 }

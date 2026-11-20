@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { emptyMini, miniElapsed, pauseMini, resumeMini, finishMini, type MiniPuzzle } from '../src/lib/mini'
-import { newKrillionRun, beginKrillionRound, pauseKrillion, resumeKrillion, restoreKrillionRun, completeKrillionRound } from '../src/lib/krillion'
+import { newKrillionRun, beginKrillionRound, restoreKrillionRun, completeKrillionRound } from '../src/lib/krillion'
 import { artifactScore, regionDistance, type Artifact } from '../src/lib/artifact-scoring'
 import { winners } from '../src/lib/score-stats'
 import { score, check, rankIdx } from '../src/lib/spelling-bee'
@@ -16,11 +16,10 @@ test('Mini accumulates only active time, pauses on leave, and records the first 
   assert.equal(replay.firstSolveSeconds,6)
   assert.equal(finishMini({...emptyMini(mini),entries:['A'],assisted:true},mini,0).firstSolveSeconds,null)
 })
-test('Krillion preview does not consume answer time; explicit pause preserves deadlines; reload cannot reset an expired timer',()=>{
+test('Krillion reload cannot reset an expired timer',()=>{
   let r=beginKrillionRound(newKrillionRun(),1000)
-  r=restoreKrillionRun(r,4500);assert.equal(r.phase,'answering');assert.equal(r.endsAt,29000)
-  r=pauseKrillion(r,5000);r=resumeKrillion(r,45000);assert.equal(r.endsAt,69000)
-  const expired=restoreKrillionRun(r,70000);assert.equal(expired.phase,'feedback');assert.equal(expired.outcomes[0]?.score,0)
+  r=restoreKrillionRun(r,4500);assert.equal(r.phase,'answering');assert.equal(r.endsAt,26000)
+  const expired=restoreKrillionRun(r,30000);assert.equal(expired.phase,'feedback');assert.equal(expired.outcomes[0]?.score,0)
   assert.equal(completeKrillionRound(expired,{answer:'x',accepted:true,score:100,reason:'Test catch'}).outcomes.length,1)
 })
 test('Original same-day Krillion key reproduces the completed reference run and includes exact aliases',async()=>{

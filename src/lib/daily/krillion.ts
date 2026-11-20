@@ -50,7 +50,7 @@ export async function krillionForDay(day:string):Promise<KrillionPuzzle> {
   return {date:review.date,prompts:review.prompts.map(({id,text})=>({id,text})),answerMs:25000,officialScoring:true}
 }
 const indices=new WeakMap<object,Map<string,KrillionAnswer>>()
-export async function judgeAnswer(date:string,index:number,answer:string,final=false):Promise<KrillionJudgment> {
+export async function judgeAnswer(date:string,index:number,answer:string):Promise<KrillionJudgment> {
   const prompt=(await krillionReview(date)).prompts[index]
   if(!prompt)throw Error('Invalid prompt')
   const miss={answer,accepted:false,score:0,reason:answer.trim()?'Not in this prompt’s accepted answer set.':'No answer before the clock ran out.'}
@@ -58,13 +58,13 @@ export async function judgeAnswer(date:string,index:number,answer:string,final=f
   if(!key)return miss
   let lookup=indices.get(prompt)
   if(!lookup){lookup=new Map();for(const entry of prompt.answers)for(const alias of [entry.answer,...entry.aliases??[]]){const normalized=answerKey(alias);if(normalized&&!lookup.has(normalized))lookup.set(normalized,entry)}indices.set(prompt,lookup)}
-  const matched=lookup.get(key)
-  if(matched)return {answer,accepted:true,score:matched.score,tier:matched.tier,matchedAnswer:matched.answer,...(matched.quip?{quip:matched.quip}:{}),reason:`${KRILLION_TIERS[matched.tier].name} · ${matched.score} points`}
-  if(!final&&key.length>=4){
+  let matched=lookup.get(key)
+  if(!matched&&key.length>=4){
     const max=key.length<8?1:2
-    let candidate:KrillionAnswer|undefined, distance=max+1, ambiguous=false
-    for(const [alias,entry] of lookup){if(Math.abs(alias.length-key.length)>max)continue;const d=editDistance(key,alias,max);if(d<distance){distance=d;candidate=entry;ambiguous=false}else if(d===distance&&candidate?.answer!==entry.answer)ambiguous=true}
-    if(candidate&&distance<=max&&!ambiguous)return {...miss,correction:candidate.answer,reason:'Spelling suggestion — submit again to confirm.'}
+    let distance=max+1,ambiguous=false
+    for(const [alias,entry] of lookup){if(Math.abs(alias.length-key.length)>max)continue;const d=editDistance(key,alias,max);if(d<distance){distance=d;matched=entry;ambiguous=false}else if(d===distance&&matched?.answer!==entry.answer)ambiguous=true}
+    if(ambiguous||distance>max)matched=undefined
   }
+  if(matched)return {answer,accepted:true,score:matched.score,tier:matched.tier,matchedAnswer:matched.answer,...(matched.quip?{quip:matched.quip}:{}),reason:`${KRILLION_TIERS[matched.tier].name} · ${matched.score} points`}
   return miss
 }

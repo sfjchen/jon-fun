@@ -7,13 +7,16 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { formatTime, isPracticeResult, logResult, markPracticeIfFuture } from '@/lib/results'
+import { loadFivefoldStats, type FivefoldStats } from '@/lib/daily/fivefold-stats'
 
 export type FivefoldPuzzle = { answer: string }
 type Mark = 'hit' | 'near' | 'miss'
-type Run = { guesses: string[]; elapsedMs: number; activeSince: number | null }
+type Run = { guesses: string[]; elapsedMs: number; activeSince: number | null; hard: boolean }
 
 const TRIES = 6
 const ROWS = ['qwertyuiop', 'asdfghjkl', '↵zxcvbnm⌫']
+const HARD_KEY = 'fivefold:hard'
+const ORD = ['1st', '2nd', '3rd', '4th', '5th']
 const RANK: Record<Mark, number> = { miss: 1, near: 2, hit: 3 }
 let words: Promise<Set<string>> | null = null
 
@@ -37,6 +40,24 @@ function marks(guess: string, answer: string): Mark[] {
 }
 
 /**
+ * Returns the first hard-mode violation of a draft against earlier guesses, or an empty string.
+ */
+function hardError(draft: string, guesses: string[], answer: string): string {
+  const need = new Map<string, number>()
+  for (const g of guesses) {
+    const m = marks(g, answer)
+    const n = new Map<string, number>()
+    for (let i = 0; i < 5; i++) {
+      if (m[i] === 'hit' && draft[i] !== g[i]) return `${ORD[i]} letter must be ${g[i]!.toUpperCase()}`
+      if (m[i] !== 'miss') n.set(g[i]!, (n.get(g[i]!) ?? 0) + 1)
+    }
+    n.forEach((c, l) => need.set(l, Math.max(need.get(l) ?? 0, c)))
+  }
+  for (const [l, c] of need) if ([...draft].filter((x) => x === l).length < c) return `Guess must contain ${l.toUpperCase()}`
+  return ''
+}
+
+/**
  * Returns the active play time, including the running stretch.
  */
 const elapsed = (r: Run, now: number) => r.elapsedMs + (r.activeSince === null ? 0 : Math.max(0, now - r.activeSince))
@@ -51,19 +72,25 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
     try {
       const r = JSON.parse(localStorage.getItem(storageKey) ?? 'null') as Run | null
       if (r && Array.isArray(r.guesses) && r.guesses.every((g) => /^[a-z]{5}$/.test(g)) && Number.isFinite(r.elapsedMs)) {
-        return { guesses: r.guesses.slice(0, TRIES), elapsedMs: r.elapsedMs, activeSince: null }
+        return { guesses: r.guesses.slice(0, TRIES), elapsedMs: r.elapsedMs, activeSince: null, hard: !!r.hard }
       }
     } catch {}
-    return { guesses: [], elapsedMs: 0, activeSince: null }
+    return { guesses: [], elapsedMs: 0, activeSince: null, hard: false }
   })
   const [draft, setDraft] = useState('')
   const [message, setMessage] = useState('')
   const [shake, setShake] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [hardPref, setHardPref] = useState(() => {
+    try { return localStorage.getItem(HARD_KEY) === '1' } catch { return false }
+  })
+  const [statsOpen, setStatsOpen] = useState(false)
+  const [stats, setStats] = useState<FivefoldStats | null>(null)
   const [clock, setClock] = useState(() => Date.now())
   const current = useRef(run)
   const won = run.guesses.at(-1) === answer
   const done = won || run.guesses.length >= TRIES
+  const hard = run.guesses.length ? !!run.hard : hardPref
   const seconds = Math.floor(elapsed(run, clock) / 1000)
 
   const commit = useCallback(
@@ -93,6 +120,14 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
     }
   }, [commit])
 
+  useEffect(() => {
+    if (!statsOpen) return
+    void loadFivefoldStats().then(setStats)
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setStatsOpen(false) }
+    window.addEventListener('keydown', esc)
+    return () => window.removeEventListener('keydown', esc)
+  }, [statsOpen])
+
   const flash = (text: string) => {
     setMessage(text)
     setShake(true)
@@ -115,17 +150,20 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
       if (draft.length < 5) return flash('Not enough letters')
       if (draft !== answer && !(await words)?.has(draft)) return flash('Not in the word list')
       const latest = current.current
+      const fail = latest.hard || (!latest.guesses.length && hardPref) ? hardError(draft, latest.guesses, answer) : ''
+      if (fail) return flash(fail)
       const guesses = [...latest.guesses, draft]
       const over = draft === answer || guesses.length >= TRIES
       setDraft('')
-      if (!over) return commit({ ...latest, guesses })
-      const final = { guesses, elapsedMs: elapsed(latest, Date.now()), activeSince: null }
+      if (!over) return commit({ ...latest, guesses, hard: latest.guesses.length ? latest.hard : hardPref })
+      const final = { guesses, elapsedMs: elapsed(latest, Date.now()), activeSince: null, hard: latest.guesses.length ? latest.hard : hardPref }
       commit(final)
+      setStatsOpen(true)
       // Logged once, when the last guess lands, so reloading a finished board never re-sends it.
       const hit = draft === answer
       logResult('fivefold', hit ? TRIES + 1 - guesses.length : 0, guesses.length, dailyDay, { solved: hit, seconds: Math.floor(final.elapsedMs / 1000), sourceDate: dailyDay, puzzleId: `nyt-wordle:${dailyDay}` })
     },
-    [done, draft, answer, commit, dailyDay],
+    [done, draft, answer, commit, dailyDay, hardPref],
   )
 
   useEffect(() => {
@@ -149,10 +187,15 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
     })
   }
   const rows = Array.from({ length: TRIES }, (_, i) => run.guesses[i] ?? (i === run.guesses.length && !done ? draft : ''))
+  const toggleHard = () => {
+    if (run.guesses.length) return flash('Hard mode can only be turned on at the start of the day')
+    setHardPref(!hardPref)
+    try { localStorage.setItem(HARD_KEY, hardPref ? '0' : '1') } catch {}
+  }
   const share = () => {
-    const icon: Record<Mark, string> = { hit: '🟢', near: '🟡', miss: '⚪' }
+    const icon: Record<Mark, string> = { hit: '🟩', near: '🟨', miss: '⬛' }
     const text = [
-      `Wordle ${dailyDay} ${won ? run.guesses.length : 'X'}/6 · ${formatTime(Math.floor(run.elapsedMs / 1000))}`,
+      `Wordle ${dailyDay} ${won ? run.guesses.length : 'X'}/6${run.hard ? '*' : ''} · ${formatTime(Math.floor(run.elapsedMs / 1000))}`,
       ...run.guesses.map((g) => marks(g, answer).map((m) => icon[m]).join('')),
       'sfjc.dev/games/wordle',
     ].join('\n')
@@ -163,6 +206,12 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
     <section className="fivefold mx-auto max-w-md space-y-4" data-testid="fivefold-play">
       <div className="flex items-center justify-between border-b pb-2 text-sm" style={{ borderColor: 'var(--ink-border)' }}>
         <span className="tabular-nums" role="timer">{formatTime(seconds)}</span>
+        <span className="flex items-center gap-3">
+          <button type="button" role="switch" aria-checked={hard} className="fivefold-hard" onClick={toggleHard}>
+            Hard mode <i data-on={hard} />
+          </button>
+          <button type="button" className="fivefold-link" onClick={() => setStatsOpen(true)}>Stats</button>
+        </span>
         <span className="text-[var(--ink-muted)]">{isPracticeResult('fivefold', dailyDay) ? 'Practice' : `${run.guesses.length}/${TRIES}`}</span>
       </div>
       <p role="status" aria-live="polite" className="min-h-6 text-center text-sm font-medium">{message}</p>
@@ -189,6 +238,7 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
           <button className="rounded-full bg-[var(--game-color)] px-5 py-2 text-sm font-semibold text-white" onClick={share}>
             {copied ? 'Copied' : 'Copy result'}
           </button>
+          <button className="fivefold-link block w-full" onClick={() => setStatsOpen(true)}>Stats</button>
         </div>
       ) : (
         <div className="space-y-1.5 select-none" aria-label="Keyboard">
@@ -208,6 +258,37 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
               ))}
             </div>
           ))}
+        </div>
+      )}
+      {statsOpen && (
+        <div className="fivefold-overlay" onClick={() => setStatsOpen(false)}>
+          <div role="dialog" aria-label="Statistics" className="fivefold-dialog" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-center text-lg font-bold">Statistics</h2>
+            {stats ? (
+              <>
+                <div className="grid grid-cols-4 text-center">
+                  {([['Played', stats.played], ['Win %', stats.played ? Math.round((stats.wins / stats.played) * 100) : 0],
+                    ['Current Streak', stats.cur], ['Max Streak', stats.max]] as const).map(([k, v]) => (
+                    <div key={k}><div className="text-2xl font-bold tabular-nums">{v}</div><div className="text-xs">{k}</div></div>
+                  ))}
+                </div>
+                <h3 className="text-center text-sm font-bold uppercase">Guess Distribution</h3>
+                {stats.dist.map((n, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm">
+                    <span className="w-3">{i + 1}</span>
+                    <span
+                      className="fivefold-bar"
+                      data-today={done && won && run.guesses.length === i + 1}
+                      style={{ width: `${Math.max(8, (n / Math.max(1, ...stats.dist)) * 100)}%` }}
+                    >
+                      {n}
+                    </span>
+                  </div>
+                ))}
+              </>
+            ) : <p className="text-center text-sm">Loading...</p>}
+            <button className="fivefold-link block w-full" onClick={() => setStatsOpen(false)}>Close</button>
+          </div>
         </div>
       )}
     </section>

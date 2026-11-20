@@ -14,7 +14,7 @@ export default function AnthropeumPlay({ puzzle, dailyDay }: { puzzle: ArtifactD
   const [round,setRound] = useState(() => Math.min(guesses.length, puzzle.artifacts.length))
   const [pin,setPin] = useState<Pin | null>(null),[year,setYear] = useState<number | null>(null)
   const [image,setImage] = useState(0),[failedImage,setFailedImage] = useState(false),[expanded,setExpanded]=useState(false),[imageLoaded,setImageLoaded]=useState(false)
-  const [hintOpen,setHintOpen]=useState(false),[imageZoom,setImageZoom]=useState(1)
+  const [hintOpen,setHintOpen]=useState(false),[imageZoom,setImageZoom]=useState(1),[copied,setCopied]=useState(false)
   const hintsKey=`anthropeum:hints:v1:${dailyDay}`
   const [hints,setHints]=useState<ArtifactHints>(()=>{try{return JSON.parse(localStorage.getItem(hintsKey)??'{}')}catch{return {}}})
   useEffect(()=>{try{localStorage.setItem(hintsKey,JSON.stringify(hints))}catch{}},[hints,hintsKey])
@@ -32,12 +32,21 @@ export default function AnthropeumPlay({ puzzle, dailyDay }: { puzzle: ArtifactD
     try { localStorage.setItem(storageKey,JSON.stringify(guesses)) } catch {}
     if (done) logResult('anthropeum', total, guesses.length, dailyDay, { solved: true, sourceDate: puzzle.date, max: 100000, scoringVersion: 2 })
   }, [guesses, done, total, dailyDay, puzzle.date, storageKey])
+  /**
+   * Shares the score band row through the phone share sheet, or copies it on desktop.
+   */
+  async function share(){
+    const band=(n:number)=>n>=8000?'🟩':n>=5000?'🟨':n>=2000?'🟧':'🟥'
+    const text=[`Anthropeum ${puzzle.date}`,`${total.toLocaleString()} / 100,000`,guesses.map(g=>band(g.total)).join(''),'sfjc.dev/games/anthropeum'].join('\n')
+    if(navigator.share&&matchMedia('(pointer: coarse)').matches)return navigator.share({text}).catch(()=>{})
+    await navigator.clipboard.writeText(text).then(()=>setCopied(true),()=>{})
+  }
   function begin(){markPracticeIfFuture('anthropeum',dailyDay);setStarted(true);try{localStorage.setItem(`${storageKey}:started`,'1')}catch{}}
   const photo=<>{failedImage?<p className="p-8 text-center text-white">Image unavailable. Try another photo.</p>:/* Museum photographs are served from their original open collection. */
     /* eslint-disable-next-line @next/next/no-img-element */
     <img src={artifact.images[image]} onLoad={()=>setImageLoaded(true)} alt={guess?artifact.title:`Mystery artifact ${round+1}`} onError={()=>setFailedImage(true)}/>}</>
   if(!started)return <section className="anthro-landing" data-testid="anthropeum-landing"><p className="anthro-eyebrow">Ten artifacts · one daily journey</p><h2>Anthropeum</h2><p className="anthro-question">Where in the world, and when, does this human artifact belong?</p><p className="mx-auto max-w-md text-lg">Each day, ten objects. Place them in history by guessing where and when they were made.</p><p className="anthro-eyebrow mb-4 mt-10">{new Date(`${dailyDay}T12:00:00Z`).toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric',timeZone:'UTC'})}</p><button className="anthro-button" onClick={begin}>Play today’s game</button><p className="mt-10 text-sm">Your progress and score save here on sfjc.dev.</p><details className="mt-8 border-t pt-5 text-left"><summary className="anthro-eyebrow cursor-pointer">How to play</summary><p className="mt-4">Examine the museum object, drop a pin on the map and select a 250-year period. You can zoom, pan, change photographs and adjust your guess before submitting. Each round awards up to 5,000 points for location and 5,000 for time.</p></details></section>
-  if (done && round >= puzzle.artifacts.length) return <section className="anthro-results space-y-6" data-testid="anthropeum-result"><p className="anthro-eyebrow">Your daily collection</p><h2 className="font-lora text-4xl">A journey through human history</h2><p className="text-5xl">{total.toLocaleString()} <span className="text-lg text-[var(--ink-muted)]">/ 100,000</span></p><ol className="grid gap-3 sm:grid-cols-2">{puzzle.artifacts.map((a,i)=><li key={a.id} className="border-b py-3"><span className="anthro-eyebrow">Artifact {i+1}</span><p>{a.title}</p><strong>{guesses[i]?.total.toLocaleString()} points</strong></li>)}</ol><p>{isPracticeResult('anthropeum',dailyDay)?'Future preview · practice only.':'Saved to your daily scores.'}</p></section>
+  if (done && round >= puzzle.artifacts.length) return <section className="anthro-results space-y-6" data-testid="anthropeum-result"><p className="anthro-eyebrow">Your daily collection</p><h2 className="font-lora text-4xl">A journey through human history</h2><p className="text-5xl">{total.toLocaleString()} <span className="text-lg text-[var(--ink-muted)]">/ 100,000</span></p><ol className="grid gap-3 sm:grid-cols-2">{puzzle.artifacts.map((a,i)=><li key={a.id} className="border-b py-3"><span className="anthro-eyebrow">Artifact {i+1}</span><p>{a.title}</p><strong>{guesses[i]?.total.toLocaleString()} points</strong></li>)}</ol><button className="anthro-button" onClick={share}>{copied?'Copied':'Share'}</button><p>{isPracticeResult('anthropeum',dailyDay)?'Future preview · practice only.':'Saved to your daily scores.'}</p></section>
   return <section data-testid="anthropeum-play">
     <div className="anthro-topline"><p className="anthro-eyebrow">Round {round+1} of {puzzle.artifacts.length}</p><p className="text-right"><span className="anthro-eyebrow">Score</span><strong className="ml-3 text-xl">{total.toLocaleString()}</strong></p></div>
     <ArtifactTimeline value={guess?.year??year} truth={guess?{beginYear:artifact.beginYear,endYear:artifact.endYear}:undefined} onChange={setYear}/>
