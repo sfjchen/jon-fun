@@ -86,14 +86,9 @@ export function permKey(p: readonly number[]): string {
 }
 
 /** One legal move toward the target (used by hint). */
-export type HintMove =
-  | { kind: 'swap'; i: number; j: number }
-  | { kind: 'shift'; from: number; to: number }
+export type HintMove = { kind: 'swap'; i: number; j: number } | { kind: 'shift'; from: number; to: number }
 
-function neighborsForMode(
-  mode: FiveCanGameMode,
-  p: Perm5,
-): Array<{ next: Perm5; move: HintMove }> {
+function neighborsForMode(mode: FiveCanGameMode, p: Perm5): Array<{ next: Perm5; move: HintMove }> {
   const out: Array<{ next: Perm5; move: HintMove }> = []
   for (let i = 0; i < 5; i++) {
     for (let j = i + 1; j < 5; j++) {
@@ -116,11 +111,7 @@ function neighborsForMode(
  * (swap-only vs swap + insertion). Uses full target — intended as a solver hint, not
  * feedback-optimal play.
  */
-export function hintFirstMoveOnShortestPath(
-  current: Perm5,
-  target: Perm5,
-  mode: FiveCanGameMode,
-): HintMove | null {
+export function hintFirstMoveOnShortestPath(current: Perm5, target: Perm5, mode: FiveCanGameMode): HintMove | null {
   const ck = permKey(current)
   const tk = permKey(target)
   if (ck === tk) return null

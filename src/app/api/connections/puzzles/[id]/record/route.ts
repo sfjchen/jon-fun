@@ -35,7 +35,11 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
     if (!row?.id) return NextResponse.json({ error: 'not_found' }, { status: 404 })
     puzzleId = row.id as string
   } else {
-    const { data: row, error: e1 } = await supabaseAdmin.from('connections_puzzles').select('id').eq('id', puzzleId).maybeSingle()
+    const { data: row, error: e1 } = await supabaseAdmin
+      .from('connections_puzzles')
+      .select('id')
+      .eq('id', puzzleId)
+      .maybeSingle()
     if (e1) return NextResponse.json({ error: e1.message }, { status: 500 })
     if (!row) return NextResponse.json({ error: 'not_found' }, { status: 404 })
   }

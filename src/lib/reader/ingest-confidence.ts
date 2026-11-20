@@ -6,9 +6,7 @@ export function scoreTxtChapterizeConfidence(chapters: ReaderChapter[], rawTextL
   if (chapters.length < 2) {
     flags.push('single_chapter_blob')
   }
-  const avgWords = chapters.length
-    ? chapters.reduce((s, c) => s + c.wordCount, 0) / chapters.length
-    : 0
+  const avgWords = chapters.length ? chapters.reduce((s, c) => s + c.wordCount, 0) / chapters.length : 0
   if (chapters.length > 1 && avgWords < 120) {
     flags.push('short_chapters_avg')
   }
@@ -26,13 +24,15 @@ export function scoreTxtChapterizeConfidence(chapters: ReaderChapter[], rawTextL
   return { overallConfidence, flags }
 }
 
-export function mergeIngestMeta(a: ReaderIngestMeta | undefined, b: ReaderIngestMeta | undefined): ReaderIngestMeta | undefined {
+export function mergeIngestMeta(
+  a: ReaderIngestMeta | undefined,
+  b: ReaderIngestMeta | undefined,
+): ReaderIngestMeta | undefined {
   if (!a && !b) return undefined
   const flags = [...new Set([...(a?.flags ?? []), ...(b?.flags ?? [])])]
   const ocA = a?.overallConfidence
   const ocB = b?.overallConfidence
-  const overallConfidence =
-    ocA != null && ocB != null ? Math.min(ocA, ocB) : ocA ?? ocB ?? 0.5
+  const overallConfidence = ocA != null && ocB != null ? Math.min(ocA, ocB) : (ocA ?? ocB ?? 0.5)
   return { overallConfidence, flags }
 }
 
@@ -40,7 +40,9 @@ export function pdfExtractIngestMeta(pageCount: number, totalChars: number, scan
   const flags: string[] = []
   if (scannedLikely) flags.push('scanned_pdf_likely')
   if (pageCount > 0 && totalChars / pageCount < 40) flags.push('low_text_density')
-  const overallConfidence = scannedLikely ? 0.35 : Math.min(1, 0.55 + Math.min(0.35, (totalChars / Math.max(pageCount, 1)) / 400))
+  const overallConfidence = scannedLikely
+    ? 0.35
+    : Math.min(1, 0.55 + Math.min(0.35, totalChars / Math.max(pageCount, 1) / 400))
   return { overallConfidence, flags }
 }
 

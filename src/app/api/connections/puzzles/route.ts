@@ -18,9 +18,11 @@ export async function GET(request: NextRequest) {
   const sort = request.nextUrl.searchParams.get('sort') ?? 'newest'
   const limit = Math.min(500, Math.max(1, Number(request.nextUrl.searchParams.get('limit')) || 200))
 
-  let q = supabaseAdmin.from('connections_puzzles').select(
-    'id, slug, title, description, tags, groups, author_display, author_fingerprint, play_count, solve_count, total_mistakes, created_at, updated_at',
-  )
+  let q = supabaseAdmin
+    .from('connections_puzzles')
+    .select(
+      'id, slug, title, description, tags, groups, author_display, author_fingerprint, play_count, solve_count, total_mistakes, created_at, updated_at',
+    )
 
   if (sort === 'plays') {
     q = q.order('play_count', { ascending: false }).order('updated_at', { ascending: false })

@@ -25,36 +25,22 @@ export function geminiApiKey(): string | undefined {
 }
 
 export function openRouterApiKey(): string | undefined {
-  return (
-    process.env.NOTES_LLM_KEY ??
-    process.env.UVIMCO_NOTES_LLM_KEY ??
-    process.env.OPENROUTER_API_KEY
-  )
+  return process.env.NOTES_LLM_KEY ?? process.env.UVIMCO_NOTES_LLM_KEY ?? process.env.OPENROUTER_API_KEY
 }
 
 export function lookupModel(): string {
-  return (
-    process.env.NOTES_LOOKUP_MODEL ??
-    process.env.UVIMCO_NOTES_LOOKUP_MODEL ??
-    DEFAULT_LOOKUP_MODEL
-  )
+  return process.env.NOTES_LOOKUP_MODEL ?? process.env.UVIMCO_NOTES_LOOKUP_MODEL ?? DEFAULT_LOOKUP_MODEL
 }
 
 export function decodeModel(): string {
-  return (
-    process.env.NOTES_DECODE_MODEL ??
-    process.env.UVIMCO_NOTES_DECODE_MODEL ??
-    DEFAULT_DECODE_MODEL
-  )
+  return process.env.NOTES_DECODE_MODEL ?? process.env.UVIMCO_NOTES_DECODE_MODEL ?? DEFAULT_DECODE_MODEL
 }
 
 export function siteReferer(): string {
   return process.env.NEXT_PUBLIC_SITE_URL ?? 'https://sfjc.dev'
 }
 
-type OpenRouterContentPart =
-  | { type: 'text'; text: string }
-  | { type: 'image_url'; image_url: { url: string } }
+type OpenRouterContentPart = { type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } }
 
 export function buildUserText(
   type: TriggerType,
@@ -104,20 +90,16 @@ export function resolveSystem(
   promptCtx: PromptContext,
   query = '',
 ): string {
-  return resolveSystemPrompt(
-    mode,
-    type,
-    {
-      ...(promptCtx.domainId ? { domainId: promptCtx.domainId } : {}),
-      ...(promptCtx.tags?.length ? { tags: promptCtx.tags } : {}),
-      ...(promptCtx.fullNotes ? { notes: promptCtx.fullNotes } : {}),
-      ...(promptCtx.title ? { title: promptCtx.title } : {}),
-      ...(query ? { query } : {}),
-      ...(promptCtx.sourcesBlock ? { sourcesBlock: promptCtx.sourcesBlock } : {}),
-      ...(promptCtx.glossaryBlock ? { glossaryBlock: promptCtx.glossaryBlock } : {}),
-      ...(promptCtx.relatedNotesBlock ? { relatedNotesBlock: promptCtx.relatedNotesBlock } : {}),
-    },
-  )
+  return resolveSystemPrompt(mode, type, {
+    ...(promptCtx.domainId ? { domainId: promptCtx.domainId } : {}),
+    ...(promptCtx.tags?.length ? { tags: promptCtx.tags } : {}),
+    ...(promptCtx.fullNotes ? { notes: promptCtx.fullNotes } : {}),
+    ...(promptCtx.title ? { title: promptCtx.title } : {}),
+    ...(query ? { query } : {}),
+    ...(promptCtx.sourcesBlock ? { sourcesBlock: promptCtx.sourcesBlock } : {}),
+    ...(promptCtx.glossaryBlock ? { glossaryBlock: promptCtx.glossaryBlock } : {}),
+    ...(promptCtx.relatedNotesBlock ? { relatedNotesBlock: promptCtx.relatedNotesBlock } : {}),
+  })
 }
 
 export function buildOpenRouterMessages(
@@ -125,9 +107,7 @@ export function buildOpenRouterMessages(
   conversation: Message[],
   userParts: OpenRouterContentPart[],
 ): { role: string; content: OpenRouterContentPart[] | string }[] {
-  const msgs: { role: string; content: OpenRouterContentPart[] | string }[] = [
-    { role: 'system', content: system },
-  ]
+  const msgs: { role: string; content: OpenRouterContentPart[] | string }[] = [{ role: 'system', content: system }]
   for (const m of conversation) {
     msgs.push({ role: m.role, content: m.content })
   }
@@ -360,7 +340,10 @@ function uniqueModels(models: string[]): string[] {
 }
 
 /** Ordered fallbacks when primary model is overloaded or unavailable. */
-export function modelFallbackChain(mode: 'lookup' | 'followup' | 'decode' | 'agent', hasImages: boolean): {
+export function modelFallbackChain(
+  mode: 'lookup' | 'followup' | 'decode' | 'agent',
+  hasImages: boolean,
+): {
   openRouter: string[]
   gemini: string[]
 } {
@@ -368,12 +351,22 @@ export function modelFallbackChain(mode: 'lookup' | 'followup' | 'decode' | 'age
   const geminiPrimary = primary.includes('/') ? primary.split('/').pop()! : primary
   if (mode === 'decode' || mode === 'agent' || mode === 'followup' || hasImages) {
     return {
-      openRouter: uniqueModels([primary, 'google/gemini-2.5-flash', 'google/gemini-2.5-flash-lite', 'openai/gpt-4o-mini']),
+      openRouter: uniqueModels([
+        primary,
+        'google/gemini-2.5-flash',
+        'google/gemini-2.5-flash-lite',
+        'openai/gpt-4o-mini',
+      ]),
       gemini: uniqueModels([geminiPrimary, 'gemini-2.5-flash', 'gemini-2.5-flash-lite']),
     }
   }
   return {
-    openRouter: uniqueModels([primary, 'google/gemini-2.5-flash-lite', 'google/gemini-2.5-flash', 'openai/gpt-4o-mini']),
+    openRouter: uniqueModels([
+      primary,
+      'google/gemini-2.5-flash-lite',
+      'google/gemini-2.5-flash',
+      'openai/gpt-4o-mini',
+    ]),
     gemini: uniqueModels([geminiPrimary, 'gemini-2.5-flash-lite', 'gemini-2.5-flash']),
   }
 }

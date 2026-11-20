@@ -62,7 +62,7 @@ function TableInsertPopover({ editor, onClose }: { editor: Editor; onClose: () =
 
   return (
     <div
-      className="absolute left-0 top-full z-20 mt-1 w-52 rounded-lg border border-[var(--uv-border)] bg-[var(--uv-bg-base)] p-3 shadow-lg"
+      className="absolute top-full left-0 z-20 mt-1 w-52 rounded-lg border border-[var(--uv-border)] bg-[var(--uv-bg-base)] p-3 shadow-lg"
       data-testid="notes-table-insert-popover"
       onMouseDown={(e) => e.stopPropagation()}
     >
@@ -195,9 +195,7 @@ export default function NotesEditorToolbar({ editor, lineHeight, onLineHeightCha
         >
           <span data-testid="notes-table-insert-btn">▦</span>
         </ToolBtn>
-        {tableOpen ? (
-          <TableInsertPopover editor={editor} onClose={() => setTableOpen(false)} />
-        ) : null}
+        {tableOpen ? <TableInsertPopover editor={editor} onClose={() => setTableOpen(false)} /> : null}
       </div>
     </div>
   )

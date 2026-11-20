@@ -45,7 +45,6 @@ test.describe('Notes', () => {
   })
 
   test('creates a second note and switches between them', async ({ page }) => {
-
     const title = page.getByTestId('notes-meeting-title')
     await title.fill('IC standup')
     await expect(title).toHaveValue('IC standup')
@@ -227,6 +226,5 @@ test.describe('Notes', () => {
       await expect(page.getByTestId('notes-split-root')).toHaveAttribute('data-split', 'false')
       await expect(page.getByTestId('notes-editor-right')).toHaveCount(0)
     })
-
   })
 })

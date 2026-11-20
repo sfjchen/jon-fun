@@ -19,6 +19,10 @@ function subscribe(cb: () => void) {
  * Returns the name and group saved on this device, or null before one is set, and follows later edits.
  */
 export function usePlayer(): Player | null {
-  const raw = useSyncExternalStore(subscribe, () => JSON.stringify(getPlayer()), () => 'null')
+  const raw = useSyncExternalStore(
+    subscribe,
+    () => JSON.stringify(getPlayer()),
+    () => 'null',
+  )
   return useMemo(() => JSON.parse(raw) as Player | null, [raw])
 }

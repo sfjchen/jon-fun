@@ -108,7 +108,11 @@ export default function EayGame() {
 
   const nameOf = (id: string) => players.find((p) => p.player_id === id)?.name ?? id.slice(0, 6)
   const sortedPlayers = useMemo(() => [...players].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)), [players])
-  const cardStyle = { backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' } as const
+  const cardStyle = {
+    backgroundColor: 'var(--ink-paper)',
+    borderColor: 'var(--ink-border)',
+    color: 'var(--ink-text)',
+  } as const
 
   const myIntakeFor = (qid: string) => intake.find((i) => i.player_id === playerId && i.question_id === qid)
   const myLie = currentRound ? lies.find((l) => l.round_id === currentRound.id && l.player_id === playerId) : null
@@ -119,9 +123,11 @@ export default function EayGame() {
   const finalPair = room?.settings?.eayFinalPair ?? []
 
   return (
-    <div className={`max-w-6xl mx-auto px-4 w-full ${notebookLayout ? 'py-4 lg:py-6' : 'py-10'}`}>
-      <h1 className="font-lora text-2xl font-semibold mb-2" style={{ color: 'var(--ink-text)' }}>Enough About You</h1>
-      <p className="text-sm mb-6" style={{ color: 'var(--ink-muted)' }}>
+    <div className={`mx-auto w-full max-w-6xl px-4 ${notebookLayout ? 'py-4 lg:py-6' : 'py-10'}`}>
+      <h1 className="mb-2 font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>
+        Enough About You
+      </h1>
+      <p className="mb-6 text-sm" style={{ color: 'var(--ink-muted)' }}>
         Private intake, then bluff rounds about each player and a final truth-vs-lie vote. 3–8 players.
       </p>
 
@@ -141,15 +147,19 @@ export default function EayGame() {
 
       {room && (
         <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[260px_1fr]">
-          <aside className="rounded-lg border p-4 h-fit shadow-sm" style={cardStyle}>
-            <div className="text-xl font-bold tracking-widest mb-2" data-testid="party-room-pin">
+          <aside className="h-fit rounded-lg border p-4 shadow-sm" style={cardStyle}>
+            <div className="mb-2 text-xl font-bold tracking-widest" data-testid="party-room-pin">
               {room.pin}
             </div>
-            <div className="text-xs mb-3" style={{ color: 'var(--ink-muted)' }}>
+            <div className="mb-3 text-xs" style={{ color: 'var(--ink-muted)' }}>
               {phase} · R{room.round_index} · S{room.step_index}
             </div>
             {sortedPlayers.map((p) => (
-              <div key={p.player_id} className="flex justify-between text-sm py-1 border-b" style={{ borderColor: 'var(--ink-border)' }}>
+              <div
+                key={p.player_id}
+                className="flex justify-between border-b py-1 text-sm"
+                style={{ borderColor: 'var(--ink-border)' }}
+              >
                 <span>
                   {p.name}
                   {p.player_id === room.host_id ? ' · host' : ''}
@@ -160,29 +170,42 @@ export default function EayGame() {
             {phase === 'lobby' && isHost && (
               <button
                 type="button"
-                data-hotkey="Enter" onClick={startGame}
+                data-hotkey="Enter"
+                onClick={startGame}
                 disabled={players.length < 3}
-                className="mt-4 w-full py-2 rounded text-white disabled:opacity-50"
+                className="mt-4 w-full rounded py-2 text-white disabled:opacity-50"
                 style={{ backgroundColor: 'var(--ink-accent)' }}
               >
                 Start (need ≥3)
               </button>
             )}
             {(phase === 'eay_scores' || phase === 'eay_final_scores') && isHost && (
-              <button type="button" data-hotkey="Enter" onClick={() => postEay({ action: 'advance' })} className="mt-4 w-full py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>
+              <button
+                type="button"
+                data-hotkey="Enter"
+                onClick={() => postEay({ action: 'advance' })}
+                className="mt-4 w-full rounded py-2 text-white"
+                style={{ backgroundColor: 'var(--ink-accent)' }}
+              >
                 Next
               </button>
             )}
             {phase === 'finished' && isHost && (
-              <button type="button" data-hotkey="Enter" onClick={() => void playAgain()} className="mt-4 w-full py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>
+              <button
+                type="button"
+                data-hotkey="Enter"
+                onClick={() => void playAgain()}
+                className="mt-4 w-full rounded py-2 text-white"
+                style={{ backgroundColor: 'var(--ink-accent)' }}
+              >
                 Play again
               </button>
             )}
           </aside>
 
-          <main className="rounded-lg border p-4 shadow-sm space-y-4" style={cardStyle}>
+          <main className="space-y-4 rounded-lg border p-4 shadow-sm" style={cardStyle}>
             {error && (
-              <div className="text-red-600 text-sm" data-testid="party-error">
+              <div className="text-sm text-red-600" data-testid="party-error">
                 {error}
               </div>
             )}
@@ -207,7 +230,7 @@ export default function EayGame() {
 
             {phase === 'eay_lie' && currentRound && playerId && (
               <div>
-                <p className="text-sm mb-2">{currentRound.question_template}</p>
+                <p className="mb-2 text-sm">{currentRound.question_template}</p>
                 {currentRound.subject_player_id === playerId ? (
                   <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
                     You&apos;re the subject — others are bluffing.
@@ -215,16 +238,21 @@ export default function EayGame() {
                 ) : myLie ? (
                   <p className="text-sm text-green-700">Lie submitted</p>
                 ) : (
-                  <LieInputEay onSubmit={(text) => postEay({ action: 'submitLie', text })} onSuggest={() => postEay({ action: 'submitLie', fromSuggestion: true })} />
+                  <LieInputEay
+                    onSubmit={(text) => postEay({ action: 'submitLie', text })}
+                    onSuggest={() => postEay({ action: 'submitLie', fromSuggestion: true })}
+                  />
                 )}
               </div>
             )}
 
             {phase === 'eay_pick' && currentRound?.option_order && playerId && (
               <div>
-                <p className="font-medium mb-1">{currentRound.question_template}</p>
+                <p className="mb-1 font-medium">{currentRound.question_template}</p>
                 {currentRound.subject_player_id === playerId ? (
-                  <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>Wait for picks.</p>
+                  <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                    Wait for picks.
+                  </p>
                 ) : (
                   <>
                     <div className="space-y-2">
@@ -233,22 +261,24 @@ export default function EayGame() {
                           key={i}
                           type="button"
                           disabled={!!myPick}
-                          className="w-full text-left px-3 py-2 rounded border disabled:opacity-60"
+                          className="w-full rounded border px-3 py-2 text-left disabled:opacity-60"
                           style={{ borderColor: 'var(--ink-border)' }}
                           data-hotkey={String(i + 1)}
-                      onClick={() => postEay({ action: 'submitPick', pickedIndex: i })}
+                          onClick={() => postEay({ action: 'submitPick', pickedIndex: i })}
                         >
                           {opt.text}
                         </button>
                       ))}
                     </div>
-                    <p className="text-xs mt-3" style={{ color: 'var(--ink-muted)' }}>Like a lie (optional):</p>
-                    <div className="flex flex-wrap gap-1 mt-1">
+                    <p className="mt-3 text-xs" style={{ color: 'var(--ink-muted)' }}>
+                      Like a lie (optional):
+                    </p>
+                    <div className="mt-1 flex flex-wrap gap-1">
                       {players.map((p) => (
                         <button
                           key={p.player_id}
                           type="button"
-                          className="text-xs px-2 py-1 border rounded"
+                          className="rounded border px-2 py-1 text-xs"
                           style={{ borderColor: 'var(--ink-border)' }}
                           onClick={() => postEay({ action: 'submitLike', targetPlayerId: p.player_id })}
                         >
@@ -256,42 +286,48 @@ export default function EayGame() {
                         </button>
                       ))}
                     </div>
-                    {myPick && <p className="text-sm text-green-700 mt-2">Pick locked</p>}
+                    {myPick && <p className="mt-2 text-sm text-green-700">Pick locked</p>}
                   </>
                 )}
               </div>
             )}
 
             {(phase === 'eay_scores' || phase === 'eay_final_scores') && (
-              <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>Scoreboard — host Next.</p>
+              <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                Scoreboard — host Next.
+              </p>
             )}
 
             {phase === 'eay_final_submit' && playerId && (
               <div>
-                <h2 className="font-semibold mb-2">Final: one truth, one lie about you</h2>
+                <h2 className="mb-2 font-semibold">Final: one truth, one lie about you</h2>
                 {myFinal ? (
                   <p className="text-sm text-green-700">Submitted</p>
                 ) : (
-                  <FinalSubmitForm onSubmit={(truthText, lieText) => postEay({ action: 'submitFinal', truthText, lieText })} />
+                  <FinalSubmitForm
+                    onSubmit={(truthText, lieText) => postEay({ action: 'submitFinal', truthText, lieText })}
+                  />
                 )}
               </div>
             )}
 
             {phase === 'eay_final_vote' && finalSubject && playerId && finalPair.length === 2 && (
               <div>
-                <p className="font-medium mb-2">Which is true for {nameOf(finalSubject.player_id)}?</p>
+                <p className="mb-2 font-medium">Which is true for {nameOf(finalSubject.player_id)}?</p>
                 {finalSubject.player_id === playerId ? (
-                  <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>Others are voting.</p>
+                  <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                    Others are voting.
+                  </p>
                 ) : (
                   <div className="flex flex-col gap-2">
                     {finalPair.map((slot, i) => (
                       <button
                         key={i}
                         type="button"
-                        className="text-left px-3 py-2 rounded border"
+                        className="rounded border px-3 py-2 text-left"
                         style={{ borderColor: 'var(--ink-accent)' }}
                         data-hotkey={String(i + 1)}
-                      onClick={() => postEay({ action: 'submitFinalPick', choiceIndex: i })}
+                        onClick={() => postEay({ action: 'submitFinalPick', choiceIndex: i })}
                       >
                         {slot.text}
                       </button>
@@ -309,12 +345,20 @@ export default function EayGame() {
   )
 }
 
-function IntakeQuestionForm({ label, done, onSubmit }: { label: string; done: boolean; onSubmit: (a: string) => void }) {
+function IntakeQuestionForm({
+  label,
+  done,
+  onSubmit,
+}: {
+  label: string
+  done: boolean
+  onSubmit: (a: string) => void
+}) {
   const [v, setV] = useState('')
-  if (done) return <p className="text-sm text-green-700 border rounded p-2">{label} ✓</p>
+  if (done) return <p className="rounded border p-2 text-sm text-green-700">{label} ✓</p>
   return (
     <form
-      className="border rounded p-3 space-y-2"
+      className="space-y-2 rounded border p-3"
       style={{ borderColor: 'var(--ink-border)' }}
       onSubmit={(e) => {
         e.preventDefault()
@@ -323,7 +367,7 @@ function IntakeQuestionForm({ label, done, onSubmit }: { label: string; done: bo
         setV('')
       }}
     >
-      <label className="text-sm block">{label}</label>
+      <label className="block text-sm">{label}</label>
       <input
         value={v}
         onChange={(e) => setV(e.target.value)}
@@ -331,7 +375,11 @@ function IntakeQuestionForm({ label, done, onSubmit }: { label: string; done: bo
         className="w-full rounded border px-2 py-1 text-sm"
         style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
       />
-      <button type="submit" className="text-sm px-3 py-1 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>
+      <button
+        type="submit"
+        className="rounded px-3 py-1 text-sm text-white"
+        style={{ backgroundColor: 'var(--ink-accent)' }}
+      >
         Save
       </button>
     </form>
@@ -343,7 +391,7 @@ function LieInputEay({ onSubmit, onSuggest }: { onSubmit: (t: string) => void; o
   return (
     <div className="space-y-2">
       <form
-        className="flex gap-2 flex-wrap"
+        className="flex flex-wrap gap-2"
         onSubmit={(e) => {
           e.preventDefault()
           if (!v.trim()) return
@@ -355,11 +403,15 @@ function LieInputEay({ onSubmit, onSuggest }: { onSubmit: (t: string) => void; o
           value={v}
           onChange={(e) => setV(e.target.value)}
           maxLength={280}
-          className="flex-1 min-w-[180px] rounded border px-2 py-1"
+          className="min-w-[180px] flex-1 rounded border px-2 py-1"
           style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
           placeholder="Your bluff"
         />
-        <button type="submit" className="px-3 py-1 rounded text-white text-sm" style={{ backgroundColor: 'var(--ink-accent)' }}>
+        <button
+          type="submit"
+          className="rounded px-3 py-1 text-sm text-white"
+          style={{ backgroundColor: 'var(--ink-accent)' }}
+        >
           Submit
         </button>
       </form>
@@ -375,14 +427,14 @@ function FinalSubmitForm({ onSubmit }: { onSubmit: (t: string, l: string) => voi
   const [lie, setLie] = useState('')
   return (
     <form
-      className="space-y-2 max-w-md"
+      className="max-w-md space-y-2"
       onSubmit={(e) => {
         e.preventDefault()
         if (!truth.trim() || !lie.trim()) return
         onSubmit(truth.trim(), lie.trim())
       }}
     >
-      <label className="text-xs block" style={{ color: 'var(--ink-muted)' }}>
+      <label className="block text-xs" style={{ color: 'var(--ink-muted)' }}>
         Truth
       </label>
       <input
@@ -392,7 +444,7 @@ function FinalSubmitForm({ onSubmit }: { onSubmit: (t: string, l: string) => voi
         className="w-full rounded border px-2 py-1"
         style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
       />
-      <label className="text-xs block" style={{ color: 'var(--ink-muted)' }}>
+      <label className="block text-xs" style={{ color: 'var(--ink-muted)' }}>
         Lie
       </label>
       <input
@@ -402,7 +454,7 @@ function FinalSubmitForm({ onSubmit }: { onSubmit: (t: string, l: string) => voi
         className="w-full rounded border px-2 py-1"
         style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
       />
-      <button type="submit" className="px-3 py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>
+      <button type="submit" className="rounded px-3 py-2 text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>
         Submit pair
       </button>
     </form>

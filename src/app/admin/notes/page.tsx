@@ -80,7 +80,11 @@ export default function UvimcoNotesAdminPage() {
             />
           </label>
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
-          <button type="submit" className="rounded px-4 py-2 text-sm text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>
+          <button
+            type="submit"
+            className="rounded px-4 py-2 text-sm text-white"
+            style={{ backgroundColor: 'var(--ink-accent)' }}
+          >
             {loading ? 'Loading…' : 'View sessions'}
           </button>
         </form>
@@ -113,7 +117,11 @@ export default function UvimcoNotesAdminPage() {
           </div>
           <ul className="space-y-4">
             {sessions.map((s) => (
-              <li key={`${s.user_id}-${s.session_id}`} className="rounded border p-4" style={{ borderColor: 'var(--ink-border)' }}>
+              <li
+                key={`${s.user_id}-${s.session_id}`}
+                className="rounded border p-4"
+                style={{ borderColor: 'var(--ink-border)' }}
+              >
                 <div className="mb-2 flex flex-wrap gap-2 text-xs text-[var(--ink-muted)]">
                   <span>{s.title || 'Untitled'}</span>
                   <span>·</span>
@@ -121,7 +129,7 @@ export default function UvimcoNotesAdminPage() {
                   <span>·</span>
                   <span className="font-mono">{s.user_id.slice(0, 8)}…</span>
                 </div>
-                <pre className="max-h-40 overflow-auto whitespace-pre-wrap text-xs">{s.notes.slice(0, 2000)}</pre>
+                <pre className="max-h-40 overflow-auto text-xs whitespace-pre-wrap">{s.notes.slice(0, 2000)}</pre>
               </li>
             ))}
           </ul>

@@ -5,22 +5,9 @@
 
 import { shuffle } from '@/lib/random'
 
-export type MentalDomain =
-  | 'speed'
-  | 'workingMemory'
-  | 'logic'
-  | 'numbers'
-  | 'words'
-  | 'knowledge'
+export type MentalDomain = 'speed' | 'workingMemory' | 'logic' | 'numbers' | 'words' | 'knowledge'
 
-export const DOMAIN_ORDER: MentalDomain[] = [
-  'speed',
-  'numbers',
-  'logic',
-  'workingMemory',
-  'words',
-  'knowledge',
-]
+export const DOMAIN_ORDER: MentalDomain[] = ['speed', 'numbers', 'logic', 'workingMemory', 'words', 'knowledge']
 
 export const DOMAIN_LABELS: Record<MentalDomain, string> = {
   speed: 'Speed',
@@ -94,11 +81,7 @@ export function scoreDigitSpan(maxLen: number): number {
 }
 
 /** Typed phrase: accuracy primary, speed secondary. */
-export function scoreWordBurst(
-  expected: string,
-  typed: string,
-  elapsedMs: number,
-): number {
+export function scoreWordBurst(expected: string, typed: string, elapsedMs: number): number {
   const exp = expected.trim().toLowerCase()
   const got = typed.trim().toLowerCase()
   if (exp.length === 0) return 0
@@ -265,12 +248,7 @@ const TRIVIA_BANK: TriviaItem[] = [
   },
   {
     question: 'In computing, what does CPU stand for?',
-    choices: [
-      'Central Processing Unit',
-      'Computer Personal Unit',
-      'Core Program Utility',
-      'Cached Page Updater',
-    ],
+    choices: ['Central Processing Unit', 'Computer Personal Unit', 'Core Program Utility', 'Cached Page Updater'],
     correct: 0,
   },
   {
@@ -412,18 +390,16 @@ export function maybeUpdateBest(run: CourseRunResult): boolean {
   if (typeof window === 'undefined') return false
   const prev = loadBestCourseScore()
   if (run.courseScore > prev) {
-    localStorage.setItem(
-      STORAGE_BEST,
-      JSON.stringify({ courseScore: run.courseScore, at: run.endedAt }),
-    )
+    localStorage.setItem(STORAGE_BEST, JSON.stringify({ courseScore: run.courseScore, at: run.endedAt }))
     return true
   }
   return false
 }
 
-export function strongestWeakest(
-  d: Record<MentalDomain, number>,
-): { strongest: MentalDomain[]; weakest: MentalDomain[] } {
+export function strongestWeakest(d: Record<MentalDomain, number>): {
+  strongest: MentalDomain[]
+  weakest: MentalDomain[]
+} {
   const entries = DOMAIN_ORDER.map((k) => [k, d[k]] as const)
   const max = Math.max(...entries.map(([, v]) => v))
   const min = Math.min(...entries.map(([, v]) => v))

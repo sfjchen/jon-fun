@@ -49,11 +49,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid characters in expression' }, { status: 400 })
     }
 
-    const { data: room, error: roomError } = await supabase
-      .from('game24_rooms')
-      .select('*')
-      .eq('pin', pin)
-      .single()
+    const { data: room, error: roomError } = await supabase.from('game24_rooms').select('*').eq('pin', pin).single()
 
     if (roomError || !room) {
       return NextResponse.json({ error: 'Room not found' }, { status: 404 })
@@ -174,4 +170,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-

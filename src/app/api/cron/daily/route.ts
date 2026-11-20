@@ -15,12 +15,18 @@ export async function GET(req: Request) {
   if (siteHour() > 3) return NextResponse.json({ skipped: true })
   const day = siteDay()
   const [results, stats] = await Promise.all([
-    Promise.allSettled(GAME_IDS.map(game => dailyPuzzle(game, day))),
-    captureAnthropeumDistribution(shiftDay(day, -1)).then(players => ({ players }), error => ({ error: String(error) })),
+    Promise.allSettled(GAME_IDS.map((game) => dailyPuzzle(game, day))),
+    captureAnthropeumDistribution(shiftDay(day, -1)).then(
+      (players) => ({ players }),
+      (error) => ({ error: String(error) }),
+    ),
   ])
-  const games = Object.fromEntries(results.map((result, i) => [
-    GAME_IDS[i], result.status === 'fulfilled' ? { sourceDate: result.value.sourceDate } : { error: String(result.reason) },
-  ]))
-  const ok = results.every(result => result.status === 'fulfilled' && result.value.sourceDate === day)
+  const games = Object.fromEntries(
+    results.map((result, i) => [
+      GAME_IDS[i],
+      result.status === 'fulfilled' ? { sourceDate: result.value.sourceDate } : { error: String(result.reason) },
+    ]),
+  )
+  const ok = results.every((result) => result.status === 'fulfilled' && result.value.sourceDate === day)
   return NextResponse.json({ ok, day, games, previousAnthropeumStats: stats }, { status: ok ? 200 : 503 })
 }

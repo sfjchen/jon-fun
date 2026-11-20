@@ -11,7 +11,11 @@ export const dynamic = 'force-dynamic'
  */
 export async function POST(req: NextRequest) {
   let body: { slug?: unknown }
-  try { body = await req.json() } catch { return NextResponse.json({ error: 'Invalid body' }, { status: 400 }) }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid body' }, { status: 400 })
+  }
   const slug = typeof body.slug === 'string' ? body.slug : ''
   if (!/^[a-z0-9-]{1,80}$/.test(slug)) return NextResponse.json({ error: 'Invalid slug' }, { status: 400 })
 

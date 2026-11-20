@@ -21,7 +21,9 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
         onSync={async () => {
           const r = await syncWithServer()
           onSynced({ force: true })
-          return r.pushOk ? { ok: true, message: 'Synced' } : { ok: false, message: r.pushError ?? 'Sync failed, saved locally' }
+          return r.pushOk
+            ? { ok: true, message: 'Synced' }
+            : { ok: false, message: r.pushError ?? 'Sync failed, saved locally' }
         }}
       />
       <button

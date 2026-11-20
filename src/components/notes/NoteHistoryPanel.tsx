@@ -12,7 +12,7 @@ export default function NoteHistoryPanel({ history }: NoteHistoryPanelProps) {
 
   return (
     <section className="px-3 py-2" data-testid="notes-history-panel">
-      <p className="mb-2 text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">Note history</p>
+      <p className="mb-2 text-[10px] tracking-wide text-[var(--uv-text-muted)] uppercase">Note history</p>
       {rows.length === 0 ? (
         <p className="text-[11px] text-[var(--uv-text-muted)]">Creates, saves, syncs, and AI lookups appear here.</p>
       ) : (

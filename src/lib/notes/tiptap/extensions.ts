@@ -77,9 +77,7 @@ export function normalizeNotesLineHeight(saved?: string): string {
   if (saved) {
     const n = parseFloat(saved)
     if (!Number.isNaN(n) && n >= 1 && n <= 2) {
-      const nearest = NOTES_LINE_HEIGHT_VALUES.reduce((best, q) =>
-        Math.abs(q - n) < Math.abs(best - n) ? q : best,
-      )
+      const nearest = NOTES_LINE_HEIGHT_VALUES.reduce((best, q) => (Math.abs(q - n) < Math.abs(best - n) ? q : best))
       return String(nearest)
     }
   }

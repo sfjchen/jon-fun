@@ -17,7 +17,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ pin:
   const t0Raw = req.nextUrl.searchParams.get('t0')
   const t0 = t0Raw ? Number(t0Raw) : 0
   const tS = Date.now()
-  return NextResponse.json({ t0: Number.isFinite(t0) ? t0 : 0, tS }, {
-    headers: { 'Cache-Control': 'no-store' },
-  })
+  return NextResponse.json(
+    { t0: Number.isFinite(t0) ? t0 : 0, tS },
+    {
+      headers: { 'Cache-Control': 'no-store' },
+    },
+  )
 }

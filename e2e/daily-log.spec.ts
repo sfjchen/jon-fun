@@ -4,7 +4,11 @@ import { join } from 'node:path'
 
 import { test, expect, type Page } from '@playwright/test'
 
-import { mockDailyLearnApi, setDailyLearnMockServerEntries, triggerDailyLearnTabVisible } from './helpers/daily-learn-mock'
+import {
+  mockDailyLearnApi,
+  setDailyLearnMockServerEntries,
+  triggerDailyLearnTabVisible,
+} from './helpers/daily-learn-mock'
 
 function sectionsNav(page: Page) {
   return page.getByRole('navigation', { name: /Daily log sections/i })

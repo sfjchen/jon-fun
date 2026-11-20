@@ -144,9 +144,7 @@ export default function SourcesPanel({
       data-testid="notes-sources-panel"
     >
       <div className={`mb-2 flex flex-wrap items-center gap-1 ${embedded ? 'justify-end' : 'justify-between'}`}>
-        {!embedded ? (
-          <p className="text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">Sources</p>
-        ) : null}
+        {!embedded ? <p className="text-[10px] tracking-wide text-[var(--uv-text-muted)] uppercase">Sources</p> : null}
         <div className="flex gap-2">
           <button
             type="button"
@@ -285,9 +283,7 @@ function SourceList({
 }) {
   return (
     <div>
-      {label ? (
-        <p className="mb-1 truncate text-[10px] font-medium text-[var(--uv-text-secondary)]">{label}</p>
-      ) : null}
+      {label ? <p className="mb-1 truncate text-[10px] font-medium text-[var(--uv-text-secondary)]">{label}</p> : null}
       <ul className="max-h-40 space-y-1 overflow-y-auto">
         {sources.map((s) => (
           <SourceRow
@@ -345,7 +341,7 @@ function SourceRow({
           onClick={onDelete}
         />
       ) : null}
-      <span className="shrink-0 text-[9px] uppercase text-[var(--uv-text-muted)]">{source.kind}</span>
+      <span className="shrink-0 text-[9px] text-[var(--uv-text-muted)] uppercase">{source.kind}</span>
     </li>
   )
 }

@@ -28,7 +28,11 @@ function readBest(): number {
  * Renders the solo game. The first deal happens in the browser so the server and client markup match.
  */
 export default function TriplesSolo() {
-  const hydrated = useSyncExternalStore(() => () => {}, () => true, () => false)
+  const hydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  )
   const [deal, setDeal] = useState<Deal | null>(null)
   const [selected, setSelected] = useState<number[]>([])
   const [hinted, setHinted] = useState<number[]>([])
@@ -53,8 +57,10 @@ export default function TriplesSolo() {
     setEndedAt(0)
     setMsg('')
     setBest(readBest())
-  },[])
-  useEffect(()=>{if(hydrated&&!deal)queueMicrotask(()=>restart(Date.now()))},[hydrated,deal,restart])
+  }, [])
+  useEffect(() => {
+    if (hydrated && !deal) queueMicrotask(() => restart(Date.now()))
+  }, [hydrated, deal, restart])
 
   useEffect(() => {
     if (endedAt) return
@@ -76,8 +82,8 @@ export default function TriplesSolo() {
   // H hints, Backspace or Escape clears the picked cards, and Enter deals again once the deck is cleared.
   useHotkeys((k) => {
     if (endedAt) return k === 'Enter' ? (restart(Date.now()), true) : false
-    if (k === 'h' || k === '?') return hint(), true
-    if (k === 'Backspace' || k === 'Escape') return setSelected([]), true
+    if (k === 'h' || k === '?') return (hint(), true)
+    if (k === 'Backspace' || k === 'Escape') return (setSelected([]), true)
   })
 
   if (!deal) return <p style={{ color: 'var(--ink-muted)' }}>Dealing…</p>
@@ -117,7 +123,6 @@ export default function TriplesSolo() {
     }, 450)
   }
 
-
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between text-sm" style={{ color: 'var(--ink-muted)' }}>
@@ -130,7 +135,14 @@ export default function TriplesSolo() {
       <p role="status" className="h-5 text-center text-sm font-medium">
         {msg}
       </p>
-      <TriplesBoard board={deal.board} selected={selected} hinted={hinted} shake={shake} disabled={!!endedAt||shake} onPick={pick} />
+      <TriplesBoard
+        board={deal.board}
+        selected={selected}
+        hinted={hinted}
+        shake={shake}
+        disabled={!!endedAt || shake}
+        onPick={pick}
+      />
       {endedAt ? (
         <div className="space-y-2 text-center">
           <p className="font-lora text-xl font-semibold">Deck cleared in {formatTime(seconds)}</p>
@@ -144,7 +156,12 @@ export default function TriplesSolo() {
         </div>
       ) : (
         <div className="flex justify-center gap-2">
-          <button className={pill} style={{ borderColor: 'currentColor' }} title="Highlights a card from a triple; tap again for more" onClick={hint}>
+          <button
+            className={pill}
+            style={{ borderColor: 'currentColor' }}
+            title="Highlights a card from a triple; tap again for more"
+            onClick={hint}
+          >
             Hint
           </button>
           <button className={pill} style={{ borderColor: 'currentColor' }} onClick={() => restart(Date.now())}>

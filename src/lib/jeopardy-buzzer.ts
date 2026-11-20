@@ -81,9 +81,8 @@ export async function measureClockOffset(
   // Median of the kept offsets is robust to a single noisy sample.
   const offsets = keep.map((r) => r.offset).sort((a, b) => a - b)
   const mid = Math.floor(offsets.length / 2)
-  const medianOffset = offsets.length % 2 === 0
-    ? Math.round(((offsets[mid - 1] ?? 0) + (offsets[mid] ?? 0)) / 2)
-    : (offsets[mid] ?? 0)
+  const medianOffset =
+    offsets.length % 2 === 0 ? Math.round(((offsets[mid - 1] ?? 0) + (offsets[mid] ?? 0)) / 2) : (offsets[mid] ?? 0)
   const medianRtt = Math.round(keep.reduce((s, r) => s + r.rtt, 0) / keep.length)
   // Clamp huge offsets so a misconfigured device clock can't poison the queue.
   const clamped = Math.max(-30_000, Math.min(30_000, medianOffset))

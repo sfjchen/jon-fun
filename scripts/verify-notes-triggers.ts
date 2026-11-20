@@ -5,7 +5,11 @@
 import { detectLineTriggers, countShorthandFlags } from '../src/lib/notes/triggerParser'
 import { buildLineSystemPrompt, isFormulaDefinitionQuery } from '../src/lib/notes/knowledge/prompts'
 import { buildUserText } from '../src/lib/notes/llm'
-import { postprocessTodoMarkdown, preprocessTodoMarkdown, mergeTodoLinesIntoMarkdown } from '../src/lib/notes/tiptap/editorCoords'
+import {
+  postprocessTodoMarkdown,
+  preprocessTodoMarkdown,
+  mergeTodoLinesIntoMarkdown,
+} from '../src/lib/notes/tiptap/editorCoords'
 import { collectTodos } from '../src/lib/notes/rollup'
 import { setTodoArchivedAtLine, collectArchivedTodosFromNotes } from '../src/lib/notes/todoLines'
 import { termsFromLookup, extractDefinitionFromAssistant } from '../src/lib/notes/glossary'
@@ -63,10 +67,7 @@ for (const c of cases) {
   const got = detectLineTriggers(c.text, c.pos, c.last)
   const ok =
     (c.expect === null && got === null) ||
-    (c.expect !== null &&
-      got !== null &&
-      got.type === c.expect.type &&
-      got.query === c.expect.query)
+    (c.expect !== null && got !== null && got.type === c.expect.type && got.query === c.expect.query)
   if (!ok) {
     failed++
     console.error('✗', c.label)
@@ -243,8 +244,26 @@ if (toggled.excludedSourceIds?.includes('src-a')) {
 }
 const filtered = filterSourcesForNote(
   [
-    { id: 'src-a', title: 'A', kind: 'paste', content: 'a', tags: [], includeInContext: true, createdAt: '', updatedAt: '' },
-    { id: 'src-b', title: 'B', kind: 'paste', content: 'b', tags: [], includeInContext: true, createdAt: '', updatedAt: '' },
+    {
+      id: 'src-a',
+      title: 'A',
+      kind: 'paste',
+      content: 'a',
+      tags: [],
+      includeInContext: true,
+      createdAt: '',
+      updatedAt: '',
+    },
+    {
+      id: 'src-b',
+      title: 'B',
+      kind: 'paste',
+      content: 'b',
+      tags: [],
+      includeInContext: true,
+      createdAt: '',
+      updatedAt: '',
+    },
   ],
   sess,
 )
@@ -267,7 +286,12 @@ if (
   console.log('✓ buildLineSystemPrompt line-context instructions')
 }
 
-const userText = buildUserText('line', 'GP wants higher DPI before next close', 'prior line\nGP wants higher DPI before next close', 'lookup')
+const userText = buildUserText(
+  'line',
+  'GP wants higher DPI before next close',
+  'prior line\nGP wants higher DPI before next close',
+  'lookup',
+)
 if (
   !userText.includes('entire line') ||
   !userText.includes('GP wants higher DPI before next close') ||

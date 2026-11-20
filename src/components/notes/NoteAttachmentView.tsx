@@ -2,12 +2,7 @@
 
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import { useCallback } from 'react'
-import {
-  attachmentDataUrl,
-  approxBase64Bytes,
-  formatFileSize,
-  spreadsheetPreviewText,
-} from '@/lib/notes/attachments'
+import { attachmentDataUrl, approxBase64Bytes, formatFileSize, spreadsheetPreviewText } from '@/lib/notes/attachments'
 import type { NoteAttachmentStorage } from '@/lib/notes/tiptap/noteAttachment'
 import type { AttachmentDisplay, SpreadsheetPreview } from '@/lib/notes/types'
 import AttachmentFrame from './AttachmentFrame'
@@ -31,7 +26,7 @@ function ImageContent({ src, crop }: { src: string; crop?: AttachmentDisplay['cr
     : undefined
 
   return (
-    <div className={`note-attachment__image-wrap${crop ? ' note-attachment__image-wrap--crop' : ''}`}>
+    <div className={`note-attachment__image-wrap${crop ? 'note-attachment__image-wrap--crop' : ''}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
@@ -54,9 +49,7 @@ function SpreadsheetContent({
 }) {
   const onCellBlur = useCallback(
     (rowIdx: number, colIdx: number, value: string) => {
-      const rows = preview.rows.map((r, ri) =>
-        ri === rowIdx ? r.map((c, ci) => (ci === colIdx ? value : c)) : [...r],
-      )
+      const rows = preview.rows.map((r, ri) => (ri === rowIdx ? r.map((c, ci) => (ci === colIdx ? value : c)) : [...r]))
       onPreviewChange({ ...preview, rows })
     },
     [preview, onPreviewChange],
@@ -192,7 +185,7 @@ export default function NoteAttachmentView({ node, selected, editor }: NodeViewP
     return (
       <NodeViewWrapper
         as="figure"
-        className={`note-attachment${selected ? ' note-attachment--selected' : ''}`}
+        className={`note-attachment${selected ? 'note-attachment--selected' : ''}`}
         data-testid="notes-attachment"
         data-attachment-id={id}
       >
@@ -213,7 +206,7 @@ export default function NoteAttachmentView({ node, selected, editor }: NodeViewP
   return (
     <NodeViewWrapper
       as="figure"
-      className={`note-attachment note-attachment--${kind}${selected ? ' note-attachment--selected' : ''}`}
+      className={`note-attachment note-attachment--${kind}${selected ? 'note-attachment--selected' : ''}`}
       data-testid="notes-attachment"
       data-attachment-id={id}
       data-attachment-kind={kind}
@@ -247,9 +240,7 @@ export default function NoteAttachmentView({ node, selected, editor }: NodeViewP
         )}
       </AttachmentFrame>
 
-      {attachment.filename ? (
-        <figcaption className="note-attachment__caption">{attachment.filename}</figcaption>
-      ) : null}
+      {attachment.filename ? <figcaption className="note-attachment__caption">{attachment.filename}</figcaption> : null}
     </NodeViewWrapper>
   )
 }

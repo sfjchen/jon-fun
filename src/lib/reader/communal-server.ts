@@ -44,9 +44,14 @@ function isChapter(v: unknown): v is ReaderChapter {
       if (!b || typeof b !== 'object') return false
       const bk = b as Record<string, unknown>
       if (typeof bk.id !== 'string' || bk.text !== paras[index]) return false
-      if (bk.kind !== undefined && !['paragraph', 'heading', 'image', 'preformatted', 'quote'].includes(String(bk.kind))) return false
+      if (
+        bk.kind !== undefined &&
+        !['paragraph', 'heading', 'image', 'preformatted', 'quote'].includes(String(bk.kind))
+      )
+        return false
       if (bk.anchorId !== undefined && (typeof bk.anchorId !== 'string' || !/^[\w-]+$/.test(bk.anchorId))) return false
-      if (bk.level !== undefined && (!Number.isInteger(bk.level) || Number(bk.level) < 1 || Number(bk.level) > 6)) return false
+      if (bk.level !== undefined && (!Number.isInteger(bk.level) || Number(bk.level) < 1 || Number(bk.level) > 6))
+        return false
       if (bk.runs !== undefined) {
         if (!Array.isArray(bk.runs)) return false
         for (const run of bk.runs) {
@@ -55,7 +60,8 @@ function isChapter(v: unknown): v is ReaderChapter {
             if (run[flag] !== undefined && typeof run[flag] !== 'boolean') return false
           }
           if (run.href !== undefined && typeof run.href !== 'string') return false
-          if (run.anchorId !== undefined && (typeof run.anchorId !== 'string' || !/^[\w-]+$/.test(run.anchorId))) return false
+          if (run.anchorId !== undefined && (typeof run.anchorId !== 'string' || !/^[\w-]+$/.test(run.anchorId)))
+            return false
         }
         if (bk.runs.map((run) => run.text).join('') !== bk.text) return false
       }
@@ -143,7 +149,10 @@ export type CommunalDbRow = {
   ingest_meta?: ReaderIngestMeta | null
 }
 
-export function publicationToDbRow(pub: ReaderPublication): Omit<CommunalDbRow, 'chapter_count' | 'total_words' | 'first_chapter_id'> & {
+export function publicationToDbRow(pub: ReaderPublication): Omit<
+  CommunalDbRow,
+  'chapter_count' | 'total_words' | 'first_chapter_id'
+> & {
   chapter_count: number
   total_words: number
   first_chapter_id: string
@@ -179,7 +188,12 @@ export function dbRowToPublication(row: CommunalDbRow): ReaderPublication {
   }
 }
 
-export function dbRowToSummary(row: Pick<CommunalDbRow, 'id' | 'title' | 'source_type' | 'chapter_count' | 'total_words' | 'updated_at' | 'first_chapter_id'>): ReaderPublicationSummary {
+export function dbRowToSummary(
+  row: Pick<
+    CommunalDbRow,
+    'id' | 'title' | 'source_type' | 'chapter_count' | 'total_words' | 'updated_at' | 'first_chapter_id'
+  >,
+): ReaderPublicationSummary {
   return {
     id: row.id,
     title: row.title,

@@ -9,9 +9,9 @@ export async function insertFibbageRound(
   playerIds: string[],
   nowIso: string,
 ): Promise<{ error?: string }> {
-  const used = (
-    await supabase.from('party_fibbage_rounds').select('prompt_template').eq('room_pin', pin)
-  ).data?.map((r) => r.prompt_template)
+  const used = (await supabase.from('party_fibbage_rounds').select('prompt_template').eq('room_pin', pin)).data?.map(
+    (r) => r.prompt_template,
+  )
   const pool = FIBBAGE_BANK.filter((p) => !used?.includes(p.template))
   const bank = pool.length > 0 ? pool : FIBBAGE_BANK
   const pick = bank[Math.floor(Math.random() * bank.length)]!

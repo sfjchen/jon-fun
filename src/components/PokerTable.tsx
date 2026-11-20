@@ -87,42 +87,45 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
   const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const fetchAbortRef = useRef<AbortController | null>(null)
 
-  const loadGameData = useCallback((signal?: AbortSignal) => {
-    const init: RequestInit | undefined = signal ? { signal } : undefined
-    return fetch(`/api/poker/rooms/${pin}`, init)
-      .then(async (response) => {
-        const data = await response.json()
+  const loadGameData = useCallback(
+    (signal?: AbortSignal) => {
+      const init: RequestInit | undefined = signal ? { signal } : undefined
+      return fetch(`/api/poker/rooms/${pin}`, init)
+        .then(async (response) => {
+          const data = await response.json()
 
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to load game')
-        }
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to load game')
+          }
 
-        const convertedPlayers: Player[] = (data.players || [])
-          .map((p: DbPlayer) => ({
-            id: p.player_id,
-            name: p.name,
-            chips: p.chips,
-            position: p.position,
-            isActive: p.is_active,
-            isAllIn: p.is_all_in,
-            currentBet: p.current_bet,
-            holeCards: p.hole_cards,
-            hasFolded: p.has_folded,
-            hasActed: p.has_acted,
-          }))
-          .sort((a: Player, b: Player) => a.position - b.position)
+          const convertedPlayers: Player[] = (data.players || [])
+            .map((p: DbPlayer) => ({
+              id: p.player_id,
+              name: p.name,
+              chips: p.chips,
+              position: p.position,
+              isActive: p.is_active,
+              isAllIn: p.is_all_in,
+              currentBet: p.current_bet,
+              holeCards: p.hole_cards,
+              hasFolded: p.has_folded,
+              hasActed: p.has_acted,
+            }))
+            .sort((a: Player, b: Player) => a.position - b.position)
 
-        setPlayers(convertedPlayers)
-        setGameState(data.gameState)
-        setRoom(data.room)
-        setLoading(false)
-      })
-      .catch((err) => {
-        if (signal?.aborted) return
-        setError(err instanceof Error ? err.message : 'Failed to load game')
-        setLoading(false)
-      })
-  }, [pin])
+          setPlayers(convertedPlayers)
+          setGameState(data.gameState)
+          setRoom(data.room)
+          setLoading(false)
+        })
+        .catch((err) => {
+          if (signal?.aborted) return
+          setError(err instanceof Error ? err.message : 'Failed to load game')
+          setLoading(false)
+        })
+    },
+    [pin],
+  )
 
   const scheduleLoad = useCallback(() => {
     if (debounceTimeoutRef.current) {
@@ -149,7 +152,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
           table: 'poker_players',
           filter: `room_pin=eq.${pin}`,
         },
-        scheduleLoad
+        scheduleLoad,
       )
       .subscribe()
 
@@ -163,7 +166,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
           table: 'poker_game_state',
           filter: `room_pin=eq.${pin}`,
         },
-        scheduleLoad
+        scheduleLoad,
       )
       .subscribe()
 
@@ -214,7 +217,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
   const handleAction = async (action: BettingAction, amount?: number) => {
     if (!currentPlayerId || !gameState) return
 
-    const currentPlayer = players.find(p => p.id === currentPlayerId)
+    const currentPlayer = players.find((p) => p.id === currentPlayerId)
     if (!currentPlayer) return
 
     try {
@@ -327,9 +330,9 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
       return (
         <div
           key={index}
-          className="w-10 h-14 sm:w-12 sm:h-16 bg-gray-800 border-2 border-gray-600 rounded flex items-center justify-center"
+          className="flex h-14 w-10 items-center justify-center rounded border-2 border-gray-600 bg-gray-800 sm:h-16 sm:w-12"
         >
-          <div className="text-gray-600 text-xs">?</div>
+          <div className="text-xs text-gray-600">?</div>
         </div>
       )
     }
@@ -337,9 +340,9 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
     return (
       <div
         key={index}
-        className={`w-10 h-14 sm:w-12 sm:h-16 bg-white border-2 border-gray-400 rounded flex flex-col items-center justify-center ${SUIT_COLORS[card.suit]}`}
+        className={`flex h-14 w-10 flex-col items-center justify-center rounded border-2 border-gray-400 bg-white sm:h-16 sm:w-12 ${SUIT_COLORS[card.suit]}`}
       >
-        <div className="text-xs sm:text-sm font-bold">{card.rank}</div>
+        <div className="text-xs font-bold sm:text-sm">{card.rank}</div>
         <div className="text-sm sm:text-lg">{SUIT_SYMBOLS[card.suit]}</div>
       </div>
     )
@@ -347,21 +350,18 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading game...</div>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900">
+        <div className="text-xl text-white">Loading game...</div>
       </div>
     )
   }
 
   if (!gameState) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center">
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 text-center">
-          <div className="text-red-400 mb-4">Game not found or not started</div>
-          <button
-            onClick={onBack}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
-          >
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900">
+        <div className="rounded-2xl border border-white/20 bg-white/10 p-8 text-center backdrop-blur-sm">
+          <div className="mb-4 text-red-400">Game not found or not started</div>
+          <button onClick={onBack} className="rounded-lg bg-green-600 px-6 py-2 text-white hover:bg-green-700">
             Go Back
           </button>
         </div>
@@ -369,7 +369,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
     )
   }
 
-  const currentPlayer = players.find(p => p.id === currentPlayerId)
+  const currentPlayer = players.find((p) => p.id === currentPlayerId)
   const isMyTurn = currentPlayer && gameState.action_on === currentPlayer.position
   const minBet = gameState.big_blind
   const maxBet = currentPlayer ? currentPlayer.chips : 0
@@ -381,46 +381,47 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 p-4">
-      <div className="max-w-7xl mx-auto">
+      <div className="mx-auto max-w-7xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <button
             onClick={onBack}
-            className="bg-white/10 hover:bg-white/20 px-3 py-2 sm:px-4 rounded-lg border border-white/20 text-white text-sm sm:text-base"
+            className="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white hover:bg-white/20 sm:px-4 sm:text-base"
           >
             ← Back
           </button>
-          <div className="text-white text-center">
-            <div className="text-xs sm:text-sm text-gray-300">Hand #{gameState.hand_number}</div>
-            <div className="text-sm sm:text-lg font-semibold capitalize">{gameState.betting_round.replace('-', ' ')}</div>
+          <div className="text-center text-white">
+            <div className="text-xs text-gray-300 sm:text-sm">Hand #{gameState.hand_number}</div>
+            <div className="text-sm font-semibold capitalize sm:text-lg">
+              {gameState.betting_round.replace('-', ' ')}
+            </div>
           </div>
-          <div className="text-white text-xs sm:text-sm">Room: {pin}</div>
+          <div className="text-xs text-white sm:text-sm">Room: {pin}</div>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200">
-            {error}
-          </div>
+          <div className="mb-4 rounded-lg border border-red-500/50 bg-red-500/20 p-3 text-red-200">{error}</div>
         )}
 
         {/* Table Area */}
-        <div className="relative bg-gradient-to-br from-green-800 to-green-900 rounded-full border-4 sm:border-8 border-amber-800 shadow-2xl mx-auto" style={{ aspectRatio: '1', width: '100%', maxWidth: '600px', minHeight: '300px' }}>
+        <div
+          className="relative mx-auto rounded-full border-4 border-amber-800 bg-gradient-to-br from-green-800 to-green-900 shadow-2xl sm:border-8"
+          style={{ aspectRatio: '1', width: '100%', maxWidth: '600px', minHeight: '300px' }}
+        >
           {/* Community Cards */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex gap-2">
-            {Array.from({ length: 5 }).map((_, i) =>
-              renderCard(gameState.community_cards[i] || null, i)
-            )}
+          <div className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform gap-2">
+            {Array.from({ length: 5 }).map((_, i) => renderCard(gameState.community_cards[i] || null, i))}
           </div>
 
           {/* Pot Display */}
-          <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-            <div className="bg-black/50 backdrop-blur-sm rounded-lg px-3 py-2 sm:px-6 sm:py-3 border-2 border-yellow-400">
-              <div className="text-yellow-400 text-xs sm:text-sm mb-1">Pot</div>
-              <div className="text-white text-xl sm:text-3xl font-bold">
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 transform text-center">
+            <div className="rounded-lg border-2 border-yellow-400 bg-black/50 px-3 py-2 backdrop-blur-sm sm:px-6 sm:py-3">
+              <div className="mb-1 text-xs text-yellow-400 sm:text-sm">Pot</div>
+              <div className="text-xl font-bold text-white sm:text-3xl">
                 <PokerChips amount={gameState.pot_main} size="sm" showLabel={true} />
               </div>
               {gameState.pot_side_pots && gameState.pot_side_pots.length > 0 && (
-                <div className="text-yellow-300 text-xs mt-1">
+                <div className="mt-1 text-xs text-yellow-300">
                   + {gameState.pot_side_pots.length} side pot{gameState.pot_side_pots.length > 1 ? 's' : ''}
                 </div>
               )}
@@ -429,11 +430,11 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
           {/* Players - Show all 12 seats */}
           {Array.from({ length: 12 }).map((_, seatIndex) => {
-            const player = players.find(p => p.position === seatIndex)
+            const player = players.find((p) => p.position === seatIndex)
             const position = getPlayerPosition(seatIndex, 12)
             const timerPerTurn = room?.timer_per_turn || 40
             const remaining = timeRemaining[seatIndex] ?? (gameState.action_on === seatIndex ? timerPerTurn : undefined)
-            
+
             return (
               <PokerPlayer
                 key={seatIndex}
@@ -453,44 +454,47 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
         {/* Betting Controls */}
         {isMyTurn && currentPlayer && !currentPlayer.hasFolded && !currentPlayer.isAllIn && (
-          <div className="mt-4 sm:mt-6 bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/20">
-            <div className="text-white text-center mb-4">
-              <div className="text-lg sm:text-xl font-semibold">Your Turn</div>
-              <div className="text-xs sm:text-sm text-gray-300">
+          <div className="mt-4 rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm sm:mt-6 sm:p-6">
+            <div className="mb-4 text-center text-white">
+              <div className="text-lg font-semibold sm:text-xl">Your Turn</div>
+              <div className="text-xs text-gray-300 sm:text-sm">
                 Chips: ${currentPlayer.chips} | Current Bet: ${gameState.current_bet} | To Call: ${callAmount}
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 sm:gap-3 justify-center mb-4">
+            <div className="mb-4 flex flex-wrap justify-center gap-2 sm:gap-3">
               <button
-                data-hotkey="f" onClick={() => handleAction('fold')}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-3 sm:px-6 min-h-11 rounded-lg font-semibold text-sm sm:text-base"
+                data-hotkey="f"
+                onClick={() => handleAction('fold')}
+                className="min-h-11 rounded-lg bg-red-600 px-4 py-3 text-sm font-semibold text-white hover:bg-red-700 sm:px-6 sm:text-base"
               >
                 Fold
               </button>
 
               {callAmount === 0 ? (
                 <button
-                  data-hotkey="c Space" onClick={() => handleAction('check')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 sm:px-6 min-h-11 rounded-lg font-semibold text-sm sm:text-base"
+                  data-hotkey="c Space"
+                  onClick={() => handleAction('check')}
+                  className="min-h-11 rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 sm:px-6 sm:text-base"
                 >
                   Check
                 </button>
               ) : (
                 <button
-                  data-hotkey="c" onClick={() => handleAction('call')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 sm:px-6 min-h-11 rounded-lg font-semibold text-sm sm:text-base"
+                  data-hotkey="c"
+                  onClick={() => handleAction('call')}
+                  className="min-h-11 rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 sm:px-6 sm:text-base"
                 >
                   Call ${callAmount}
                 </button>
               )}
 
-              <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
+              <div className="flex w-full items-center justify-center gap-2 sm:w-auto">
                 <input
                   type="number"
                   value={betAmount || minBet}
                   onChange={(e) => setBetAmount(Math.max(minBet, Math.min(maxBet, parseInt(e.target.value) || minBet)))}
-                  className="w-20 sm:w-24 bg-white/10 border border-white/20 rounded-lg px-2 py-2 sm:px-3 min-h-11 text-white text-center text-sm sm:text-base"
+                  className="min-h-11 w-20 rounded-lg border border-white/20 bg-white/10 px-2 py-2 text-center text-sm text-white sm:w-24 sm:px-3 sm:text-base"
                   min={minBet}
                   max={maxBet}
                 />
@@ -506,15 +510,17 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
                 ))}
                 {canOpenBet ? (
                   <button
-                    data-hotkey="b" onClick={() => handleAction('bet')}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-3 sm:px-6 min-h-11 rounded-lg font-semibold text-sm sm:text-base"
+                    data-hotkey="b"
+                    onClick={() => handleAction('bet')}
+                    className="min-h-11 rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white hover:bg-green-700 sm:px-6 sm:text-base"
                   >
                     Bet ${betAmount || minBet}
                   </button>
                 ) : (
                   <button
-                    data-hotkey="r" onClick={() => handleAction('raise')}
-                    className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-3 sm:px-6 min-h-11 rounded-lg font-semibold text-sm sm:text-base"
+                    data-hotkey="r"
+                    onClick={() => handleAction('raise')}
+                    className="min-h-11 rounded-lg bg-orange-600 px-4 py-3 text-sm font-semibold text-white hover:bg-orange-700 sm:px-6 sm:text-base"
                   >
                     Raise ${betAmount || minBet}
                   </button>
@@ -523,7 +529,7 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
 
               <button
                 onClick={() => handleAction('all-in')}
-                className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 sm:px-6 min-h-11 rounded-lg font-semibold text-sm sm:text-base"
+                className="min-h-11 rounded-lg bg-yellow-600 px-4 py-3 text-sm font-semibold text-white hover:bg-yellow-700 sm:px-6 sm:text-base"
               >
                 All-In ${currentPlayer.chips}
               </button>
@@ -534,7 +540,9 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
         {!isMyTurn && currentPlayer && gameState.action_on >= 0 && (
           <div className="mt-6 text-center text-gray-300">
             {actingPlayer ? (
-              <span>Waiting for <span className="text-yellow-300 font-semibold">{actingPlayer.name}</span>...</span>
+              <span>
+                Waiting for <span className="font-semibold text-yellow-300">{actingPlayer.name}</span>...
+              </span>
             ) : (
               'Waiting for other players...'
             )}
@@ -542,33 +550,38 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
         )}
 
         {gameState.action_on === -1 && (
-          <div className="mt-6 bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/20 text-center">
-            <div className="text-yellow-300 font-semibold text-lg mb-2">Hand complete</div>
-            <p className="text-gray-300 text-sm mb-4">
+          <div className="mt-6 rounded-2xl border border-white/20 bg-white/10 p-4 text-center backdrop-blur-sm sm:p-6">
+            <div className="mb-2 text-lg font-semibold text-yellow-300">Hand complete</div>
+            <p className="mb-4 text-sm text-gray-300">
               Pot: ${gameState.pot_main.toLocaleString()} — award at the table, then start next hand
             </p>
             {isHost ? (
-              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+              <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <select
                   value={nextHandWinner}
                   onChange={(e) => setNextHandWinner(e.target.value)}
-                  className="bg-white/10 border border-white/20 rounded-lg px-4 py-3 min-h-11 text-white text-sm"
+                  className="min-h-11 rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-sm text-white"
                 >
-                  <option value="" className="text-black">Select winner...</option>
+                  <option value="" className="text-black">
+                    Select winner...
+                  </option>
                   {activePlayers.map((p) => (
-                    <option key={p.id} value={p.id} className="text-black">{p.name}</option>
+                    <option key={p.id} value={p.id} className="text-black">
+                      {p.name}
+                    </option>
                   ))}
                 </select>
                 <button
-                  data-hotkey="n Enter" onClick={handleNextHand}
+                  data-hotkey="n Enter"
+                  onClick={handleNextHand}
                   disabled={!nextHandWinner || startingNextHand}
-                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white font-semibold px-6 py-3 min-h-11 rounded-lg"
+                  className="min-h-11 rounded-lg bg-green-600 px-6 py-3 font-semibold text-white hover:bg-green-700 disabled:bg-gray-600"
                 >
                   {startingNextHand ? 'Starting...' : 'Award Pot & Next Hand'}
                 </button>
               </div>
             ) : (
-              <p className="text-gray-400 text-sm">Waiting for host to award pot and start next hand...</p>
+              <p className="text-sm text-gray-400">Waiting for host to award pot and start next hand...</p>
             )}
           </div>
         )}
@@ -576,4 +589,3 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
     </div>
   )
 }
-

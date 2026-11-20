@@ -22,8 +22,17 @@ async function bumpRoom(pin: string, patch: Record<string, unknown>, nowIso: str
 }
 
 async function addScore(pin: string, playerId: string, delta: number) {
-  const { data: p } = await supabase.from('party_players').select('score').eq('room_pin', pin).eq('player_id', playerId).single()
-  await supabase.from('party_players').update({ score: (p?.score ?? 0) + delta }).eq('room_pin', pin).eq('player_id', playerId)
+  const { data: p } = await supabase
+    .from('party_players')
+    .select('score')
+    .eq('room_pin', pin)
+    .eq('player_id', playerId)
+    .single()
+  await supabase
+    .from('party_players')
+    .update({ score: (p?.score ?? 0) + delta })
+    .eq('room_pin', pin)
+    .eq('player_id', playerId)
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ pin: string }> }) {
@@ -44,11 +53,19 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'Room not found' }, { status: 404 })
     }
 
-    const { data: players } = await supabase.from('party_players').select('*').eq('room_pin', pin).order('joined_at', { ascending: true })
+    const { data: players } = await supabase
+      .from('party_players')
+      .select('*')
+      .eq('room_pin', pin)
+      .order('joined_at', { ascending: true })
     const playerList = players ?? []
     const now = new Date().toISOString()
 
-    const { data: rounds } = await supabase.from('party_fibbage_rounds').select('*').eq('room_pin', pin).order('round_index', { ascending: true })
+    const { data: rounds } = await supabase
+      .from('party_fibbage_rounds')
+      .select('*')
+      .eq('room_pin', pin)
+      .order('round_index', { ascending: true })
     const currentRound = rounds?.find((r) => r.round_index === room.round_index) ?? rounds?.[rounds.length - 1]
 
     if (action === 'submitLie') {
@@ -83,10 +100,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           opts.push({ text: row.lie_text, truth: false, authorId: row.player_id })
         }
         const shuffled = shuffle(opts)
-        await supabase.from('party_fibbage_rounds').update({ option_order: shuffled as unknown as OptRow[] }).eq('id', currentRound.id)
+        await supabase
+          .from('party_fibbage_rounds')
+          .update({ option_order: shuffled as unknown as OptRow[] })
+          .eq('id', currentRound.id)
         await bumpRoom(
           pin,
-          { phase: 'fibbage_pick', deadline_at: new Date(Date.now() + PARTY_PHASE_SECONDS_DEFAULT * 1000).toISOString() },
+          {
+            phase: 'fibbage_pick',
+            deadline_at: new Date(Date.now() + PARTY_PHASE_SECONDS_DEFAULT * 1000).toISOString(),
+          },
           now,
         )
       }
@@ -105,18 +128,24 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       if (pickedIndex >= order.length) {
         return NextResponse.json({ error: 'Invalid index' }, { status: 400 })
       }
-      await supabase.from('party_fibbage_picks').upsert(
-        { round_id: currentRound.id, player_id: playerId, picked_index: pickedIndex },
-        { onConflict: 'round_id,player_id' },
-      )
+      await supabase
+        .from('party_fibbage_picks')
+        .upsert(
+          { round_id: currentRound.id, player_id: playerId, picked_index: pickedIndex },
+          { onConflict: 'round_id,player_id' },
+        )
 
-      const { data: picks } = await supabase.from('party_fibbage_picks').select('player_id').eq('round_id', currentRound.id)
+      const { data: picks } = await supabase
+        .from('party_fibbage_picks')
+        .select('player_id')
+        .eq('round_id', currentRound.id)
       const picked = new Set((picks ?? []).map((p) => p.player_id))
       const allPicked = playerList.every((p) => picked.has(p.player_id))
       if (allPicked) {
         const mult = room.round_index === 1 ? 1 : room.round_index === 2 ? 2 : 3
         const truthIdx = order.findIndex((o) => o.truth)
-        const fullPicks = (await supabase.from('party_fibbage_picks').select('*').eq('round_id', currentRound.id)).data ?? []
+        const fullPicks =
+          (await supabase.from('party_fibbage_picks').select('*').eq('round_id', currentRound.id)).data ?? []
         const fooledBy = new Map<string, number>()
         for (const pk of fullPicks) {
           if (pk.picked_index === truthIdx) {
@@ -157,10 +186,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       if (!targetPlayerId) {
         return NextResponse.json({ error: 'targetPlayerId required' }, { status: 400 })
       }
-      await supabase.from('party_fibbage_likes').upsert(
-        { round_id: currentRound.id, from_player_id: playerId, to_player_id: targetPlayerId },
-        { onConflict: 'round_id,from_player_id,to_player_id' },
-      )
+      await supabase
+        .from('party_fibbage_likes')
+        .upsert(
+          { round_id: currentRound.id, from_player_id: playerId, to_player_id: targetPlayerId },
+          { onConflict: 'round_id,from_player_id,to_player_id' },
+        )
       return NextResponse.json({ success: true })
     }
 

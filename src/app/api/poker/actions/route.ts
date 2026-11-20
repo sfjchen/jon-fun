@@ -29,7 +29,12 @@ export async function POST(request: NextRequest) {
     const [gameStateResult, playerResult, allPlayersResult] = await Promise.all([
       supabase.from('poker_game_state').select('*').eq('room_pin', pin).single(),
       supabase.from('poker_players').select('*').eq('room_pin', pin).eq('player_id', playerId).single(),
-      supabase.from('poker_players').select('*').eq('room_pin', pin).eq('is_active', true).order('position', { ascending: true }),
+      supabase
+        .from('poker_players')
+        .select('*')
+        .eq('room_pin', pin)
+        .eq('is_active', true)
+        .order('position', { ascending: true }),
     ])
 
     const gameState = gameStateResult.data
@@ -78,7 +83,10 @@ export async function POST(request: NextRequest) {
       const targetTotal = Math.max(minRaiseTotal, (player.current_bet ?? 0) + (amount ?? bb))
       actionAmount = Math.min(chipsAvailable, targetTotal - (player.current_bet ?? 0))
       if ((player.current_bet ?? 0) + actionAmount < minRaiseTotal && actionAmount < chipsAvailable) {
-        return NextResponse.json({ error: `Minimum raise is $${minRaiseTotal - (player.current_bet ?? 0)}` }, { status: 400 })
+        return NextResponse.json(
+          { error: `Minimum raise is $${minRaiseTotal - (player.current_bet ?? 0)}` },
+          { status: 400 },
+        )
       }
     } else if (action === 'all-in') {
       actionAmount = chipsAvailable
@@ -105,9 +113,7 @@ export async function POST(request: NextRequest) {
     }
 
     const newCurrentBet =
-      action === 'bet' || action === 'raise' || action === 'all-in'
-        ? Math.max(currentBet, newPlayerBet)
-        : currentBet
+      action === 'bet' || action === 'raise' || action === 'all-in' ? Math.max(currentBet, newPlayerBet) : currentBet
 
     const raised = newCurrentBet > currentBet
     const newPotMain = (gameState.pot_main ?? 0) + actionAmount
@@ -169,23 +175,12 @@ export async function POST(request: NextRequest) {
       .eq('player_id', playerId)
 
     if (raised && !roundComplete) {
-      await supabase
-        .from('poker_players')
-        .update({ has_acted: false })
-        .eq('room_pin', pin)
-        .neq('player_id', playerId)
-      await supabase
-        .from('poker_players')
-        .update({ has_acted: true })
-        .eq('room_pin', pin)
-        .eq('player_id', playerId)
+      await supabase.from('poker_players').update({ has_acted: false }).eq('room_pin', pin).neq('player_id', playerId)
+      await supabase.from('poker_players').update({ has_acted: true }).eq('room_pin', pin).eq('player_id', playerId)
     }
 
     if (resetStreetBets) {
-      await supabase
-        .from('poker_players')
-        .update({ has_acted: false, current_bet: 0 })
-        .eq('room_pin', pin)
+      await supabase.from('poker_players').update({ has_acted: false, current_bet: 0 }).eq('room_pin', pin)
     }
 
     await Promise.all([

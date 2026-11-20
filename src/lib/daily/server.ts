@@ -1,7 +1,10 @@
 import { isNytGame } from '@/lib/daily'
 import { nytPuzzle } from '@/lib/daily/nyt'
 import type { GameId } from '@/lib/results'
-export async function dailyPuzzle(game: GameId, day: string): Promise<{ day: string; sourceDate: string; puzzle: unknown }> {
+export async function dailyPuzzle(
+  game: GameId,
+  day: string,
+): Promise<{ day: string; sourceDate: string; puzzle: unknown }> {
   if (game === 'anthropeum') {
     const { anthropeumPuzzle } = await import('@/lib/daily/anthropeum')
     const puzzle = await anthropeumPuzzle(day)

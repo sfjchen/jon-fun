@@ -45,8 +45,7 @@ function rt(entries: typeof fixtures): void {
 rt(fixtures)
 
 // Column order in header row should still parse
-const shuffledHeader =
-  'updatedAt,text,date\n2021-05-05T10:00:00.000Z,"Last, first",2021-05-05'
+const shuffledHeader = 'updatedAt,text,date\n2021-05-05T10:00:00.000Z,"Last, first",2021-05-05'
 const shuffled = parseDailyLearnCsv(shuffledHeader)
 assert.ifError(shuffled.error)
 assert.equal(shuffled.entries.length, 1)

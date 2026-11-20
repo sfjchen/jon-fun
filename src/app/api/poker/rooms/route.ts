@@ -17,19 +17,17 @@ export async function POST(request: NextRequest) {
 
     // Create room with minimal round-trips: generate PIN, insert, retry on unique conflicts
     const now = new Date().toISOString()
-    let finalRoom:
-      | {
-          id: string
-          pin: string
-          host_id: string
-          small_blind: number
-          big_blind: number
-          status: string
-          created_at: string
-          last_activity: string
-          timer_per_turn?: number
-        }
-      | null = null
+    let finalRoom: {
+      id: string
+      pin: string
+      host_id: string
+      small_blind: number
+      big_blind: number
+      status: string
+      created_at: string
+      last_activity: string
+      timer_per_turn?: number
+    } | null = null
 
     for (let attempt = 0; attempt < 8 && !finalRoom; attempt++) {
       const pin = generateRoomPin()
@@ -45,8 +43,7 @@ export async function POST(request: NextRequest) {
         timer_per_turn: timerPerTurn,
       }
 
-      const tryInsert = async (data: typeof baseRoomData) =>
-        supabase.from('poker_rooms').insert(data).select().single()
+      const tryInsert = async (data: typeof baseRoomData) => supabase.from('poker_rooms').insert(data).select().single()
 
       const { data: room, error: roomError } = await tryInsert(baseRoomData)
 
@@ -77,21 +74,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Create host player
-    const { error: playerError } = await supabase
-      .from('poker_players')
-      .insert({
-        id: uuidv4(),
-        room_pin: finalRoom.pin,
-        player_id: hostId,
-        name: hostName.trim(),
-        chips: 0,
-        position: 0,
-        is_active: true,
-        is_all_in: false,
-        current_bet: 0,
-        has_folded: false,
-        has_acted: false,
-      })
+    const { error: playerError } = await supabase.from('poker_players').insert({
+      id: uuidv4(),
+      room_pin: finalRoom.pin,
+      player_id: hostId,
+      name: hostName.trim(),
+      chips: 0,
+      position: 0,
+      is_active: true,
+      is_all_in: false,
+      current_bet: 0,
+      has_folded: false,
+      has_acted: false,
+    })
 
     if (playerError) {
       await supabase.from('poker_rooms').delete().eq('pin', finalRoom.pin)
@@ -110,4 +105,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-

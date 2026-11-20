@@ -108,7 +108,11 @@ async function callGoogleGeminiOnce(
   })
 }
 
-async function callGoogleGemini(apiKey: string, model: string, userJson: string): Promise<{ text: string; model: string }> {
+async function callGoogleGemini(
+  apiKey: string,
+  model: string,
+  userJson: string,
+): Promise<{ text: string; model: string }> {
   const allowSchema = (process.env.READER_CHAPTER_GEMINI_JSON_SCHEMA ?? '1') !== '0'
 
   let res = await callGoogleGeminiOnce(apiKey, model, userJson, allowSchema)
@@ -177,8 +181,7 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Expected bookTitle and non-empty chapters[].' }, { status: 400 })
   }
 
-  const truncated =
-    body.chapters.length > MAX_CHAPTERS ? body.chapters.slice(0, MAX_CHAPTERS) : body.chapters
+  const truncated = body.chapters.length > MAX_CHAPTERS ? body.chapters.slice(0, MAX_CHAPTERS) : body.chapters
   const truncatedNote =
     body.chapters.length > MAX_CHAPTERS
       ? `Only the first ${MAX_CHAPTERS} chapters were sent to the model (book has ${body.chapters.length}).`

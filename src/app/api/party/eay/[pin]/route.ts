@@ -24,15 +24,32 @@ async function bumpRoom(pin: string, patch: Record<string, unknown>, nowIso: str
 }
 
 async function addScore(pin: string, playerId: string, delta: number) {
-  const { data: p } = await supabase.from('party_players').select('score').eq('room_pin', pin).eq('player_id', playerId).single()
-  await supabase.from('party_players').update({ score: (p?.score ?? 0) + delta }).eq('room_pin', pin).eq('player_id', playerId)
+  const { data: p } = await supabase
+    .from('party_players')
+    .select('score')
+    .eq('room_pin', pin)
+    .eq('player_id', playerId)
+    .single()
+  await supabase
+    .from('party_players')
+    .update({ score: (p?.score ?? 0) + delta })
+    .eq('room_pin', pin)
+    .eq('player_id', playerId)
 }
 
-async function seedEayRoundsAfterIntake(pin: string, playerList: { player_id: string; name: string }[], nowIso: string) {
+async function seedEayRoundsAfterIntake(
+  pin: string,
+  playerList: { player_id: string; name: string }[],
+  nowIso: string,
+) {
   await supabase.from('party_eay_rounds').delete().eq('room_pin', pin)
   let sort = 0
   for (const pl of playerList) {
-    const { data: intakes } = await supabase.from('party_eay_intake').select('*').eq('room_pin', pin).eq('player_id', pl.player_id)
+    const { data: intakes } = await supabase
+      .from('party_eay_intake')
+      .select('*')
+      .eq('room_pin', pin)
+      .eq('player_id', pl.player_id)
     const answers = intakes ?? []
     if (answers.length === 0) continue
     const pick = answers[Math.floor(Math.random() * answers.length)]!
@@ -69,7 +86,12 @@ async function seedEayRoundsAfterIntake(pin: string, playerList: { player_id: st
 async function setFinalVotePairForStep(pin: string, playerList: { player_id: string }[], step: number, nowIso: string) {
   const subject = playerList[step]
   if (!subject) return
-  const { data: row } = await supabase.from('party_eay_final').select('*').eq('room_pin', pin).eq('player_id', subject.player_id).single()
+  const { data: row } = await supabase
+    .from('party_eay_final')
+    .select('*')
+    .eq('room_pin', pin)
+    .eq('player_id', subject.player_id)
+    .single()
   if (!row) return
   const pair: FinalPairSlot[] = shuffle([
     { text: row.truth_text, isTruth: true },
@@ -108,14 +130,22 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'Room not found' }, { status: 404 })
     }
 
-    const { data: players } = await supabase.from('party_players').select('*').eq('room_pin', pin).order('joined_at', { ascending: true })
+    const { data: players } = await supabase
+      .from('party_players')
+      .select('*')
+      .eq('room_pin', pin)
+      .order('joined_at', { ascending: true })
     const playerList = players ?? []
     const now = new Date().toISOString()
 
     const settings = (room.settings as { eayQuestionIds?: string[] }) ?? {}
     const qIds = settings.eayQuestionIds ?? EAY_INTAKE_QUESTIONS.map((q) => q.id)
 
-    const { data: eayRounds } = await supabase.from('party_eay_rounds').select('*').eq('room_pin', pin).order('round_index', { ascending: true })
+    const { data: eayRounds } = await supabase
+      .from('party_eay_rounds')
+      .select('*')
+      .eq('room_pin', pin)
+      .order('round_index', { ascending: true })
     const currentEay = eayRounds?.find((r) => r.round_index === room.round_index)
 
     if (action === 'submitIntake') {
@@ -130,14 +160,20 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       if (!ans) {
         return NextResponse.json({ error: 'Answer required' }, { status: 400 })
       }
-      await supabase.from('party_eay_intake').upsert(
-        { room_pin: pin, player_id: playerId, question_id: questionId, answer: ans },
-        { onConflict: 'room_pin,player_id,question_id' },
-      )
+      await supabase
+        .from('party_eay_intake')
+        .upsert(
+          { room_pin: pin, player_id: playerId, question_id: questionId, answer: ans },
+          { onConflict: 'room_pin,player_id,question_id' },
+        )
 
       let allDone = true
       for (const p of playerList) {
-        const { data: rows } = await supabase.from('party_eay_intake').select('question_id').eq('room_pin', pin).eq('player_id', p.player_id)
+        const { data: rows } = await supabase
+          .from('party_eay_intake')
+          .select('question_id')
+          .eq('room_pin', pin)
+          .eq('player_id', p.player_id)
         const got = new Set((rows ?? []).map((r) => r.question_id))
         for (const q of qIds) {
           if (!got.has(q)) allDone = false
@@ -169,10 +205,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       if (!lieText) {
         return NextResponse.json({ error: 'Lie required' }, { status: 400 })
       }
-      await supabase.from('party_eay_lies').upsert(
-        { round_id: currentEay.id, player_id: playerId, lie_text: lieText, from_suggestion: fromSug },
-        { onConflict: 'round_id,player_id' },
-      )
+      await supabase
+        .from('party_eay_lies')
+        .upsert(
+          { round_id: currentEay.id, player_id: playerId, lie_text: lieText, from_suggestion: fromSug },
+          { onConflict: 'round_id,player_id' },
+        )
 
       const liarsExpected = playerList.filter((p) => p.player_id !== currentEay.subject_player_id)
       const { data: lies } = await supabase.from('party_eay_lies').select('*').eq('round_id', currentEay.id)
@@ -184,8 +222,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           opts.push({ text: row.lie_text, truth: false, authorId: row.player_id })
         }
         const shuffled = shuffle(opts)
-        await supabase.from('party_eay_rounds').update({ option_order: shuffled as unknown as OptRow[] }).eq('id', currentEay.id)
-        await bumpRoom(pin, { phase: 'eay_pick', deadline_at: new Date(Date.now() + PARTY_PHASE_SECONDS_DEFAULT * 1000).toISOString() }, now)
+        await supabase
+          .from('party_eay_rounds')
+          .update({ option_order: shuffled as unknown as OptRow[] })
+          .eq('id', currentEay.id)
+        await bumpRoom(
+          pin,
+          { phase: 'eay_pick', deadline_at: new Date(Date.now() + PARTY_PHASE_SECONDS_DEFAULT * 1000).toISOString() },
+          now,
+        )
       }
       return NextResponse.json({ success: true })
     }
@@ -205,10 +250,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       if (pickedIndex >= order.length) {
         return NextResponse.json({ error: 'Invalid index' }, { status: 400 })
       }
-      await supabase.from('party_eay_picks').upsert(
-        { round_id: currentEay.id, player_id: playerId, picked_index: pickedIndex },
-        { onConflict: 'round_id,player_id' },
-      )
+      await supabase
+        .from('party_eay_picks')
+        .upsert(
+          { round_id: currentEay.id, player_id: playerId, picked_index: pickedIndex },
+          { onConflict: 'round_id,player_id' },
+        )
 
       const pickers = playerList.filter((p) => p.player_id !== currentEay.subject_player_id)
       const { data: picks } = await supabase.from('party_eay_picks').select('player_id').eq('round_id', currentEay.id)
@@ -257,10 +304,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       if (!targetPlayerId) {
         return NextResponse.json({ error: 'targetPlayerId required' }, { status: 400 })
       }
-      await supabase.from('party_eay_likes').upsert(
-        { round_id: currentEay.id, from_player_id: playerId, to_player_id: targetPlayerId },
-        { onConflict: 'round_id,from_player_id,to_player_id' },
-      )
+      await supabase
+        .from('party_eay_likes')
+        .upsert(
+          { round_id: currentEay.id, from_player_id: playerId, to_player_id: targetPlayerId },
+          { onConflict: 'round_id,from_player_id,to_player_id' },
+        )
       return NextResponse.json({ success: true })
     }
 
@@ -290,7 +339,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           return NextResponse.json({ success: true })
         }
         const deadline = new Date(Date.now() + PARTY_PHASE_SECONDS_DEFAULT * 1000).toISOString()
-        await bumpRoom(pin, { phase: 'eay_lie', round_index: (room.round_index ?? 1) + 1, step_index: 0, deadline_at: deadline }, now)
+        await bumpRoom(
+          pin,
+          { phase: 'eay_lie', round_index: (room.round_index ?? 1) + 1, step_index: 0, deadline_at: deadline },
+          now,
+        )
         return NextResponse.json({ success: true })
       }
       if (room.phase === 'eay_final_scores') {
@@ -310,10 +363,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       if (!t || !l) {
         return NextResponse.json({ error: 'truth and lie required' }, { status: 400 })
       }
-      await supabase.from('party_eay_final').upsert(
-        { room_pin: pin, player_id: playerId, truth_text: t, lie_text: l },
-        { onConflict: 'room_pin,player_id' },
-      )
+      await supabase
+        .from('party_eay_final')
+        .upsert(
+          { room_pin: pin, player_id: playerId, truth_text: t, lie_text: l },
+          { onConflict: 'room_pin,player_id' },
+        )
       const { data: finals } = await supabase.from('party_eay_final').select('player_id').eq('room_pin', pin)
       const have = new Set((finals ?? []).map((f) => f.player_id))
       const allIn = playerList.every((p) => have.has(p.player_id))
@@ -374,8 +429,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       const allVoted = voters.every((v) => voted.has(v.player_id))
       if (allVoted) {
         const correctIdx = pair.findIndex((p) => p.isTruth)
-        const full = (await supabase.from('party_eay_final_picks').select('*').eq('room_pin', pin).eq('subject_player_id', subject.player_id))
-          .data ?? []
+        const full =
+          (
+            await supabase
+              .from('party_eay_final_picks')
+              .select('*')
+              .eq('room_pin', pin)
+              .eq('subject_player_id', subject.player_id)
+          ).data ?? []
         for (const pk of full) {
           if (pk.choice_index === correctIdx) {
             await addScore(pin, pk.voter_player_id, 500)

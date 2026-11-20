@@ -95,7 +95,9 @@ export async function importReaderPublicationsMerge(publications: ReaderPublicat
   }
   if (!first.ok) {
     const err = await first.json().catch(() => ({}))
-    throw new Error(typeof (err as { error?: string }).error === 'string' ? (err as { error: string }).error : 'Import failed')
+    throw new Error(
+      typeof (err as { error?: string }).error === 'string' ? (err as { error: string }).error : 'Import failed',
+    )
   }
   for (let i = 1; i < publications.length; i++) {
     const res = await fetch(COMMUNAL, {
@@ -105,7 +107,9 @@ export async function importReaderPublicationsMerge(publications: ReaderPublicat
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      throw new Error(typeof (err as { error?: string }).error === 'string' ? (err as { error: string }).error : 'Import failed')
+      throw new Error(
+        typeof (err as { error?: string }).error === 'string' ? (err as { error: string }).error : 'Import failed',
+      )
     }
   }
 }
@@ -135,7 +139,9 @@ export async function saveReaderPublication(publication: ReaderPublication): Pro
   }
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
-    throw new Error(typeof (err as { error?: string }).error === 'string' ? (err as { error: string }).error : 'Save failed')
+    throw new Error(
+      typeof (err as { error?: string }).error === 'string' ? (err as { error: string }).error : 'Save failed',
+    )
   }
 }
 
@@ -151,6 +157,8 @@ export async function deleteReaderPublication(id: string): Promise<void> {
   }
   if (!res.ok && res.status !== 404) {
     const err = await res.json().catch(() => ({}))
-    throw new Error(typeof (err as { error?: string }).error === 'string' ? (err as { error: string }).error : 'Delete failed')
+    throw new Error(
+      typeof (err as { error?: string }).error === 'string' ? (err as { error: string }).error : 'Delete failed',
+    )
   }
 }

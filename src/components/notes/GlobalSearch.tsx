@@ -101,10 +101,8 @@ export default function GlobalSearch({ open, sessions, onClose, onJump }: Global
                 className="w-full px-3 py-2 text-left hover:bg-[var(--uv-bg-hover)]"
               >
                 <div className="flex items-center gap-2">
-                  <span className="truncate text-xs font-medium text-[var(--uv-text-primary)]">
-                    {hit.sessionTitle}
-                  </span>
-                  <span className="shrink-0 rounded bg-[var(--uv-bg-hover)] px-1 text-[9px] uppercase text-[var(--uv-text-muted)]">
+                  <span className="truncate text-xs font-medium text-[var(--uv-text-primary)]">{hit.sessionTitle}</span>
+                  <span className="shrink-0 rounded bg-[var(--uv-bg-hover)] px-1 text-[9px] text-[var(--uv-text-muted)] uppercase">
                     {hit.facet}
                   </span>
                 </div>

@@ -55,10 +55,7 @@ export async function deleteSourceOnServer(sourceId: string): Promise<boolean> {
 
 /** Merge remote glossary/sources into localStorage after session sync. */
 export async function syncMemoryBank(): Promise<{ glossaryOk: boolean; sourcesOk: boolean }> {
-  const [remoteGlossary, remoteSources] = await Promise.all([
-    fetchGlossaryFromServer(),
-    fetchSourcesFromServer(),
-  ])
+  const [remoteGlossary, remoteSources] = await Promise.all([fetchGlossaryFromServer(), fetchSourcesFromServer()])
 
   if (remoteGlossary.length) mergeGlossaryFromServer(remoteGlossary)
 

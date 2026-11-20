@@ -15,8 +15,12 @@ export default async function LeaderboardsPage({ searchParams }: { searchParams:
   return (
     <>
       <nav className="mx-auto mb-5 flex max-w-4xl justify-end gap-1">
-        <Link href="/leaderboards" className={tab(!multi)}>Daily</Link>
-        <Link href="/leaderboards?tab=multiplayer" className={tab(multi)}>Multiplayer</Link>
+        <Link href="/leaderboards" className={tab(!multi)}>
+          Daily
+        </Link>
+        <Link href="/leaderboards?tab=multiplayer" className={tab(multi)}>
+          Multiplayer
+        </Link>
       </nav>
       {multi ? <MultiplayerBoard /> : <ScoresHub />}
     </>

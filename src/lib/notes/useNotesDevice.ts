@@ -4,9 +4,7 @@ import { useEffect, useState } from 'react'
 import { isMacPlatform, isNotesMobileViewport, NOTES_MOBILE_MAX_PX } from './device'
 
 export function useNotesDevice() {
-  const [mobile, setMobile] = useState(() =>
-    typeof window !== 'undefined' ? isNotesMobileViewport() : false,
-  )
+  const [mobile, setMobile] = useState(() => (typeof window !== 'undefined' ? isNotesMobileViewport() : false))
   const [mac, setMac] = useState(() => (typeof window !== 'undefined' ? isMacPlatform() : false))
 
   useEffect(() => {

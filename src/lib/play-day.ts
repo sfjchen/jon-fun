@@ -43,7 +43,9 @@ export function usePlayDay(requested: string | null, game?: GameId | 'set'): str
     try {
       const mark = game && JSON.parse(localStorage.getItem(PLAYING_KEY + game) ?? 'null')
       if (mark?.day === shiftDay(day, -1) && Date.now() - mark.at < RESUME_MS) day = mark.day
-    } catch { /* Storage can be disabled on the server or in a private browser. */ }
+    } catch {
+      /* Storage can be disabled on the server or in a private browser. */
+    }
     return { requested, today, day: requested ?? day }
   })
   let day = requested ?? (today ? pin.day : siteDay())
@@ -66,12 +68,16 @@ export function usePlayDay(requested: string | null, game?: GameId | 'set'): str
         const prev = JSON.parse(localStorage.getItem(PLAYING_KEY + game) ?? 'null')
         // A finished game (at 0) stays finished, so clicks on its result screen never make a reload resume it.
         if (prev?.day !== day || prev.at)
-            localStorage.setItem(PLAYING_KEY + game, JSON.stringify({ day, at: (last = Date.now()) }))
-      } catch { /* Storage can be disabled in a private browser. */ }
+          localStorage.setItem(PLAYING_KEY + game, JSON.stringify({ day, at: (last = Date.now()) }))
+      } catch {
+        /* Storage can be disabled in a private browser. */
+      }
     }
     const events = ['keydown', 'pointerdown']
     for (const e of events) window.addEventListener(e, mark, true)
-    return () => { for (const e of events) window.removeEventListener(e, mark, true) }
+    return () => {
+      for (const e of events) window.removeEventListener(e, mark, true)
+    }
   }, [game, day])
   return day
 }

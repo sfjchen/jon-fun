@@ -1,10 +1,5 @@
 import { test, expect } from '@playwright/test'
-import {
-  mockNotesApi,
-  notesEditor,
-  waitForNotesEditor,
-  SESSIONS_KEY,
-} from './helpers/notes-mock'
+import { mockNotesApi, notesEditor, waitForNotesEditor, SESSIONS_KEY } from './helpers/notes-mock'
 
 test.describe('Notes sync race / fast typing', () => {
   test.use({ viewport: { width: 1280, height: 800 } })
@@ -98,5 +93,4 @@ test.describe('Notes sync race / fast typing', () => {
     const count = (text.match(/quick brown fox/g) ?? []).length
     expect(count).toBe(5)
   })
-
 })

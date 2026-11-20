@@ -18,11 +18,15 @@ import { v4 as uuidv4 } from 'uuid'
 
 function loadEnv(): void {
   for (const f of ['.env.local', '.env']) {
-    const p = join(process.cwd(), f); if (!existsSync(p)) continue
+    const p = join(process.cwd(), f)
+    if (!existsSync(p)) continue
     for (const line of readFileSync(p, 'utf8').split('\n')) {
-      const t = line.trim(); if (!t || t.startsWith('#')) continue
-      const eq = t.indexOf('='); if (eq <= 0) continue
-      const k = t.slice(0, eq).trim(); let v = t.slice(eq + 1).trim()
+      const t = line.trim()
+      if (!t || t.startsWith('#')) continue
+      const eq = t.indexOf('=')
+      if (eq <= 0) continue
+      const k = t.slice(0, eq).trim()
+      let v = t.slice(eq + 1).trim()
       if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1)
       if (!(k in process.env)) process.env[k] = v
     }
@@ -41,7 +45,10 @@ const BASE = arg('base', 'https://sfjc.dev').replace(/\/+$/, '')
 let failures = 0
 function check(label: string, cond: boolean, detail?: string): void {
   if (cond) console.log(`  PASS  ${label}`)
-  else { console.log(`  FAIL  ${label}${detail ? '  ' + detail : ''}`); failures++ }
+  else {
+    console.log(`  FAIL  ${label}${detail ? '  ' + detail : ''}`)
+    failures++
+  }
 }
 
 interface SessionDto {
@@ -95,15 +102,18 @@ async function joinSession(pin: string, p: { playerId: string; name: string; clo
   if (!res.ok) throw new Error(`join failed: ${res.status} ${await res.text()}`)
 }
 
-async function buzz(pin: string, p: {
-  playerId: string
-  name: string
-  /** Wall-clock instant (ms) the player "pressed" — sent verbatim in the body. */
-  clientPressAt: number
-  /** Hold this many ms BEFORE sending — simulates network transmission delay between press and arrival. */
-  transmissionDelayMs: number
-  clockOffsetMs: number
-}): Promise<{ rejected?: boolean; reason?: string; queue?: BuzzDto[] }> {
+async function buzz(
+  pin: string,
+  p: {
+    playerId: string
+    name: string
+    /** Wall-clock instant (ms) the player "pressed" — sent verbatim in the body. */
+    clientPressAt: number
+    /** Hold this many ms BEFORE sending — simulates network transmission delay between press and arrival. */
+    transmissionDelayMs: number
+    clockOffsetMs: number
+  },
+): Promise<{ rejected?: boolean; reason?: string; queue?: BuzzDto[] }> {
   // Sleep until (clientPressAt + transmissionDelayMs) — i.e. the press already happened
   // and the packet is now arriving at the server. This is the realistic shape.
   const sendAt = p.clientPressAt + p.transmissionDelayMs
@@ -142,9 +152,9 @@ async function main() {
   // Stored offsets get used by the server, so we can simulate different timings without
   // actually skewing system clocks.
   const players = [
-    { playerId: uuidv4(), name: 'P1-FarPress',    clockOffsetMs: 0 },
-    { playerId: uuidv4(), name: 'P2-MidPress',    clockOffsetMs: 0 },
-    { playerId: uuidv4(), name: 'P3-LatePress',   clockOffsetMs: 0 },
+    { playerId: uuidv4(), name: 'P1-FarPress', clockOffsetMs: 0 },
+    { playerId: uuidv4(), name: 'P2-MidPress', clockOffsetMs: 0 },
+    { playerId: uuidv4(), name: 'P3-LatePress', clockOffsetMs: 0 },
   ]
   for (const p of players) await joinSession(session0.pin, p)
 
@@ -153,10 +163,17 @@ async function main() {
     console.log('[A] pre-arm buzz should be rejected')
     {
       const res = await buzz(session0.pin, {
-        playerId: players[0]!.playerId, name: players[0]!.name,
-        clientPressAt: Date.now(), transmissionDelayMs: 0, clockOffsetMs: 0,
+        playerId: players[0]!.playerId,
+        name: players[0]!.name,
+        clientPressAt: Date.now(),
+        transmissionDelayMs: 0,
+        clockOffsetMs: 0,
       })
-      check('rejected with reason=round_not_armed', res.rejected === true && res.reason === 'round_not_armed', `got: ${JSON.stringify(res)}`)
+      check(
+        'rejected with reason=round_not_armed',
+        res.rejected === true && res.reason === 'round_not_armed',
+        `got: ${JSON.stringify(res)}`,
+      )
     }
 
     // --- Test B: arm, then 3 buzzes where press order is the REVERSE of arrival order ---
@@ -172,26 +189,32 @@ async function main() {
     // So arrival order is P3 (t+150) → P2 (t+350) → P1 (t+600). Press order is opposite.
     const transmissionDelays = [600, 300, 50]
 
-    const results = await Promise.all(players.map((p, i) => buzz(session0.pin, {
-      playerId: p.playerId, name: p.name,
-      clientPressAt: pressTimes[i]!,
-      transmissionDelayMs: transmissionDelays[i]!,
-      clockOffsetMs: 0,
-    })))
+    const results = await Promise.all(
+      players.map((p, i) =>
+        buzz(session0.pin, {
+          playerId: p.playerId,
+          name: p.name,
+          clientPressAt: pressTimes[i]!,
+          transmissionDelayMs: transmissionDelays[i]!,
+          clockOffsetMs: 0,
+        }),
+      ),
+    )
 
     for (let i = 0; i < players.length; i++) {
-      check(`P${i+1} buzz not rejected`, results[i]!.rejected !== true, `got: ${JSON.stringify(results[i])}`)
+      check(`P${i + 1} buzz not rejected`, results[i]!.rejected !== true, `got: ${JSON.stringify(results[i])}`)
     }
 
     const { queue } = await getQueue(session0.pin)
     check('queue has 3 buzzes', queue.length === 3, `got ${queue.length}`)
     const ordered = [...queue].sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99))
-    check('rank #1 is P1 (earliest press despite latest arrival)', ordered[0]?.playerId === players[0]!.playerId,
-      `rank-1 name = "${ordered[0]?.name}"`)
-    check('rank #2 is P2', ordered[1]?.playerId === players[1]!.playerId,
-      `rank-2 name = "${ordered[1]?.name}"`)
-    check('rank #3 is P3', ordered[2]?.playerId === players[2]!.playerId,
-      `rank-3 name = "${ordered[2]?.name}"`)
+    check(
+      'rank #1 is P1 (earliest press despite latest arrival)',
+      ordered[0]?.playerId === players[0]!.playerId,
+      `rank-1 name = "${ordered[0]?.name}"`,
+    )
+    check('rank #2 is P2', ordered[1]?.playerId === players[1]!.playerId, `rank-2 name = "${ordered[1]?.name}"`)
+    check('rank #3 is P3', ordered[2]?.playerId === players[2]!.playerId, `rank-3 name = "${ordered[2]?.name}"`)
     // Sanity: effective_server_press_at gap between #1 and #2 should reflect the engineered 50ms gap.
     if (ordered[0]?.effectiveServerPressAt && ordered[1]?.effectiveServerPressAt) {
       const dt = Date.parse(ordered[1].effectiveServerPressAt) - Date.parse(ordered[0].effectiveServerPressAt)
@@ -201,17 +224,21 @@ async function main() {
     // --- Test C: duplicate buzz from same player in same round is idempotent ---
     console.log('\n[C] duplicate buzz is silent no-op')
     const dup = await buzz(session0.pin, {
-      playerId: players[0]!.playerId, name: players[0]!.name,
+      playerId: players[0]!.playerId,
+      name: players[0]!.name,
       // Send a "later" press; the unique index should reject it (no row replace).
       // We deliberately keep this in the past so it doesn't get future-clamped.
-      clientPressAt: Date.now() - 50, transmissionDelayMs: 0, clockOffsetMs: 0,
+      clientPressAt: Date.now() - 50,
+      transmissionDelayMs: 0,
+      clockOffsetMs: 0,
     })
-    check('queue size still 3 after duplicate', Array.isArray(dup.queue) && dup.queue.length === 3,
-      `got queue.length = ${dup.queue?.length}`)
+    check(
+      'queue size still 3 after duplicate',
+      Array.isArray(dup.queue) && dup.queue.length === 3,
+      `got queue.length = ${dup.queue?.length}`,
+    )
     const p1AfterDup = dup.queue?.find((b) => b.playerId === players[0]!.playerId)
-    check('P1 still rank #1 (not overwritten by late dup press)',
-      p1AfterDup?.rank === 1,
-      `rank = ${p1AfterDup?.rank}`)
+    check('P1 still rank #1 (not overwritten by late dup press)', p1AfterDup?.rank === 1, `rank = ${p1AfterDup?.rank}`)
 
     // --- Test D: locked → buzz rejected ---
     console.log('\n[D] locked → buzz rejected')
@@ -220,11 +247,17 @@ async function main() {
     const lateNewPlayer = { playerId: uuidv4(), name: 'D-LateJoiner', clockOffsetMs: 0 }
     await joinSession(session0.pin, lateNewPlayer)
     const lockedRes = await buzz(session0.pin, {
-      playerId: lateNewPlayer.playerId, name: lateNewPlayer.name,
-      clientPressAt: Date.now(), transmissionDelayMs: 0, clockOffsetMs: 0,
+      playerId: lateNewPlayer.playerId,
+      name: lateNewPlayer.name,
+      clientPressAt: Date.now(),
+      transmissionDelayMs: 0,
+      clockOffsetMs: 0,
     })
-    check('rejected with round_not_armed', lockedRes.rejected === true && lockedRes.reason === 'round_not_armed',
-      `got: ${JSON.stringify(lockedRes)}`)
+    check(
+      'rejected with round_not_armed',
+      lockedRes.rejected === true && lockedRes.reason === 'round_not_armed',
+      `got: ${JSON.stringify(lockedRes)}`,
+    )
 
     // --- Test E: re-arm clears the queue (new round_id) ---
     console.log('\n[E] re-arm clears queue (new round_id)')
@@ -234,11 +267,18 @@ async function main() {
     check('queue empty after re-arm', q2.length === 0, `got ${q2.length}`)
   } finally {
     // Leave session in idle state for tidy follow-up runs.
-    try { await patchSession(session0.pin, 'clear') } catch { /* ignore */ }
+    try {
+      await patchSession(session0.pin, 'clear')
+    } catch {
+      /* ignore */
+    }
   }
 
   console.log(`\n${failures === 0 ? 'ALL CHECKS PASSED' : `${failures} check(s) FAILED`}`)
   if (failures > 0) process.exit(1)
 }
 
-main().catch((err) => { console.error(err); process.exit(1) })
+main().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})

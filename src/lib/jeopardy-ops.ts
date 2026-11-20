@@ -102,10 +102,13 @@ export function normalizeBoard(raw: unknown, fallbackId: string): JeopardyBoard 
     }
   })
   const maxRows = Math.max(0, ...normCats.map((c) => c.clues.length)) || 5
-  const filled = normCats.length > 0 ? normCats : Array.from({ length: 5 }, (_, c) => ({
-    title: `category ${c + 1}`,
-    clues: Array.from({ length: maxRows }, emptyClue),
-  }))
+  const filled =
+    normCats.length > 0
+      ? normCats
+      : Array.from({ length: 5 }, (_, c) => ({
+          title: `category ${c + 1}`,
+          clues: Array.from({ length: maxRows }, emptyClue),
+        }))
   const padded = filled.map((c) => ({
     ...c,
     clues: Array.from({ length: maxRows }, (_, i) => c.clues[i] ?? emptyClue()),

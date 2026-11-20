@@ -10,7 +10,9 @@ export type PdfExtractClientMeta = {
   scannedLikely: boolean
 }
 
-export async function extractPdfText(file: File): Promise<{ text: string; notes: string[]; extractMeta?: PdfExtractClientMeta }> {
+export async function extractPdfText(
+  file: File,
+): Promise<{ text: string; notes: string[]; extractMeta?: PdfExtractClientMeta }> {
   const fd = new FormData()
   fd.append('file', file)
   const res = await fetch('/api/reader/extract-pdf', {

@@ -150,9 +150,7 @@ export default function SidePanel({
   onSourcesChange,
   onDictionaryChange,
 }: SidePanelProps) {
-  const [width, setWidth] = useState(() =>
-    clampPanelWidth(loadNotesUiPrefs().panelWidth ?? 300),
-  )
+  const [width, setWidth] = useState(() => clampPanelWidth(loadNotesUiPrefs().panelWidth ?? 300))
   const dragRef = useRef<{ startX: number; startW: number } | null>(null)
 
   const onResizeStart = useCallback(
@@ -182,8 +180,7 @@ export default function SidePanel({
 
   if (!isOpen) return null
 
-  const aiTitle =
-    aiActiveCount > 1 ? `AI lookup · ${aiActiveCount} active` : 'AI lookup'
+  const aiTitle = aiActiveCount > 1 ? `AI lookup · ${aiActiveCount} active` : 'AI lookup'
 
   const todoCount = collectTodos(sessions).length
   const openLookupIds = new Set(openLookups.map((lk) => lk.id))
@@ -192,7 +189,7 @@ export default function SidePanel({
   return (
     <aside
       style={{ width }}
-      className="notes-side-panel-mobile relative flex shrink-0 flex-col border-l border-[var(--uv-border)] bg-[var(--uv-bg-panel)] max-md:fixed max-md:top-0 max-md:right-0 max-md:z-30 max-md:h-[calc(100dvh-2.25rem-env(safe-area-inset-bottom))] max-md:shadow-xl max-md:pt-[env(safe-area-inset-top)]"
+      className="notes-side-panel-mobile relative flex shrink-0 flex-col border-l border-[var(--uv-border)] bg-[var(--uv-bg-panel)] max-md:fixed max-md:top-0 max-md:right-0 max-md:z-30 max-md:h-[calc(100dvh-2.25rem-env(safe-area-inset-bottom))] max-md:pt-[env(safe-area-inset-top)] max-md:shadow-xl"
       data-testid="notes-side-panel"
       aria-label="Notes and AI panel"
     >
@@ -200,7 +197,7 @@ export default function SidePanel({
         role="separator"
         aria-orientation="vertical"
         onMouseDown={onResizeStart}
-        className="absolute bottom-0 left-0 top-0 z-10 w-1 cursor-col-resize hover:bg-[var(--uv-accent-dim)] max-md:hidden"
+        className="absolute top-0 bottom-0 left-0 z-10 w-1 cursor-col-resize hover:bg-[var(--uv-accent-dim)] max-md:hidden"
         data-testid="notes-panel-resize"
       />
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto max-md:pt-2">
@@ -274,10 +271,10 @@ export default function SidePanel({
             ) : null}
 
             {historyClosed.length > 0 ? (
-              <div className={`border-[var(--uv-border)] pt-2 ${openLookups.length ? 'mt-2 border-t' : 'mt-4 border-t'}`}>
-                <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">
-                  This note
-                </p>
+              <div
+                className={`border-[var(--uv-border)] pt-2 ${openLookups.length ? 'mt-2 border-t' : 'mt-4 border-t'}`}
+              >
+                <p className="mb-1 text-[10px] tracking-wide text-[var(--uv-text-muted)] uppercase">This note</p>
                 <ul className="space-y-0.5">
                   {historyClosed.map((lk) => {
                     const streaming = isLookupStreaming(streamByLookupId, lk.id)
@@ -292,9 +289,7 @@ export default function SidePanel({
                           <span className="min-w-0 flex-1 truncate">
                             {lookupLabel(lk)} · {timeAgo(lk.triggeredAt)}
                           </span>
-                          {streaming ? (
-                            <span className="shrink-0 text-[10px] text-[var(--uv-accent)]">…</span>
-                          ) : null}
+                          {streaming ? <span className="shrink-0 text-[10px] text-[var(--uv-accent)]">…</span> : null}
                         </button>
                         <NotesRowAction
                           label={`Delete ${lookupLabel(lk)}`}
@@ -335,11 +330,7 @@ export default function SidePanel({
           <SourcesPanel
             refreshKey={glossaryRefreshKey}
             session={activeSession}
-            splitSession={
-              splitSessionId
-                ? (sessions.find((s) => s.id === splitSessionId) ?? null)
-                : null
-            }
+            splitSession={splitSessionId ? (sessions.find((s) => s.id === splitSessionId) ?? null) : null}
             onToggleSourceForNote={onToggleSourceForNote}
             onChange={onSourcesChange}
             embedded

@@ -77,7 +77,7 @@ function RadarChart({ scores }: { scores: Record<MentalDomain, number> }) {
           y={label.y}
           textAnchor="middle"
           dominantBaseline="middle"
-          className="text-[9px] fill-[var(--ink-muted)] font-sans max-w-[48px]"
+          className="max-w-[48px] fill-[var(--ink-muted)] font-sans text-[9px]"
           style={{ fontSize: 9 }}
         >
           {DOMAIN_LABELS[d]}
@@ -137,10 +137,13 @@ function ReactionPhase({ onDone, quickE2e }: { onDone: (score: number) => void; 
     return clearGoTimer
   }, [phase, scheduleWait])
 
-  useEffect(() => () => {
-    clearGoTimer()
-    clearPenaltyTimer()
-  }, [])
+  useEffect(
+    () => () => {
+      clearGoTimer()
+      clearPenaltyTimer()
+    },
+    [],
+  )
 
   const tap = () => {
     if (phase === 'wait') {
@@ -168,12 +171,7 @@ function ReactionPhase({ onDone, quickE2e }: { onDone: (score: number) => void; 
     }
   }
 
-  const label =
-    phase === 'go'
-      ? 'Tap now!'
-      : phase === 'tooSoon'
-        ? 'Too soon — wait for green'
-        : 'Wait for green…'
+  const label = phase === 'go' ? 'Tap now!' : phase === 'tooSoon' ? 'Too soon — wait for green' : 'Wait for green…'
 
   return (
     <div className="flex flex-col items-center gap-6">
@@ -308,9 +306,7 @@ function LogicPhase({ onDone, quickE2e }: { onDone: (score: number) => void; qui
     setCorrect(nextCorrect)
     setTotal(nextTotal)
     if (nextTotal >= 6) {
-      const avg = times.current.length
-        ? times.current.reduce((a, b) => a + b, 0) / times.current.length
-        : 15000
+      const avg = times.current.length ? times.current.reduce((a, b) => a + b, 0) / times.current.length : 15000
       onDone(scoreLogic(nextCorrect, 6, avg))
       return
     }
@@ -417,7 +413,11 @@ function MemoryPhase({ onDone, quickE2e }: { onDone: (score: number) => void; qu
         autoFocus
         aria-label="Digits"
       />
-      <button type="submit" className="w-full rounded-lg py-2 text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>
+      <button
+        type="submit"
+        className="w-full rounded-lg py-2 text-white"
+        style={{ backgroundColor: 'var(--ink-accent)' }}
+      >
         Check
       </button>
     </form>
@@ -472,9 +472,7 @@ function WordsPhase({
         const n = [...p, ch]
         if (n.length === target.length) {
           setDone(true)
-          queueMicrotask(() =>
-            onDone(scoreWordTap(true, wrongTaps, performance.now() - start, wordTapMs)),
-          )
+          queueMicrotask(() => onDone(scoreWordTap(true, wrongTaps, performance.now() - start, wordTapMs)))
         }
         return n
       })
@@ -496,7 +494,7 @@ function WordsPhase({
               key={`${ch}-${i}`}
               type="button"
               onClick={() => tapLetter(ch)}
-              className="min-h-[44px] min-w-[44px] rounded-lg border text-lg font-mono font-bold"
+              className="min-h-[44px] min-w-[44px] rounded-lg border font-mono text-lg font-bold"
               style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
             >
               {ch}
@@ -539,7 +537,11 @@ function WordsPhase({
         autoFocus
         aria-label="Type phrase"
       />
-      <button type="submit" className="w-full rounded-lg py-2 text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>
+      <button
+        type="submit"
+        className="w-full rounded-lg py-2 text-white"
+        style={{ backgroundColor: 'var(--ink-accent)' }}
+      >
         Done
       </button>
     </form>
@@ -675,15 +677,27 @@ export default function MentalObstacleCourse() {
   const searchParams = useSearchParams()
   const quickE2e = searchParams.get(MOC_E2E_QUERY) === '1'
   const [screen, setScreen] = useState<Screen>('intro')
-  const clientReady = useSyncExternalStore(() => () => {}, () => true, () => false)
+  const clientReady = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  )
   const [inputMode, setInputMode] = useState<InputMode>('mixed')
   const [roundIdx, setRoundIdx] = useState(0)
   const [roundReady, setRoundReady] = useState(false)
   const accRef = useRef<Partial<Record<MentalDomain, number>>>({})
   const [result, setResult] = useState<CourseRunResult | null>(null)
   const [triviaBatch, setTriviaBatch] = useState(() => pickTriviaBatch(6))
-  const best = useSyncExternalStore(() => () => {}, loadBestCourseScore, () => 0)
-  const historyCount = useSyncExternalStore(() => () => {}, () => loadHistory().length, () => 0)
+  const best = useSyncExternalStore(
+    () => () => {},
+    loadBestCourseScore,
+    () => 0,
+  )
+  const historyCount = useSyncExternalStore(
+    () => () => {},
+    () => loadHistory().length,
+    () => 0,
+  )
 
   const onRoundComplete = useCallback(
     (domain: MentalDomain, score: number) => {
@@ -762,7 +776,8 @@ export default function MentalObstacleCourse() {
           Mental Obstacle Course
         </h1>
         <p className="mt-2 text-sm" style={{ color: 'var(--ink-muted)' }}>
-          One ~10-minute playful benchmark — not a clinical test or IQ score. Scores are for fun and self-comparison on this site.
+          One ~10-minute playful benchmark — not a clinical test or IQ score. Scores are for fun and self-comparison on
+          this site.
         </p>
       </div>
 
@@ -772,7 +787,8 @@ export default function MentalObstacleCourse() {
           style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
         >
           <p className="text-sm" style={{ color: 'var(--ink-text)' }}>
-            Six rounds: reaction, arithmetic, patterns, digit memory, words, trivia. You&apos;ll get a radar chart by mental area. Keyboard users get a typing round; narrow/touch devices get tap-letters instead.
+            Six rounds: reaction, arithmetic, patterns, digit memory, words, trivia. You&apos;ll get a radar chart by
+            mental area. Keyboard users get a typing round; narrow/touch devices get tap-letters instead.
           </p>
           {best > 0 && (
             <p className="text-sm" style={{ color: 'var(--ink-accent)' }}>
@@ -852,7 +868,10 @@ export default function MentalObstacleCourse() {
               <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
                 {prep.howTo}
               </p>
-              <p className="rounded border px-3 py-2 text-xs" style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-muted)' }}>
+              <p
+                className="rounded border px-3 py-2 text-xs"
+                style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-muted)' }}
+              >
                 {prep.demo}
               </p>
               <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
@@ -871,9 +890,7 @@ export default function MentalObstacleCourse() {
             </div>
           ) : (
             <>
-              {domain === 'speed' && (
-                <ReactionPhase quickE2e={quickE2e} onDone={(s) => onRoundComplete('speed', s)} />
-              )}
+              {domain === 'speed' && <ReactionPhase quickE2e={quickE2e} onDone={(s) => onRoundComplete('speed', s)} />}
               {domain === 'numbers' && (
                 <ArithmeticPhase quickE2e={quickE2e} onDone={(s) => onRoundComplete('numbers', s)} />
               )}

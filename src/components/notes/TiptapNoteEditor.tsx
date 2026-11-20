@@ -2,11 +2,7 @@
 
 import { useEditor, EditorContent } from '@tiptap/react'
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import {
-  buildNotesExtensions,
-  NOTES_EDITOR_PLACEHOLDER,
-  normalizeNotesLineHeight,
-} from '@/lib/notes/tiptap/extensions'
+import { buildNotesExtensions, NOTES_EDITOR_PLACEHOLDER, normalizeNotesLineHeight } from '@/lib/notes/tiptap/extensions'
 import type { NoteAttachmentStorage } from '@/lib/notes/tiptap/noteAttachment'
 import {
   markdownFromEditor,

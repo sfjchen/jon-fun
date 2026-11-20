@@ -15,9 +15,18 @@ const schema = z.object({ group: z.string().regex(/^[a-z0-9-]{3,32}$/), day: z.s
 export async function GET(req: Request) {
   const q = schema.safeParse(Object.fromEntries(new URL(req.url).searchParams))
   if (!q.success) return NextResponse.json({ error: 'Invalid query' }, { status: 400 })
-  const { data, error } = await supabaseAdmin.from('game_results').select('score,stats').eq('group_code', q.data.group)
-    .eq('game', 'bee').eq('day', q.data.day)
+  const { data, error } = await supabaseAdmin
+    .from('game_results')
+    .select('score,stats')
+    .eq('group_code', q.data.group)
+    .eq('game', 'bee')
+    .eq('day', q.data.day)
   if (error) return NextResponse.json({ error: 'Could not load players' }, { status: 503 })
-  const genius = data.filter((r) => r.score >= Math.round(0.7 * ((r.stats as { max?: number } | null)?.max ?? Infinity)))
-  return NextResponse.json({ players: data.length, genius: genius.length }, { headers: { 'Cache-Control': 'no-store' } })
+  const genius = data.filter(
+    (r) => r.score >= Math.round(0.7 * ((r.stats as { max?: number } | null)?.max ?? Infinity)),
+  )
+  return NextResponse.json(
+    { players: data.length, genius: genius.length },
+    { headers: { 'Cache-Control': 'no-store' } },
+  )
 }

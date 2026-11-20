@@ -30,7 +30,11 @@ export function ReaderChapterListModal({
   const [query, setQuery] = useState('')
   const deferredQuery = useDeferredValue(query)
   const activeRef = useRef<HTMLButtonElement | null>(null)
-  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false)
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  )
   const [prev, setPrev] = useState({ open, currentChapterId })
 
   // Clears the filter when the modal opens or the current chapter changes while open.
@@ -107,7 +111,10 @@ export function ReaderChapterListModal({
         aria-labelledby="reader-chapter-list-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between gap-3 border-b px-4 py-3" style={{ borderColor: 'var(--reader-border)' }}>
+        <div
+          className="flex items-center justify-between gap-3 border-b px-4 py-3"
+          style={{ borderColor: 'var(--reader-border)' }}
+        >
           <h2 id="reader-chapter-list-title" className="text-base font-semibold">
             Chapter list
           </h2>
@@ -150,7 +157,11 @@ export function ReaderChapterListModal({
           ) : null}
         </div>
 
-        <ul className="reader-scrollbar min-h-0 flex-1 overflow-y-auto px-2 py-2 pb-safe" role="listbox" aria-label="Chapters">
+        <ul
+          className="reader-scrollbar pb-safe min-h-0 flex-1 overflow-y-auto px-2 py-2"
+          role="listbox"
+          aria-label="Chapters"
+        >
           {rows.length === 0 ? (
             <li className="px-3 py-8 text-center text-sm" style={{ color: 'var(--reader-muted)' }}>
               No chapters match your search.

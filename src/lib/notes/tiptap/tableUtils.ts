@@ -98,11 +98,7 @@ export function gridToMarkdownTable(grid: string[][], withHeaderRow = false): st
     const h = pad(head ?? [])
     const sep = h.map(() => '---')
     const rows = body.map(pad)
-    return [
-      `| ${h.join(' | ')} |`,
-      `| ${sep.join(' | ')} |`,
-      ...rows.map((r) => `| ${r.join(' | ')} |`),
-    ].join('\n')
+    return [`| ${h.join(' | ')} |`, `| ${sep.join(' | ')} |`, ...rows.map((r) => `| ${r.join(' | ')} |`)].join('\n')
   }
 
   const rows = grid.map(pad)
@@ -121,9 +117,7 @@ export function gridToTableContent(grid: string[][], withHeaderRow = false): JSO
 
   const cellNode = (text: string, header: boolean): JSONContent => ({
     type: header ? 'tableHeader' : 'tableCell',
-    content: text
-      ? [{ type: 'paragraph', content: [{ type: 'text', text }] }]
-      : [{ type: 'paragraph' }],
+    content: text ? [{ type: 'paragraph', content: [{ type: 'text', text }] }] : [{ type: 'paragraph' }],
   })
 
   return {

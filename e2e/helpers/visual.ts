@@ -67,11 +67,7 @@ export async function gotoStable(page: Page, url: string, opts: { waitFor?: stri
   await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))))
 }
 
-export async function snap(
-  page: Page,
-  name: string,
-  opts: { mask?: Locator[]; fullPage?: boolean } = {},
-) {
+export async function snap(page: Page, name: string, opts: { mask?: Locator[]; fullPage?: boolean } = {}) {
   const screenshotOpts: {
     fullPage: boolean
     animations: 'disabled'
@@ -91,9 +87,7 @@ export async function snap(
  * Other a11y rules would generate noise across an existing codebase; we narrow to the visual bug class we care about.
  */
 export async function assertNoLowContrast(page: Page) {
-  const results = await new AxeBuilder({ page })
-    .withRules(['color-contrast'])
-    .analyze()
+  const results = await new AxeBuilder({ page }).withRules(['color-contrast']).analyze()
   if (results.violations.length === 0) return
   const summary = results.violations
     .flatMap((v) => v.nodes.map((n) => `${v.id}: ${n.target.join(' ')} — ${n.failureSummary?.split('\n')[0] ?? ''}`))

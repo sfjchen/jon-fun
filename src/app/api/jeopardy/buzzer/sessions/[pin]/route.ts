@@ -45,7 +45,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ pi
   const { pin } = await params
   if (!isValidBuzzerPin(pin)) return NextResponse.json({ error: 'Invalid PIN' }, { status: 400 })
   let body: { op?: unknown }
-  try { body = await req.json() } catch { return NextResponse.json({ error: 'Invalid body' }, { status: 400 }) }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid body' }, { status: 400 })
+  }
   if (!isValidPatch(body.op)) return NextResponse.json({ error: 'Invalid op' }, { status: 400 })
 
   const result = await applySessionPatch(pin, body.op)

@@ -8,7 +8,11 @@ import { ReaderBody } from '@/components/reader/ReaderBody'
 import { ReaderChapterEndNav } from '@/components/reader/ReaderChapterEndNav'
 import { ReaderPenLayer } from '@/components/reader/ReaderPenLayer'
 import { SettingsDrawer } from '@/components/reader/SettingsDrawer'
-import { getReaderCommentDisplayName, getReaderCommentIdentity, setReaderCommentDisplayName } from '@/lib/reader/comment-identity'
+import {
+  getReaderCommentDisplayName,
+  getReaderCommentIdentity,
+  setReaderCommentDisplayName,
+} from '@/lib/reader/comment-identity'
 import type { ReaderPublicationCommentDto } from '@/lib/reader/comments-server'
 import {
   type ChapterAnnotationBundle,
@@ -156,8 +160,8 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
   const fallbackIndex = chapters.findIndex((c) => c.id === initialChapterId)
   const currentIndex = chapterIndex >= 0 ? chapterIndex : fallbackIndex >= 0 ? fallbackIndex : 0
   const chapter = chapters[currentIndex] ?? chapters[0]
-  const prevChapterId = currentIndex > 0 ? chapters[currentIndex - 1]?.id ?? '' : ''
-  const nextChapterId = currentIndex < chapters.length - 1 ? chapters[currentIndex + 1]?.id ?? '' : ''
+  const prevChapterId = currentIndex > 0 ? (chapters[currentIndex - 1]?.id ?? '') : ''
+  const nextChapterId = currentIndex < chapters.length - 1 ? (chapters[currentIndex + 1]?.id ?? '') : ''
 
   const lexicalHits = useMemo(() => findSearchHits(publication, searchActiveQuery), [publication, searchActiveQuery])
 
@@ -343,15 +347,11 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
       const raw = normalizeParagraphText(chapter.paragraphs[idx] ?? '')
       setAnnBundle((cur) => {
         const inBlock = (h: (typeof cur.highlights)[0]) => h.blockId === blockId
-        const same = cur.highlights.find(
-          (h) => inBlock(h) && h.position.start === start && h.position.end === end,
-        )
+        const same = cur.highlights.find((h) => inBlock(h) && h.position.start === start && h.position.end === end)
         if (same) {
           return { ...cur, highlights: cur.highlights.filter((h) => h.id !== same.id) }
         }
-        const sup = cur.highlights.find(
-          (h) => inBlock(h) && h.position.start <= start && h.position.end >= end,
-        )
+        const sup = cur.highlights.find((h) => inBlock(h) && h.position.start <= start && h.position.end >= end)
         if (sup) {
           return { ...cur, highlights: cur.highlights.filter((h) => h.id !== sup.id) }
         }
@@ -378,16 +378,19 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
     [commentDisplayName],
   )
 
-  const onPostMessage = useCallback((threadId: string, body: string) => {
-    const t = body.trim()
-    if (!t) return
-    const id = getReaderCommentIdentity()
-    const m = newMessage(t, id.displayName || commentDisplayName, id.fingerprint)
-    setAnnBundle((cur) => ({
-      ...cur,
-      threads: cur.threads.map((th) => (th.id === threadId ? { ...th, messages: [...th.messages, m] } : th)),
-    }))
-  }, [commentDisplayName])
+  const onPostMessage = useCallback(
+    (threadId: string, body: string) => {
+      const t = body.trim()
+      if (!t) return
+      const id = getReaderCommentIdentity()
+      const m = newMessage(t, id.displayName || commentDisplayName, id.fingerprint)
+      setAnnBundle((cur) => ({
+        ...cur,
+        threads: cur.threads.map((th) => (th.id === threadId ? { ...th, messages: [...th.messages, m] } : th)),
+      }))
+    },
+    [commentDisplayName],
+  )
 
   const onComposerSubmit = useCallback(() => {
     if (!composer?.draft.trim()) return
@@ -637,9 +640,12 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
     return () => window.clearInterval(id)
   }, [prefs.autoScrollEnabled, prefs.autoScrollSpeed, prefersReducedMotion])
 
-  useEffect(() => () => {
-    window.speechSynthesis?.cancel()
-  }, [])
+  useEffect(
+    () => () => {
+      window.speechSynthesis?.cancel()
+    },
+    [],
+  )
 
   const updatePref = useCallback(<K extends keyof ReaderPreferences>(key: K, value: ReaderPreferences[K]) => {
     setPrefs((current) => ({ ...current, [key]: value }))
@@ -748,7 +754,10 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
       // Left and right turn a page, which here is most of a screen of the scrolling text.
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         e.preventDefault()
-        window.scrollBy({ top: (e.key === 'ArrowRight' ? 0.9 : -0.9) * window.innerHeight, behavior: prefersReducedMotion ? 'auto' : 'smooth' })
+        window.scrollBy({
+          top: (e.key === 'ArrowRight' ? 0.9 : -0.9) * window.innerHeight,
+          behavior: prefersReducedMotion ? 'auto' : 'smooth',
+        })
         return
       }
 
@@ -845,7 +854,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
               ← Library
             </Link>
             <span
-              className="min-w-0 flex-1 truncate text-center text-xs font-medium leading-tight"
+              className="min-w-0 flex-1 truncate text-center text-xs leading-tight font-medium"
               style={{ color: 'var(--ink-text)' }}
               title={publication.title}
             >
@@ -880,11 +889,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
         {mobile ? (
           <label className="sr-only">
             <span>Choose chapter</span>
-            <select
-              ref={chapterSelectRef}
-              value={chapter.id}
-              onChange={(event) => goToChapter(event.target.value)}
-            >
+            <select ref={chapterSelectRef} value={chapter.id} onChange={(event) => goToChapter(event.target.value)}>
               {chapters.map((item, index) => (
                 <option key={item.id} value={item.id}>
                   {index + 1}. {item.title}
@@ -914,13 +919,16 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
             </span>
           </nav>
           {flashMessage ? (
-            <span className="rounded-full px-3 py-1 text-xs" style={{ backgroundColor: 'var(--ink-bg)', color: 'var(--ink-accent)' }}>
+            <span
+              className="rounded-full px-3 py-1 text-xs"
+              style={{ backgroundColor: 'var(--ink-bg)', color: 'var(--ink-accent)' }}
+            >
               {flashMessage}
             </span>
           ) : null}
         </div>
 
-        <div className="mb-4 hidden flex-col gap-4 lg:flex-row lg:items-start lg:justify-between md:flex">
+        <div className="mb-4 hidden flex-col gap-4 md:flex lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
             <p className="mb-1 text-sm font-semibold" style={{ color: 'var(--ink-accent)' }}>
               {publication.title}
@@ -939,7 +947,12 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
             >
               {tocOpen ? 'Hide contents' : 'Contents'}
             </button>
-            <button type="button" onClick={cycleTheme} className="e-reader-chrome-chip reader-focus rounded-2xl px-4 py-2 text-sm font-medium" title="Cycle theme">
+            <button
+              type="button"
+              onClick={cycleTheme}
+              className="e-reader-chrome-chip reader-focus rounded-2xl px-4 py-2 text-sm font-medium"
+              title="Cycle theme"
+            >
               Theme
             </button>
             <button
@@ -976,16 +989,34 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
               />
             </label>
             <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={runFind} className="e-reader-chrome-action reader-focus rounded-xl px-3 py-2 text-sm font-medium">
+              <button
+                type="button"
+                onClick={runFind}
+                className="e-reader-chrome-action reader-focus rounded-xl px-3 py-2 text-sm font-medium"
+              >
                 Find
               </button>
-              <button type="button" onClick={prevHit} disabled={!hits.length} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
+              <button
+                type="button"
+                onClick={prevHit}
+                disabled={!hits.length}
+                className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40"
+              >
                 Prev
               </button>
-              <button type="button" onClick={nextHit} disabled={!hits.length} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
+              <button
+                type="button"
+                onClick={nextHit}
+                disabled={!hits.length}
+                className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40"
+              >
                 Next
               </button>
-              <button type="button" onClick={clearSearch} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm">
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm"
+              >
                 Clear
               </button>
               <span className="e-reader-chrome-muted flex items-center px-2 text-xs" aria-live="polite">
@@ -1042,7 +1073,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
             className="e-reader-chrome-panel e-reader-chrome-scrollbar sticky top-24 z-10 hidden max-h-[70vh] w-52 shrink-0 overflow-y-auto rounded-3xl p-4 lg:block"
             aria-label="Table of contents"
           >
-            <p className="e-reader-chrome-muted mb-3 text-xs font-semibold uppercase tracking-[0.2em]">Contents</p>
+            <p className="e-reader-chrome-muted mb-3 text-xs font-semibold tracking-[0.2em] uppercase">Contents</p>
             <ul className="space-y-1">
               {chapters.map((c, index) => (
                 <li key={c.id}>
@@ -1051,7 +1082,10 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
                     onClick={() => goToChapter(c.id)}
                     className="reader-focus w-full rounded-xl px-3 py-2 text-left text-sm leading-snug transition-colors"
                     style={{
-                      backgroundColor: c.id === chapter.id ? 'color-mix(in srgb, var(--ink-accent) 18%, var(--ink-paper))' : 'transparent',
+                      backgroundColor:
+                        c.id === chapter.id
+                          ? 'color-mix(in srgb, var(--ink-accent) 18%, var(--ink-paper))'
+                          : 'transparent',
                       color: 'var(--ink-text)',
                       border: c.id === chapter.id ? '1px solid var(--ink-accent)' : '1px solid transparent',
                     }}
@@ -1067,7 +1101,10 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
 
         <div className="min-w-0 flex-1">
           {prefersReducedMotion && prefs.autoScrollEnabled ? (
-            <div className="e-reader-chrome-muted mb-4 rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)' }}>
+            <div
+              className="e-reader-chrome-muted mb-4 rounded-2xl border px-4 py-3 text-sm"
+              style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)' }}
+            >
               Auto scroll is paused because reduced motion is enabled on this device.
             </div>
           ) : null}
@@ -1077,7 +1114,10 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
               <header className="mb-6 border-b pb-6" style={{ borderColor: 'var(--reader-border)' }}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <h1 className="text-[1.35rem] font-semibold leading-snug sm:text-2xl" style={{ color: 'var(--reader-text)' }}>
+                    <h1
+                      className="text-[1.35rem] leading-snug font-semibold sm:text-2xl"
+                      style={{ color: 'var(--reader-text)' }}
+                    >
                       {chapter.title}
                     </h1>
                     <p className="mt-2 text-sm" style={{ color: 'var(--reader-muted)' }}>
@@ -1096,7 +1136,17 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
                     aria-label="Reader settings — typography, theme, TTS (Text-To-Speech), and more"
                     title="Reader settings"
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
                       <circle cx="12" cy="12" r="3" />
                       <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
                     </svg>
@@ -1142,7 +1192,10 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
                       className="reader-focus rounded-lg border px-2.5 py-1 text-xs font-medium"
                       style={{
                         borderColor: 'var(--reader-border)',
-                        backgroundColor: activeMarkTool === t.id ? 'color-mix(in srgb, var(--reader-accent) 22%, var(--reader-panel))' : 'var(--reader-panel)',
+                        backgroundColor:
+                          activeMarkTool === t.id
+                            ? 'color-mix(in srgb, var(--reader-accent) 22%, var(--reader-panel))'
+                            : 'var(--reader-panel)',
                         color: 'var(--reader-text)',
                       }}
                     >
@@ -1150,7 +1203,11 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
                     </button>
                   ))}
                 {!mobile ? (
-                  <span className="text-[10px] opacity-60" style={{ color: 'var(--reader-muted)' }} title="Hold Shift to draw with the pen">
+                  <span
+                    className="text-[10px] opacity-60"
+                    style={{ color: 'var(--reader-muted)' }}
+                    title="Hold Shift to draw with the pen"
+                  >
                     Hold Shift for pen
                   </span>
                 ) : null}
@@ -1165,7 +1222,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
                   </button>
                 ) : null}
               </div>
-                {mobile ? (
+              {mobile ? (
                 <button
                   type="button"
                   aria-pressed={activeMarkTool === 'pen'}
@@ -1267,7 +1324,6 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
           }}
         />
       ) : null}
-
     </section>
   )
 }

@@ -18,7 +18,10 @@ export async function GET() {
       stepsCount: r.steps_count,
       createdAt: r.created_at ?? new Date().toISOString(),
     }))
-    const byVariant = { a: { count: 0, totalSec: 0, ratings: { meh: 0, good: 0, great: 0 } }, b: { count: 0, totalSec: 0, ratings: { meh: 0, good: 0, great: 0 } } }
+    const byVariant = {
+      a: { count: 0, totalSec: 0, ratings: { meh: 0, good: 0, great: 0 } },
+      b: { count: 0, totalSec: 0, ratings: { meh: 0, good: 0, great: 0 } },
+    }
     const byTask: Record<string, { count: number; totalSec: number; ratings: Record<string, number> }> = {}
     for (const r of rows) {
       const v = r.variant as 'a' | 'b'
@@ -35,11 +38,22 @@ export async function GET() {
     const summary = {
       total: rows.length,
       byVariant: {
-        a: { count: byVariant.a.count, avgSec: byVariant.a.count ? Math.round(byVariant.a.totalSec / byVariant.a.count) : 0, ratings: byVariant.a.ratings },
-        b: { count: byVariant.b.count, avgSec: byVariant.b.count ? Math.round(byVariant.b.totalSec / byVariant.b.count) : 0, ratings: byVariant.b.ratings },
+        a: {
+          count: byVariant.a.count,
+          avgSec: byVariant.a.count ? Math.round(byVariant.a.totalSec / byVariant.a.count) : 0,
+          ratings: byVariant.a.ratings,
+        },
+        b: {
+          count: byVariant.b.count,
+          avgSec: byVariant.b.count ? Math.round(byVariant.b.totalSec / byVariant.b.count) : 0,
+          ratings: byVariant.b.ratings,
+        },
       },
       byTask: Object.fromEntries(
-        Object.entries(byTask).map(([k, v]) => [k, { count: v.count, avgSec: v.count ? Math.round(v.totalSec / v.count) : 0, ratings: v.ratings }])
+        Object.entries(byTask).map(([k, v]) => [
+          k,
+          { count: v.count, avgSec: v.count ? Math.round(v.totalSec / v.count) : 0, ratings: v.ratings },
+        ]),
       ),
     }
     return NextResponse.json({ rows, summary })
@@ -59,8 +73,18 @@ export async function POST(request: NextRequest) {
       avgSecPerStep?: number
       stepsCount?: number
     }
-    if (!variant || !taskId || !rating || !Number.isFinite(totalSec) || !Number.isFinite(avgSecPerStep) || !Number.isFinite(stepsCount)) {
-      return NextResponse.json({ error: 'variant, taskId, rating, totalSec, avgSecPerStep, stepsCount required' }, { status: 400 })
+    if (
+      !variant ||
+      !taskId ||
+      !rating ||
+      !Number.isFinite(totalSec) ||
+      !Number.isFinite(avgSecPerStep) ||
+      !Number.isFinite(stepsCount)
+    ) {
+      return NextResponse.json(
+        { error: 'variant, taskId, rating, totalSec, avgSecPerStep, stepsCount required' },
+        { status: 400 },
+      )
     }
     if (!['a', 'b'].includes(variant) || !['meh', 'good', 'great'].includes(rating)) {
       return NextResponse.json({ error: 'Invalid variant or rating' }, { status: 400 })

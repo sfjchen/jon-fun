@@ -14,7 +14,6 @@ supabase/migrations/*.sql
 - **`npm run db:push`** — apply pending migrations to linked remote (`supabase db push --linked --yes`)
 - Agents: prefer Supabase MCP `apply_migration` for one-off remote DDL, but **commit the same SQL** under `supabase/migrations/` when it belongs in repo history.
 
-
 ## Notes vault tables
 
 Applied via migrations `20260622120000` → `20260624120000`:

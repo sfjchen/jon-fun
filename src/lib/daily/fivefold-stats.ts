@@ -39,7 +39,10 @@ export async function loadFivefoldStats(): Promise<FivefoldStats> {
     }
   } catch {}
   const dist = Array<number>(6).fill(0)
-  let played = 0, wins = 0, max = 0, run = 0
+  let played = 0,
+    wins = 0,
+    max = 0,
+    run = 0
   for (const [day, n] of [...days].filter(([d]) => d <= today && !isPracticeResult('fivefold', d)).sort()) {
     played++
     if (n) dist[n - 1]!++

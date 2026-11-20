@@ -7,7 +7,13 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import {
-  flushResults, getPlayer, onLiveRefresh, pendingResults, PLAYER_CHANGED, RESULT_QUEUED, RESULTS_CHANGED,
+  flushResults,
+  getPlayer,
+  onLiveRefresh,
+  pendingResults,
+  PLAYER_CHANGED,
+  RESULT_QUEUED,
+  RESULTS_CHANGED,
 } from '@/lib/results'
 
 /**
@@ -16,8 +22,7 @@ import {
 export default function ScoreSync() {
   const [status, setStatus] = useState('')
   useEffect(() => {
-    const refresh = () =>
-      setStatus(!getPlayer() ? '' : pendingResults() ? 'Score saved here · syncing…' : '')
+    const refresh = () => setStatus(!getPlayer() ? '' : pendingResults() ? 'Score saved here · syncing…' : '')
     const sync = () => void flushResults().then(refresh)
     refresh()
     sync()
@@ -31,7 +36,12 @@ export default function ScoreSync() {
   }, [])
   if (!status) return null
   return (
-    <Link href="/leaderboards" className="block text-xs underline underline-offset-4" data-testid="score-sync" style={{ color: 'var(--ink-muted)' }}>
+    <Link
+      href="/leaderboards"
+      className="block text-xs underline underline-offset-4"
+      data-testid="score-sync"
+      style={{ color: 'var(--ink-muted)' }}
+    >
       {status} →
     </Link>
   )

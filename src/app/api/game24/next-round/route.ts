@@ -35,11 +35,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid room PIN' }, { status: 400 })
     }
 
-    const { data: room, error: roomError } = await supabase
-      .from('game24_rooms')
-      .select('*')
-      .eq('pin', pin)
-      .single()
+    const { data: room, error: roomError } = await supabase.from('game24_rooms').select('*').eq('pin', pin).single()
 
     if (roomError || !room) {
       return NextResponse.json({ error: 'Room not found' }, { status: 404 })
@@ -115,18 +111,23 @@ export async function POST(request: NextRequest) {
           ])
           const starts = new Map((rounds ?? []).map((r) => [r.round_number, new Date(r.started_at).getTime()]))
           const startedAt = new Date(Math.min(...starts.values())).toISOString()
-          await recordMatch('24', pin, startedAt, (ps ?? []).map((p) => {
-            const ms = (subs ?? [])
-              .filter((s) => s.player_id === p.player_id && starts.has(s.round_number))
-              .map((s) => new Date(s.submitted_at).getTime() - starts.get(s.round_number)!)
-            return {
-              id: p.player_id,
-              name: p.name,
-              score: p.score ?? 0,
-              best: ms.length ? Math.min(...ms) : null,
-              avg: ms.length ? Math.round(ms.reduce((a, b) => a + b, 0) / ms.length) : null,
-            }
-          }))
+          await recordMatch(
+            '24',
+            pin,
+            startedAt,
+            (ps ?? []).map((p) => {
+              const ms = (subs ?? [])
+                .filter((s) => s.player_id === p.player_id && starts.has(s.round_number))
+                .map((s) => new Date(s.submitted_at).getTime() - starts.get(s.round_number)!)
+              return {
+                id: p.player_id,
+                name: p.name,
+                score: p.score ?? 0,
+                best: ms.length ? Math.min(...ms) : null,
+                avg: ms.length ? Math.round(ms.reduce((a, b) => a + b, 0) / ms.length) : null,
+              }
+            }),
+          )
         }
 
         return NextResponse.json({ status: 'finished' as Game24Status })
@@ -135,18 +136,16 @@ export async function POST(request: NextRequest) {
       const nextRound = (room.round_number ?? 0) + 1
       const numbers = generateSolvableNumbers()
 
-      const { error: roundError } = await supabase
-        .from('game24_rounds')
-        .upsert(
-          {
-            id: uuidv4(),
-            room_pin: pin,
-            round_number: nextRound,
-            numbers,
-            started_at: nowIso,
-          },
-          { onConflict: 'room_pin,round_number' }
-        )
+      const { error: roundError } = await supabase.from('game24_rounds').upsert(
+        {
+          id: uuidv4(),
+          room_pin: pin,
+          round_number: nextRound,
+          numbers,
+          started_at: nowIso,
+        },
+        { onConflict: 'room_pin,round_number' },
+      )
 
       if (roundError) {
         return NextResponse.json({ error: 'Failed to create next round' }, { status: 500 })
@@ -179,4 +178,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-

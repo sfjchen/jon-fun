@@ -53,19 +53,19 @@ export class Solver24 {
 
   private getPermutations(arr: number[]): number[][] {
     if (arr.length <= 1) return [arr]
-    
+
     const result: number[][] = []
-    
+
     for (let i = 0; i < arr.length; i++) {
       const current = arr[i]!
       const remaining = [...arr.slice(0, i), ...arr.slice(i + 1)]
       const perms = this.getPermutations(remaining)
-      
+
       for (const perm of perms) {
         result.push([current, ...perm])
       }
     }
-    
+
     return result
   }
 
@@ -92,7 +92,7 @@ export class Solver24 {
         } catch {
           return false
         }
-      }
+      },
     ]
 
     for (const op1 of Solver24.OPERATORS) {
@@ -106,7 +106,7 @@ export class Solver24 {
         }
       }
     }
-    
+
     return false
   }
 
@@ -139,7 +139,7 @@ export class Solver24 {
           return null
         }
         return null
-      }
+      },
     ]
 
     for (const op1 of Solver24.OPERATORS) {
@@ -154,7 +154,7 @@ export class Solver24 {
         }
       }
     }
-    
+
     return null
   }
 

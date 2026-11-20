@@ -32,7 +32,12 @@ import { toSummary } from '@/lib/reader/publications-idb'
 import { isOwnerDevice, subscribeSyncIdentity } from '@/lib/syncIdentity'
 import { loadLastReaderLocation } from '@/lib/reader/settings'
 import { registerReaderServiceWorker } from '@/lib/reader/pwa'
-import type { ReaderImportDraft, ReaderPublication, ReaderPublicationSummary, ReaderSourceType } from '@/lib/reader/types'
+import type {
+  ReaderImportDraft,
+  ReaderPublication,
+  ReaderPublicationSummary,
+  ReaderSourceType,
+} from '@/lib/reader/types'
 
 type ReaderStudioProps = {
   routeBase: string
@@ -84,7 +89,11 @@ function exportPublicationAsTxt(pub: ReaderPublication) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  const safe = pub.title.replace(/[<>:"/\\|?*]/g, '').trim().slice(0, 80) || 'book'
+  const safe =
+    pub.title
+      .replace(/[<>:"/\\|?*]/g, '')
+      .trim()
+      .slice(0, 80) || 'book'
   a.download = `${safe}.txt`
   a.click()
   URL.revokeObjectURL(url)
@@ -116,9 +125,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
   const [detectHint, setDetectHint] = useState('')
   const [catalogBanner, setCatalogBanner] = useState('')
   const [catalogBusy, setCatalogBusy] = useState(false)
-  const [aiMerges, setAiMerges] = useState<{ startIndex: number; endIndex: number; reason: string; kind: 'llm' }[]>(
-    [],
-  )
+  const [aiMerges, setAiMerges] = useState<{ startIndex: number; endIndex: number; reason: string; kind: 'llm' }[]>([])
   const [aiSplitChapters, setAiSplitChapters] = useState<{ chapterIndex: number; reason: string; kind: 'llm' }[]>([])
   const [aiFormatNotes, setAiFormatNotes] = useState<string[]>([])
   const [aiNotes, setAiNotes] = useState<string[]>([])
@@ -162,7 +169,9 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
           throw new Error('No chapters detected. Add headings like "Chapter 1" or paste more text.')
         }
         setDraft(nextDraft)
-        setDetectHint(`Detected ${nextDraft.chapters.length} chapter(s). Your pasted text is unchanged — scroll down to review the preview.`)
+        setDetectHint(
+          `Detected ${nextDraft.chapters.length} chapter(s). Your pasted text is unchanged — scroll down to review the preview.`,
+        )
         return
       }
 
@@ -411,9 +420,14 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
 
   return (
     <section className="space-y-6">
-      <div className="rounded-3xl border p-5 md:p-6" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+      <div
+        className="rounded-3xl border p-5 md:p-6"
+        style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+      >
         <div className="mb-4">
-          <h1 className="font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>Web E-Reader</h1>
+          <h1 className="font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>
+            Web E-Reader
+          </h1>
           <p className="mt-2 text-sm" style={{ color: 'var(--ink-muted)' }}>
             Open a sample below, or paste text or upload a .txt, .md, PDF or EPUB to add your own.
           </p>
@@ -421,7 +435,9 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
 
         {samples.length ? (
           <div className="mb-6" data-testid="reader-sample-shelf">
-            <h2 className="mb-3 font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>Sample shelf</h2>
+            <h2 className="mb-3 font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>
+              Sample shelf
+            </h2>
             <div className="grid gap-3 md:grid-cols-3">
               {samples.map((item) => (
                 <div
@@ -430,7 +446,9 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                   style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)' }}
                 >
                   <div>
-                    <h3 className="text-lg font-semibold" style={{ color: 'var(--ink-text)' }}>{item.title}</h3>
+                    <h3 className="text-lg font-semibold" style={{ color: 'var(--ink-text)' }}>
+                      {item.title}
+                    </h3>
                     <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
                       {item.chapterCount} chapters · {item.totalWords.toLocaleString()} words
                     </p>
@@ -438,7 +456,7 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                   <Link
                     href={
                       `${routeBase}/read/${item.id}/` +
-                        (lastLocation?.bookId === item.id ? lastLocation.chapterId : item.firstChapterId)
+                      (lastLocation?.bookId === item.id ? lastLocation.chapterId : item.firstChapterId)
                     }
                     className="self-start rounded-full px-4 py-2 text-sm font-semibold text-white"
                     style={{ backgroundColor: 'var(--ink-accent)' }}
@@ -481,7 +499,9 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
             </div>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-medium" style={{ color: 'var(--ink-text)' }}>Book title</span>
+              <span className="mb-2 block text-sm font-medium" style={{ color: 'var(--ink-text)' }}>
+                Book title
+              </span>
               <input
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
@@ -493,25 +513,37 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
 
             {importMode === 'paste' ? (
               <label className="block">
-                <span className="mb-2 block text-sm font-medium" style={{ color: 'var(--ink-text)' }}>Paste plain text</span>
+                <span className="mb-2 block text-sm font-medium" style={{ color: 'var(--ink-text)' }}>
+                  Paste plain text
+                </span>
                 <textarea
                   value={pasteText}
                   onChange={(event) => setPasteText(event.target.value)}
                   placeholder="Paste a whole book, several chapters, or a long article. Chapter headings like 'Chapter 12' are detected automatically."
                   className="min-h-[320px] w-full rounded-3xl border px-4 py-4 text-sm outline-none"
-                  style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
+                  style={{
+                    borderColor: 'var(--ink-border)',
+                    backgroundColor: 'var(--ink-bg)',
+                    color: 'var(--ink-text)',
+                  }}
                 />
               </label>
             ) : (
               <label className="block">
-                <span className="mb-2 block text-sm font-medium" style={{ color: 'var(--ink-text)' }}>Choose a `.txt`, `.md`, `.pdf`, or `.epub` file</span>
+                <span className="mb-2 block text-sm font-medium" style={{ color: 'var(--ink-text)' }}>
+                  Choose a `.txt`, `.md`, `.pdf`, or `.epub` file
+                </span>
                 <input
                   type="file"
                   data-testid="reader-file-input"
                   accept=".txt,.md,.pdf,.epub,text/plain,application/pdf,application/epub+zip"
                   onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
                   className="w-full rounded-2xl border px-4 py-3 text-sm"
-                  style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
+                  style={{
+                    borderColor: 'var(--ink-border)',
+                    backgroundColor: 'var(--ink-bg)',
+                    color: 'var(--ink-text)',
+                  }}
                 />
                 {selectedFile ? (
                   <p className="mt-2 text-sm" style={{ color: 'var(--ink-muted)' }}>
@@ -522,13 +554,24 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
             )}
 
             {error ? (
-              <div className="rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: '#f5b3b3', backgroundColor: '#fff2f2', color: '#7f1d1d' }}>
+              <div
+                className="rounded-2xl border px-4 py-3 text-sm"
+                style={{ borderColor: '#f5b3b3', backgroundColor: '#fff2f2', color: '#7f1d1d' }}
+              >
                 {error}
               </div>
             ) : null}
 
             {detectHint ? (
-              <div className="rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-muted)' }} role="status">
+              <div
+                className="rounded-2xl border px-4 py-3 text-sm"
+                style={{
+                  borderColor: 'var(--ink-border)',
+                  backgroundColor: 'var(--ink-bg)',
+                  color: 'var(--ink-muted)',
+                }}
+                role="status"
+              >
                 {detectHint}
               </div>
             ) : null}
@@ -557,10 +600,22 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
             </div>
           </div>
 
-          <div className="rounded-3xl border p-5" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)' }}>
-            <h2 className="mb-3 font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>Library</h2>
+          <div
+            className="rounded-3xl border p-5"
+            style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)' }}
+          >
+            <h2 className="mb-3 font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>
+              Library
+            </h2>
             {catalogBanner ? (
-              <p className="mb-3 rounded-2xl border px-3 py-2 text-sm" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-muted)' }}>
+              <p
+                className="mb-3 rounded-2xl border px-3 py-2 text-sm"
+                style={{
+                  borderColor: 'var(--ink-border)',
+                  backgroundColor: 'var(--ink-paper)',
+                  color: 'var(--ink-muted)',
+                }}
+              >
                 {catalogBanner}
               </p>
             ) : null}
@@ -608,12 +663,19 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
             ) : (
               <div className="space-y-3">
                 {libraryCards.map((item) => (
-                  <div key={item.id} className="rounded-2xl border p-4" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)' }}>
+                  <div
+                    key={item.id}
+                    className="rounded-2xl border p-4"
+                    style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)' }}
+                  >
                     <div className="mb-2 flex items-start justify-between gap-3">
                       <div>
-                        <h3 className="text-lg font-semibold" style={{ color: 'var(--ink-text)' }}>{item.title}</h3>
+                        <h3 className="text-lg font-semibold" style={{ color: 'var(--ink-text)' }}>
+                          {item.title}
+                        </h3>
                         <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-                          {item.chapterCount} chapters · {item.totalWords.toLocaleString()} words · {sourceLabel(item.sourceType)}
+                          {item.chapterCount} chapters · {item.totalWords.toLocaleString()} words ·{' '}
+                          {sourceLabel(item.sourceType)}
                         </p>
                       </div>
                       <button
@@ -633,7 +695,9 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                       </button>
                     </div>
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                      <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>Updated {formatUpdatedAt(item.updatedAt)}</p>
+                      <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
+                        Updated {formatUpdatedAt(item.updatedAt)}
+                      </p>
                       <div className="flex flex-wrap gap-2">
                         <button
                           type="button"
@@ -681,8 +745,12 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
         >
           <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-sm font-semibold" style={{ color: 'var(--ink-accent)' }}>Imported preview</p>
-              <h2 className="font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>{draft.title}</h2>
+              <p className="text-sm font-semibold" style={{ color: 'var(--ink-accent)' }}>
+                Imported preview
+              </p>
+              <h2 className="font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>
+                {draft.title}
+              </h2>
               <p className="mt-1 text-sm" data-testid="reader-chapter-summary" style={{ color: 'var(--ink-muted)' }}>
                 {draft.chapters.length} detected chapters · {sourceLabel(draft.sourceType)}
                 {draft.originalFileName ? ` · ${draft.originalFileName}` : ''}
@@ -700,8 +768,13 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
           </div>
 
           {draft.importNotes.length > 0 ? (
-            <div className="mb-4 rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-muted)' }}>
-              <p className="mb-2 font-semibold" style={{ color: 'var(--ink-text)' }}>Import notes</p>
+            <div
+              className="mb-4 rounded-2xl border px-4 py-3 text-sm"
+              style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-muted)' }}
+            >
+              <p className="mb-2 font-semibold" style={{ color: 'var(--ink-text)' }}>
+                Import notes
+              </p>
               <ul className="list-disc pl-5">
                 {draft.importNotes.map((note) => (
                   <li key={note}>{note}</li>
@@ -730,19 +803,21 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                 <code className="rounded bg-black/5 px-1">READER_CHAPTER_LLM_KEY</code> or{' '}
                 <code className="rounded bg-black/5 px-1">OPENROUTER_API_KEY</code>. Override with{' '}
                 <code className="rounded bg-black/5 px-1">READER_CHAPTER_LLM_PROVIDER=google</code> or{' '}
-                <code className="rounded bg-black/5 px-1">openrouter</code>. Hints can include merges, midpoint splits, and
-                excerpt-only formatting notes. Apply one merge or split at a time (indices update after each edit).
+                <code className="rounded bg-black/5 px-1">openrouter</code>. Hints can include merges, midpoint splits,
+                and excerpt-only formatting notes. Apply one merge or split at a time (indices update after each edit).
               </p>
               <p className="mb-2 text-xs">
-                {chapterAnalysis.stats.chapterCount} chapters · {chapterAnalysis.stats.totalWords.toLocaleString()} words
-                · median {chapterAnalysis.stats.medianChapterWords.toLocaleString()} words/chapter ·{' '}
+                {chapterAnalysis.stats.chapterCount} chapters · {chapterAnalysis.stats.totalWords.toLocaleString()}{' '}
+                words · median {chapterAnalysis.stats.medianChapterWords.toLocaleString()} words/chapter ·{' '}
                 {(chapterAnalysis.stats.shortChapterFraction * 100).toFixed(0)}% under{' '}
                 {chapterAnalysis.tinyWordThreshold}w
               </p>
 
               {chapterAnalysis.duplicateTitleGroups.length > 0 ? (
                 <div className="mb-3">
-                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>Duplicate chapter titles</p>
+                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>
+                    Duplicate chapter titles
+                  </p>
                   <ul className="list-disc pl-5 text-xs">
                     {chapterAnalysis.duplicateTitleGroups.map((g) => (
                       <li key={g.normalized}>
@@ -755,7 +830,9 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
 
               {chapterAnalysis.splitHints.length > 0 ? (
                 <div className="mb-3">
-                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>Possible stuck-together chapters</p>
+                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>
+                    Possible stuck-together chapters
+                  </p>
                   <ul className="list-disc pl-5 text-xs">
                     {chapterAnalysis.splitHints.map((h) => (
                       <li key={`${h.chapterIndex}-${h.title}`}>
@@ -768,10 +845,15 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
 
               {chapterAnalysis.heuristicMerges.length > 0 ? (
                 <div className="mb-3">
-                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>Suggested merges (local)</p>
+                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>
+                    Suggested merges (local)
+                  </p>
                   <ul className="space-y-2">
                     {chapterAnalysis.heuristicMerges.map((s) => (
-                      <li key={`${s.startIndex}-${s.endIndex}`} className="flex flex-wrap items-start justify-between gap-2 text-xs">
+                      <li
+                        key={`${s.startIndex}-${s.endIndex}`}
+                        className="flex flex-wrap items-start justify-between gap-2 text-xs"
+                      >
                         <span>
                           Ch. {s.startIndex + 1}–{s.endIndex + 1}: {s.reason}
                         </span>
@@ -815,8 +897,13 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                 </ul>
               ) : null}
               {aiFormatNotes.length > 0 ? (
-                <div className="mb-2 rounded-xl border px-3 py-2 text-xs" style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-muted)' }}>
-                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>Formatting (excerpt-only, advisory)</p>
+                <div
+                  className="mb-2 rounded-xl border px-3 py-2 text-xs"
+                  style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-muted)' }}
+                >
+                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>
+                    Formatting (excerpt-only, advisory)
+                  </p>
                   <ul className="list-disc pl-5">
                     {aiFormatNotes.map((n, i) => (
                       <li key={`${i}-${n.slice(0, 48)}`}>{n}</li>
@@ -826,10 +913,15 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
               ) : null}
               {aiMerges.length > 0 ? (
                 <div>
-                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>AI suggested merges</p>
+                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>
+                    AI suggested merges
+                  </p>
                   <ul className="space-y-2">
                     {aiMerges.map((s) => (
-                      <li key={`ai-${s.startIndex}-${s.endIndex}`} className="flex flex-wrap items-start justify-between gap-2 text-xs">
+                      <li
+                        key={`ai-${s.startIndex}-${s.endIndex}`}
+                        className="flex flex-wrap items-start justify-between gap-2 text-xs"
+                      >
                         <span>
                           Ch. {s.startIndex + 1}–{s.endIndex + 1}: {s.reason}
                         </span>
@@ -848,13 +940,18 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
               ) : null}
               {aiSplitChapters.length > 0 ? (
                 <div className="mb-2">
-                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>AI suggested splits</p>
+                  <p className="mb-1 font-medium" style={{ color: 'var(--ink-text)' }}>
+                    AI suggested splits
+                  </p>
                   <p className="mb-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
                     Uses midpoint word split as a first pass — refine titles after.
                   </p>
                   <ul className="space-y-2">
                     {aiSplitChapters.map((s) => (
-                      <li key={`ai-split-${s.chapterIndex}`} className="flex flex-wrap items-start justify-between gap-2 text-xs">
+                      <li
+                        key={`ai-split-${s.chapterIndex}`}
+                        className="flex flex-wrap items-start justify-between gap-2 text-xs"
+                      >
                         <span>
                           Ch. {s.chapterIndex + 1}: {s.reason}
                         </span>
@@ -879,82 +976,100 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
             {draft.chapters.map((chapter, index) => {
               const preview = selectImportPreviewParagraphs(chapter.paragraphs)
               return (
-              <div key={chapter.id} className="rounded-2xl border p-4" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)' }}>
-                <div className="mb-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                  <div className="flex-1">
-                    <label className="block">
-                      <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--ink-muted)' }}>
-                        Chapter {index + 1}
-                      </span>
-                      <input
-                        value={chapter.title}
-                        onChange={(event) =>
+                <div
+                  key={chapter.id}
+                  className="rounded-2xl border p-4"
+                  style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)' }}
+                >
+                  <div className="mb-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div className="flex-1">
+                      <label className="block">
+                        <span
+                          className="mb-1 block text-xs font-semibold tracking-[0.18em] uppercase"
+                          style={{ color: 'var(--ink-muted)' }}
+                        >
+                          Chapter {index + 1}
+                        </span>
+                        <input
+                          value={chapter.title}
+                          onChange={(event) =>
+                            setDraft((current) =>
+                              current
+                                ? {
+                                    ...current,
+                                    chapters: renameChapter(current.chapters, chapter.id, event.target.value),
+                                  }
+                                : current,
+                            )
+                          }
+                          className="w-full rounded-xl border px-3 py-2 text-sm outline-none"
+                          style={{
+                            borderColor: 'var(--ink-border)',
+                            backgroundColor: 'var(--ink-paper)',
+                            color: 'var(--ink-text)',
+                          }}
+                        />
+                      </label>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        data-testid="reader-merge-up"
+                        disabled={index === 0}
+                        onClick={() =>
                           setDraft((current) =>
                             current
-                              ? { ...current, chapters: renameChapter(current.chapters, chapter.id, event.target.value) }
+                              ? { ...current, chapters: mergeWithPreviousChapter(current.chapters, chapter.id) }
                               : current,
                           )
                         }
-                        className="w-full rounded-xl border px-3 py-2 text-sm outline-none"
-                        style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
-                      />
-                    </label>
+                        className="rounded-full border px-3 py-2 text-xs font-semibold disabled:opacity-40"
+                        style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                      >
+                        Merge up
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="reader-split-chapter"
+                        disabled={chapter.paragraphs.length < 2}
+                        onClick={() =>
+                          setDraft((current) =>
+                            current
+                              ? { ...current, chapters: splitChapterAtMidpoint(current.chapters, chapter.id) }
+                              : current,
+                          )
+                        }
+                        className="rounded-full border px-3 py-2 text-xs font-semibold disabled:opacity-40"
+                        style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                      >
+                        Split in half
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      data-testid="reader-merge-up"
-                      disabled={index === 0}
-                      onClick={() =>
-                        setDraft((current) =>
-                          current
-                            ? { ...current, chapters: mergeWithPreviousChapter(current.chapters, chapter.id) }
-                            : current,
-                        )
-                      }
-                      className="rounded-full border px-3 py-2 text-xs font-semibold disabled:opacity-40"
-                      style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-                    >
-                      Merge up
-                    </button>
-                    <button
-                      type="button"
-                      data-testid="reader-split-chapter"
-                      disabled={chapter.paragraphs.length < 2}
-                      onClick={() =>
-                        setDraft((current) =>
-                          current
-                            ? { ...current, chapters: splitChapterAtMidpoint(current.chapters, chapter.id) }
-                            : current,
-                        )
-                      }
-                      className="rounded-full border px-3 py-2 text-xs font-semibold disabled:opacity-40"
-                      style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-                    >
-                      Split in half
-                    </button>
+
+                  <div className="mb-3 flex flex-wrap gap-3 text-xs" style={{ color: 'var(--ink-muted)' }}>
+                    <span>{chapter.wordCount.toLocaleString()} words</span>
+                    <span>{chapter.paragraphs.length} paragraphs</span>
+                  </div>
+
+                  <div
+                    className="reader-import-preview-prose max-h-[min(28rem,55vh)] overflow-y-auto rounded-2xl border px-4 py-4 text-[15px] leading-[1.75]"
+                    style={{
+                      borderColor: 'var(--ink-border)',
+                      backgroundColor: 'var(--ink-paper)',
+                      color: 'var(--ink-text)',
+                    }}
+                  >
+                    {preview.show.map((paragraph, pi) => (
+                      <p key={`${chapter.id}-pv-${pi}-${paragraph.slice(0, 24)}`}>{paragraph}</p>
+                    ))}
+                    {preview.truncated ? (
+                      <p className="mb-0 text-sm italic" style={{ color: 'var(--ink-muted)' }}>
+                        Preview only — open the reader after saving to see the full chapter.
+                      </p>
+                    ) : null}
                   </div>
                 </div>
-
-                <div className="mb-3 flex flex-wrap gap-3 text-xs" style={{ color: 'var(--ink-muted)' }}>
-                  <span>{chapter.wordCount.toLocaleString()} words</span>
-                  <span>{chapter.paragraphs.length} paragraphs</span>
-                </div>
-
-                <div
-                  className="reader-import-preview-prose max-h-[min(28rem,55vh)] overflow-y-auto rounded-2xl border px-4 py-4 text-[15px] leading-[1.75]"
-                  style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
-                >
-                  {preview.show.map((paragraph, pi) => (
-                    <p key={`${chapter.id}-pv-${pi}-${paragraph.slice(0, 24)}`}>{paragraph}</p>
-                  ))}
-                  {preview.truncated ? (
-                    <p className="mb-0 text-sm italic" style={{ color: 'var(--ink-muted)' }}>
-                      Preview only — open the reader after saving to see the full chapter.
-                    </p>
-                  ) : null}
-                </div>
-              </div>
               )
             })}
           </div>

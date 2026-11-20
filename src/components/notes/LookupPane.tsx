@@ -18,13 +18,7 @@ type LookupPaneProps = {
   onDelete: (lookupId: string) => void
 }
 
-export default function LookupPane({
-  lookup,
-  streamByLookupId,
-  onFollowUp,
-  onDismiss,
-  onDelete,
-}: LookupPaneProps) {
+export default function LookupPane({ lookup, streamByLookupId, onFollowUp, onDismiss, onDelete }: LookupPaneProps) {
   const stream = streamByLookupId[lookup.id]
   const isStreaming = isLookupStreaming(streamByLookupId, lookup.id)
   const streamText = stream?.text ?? ''
@@ -63,9 +57,7 @@ export default function LookupPane({
         error={error}
         testId={`notes-chat-thread-${lookup.id}`}
       />
-      {!isStreaming ? (
-        <FollowUpComposer lookupId={lookup.id} onSubmit={(q) => onFollowUp(lookup.id, q)} />
-      ) : null}
+      {!isStreaming ? <FollowUpComposer lookupId={lookup.id} onSubmit={(q) => onFollowUp(lookup.id, q)} /> : null}
     </div>
   )
 }

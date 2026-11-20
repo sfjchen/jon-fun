@@ -43,7 +43,10 @@ function isBookSplitLine(line: string): boolean {
 }
 
 /** From each candidate "Book 1" in the file, take 1,2,3,… in order; pick the longest run, tie-break to later in file (body after TOC). */
-function buildAscendingBookRun(marks: { idx: number; title: string }[], start: number): { idx: number; title: string }[] {
+function buildAscendingBookRun(
+  marks: { idx: number; title: string }[],
+  start: number,
+): { idx: number; title: string }[] {
   const run: { idx: number; title: string }[] = []
   let next = 1
   for (let j = start; j < marks.length; j++) {
@@ -238,7 +241,10 @@ function detectStructuredChapters(normalized: string): ReaderChapter[] {
       continue
     }
 
-    if (isHeadingLine(line) && (currentParagraphs.length > 0 || currentParagraphLines.length > 0 || chapters.length > 0)) {
+    if (
+      isHeadingLine(line) &&
+      (currentParagraphs.length > 0 || currentParagraphLines.length > 0 || chapters.length > 0)
+    ) {
       flushParagraph()
       finalizeChapter(chapters, currentTitle || chapterTitleFromIndex(chapters.length), currentParagraphs)
       currentTitle = line
@@ -310,18 +316,12 @@ export function createImportDraft(input: {
   ingestMeta?: ReaderIngestMeta
 }): ReaderImportDraft {
   const title =
-    input.title?.trim() ||
-    input.originalFileName?.replace(/\.[^/.]+$/, '').trim() ||
-    'Untitled reader import'
+    input.title?.trim() || input.originalFileName?.replace(/\.[^/.]+$/, '').trim() || 'Untitled reader import'
   let chapters = chapterizeText(input.rawText, input.sourceType)
   chapters = applyReadingFormatToChapters(chapters, { splitLong: true, maxChunkLen: 540 })
 
   const importNotes = [...(input.notes ?? [])]
-  if (
-    input.sourceType === 'pdf' &&
-    chapters.length >= 2 &&
-    chapters.some((c) => /^Book\s+\d+/i.test(c.title))
-  ) {
+  if (input.sourceType === 'pdf' && chapters.length >= 2 && chapters.some((c) => /^Book\s+\d+/i.test(c.title))) {
     importNotes.push(
       "Chapters were split on strict 'Book N' headings (typical for Meditations). Title page and TOC lines are merged into Book 1 when present.",
     )
@@ -472,7 +472,9 @@ export function createEpubImportDraft(input: {
 }
 
 export function renameChapter(chapters: ReaderChapter[], chapterId: string, title: string): ReaderChapter[] {
-  return chapters.map((chapter) => (chapter.id === chapterId ? makeChapter(title, chapter.paragraphs, chapter.order, chapter.id) : chapter))
+  return chapters.map((chapter) =>
+    chapter.id === chapterId ? makeChapter(title, chapter.paragraphs, chapter.order, chapter.id) : chapter,
+  )
 }
 
 export function mergeWithPreviousChapter(chapters: ReaderChapter[], chapterId: string): ReaderChapter[] {

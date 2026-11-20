@@ -59,7 +59,7 @@ export default function PokerPage() {
   const handleJoinRoom = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    
+
     if (!/^\d{4}$/.test(joinPin)) {
       setError('Please enter a valid 4-digit PIN')
       return
@@ -115,162 +115,225 @@ export default function PokerPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-2">
       <div className="mx-auto max-w-2xl">
-        <header className="text-center mb-8">
-          <h1 className="text-4xl sm:text-5xl font-bold font-lora mb-3" style={{ color: 'var(--ink-text)' }}>🃏 Texas Hold&apos;em</h1>
-          <p className="text-xl" style={{ color: 'var(--ink-muted)' }}>Poker Chip Tracker</p>
-          <p className="text-sm mt-2" style={{ color: 'var(--ink-muted)' }}>
+        <header className="mb-8 text-center">
+          <h1 className="mb-3 font-lora text-4xl font-bold sm:text-5xl" style={{ color: 'var(--ink-text)' }}>
+            🃏 Texas Hold&apos;em
+          </h1>
+          <p className="text-xl" style={{ color: 'var(--ink-muted)' }}>
+            Poker Chip Tracker
+          </p>
+          <p className="mt-2 text-sm" style={{ color: 'var(--ink-muted)' }}>
             2+ players, each on their own phone. Solo? Create a room, then join its PIN from a 2nd tab.
           </p>
         </header>
 
-        <div className="rounded-lg border p-5 shadow-sm sm:p-8" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-            <div className="mb-6 flex gap-3 sm:gap-4">
-              <button
-                onClick={() => setMode('create')}
-                className={`flex-1 whitespace-nowrap py-3 px-3 rounded-lg font-semibold ${
-                  mode === 'create'
-                    ? 'text-white'
-                    : ''
-                }`}
-                style={mode === 'create' ? { backgroundColor: 'rgb(22 101 52)' } : { backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)', border: '1px solid' }}
-              >
-                Create Room
-              </button>
-              <button
-                onClick={() => setMode('join')}
-                className={`flex-1 whitespace-nowrap py-3 px-3 rounded-lg font-semibold ${
-                  mode === 'join'
-                    ? 'text-white'
-                    : ''
-                }`}
-                style={mode === 'join' ? { backgroundColor: 'rgb(22 101 52)' } : { backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)', border: '1px solid' }}
-              >
-                Join Room
-              </button>
+        <div
+          className="rounded-lg border p-5 shadow-sm sm:p-8"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
+          <div className="mb-6 flex gap-3 sm:gap-4">
+            <button
+              onClick={() => setMode('create')}
+              className={`flex-1 rounded-lg px-3 py-3 font-semibold whitespace-nowrap ${
+                mode === 'create' ? 'text-white' : ''
+              }`}
+              style={
+                mode === 'create'
+                  ? { backgroundColor: 'rgb(22 101 52)' }
+                  : {
+                      backgroundColor: 'var(--ink-paper)',
+                      borderColor: 'var(--ink-border)',
+                      color: 'var(--ink-text)',
+                      border: '1px solid',
+                    }
+              }
+            >
+              Create Room
+            </button>
+            <button
+              onClick={() => setMode('join')}
+              className={`flex-1 rounded-lg px-3 py-3 font-semibold whitespace-nowrap ${
+                mode === 'join' ? 'text-white' : ''
+              }`}
+              style={
+                mode === 'join'
+                  ? { backgroundColor: 'rgb(22 101 52)' }
+                  : {
+                      backgroundColor: 'var(--ink-paper)',
+                      borderColor: 'var(--ink-border)',
+                      color: 'var(--ink-text)',
+                      border: '1px solid',
+                    }
+              }
+            >
+              Join Room
+            </button>
+          </div>
+
+          {error && (
+            <div className="mb-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800" role="alert">
+              {error}
             </div>
+          )}
 
-            {error && (
-              <div className="mb-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800" role="alert">
-                {error}
-              </div>
-            )}
-
-            {mode === 'create' ? (
-              <form onSubmit={handleCreateRoom} className="space-y-4">
-                <div>
-                  <label htmlFor="poker-host-name" className="block mb-2" style={{ color: 'var(--ink-text)' }}>Your Name</label>
-                  <input
-                    id="poker-host-name"
-                    type="text"
-                    value={hostName}
-                    onChange={(e) => setHostName(e.target.value)}
-                    className="w-full rounded-lg px-4 py-2 border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
-                    style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-                    placeholder="Enter your name"
-                    required
-                    maxLength={20}
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 items-end gap-3 sm:gap-4">
-                  <div>
-                    <label htmlFor="poker-small-blind" className="block mb-2 whitespace-nowrap text-sm sm:text-base" style={{ color: 'var(--ink-text)' }}>Small Blind</label>
-                    <input
-                      id="poker-small-blind"
-                      type="number"
-                      value={smallBlind}
-                      onChange={(e) => setSmallBlind(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="w-full rounded-lg px-4 py-2 border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
-                      style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-                      min="1"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="poker-big-blind" className="block mb-2 whitespace-nowrap text-sm sm:text-base" style={{ color: 'var(--ink-text)' }}>Big Blind</label>
-                    <input
-                      id="poker-big-blind"
-                      type="number"
-                      value={bigBlind}
-                      onChange={(e) => setBigBlind(Math.max(smallBlind * 2, parseInt(e.target.value) || smallBlind * 2))}
-                      className="w-full rounded-lg px-4 py-2 border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
-                      style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-                      min={smallBlind * 2}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="poker-timer" className="block mb-2 whitespace-nowrap text-sm sm:text-base" style={{ color: 'var(--ink-text)' }}>Timer (s)</label>
-                    <input
-                      id="poker-timer"
-                      type="number"
-                      value={timerPerTurn}
-                      onChange={(e) => setTimerPerTurn(Math.max(5, Math.min(300, parseInt(e.target.value) || 40)))}
-                      className="w-full rounded-lg px-4 py-2 border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
-                      style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-                      min="5"
-                      max="300"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading || !hostName.trim()}
-                  className="w-full text-white font-semibold py-3 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: 'rgb(22 101 52)' }}
-                >
-                  {loading ? 'Creating...' : 'Create Room'}
-                </button>
-              </form>
-            ) : showPositionSelection ? (
+          {mode === 'create' ? (
+            <form onSubmit={handleCreateRoom} className="space-y-4">
               <div>
-                <div className="mb-4">
-                  <button
-                    onClick={() => setShowPositionSelection(false)}
-                    className="mb-2 hover:opacity-80"
-                    style={{ color: 'var(--ink-accent)' }}
-                  >
-                    ← Back to PIN entry
-                  </button>
-                </div>
-                <PokerJoinForm
-                  pin={joinPin}
-                  onJoin={handleJoinWithPosition}
-                  onCancel={() => setShowPositionSelection(false)}
-                  loading={loading}
-                  error={error}
+                <label htmlFor="poker-host-name" className="mb-2 block" style={{ color: 'var(--ink-text)' }}>
+                  Your Name
+                </label>
+                <input
+                  id="poker-host-name"
+                  type="text"
+                  value={hostName}
+                  onChange={(e) => setHostName(e.target.value)}
+                  className="w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-[var(--ink-accent)] focus:outline-none"
+                  style={{
+                    backgroundColor: 'var(--ink-bg)',
+                    borderColor: 'var(--ink-border)',
+                    color: 'var(--ink-text)',
+                  }}
+                  placeholder="Enter your name"
+                  required
+                  maxLength={20}
                 />
               </div>
-            ) : (
-              <form onSubmit={handleJoinRoom} className="space-y-4">
+
+              <div className="grid grid-cols-3 items-end gap-3 sm:gap-4">
                 <div>
-                  <label htmlFor="poker-join-pin" className="block mb-2" style={{ color: 'var(--ink-text)' }}>Room PIN</label>
+                  <label
+                    htmlFor="poker-small-blind"
+                    className="mb-2 block text-sm whitespace-nowrap sm:text-base"
+                    style={{ color: 'var(--ink-text)' }}
+                  >
+                    Small Blind
+                  </label>
                   <input
-                    id="poker-join-pin"
-                    type="text"
-                    value={joinPin}
-                    onChange={(e) => setJoinPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                    className="w-full rounded-lg px-4 py-2 border text-center text-2xl tracking-widest focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
-                    style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-                    placeholder="0000"
-                    maxLength={4}
+                    id="poker-small-blind"
+                    type="number"
+                    value={smallBlind}
+                    onChange={(e) => setSmallBlind(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-[var(--ink-accent)] focus:outline-none"
+                    style={{
+                      backgroundColor: 'var(--ink-bg)',
+                      borderColor: 'var(--ink-border)',
+                      color: 'var(--ink-text)',
+                    }}
+                    min="1"
                     required
                   />
                 </div>
+                <div>
+                  <label
+                    htmlFor="poker-big-blind"
+                    className="mb-2 block text-sm whitespace-nowrap sm:text-base"
+                    style={{ color: 'var(--ink-text)' }}
+                  >
+                    Big Blind
+                  </label>
+                  <input
+                    id="poker-big-blind"
+                    type="number"
+                    value={bigBlind}
+                    onChange={(e) => setBigBlind(Math.max(smallBlind * 2, parseInt(e.target.value) || smallBlind * 2))}
+                    className="w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-[var(--ink-accent)] focus:outline-none"
+                    style={{
+                      backgroundColor: 'var(--ink-bg)',
+                      borderColor: 'var(--ink-border)',
+                      color: 'var(--ink-text)',
+                    }}
+                    min={smallBlind * 2}
+                    required
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="poker-timer"
+                    className="mb-2 block text-sm whitespace-nowrap sm:text-base"
+                    style={{ color: 'var(--ink-text)' }}
+                  >
+                    Timer (s)
+                  </label>
+                  <input
+                    id="poker-timer"
+                    type="number"
+                    value={timerPerTurn}
+                    onChange={(e) => setTimerPerTurn(Math.max(5, Math.min(300, parseInt(e.target.value) || 40)))}
+                    className="w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-[var(--ink-accent)] focus:outline-none"
+                    style={{
+                      backgroundColor: 'var(--ink-bg)',
+                      borderColor: 'var(--ink-border)',
+                      color: 'var(--ink-text)',
+                    }}
+                    min="5"
+                    max="300"
+                    required
+                  />
+                </div>
+              </div>
 
+              <button
+                type="submit"
+                disabled={loading || !hostName.trim()}
+                className="w-full rounded-lg px-4 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                style={{ backgroundColor: 'rgb(22 101 52)' }}
+              >
+                {loading ? 'Creating...' : 'Create Room'}
+              </button>
+            </form>
+          ) : showPositionSelection ? (
+            <div>
+              <div className="mb-4">
                 <button
-                  type="submit"
-                  disabled={!joinPin || joinPin.length !== 4 || loading}
-                  className="w-full text-white font-semibold py-3 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: 'rgb(22 101 52)' }}
+                  onClick={() => setShowPositionSelection(false)}
+                  className="mb-2 hover:opacity-80"
+                  style={{ color: 'var(--ink-accent)' }}
                 >
-                  Continue to Select Seat
+                  ← Back to PIN entry
                 </button>
-              </form>
-            )}
-          </div>
+              </div>
+              <PokerJoinForm
+                pin={joinPin}
+                onJoin={handleJoinWithPosition}
+                onCancel={() => setShowPositionSelection(false)}
+                loading={loading}
+                error={error}
+              />
+            </div>
+          ) : (
+            <form onSubmit={handleJoinRoom} className="space-y-4">
+              <div>
+                <label htmlFor="poker-join-pin" className="mb-2 block" style={{ color: 'var(--ink-text)' }}>
+                  Room PIN
+                </label>
+                <input
+                  id="poker-join-pin"
+                  type="text"
+                  value={joinPin}
+                  onChange={(e) => setJoinPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  className="w-full rounded-lg border px-4 py-2 text-center text-2xl tracking-widest focus:ring-2 focus:ring-[var(--ink-accent)] focus:outline-none"
+                  style={{
+                    backgroundColor: 'var(--ink-bg)',
+                    borderColor: 'var(--ink-border)',
+                    color: 'var(--ink-text)',
+                  }}
+                  placeholder="0000"
+                  maxLength={4}
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={!joinPin || joinPin.length !== 4 || loading}
+                className="w-full rounded-lg px-4 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                style={{ backgroundColor: 'rgb(22 101 52)' }}
+              >
+                Continue to Select Seat
+              </button>
+            </form>
+          )}
+        </div>
 
         <div className="mt-8 text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
           <p>Use physical cards, track chips digitally</p>
@@ -280,4 +343,3 @@ export default function PokerPage() {
     </div>
   )
 }
-

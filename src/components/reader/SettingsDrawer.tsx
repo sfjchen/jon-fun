@@ -71,17 +71,12 @@ const uiModes: Array<{ id: ReaderUiMode; label: string; hint: string }> = [
   { id: 'study', label: 'Study', hint: 'Denser layout + TOC bias' },
 ]
 
-function Toggle({
-  checked,
-  label,
-  onChange,
-}: {
-  checked: boolean
-  label: string
-  onChange: (next: boolean) => void
-}) {
+function Toggle({ checked, label, onChange }: { checked: boolean; label: string; onChange: (next: boolean) => void }) {
   return (
-    <label className="flex items-center justify-between gap-3 rounded-xl border px-3 py-2" style={{ borderColor: 'var(--ink-border)' }}>
+    <label
+      className="flex items-center justify-between gap-3 rounded-xl border px-3 py-2"
+      style={{ borderColor: 'var(--ink-border)' }}
+    >
       <span className="text-sm">{label}</span>
       <button
         type="button"
@@ -143,22 +138,40 @@ export function SettingsDrawer({
       ) : null}
       <div className="mb-5 flex items-center justify-between gap-3">
         <div>
-          <p className="e-reader-chrome-muted text-xs uppercase tracking-[0.24em]">Reader settings</p>
+          <p className="e-reader-chrome-muted text-xs tracking-[0.24em] uppercase">Reader settings</p>
           <h2 className="text-lg font-semibold">Customize your reading view</h2>
         </div>
-        <button type="button" onClick={onClose} className="e-reader-chrome-chip reader-focus rounded-full px-3 py-1.5 text-sm">
+        <button
+          type="button"
+          onClick={onClose}
+          className="e-reader-chrome-chip reader-focus rounded-full px-3 py-1.5 text-sm"
+        >
           {mobile ? 'Done' : 'Close'}
         </button>
       </div>
 
       <div className="mb-5 grid grid-cols-3 gap-2">
-        <button type="button" onClick={onGoPrev} disabled={!canGoPrev} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
+        <button
+          type="button"
+          onClick={onGoPrev}
+          disabled={!canGoPrev}
+          className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40"
+        >
           Prev
         </button>
-        <button type="button" onClick={hasBookmark ? onJumpToBookmark : onSaveBookmark} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm">
+        <button
+          type="button"
+          onClick={hasBookmark ? onJumpToBookmark : onSaveBookmark}
+          className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm"
+        >
           {hasBookmark ? 'Bookmark' : 'Save spot'}
         </button>
-        <button type="button" onClick={onGoNext} disabled={!canGoNext} className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40">
+        <button
+          type="button"
+          onClick={onGoNext}
+          disabled={!canGoNext}
+          className="e-reader-chrome-chip reader-focus rounded-xl px-3 py-2 text-sm disabled:opacity-40"
+        >
           Next
         </button>
       </div>
@@ -285,7 +298,11 @@ export function SettingsDrawer({
         <Toggle checked={prefs.textIndent} label="Text indent" onChange={(next) => onChange('textIndent', next)} />
         <Toggle checked={prefs.bionic} label="Bionic reading" onChange={(next) => onChange('bionic', next)} />
         <Toggle checked={prefs.copyEnabled} label="Copy text" onChange={(next) => onChange('copyEnabled', next)} />
-        <Toggle checked={prefs.focusBandEnabled} label="Reading band (soft edges)" onChange={(next) => onChange('focusBandEnabled', next)} />
+        <Toggle
+          checked={prefs.focusBandEnabled}
+          label="Reading band (soft edges)"
+          onChange={(next) => onChange('focusBandEnabled', next)}
+        />
       </section>
 
       <section className="mb-5">
@@ -329,7 +346,11 @@ export function SettingsDrawer({
       <section className="mb-5 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold">Text to speech</h3>
-          <button type="button" onClick={onToggleSpeak} className="e-reader-chrome-action reader-focus rounded-xl px-3 py-2 text-sm">
+          <button
+            type="button"
+            onClick={onToggleSpeak}
+            className="e-reader-chrome-action reader-focus rounded-xl px-3 py-2 text-sm"
+          >
             {isSpeaking ? 'Stop' : 'Play'}
           </button>
         </div>
@@ -367,8 +388,16 @@ export function SettingsDrawer({
 
       <section className="mb-5 space-y-2">
         <h3 className="text-sm font-semibold">Automation</h3>
-        <Toggle checked={prefs.autoScrollEnabled} label="Auto scroll" onChange={(next) => onChange('autoScrollEnabled', next)} />
-        <Toggle checked={prefs.autoNextChapter} label="Auto next chapter" onChange={(next) => onChange('autoNextChapter', next)} />
+        <Toggle
+          checked={prefs.autoScrollEnabled}
+          label="Auto scroll"
+          onChange={(next) => onChange('autoScrollEnabled', next)}
+        />
+        <Toggle
+          checked={prefs.autoNextChapter}
+          label="Auto next chapter"
+          onChange={(next) => onChange('autoNextChapter', next)}
+        />
         <label className="block">
           <div className="mb-1 flex items-center justify-between text-sm">
             <span>Scroll speed</span>
@@ -390,7 +419,8 @@ export function SettingsDrawer({
         <section className="mb-5">
           <h3 className="mb-2 text-sm font-semibold">Discussion tag</h3>
           <p className="e-reader-chrome-muted mb-2 text-xs leading-relaxed">
-            Name shown on notes you post next to paragraphs. Stored on this device only. When accounts exist on this deployment, this can be replaced by your login name later.
+            Name shown on notes you post next to paragraphs. Stored on this device only. When accounts exist on this
+            deployment, this can be replaced by your login name later.
           </p>
           <label className="block">
             <span className="sr-only">Display name for discussions</span>
@@ -405,7 +435,11 @@ export function SettingsDrawer({
         </section>
       ) : null}
 
-      <button type="button" onClick={onReset} className="e-reader-chrome-action reader-focus w-full rounded-xl px-4 py-3 text-sm font-semibold">
+      <button
+        type="button"
+        onClick={onReset}
+        className="e-reader-chrome-action reader-focus w-full rounded-xl px-4 py-3 text-sm font-semibold"
+      >
         Reset to defaults
       </button>
     </aside>

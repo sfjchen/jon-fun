@@ -22,9 +22,12 @@ function loadEnvLocal(): void {
     const p = join(process.cwd(), f)
     if (!existsSync(p)) continue
     for (const line of readFileSync(p, 'utf8').split('\n')) {
-      const t = line.trim(); if (!t || t.startsWith('#')) continue
-      const eq = t.indexOf('='); if (eq <= 0) continue
-      const k = t.slice(0, eq).trim(); let v = t.slice(eq + 1).trim()
+      const t = line.trim()
+      if (!t || t.startsWith('#')) continue
+      const eq = t.indexOf('=')
+      if (eq <= 0) continue
+      const k = t.slice(0, eq).trim()
+      let v = t.slice(eq + 1).trim()
       if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1)
       if (!(k in process.env)) process.env[k] = v
     }
@@ -46,7 +49,12 @@ if (!URL || !ANON) throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBL
 
 interface Subscriber {
   name: string
-  events: Array<{ version: number; playVersion: number; board: Record<string, unknown>; playState: Record<string, unknown> }>
+  events: Array<{
+    version: number
+    playVersion: number
+    board: Record<string, unknown>
+    playState: Record<string, unknown>
+  }>
   channel: RealtimeChannel
   cleanup: () => Promise<void>
 }
@@ -72,15 +80,23 @@ async function makeSubscriber(name: string): Promise<Subscriber> {
   await new Promise<void>((resolve, reject) => {
     const t = setTimeout(() => reject(new Error(`Subscriber ${name} timed out subscribing`)), 10_000)
     ch.subscribe((status) => {
-      if (status === 'SUBSCRIBED') { clearTimeout(t); resolve() }
-      else if (status === 'CHANNEL_ERROR' || status === 'CLOSED') { clearTimeout(t); reject(new Error(`Subscriber ${name}: ${status}`)) }
+      if (status === 'SUBSCRIBED') {
+        clearTimeout(t)
+        resolve()
+      } else if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
+        clearTimeout(t)
+        reject(new Error(`Subscriber ${name}: ${status}`))
+      }
     })
   })
   return {
     name,
     events,
     channel: ch,
-    cleanup: async () => { await ch.unsubscribe().catch(() => {}); await client.removeAllChannels().catch(() => {}) },
+    cleanup: async () => {
+      await ch.unsubscribe().catch(() => {})
+      await client.removeAllChannels().catch(() => {})
+    },
   }
 }
 
@@ -107,7 +123,9 @@ async function patchContent(op: Record<string, unknown>): Promise<{ version: num
   return await res.json()
 }
 
-async function patchPlay(op: Record<string, unknown>): Promise<{ playVersion: number; playState: Record<string, unknown> }> {
+async function patchPlay(
+  op: Record<string, unknown>,
+): Promise<{ playVersion: number; playState: Record<string, unknown> }> {
   const res = await fetch(`${BASE}/api/jeopardy/boards/${SLUG}/play-state`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -117,7 +135,12 @@ async function patchPlay(op: Record<string, unknown>): Promise<{ playVersion: nu
   return await res.json()
 }
 
-async function getBoard(): Promise<{ version: number; playVersion: number; board: Record<string, unknown>; playState: Record<string, unknown> }> {
+async function getBoard(): Promise<{
+  version: number
+  playVersion: number
+  board: Record<string, unknown>
+  playState: Record<string, unknown>
+}> {
   const res = await fetch(`${BASE}/api/jeopardy/boards/${SLUG}`, { cache: 'no-store' as RequestCache })
   if (!res.ok) throw new Error(`GET failed: ${res.status}`)
   return await res.json()
@@ -126,7 +149,10 @@ async function getBoard(): Promise<{ version: number; playVersion: number; board
 let failures = 0
 function check(label: string, cond: boolean, detail?: string): void {
   if (cond) console.log(`  ✓ ${label}`)
-  else { console.log(`  ✗ ${label}${detail ? '  ' + detail : ''}`); failures++ }
+  else {
+    console.log(`  ✗ ${label}${detail ? '  ' + detail : ''}`)
+    failures++
+  }
 }
 
 async function main() {
@@ -146,19 +172,35 @@ async function main() {
     const tag = `realtime-test-${Date.now().toString(36)}`
     const before = (baseline.board as { categories?: Array<{ title?: string }> }).categories?.[0]?.title ?? ''
     const patched = await patchContent({ kind: 'setCategoryTitle', col: 0, title: tag })
-    check('PATCH returned bumped version', patched.version === baseline.version + 1, `expected ${baseline.version + 1}, got ${patched.version}`)
-    check('PATCH server state shows new title',
-      ((patched.board as { categories?: Array<{ title?: string }> }).categories?.[0]?.title ?? '') === tag)
+    check(
+      'PATCH returned bumped version',
+      patched.version === baseline.version + 1,
+      `expected ${baseline.version + 1}, got ${patched.version}`,
+    )
+    check(
+      'PATCH server state shows new title',
+      ((patched.board as { categories?: Array<{ title?: string }> }).categories?.[0]?.title ?? '') === tag,
+    )
 
     // Wait for both subscribers to see the new version.
-    const evA = await waitFor(() => a.events.find((e) => e.version >= patched.version) ?? null, 'A receives content fan-out')
-    const evB = await waitFor(() => b.events.find((e) => e.version >= patched.version) ?? null, 'B receives content fan-out')
+    const evA = await waitFor(
+      () => a.events.find((e) => e.version >= patched.version) ?? null,
+      'A receives content fan-out',
+    )
+    const evB = await waitFor(
+      () => b.events.find((e) => e.version >= patched.version) ?? null,
+      'B receives content fan-out',
+    )
     check('A subscriber received event', evA.version >= patched.version)
     check('B subscriber received event', evB.version >= patched.version)
-    check('A payload contains new title',
-      ((evA.board as { categories?: Array<{ title?: string }> }).categories?.[0]?.title ?? '') === tag)
-    check('B payload contains new title',
-      ((evB.board as { categories?: Array<{ title?: string }> }).categories?.[0]?.title ?? '') === tag)
+    check(
+      'A payload contains new title',
+      ((evA.board as { categories?: Array<{ title?: string }> }).categories?.[0]?.title ?? '') === tag,
+    )
+    check(
+      'B payload contains new title',
+      ((evB.board as { categories?: Array<{ title?: string }> }).categories?.[0]?.title ?? '') === tag,
+    )
 
     // Restore original title.
     await patchContent({ kind: 'setCategoryTitle', col: 0, title: before })
@@ -172,8 +214,10 @@ async function main() {
 
     const p1 = await patchPlay({ kind: 'setTeamName', index: 0, name: nameTag })
     check('play PATCH bumped playVersion', p1.playVersion === baseline2.playVersion + 1)
-    check('play PATCH state has new name',
-      ((p1.playState as { teams?: Array<{ name?: string }> }).teams?.[0]?.name ?? '') === nameTag)
+    check(
+      'play PATCH state has new name',
+      ((p1.playState as { teams?: Array<{ name?: string }> }).teams?.[0]?.name ?? '') === nameTag,
+    )
 
     const aP1 = await waitFor(
       () => a.events.slice(aEvCountBefore).find((e) => e.playVersion >= p1.playVersion) ?? null,
@@ -183,10 +227,14 @@ async function main() {
       () => b.events.slice(bEvCountBefore).find((e) => e.playVersion >= p1.playVersion) ?? null,
       'B receives play-state fan-out',
     )
-    check('A payload contains new team name',
-      ((aP1.playState as { teams?: Array<{ name?: string }> }).teams?.[0]?.name ?? '') === nameTag)
-    check('B payload contains new team name',
-      ((bP1.playState as { teams?: Array<{ name?: string }> }).teams?.[0]?.name ?? '') === nameTag)
+    check(
+      'A payload contains new team name',
+      ((aP1.playState as { teams?: Array<{ name?: string }> }).teams?.[0]?.name ?? '') === nameTag,
+    )
+    check(
+      'B payload contains new team name',
+      ((bP1.playState as { teams?: Array<{ name?: string }> }).teams?.[0]?.name ?? '') === nameTag,
+    )
 
     // Score adjustment
     const aEvCountB2 = a.events.length
@@ -217,15 +265,23 @@ async function main() {
       patchPlay({ kind: 'adjustTeamScore', index: 0, delta: 100 }),
       patchPlay({ kind: 'adjustTeamScore', index: 0, delta: 100 }),
     ])
-    check('both PATCHes succeeded with distinct playVersions', r1.playVersion !== r2.playVersion,
-      `got ${r1.playVersion} and ${r2.playVersion}`)
+    check(
+      'both PATCHes succeeded with distinct playVersions',
+      r1.playVersion !== r2.playVersion,
+      `got ${r1.playVersion} and ${r2.playVersion}`,
+    )
     const finalGet = await getBoard()
     const finalScore = (finalGet.playState as { teams?: Array<{ score?: number }> }).teams?.[0]?.score ?? 0
-    check('final team-0 score reflects BOTH ops (+200 net)', finalScore === t0Score + 200,
-      `expected ${t0Score + 200}, got ${finalScore}`)
-    check('final playVersion bumped by exactly 2',
+    check(
+      'final team-0 score reflects BOTH ops (+200 net)',
+      finalScore === t0Score + 200,
+      `expected ${t0Score + 200}, got ${finalScore}`,
+    )
+    check(
+      'final playVersion bumped by exactly 2',
       finalGet.playVersion === baseline3.playVersion + 2,
-      `expected ${baseline3.playVersion + 2}, got ${finalGet.playVersion}`)
+      `expected ${baseline3.playVersion + 2}, got ${finalGet.playVersion}`,
+    )
 
     // Reset score
     await patchPlay({ kind: 'adjustTeamScore', index: 0, delta: -200 })
@@ -238,4 +294,7 @@ async function main() {
   if (failures > 0) process.exit(1)
 }
 
-main().catch((err) => { console.error(err); process.exit(1) })
+main().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})

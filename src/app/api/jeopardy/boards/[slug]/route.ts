@@ -11,7 +11,9 @@ function isValidSlug(s: string): boolean {
 async function loadRow(slug: string) {
   return supabase
     .from('jeopardy_boards')
-    .select('id, slug, title, board, base_value, increment, version, updated_at, last_editor, play_state, play_version, play_updated_at')
+    .select(
+      'id, slug, title, board, base_value, increment, version, updated_at, last_editor, play_state, play_version, play_updated_at',
+    )
     .eq('slug', slug)
     .single()
 }

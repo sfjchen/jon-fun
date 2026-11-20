@@ -57,9 +57,7 @@ export async function getAllReaderPublicationsIdb(): Promise<ReaderPublication[]
   const store = tx.objectStore(STORE)
   const all = await txRequest(store.getAll())
   db.close()
-  return (all as ReaderPublication[]).sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-  )
+  return (all as ReaderPublication[]).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
 }
 
 export async function importReaderPublicationsMergeIdb(publications: ReaderPublication[]): Promise<void> {

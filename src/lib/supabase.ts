@@ -17,4 +17,3 @@ function createServerClient(): SupabaseClient {
 }
 
 export const supabaseAdmin = createServerClient()
-

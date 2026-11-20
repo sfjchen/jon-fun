@@ -23,7 +23,10 @@ export function extractDefinitionFromAssistant(content: string, term?: string): 
   const text = kept.join('\n').trim()
   if (!text) return content.trim().slice(0, 600)
 
-  const blocks = text.split(/\n\n+/).map((b) => b.trim()).filter(Boolean)
+  const blocks = text
+    .split(/\n\n+/)
+    .map((b) => b.trim())
+    .filter(Boolean)
   if (!blocks.length) return text.slice(0, 600)
 
   let startIdx = 0
@@ -39,7 +42,10 @@ export function extractDefinitionFromAssistant(content: string, term?: string): 
   }
 
   const defBlock = blocks[startIdx] ?? blocks[0]!
-  return defBlock.replace(/\n{2,}/g, '\n').trim().slice(0, 600)
+  return defBlock
+    .replace(/\n{2,}/g, '\n')
+    .trim()
+    .slice(0, 600)
 }
 
 function isSkippedTerm(term: string): boolean {

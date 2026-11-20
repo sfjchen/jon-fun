@@ -23,10 +23,14 @@ export function cardLabel(card: number): string {
  */
 function Shape({ shape, x, fill, stroke }: { shape: number; x: number; fill: string; stroke: string }) {
   const p = { fill, stroke, strokeWidth: 3.5, strokeLinejoin: 'round' as const }
-  if(shape===0)return <rect x={x-13} y={22} width={26} height={56} rx={13} {...p}/>
-  if(shape===1)return <path d={`M${x} 20 ${x+17} 50 ${x} 80 ${x-17} 50 Z`} {...p}/>
-  return <path d={`M${x-11} 23 C${x+15} 12 ${x+22} 35 ${x+8} 49 C${x-1} 61 ${x+23} 64 ${x+9} 78 C${x-14} 89 ${x-24} 66 ${x-10} 51 C${x+1} 39 ${x-24} 37 ${x-11} 23 Z`} {...p}/>
-
+  if (shape === 0) return <rect x={x - 13} y={22} width={26} height={56} rx={13} {...p} />
+  if (shape === 1) return <path d={`M${x} 20 ${x + 17} 50 ${x} 80 ${x - 17} 50 Z`} {...p} />
+  return (
+    <path
+      d={`M${x - 11} 23 C${x + 15} 12 ${x + 22} 35 ${x + 8} 49 C${x - 1} 61 ${x + 23} 64 ${x + 9} 78 C${x - 14} 89 ${x - 24} 66 ${x - 10} 51 C${x + 1} 39 ${x - 24} 37 ${x - 11} 23 Z`}
+      {...p}
+    />
+  )
 }
 
 type Props = {

@@ -48,7 +48,7 @@ export function parseGroupsJsonb(raw: unknown): ConnectionsGroup[] | null {
 export function parseConnectionsUpsertBody(body: unknown, existingId?: string): ConnectionsPuzzle {
   if (!body || typeof body !== 'object') throw new Error('Invalid body')
   const p = body as Record<string, unknown>
-  const id = typeof p.id === 'string' && p.id.trim() ? p.id : existingId ?? ''
+  const id = typeof p.id === 'string' && p.id.trim() ? p.id : (existingId ?? '')
   if (!id.trim()) throw new Error('id required')
   const title = typeof p.title === 'string' ? p.title.trim() : ''
   const description = typeof p.description === 'string' ? p.description : ''
@@ -81,7 +81,9 @@ export function parseConnectionsUpsertBody(body: unknown, existingId?: string): 
   return puzzle
 }
 
-export function puzzleToDbRow(puzzle: ConnectionsPuzzle): Omit<ConnectionsDbRow, 'play_count' | 'solve_count' | 'total_mistakes'> {
+export function puzzleToDbRow(
+  puzzle: ConnectionsPuzzle,
+): Omit<ConnectionsDbRow, 'play_count' | 'solve_count' | 'total_mistakes'> {
   return {
     id: puzzle.id,
     slug: puzzle.slug,

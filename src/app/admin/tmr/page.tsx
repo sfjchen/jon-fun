@@ -73,10 +73,7 @@ export default function TMRAdminPage() {
   }
 
   const exportJson = useCallback(() => {
-    const blob = new Blob(
-      [JSON.stringify({ studySessions, sleepSessions }, null, 2)],
-      { type: 'application/json' }
-    )
+    const blob = new Blob([JSON.stringify({ studySessions, sleepSessions }, null, 2)], { type: 'application/json' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
     a.download = 'tmr-sessions.json'
@@ -89,14 +86,14 @@ export default function TMRAdminPage() {
       'type,user_id,start,end,duration_minutes,cues_played,cue_interval_seconds,interrupted,created_at',
       ...studySessions.map(
         (s) =>
-          `study,${s.user_id},${s.start},${s.end},${s.duration_minutes},${s.cues_played},${s.cue_interval_seconds},${s.interrupted},${s.created_at}`
+          `study,${s.user_id},${s.start},${s.end},${s.duration_minutes},${s.cues_played},${s.cue_interval_seconds},${s.interrupted},${s.created_at}`,
       ),
     ]
     const sleepLines = [
       'type,user_id,start,end,duration_minutes,total_cues,cycles,created_at',
       ...sleepSessions.map(
         (s) =>
-          `sleep,${s.user_id},${s.start},${s.end},${s.duration_minutes},${s.total_cues},${s.cycles},${s.created_at}`
+          `sleep,${s.user_id},${s.start},${s.end},${s.duration_minutes},${s.total_cues},${s.cycles},${s.created_at}`,
       ),
     ]
     const csv = [...studyLines, '', ...sleepLines].join('\n')
@@ -114,35 +111,45 @@ export default function TMRAdminPage() {
       lines.push(`[Study] ${s.start} – ${s.end} | ${s.duration_minutes.toFixed(1)} min | ${s.cues_played} cues`)
     })
     sleepSessions.forEach((s) => {
-      lines.push(`[Sleep] ${s.start} – ${s.end} | ${s.duration_minutes.toFixed(1)} min | ${s.total_cues} cues | ${s.cycles} cycles`)
+      lines.push(
+        `[Sleep] ${s.start} – ${s.end} | ${s.duration_minutes.toFixed(1)} min | ${s.total_cues} cues | ${s.cycles} cycles`,
+      )
     })
     navigator.clipboard.writeText(lines.join('\n'))
   }, [studySessions, sleepSessions])
 
-  const formatDate = (s: string) =>
-    new Date(s).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
+  const formatDate = (s: string) => new Date(s).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
 
   if (!authorized && !loading) {
     return (
-      <div className="p-4 flex items-center justify-center">
-        <div className="rounded-lg p-6 border max-w-md w-full shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-          <h1 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>TMR Admin</h1>
+      <div className="flex items-center justify-center p-4">
+        <div
+          className="w-full max-w-md rounded-lg border p-6 shadow-sm"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
+          <h1 className="mb-4 font-lora text-2xl font-bold" style={{ color: 'var(--ink-text)' }}>
+            TMR Admin
+          </h1>
           <form onSubmit={handleSubmit}>
             <input
               type="password"
               value={key}
               onChange={(e) => setKey(e.target.value)}
               placeholder="Admin key"
-              className="w-full px-4 py-2 rounded-lg border mb-4 focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
+              className="mb-4 w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-[var(--ink-accent)] focus:outline-none"
               style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
               autoComplete="off"
             />
-            <button type="submit" className="w-full text-white py-2 rounded-lg hover:opacity-90" style={{ backgroundColor: 'var(--ink-accent)' }}>
+            <button
+              type="submit"
+              className="w-full rounded-lg py-2 text-white hover:opacity-90"
+              style={{ backgroundColor: 'var(--ink-accent)' }}
+            >
               View logs
             </button>
           </form>
-          {error && <p className="text-red-600 mt-2 text-sm">{error}</p>}
-          <Link href={hubHref} className="block mt-4 text-sm hover:opacity-80" style={{ color: 'var(--ink-accent)' }}>
+          {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+          <Link href={hubHref} className="mt-4 block text-sm hover:opacity-80" style={{ color: 'var(--ink-accent)' }}>
             ← Back to hub
           </Link>
         </div>
@@ -152,113 +159,133 @@ export default function TMRAdminPage() {
 
   if (loading) {
     return (
-      <div className="p-4 flex items-center justify-center">
+      <div className="flex items-center justify-center p-4">
         <p style={{ color: 'var(--ink-text)' }}>Loading…</p>
       </div>
     )
   }
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="mx-auto max-w-5xl">
+      <div className="mb-8 flex items-center justify-between">
         <Link href={hubHref} className="text-2xl font-bold hover:opacity-80" style={{ color: 'var(--ink-accent)' }}>
           ← Back
         </Link>
-        <h1 className="text-4xl font-bold font-lora" style={{ color: 'var(--ink-text)' }}>TMR Admin – All sessions</h1>
+        <h1 className="font-lora text-4xl font-bold" style={{ color: 'var(--ink-text)' }}>
+          TMR Admin – All sessions
+        </h1>
         <div className="w-16" />
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="mb-6 flex flex-wrap gap-2">
         <button
           onClick={exportJson}
-          className="px-4 py-2 rounded-lg text-white hover:opacity-90"
+          className="rounded-lg px-4 py-2 text-white hover:opacity-90"
           style={{ backgroundColor: 'var(--ink-accent)' }}
         >
-            Download JSON
-          </button>
+          Download JSON
+        </button>
         <button
           onClick={exportCsv}
-          className="px-4 py-2 rounded-lg border hover:opacity-90"
+          className="rounded-lg border px-4 py-2 hover:opacity-90"
           style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
         >
           Download CSV
         </button>
         <button
           onClick={copyText}
-          className="px-4 py-2 rounded-lg border hover:opacity-90"
+          className="rounded-lg border px-4 py-2 hover:opacity-90"
           style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
         >
-            Copy as text
-          </button>
-        </div>
-
-        <div className="rounded-lg p-6 border mb-6 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-          <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>Study sessions ({studySessions.length})</h2>
-          {studySessions.length === 0 ? (
-            <p style={{ color: 'var(--ink-muted)' }}>No study sessions.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b" style={{ color: 'var(--ink-muted)', borderColor: 'var(--ink-border)' }}>
-                    <th className="py-2 pr-4">User</th>
-                    <th className="py-2 pr-4">Start</th>
-                    <th className="py-2 pr-4">End</th>
-                    <th className="py-2 pr-4">Duration</th>
-                    <th className="py-2 pr-4">Cues</th>
-                    <th className="py-2">Int.</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {studySessions.map((s) => (
-                    <tr key={s.id} className="border-b" style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
-                      <td className="py-2 pr-4 font-mono text-xs">{s.user_id.slice(0, 8)}…</td>
-                      <td className="py-2 pr-4">{formatDate(s.start)}</td>
-                      <td className="py-2 pr-4">{formatDate(s.end)}</td>
-                      <td className="py-2 pr-4">{s.duration_minutes.toFixed(1)} m</td>
-                      <td className="py-2 pr-4">{s.cues_played}</td>
-                      <td className="py-2">{s.interrupted ? 'Yes' : 'No'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        <div className="rounded-lg p-6 border shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-          <h2 className="text-2xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>Sleep sessions ({sleepSessions.length})</h2>
-          {sleepSessions.length === 0 ? (
-            <p style={{ color: 'var(--ink-muted)' }}>No sleep sessions.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b" style={{ color: 'var(--ink-muted)', borderColor: 'var(--ink-border)' }}>
-                    <th className="py-2 pr-4">User</th>
-                    <th className="py-2 pr-4">Start</th>
-                    <th className="py-2 pr-4">End</th>
-                    <th className="py-2 pr-4">Duration</th>
-                    <th className="py-2 pr-4">Cues</th>
-                    <th className="py-2">Cycles</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sleepSessions.map((s) => (
-                    <tr key={s.id} className="border-b" style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
-                      <td className="py-2 pr-4 font-mono text-xs">{s.user_id.slice(0, 8)}…</td>
-                      <td className="py-2 pr-4">{formatDate(s.start)}</td>
-                      <td className="py-2 pr-4">{formatDate(s.end)}</td>
-                      <td className="py-2 pr-4">{s.duration_minutes.toFixed(1)} m</td>
-                      <td className="py-2 pr-4">{s.total_cues}</td>
-                      <td className="py-2">{s.cycles}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+          Copy as text
+        </button>
       </div>
+
+      <div
+        className="mb-6 rounded-lg border p-6 shadow-sm"
+        style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+      >
+        <h2 className="mb-4 font-lora text-2xl font-bold" style={{ color: 'var(--ink-text)' }}>
+          Study sessions ({studySessions.length})
+        </h2>
+        {studySessions.length === 0 ? (
+          <p style={{ color: 'var(--ink-muted)' }}>No study sessions.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b" style={{ color: 'var(--ink-muted)', borderColor: 'var(--ink-border)' }}>
+                  <th className="py-2 pr-4">User</th>
+                  <th className="py-2 pr-4">Start</th>
+                  <th className="py-2 pr-4">End</th>
+                  <th className="py-2 pr-4">Duration</th>
+                  <th className="py-2 pr-4">Cues</th>
+                  <th className="py-2">Int.</th>
+                </tr>
+              </thead>
+              <tbody>
+                {studySessions.map((s) => (
+                  <tr
+                    key={s.id}
+                    className="border-b"
+                    style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                  >
+                    <td className="py-2 pr-4 font-mono text-xs">{s.user_id.slice(0, 8)}…</td>
+                    <td className="py-2 pr-4">{formatDate(s.start)}</td>
+                    <td className="py-2 pr-4">{formatDate(s.end)}</td>
+                    <td className="py-2 pr-4">{s.duration_minutes.toFixed(1)} m</td>
+                    <td className="py-2 pr-4">{s.cues_played}</td>
+                    <td className="py-2">{s.interrupted ? 'Yes' : 'No'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <div
+        className="rounded-lg border p-6 shadow-sm"
+        style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+      >
+        <h2 className="mb-4 font-lora text-2xl font-bold" style={{ color: 'var(--ink-text)' }}>
+          Sleep sessions ({sleepSessions.length})
+        </h2>
+        {sleepSessions.length === 0 ? (
+          <p style={{ color: 'var(--ink-muted)' }}>No sleep sessions.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b" style={{ color: 'var(--ink-muted)', borderColor: 'var(--ink-border)' }}>
+                  <th className="py-2 pr-4">User</th>
+                  <th className="py-2 pr-4">Start</th>
+                  <th className="py-2 pr-4">End</th>
+                  <th className="py-2 pr-4">Duration</th>
+                  <th className="py-2 pr-4">Cues</th>
+                  <th className="py-2">Cycles</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sleepSessions.map((s) => (
+                  <tr
+                    key={s.id}
+                    className="border-b"
+                    style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                  >
+                    <td className="py-2 pr-4 font-mono text-xs">{s.user_id.slice(0, 8)}…</td>
+                    <td className="py-2 pr-4">{formatDate(s.start)}</td>
+                    <td className="py-2 pr-4">{formatDate(s.end)}</td>
+                    <td className="py-2 pr-4">{s.duration_minutes.toFixed(1)} m</td>
+                    <td className="py-2 pr-4">{s.total_cues}</td>
+                    <td className="py-2">{s.cycles}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }

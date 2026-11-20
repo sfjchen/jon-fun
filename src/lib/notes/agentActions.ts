@@ -26,7 +26,8 @@ export function parseAgentResponse(raw: string): { displayText: string; actions:
 
   const end = raw.indexOf(ACTIONS_END, start)
   const displayText = raw.slice(0, start).trim()
-  const block = end > start ? raw.slice(start + ACTIONS_START.length, end).trim() : raw.slice(start + ACTIONS_START.length).trim()
+  const block =
+    end > start ? raw.slice(start + ACTIONS_START.length, end).trim() : raw.slice(start + ACTIONS_START.length).trim()
 
   let actions: AgentAction[] = []
   try {
@@ -54,11 +55,7 @@ function isAgentAction(v: unknown): v is AgentAction {
   return false
 }
 
-export function applyAgentActions(
-  actions: AgentAction[],
-  session: NoteSession,
-  lookupId: string,
-): AgentApplyResult {
+export function applyAgentActions(actions: AgentAction[], session: NoteSession, lookupId: string): AgentApplyResult {
   if (!actions.length) return { session: null, dictionaryChanged: false, applied: [] }
 
   let next: NoteSession = { ...session }
@@ -91,7 +88,13 @@ export function applyAgentActions(
         applied.push('note append')
         break
       case 'note.set_tags':
-        next = { ...next, tags: action.tags.map((t) => t.trim()).filter(Boolean).slice(0, 20) }
+        next = {
+          ...next,
+          tags: action.tags
+            .map((t) => t.trim())
+            .filter(Boolean)
+            .slice(0, 20),
+        }
         applied.push('note tags')
         break
       case 'note.add_tag': {

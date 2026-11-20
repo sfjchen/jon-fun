@@ -31,7 +31,7 @@ export const score = (w: string) => (w.length === 4 ? 1 : w.length) + (isPangram
 
 /** Published pangrams can be listed separately in older snapshots. */
 export function includePublishedPangrams<T extends Puzzle>(puzzle: T): T {
-  if (puzzle.pangrams.every(word => puzzle.answers.includes(word))) return puzzle
+  if (puzzle.pangrams.every((word) => puzzle.answers.includes(word))) return puzzle
   const answers = [...new Set([...puzzle.answers, ...puzzle.pangrams])].sort()
   return { ...puzzle, answers, max: answers.reduce((sum, word) => sum + score(word), 0) }
 }

@@ -40,7 +40,8 @@ export function hardError(draft: string, guesses: string[], answer: string): str
     }
     n.forEach((c, l) => need.set(l, Math.max(need.get(l) ?? 0, c)))
   }
-  for (const [l, c] of need) if ([...draft].filter((x) => x === l).length < c) return `Guess must contain ${l.toUpperCase()}`
+  for (const [l, c] of need)
+    if ([...draft].filter((x) => x === l).length < c) return `Guess must contain ${l.toUpperCase()}`
   return ''
 }
 
@@ -49,11 +50,16 @@ export function hardError(draft: string, guesses: string[], answer: string): str
  * on the answer or the 6th guess, and hard mode must hold on every guess when claimed. Returns the score (7 minus
  * guesses, 0 for a loss) or the reason the guesses are not a valid game.
  */
-export function replayFivefold(guesses: string[], answer: string, listed: (word: string) => boolean, hard: boolean):
-  { score: number; n: number; solved: boolean } | { error: string } {
+export function replayFivefold(
+  guesses: string[],
+  answer: string,
+  listed: (word: string) => boolean,
+  hard: boolean,
+): { score: number; n: number; solved: boolean } | { error: string } {
   if (!guesses.length || guesses.length > FIVEFOLD_TRIES) return { error: 'A game has 1 to 6 guesses' }
   for (const [i, g] of guesses.entries()) {
-    if (!/^[a-z]{5}$/.test(g) || (g !== answer && !listed(g))) return { error: `Guess ${i + 1} is not in the word list` }
+    if (!/^[a-z]{5}$/.test(g) || (g !== answer && !listed(g)))
+      return { error: `Guess ${i + 1} is not in the word list` }
     if (g === answer && i < guesses.length - 1) return { error: 'Guesses continue after the answer' }
     if (hard && hardError(g, guesses.slice(0, i), answer)) return { error: `Guess ${i + 1} breaks hard mode` }
   }

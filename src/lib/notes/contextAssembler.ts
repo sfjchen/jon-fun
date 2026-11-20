@@ -1,10 +1,5 @@
 import { formatGlossaryForPrompt } from './glossary'
-import {
-  formatRankedRelated,
-  formatRankedSources,
-  rankRelatedSessions,
-  rankSourcesForQuery,
-} from './contextRag'
+import { formatRankedRelated, formatRankedSources, rankRelatedSessions, rankSourcesForQuery } from './contextRag'
 import { resolveDomainOpts, resolveDomainsForNote } from './knowledge/registry'
 import { formatSectionsOutline, parseNoteSections } from './knowledge/sectioning'
 import { formatSourcesForPrompt, loadSourcesLocal } from './sources'
@@ -44,9 +39,7 @@ function baseContext(opts: {
   const allSources = loadSourcesLocal()
   const sources = companion
     ? allSources.filter(
-        (s) =>
-          isSourceEnabledForNote(opts.activeSession, s.id) ||
-          isSourceEnabledForNote(companion, s.id),
+        (s) => isSourceEnabledForNote(opts.activeSession, s.id) || isSourceEnabledForNote(companion, s.id),
       )
     : filterSourcesForNote(allSources, opts.activeSession)
   const domainTags = new Set(primary.tagHints.map((t) => t.toLowerCase()))
@@ -104,10 +97,8 @@ export async function assembleClientContextAsync(opts: {
     rankRelatedSessions(opts.allSessions, opts.query, opts.activeSession.id, opts.maxNotes ?? 3),
   ])
 
-  const sourcesBlock =
-    formatRankedSources(rankedSources) || ctx.sourcesBlock || '(none yet)'
-  const relatedNotesBlock =
-    formatRankedRelated(rankedRelated.length ? rankedRelated : ctx.keywordRelated) || '(none)'
+  const sourcesBlock = formatRankedSources(rankedSources) || ctx.sourcesBlock || '(none yet)'
+  const relatedNotesBlock = formatRankedRelated(rankedRelated.length ? rankedRelated : ctx.keywordRelated) || '(none)'
 
   return {
     glossaryBlock: ctx.glossaryBlock,

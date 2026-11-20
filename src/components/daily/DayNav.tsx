@@ -59,7 +59,7 @@ export function Info({ children }: { children: React.ReactNode }) {
         <div
           role="dialog"
           aria-label="How to play"
-          className="absolute right-0 top-11 z-40 w-[min(20rem,calc(100vw-2rem))] space-y-2 rounded-xl border p-4 text-sm shadow-lg"
+          className="absolute top-11 right-0 z-40 w-[min(20rem,calc(100vw-2rem))] space-y-2 rounded-xl border p-4 text-sm shadow-lg"
           style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
         >
           {children}
@@ -86,7 +86,16 @@ type DayNavProps = {
 /**
  * Renders the header. Day arrows step one day, the date field jumps anywhere, and Today returns to today.
  */
-export default function DayNav({ title, path, day, label, info, children, minDay = DAILY_EPOCH, publishedOnly = false }: DayNavProps) {
+export default function DayNav({
+  title,
+  path,
+  day,
+  label,
+  info,
+  children,
+  minDay = DAILY_EPOCH,
+  publishedOnly = false,
+}: DayNavProps) {
   const router = useRouter()
   /** Read only in the browser, so a server on another day (or a test clock) never mismatches the page. */
   const today = useSiteDay()
@@ -99,8 +108,20 @@ export default function DayNav({ title, path, day, label, info, children, minDay
         <HomeLink className="inline-flex h-10 w-10 shrink-0 items-center justify-center" />
         <h1 className="mr-auto min-w-0 truncate font-lora text-xl font-bold md:text-2xl">{title}</h1>
         <DailyHeader compact />
-        <Link href={day ? `/leaderboards?d=${day}` : '/leaderboards'} className={icon} aria-label="Leaderboard" title="Leaderboard">
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
+        <Link
+          href={day ? `/leaderboards?d=${day}` : '/leaderboards'}
+          className={icon}
+          aria-label="Leaderboard"
+          title="Leaderboard"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinejoin="round"
+          >
             <path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 20h8" />
           </svg>
         </Link>
@@ -108,7 +129,14 @@ export default function DayNav({ title, path, day, label, info, children, minDay
       </div>
       <div className="flex flex-wrap items-center gap-x-1 gap-y-1">
         {day ? (
-          <DayPicker day={day} today={today} minDay={minDay} maxDay={publishedOnly ? today : undefined} go={go} className="mr-auto" />
+          <DayPicker
+            day={day}
+            today={today}
+            minDay={minDay}
+            maxDay={publishedOnly ? today : undefined}
+            go={go}
+            className="mr-auto"
+          />
         ) : (
           <p className="mr-auto text-sm" style={{ color: 'var(--ink-muted)' }}>
             {label}
@@ -119,7 +147,11 @@ export default function DayNav({ title, path, day, label, info, children, minDay
           {children}
         </div>
       </div>
-      {day && today && day > today && <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>Future preview · practice only, not ranked</p>}
+      {day && today && day > today && (
+        <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
+          Future preview · practice only, not ranked
+        </p>
+      )}
       <ScoreSync />
     </header>
   )

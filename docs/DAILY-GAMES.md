@@ -12,16 +12,16 @@ Wordle (id `fivefold`), Mini, Connections, Spelling Bee (`bee`), Krillion and An
 
 ## Code map
 
-| Piece | Where |
-|---|---|
-| Game registry (title, url, max, rules) | `GAMES` in `src/lib/results.ts` |
-| Dates, playable range, NYT first days | `src/lib/daily.ts` |
-| Puzzle for a day | `GET /api/daily/[game]` → `dailyPuzzle` in `src/lib/daily/server.ts` |
-| NYT fetch, validation, snapshots | `src/lib/daily/nyt.ts`, `nyt-puzzles.ts` |
-| Krillion and Anthropeum sources | `src/lib/daily/krillion.ts`, `anthropeum.ts` |
-| Page shell for 5 games | `src/components/daily/DailyGame.tsx` (Spelling Bee has its own, for practice hives) |
-| Score check | `POST /api/results` → `VERIFIERS` in `src/lib/daily/verify.ts` |
-| Boards and stats | `/leaderboards` (`src/components/Scores.tsx`), Daily drawer (`DailyDrawer.tsx`) |
+| Piece                                  | Where                                                                               |
+| -------------------------------------- | ----------------------------------------------------------------------------------- |
+| Game registry (title, url, max, rules) | `GAMES` in `src/lib/results.ts`                                                     |
+| Dates, playable range, NYT first days  | `src/lib/daily.ts`                                                                  |
+| Puzzle for a day                       | `GET /api/daily/[game]` → `dailyPuzzle` in `src/lib/daily/server.ts`                |
+| NYT fetch, validation, snapshots       | `src/lib/daily/nyt.ts`, `nyt-puzzles.ts`                                            |
+| Krillion and Anthropeum sources        | `src/lib/daily/krillion.ts`, `anthropeum.ts`                                        |
+| Page shell for 5 games                 | `src/components/daily/DailyGame.tsx` (Spelling Bee has its own, for practice hives) |
+| Score check                            | `POST /api/results` → `VERIFIERS` in `src/lib/daily/verify.ts`                      |
+| Boards and stats                       | `/leaderboards` (`src/components/Scores.tsx`), Daily drawer (`DailyDrawer.tsx`)     |
 
 Adding a daily game - add it to `GAMES`, give it a verifier (the build fails without one), a branch in `dailyPuzzle`, a player component and its route in `PageShell`.
 

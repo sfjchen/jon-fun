@@ -3,7 +3,12 @@
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import type { ConnectionsDifficulty, ConnectionsPuzzleSummary } from '@/lib/connections'
-import { CONNECTIONS_DIFFICULTIES, getOrCreateConnectionsClientId, summaryAvgMistakes, summarySolveRate } from '@/lib/connections'
+import {
+  CONNECTIONS_DIFFICULTIES,
+  getOrCreateConnectionsClientId,
+  summaryAvgMistakes,
+  summarySolveRate,
+} from '@/lib/connections'
 import { SAMPLE_PUZZLE } from '@/lib/connections-sample'
 
 const TIER_DOT: Record<ConnectionsDifficulty, string> = {
@@ -131,7 +136,7 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
           style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
         >
           Library is offline (Supabase not configured). You can still use{' '}
-          <Link href={`${basePath}/new`} className="underline font-medium">
+          <Link href={`${basePath}/new`} className="font-medium underline">
             Create puzzle
           </Link>{' '}
           and export JSON locally.
@@ -179,7 +184,7 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
           data-testid="connections-library-no-matches"
           style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
         >
-          <p className="font-lora text-lg mb-2" style={{ color: 'var(--ink-text)' }}>
+          <p className="mb-2 font-lora text-lg" style={{ color: 'var(--ink-text)' }}>
             No matches
           </p>
           <p className="mb-4 text-sm" style={{ color: 'var(--ink-muted)' }}>
@@ -192,7 +197,7 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
           data-testid="connections-library-empty"
           style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
         >
-          <p className="font-lora text-lg mb-2" style={{ color: 'var(--ink-text)' }}>
+          <p className="mb-2 font-lora text-lg" style={{ color: 'var(--ink-text)' }}>
             No puzzles yet
           </p>
           <p className="mb-4 text-sm" style={{ color: 'var(--ink-muted)' }}>
@@ -225,16 +230,12 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
               style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
             >
               <div className="mb-2 flex items-start justify-between gap-2">
-                <h2 className="font-lora text-lg font-semibold leading-tight" style={{ color: 'var(--ink-text)' }}>
+                <h2 className="font-lora text-lg leading-tight font-semibold" style={{ color: 'var(--ink-text)' }}>
                   {it.title}
                 </h2>
                 <div className="flex shrink-0 gap-0.5" title="Difficulty tiers (yellow → purple)">
                   {CONNECTIONS_DIFFICULTIES.map((d) => (
-                    <span
-                      key={d}
-                      className="h-2.5 w-2.5 rounded-full"
-                      style={{ backgroundColor: TIER_DOT[d] }}
-                    />
+                    <span key={d} className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: TIER_DOT[d] }} />
                   ))}
                 </div>
               </div>
@@ -244,8 +245,9 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
                 </p>
               ) : null}
               <p className="mb-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
-                by {it.authorDisplay || 'Anonymous'} · {it.playCount} plays · {summarySolveRate(it.solveCount, it.playCount)}%
-                solved · avg {summaryAvgMistakes(it.totalMistakes, it.playCount)} mistakes
+                by {it.authorDisplay || 'Anonymous'} · {it.playCount} plays ·{' '}
+                {summarySolveRate(it.solveCount, it.playCount)}% solved · avg{' '}
+                {summaryAvgMistakes(it.totalMistakes, it.playCount)} mistakes
               </p>
               {it.tags?.length ? (
                 <p className="mb-3 text-xs" style={{ color: 'var(--ink-muted)' }}>
@@ -265,13 +267,17 @@ export default function ConnectionsLibrary({ basePath }: ConnectionsLibraryProps
                   Play
                 </Link>
                 {it.mine && (
-                <Link
-                  href={`${basePath}/edit/${it.id}`}
-                  className="rounded-lg border px-3 py-1.5 text-sm"
-                  style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-                >
-                  Edit
-                </Link>
+                  <Link
+                    href={`${basePath}/edit/${it.id}`}
+                    className="rounded-lg border px-3 py-1.5 text-sm"
+                    style={{
+                      backgroundColor: 'var(--ink-bg)',
+                      borderColor: 'var(--ink-border)',
+                      color: 'var(--ink-text)',
+                    }}
+                  >
+                    Edit
+                  </Link>
                 )}
               </div>
             </li>

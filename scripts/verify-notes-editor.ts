@@ -25,10 +25,7 @@ ok('wrap highlight single line', wrapLinesWithHighlight('hello') === '*hello*')
 ok('wrap highlight keeps indent', wrapLinesWithHighlight('  item') === '  *item*')
 ok('wrap highlight skips wrapped', wrapLinesWithHighlight('*done*') === '*done*')
 ok('wrap highlight multiline', wrapLinesWithHighlight('a\nb') === '*a*\n*b*')
-ok(
-  'normalize plain unicode bullets',
-  normalizePlainPasteText('• one\n  • nested') === '- one\n  - nested',
-)
+ok('normalize plain unicode bullets', normalizePlainPasteText('• one\n  • nested') === '- one\n  - nested')
 ok('normalize plain skips dash lines', normalizePlainPasteText('- already\nplain') === null)
 ok('bullettize plain lines', bullettizeLines('one\n  two') === '- one\n  - two')
 ok('bullettize skips existing dash', bullettizeLines('- done') === '- done')

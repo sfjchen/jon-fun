@@ -61,10 +61,7 @@ export function canPlayerAct(p: SeatPlayer): boolean {
   return !p.has_folded && !p.is_all_in
 }
 
-export function applyPendingUpdate(
-  p: SeatPlayer,
-  pending?: Partial<SeatPlayer> & { position: number },
-): SeatPlayer {
+export function applyPendingUpdate(p: SeatPlayer, pending?: Partial<SeatPlayer> & { position: number }): SeatPlayer {
   if (pending && pending.position === p.position) {
     return { ...p, ...pending }
   }

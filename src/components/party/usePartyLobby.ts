@@ -26,7 +26,10 @@ export function usePartyLobby(gameKind: PartyGameKind, onPayload: (data: unknown
   /* Reads the saved session on the client; null on the server and during hydration. */
   const saved = useSyncExternalStore(
     () => () => {},
-    () => JSON.stringify([keys.pin, keys.playerId, keys.hostId, keys.playerName].map((k) => sessionStorage.getItem(k) || '')),
+    () =>
+      JSON.stringify(
+        [keys.pin, keys.playerId, keys.hostId, keys.playerName].map((k) => sessionStorage.getItem(k) || ''),
+      ),
     () => null,
   )
   const clientReady = saved !== null
@@ -48,7 +51,10 @@ export function usePartyLobby(gameKind: PartyGameKind, onPayload: (data: unknown
       if (d.pin !== undefined) sessionStorage.setItem(keys.pin, d.pin)
       if (d.playerId !== undefined) sessionStorage.setItem(keys.playerId, d.playerId)
       if (d.hostId !== undefined) sessionStorage.setItem(keys.hostId, d.hostId ?? '')
-      if (d.playerName !== undefined) { sessionStorage.setItem(keys.playerName, d.playerName); saveDevicePlayer({ name: d.playerName, group: getDevicePlayer()?.group ?? 'public' }) }
+      if (d.playerName !== undefined) {
+        sessionStorage.setItem(keys.playerName, d.playerName)
+        saveDevicePlayer({ name: d.playerName, group: getDevicePlayer()?.group ?? 'public' })
+      }
     },
     [keys.hostId, keys.pin, keys.playerId, keys.playerName],
   )

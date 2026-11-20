@@ -112,12 +112,7 @@ export function parseConnectionsGroup(v: unknown): ConnectionsGroup | null {
   if (typeof o.category !== 'string') return null
   if (!isConnectionsDifficulty(o.difficulty)) return null
   if (!Array.isArray(o.words) || o.words.length !== 4) return null
-  const words = o.words.map((x) => (typeof x === 'string' ? normalizeWord(x) : '')) as [
-    string,
-    string,
-    string,
-    string,
-  ]
+  const words = o.words.map((x) => (typeof x === 'string' ? normalizeWord(x) : '')) as [string, string, string, string]
   if (words.some((w) => !w)) return null
   return { category: o.category.trim(), difficulty: o.difficulty, words }
 }
@@ -185,8 +180,7 @@ export function readPuzzleFromJsonText(text: string): ConnectionsPuzzle {
   const o = parsed as Record<string, unknown>
   const id = typeof o.id === 'string' && o.id.trim() ? o.id : generateConnectionsId()
   const title = typeof o.title === 'string' ? o.title : 'Untitled'
-  const slug =
-    typeof o.slug === 'string' && o.slug.trim() ? o.slug : `${slugify(title)}-${id.slice(0, 8)}`
+  const slug = typeof o.slug === 'string' && o.slug.trim() ? o.slug : `${slugify(title)}-${id.slice(0, 8)}`
   const groupsRaw = Array.isArray(o.groups) ? o.groups : []
   const groups = groupsRaw.map((g) => parseConnectionsGroup(g)).filter(Boolean) as ConnectionsGroup[]
   const puzzle: ConnectionsPuzzle = {
@@ -196,10 +190,7 @@ export function readPuzzleFromJsonText(text: string): ConnectionsPuzzle {
     title,
     description: typeof o.description === 'string' ? o.description : '',
     tags: Array.isArray(o.tags) ? o.tags.filter((t): t is string => typeof t === 'string') : [],
-    groups:
-      groups.length === 4
-        ? groups
-        : (createDefaultConnectionsPuzzle().groups as ConnectionsGroup[]),
+    groups: groups.length === 4 ? groups : (createDefaultConnectionsPuzzle().groups as ConnectionsGroup[]),
     authorDisplay: typeof o.authorDisplay === 'string' ? o.authorDisplay : 'Anonymous',
     authorFingerprint: typeof o.authorFingerprint === 'string' ? o.authorFingerprint : '',
     createdAt: typeof o.createdAt === 'string' ? o.createdAt : new Date().toISOString(),
@@ -243,10 +234,7 @@ export function buildShareLines(guesses: ConnectionsDifficulty[][]): string[] {
 }
 
 /** Check if selected 4 words match exactly one group (by normalized word set). */
-export function findMatchingGroup(
-  groups: ConnectionsGroup[],
-  selectedWords: string[],
-): ConnectionsGroup | null {
+export function findMatchingGroup(groups: ConnectionsGroup[], selectedWords: string[]): ConnectionsGroup | null {
   if (selectedWords.length !== 4) return null
   const sel = new Set(selectedWords.map(wordKey))
   if (sel.size !== 4) return null

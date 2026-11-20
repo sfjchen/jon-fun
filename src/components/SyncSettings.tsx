@@ -6,12 +6,7 @@
  */
 import { useEffect, useState } from 'react'
 import PlayerName from '@/components/PlayerName'
-import {
-  connectSyncKey,
-  ensureSyncIdentity,
-  getSyncKey,
-  SYNC_IDENTITY_CHANGED,
-} from '@/lib/syncIdentity'
+import { connectSyncKey, ensureSyncIdentity, getSyncKey, SYNC_IDENTITY_CHANGED } from '@/lib/syncIdentity'
 
 const C = {
   text: 'var(--uv-text-primary, var(--ink-text))',

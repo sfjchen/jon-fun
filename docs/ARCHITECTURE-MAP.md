@@ -6,32 +6,32 @@ Reading order: [`README.md`](../README.md) (projects, scripts, env), this file, 
 
 ## Routes
 
-| Prefix | Purpose |
-|--------|---------|
-| `/` | Home grid and the Daily drawer |
-| `/games/*` | Every game and tool |
-| `/leaderboards` | Daily results, standings and stats per group |
-| `/admin/*` | Owner admin (TMR, Notes) |
-| `/veridian/*` | Rewrite to the external whiteboard (`VERIDIAN_ORIGIN`) |
-| `/api/*` | Route handlers |
+| Prefix          | Purpose                                                |
+| --------------- | ------------------------------------------------------ |
+| `/`             | Home grid and the Daily drawer                         |
+| `/games/*`      | Every game and tool                                    |
+| `/leaderboards` | Daily results, standings and stats per group           |
+| `/admin/*`      | Owner admin (TMR, Notes)                               |
+| `/veridian/*`   | Rewrite to the external whiteboard (`VERIDIAN_ORIGIN`) |
+| `/api/*`        | Route handlers                                         |
 
 Old `/notebook` and `/theme2` URLs redirect in `next.config.mjs`.
 
 ## Projects and backends
 
-| Project | Routes | State | Backend |
-|---------|--------|-------|---------|
-| Daily games | `/games/{wordle,mini,connections/daily,spelling-bee,krillion,anthropeum}`, `/games/archives` | localStorage progress, `game_results`, `daily_game_content` | `/api/daily`, `/api/results`, `/api/cron`, `/api/krillion`, `/api/anthropeum`, `/api/spelling-bee` |
-| SET and Triples | `/games/set`, `/games/triples` | localStorage, `triples_rooms` | `/api/triples`, `/api/match-results` |
-| Notes | `/games/notes` | localStorage + Supabase | `/api/notes/*` |
-| E-reader | `/games/e-reader` | IndexedDB + optional Supabase | `/api/reader/*` |
-| Daily log | `/games/daily-log` | localStorage + Supabase | `/api/daily-learn/*` |
-| Poker | `/games/poker/*` | session + Supabase rooms | `/api/poker/*` |
-| Party games | quip-clash, fib-it, enough-about-you | sessionStorage + Realtime | `/api/party/*` |
-| Connections shelf | `/games/connections` | Supabase shelf | `/api/connections/*` |
-| Jeopardy | `/games/jeopardy` | localStorage + optional buzzer room | `/api/jeopardy/*` |
-| 24 | `/games/24` | Supabase rooms | `/api/game24/*`, `/api/match-results` |
-| Focus Chimes | `/games/tmr` | localStorage + Supabase | `/api/tmr/*` |
+| Project           | Routes                                                                                       | State                                                       | Backend                                                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Daily games       | `/games/{wordle,mini,connections/daily,spelling-bee,krillion,anthropeum}`, `/games/archives` | localStorage progress, `game_results`, `daily_game_content` | `/api/daily`, `/api/results`, `/api/cron`, `/api/krillion`, `/api/anthropeum`, `/api/spelling-bee` |
+| SET and Triples   | `/games/set`, `/games/triples`                                                               | localStorage, `triples_rooms`                               | `/api/triples`, `/api/match-results`                                                               |
+| Notes             | `/games/notes`                                                                               | localStorage + Supabase                                     | `/api/notes/*`                                                                                     |
+| E-reader          | `/games/e-reader`                                                                            | IndexedDB + optional Supabase                               | `/api/reader/*`                                                                                    |
+| Daily log         | `/games/daily-log`                                                                           | localStorage + Supabase                                     | `/api/daily-learn/*`                                                                               |
+| Poker             | `/games/poker/*`                                                                             | session + Supabase rooms                                    | `/api/poker/*`                                                                                     |
+| Party games       | quip-clash, fib-it, enough-about-you                                                         | sessionStorage + Realtime                                   | `/api/party/*`                                                                                     |
+| Connections shelf | `/games/connections`                                                                         | Supabase shelf                                              | `/api/connections/*`                                                                               |
+| Jeopardy          | `/games/jeopardy`                                                                            | localStorage + optional buzzer room                         | `/api/jeopardy/*`                                                                                  |
+| 24                | `/games/24`                                                                                  | Supabase rooms                                              | `/api/game24/*`, `/api/match-results`                                                              |
+| Focus Chimes      | `/games/tmr`                                                                                 | localStorage + Supabase                                     | `/api/tmr/*`                                                                                       |
 
 Devices and sync keys are shared by all of them through `/api/sync` (see `SYNC.md`).
 

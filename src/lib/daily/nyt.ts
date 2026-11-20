@@ -22,13 +22,14 @@ async function exactSnapshot(game: NytGame, day: string): Promise<unknown | null
   const key = `${game}/${day.slice(0, 4)}`
   let year = years.get(key)
   if (!year) {
-    year = readFile(path.join(process.cwd(), 'public/puzzle-archives', `${key}.json`), 'utf8')
-      .then(text => new Map((JSON.parse(text) as { date: string }[]).map(p => [p.date, p])))
+    year = readFile(path.join(process.cwd(), 'public/puzzle-archives', `${key}.json`), 'utf8').then(
+      (text) => new Map((JSON.parse(text) as { date: string }[]).map((p) => [p.date, p])),
+    )
     years.set(key, year)
   }
   try {
     const puzzle = (await year).get(day)
-    return puzzle && game === 'bee' ? includePublishedPangrams(puzzle as Puzzle & { date: string }) : puzzle ?? null
+    return puzzle && game === 'bee' ? includePublishedPangrams(puzzle as Puzzle & { date: string }) : (puzzle ?? null)
   } catch {
     // A missing file is the current year before its first sync, so the next request looks again.
     years.delete(key)
@@ -40,10 +41,15 @@ async function load(game: NytGame, day: string): Promise<unknown> {
   if (local && day < siteDay()) return local
   let stored: { date: string } | null = null
   if (configured()) {
-    const r = await supabaseAdmin.from('daily_game_content').select('payload').eq('game', `nyt-${game}`).eq('source_day', day).maybeSingle()
+    const r = await supabaseAdmin
+      .from('daily_game_content')
+      .select('payload')
+      .eq('game', `nyt-${game}`)
+      .eq('source_day', day)
+      .maybeSingle()
     if (r.data?.payload?.format === 'nyt-v1' && r.data.payload.puzzle?.date === day) {
       stored = game === 'bee' ? includePublishedPangrams(r.data.payload.puzzle) : r.data.payload.puzzle
-      if (Date.now()-Date.parse(r.data.payload.fetchedAt) < 3600000 || day < siteDay()) return stored
+      if (Date.now() - Date.parse(r.data.payload.fetchedAt) < 3600000 || day < siteDay()) return stored
     }
   }
   try {
@@ -52,7 +58,11 @@ async function load(game: NytGame, day: string): Promise<unknown> {
     if (!response.ok) throw Error(`NYT returned ${response.status}`)
     const puzzle = normalizeNytPuzzle(game, await response.json(), day)
     if (configured()) {
-      const r = await supabaseAdmin.from('daily_game_content').upsert({ game: `nyt-${game}`, source_day: day, payload: { format: 'nyt-v1', puzzle, sourceUrl: url, fetchedAt: new Date().toISOString() } })
+      const r = await supabaseAdmin.from('daily_game_content').upsert({
+        game: `nyt-${game}`,
+        source_day: day,
+        payload: { format: 'nyt-v1', puzzle, sourceUrl: url, fetchedAt: new Date().toISOString() },
+      })
       if (r.error) console.warn('NYT snapshot storage unavailable', game, day)
     }
     return puzzle
@@ -62,9 +72,13 @@ async function load(game: NytGame, day: string): Promise<unknown> {
   }
 }
 export function nytPuzzle(game: NytGame, day: string): Promise<unknown> {
-  if (!validDay(day) || day < NYT_FIRST_DAY[game] || day > siteDay()) return Promise.reject(Error('Choose a published puzzle date. Future NYT puzzles are not available.'))
+  if (!validDay(day) || day < NYT_FIRST_DAY[game] || day > siteDay())
+    return Promise.reject(Error('Choose a published puzzle date. Future NYT puzzles are not available.'))
   const key = `${game}:${day}`
   let request = pending.get(key)
-  if (!request) { request = load(game, day).finally(() => pending.delete(key)); pending.set(key, request) }
+  if (!request) {
+    request = load(game, day).finally(() => pending.delete(key))
+    pending.set(key, request)
+  }
   return request
 }

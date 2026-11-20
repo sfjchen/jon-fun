@@ -37,7 +37,10 @@ export default function ConnectionsResult({
   const text = [`Connections · ${title}`, ...shareLines].join('\n')
   const share = async () => {
     if (navigator.share && matchMedia('(pointer: coarse)').matches) return navigator.share({ text }).catch(() => {})
-    await navigator.clipboard.writeText(text).then(() => setCopied(true), () => {})
+    await navigator.clipboard.writeText(text).then(
+      () => setCopied(true),
+      () => {},
+    )
   }
   const btn = 'rounded-full border px-5 py-2.5 text-sm font-semibold'
 
@@ -47,7 +50,7 @@ export default function ConnectionsResult({
       <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
         {won ? `Solved with ${wrongGuesses} mistake${wrongGuesses === 1 ? '' : 's'}` : 'Out of mistakes'}
       </p>
-      <p className="whitespace-pre font-mono text-xl leading-6" aria-label="Your guesses">
+      <p className="font-mono text-xl leading-6 whitespace-pre" aria-label="Your guesses">
         {shareLines.join('\n')}
       </p>
       <div className="flex flex-wrap justify-center gap-2">

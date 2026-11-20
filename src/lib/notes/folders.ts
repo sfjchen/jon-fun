@@ -7,9 +7,7 @@ export const ARCHIVE_FOLDER_NAME = 'Archive'
 
 export function findArchiveFolder(folders: NoteFolder[]): NoteFolder | undefined {
   return folders.find(
-    (f) =>
-      f.parentId === null &&
-      f.name.localeCompare(ARCHIVE_FOLDER_NAME, undefined, { sensitivity: 'accent' }) === 0,
+    (f) => f.parentId === null && f.name.localeCompare(ARCHIVE_FOLDER_NAME, undefined, { sensitivity: 'accent' }) === 0,
   )
 }
 
@@ -99,7 +97,9 @@ export function sessionsInFolder(sessions: NoteSession[], folderId: string | nul
 }
 
 export function childFolders(folders: NoteFolder[], parentId: string | null): NoteFolder[] {
-  return folders.filter((f) => f.parentId === parentId).sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
+  return folders
+    .filter((f) => f.parentId === parentId)
+    .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
 }
 
 /** True when `maybeDescendantId` is `ancestorId` or nested under it. */
@@ -120,9 +120,7 @@ export function moveFolder(folderId: string, newParentId: string | null): NoteFo
   if (newParentId && isFolderDescendant(folders, folderId, newParentId)) return null
 
   const siblingCount = folders.filter((f) => f.parentId === newParentId && f.id !== folderId).length
-  const next = folders.map((f) =>
-    f.id === folderId ? { ...f, parentId: newParentId, sortOrder: siblingCount } : f,
-  )
+  const next = folders.map((f) => (f.id === folderId ? { ...f, parentId: newParentId, sortOrder: siblingCount } : f))
   saveFolders(next)
   return next
 }

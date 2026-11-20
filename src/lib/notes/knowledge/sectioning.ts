@@ -82,7 +82,10 @@ export function formatSectionsOutline(sections: NoteSection[], maxSections = 8):
 /** Suggest tags from section content + domains (caller merges with registry). */
 export function suggestTagsFromSections(sections: NoteSection[]): string[] {
   const tags = new Set<string>()
-  const text = sections.map((s) => s.lines.join('\n')).join('\n').toLowerCase()
+  const text = sections
+    .map((s) => s.lines.join('\n'))
+    .join('\n')
+    .toLowerCase()
   if (/\b(ic|investment committee)\b/.test(text)) tags.add('IC')
   if (/\b(gp|general partner)\b/.test(text)) tags.add('GP')
   if (/\b(cfa|ifrs|gaap)\b/.test(text)) tags.add('CFA')

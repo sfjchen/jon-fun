@@ -80,7 +80,7 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
         },
         () => {
           loadRoomData()
-        }
+        },
       )
       .subscribe()
 
@@ -96,7 +96,7 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
         },
         () => {
           loadRoomData()
-        }
+        },
       )
       .subscribe()
 
@@ -197,21 +197,18 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900">
+        <div className="text-xl text-white">Loading...</div>
       </div>
     )
   }
 
   if (error && !room) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center">
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 text-center">
-          <div className="text-red-400 mb-4">{error}</div>
-          <button
-            onClick={onBack}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
-          >
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900">
+        <div className="rounded-2xl border border-white/20 bg-white/10 p-8 text-center backdrop-blur-sm">
+          <div className="mb-4 text-red-400">{error}</div>
+          <button onClick={onBack} className="rounded-lg bg-green-600 px-6 py-2 text-white hover:bg-green-700">
             Go Back
           </button>
         </div>
@@ -222,60 +219,60 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-6 flex items-center justify-between">
             <button
               onClick={onBack}
-              className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg border border-white/20 text-white"
+              className="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-white hover:bg-white/20"
             >
               ← Back
             </button>
-            <div className="text-white text-sm">
-              {isHost && <span className="bg-green-600 px-3 py-1 rounded-full">Host</span>}
+            <div className="text-sm text-white">
+              {isHost && <span className="rounded-full bg-green-600 px-3 py-1">Host</span>}
             </div>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 mb-6">
-            <div className="text-center mb-6">
-              <h1 className="text-4xl font-bold text-white mb-2">Room PIN</h1>
+          <div className="mb-6 rounded-2xl border border-white/20 bg-white/10 p-8 backdrop-blur-sm">
+            <div className="mb-6 text-center">
+              <h1 className="mb-2 text-4xl font-bold text-white">Room PIN</h1>
               <div className="flex items-center justify-center gap-4">
-                <div className="text-6xl font-bold text-green-400 tracking-widest">{pin}</div>
+                <div className="text-6xl font-bold tracking-widest text-green-400">{pin}</div>
                 <button
                   onClick={handleCopyPin}
-                  className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg border border-white/20 text-white text-sm"
+                  className="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm text-white hover:bg-white/20"
                 >
                   Copy
                 </button>
               </div>
-              <p className="text-gray-300 mt-4">Share this PIN with friends to join</p>
+              <p className="mt-4 text-gray-300">Share this PIN with friends to join</p>
             </div>
 
             {room && (
-              <div className="grid grid-cols-3 gap-4 text-center mb-6">
-                <div className="bg-white/5 rounded-lg p-4">
-                  <div className="text-gray-400 text-sm">Small Blind</div>
+              <div className="mb-6 grid grid-cols-3 gap-4 text-center">
+                <div className="rounded-lg bg-white/5 p-4">
+                  <div className="text-sm text-gray-400">Small Blind</div>
                   <div className="text-2xl font-bold text-white">${room.small_blind}</div>
                 </div>
-                <div className="bg-white/5 rounded-lg p-4">
-                  <div className="text-gray-400 text-sm">Big Blind</div>
+                <div className="rounded-lg bg-white/5 p-4">
+                  <div className="text-sm text-gray-400">Big Blind</div>
                   <div className="text-2xl font-bold text-white">${room.big_blind}</div>
                 </div>
-                <div className="bg-white/5 rounded-lg p-4">
-                  <div className="text-gray-400 text-sm">Timer (seconds)</div>
+                <div className="rounded-lg bg-white/5 p-4">
+                  <div className="text-sm text-gray-400">Timer (seconds)</div>
                   {isHost ? (
-                    <div className="flex items-center justify-center gap-2 mt-2">
+                    <div className="mt-2 flex items-center justify-center gap-2">
                       <input
                         type="number"
                         value={timerPerTurn}
                         onChange={(e) => setTimerPerTurn(Math.max(5, Math.min(300, parseInt(e.target.value) || 40)))}
-                        className="w-16 bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-center text-lg"
+                        className="w-16 rounded border border-white/20 bg-white/10 px-2 py-1 text-center text-lg text-white"
                         min="5"
                         max="300"
                       />
                       <button
                         onClick={handleUpdateTimer}
                         disabled={updatingTimer}
-                        className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white min-h-11 py-2 px-4 rounded text-sm"
+                        className="min-h-11 rounded bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700 disabled:bg-gray-600"
                       >
                         {updatingTimer ? '...' : 'Update'}
                       </button>
@@ -288,42 +285,38 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
             )}
           </div>
 
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-            <h2 className="text-2xl font-bold text-white mb-4">Players ({players.length}/12)</h2>
+          <div className="rounded-2xl border border-white/20 bg-white/10 p-8 backdrop-blur-sm">
+            <h2 className="mb-4 text-2xl font-bold text-white">Players ({players.length}/12)</h2>
 
             {error && (
-              <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200">
-                {error}
-              </div>
+              <div className="mb-4 rounded-lg border border-red-500/50 bg-red-500/20 p-3 text-red-200">{error}</div>
             )}
 
             {players.length === 0 ? (
-              <div className="text-center text-gray-400 py-8">No players yet</div>
+              <div className="py-8 text-center text-gray-400">No players yet</div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {players.map((player) => (
                   <div
                     key={player.id}
-                    className={`bg-white/5 rounded-lg p-4 border ${
-                      player.player_id === hostId
-                        ? 'border-green-500'
-                        : 'border-white/10'
+                    className={`rounded-lg border bg-white/5 p-4 ${
+                      player.player_id === hostId ? 'border-green-500' : 'border-white/10'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="text-white font-semibold">{player.name}</div>
+                      <div className="font-semibold text-white">{player.name}</div>
                       {player.player_id === hostId && (
-                        <span className="text-xs bg-green-600 px-2 py-1 rounded">Host</span>
+                        <span className="rounded bg-green-600 px-2 py-1 text-xs">Host</span>
                       )}
                     </div>
-                    <div className="text-gray-400 text-sm mt-1">Seat {player.position + 1}</div>
+                    <div className="mt-1 text-sm text-gray-400">Seat {player.position + 1}</div>
                     {isHost && room?.status === 'waiting' && (
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className="mt-2 flex items-center gap-2">
                         <input
                           type="number"
                           defaultValue={player.chips || 1000}
                           min={0}
-                          className="w-20 bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-sm"
+                          className="w-20 rounded border border-white/20 bg-white/10 px-2 py-1 text-sm text-white"
                           onBlur={(e) => {
                             const val = Math.max(0, parseInt(e.target.value) || 0)
                             if (val !== player.chips) handleAdjustChips(player.player_id, val)
@@ -344,26 +337,17 @@ export default function PokerLobby({ pin, onStartGame, onBack }: PokerLobbyProps
                 <button
                   onClick={handleStartGame}
                   disabled={starting || players.length < 2}
-                  className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                  className="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-600"
                 >
-                  {starting
-                    ? 'Starting...'
-                    : players.length < 2
-                      ? 'Need at least 2 players'
-                      : 'Start Game'}
+                  {starting ? 'Starting...' : players.length < 2 ? 'Need at least 2 players' : 'Start Game'}
                 </button>
               </div>
             )}
 
-            {!isHost && (
-              <div className="mt-6 text-center text-gray-400">
-                Waiting for host to start the game...
-              </div>
-            )}
+            {!isHost && <div className="mt-6 text-center text-gray-400">Waiting for host to start the game...</div>}
           </div>
         </div>
       </div>
     </div>
   )
 }
-

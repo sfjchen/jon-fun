@@ -10,14 +10,14 @@ Tokens, typography and layout. Routes and stack boundaries are in [`ARCHITECTURE
 
 ### Color palette (notebook)
 
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `--nb-bg` | `#fcf9f4` | Page background |
-| `--nb-text` | `#1a1a1a` | Primary text |
-| `--nb-muted` | `#6b6359` | Secondary |
-| `--nb-accent` | `#8c3838` | Links, CTAs |
-| `--nb-border` | `#eee9e2` | Dividers |
-| `--nb-paper` | `#faf6f0` | Cards |
+| Token         | Hex       | Usage           |
+| ------------- | --------- | --------------- |
+| `--nb-bg`     | `#fcf9f4` | Page background |
+| `--nb-text`   | `#1a1a1a` | Primary text    |
+| `--nb-muted`  | `#6b6359` | Secondary       |
+| `--nb-accent` | `#8c3838` | Links, CTAs     |
+| `--nb-border` | `#eee9e2` | Dividers        |
+| `--nb-paper`  | `#faf6f0` | Cards           |
 
 Under `data-theme="notebook"` the shared `--ink-*` tokens resolve to these `--nb-*` values (`globals.css`), so components only use `--ink-*`.
 
@@ -45,14 +45,14 @@ Under `data-theme="notebook"` the shared `--ink-*` tokens resolve to these `--nb
 
 Used by party games, Connections, and components that predate notebook mapping:
 
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `--ink-bg` | `#faf6f0` | Warm cream |
-| `--ink-text` | `#1a1a1a` | Body |
-| `--ink-muted` | `#6b6359` | Captions |
+| Token          | Hex       | Usage                      |
+| -------------- | --------- | -------------------------- |
+| `--ink-bg`     | `#faf6f0` | Warm cream                 |
+| `--ink-text`   | `#1a1a1a` | Body                       |
+| `--ink-muted`  | `#6b6359` | Captions                   |
 | `--ink-accent` | `#800020` | Burgundy CTA (party games) |
-| `--ink-border` | `#e8e2da` | Borders |
-| `--ink-paper` | `#f5f1eb` | Cards |
+| `--ink-border` | `#e8e2da` | Borders                    |
+| `--ink-paper`  | `#f5f1eb` | Cards                      |
 
 On notebook pages these resolve through `--nb-*` where mapped.
 
@@ -66,12 +66,12 @@ Daily games, SET, Connections and the leaderboard set `data-game-theme` (`PageSh
 
 ## Shell exceptions
 
-| Surface | Chrome |
-|---------|--------|
-| **Notes** | Minimal back link; Lato workspace |
-| **Poker lobby/table** | Full-bleed green felt |
-| **Pear Navigator** | Dark inner UI |
-| **Chwazi mobile** | Touch-first; compact header |
+| Surface               | Chrome                            |
+| --------------------- | --------------------------------- |
+| **Notes**             | Minimal back link; Lato workspace |
+| **Poker lobby/table** | Full-bleed green felt             |
+| **Pear Navigator**    | Dark inner UI                     |
+| **Chwazi mobile**     | Touch-first; compact header       |
 
 ---
 

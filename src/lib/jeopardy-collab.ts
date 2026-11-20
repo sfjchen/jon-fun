@@ -129,13 +129,17 @@ export function useCollabBoard(slug: string | null, identity: EditorIdentity | n
           }
           // Only accept newer versions.
           const incomingVersion = typeof row.version === 'number' ? row.version : 0
-          setState((s) => (incomingVersion <= s.version ? s : {
-            ...s,
-            board: normalizeBoard(row.board, (row.id as string) || ''),
-            version: incomingVersion,
-            updatedAt: (row.updated_at as string) || s.updatedAt,
-            lastEditor: (row.last_editor as string) || s.lastEditor,
-          }))
+          setState((s) =>
+            incomingVersion <= s.version
+              ? s
+              : {
+                  ...s,
+                  board: normalizeBoard(row.board, (row.id as string) || ''),
+                  version: incomingVersion,
+                  updatedAt: (row.updated_at as string) || s.updatedAt,
+                  lastEditor: (row.last_editor as string) || s.lastEditor,
+                },
+          )
         },
       )
       .subscribe()
@@ -265,19 +269,22 @@ export function useCollabBoard(slug: string | null, identity: EditorIdentity | n
   )
 
   // ----- Lock / unlock current cell (presence-tracked) -----
-  const setLock = useCallback((key: LockKey | null) => {
-    myLockRef.current = key
-    const ch = channelRef.current
-    if (!ch) return
-    void ch
-      .track({
-        name: editorName,
-        color: editorColor,
-        online_at: new Date().toISOString(),
-        lock: key,
-      })
-      .catch(() => {})
-  }, [editorName, editorColor])
+  const setLock = useCallback(
+    (key: LockKey | null) => {
+      myLockRef.current = key
+      const ch = channelRef.current
+      if (!ch) return
+      void ch
+        .track({
+          name: editorName,
+          color: editorColor,
+          online_at: new Date().toISOString(),
+          lock: key,
+        })
+        .catch(() => {})
+    },
+    [editorName, editorColor],
+  )
 
   return useMemo<UseCollabBoardResult>(
     () => ({ ...state, sendOp, setLock, refresh: fetchBoard }),

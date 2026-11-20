@@ -26,7 +26,8 @@ const windows = new Map<string, { start: number; count: number }>()
  */
 export function rateLimited(req: Request, name: string, max: number): boolean {
   const key = `${name}:${req.headers.get('x-forwarded-for')?.split(',')[0] ?? 'local'}`
-  const now = Date.now(), prev = windows.get(key)
+  const now = Date.now(),
+    prev = windows.get(key)
   const rate = prev && now - prev.start < 60000 ? prev : { start: now, count: 0 }
   rate.count++
   windows.set(key, rate)

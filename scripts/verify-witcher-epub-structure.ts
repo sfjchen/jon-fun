@@ -75,7 +75,10 @@ Answer in compact JSON only: {"ok":true or false,"issues":[] or short strings}`
   try {
     const data = JSON.parse(raw) as { candidates?: { content?: { parts?: { text?: string }[] } }[] }
     const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? '').join('') ?? ''
-    const trimmed = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '')
+    const trimmed = text
+      .trim()
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```$/i, '')
     console.log('Gemini audit:', trimmed)
     const m = /\{[\s\S]*\}/.exec(trimmed)
     if (m) {

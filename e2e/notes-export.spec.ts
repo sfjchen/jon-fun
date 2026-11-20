@@ -2,13 +2,7 @@ import fs from 'node:fs'
 
 import { test, expect, type Download } from '@playwright/test'
 
-import {
-  mockNotesApi,
-  notesEditor,
-  SESSIONS_KEY,
-  waitForNotesEditor,
-  waitForNotesTrigger,
-} from './helpers/notes-mock'
+import { mockNotesApi, notesEditor, SESSIONS_KEY, waitForNotesEditor, waitForNotesTrigger } from './helpers/notes-mock'
 
 async function readTextDownload(download: Download): Promise<{ name: string; text: string }> {
   const name = download.suggestedFilename()
@@ -56,10 +50,7 @@ test.describe('Notes export', () => {
     await waitForNotesTrigger(page)
 
     await page.getByTestId('notes-export-toggle').click()
-    const [download] = await Promise.all([
-      page.waitForEvent('download'),
-      page.getByTestId('notes-export-md').click(),
-    ])
+    const [download] = await Promise.all([page.waitForEvent('download'), page.getByTestId('notes-export-md').click()])
     const { name, text } = await readTextDownload(download)
     expect(name).toMatch(/^notes-export-e2e-sample-.*\.md$/)
     expect(text).toMatch(/^# Export E2E Sample/m)
@@ -90,5 +81,4 @@ test.describe('Notes export', () => {
     expect(buf.slice(0, 5).toString()).toBe('%PDF-')
     expect(buf.length).toBeGreaterThan(800)
   })
-
 })

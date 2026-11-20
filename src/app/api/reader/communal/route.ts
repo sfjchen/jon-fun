@@ -75,7 +75,10 @@ export async function POST(request: NextRequest) {
   if (existing && !isOwnerKey((body as { userId?: string }).userId)) {
     return NextResponse.json({ ok: true, skipped: true })
   }
-  const existingState = existing && typeof existing === 'object' && 'reading_state' in existing ? (existing as { reading_state?: unknown }).reading_state : null
+  const existingState =
+    existing && typeof existing === 'object' && 'reading_state' in existing
+      ? (existing as { reading_state?: unknown }).reading_state
+      : null
   if (existingState && typeof existingState === 'object') {
     ;(row as { reading_state?: unknown }).reading_state = existingState
   }

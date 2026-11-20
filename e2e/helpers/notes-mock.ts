@@ -13,12 +13,18 @@ export function notesEditor(page: Page, pane: 'left' | 'right' = 'left'): Locato
 
 /** Wait for Tiptap editor to mount (retries once after reload on slow dev compiles). */
 export async function waitForNotesEditor(page: Page): Promise<void> {
-  await page.getByTestId('notes-loading').waitFor({ state: 'hidden', timeout: 30_000 }).catch(() => {})
+  await page
+    .getByTestId('notes-loading')
+    .waitFor({ state: 'hidden', timeout: 30_000 })
+    .catch(() => {})
   try {
     await page.waitForSelector('[data-testid="notes-tiptap-editor"] .ProseMirror', { timeout: 25_000 })
   } catch {
     await page.reload({ waitUntil: 'domcontentloaded' })
-    await page.getByTestId('notes-loading').waitFor({ state: 'hidden', timeout: 30_000 }).catch(() => {})
+    await page
+      .getByTestId('notes-loading')
+      .waitFor({ state: 'hidden', timeout: 30_000 })
+      .catch(() => {})
     await page.waitForSelector('[data-testid="notes-tiptap-editor"] .ProseMirror', { timeout: 25_000 })
   }
 }
@@ -82,7 +88,13 @@ export async function mockNotesApi(page: Page, opts?: { owner?: boolean }): Prom
     }
     const excerpts = Array.isArray(body.excerpts) ? body.excerpts : []
     const scores = excerpts.map((ex, i) =>
-      ex.toLowerCase().includes(String(body.query ?? '').toLowerCase().slice(0, 4)) ? 0.9 - i * 0.05 : 0.2,
+      ex.toLowerCase().includes(
+        String(body.query ?? '')
+          .toLowerCase()
+          .slice(0, 4),
+      )
+        ? 0.9 - i * 0.05
+        : 0.2,
     )
     await route.fulfill({
       status: 200,
@@ -104,11 +116,7 @@ export async function mockNotesApi(page: Page, opts?: { owner?: boolean }): Prom
 }
 
 /** Drop a vault note onto a split pane (Playwright dragTo omits custom MIME payloads). */
-export async function dropNoteOnSplitPane(
-  page: Page,
-  sessionId: string,
-  side: 'left' | 'right',
-): Promise<void> {
+export async function dropNoteOnSplitPane(page: Page, sessionId: string, side: 'left' | 'right'): Promise<void> {
   await page.evaluate(
     ([id, pane]) => {
       const w = window as { __notesE2eSplitDrop?: (sid: string, s: 'left' | 'right') => void }
@@ -131,11 +139,7 @@ export async function dropNoteOnSplitPane(
 }
 
 /** Drag a vault note by its title onto a split pane (exceeds 6px movement threshold). */
-export async function dragNoteTitleToSplitPane(
-  page: Page,
-  sessionId: string,
-  side: 'left' | 'right',
-): Promise<void> {
+export async function dragNoteTitleToSplitPane(page: Page, sessionId: string, side: 'left' | 'right'): Promise<void> {
   const title = page.getByTestId(`notes-note-drag-title-${sessionId}`)
   const drop = page.getByTestId(`notes-split-drop-${side}`)
   await expect(title).toBeVisible()
@@ -178,11 +182,7 @@ export async function waitForLookupComplete(page: Page): Promise<void> {
 export const SESSIONS_KEY = 'notes_sessions'
 
 /** Insert CSV via `?notesE2e=1` hook (Playwright cannot synthesize file drop reliably). */
-export async function dropCsvOnNotesEditor(
-  page: Page,
-  csv: string,
-  filename = 'positions.csv',
-): Promise<void> {
+export async function dropCsvOnNotesEditor(page: Page, csv: string, filename = 'positions.csv'): Promise<void> {
   await waitForNotesEditor(page)
   await notesEditor(page).click()
   const ok = await page.evaluate(
@@ -220,7 +220,10 @@ export async function seedSpreadsheetAttachmentSession(page: Page): Promise<void
           preview: {
             sheetName: 'positions',
             headers: ['Ticker', 'Price'],
-            rows: [['AAPL', '190'], ['MSFT', '420']],
+            rows: [
+              ['AAPL', '190'],
+              ['MSFT', '420'],
+            ],
             totalRows: 2,
             totalCols: 2,
           },

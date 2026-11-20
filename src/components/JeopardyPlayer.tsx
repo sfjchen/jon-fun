@@ -3,11 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { JeopardyBoard } from '@/lib/jeopardy'
 import { getClueValue } from '@/lib/jeopardy'
-import {
-  MAX_TEAMS,
-  type JeopardyPlayOp,
-  type JeopardyPlayState,
-} from '@/lib/jeopardy-play-ops'
+import { MAX_TEAMS, type JeopardyPlayOp, type JeopardyPlayState } from '@/lib/jeopardy-play-ops'
 
 interface JeopardyPlayerProps {
   board: JeopardyBoard
@@ -21,7 +17,17 @@ interface JeopardyPlayerProps {
   buzzerSlot?: React.ReactNode
 }
 
-export default function JeopardyPlayer({ board, playState, dispatchPlayOp, onBack, onEdit, syncing, buzzerEnabled, onBuzzerToggle, buzzerSlot }: JeopardyPlayerProps) {
+export default function JeopardyPlayer({
+  board,
+  playState,
+  dispatchPlayOp,
+  onBack,
+  onEdit,
+  syncing,
+  buzzerEnabled,
+  onBuzzerToggle,
+  buzzerSlot,
+}: JeopardyPlayerProps) {
   const { teamCount, teams, used, lastAnswered } = playState
   const [open, setOpen] = useState<{ col: number; row: number } | null>(null)
   const [revealed, setRevealed] = useState(false)
@@ -49,7 +55,10 @@ export default function JeopardyPlayer({ board, playState, dispatchPlayOp, onBac
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (open) {
-        if (e.key === ' ') { e.preventDefault(); setRevealed((r) => !r) }
+        if (e.key === ' ') {
+          e.preventDefault()
+          setRevealed((r) => !r)
+        }
         if (e.key === 'Escape') closeTile()
       }
     }
@@ -62,13 +71,19 @@ export default function JeopardyPlayer({ board, playState, dispatchPlayOp, onBac
     setRevealed(false)
   }, [])
 
-  const adjustScore = useCallback((teamIndex: number, delta: number) => {
-    dispatchPlayOp({ kind: 'adjustTeamScore', index: teamIndex, delta })
-  }, [dispatchPlayOp])
+  const adjustScore = useCallback(
+    (teamIndex: number, delta: number) => {
+      dispatchPlayOp({ kind: 'adjustTeamScore', index: teamIndex, delta })
+    },
+    [dispatchPlayOp],
+  )
 
-  const setScore = useCallback((teamIndex: number, newScore: number) => {
-    dispatchPlayOp({ kind: 'setTeamScore', index: teamIndex, score: newScore })
-  }, [dispatchPlayOp])
+  const setScore = useCallback(
+    (teamIndex: number, newScore: number) => {
+      dispatchPlayOp({ kind: 'setTeamScore', index: teamIndex, score: newScore })
+    },
+    [dispatchPlayOp],
+  )
 
   const resetTiles = useCallback(() => {
     dispatchPlayOp({ kind: 'resetTiles' })
@@ -83,28 +98,56 @@ export default function JeopardyPlayer({ board, playState, dispatchPlayOp, onBac
   }, [dispatchPlayOp])
 
   return (
-    <div className="p-4 flex flex-col">
-      <div className="flex items-center justify-between mb-4">
-        <button onClick={onBack} className="px-4 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>← Back</button>
+    <div className="flex flex-col p-4">
+      <div className="mb-4 flex items-center justify-between">
+        <button
+          onClick={onBack}
+          className="rounded-lg border px-4 py-2 hover:opacity-90"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+        >
+          ← Back
+        </button>
         <div className="flex items-center gap-2">
-          {syncing ? <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>syncing…</span> : null}
-          <label className="text-sm" style={{ color: 'var(--ink-muted)' }}>Teams</label>
+          {syncing ? (
+            <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>
+              syncing…
+            </span>
+          ) : null}
+          <label className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+            Teams
+          </label>
           <select
-            className="rounded-lg px-2 py-1 border"
+            className="rounded-lg border px-2 py-1"
             style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
             value={teamCount}
-            onChange={(e) => dispatchPlayOp({ kind: 'setTeamCount', count: Math.min(MAX_TEAMS, Math.max(1, Number(e.target.value))) })}
+            onChange={(e) =>
+              dispatchPlayOp({ kind: 'setTeamCount', count: Math.min(MAX_TEAMS, Math.max(1, Number(e.target.value))) })
+            }
           >
             {Array.from({ length: MAX_TEAMS }, (_, i) => i + 1).map((n) => (
-              <option key={n} value={n}>{n}</option>
+              <option key={n} value={n}>
+                {n}
+              </option>
             ))}
           </select>
-          <button onClick={resetTiles} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Reset Tiles</button>
-          <button onClick={resetTilesAndScores} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Reset Tiles + Scores</button>
+          <button
+            onClick={resetTiles}
+            className="rounded-lg border px-3 py-2 hover:opacity-90"
+            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+          >
+            Reset Tiles
+          </button>
+          <button
+            onClick={resetTilesAndScores}
+            className="rounded-lg border px-3 py-2 hover:opacity-90"
+            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+          >
+            Reset Tiles + Scores
+          </button>
           {onBuzzerToggle && (
             <button
               onClick={() => onBuzzerToggle(!buzzerEnabled)}
-              className="px-3 py-2 rounded-lg border hover:opacity-90 font-semibold"
+              className="rounded-lg border px-3 py-2 font-semibold hover:opacity-90"
               style={{
                 backgroundColor: buzzerEnabled ? '#16a34a' : 'var(--ink-paper)',
                 borderColor: 'var(--ink-border)',
@@ -115,28 +158,54 @@ export default function JeopardyPlayer({ board, playState, dispatchPlayOp, onBac
               Buzzer {buzzerEnabled ? 'ON' : 'OFF'}
             </button>
           )}
-          <button onClick={onEdit} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Edit</button>
+          <button
+            onClick={onEdit}
+            className="rounded-lg border px-3 py-2 hover:opacity-90"
+            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+          >
+            Edit
+          </button>
         </div>
       </div>
 
-      <h1 className="text-center text-4xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>{board.title}</h1>
-      <div className="text-center text-sm mb-4" style={{ color: 'var(--ink-muted)' }}>Hotkeys: Space reveals • Esc goes back · Scores sync across devices</div>
+      <h1 className="mb-2 text-center font-lora text-4xl font-bold" style={{ color: 'var(--ink-text)' }}>
+        {board.title}
+      </h1>
+      <div className="mb-4 text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
+        Hotkeys: Space reveals • Esc goes back · Scores sync across devices
+      </div>
 
       {/* Board */}
-      <div className="max-w-6xl mx-auto w-full">
+      <div className="mx-auto w-full max-w-6xl">
         <div className="smooth-scroll-x">
           <div style={{ minWidth: `${board.categories.length * COL_MIN_WIDTH_PX}px` }}>
             <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
               {board.categories.map((cat, colIndex) => (
-                <div key={colIndex} className="px-2 py-2 border text-center font-semibold uppercase tracking-wide text-xs sm:text-sm md:text-lg select-none rounded-t-lg wrap-anywhere" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}>
+                <div
+                  key={colIndex}
+                  className="rounded-t-lg border px-2 py-2 text-center text-xs font-semibold tracking-wide wrap-anywhere uppercase select-none sm:text-sm md:text-lg"
+                  style={{
+                    borderColor: 'var(--ink-border)',
+                    backgroundColor: 'var(--ink-paper)',
+                    color: 'var(--ink-text)',
+                  }}
+                >
                   {cat.title}
                 </div>
               ))}
             </div>
 
-            <div data-arrows={open ? undefined : 'grab'} className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
+            <div
+              data-arrows={open ? undefined : 'grab'}
+              className="grid"
+              style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}
+            >
               {board.categories.map((cat, colIndex) => (
-                <div key={colIndex} className="grid" style={{ gridTemplateRows: `repeat(${rowsCount}, minmax(0, 1fr))` }}>
+                <div
+                  key={colIndex}
+                  className="grid"
+                  style={{ gridTemplateRows: `repeat(${rowsCount}, minmax(0, 1fr))` }}
+                >
                   {Array.from({ length: rowsCount }, (_, rowIndex) => {
                     const value = getClueValue(board, rowIndex)
                     const disabled = used[`${colIndex}:${rowIndex}`]
@@ -144,8 +213,12 @@ export default function JeopardyPlayer({ board, playState, dispatchPlayOp, onBac
                       <button
                         key={rowIndex}
                         onClick={() => openTile(colIndex, rowIndex)}
-                        className={`h-20 sm:h-24 md:h-28 lg:h-32 border text-2xl md:text-3xl font-extrabold rounded-b-lg transition-colors ${disabled ? '' : 'hover:opacity-90'}`}
-                        style={{ borderColor: 'var(--ink-border)', backgroundColor: disabled ? 'var(--ink-bg)' : 'var(--ink-paper)', color: disabled ? 'var(--ink-muted)' : 'var(--ink-accent)' }}
+                        className={`h-20 rounded-b-lg border text-2xl font-extrabold transition-colors sm:h-24 md:h-28 md:text-3xl lg:h-32 ${disabled ? '' : 'hover:opacity-90'}`}
+                        style={{
+                          borderColor: 'var(--ink-border)',
+                          backgroundColor: disabled ? 'var(--ink-bg)' : 'var(--ink-paper)',
+                          color: disabled ? 'var(--ink-muted)' : 'var(--ink-accent)',
+                        }}
                       >
                         <span>${value}</span>
                       </button>
@@ -162,39 +235,53 @@ export default function JeopardyPlayer({ board, playState, dispatchPlayOp, onBac
       {buzzerEnabled && buzzerSlot}
 
       {/* Teams */}
-      <div className="mt-6 w-full max-w-6xl mx-auto">
+      <div className="mx-auto mt-6 w-full max-w-6xl">
         <div
-          className="grid gap-3 justify-items-stretch"
+          className="grid justify-items-stretch gap-3"
           style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${teamLayout.minCardWidth}px, 1fr))` }}
         >
           {teams.map((team, i) => (
-            <div key={i} className="rounded-xl border min-w-0 p-3" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-            <input
-              value={team.name}
-              maxLength={24}
-              onChange={(e) => dispatchPlayOp({ kind: 'setTeamName', index: i, name: e.target.value })}
-              className="w-full bg-transparent text-center font-semibold mb-2 outline-none"
-              style={{ color: 'var(--ink-text)' }}
-            />
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="-?[0-9]*"
-              value={team.score}
-              onChange={(e) => setScore(i, Number(e.target.value) || 0)}
-              className="w-full text-center text-2xl font-bold rounded-md py-2 outline-none border"
-              style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-            />
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              <button onClick={() => {
-                const src = open ?? lastAnswered
-                if (src) adjustScore(i, getClueValue(board, src.row))
-              }} className="bg-green-600 hover:bg-green-700 text-white rounded-md py-1">+</button>
-              <button onClick={() => {
-                const src = open ?? lastAnswered
-                if (src) adjustScore(i, -getClueValue(board, src.row))
-              }} className="bg-red-600 hover:bg-red-700 text-white rounded-md py-1">-</button>
-            </div>
+            <div
+              key={i}
+              className="min-w-0 rounded-xl border p-3"
+              style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+            >
+              <input
+                value={team.name}
+                maxLength={24}
+                onChange={(e) => dispatchPlayOp({ kind: 'setTeamName', index: i, name: e.target.value })}
+                className="mb-2 w-full bg-transparent text-center font-semibold outline-none"
+                style={{ color: 'var(--ink-text)' }}
+              />
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="-?[0-9]*"
+                value={team.score}
+                onChange={(e) => setScore(i, Number(e.target.value) || 0)}
+                className="w-full rounded-md border py-2 text-center text-2xl font-bold outline-none"
+                style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+              />
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    const src = open ?? lastAnswered
+                    if (src) adjustScore(i, getClueValue(board, src.row))
+                  }}
+                  className="rounded-md bg-green-600 py-1 text-white hover:bg-green-700"
+                >
+                  +
+                </button>
+                <button
+                  onClick={() => {
+                    const src = open ?? lastAnswered
+                    if (src) adjustScore(i, -getClueValue(board, src.row))
+                  }}
+                  className="rounded-md bg-red-600 py-1 text-white hover:bg-red-700"
+                >
+                  -
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -202,22 +289,54 @@ export default function JeopardyPlayer({ board, playState, dispatchPlayOp, onBac
 
       {/* Overlay */}
       {open && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 sm:p-6 z-50 overflow-y-auto" style={{ backgroundColor: 'var(--ink-bg)' }}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6"
+          style={{ backgroundColor: 'var(--ink-bg)' }}
+        >
           <div className="absolute top-2 left-2">
-            <button onClick={closeTile} className="min-h-11 py-2 px-4 rounded-lg border" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>ESC</button>
+            <button
+              onClick={closeTile}
+              className="min-h-11 rounded-lg border px-4 py-2"
+              style={{
+                backgroundColor: 'var(--ink-paper)',
+                borderColor: 'var(--ink-border)',
+                color: 'var(--ink-text)',
+              }}
+            >
+              ESC
+            </button>
           </div>
           <div className="absolute top-2 right-2">
-            <button onClick={() => setRevealed((r) => !r)} className="min-h-11 py-2 px-4 rounded-lg border" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Space: Reveal</button>
+            <button
+              onClick={() => setRevealed((r) => !r)}
+              className="min-h-11 rounded-lg border px-4 py-2"
+              style={{
+                backgroundColor: 'var(--ink-paper)',
+                borderColor: 'var(--ink-border)',
+                color: 'var(--ink-text)',
+              }}
+            >
+              Space: Reveal
+            </button>
           </div>
-          <div className="max-w-5xl text-center max-h-[85vh] overflow-y-auto">
-            <div className="text-sm sm:text-base md:text-lg mb-2 wrap-anywhere" style={{ color: 'var(--ink-muted)' }}>{board.categories[open.col]?.title} for ${getClueValue(board, open.row)}</div>
-            <div className="text-3xl sm:text-4xl md:text-5xl font-bold font-lora tracking-wide wrap-anywhere" style={{ color: 'var(--ink-text)' }}>
+          <div className="max-h-[85vh] max-w-5xl overflow-y-auto text-center">
+            <div className="mb-2 text-sm wrap-anywhere sm:text-base md:text-lg" style={{ color: 'var(--ink-muted)' }}>
+              {board.categories[open.col]?.title} for ${getClueValue(board, open.row)}
+            </div>
+            <div
+              className="font-lora text-3xl font-bold tracking-wide wrap-anywhere sm:text-4xl md:text-5xl"
+              style={{ color: 'var(--ink-text)' }}
+            >
               {!revealed ? (
                 <div>{board.categories[open.col]?.clues[open.row]?.question || '—'}</div>
               ) : (
                 <div>
-                  <div className="text-2xl sm:text-3xl md:text-4xl mb-6" style={{ color: 'var(--ink-muted)' }}>{board.categories[open.col]?.clues[open.row]?.question || '—'}</div>
-                  <div style={{ color: 'var(--ink-accent)' }}>{board.categories[open.col]?.clues[open.row]?.answer || '—'}</div>
+                  <div className="mb-6 text-2xl sm:text-3xl md:text-4xl" style={{ color: 'var(--ink-muted)' }}>
+                    {board.categories[open.col]?.clues[open.row]?.question || '—'}
+                  </div>
+                  <div style={{ color: 'var(--ink-accent)' }}>
+                    {board.categories[open.col]?.clues[open.row]?.answer || '—'}
+                  </div>
                 </div>
               )}
             </div>

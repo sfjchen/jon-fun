@@ -48,17 +48,15 @@ export async function findSessionByBoardId(boardId: string): Promise<BuzzerSessi
 
 /** Look up an existing session by PIN. */
 export async function findSessionByPin(pin: string): Promise<BuzzerSession | null> {
-  const { data, error } = await supabase
-    .from('jeopardy_buzzer_sessions')
-    .select('*')
-    .eq('pin', pin)
-    .maybeSingle()
+  const { data, error } = await supabase.from('jeopardy_buzzer_sessions').select('*').eq('pin', pin).maybeSingle()
   if (error || !data) return null
   return rowToSession(data as SessionRow)
 }
 
 /** Get-or-create a session for a board, allocating a unique PIN on collision. */
-export async function ensureSessionForBoard(boardId: string): Promise<{ ok: true; session: BuzzerSession } | { ok: false; error: string }> {
+export async function ensureSessionForBoard(
+  boardId: string,
+): Promise<{ ok: true; session: BuzzerSession } | { ok: false; error: string }> {
   const existing = await findSessionByBoardId(boardId)
   if (existing) return { ok: true, session: existing }
 
@@ -91,10 +89,10 @@ export async function ensureSessionForBoard(boardId: string): Promise<{ ok: true
 }
 
 export type SessionPatch =
-  | { kind: 'arm' }       // begins a new round (fresh round_id), status='armed'
-  | { kind: 'clear' }     // status='idle', round_id cleared (queue still in DB but considered stale)
-  | { kind: 'lock' }      // status='locked', no further buzzes accepted
-  | { kind: 'unlock' }    // status='armed' again on the same round
+  | { kind: 'arm' } // begins a new round (fresh round_id), status='armed'
+  | { kind: 'clear' } // status='idle', round_id cleared (queue still in DB but considered stale)
+  | { kind: 'lock' } // status='locked', no further buzzes accepted
+  | { kind: 'unlock' } // status='armed' again on the same round
 
 /**
  * Apply a host control op to the session row with optimistic concurrency.
@@ -168,19 +166,17 @@ export async function upsertPlayer(input: {
   const color = (input.color || '#3b82f6').trim().slice(0, MAX_COLOR) || '#3b82f6'
   const clock_offset_ms = Math.max(-30_000, Math.min(30_000, Math.round(input.clockOffsetMs || 0)))
   const now = new Date().toISOString()
-  const { error } = await supabase
-    .from('jeopardy_buzzer_players')
-    .upsert(
-      {
-        session_id: input.sessionId,
-        player_id: input.playerId,
-        name,
-        color,
-        clock_offset_ms,
-        last_seen_at: now,
-      },
-      { onConflict: 'session_id,player_id' },
-    )
+  const { error } = await supabase.from('jeopardy_buzzer_players').upsert(
+    {
+      session_id: input.sessionId,
+      player_id: input.playerId,
+      name,
+      color,
+      clock_offset_ms,
+      last_seen_at: now,
+    },
+    { onConflict: 'session_id,player_id' },
+  )
   if (error) return { ok: false, error: error.message }
   return { ok: true }
 }
@@ -193,7 +189,7 @@ export async function getPlayerOffsetMs(sessionId: string, playerId: string): Pr
     .eq('session_id', sessionId)
     .eq('player_id', playerId)
     .maybeSingle()
-  return typeof (data?.clock_offset_ms) === 'number' ? data.clock_offset_ms : 0
+  return typeof data?.clock_offset_ms === 'number' ? data.clock_offset_ms : 0
 }
 
 type BuzzRow = {

@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import {
-  validateRoomPin,
-  computeBlindSetup,
-  rotateDealer,
-  sortedSeatPositions,
-} from '@/lib/poker'
+import { validateRoomPin, computeBlindSetup, rotateDealer, sortedSeatPositions } from '@/lib/poker'
 import { v4 as uuidv4 } from 'uuid'
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ pin: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ pin: string }> }) {
   try {
     const { pin } = await params
 
@@ -20,11 +12,7 @@ export async function GET(
     }
 
     // Get room
-    const { data: room, error: roomError } = await supabase
-      .from('poker_rooms')
-      .select('*')
-      .eq('pin', pin)
-      .single()
+    const { data: room, error: roomError } = await supabase.from('poker_rooms').select('*').eq('pin', pin).single()
 
     if (roomError || !room) {
       return NextResponse.json({ error: 'Room not found' }, { status: 404 })
@@ -44,11 +32,7 @@ export async function GET(
     // Get game state if game is active
     let gameState = null
     if (room.status === 'active') {
-      const { data: state } = await supabase
-        .from('poker_game_state')
-        .select('*')
-        .eq('room_pin', pin)
-        .single()
+      const { data: state } = await supabase.from('poker_game_state').select('*').eq('room_pin', pin).single()
       gameState = state
     }
 
@@ -62,10 +46,7 @@ export async function GET(
   }
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ pin: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ pin: string }> }) {
   try {
     const { pin } = await params
     const body = await request.json()
@@ -76,11 +57,7 @@ export async function POST(
     }
 
     // Check if room exists
-    const { data: room, error: roomError } = await supabase
-      .from('poker_rooms')
-      .select('*')
-      .eq('pin', pin)
-      .single()
+    const { data: room, error: roomError } = await supabase.from('poker_rooms').select('*').eq('pin', pin).single()
 
     if (roomError || !room) {
       return NextResponse.json({ error: 'Room not found' }, { status: 404 })
@@ -99,7 +76,7 @@ export async function POST(
           .eq('room_pin', pin)
           .eq('is_active', true)
 
-        const occupiedPositions = new Set((existingPlayers || []).map(p => p.position))
+        const occupiedPositions = new Set((existingPlayers || []).map((p) => p.position))
         const maxPlayers = 12
 
         if (occupiedPositions.size >= maxPlayers) {
@@ -130,31 +107,26 @@ export async function POST(
 
         const newPlayerId = uuidv4()
         const playerId = uuidv4()
-        const { error: joinError } = await supabase
-          .from('poker_players')
-          .insert({
-            id: playerId,
-            room_pin: pin,
-            player_id: newPlayerId,
-            name: playerName.trim(),
-            chips: 0,
-            position: selectedPosition,
-            is_active: true,
-            is_all_in: false,
-            current_bet: 0,
-            has_folded: false,
-            has_acted: false,
-          })
+        const { error: joinError } = await supabase.from('poker_players').insert({
+          id: playerId,
+          room_pin: pin,
+          player_id: newPlayerId,
+          name: playerName.trim(),
+          chips: 0,
+          position: selectedPosition,
+          is_active: true,
+          is_all_in: false,
+          current_bet: 0,
+          has_folded: false,
+          has_acted: false,
+        })
 
         if (joinError) {
           return NextResponse.json({ error: 'Failed to join room' }, { status: 500 })
         }
 
         // Update room last_activity timestamp
-        await supabase
-          .from('poker_rooms')
-          .update({ last_activity: new Date().toISOString() })
-          .eq('pin', pin)
+        await supabase.from('poker_rooms').update({ last_activity: new Date().toISOString() }).eq('pin', pin)
 
         return NextResponse.json({ playerId: newPlayerId, position: selectedPosition })
       }
@@ -218,24 +190,22 @@ export async function POST(
 
         const potMain = sb + bb
 
-        const { error: stateError } = await supabase
-          .from('poker_game_state')
-          .insert({
-            room_pin: pin,
-            hand_number: 1,
-            betting_round: 'pre-flop',
-            current_bet: bb,
-            dealer_position: blinds.dealerPosition,
-            small_blind_position: blinds.smallBlindPosition,
-            big_blind_position: blinds.bigBlindPosition,
-            action_on: blinds.actionOn,
-            small_blind: sb,
-            big_blind: bb,
-            pot_main: potMain,
-            pot_side_pots: [],
-            community_cards: [],
-            is_game_active: true,
-          })
+        const { error: stateError } = await supabase.from('poker_game_state').insert({
+          room_pin: pin,
+          hand_number: 1,
+          betting_round: 'pre-flop',
+          current_bet: bb,
+          dealer_position: blinds.dealerPosition,
+          small_blind_position: blinds.smallBlindPosition,
+          big_blind_position: blinds.bigBlindPosition,
+          action_on: blinds.actionOn,
+          small_blind: sb,
+          big_blind: bb,
+          pot_main: potMain,
+          pot_side_pots: [],
+          community_cards: [],
+          is_game_active: true,
+        })
 
         if (stateError) {
           return NextResponse.json({ error: 'Failed to initialize game state' }, { status: 500 })
@@ -254,11 +224,7 @@ export async function POST(
           return NextResponse.json({ error: 'Winner player ID is required' }, { status: 400 })
         }
 
-        const { data: gameState } = await supabase
-          .from('poker_game_state')
-          .select('*')
-          .eq('room_pin', pin)
-          .single()
+        const { data: gameState } = await supabase.from('poker_game_state').select('*').eq('room_pin', pin).single()
 
         if (!gameState || gameState.action_on !== -1) {
           return NextResponse.json({ error: 'Current hand is not complete' }, { status: 400 })
@@ -373,10 +339,7 @@ export async function POST(
           return NextResponse.json({ error: 'Failed to adjust chips' }, { status: 500 })
         }
 
-        await supabase
-          .from('poker_rooms')
-          .update({ last_activity: new Date().toISOString() })
-          .eq('pin', pin)
+        await supabase.from('poker_rooms').update({ last_activity: new Date().toISOString() }).eq('pin', pin)
 
         return NextResponse.json({ success: true })
       }
@@ -389,10 +352,7 @@ export async function POST(
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ pin: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ pin: string }> }) {
   try {
     const { pin } = await params
     const body = await request.json()
@@ -403,11 +363,7 @@ export async function PATCH(
     }
 
     // Check if room exists
-    const { data: room, error: roomError } = await supabase
-      .from('poker_rooms')
-      .select('*')
-      .eq('pin', pin)
-      .single()
+    const { data: room, error: roomError } = await supabase.from('poker_rooms').select('*').eq('pin', pin).single()
 
     if (roomError || !room) {
       return NextResponse.json({ error: 'Room not found' }, { status: 404 })
@@ -432,11 +388,8 @@ export async function PATCH(
         last_activity: new Date().toISOString(),
         timer_per_turn: timer,
       }
-      
-      const { error: updateError } = await supabase
-        .from('poker_rooms')
-        .update(updateData)
-        .eq('pin', pin)
+
+      const { error: updateError } = await supabase.from('poker_rooms').update(updateData).eq('pin', pin)
 
       if (updateError) {
         if (!(updateError.message?.includes('column') && updateError.message?.includes('timer_per_turn'))) {

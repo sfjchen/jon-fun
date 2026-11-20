@@ -6,9 +6,9 @@ import {
   waitForNotesEditor,
 } from './helpers/notes-mock'
 
-const isProductionDeploy = (process.env.PLAYWRIGHT_BASE_URL ?? (process.env.PLAYWRIGHT_SKIP_WEBSERVER === '1' ? 'https://sfjc.dev' : '')).includes(
-  'sfjc.dev',
-)
+const isProductionDeploy = (
+  process.env.PLAYWRIGHT_BASE_URL ?? (process.env.PLAYWRIGHT_SKIP_WEBSERVER === '1' ? 'https://sfjc.dev' : '')
+).includes('sfjc.dev')
 
 test.describe('Notes file attachments', () => {
   test.use({ viewport: { width: 1280, height: 800 } })
@@ -22,8 +22,7 @@ test.describe('Notes file attachments', () => {
   test('restored attachment marker renders image when screenshot map present', async ({ page }) => {
     await page.evaluate(() => {
       const id = 'screenshot-e2e-restore'
-      const base64 =
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+      const base64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
       const session = {
         id: 'attach-restore',
         title: 'Attach restore',
@@ -70,5 +69,4 @@ test.describe('Notes file attachments', () => {
     await expect(page.locator('.note-attachment__table')).toContainText('AAPL')
     await expect(page.locator('.note-attachment__table')).toContainText('190')
   })
-
 })

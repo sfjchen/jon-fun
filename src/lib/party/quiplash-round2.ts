@@ -5,7 +5,11 @@ import { shuffle } from '@/lib/random'
 import { QUIPLASH_PROMPT_POOL } from './prompts-quiplash'
 import { buildQuiplashMatchups } from './quiplash-pairing'
 
-export async function seedQuiplashRound2(pin: string, playerIds: string[], nowIso: string): Promise<{ error?: string }> {
+export async function seedQuiplashRound2(
+  pin: string,
+  playerIds: string[],
+  nowIso: string,
+): Promise<{ error?: string }> {
   const shuffled = shuffle(QUIPLASH_PROMPT_POOL)
   const pairs = buildQuiplashMatchups(playerIds, shuffled, 2)
   const deadline = new Date(Date.now() + PARTY_PHASE_SECONDS_DEFAULT * 1000).toISOString()

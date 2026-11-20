@@ -25,23 +25,33 @@ export default function BuzzerPlayerPage() {
           return
         }
         if (!res.ok) throw new Error(await res.text())
-        const d = await res.json() as { session: BuzzerSession; queue: Buzz[]; board?: { title?: string | null } | null }
+        const d = (await res.json()) as {
+          session: BuzzerSession
+          queue: Buzz[]
+          board?: { title?: string | null } | null
+        }
         if (!cancelled) setData({ session: d.session, queue: d.queue ?? [], boardTitle: d.board?.title ?? null })
       } catch (e) {
         if (!cancelled) setFetchError((e as Error).message || 'Failed to load buzzer session.')
       }
     })()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [pin, validPin])
 
   if (error) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center p-4 text-center">
+      <div className="flex min-h-[80vh] items-center justify-center p-4 text-center">
         <div>
-          <h2 className="text-xl font-bold mb-3" style={{ color: 'var(--ink-text)' }}>{error}</h2>
-          <button onClick={() => router.push('/games/jeopardy/buzz')}
-            className="px-4 py-2 rounded-lg border"
-            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
+          <h2 className="mb-3 text-xl font-bold" style={{ color: 'var(--ink-text)' }}>
+            {error}
+          </h2>
+          <button
+            onClick={() => router.push('/games/jeopardy/buzz')}
+            className="rounded-lg border px-4 py-2"
+            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+          >
             Try another PIN
           </button>
         </div>
@@ -51,14 +61,14 @@ export default function BuzzerPlayerPage() {
 
   if (!data) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center p-4 text-center"
-        style={{ color: 'var(--ink-muted)' }}>
+      <div
+        className="flex min-h-[80vh] items-center justify-center p-4 text-center"
+        style={{ color: 'var(--ink-muted)' }}
+      >
         Connecting...
       </div>
     )
   }
 
-  return (
-    <BuzzerPlayer pin={pin} initialSession={data.session} initialQueue={data.queue} boardTitle={data.boardTitle} />
-  )
+  return <BuzzerPlayer pin={pin} initialSession={data.session} initialQueue={data.queue} boardTitle={data.boardTitle} />
 }

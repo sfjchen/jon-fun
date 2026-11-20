@@ -18,10 +18,7 @@ import {
   isLookupStreaming,
   type LookupStreamMap,
 } from '@/lib/notes/lookupStreams'
-import {
-  findLookupOwnerSessionId,
-  lookupIdsNewestFirst,
-} from '@/lib/notes/lookupPersistence'
+import { findLookupOwnerSessionId, lookupIdsNewestFirst } from '@/lib/notes/lookupPersistence'
 import { pushGlossaryToServer, syncMemoryBank } from '@/lib/notes/memorySync'
 import { countShorthandFlags, setTodoArchivedAtLine } from '@/lib/notes/shorthand'
 import { appendNoteHistory, lastHistoryEntry } from '@/lib/notes/noteHistory'
@@ -126,13 +123,11 @@ type Action =
 
 function initState(): State {
   const prefs = typeof window !== 'undefined' ? loadNotesUiPrefs() : {}
-  const desktop =
-    typeof window !== 'undefined' && window.matchMedia(NOTES_DESKTOP_MIN_MQ).matches
+  const desktop = typeof window !== 'undefined' && window.matchMedia(NOTES_DESKTOP_MIN_MQ).matches
   const initial = loadActiveSession()
   const bootSessions = loadSessions()
   const splitId = prefs.splitSessionId ?? null
-  const validSplit =
-    splitId && bootSessions.some((s) => s.id === splitId) ? splitId : null
+  const validSplit = splitId && bootSessions.some((s) => s.id === splitId) ? splitId : null
   return {
     session: initial,
     sessions: bootSessions.length > 0 ? bootSessions : [initial],
@@ -229,10 +224,7 @@ function reducer(state: State, action: Action): State {
     case 'LOOKUP_START': {
       const session = upsertLookupInSession(state.session, action.lookup)
       const sessions = state.sessions.map((s) => (s.id === session.id ? session : s))
-      const sessionHistory = [
-        action.lookup,
-        ...state.sessionHistory.filter((l) => l.id !== action.lookup.id),
-      ]
+      const sessionHistory = [action.lookup, ...state.sessionHistory.filter((l) => l.id !== action.lookup.id)]
       return {
         ...state,
         session,
@@ -261,8 +253,7 @@ function reducer(state: State, action: Action): State {
       }
     case 'STREAM_DONE': {
       const ownerSessionId =
-        findLookupOwnerSessionId(state.sessions, state.session.id, action.lookupId) ??
-        state.session.id
+        findLookupOwnerSessionId(state.sessions, state.session.id, action.lookupId) ?? state.session.id
       const ownerSession =
         state.sessions.find((s) => s.id === ownerSessionId) ??
         (ownerSessionId === state.session.id ? state.session : null)
@@ -342,8 +333,7 @@ function reducer(state: State, action: Action): State {
       }
     case 'LOAD_SESSION': {
       const preserveAi = action.preserveAi && anyStreaming(state.streamByLookupId)
-      const splitSessionId =
-        state.splitSessionId === action.session.id ? null : state.splitSessionId
+      const splitSessionId = state.splitSessionId === action.session.id ? null : state.splitSessionId
       const sessionLookupIds = new Set(action.session.lookups.map((l) => l.id))
       let openLookupIds = lookupIdsNewestFirst(action.session.lookups)
       const streamByLookupId: LookupStreamMap = {}
@@ -436,9 +426,7 @@ export default function NotesApp() {
   const [syncing, setSyncing] = useState(true)
   const [searchOpen, setSearchOpen] = useState(false)
   const [hintsOpen, setHintsOpen] = useState(() => typeof window !== 'undefined' && loadHintsOpen())
-  const [folders, setFolders] = useState<NoteFolder[]>(() =>
-    typeof window !== 'undefined' ? loadFolders() : [],
-  )
+  const [folders, setFolders] = useState<NoteFolder[]>(() => (typeof window !== 'undefined' ? loadFolders() : []))
   const [expandedFolderIds, setExpandedFolderIds] = useState<string[]>(() => {
     if (typeof window === 'undefined') return ['__inbox__']
     return loadNotesUiPrefs().expandedFolderIds ?? ['__inbox__']
@@ -576,50 +564,55 @@ export default function NotesApp() {
     dispatch({ type: 'GLOSSARY_BUMP' })
   }, [])
 
-  const applyServerSync = useCallback(async (opts?: { skipPersist?: boolean }) => {
-    if (!opts?.skipPersist) persistLocal(sessionRef.current)
-    const r = await syncWithServer()
-    lastPullAtRef.current = Date.now()
-    const mem = await syncMemoryBank()
-    dispatch({ type: 'GLOSSARY_BUMP' })
-    const inMem = sessionRef.current
-    const preserveAi = anyStreaming(streamRef.current)
-    const active = loadActiveSession()
-    const sameSession = inMem.id === active.id
-    const activeDirty = sameSession && isSessionDirty(inMem)
-    const editing = isActivelyEditing()
-    const remoteEditing = isRemoteEditing(inMem.id)
-    const protectActive = sameSession && (activeDirty || editing || remoteEditing)
+  const applyServerSync = useCallback(
+    async (opts?: { skipPersist?: boolean }) => {
+      if (!opts?.skipPersist) persistLocal(sessionRef.current)
+      const r = await syncWithServer()
+      lastPullAtRef.current = Date.now()
+      const mem = await syncMemoryBank()
+      dispatch({ type: 'GLOSSARY_BUMP' })
+      const inMem = sessionRef.current
+      const preserveAi = anyStreaming(streamRef.current)
+      const active = loadActiveSession()
+      const sameSession = inMem.id === active.id
+      const activeDirty = sameSession && isSessionDirty(inMem)
+      const editing = isActivelyEditing()
+      const remoteEditing = isRemoteEditing(inMem.id)
+      const protectActive = sameSession && (activeDirty || editing || remoteEditing)
 
-    let sessions = r.sessions
-    if (protectActive) {
-      sessions = r.sessions.map((s) => (s.id === inMem.id ? inMem : s))
-      upsertSession(inMem)
-    }
-    dispatch({ type: 'SET_SESSIONS', sessions })
-    setFolders(loadFolders())
+      let sessions = r.sessions
+      if (protectActive) {
+        sessions = r.sessions.map((s) => (s.id === inMem.id ? inMem : s))
+        upsertSession(inMem)
+      }
+      dispatch({ type: 'SET_SESSIONS', sessions })
+      setFolders(loadFolders())
 
-    const mergedActive = r.sessions.find((s) => s.id === active.id) ?? active
-    const remoteNewer =
-      mergedActive.id === inMem.id &&
-      new Date(mergedActive.updatedAt).getTime() > new Date(inMem.updatedAt).getTime()
-    const contentDiffers =
-      mergedActive.notes !== inMem.notes || mergedActive.title !== inMem.title
+      const mergedActive = r.sessions.find((s) => s.id === active.id) ?? active
+      const remoteNewer =
+        mergedActive.id === inMem.id && new Date(mergedActive.updatedAt).getTime() > new Date(inMem.updatedAt).getTime()
+      const contentDiffers = mergedActive.notes !== inMem.notes || mergedActive.title !== inMem.title
 
-    if (!preserveAi && !protectActive && (remoteNewer || contentDiffers)) {
-      dispatch({
-        type: 'LOAD_SESSION',
-        session: mergedActive,
-        preserveAi,
-      })
-      setActiveSessionId(mergedActive.id)
-    }
+      if (!preserveAi && !protectActive && (remoteNewer || contentDiffers)) {
+        dispatch({
+          type: 'LOAD_SESSION',
+          session: mergedActive,
+          preserveAi,
+        })
+        setActiveSessionId(mergedActive.id)
+      }
 
-    const ok = r.pushOk && mem.glossaryOk && mem.sourcesOk
-    const syncError = !r.pushOk ? (r.pushError ?? null) : !mem.glossaryOk || !mem.sourcesOk ? 'Dictionary or sources sync failed' : null
-    dispatch({ type: 'SYNC_OK', ok, kind: 'synced', error: syncError })
-    return r
-  }, [persistLocal, isActivelyEditing])
+      const ok = r.pushOk && mem.glossaryOk && mem.sourcesOk
+      const syncError = !r.pushOk
+        ? (r.pushError ?? null)
+        : !mem.glossaryOk || !mem.sourcesOk
+          ? 'Dictionary or sources sync failed'
+          : null
+      dispatch({ type: 'SYNC_OK', ok, kind: 'synced', error: syncError })
+      return r
+    },
+    [persistLocal, isActivelyEditing],
+  )
 
   const shouldBackgroundPull = useCallback((force?: boolean) => {
     if (force) return true
@@ -671,8 +664,8 @@ export default function NotesApp() {
         const pullDue = shouldBackgroundPull(opts?.forcePull) && !isActivelyEditing()
         if (pullDue) {
           const pullOpts = opts?.forcePull
-            ? ({ skipPersist: false as const, force: true as const })
-            : ({ skipPersist: false as const })
+            ? { skipPersist: false as const, force: true as const }
+            : { skipPersist: false as const }
           const r = await refreshFromServer(pullOpts)
           if (r) return r
         }
@@ -701,8 +694,8 @@ export default function NotesApp() {
       const pullDue = shouldBackgroundPull(opts?.forcePull) && !isActivelyEditing()
       if (pullDue) {
         const pullOpts = opts?.forcePull
-          ? ({ skipPersist: false as const, force: true as const })
-          : ({ skipPersist: false as const })
+          ? { skipPersist: false as const, force: true as const }
+          : { skipPersist: false as const }
         const r = await refreshFromServer(pullOpts)
         if (r) return r
       }
@@ -776,7 +769,7 @@ export default function NotesApp() {
   }, [state.session, syncToServer])
 
   const secondarySession = state.splitSessionId
-    ? state.sessions.find((s) => s.id === state.splitSessionId) ?? null
+    ? (state.sessions.find((s) => s.id === state.splitSessionId) ?? null)
     : null
 
   useEffect(() => {
@@ -808,8 +801,7 @@ export default function NotesApp() {
     let id: number | undefined
     const schedule = () => {
       if (id != null) clearInterval(id)
-      const ms =
-        document.visibilityState === 'visible' ? PERIODIC_VISIBLE_MS : PERIODIC_HIDDEN_MS
+      const ms = document.visibilityState === 'visible' ? PERIODIC_VISIBLE_MS : PERIODIC_HIDDEN_MS
       id = window.setInterval(() => void refreshFromServer(), ms)
     }
     const onVis = () => {
@@ -841,11 +833,7 @@ export default function NotesApp() {
     }) => {
       streamBufs.current[opts.lookupId] = ''
 
-      const companion = splitCompanionSession(
-        sessionRef.current,
-        sessionsRef.current,
-        splitSessionIdRef.current,
-      )
+      const companion = splitCompanionSession(sessionRef.current, sessionsRef.current, splitSessionIdRef.current)
 
       const ctx = await assembleClientContextAsync({
         query: opts.query,
@@ -864,9 +852,7 @@ export default function NotesApp() {
       commitSession(withDomain)
 
       const noteShots = screenshotsInContext(withDomain.notes, withDomain.screenshots)
-      const companionShots = companion
-        ? screenshotsInContext(companion.notes, companion.screenshots)
-        : []
+      const companionShots = companion ? screenshotsInContext(companion.notes, companion.screenshots) : []
       const screenshots = [...noteShots, ...companionShots, ...(opts.extraScreenshots ?? [])]
 
       const mergedFullNotes = formatSplitFullNotes(withDomain, companion)
@@ -932,14 +918,8 @@ export default function NotesApp() {
             skipGlossaryAuto,
           })
           queueMicrotask(() => {
-            const ownerId = findLookupOwnerSessionId(
-              sessionsRef.current,
-              sessionRef.current.id,
-              opts.lookupId,
-            )
-            const owner =
-              (ownerId ? sessionsRef.current.find((s) => s.id === ownerId) : null) ??
-              sessionRef.current
+            const ownerId = findLookupOwnerSessionId(sessionsRef.current, sessionRef.current.id, opts.lookupId)
+            const owner = (ownerId ? sessionsRef.current.find((s) => s.id === ownerId) : null) ?? sessionRef.current
             const lk = owner.lookups.find((l) => l.id === opts.lookupId)
             if (lk?.conversation.some((m) => m.role === 'assistant')) {
               upsertSession(owner)
@@ -954,17 +934,8 @@ export default function NotesApp() {
 
   const handleTrigger = useCallback(
     (type: TriggerType, query: string, context: string, pane: 'left' | 'right' = 'left') => {
-      const companion = splitCompanionSession(
-        sessionRef.current,
-        sessionsRef.current,
-        splitSessionIdRef.current,
-      )
-      const mergedContext = mergeSplitEditorContext(
-        context,
-        sessionRef.current,
-        companion,
-        pane,
-      )
+      const companion = splitCompanionSession(sessionRef.current, sessionsRef.current, splitSessionIdRef.current)
+      const mergedContext = mergeSplitEditorContext(context, sessionRef.current, companion, pane)
       const lookup: Lookup = {
         id: `lk-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type,
@@ -1018,11 +989,7 @@ export default function NotesApp() {
     (raw: string) => {
       const query = raw.trim()
       if (!query) return
-      const companion = splitCompanionSession(
-        state.session,
-        state.sessions,
-        state.splitSessionId,
-      )
+      const companion = splitCompanionSession(state.session, state.sessions, state.splitSessionId)
       const mergedNotes = formatSplitFullNotes(state.session, companion)
       const lookup: Lookup = {
         id: `lk-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -1050,8 +1017,7 @@ export default function NotesApp() {
   const handleFollowUp = useCallback(
     (lookupId: string, question: string) => {
       const lk =
-        state.session.lookups.find((l) => l.id === lookupId) ??
-        state.sessionHistory.find((l) => l.id === lookupId)
+        state.session.lookups.find((l) => l.id === lookupId) ?? state.sessionHistory.find((l) => l.id === lookupId)
       if (!lk || isLookupStreaming(state.streamByLookupId, lk.id)) return
       const conversation = [...lk.conversation, { role: 'user' as const, content: question }]
       const updated = { ...lk, conversation }
@@ -1127,11 +1093,7 @@ export default function NotesApp() {
   const handleSummarize = useCallback(() => {
     const mobile = isNotesMobileViewport()
     if (!mobile) dispatch({ type: 'PANEL', open: true })
-    const companion = splitCompanionSession(
-      state.session,
-      state.sessions,
-      state.splitSessionId,
-    )
+    const companion = splitCompanionSession(state.session, state.sessions, state.splitSessionId)
     const mergedNotes = formatSplitFullNotes(state.session, companion)
     const lookup: Lookup = {
       id: `decode-${Date.now()}`,
@@ -1152,60 +1114,69 @@ export default function NotesApp() {
     })
   }, [state.session, state.sessions, state.splitSessionId, runStream])
 
-  const handleNewNote = useCallback((folderId: string | null = null) => {
-    const fid = typeof folderId === 'string' ? folderId : null
-    const flushed = flushAndCommitEditor(sessionRef.current.id)
-    const prev = touchSession(flushed ?? sessionRef.current)
-    upsertSession(prev)
-    const storedPrev = loadSessions().find((x) => x.id === prev.id)
-    if (flushed || isSessionDirty(prev, storedPrev)) {
-      const saved = appendNoteHistory(prev, { kind: 'saved', detail: 'before new note' })
-      upsertSession(saved)
-      void (async () => {
-        await syncToServer(saved)
-        dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
-      })()
-    }
+  const handleNewNote = useCallback(
+    (folderId: string | null = null) => {
+      const fid = typeof folderId === 'string' ? folderId : null
+      const flushed = flushAndCommitEditor(sessionRef.current.id)
+      const prev = touchSession(flushed ?? sessionRef.current)
+      upsertSession(prev)
+      const storedPrev = loadSessions().find((x) => x.id === prev.id)
+      if (flushed || isSessionDirty(prev, storedPrev)) {
+        const saved = appendNoteHistory(prev, { kind: 'saved', detail: 'before new note' })
+        upsertSession(saved)
+        void (async () => {
+          await syncToServer(saved)
+          dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+        })()
+      }
 
-    const fresh = createEmptySession(undefined, fid)
-    setActiveSessionId(fresh.id)
-    upsertSession(fresh)
-    dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
-    dispatch({ type: 'LOAD_SESSION', session: fresh })
-    dispatch({ type: 'SPLIT_CLOSE' })
-    dispatch({ type: 'PANEL', open: true })
-    dispatch({ type: 'NOTES_LIST', open: true })
-    if (fid) {
-      setExpandedFolderIds((prevIds) => {
-        if (prevIds.includes(fid)) return prevIds
-        const next = [...prevIds, fid]
+      const fresh = createEmptySession(undefined, fid)
+      setActiveSessionId(fresh.id)
+      upsertSession(fresh)
+      dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+      dispatch({ type: 'LOAD_SESSION', session: fresh })
+      dispatch({ type: 'SPLIT_CLOSE' })
+      dispatch({ type: 'PANEL', open: true })
+      dispatch({ type: 'NOTES_LIST', open: true })
+      if (fid) {
+        setExpandedFolderIds((prevIds) => {
+          if (prevIds.includes(fid)) return prevIds
+          const next = [...prevIds, fid]
+          saveNotesUiPrefs({ expandedFolderIds: next })
+          return next
+        })
+      }
+    },
+    [flushAndCommitEditor, syncToServer],
+  )
+
+  const handleNewFolder = useCallback(
+    (parentId: string | null, name: string) => {
+      const folder = createFolder(name, parentId)
+      setFolders(loadFolders())
+      setExpandedFolderIds((prev) => {
+        const next = [...new Set([...prev, folder.id, '__inbox__', ...(parentId ? [parentId] : [])])]
         saveNotesUiPrefs({ expandedFolderIds: next })
         return next
       })
-    }
-  }, [flushAndCommitEditor, syncToServer])
+      void syncAllToServer()
+    },
+    [syncAllToServer],
+  )
 
-  const handleNewFolder = useCallback((parentId: string | null, name: string) => {
-    const folder = createFolder(name, parentId)
-    setFolders(loadFolders())
-    setExpandedFolderIds((prev) => {
-      const next = [...new Set([...prev, folder.id, '__inbox__', ...(parentId ? [parentId] : [])])]
-      saveNotesUiPrefs({ expandedFolderIds: next })
-      return next
-    })
-    void syncAllToServer()
-  }, [syncAllToServer])
-
-  const handleDeleteFolder = useCallback((folderId: string) => {
-    const folder = loadFolders().find((f) => f.id === folderId)
-    if (folder && isArchiveFolder(folder)) return
-    const { folders: nextFolders, sessions: nextSessions } = deleteFolder(folderId, loadSessions())
-    saveSessionsLocal(nextSessions)
-    setFolders(nextFolders)
-    dispatch({ type: 'SET_SESSIONS', sessions: nextSessions })
-    dispatch({ type: 'LOAD_SESSION', session: loadActiveSession() })
-    void syncAllToServer()
-  }, [syncAllToServer])
+  const handleDeleteFolder = useCallback(
+    (folderId: string) => {
+      const folder = loadFolders().find((f) => f.id === folderId)
+      if (folder && isArchiveFolder(folder)) return
+      const { folders: nextFolders, sessions: nextSessions } = deleteFolder(folderId, loadSessions())
+      saveSessionsLocal(nextSessions)
+      setFolders(nextFolders)
+      dispatch({ type: 'SET_SESSIONS', sessions: nextSessions })
+      dispatch({ type: 'LOAD_SESSION', session: loadActiveSession() })
+      void syncAllToServer()
+    },
+    [syncAllToServer],
+  )
 
   const handleToggleSourceForNote = useCallback((sourceId: string, enabled: boolean, sessionId?: string) => {
     const targetId = sessionId ?? sessionRef.current.id
@@ -1262,17 +1233,20 @@ export default function NotesApp() {
     [state.session.id, syncToServer],
   )
 
-  const handleMoveFolder = useCallback((folderId: string, parentId: string | null) => {
-    const next = moveFolder(folderId, parentId)
-    if (!next) return
-    setFolders(next)
-    setExpandedFolderIds((prev) => {
-      const nextExpanded = [...new Set([...prev, folderId, ...(parentId ? [parentId] : []), '__inbox__'])]
-      saveNotesUiPrefs({ expandedFolderIds: nextExpanded })
-      return nextExpanded
-    })
-    void syncAllToServer()
-  }, [syncAllToServer])
+  const handleMoveFolder = useCallback(
+    (folderId: string, parentId: string | null) => {
+      const next = moveFolder(folderId, parentId)
+      if (!next) return
+      setFolders(next)
+      setExpandedFolderIds((prev) => {
+        const nextExpanded = [...new Set([...prev, folderId, ...(parentId ? [parentId] : []), '__inbox__'])]
+        saveNotesUiPrefs({ expandedFolderIds: nextExpanded })
+        return nextExpanded
+      })
+      void syncAllToServer()
+    },
+    [syncAllToServer],
+  )
 
   const handleToggleFolder = useCallback((folderId: string) => {
     setExpandedFolderIds((prev) => {
@@ -1282,45 +1256,43 @@ export default function NotesApp() {
     })
   }, [])
 
-  const handleSelectMeeting = useCallback((s: NoteSession, opts?: { keepSplit?: boolean }) => {
-    if (s.id === sessionRef.current.id) return
+  const handleSelectMeeting = useCallback(
+    (s: NoteSession, opts?: { keepSplit?: boolean }) => {
+      if (s.id === sessionRef.current.id) return
 
-    const flushed = flushAndCommitEditor(sessionRef.current.id)
-    const prev = touchSession(flushed ?? sessionRef.current)
-    upsertSession(prev)
+      const flushed = flushAndCommitEditor(sessionRef.current.id)
+      const prev = touchSession(flushed ?? sessionRef.current)
+      upsertSession(prev)
 
-    const target =
-      sessionsRef.current.find((x) => x.id === s.id) ??
-      loadSessions().find((x) => x.id === s.id) ??
-      s
-    const switched = appendNoteHistory(target, { kind: 'switch', detail: target.title || 'Untitled' })
+      const target = sessionsRef.current.find((x) => x.id === s.id) ?? loadSessions().find((x) => x.id === s.id) ?? s
+      const switched = appendNoteHistory(target, { kind: 'switch', detail: target.title || 'Untitled' })
 
-    setActiveSessionId(switched.id)
-    dispatch({ type: 'LOAD_SESSION', session: switched })
-    if (!opts?.keepSplit) dispatch({ type: 'SPLIT_CLOSE' })
-    dispatch({
-      type: 'SET_SESSIONS',
-      sessions: sessionsRef.current.map((x) =>
-        x.id === switched.id ? switched : x.id === prev.id ? prev : x,
-      ),
-    })
+      setActiveSessionId(switched.id)
+      dispatch({ type: 'LOAD_SESSION', session: switched })
+      if (!opts?.keepSplit) dispatch({ type: 'SPLIT_CLOSE' })
+      dispatch({
+        type: 'SET_SESSIONS',
+        sessions: sessionsRef.current.map((x) => (x.id === switched.id ? switched : x.id === prev.id ? prev : x)),
+      })
 
-    queueMicrotask(() => {
-      upsertSession(switched)
-      const storedPrev = loadSessions().find((x) => x.id === prev.id)
-      if (flushed || isSessionDirty(prev, storedPrev)) {
-        const saved = appendNoteHistory(prev, { kind: 'saved' })
-        upsertSession(saved)
-        void (async () => {
-          await syncToServer(saved)
-          dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
-          if (sessionRef.current.id === prev.id) {
-            dispatch({ type: 'PATCH_SESSION', session: saved })
-          }
-        })()
-      }
-    })
-  }, [flushAndCommitEditor, syncToServer])
+      queueMicrotask(() => {
+        upsertSession(switched)
+        const storedPrev = loadSessions().find((x) => x.id === prev.id)
+        if (flushed || isSessionDirty(prev, storedPrev)) {
+          const saved = appendNoteHistory(prev, { kind: 'saved' })
+          upsertSession(saved)
+          void (async () => {
+            await syncToServer(saved)
+            dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+            if (sessionRef.current.id === prev.id) {
+              dispatch({ type: 'PATCH_SESSION', session: saved })
+            }
+          })()
+        }
+      })
+    },
+    [flushAndCommitEditor, syncToServer],
+  )
 
   const handleRenameMeeting = useCallback(
     (sessionId: string, title: string) => {
@@ -1340,13 +1312,16 @@ export default function NotesApp() {
     [bumpEditActivity, syncToServer],
   )
 
-  const handleDeleteMeeting = useCallback((sessionId: string) => {
-    void deleteSessionOnServer(sessionId)
-    const next = deleteSession(sessionId)
-    dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
-    if (state.splitSessionId === sessionId) dispatch({ type: 'SPLIT_CLOSE' })
-    if (next) dispatch({ type: 'LOAD_SESSION', session: next })
-  }, [state.splitSessionId])
+  const handleDeleteMeeting = useCallback(
+    (sessionId: string) => {
+      void deleteSessionOnServer(sessionId)
+      const next = deleteSession(sessionId)
+      dispatch({ type: 'SET_SESSIONS', sessions: loadSessions() })
+      if (state.splitSessionId === sessionId) dispatch({ type: 'SPLIT_CLOSE' })
+      if (next) dispatch({ type: 'LOAD_SESSION', session: next })
+    },
+    [state.splitSessionId],
+  )
 
   const handleDeleteLookup = useCallback(
     (lookupId: string) => {
@@ -1633,9 +1608,7 @@ export default function NotesApp() {
       title={state.session.title}
       startedAt={state.session.startedAt}
       updatedAt={state.session.updatedAt}
-      {...(state.session.metadata?.lastDeviceLabel
-        ? { lastDeviceLabel: state.session.metadata.lastDeviceLabel }
-        : {})}
+      {...(state.session.metadata?.lastDeviceLabel ? { lastDeviceLabel: state.session.metadata.lastDeviceLabel } : {})}
       tags={state.session.tags ?? []}
       sessions={state.sessions}
       onTitleChange={(title) => {
@@ -1647,25 +1620,24 @@ export default function NotesApp() {
     />
   )
 
-  const secondaryTopBar =
-    secondarySession ? (
-      <NotesTopBar
-        pane="secondary"
-        title={secondarySession.title}
-        startedAt={secondarySession.startedAt}
-        updatedAt={secondarySession.updatedAt}
-        {...(secondarySession.metadata?.lastDeviceLabel
-          ? { lastDeviceLabel: secondarySession.metadata.lastDeviceLabel }
-          : {})}
-        tags={secondarySession.tags ?? []}
-        sessions={state.sessions}
-        onTitleChange={handleSecondaryTitle}
-        onTagsChange={handleSecondaryTags}
-        onDeleteNote={() => handleDeleteMeeting(secondarySession.id)}
-        onClosePane={() => dispatch({ type: 'SPLIT_CLOSE' })}
-        showHomeLink={false}
-      />
-    ) : null
+  const secondaryTopBar = secondarySession ? (
+    <NotesTopBar
+      pane="secondary"
+      title={secondarySession.title}
+      startedAt={secondarySession.startedAt}
+      updatedAt={secondarySession.updatedAt}
+      {...(secondarySession.metadata?.lastDeviceLabel
+        ? { lastDeviceLabel: secondarySession.metadata.lastDeviceLabel }
+        : {})}
+      tags={secondarySession.tags ?? []}
+      sessions={state.sessions}
+      onTitleChange={handleSecondaryTitle}
+      onTagsChange={handleSecondaryTags}
+      onDeleteNote={() => handleDeleteMeeting(secondarySession.id)}
+      onClosePane={() => dispatch({ type: 'SPLIT_CLOSE' })}
+      showHomeLink={false}
+    />
+  ) : null
 
   return (
     <div className="notes-root bg-[var(--uv-bg-base)] text-[var(--uv-text-primary)]">
@@ -1709,12 +1681,8 @@ export default function NotesApp() {
                 activeTriggerQueries={leftActiveQueries}
                 onAttachmentAdd={handleAttachmentAdd}
                 onAttachmentUpdate={handleAttachmentUpdate}
-                onLookupSelection={(query, type) =>
-                  handleTrigger(type, query, state.session.notes, 'left')
-                }
-                onAddSelectionToDictionary={(term) =>
-                  handleAddSelectionToDictionary(term, state.session.notes)
-                }
+                onLookupSelection={(query, type) => handleTrigger(type, query, state.session.notes, 'left')}
+                onAddSelectionToDictionary={(term) => handleAddSelectionToDictionary(term, state.session.notes)}
                 onArchiveTodoLine={(lineIndex) => handleArchiveTodo(state.session.id, lineIndex)}
                 onRestoreTodoLine={(lineIndex) => handleRestoreTodo(state.session.id, lineIndex)}
               />
@@ -1731,12 +1699,8 @@ export default function NotesApp() {
                   activeTriggerQueries={rightActiveQueries}
                   onAttachmentAdd={handleSecondaryAttachmentAdd}
                   onAttachmentUpdate={handleSecondaryAttachmentUpdate}
-                  onLookupSelection={(query, type) =>
-                    handleSecondaryTrigger(type, query, secondarySession.notes)
-                  }
-                  onAddSelectionToDictionary={(term) =>
-                    handleAddSelectionToDictionary(term, secondarySession.notes)
-                  }
+                  onLookupSelection={(query, type) => handleSecondaryTrigger(type, query, secondarySession.notes)}
+                  onAddSelectionToDictionary={(term) => handleAddSelectionToDictionary(term, secondarySession.notes)}
                   onArchiveTodoLine={(lineIndex) => handleArchiveTodo(secondarySession.id, lineIndex)}
                   onRestoreTodoLine={(lineIndex) => handleRestoreTodo(secondarySession.id, lineIndex)}
                 />

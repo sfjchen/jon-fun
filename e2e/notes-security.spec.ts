@@ -1,11 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { buildSessionMarkdown } from '../src/lib/notes/export'
 import type { NoteSession } from '../src/lib/notes/types'
-import {
-  mockNotesApi,
-  notesEditor,
-  waitForNotesEditor,
-} from './helpers/notes-mock'
+import { mockNotesApi, notesEditor, waitForNotesEditor } from './helpers/notes-mock'
 
 test.describe('Notes security', () => {
   test.use({ viewport: { width: 1280, height: 800 }, acceptDownloads: true })
@@ -64,5 +60,4 @@ test.describe('Notes security', () => {
     expect(postBody).not.toContain('\u2028')
     expect(postBody).toContain('line with separator')
   })
-
 })

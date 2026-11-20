@@ -75,13 +75,13 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
   }, [puzzle.groups])
 
   const [order, setOrder] = useState<Tile[]>(() => {
-    const tiles = new Map(allTiles.map(t => [wordKey(t.word), t]))
-    const original = puzzle.startingWords?.map(w => tiles.get(wordKey(w))).filter((t): t is Tile => !!t)
-    return original?.length === 16 && new Set(original.map(t => wordKey(t.word))).size === 16 ? original : shuffle(allTiles)
+    const tiles = new Map(allTiles.map((t) => [wordKey(t.word), t]))
+    const original = puzzle.startingWords?.map((w) => tiles.get(wordKey(w))).filter((t): t is Tile => !!t)
+    return original?.length === 16 && new Set(original.map((t) => wordKey(t.word))).size === 16
+      ? original
+      : shuffle(allTiles)
   })
-  const [progress, setProgress] = useState<ConnectionsProgress>(
-    () => initialProgress ?? { guesses: [], gaveUp: false },
-  )
+  const [progress, setProgress] = useState<ConnectionsProgress>(() => initialProgress ?? { guesses: [], gaveUp: false })
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(() => new Set())
   const [shake, setShake] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
@@ -90,9 +90,7 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
 
   const solved = useMemo(
     () =>
-      progress.guesses
-        .map((g) => findMatchingGroup(puzzle.groups, g))
-        .filter((g): g is ConnectionsGroup => g !== null),
+      progress.guesses.map((g) => findMatchingGroup(puzzle.groups, g)).filter((g): g is ConnectionsGroup => g !== null),
     [progress.guesses, puzzle.groups],
   )
   const wrongGuesses = progress.guesses.length - solved.length
@@ -204,21 +202,21 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
   // shuffles. The arrows walk the tiles through the grid's data-arrows group.
   useHotkeys((k) => {
     if (done) return
-    if (k === 'Backspace' || k === 'Escape') return deselectAll(), true
-    if (k === ' ') return shufflePool(), true
+    if (k === 'Backspace' || k === 'Escape') return (deselectAll(), true)
+    if (k === ' ') return (shufflePool(), true)
     const t = pool[gridKeyIndex(k, 4)]
-    if (t) return toggleSel(t.word), true
+    if (t) return (toggleSel(t.word), true)
   })
 
   const neutral = puzzle.difficultyKnown === false
   return (
-    <div className="relative mx-auto w-full max-w-[600px] select-none space-y-3" data-testid="connections-board">
+    <div className="relative mx-auto w-full max-w-[600px] space-y-3 select-none" data-testid="connections-board">
       <style>{`@keyframes cx-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}
         75%{transform:translateX(6px)}}`}</style>
       {toast && (
         <div
           role="status"
-          className="absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-full rounded-md px-3 py-1.5 text-sm font-semibold"
+          className="absolute top-0 left-1/2 z-20 -translate-x-1/2 -translate-y-full rounded-md px-3 py-1.5 text-sm font-semibold"
           style={{ background: '#121212', color: '#fff' }}
         >
           {toast}
@@ -246,8 +244,7 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
               aria-pressed={sel}
               data-cx-tile
               onClick={() => toggleSel(t.word)}
-              className={`flex h-[72px] items-center justify-center rounded-md px-0.5 text-center font-bold uppercase
-                leading-tight transition-colors focus:outline-none focus-visible:ring-2 sm:h-20 ${tileText(t.word)}`}
+              className={`flex h-[72px] items-center justify-center rounded-md px-0.5 text-center leading-tight font-bold uppercase transition-colors focus:outline-none focus-visible:ring-2 sm:h-20 ${tileText(t.word)}`}
               style={{
                 backgroundColor: sel ? '#5a594e' : '#efefe6',
                 color: sel ? '#fff' : '#000',
@@ -256,8 +253,14 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
             >
               {puzzle.tileImages?.[t.word] ? (
                 // eslint-disable-next-line @next/next/no-img-element -- Original NYT picture tile; preserve SVG artwork.
-                <img src={puzzle.tileImages[t.word]!.url} alt={puzzle.tileImages[t.word]!.alt} className="h-14 max-w-full rounded bg-white object-contain p-1" />
-              ) : normalizeWord(t.word)}
+                <img
+                  src={puzzle.tileImages[t.word]!.url}
+                  alt={puzzle.tileImages[t.word]!.alt}
+                  className="h-14 max-w-full rounded bg-white object-contain p-1"
+                />
+              ) : (
+                normalizeWord(t.word)
+              )}
             </button>
           )
         })}
@@ -265,7 +268,10 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
 
       {!done && (
         <>
-          <div className="flex items-center justify-center gap-2 text-sm" aria-label={`${mistakesRemaining} mistakes remaining`}>
+          <div
+            className="flex items-center justify-center gap-2 text-sm"
+            aria-label={`${mistakesRemaining} mistakes remaining`}
+          >
             Mistakes remaining:
             {[0, 1, 2, 3].map((i) => (
               <span
@@ -276,7 +282,13 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
             ))}
           </div>
           <div className="flex justify-center gap-2">
-            <button type="button" title="Shuffle the tiles" className={pill} style={{ borderColor: 'currentColor' }} onClick={shufflePool}>
+            <button
+              type="button"
+              title="Shuffle the tiles"
+              className={pill}
+              style={{ borderColor: 'currentColor' }}
+              onClick={shufflePool}
+            >
               Shuffle
             </button>
             <button

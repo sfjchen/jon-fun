@@ -54,17 +54,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const {
-      sessionId,
-      variant,
-      taskId,
-      stepReached,
-      stepTimes,
-      completed,
-      rating,
-      totalSec,
-      stepsCount,
-    } = body as {
+    const { sessionId, variant, taskId, stepReached, stepTimes, completed, rating, totalSec, stepsCount } = body as {
       sessionId?: string
       variant?: string
       taskId?: string
@@ -92,11 +82,11 @@ export async function POST(request: NextRequest) {
         step_times: steps,
         completed: completed ?? false,
         rating: completed && rating ? rating : null,
-      total_sec: completed && Number.isFinite(totalSec) ? Math.round(totalSec ?? 0) : null,
-      steps_count: completed && Number.isFinite(stepsCount) ? Math.round(stepsCount ?? 0) : null,
+        total_sec: completed && Number.isFinite(totalSec) ? Math.round(totalSec ?? 0) : null,
+        steps_count: completed && Number.isFinite(stepsCount) ? Math.round(stepsCount ?? 0) : null,
         updated_at: now,
       },
-      { onConflict: 'session_id', ignoreDuplicates: false }
+      { onConflict: 'session_id', ignoreDuplicates: false },
     )
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 

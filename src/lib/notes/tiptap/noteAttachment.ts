@@ -31,8 +31,7 @@ export const NoteAttachment = Node.create<Record<string, never>, NoteAttachmentS
       attachmentId: {
         default: null,
         parseHTML: (el) => el.getAttribute('data-note-attachment'),
-        renderHTML: (attrs) =>
-          attrs.attachmentId ? { 'data-note-attachment': attrs.attachmentId } : {},
+        renderHTML: (attrs) => (attrs.attachmentId ? { 'data-note-attachment': attrs.attachmentId } : {}),
       },
     }
   },
@@ -45,8 +44,7 @@ export const NoteAttachment = Node.create<Record<string, never>, NoteAttachmentS
     return ['div', mergeAttributes(HTMLAttributes)]
   },
 
-  parseMarkdown: (token, helpers) =>
-    helpers.createNode('noteAttachment', { attachmentId: token.attachmentId }),
+  parseMarkdown: (token, helpers) => helpers.createNode('noteAttachment', { attachmentId: token.attachmentId }),
 
   renderMarkdown: (node) => `[📎 ${node.attrs?.attachmentId ?? ''}]`,
 

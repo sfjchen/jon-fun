@@ -1,18 +1,10 @@
 /** Shared shorthand parsing: todos, highlights, AI triggers, counts. */
 
-import {
-  collectActiveTodosFromNotes,
-  parseActiveTodoLine,
-  isArchivedTodoLine,
-} from './todoLines'
+import { collectActiveTodosFromNotes, parseActiveTodoLine, isArchivedTodoLine } from './todoLines'
 
 export type TodoLine = { text: string; lineIndex: number }
 
-export {
-  collectActiveTodosFromNotes,
-  collectArchivedTodosFromNotes,
-  setTodoArchivedAtLine,
-} from './todoLines'
+export { collectActiveTodosFromNotes, collectArchivedTodosFromNotes, setTodoArchivedAtLine } from './todoLines'
 
 const HIGHLIGHT = /\*([^*\n]+)\*/g
 

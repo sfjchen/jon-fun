@@ -32,7 +32,8 @@ export default function TMRStudySession({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     const initAudio = async () => {
       try {
-        const Ctx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+        const Ctx =
+          window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
         audioContextRef.current = new Ctx!()
         cueBufferRef.current = await generateTMRCue()
       } catch (error) {
@@ -54,38 +55,41 @@ export default function TMRStudySession({ onBack }: { onBack: () => void }) {
     }
   }, [config.studyVolume])
 
-  const stopSession = useCallback((interrupted: boolean) => {
-    setIsRunning(false)
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current)
-      intervalRef.current = null
-    }
-    if (timerRef.current) {
-      clearInterval(timerRef.current)
-      timerRef.current = null
-    }
-
-    // Save session log
-    if (sessionStart) {
-      const sessionEnd = new Date()
-      const durationMinutes = (sessionEnd.getTime() - sessionStart.getTime()) / 60000
-
-      const session: StudySession = {
-        start: sessionStart.toISOString(),
-        end: sessionEnd.toISOString(),
-        durationMinutes,
-        cuesPlayed,
-        cueIntervalSeconds: config.cueIntervalSeconds,
-        interrupted,
+  const stopSession = useCallback(
+    (interrupted: boolean) => {
+      setIsRunning(false)
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+        timerRef.current = null
       }
 
-      saveStudySession(session)
-      void syncStudySessionToServer(session)
-    }
+      // Save session log
+      if (sessionStart) {
+        const sessionEnd = new Date()
+        const durationMinutes = (sessionEnd.getTime() - sessionStart.getTime()) / 60000
 
-    setSessionStart(null)
-    startTimeRef.current = null
-  }, [sessionStart, cuesPlayed, config.cueIntervalSeconds])
+        const session: StudySession = {
+          start: sessionStart.toISOString(),
+          end: sessionEnd.toISOString(),
+          durationMinutes,
+          cuesPlayed,
+          cueIntervalSeconds: config.cueIntervalSeconds,
+          interrupted,
+        }
+
+        saveStudySession(session)
+        void syncStudySessionToServer(session)
+      }
+
+      setSessionStart(null)
+      startTimeRef.current = null
+    },
+    [sessionStart, cuesPlayed, config.cueIntervalSeconds],
+  )
 
   const startSession = useCallback(() => {
     if (!audioContextRef.current || !cueBufferRef.current) {
@@ -120,9 +124,9 @@ export default function TMRStudySession({ onBack }: { onBack: () => void }) {
   const remainingTime = remainingSeconds > 0 ? formatTime(remainingSeconds) : '00:00'
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="mx-auto max-w-4xl">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="mb-8 flex items-center justify-between">
         <button
           onClick={onBack}
           className="text-2xl font-bold hover:opacity-80"
@@ -131,18 +135,27 @@ export default function TMRStudySession({ onBack }: { onBack: () => void }) {
         >
           ← Back
         </button>
-        <h1 className="text-4xl font-bold font-lora" style={{ color: 'var(--ink-text)' }}>Study Session</h1>
+        <h1 className="font-lora text-4xl font-bold" style={{ color: 'var(--ink-text)' }}>
+          Study Session
+        </h1>
         <div className="w-16" />
       </div>
 
       {/* Session Controls */}
       {!isRunning ? (
-        <div className="rounded-lg p-8 border mb-6 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-          <h2 className="text-2xl font-bold font-lora mb-6" style={{ color: 'var(--ink-text)' }}>Start Study Session</h2>
+        <div
+          className="mb-6 rounded-lg border p-8 shadow-sm"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
+          <h2 className="mb-6 font-lora text-2xl font-bold" style={{ color: 'var(--ink-text)' }}>
+            Start Study Session
+          </h2>
 
-          <div className="space-y-4 mb-6">
+          <div className="mb-6 space-y-4">
             <div>
-              <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>Duration (minutes)</label>
+              <label className="mb-2 block" style={{ color: 'var(--ink-text)' }}>
+                Duration (minutes)
+              </label>
               <input
                 type="number"
                 value={duration}
@@ -157,87 +170,100 @@ export default function TMRStudySession({ onBack }: { onBack: () => void }) {
                 onBlur={() => setDuration((d) => clampStudyDuration(d))}
                 min="1"
                 max="120"
-                className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
+                className="w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-[var(--ink-accent)] focus:outline-none"
                 style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-                  disabled={isRunning}
-                />
-              </div>
+                disabled={isRunning}
+              />
+            </div>
 
             <div>
-              <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>
+              <label className="mb-2 block" style={{ color: 'var(--ink-text)' }}>
                 Cue Interval: {config.cueIntervalSeconds} seconds
               </label>
-                <input
-                  type="range"
-                  min="30"
-                  max="120"
-                  step="10"
-                  value={config.cueIntervalSeconds}
-                  onChange={(e) => {
-                    const newConfig = { ...config, cueIntervalSeconds: parseInt(e.target.value) }
-                    setConfig(newConfig)
-                    saveConfig(newConfig)
-                  }}
-                  className="w-full"
-                  disabled={isRunning}
-                />
-              </div>
+              <input
+                type="range"
+                min="30"
+                max="120"
+                step="10"
+                value={config.cueIntervalSeconds}
+                onChange={(e) => {
+                  const newConfig = { ...config, cueIntervalSeconds: parseInt(e.target.value) }
+                  setConfig(newConfig)
+                  saveConfig(newConfig)
+                }}
+                className="w-full"
+                disabled={isRunning}
+              />
+            </div>
 
             <div>
-              <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>
+              <label className="mb-2 block" style={{ color: 'var(--ink-text)' }}>
                 Volume: {Math.round(config.studyVolume * 100)}%
               </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="5"
-                  value={config.studyVolume * 100}
-                  onChange={(e) => {
-                    const newConfig = { ...config, studyVolume: parseInt(e.target.value) / 100 }
-                    setConfig(newConfig)
-                    saveConfig(newConfig)
-                  }}
-                  className="w-full"
-                  disabled={isRunning}
-                />
-              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={config.studyVolume * 100}
+                onChange={(e) => {
+                  const newConfig = { ...config, studyVolume: parseInt(e.target.value) / 100 }
+                  setConfig(newConfig)
+                  saveConfig(newConfig)
+                }}
+                className="w-full"
+                disabled={isRunning}
+              />
             </div>
+          </div>
 
+          <button
+            data-hotkey="Enter"
+            onClick={startSession}
+            className="w-full rounded-lg px-6 py-3 text-lg font-bold text-white hover:opacity-90"
+            style={{ backgroundColor: 'var(--ink-accent)' }}
+          >
+            Start Study Session
+          </button>
+        </div>
+      ) : (
+        <div
+          className="mb-6 rounded-lg border p-8 shadow-sm"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
+          <div className="text-center">
+            <h2 className="mb-4 font-lora text-3xl font-bold" style={{ color: 'var(--ink-text)' }}>
+              Session Active
+            </h2>
+            <div className="mb-4 font-mono text-6xl" style={{ color: 'var(--ink-text)' }}>
+              {remainingTime}
+            </div>
+            <div className="mb-4" style={{ color: 'var(--ink-muted)' }}>
+              Elapsed: {formatTime(elapsed)} | Cues: {cuesPlayed}
+            </div>
             <button
-              data-hotkey="Enter" onClick={startSession}
-              className="w-full text-white px-6 py-3 rounded-lg text-lg font-bold hover:opacity-90"
-              style={{ backgroundColor: 'var(--ink-accent)' }}
+              onClick={() => stopSession(true)}
+              className="rounded-lg bg-red-600 px-6 py-2 font-bold text-white hover:bg-red-700 hover:opacity-90"
             >
-              Start Study Session
+              Stop Session
             </button>
           </div>
-        ) : (
-          <div className="rounded-lg p-8 border mb-6 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-            <div className="text-center">
-              <h2 className="text-3xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>Session Active</h2>
-              <div className="text-6xl font-mono mb-4" style={{ color: 'var(--ink-text)' }}>{remainingTime}</div>
-              <div className="mb-4" style={{ color: 'var(--ink-muted)' }}>
-                Elapsed: {formatTime(elapsed)} | Cues: {cuesPlayed}
-              </div>
-              <button
-                onClick={() => stopSession(true)}
-                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-bold hover:opacity-90"
-              >
-                Stop Session
-              </button>
-            </div>
-          </div>
-        )}
+        </div>
+      )}
 
       {/* Info */}
-      <div className="rounded-lg p-6 border" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
-        <h3 className="text-xl font-bold font-lora mb-3" style={{ color: 'var(--ink-text)' }}>How TMR Works</h3>
+      <div
+        className="rounded-lg border p-6"
+        style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}
+      >
+        <h3 className="mb-3 font-lora text-xl font-bold" style={{ color: 'var(--ink-text)' }}>
+          How TMR Works
+        </h3>
         <ul className="space-y-2 text-sm" style={{ color: 'var(--ink-muted)' }}>
-            <li>• TMR cues play periodically during your study session</li>
-            <li>• These sounds tag the material you are learning</li>
-            <li>• Later, replay these cues during sleep to reinforce memories</li>
-            <li>• Focus intensely on your material when you hear each cue</li>
+          <li>• TMR cues play periodically during your study session</li>
+          <li>• These sounds tag the material you are learning</li>
+          <li>• Later, replay these cues during sleep to reinforce memories</li>
+          <li>• Focus intensely on your material when you hear each cue</li>
         </ul>
       </div>
     </div>

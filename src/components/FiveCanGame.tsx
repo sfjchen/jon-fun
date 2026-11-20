@@ -65,18 +65,21 @@ function Slot({
       data-testid={`five-can-slot-${idx}`}
       disabled={disabled}
       onClick={() => onPick(idx)}
-      className={`flex min-w-0 flex-1 flex-col items-center justify-start rounded-xl border-2 px-1.5 pb-2 pt-1.5 transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 disabled:opacity-50 sm:w-[104px] sm:flex-none md:w-[112px] ${sel}`}
+      className={`flex min-w-0 flex-1 flex-col items-center justify-start rounded-xl border-2 px-1.5 pt-1.5 pb-2 transition hover:opacity-95 focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-50 sm:w-[104px] sm:flex-none md:w-[112px] ${sel}`}
       style={{
         backgroundColor: 'var(--ink-paper)',
       }}
     >
-      <span className="mb-1 text-[11px] font-medium leading-none" style={{ color: 'var(--ink-muted)' }}>
+      <span className="mb-1 text-[11px] leading-none font-medium" style={{ color: 'var(--ink-muted)' }}>
         {idx + 1}
       </span>
       <div className="h-[min(28vw,120px)] w-full sm:h-[120px] [&>svg]:h-full [&>svg]:w-full">
         <FiveCanDoodle canId={canId} />
       </div>
-      <span className="mt-1.5 line-clamp-2 min-h-[2.25rem] text-center text-[11px] leading-snug sm:text-xs" style={{ color: 'var(--ink-muted)' }}>
+      <span
+        className="mt-1.5 line-clamp-2 min-h-[2.25rem] text-center text-[11px] leading-snug sm:text-xs"
+        style={{ color: 'var(--ink-muted)' }}
+      >
         {brand}
       </span>
     </button>
@@ -224,8 +227,7 @@ export default function FiveCanGame() {
 
   const canApply = first !== null && second !== null && !g.won && first !== second
 
-  const applyLabel =
-    mode === 'swap' ? 'Swap' : shiftMoveKind === 'swap' ? 'Swap' : 'Shift'
+  const applyLabel = mode === 'swap' ? 'Swap' : shiftMoveKind === 'swap' ? 'Swap' : 'Shift'
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -319,12 +321,29 @@ export default function FiveCanGame() {
             )}
           </div>
           <span className="text-xs leading-relaxed" style={{ color: 'var(--ink-muted)' }}>
-            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>1</kbd>–
-            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>5</kbd> pick ·{' '}
-            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>Enter</kbd>{' '}
-            apply · <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>H</kbd>{' '}
-            hint · <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>Esc</kbd>{' '}
-            clear · <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>N</kbd>{' '}
+            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>
+              1
+            </kbd>
+            –
+            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>
+              5
+            </kbd>{' '}
+            pick ·{' '}
+            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>
+              Enter
+            </kbd>{' '}
+            apply ·{' '}
+            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>
+              H
+            </kbd>{' '}
+            hint ·{' '}
+            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>
+              Esc
+            </kbd>{' '}
+            clear ·{' '}
+            <kbd className="rounded border px-1 py-0.5" style={{ borderColor: 'var(--ink-border)' }}>
+              N
+            </kbd>{' '}
             new
           </span>
         </div>
@@ -338,7 +357,7 @@ export default function FiveCanGame() {
                 aria-live="polite"
                 aria-label={`${currentCorrect} cans in correct position`}
               >
-                <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: 'var(--ink-muted)' }}>
+                <span className="text-[10px] font-medium tracking-wide uppercase" style={{ color: 'var(--ink-muted)' }}>
                   Correct
                 </span>
                 <span
@@ -351,7 +370,7 @@ export default function FiveCanGame() {
               </div>
 
               <div className="min-w-0 flex-1 touch-pan-x overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
-                <div className="flex h-full min-h-[200px] w-full flex-nowrap sm:w-max sm:min-w-full items-stretch justify-between gap-2 sm:gap-3 md:min-w-0 md:justify-evenly">
+                <div className="flex h-full min-h-[200px] w-full flex-nowrap items-stretch justify-between gap-2 sm:w-max sm:min-w-full sm:gap-3 md:min-w-0 md:justify-evenly">
                   {[0, 1, 2, 3, 4].map((idx) => (
                     <Slot
                       key={idx}
@@ -377,13 +396,13 @@ export default function FiveCanGame() {
               </p>
               <p className="mb-2 border-b pb-2" style={{ borderColor: 'var(--ink-border)' }}>
                 <strong style={{ color: 'var(--ink-text)' }}>Swap:</strong> optimal play with positional feedback only
-                needs at most <strong style={{ color: 'var(--ink-text)' }}>{THEORY_WORST_CASE_SWAP_MOVES}</strong> moves to
-                identify the hidden order (paper).
+                needs at most <strong style={{ color: 'var(--ink-text)' }}>{THEORY_WORST_CASE_SWAP_MOVES}</strong> moves
+                to identify the hidden order (paper).
               </p>
               <p>
                 <strong style={{ color: 'var(--ink-text)' }}>Shift mode:</strong> choose <strong>Insert</strong> (pick
-                source slot then destination) or <strong>Swap</strong> (two slots). Insertion alone sorts any layout in at
-                most <strong style={{ color: 'var(--ink-text)' }}>{THEORY_WORST_CASE_SHIFT_SORT_MOVES}</strong> moves
+                source slot then destination) or <strong>Swap</strong> (two slots). Insertion alone sorts any layout in
+                at most <strong style={{ color: 'var(--ink-text)' }}>{THEORY_WORST_CASE_SHIFT_SORT_MOVES}</strong> moves
                 (diameter on S₅); swaps are optional when helpful.
               </p>
             </div>
@@ -410,7 +429,7 @@ export default function FiveCanGame() {
                       }}
                     >
                       <span style={{ color: 'var(--ink-muted)' }}>Move {e.move}</span>
-                      <span className="tabular-nums font-semibold" style={{ color: 'var(--ink-text)' }}>
+                      <span className="font-semibold tabular-nums" style={{ color: 'var(--ink-text)' }}>
                         {e.correct}
                       </span>
                     </li>
@@ -421,14 +440,17 @@ export default function FiveCanGame() {
           </aside>
         </div>
 
-        <div className="mt-6 flex flex-col gap-3 border-t pt-5 sm:flex-row sm:flex-wrap sm:items-center" style={{ borderColor: 'var(--ink-border)' }}>
+        <div
+          className="mt-6 flex flex-col gap-3 border-t pt-5 sm:flex-row sm:flex-wrap sm:items-center"
+          style={{ borderColor: 'var(--ink-border)' }}
+        >
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
               data-testid="five-can-swap"
               disabled={!canApply}
               onClick={applyMove}
-              className="min-h-[44px] min-w-[120px] rounded-lg px-4 py-2 text-sm font-medium text-white transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 disabled:opacity-45"
+              className="min-h-[44px] min-w-[120px] rounded-lg px-4 py-2 text-sm font-medium text-white transition hover:opacity-95 focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-45"
               style={{ backgroundColor: 'var(--ink-accent)' }}
             >
               {applyLabel}
@@ -438,7 +460,7 @@ export default function FiveCanGame() {
               data-testid="five-can-hint"
               disabled={g.won || solverHint === null}
               onClick={applyHint}
-              className="min-h-[44px] rounded-lg border px-4 py-2 text-sm font-medium transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 disabled:opacity-45"
+              className="min-h-[44px] rounded-lg border px-4 py-2 text-sm font-medium transition hover:opacity-95 focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-45"
               style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
               title="Shortest path to the hidden order (full state). Does not spend a move."
             >
@@ -448,7 +470,7 @@ export default function FiveCanGame() {
               type="button"
               data-testid="five-can-new"
               onClick={newGame}
-              className="min-h-[44px] rounded-lg border px-4 py-2 text-sm font-medium transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2"
+              className="min-h-[44px] rounded-lg border px-4 py-2 text-sm font-medium transition hover:opacity-95 focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 focus-visible:outline-none"
               style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-accent)' }}
             >
               New game
@@ -457,19 +479,25 @@ export default function FiveCanGame() {
           <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>
             {mode === 'swap' && first !== null && second === null && <>Pick a second slot, then Swap.</>}
             {mode === 'swap' && first !== null && second !== null && (
-              <>Swap slots {first + 1} ↔ {second + 1}.</>
+              <>
+                Swap slots {first + 1} ↔ {second + 1}.
+              </>
             )}
             {mode === 'shift' && shiftMoveKind === 'insert' && first !== null && second === null && (
               <>Pick insert position (destination slot).</>
             )}
             {mode === 'shift' && shiftMoveKind === 'insert' && first !== null && second !== null && (
-              <>Move can from slot {first + 1} to position {second + 1}.</>
+              <>
+                Move can from slot {first + 1} to position {second + 1}.
+              </>
             )}
             {mode === 'shift' && shiftMoveKind === 'swap' && first !== null && second === null && (
               <>Pick a second slot, then Swap.</>
             )}
             {mode === 'shift' && shiftMoveKind === 'swap' && first !== null && second !== null && (
-              <>Swap slots {first + 1} ↔ {second + 1}.</>
+              <>
+                Swap slots {first + 1} ↔ {second + 1}.
+              </>
             )}
           </span>
         </div>
@@ -492,7 +520,10 @@ export default function FiveCanGame() {
                   <div className="h-[88px] w-full [&>svg]:h-full [&>svg]:w-full">
                     <FiveCanDoodle canId={id} />
                   </div>
-                  <span className="text-center text-[10px] leading-tight sm:text-[11px]" style={{ color: 'var(--ink-muted)' }}>
+                  <span
+                    className="text-center text-[10px] leading-tight sm:text-[11px]"
+                    style={{ color: 'var(--ink-muted)' }}
+                  >
                     {CAN_BRAND_NAMES[id]}
                   </span>
                 </div>

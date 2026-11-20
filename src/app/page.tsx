@@ -10,11 +10,19 @@ import { isOwnerDevice, subscribeSyncIdentity } from '@/lib/syncIdentity'
 
 const nb = '/doodles/notebook'
 const items: GameCardGame[] = [
-  { id: 'daily-log', title: '1 Sentence Everyday', description: 'One sentence per day; history, calendar, export', icon: `${nb}/daily.svg`, href: '/games/daily-log', available: true },
+  {
+    id: 'daily-log',
+    title: '1 Sentence Everyday',
+    description: 'One sentence per day; history, calendar, export',
+    icon: `${nb}/daily.svg`,
+    href: '/games/daily-log',
+    available: true,
+  },
   {
     id: 'callmoves',
     title: 'CallMoves',
-    description: 'Replay earnings calls next to the stock: the 5 moments that moved price vs its sector, minute by minute',
+    description:
+      'Replay earnings calls next to the stock: the 5 moments that moved price vs its sector, minute by minute',
     icon: `${nb}/callmoves.svg`,
     href: 'https://callmoves.sfjc.dev',
     available: true,
@@ -27,21 +35,71 @@ const items: GameCardGame[] = [
     href: '/veridian',
     available: true,
   },
-  { id: 'tmr', title: 'Focus Chimes', description: 'Recurring background chimes to stay on track and keep a sense of time', icon: `${nb}/tmr.svg`, href: '/games/tmr', available: true },
+  {
+    id: 'tmr',
+    title: 'Focus Chimes',
+    description: 'Recurring background chimes to stay on track and keep a sense of time',
+    icon: `${nb}/tmr.svg`,
+    href: '/games/tmr',
+    available: true,
+  },
   {
     id: 'e-reader',
     title: 'Web E-Reader',
-    description: 'Import text or PDF files into a chapterized reader with typography controls, bookmarks, TTS, and local progress',
+    description:
+      'Import text or PDF files into a chapterized reader with typography controls, bookmarks, TTS, and local progress',
     icon: `${nb}/ereader.svg`,
     href: '/games/e-reader',
     available: true,
   },
-  { id: '24', title: '24 (Jon\'s favorite)', description: '4 numbers, basic arithmetic → make 24', icon: `${nb}/game24.svg`, href: '/games/24', available: true },
-  { id: 'poker', title: 'Texas Hold\'em chip tracker', description: 'Chip tracker with multiplayer lobbies', icon: `${nb}/poker.svg`, href: '/games/poker', available: true },
-  { id: 'set', title: 'Set', description: 'Race friends in a room, or clear a full deck', icon: `${nb}/triples.svg`, href: '/games/triples', available: true },
-  { id: 'jeopardy', title: 'Jeopardy with Friends', description: 'Create and play custom boards locally', icon: `${nb}/jeopardy.svg`, href: '/games/jeopardy', available: true },
-  { id: 'chwazi', title: 'Chwazi Finger Chooser', description: 'Touch screen to pick a winner', icon: `${nb}/chwazi.svg`, href: '/games/chwazi', available: true },
-  { id: 'coming-soon', title: 'Coming Soon', description: 'More brain games in development', icon: `${nb}/coming-soon.svg`, href: '#', available: false },
+  {
+    id: '24',
+    title: "24 (Jon's favorite)",
+    description: '4 numbers, basic arithmetic → make 24',
+    icon: `${nb}/game24.svg`,
+    href: '/games/24',
+    available: true,
+  },
+  {
+    id: 'poker',
+    title: "Texas Hold'em chip tracker",
+    description: 'Chip tracker with multiplayer lobbies',
+    icon: `${nb}/poker.svg`,
+    href: '/games/poker',
+    available: true,
+  },
+  {
+    id: 'set',
+    title: 'Set',
+    description: 'Race friends in a room, or clear a full deck',
+    icon: `${nb}/triples.svg`,
+    href: '/games/triples',
+    available: true,
+  },
+  {
+    id: 'jeopardy',
+    title: 'Jeopardy with Friends',
+    description: 'Create and play custom boards locally',
+    icon: `${nb}/jeopardy.svg`,
+    href: '/games/jeopardy',
+    available: true,
+  },
+  {
+    id: 'chwazi',
+    title: 'Chwazi Finger Chooser',
+    description: 'Touch screen to pick a winner',
+    icon: `${nb}/chwazi.svg`,
+    href: '/games/chwazi',
+    available: true,
+  },
+  {
+    id: 'coming-soon',
+    title: 'Coming Soon',
+    description: 'More brain games in development',
+    icon: `${nb}/coming-soon.svg`,
+    href: '#',
+    available: false,
+  },
 ]
 
 export default function Home() {
@@ -107,7 +165,7 @@ export default function Home() {
           bullets,
         }),
       })
-      const raw = (await res.json().catch(() => null)) as { error?: string } & Partial<HomeComingSoonCopy> | null
+      const raw = (await res.json().catch(() => null)) as ({ error?: string } & Partial<HomeComingSoonCopy>) | null
       if (!res.ok) {
         setSaveErr(typeof raw?.error === 'string' ? raw.error : 'Save failed')
         return
@@ -126,13 +184,8 @@ export default function Home() {
     <>
       <ul data-arrows className="mx-auto grid w-full max-w-3xl list-none grid-cols-2 gap-2.5 p-0 sm:gap-5">
         {gridItems.map((item) => (
-          <li key={item.id} className="min-h-0 flex">
-            <GameCard
-              game={item}
-              onComingSoonClick={() => setShowComingSoon(true)}
-              compact
-              hideDescription
-            />
+          <li key={item.id} className="flex min-h-0">
+            <GameCard game={item} onComingSoonClick={() => setShowComingSoon(true)} compact hideDescription />
           </li>
         ))}
       </ul>
@@ -151,7 +204,10 @@ export default function Home() {
             style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
           >
             <div className="mb-4 flex items-center justify-between gap-2">
-              <h2 className="font-lora flex items-center gap-2 text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>
+              <h2
+                className="flex items-center gap-2 font-lora text-2xl font-semibold"
+                style={{ color: 'var(--ink-text)' }}
+              >
                 <Image src="/doodles/notebook/coming-soon.svg" alt="" width={32} height={32} className="h-8 w-8" />
                 {copy.headline}
               </h2>
@@ -181,8 +237,12 @@ export default function Home() {
                   className="flex items-start rounded-lg border p-3"
                   style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}
                 >
-                  <span className="mr-3 mt-1 text-lg" style={{ color: 'var(--ink-accent)' }}>•</span>
-                  <span className="text-sm" style={{ color: 'var(--ink-text)' }}>{feature}</span>
+                  <span className="mt-1 mr-3 text-lg" style={{ color: 'var(--ink-accent)' }}>
+                    •
+                  </span>
+                  <span className="text-sm" style={{ color: 'var(--ink-text)' }}>
+                    {feature}
+                  </span>
                 </div>
               ))}
             </div>
@@ -211,7 +271,11 @@ export default function Home() {
                     value={editPwd}
                     onChange={(e) => setEditPwd(e.target.value)}
                     className="mt-1 w-full rounded border px-3 py-2 text-sm"
-                    style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
+                    style={{
+                      borderColor: 'var(--ink-border)',
+                      backgroundColor: 'var(--ink-paper)',
+                      color: 'var(--ink-text)',
+                    }}
                   />
                 </label>
                 <label className="block text-sm font-medium" style={{ color: 'var(--ink-text)' }}>
@@ -221,7 +285,11 @@ export default function Home() {
                     value={editHeadline}
                     onChange={(e) => setEditHeadline(e.target.value)}
                     className="mt-1 w-full rounded border px-3 py-2 text-sm"
-                    style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
+                    style={{
+                      borderColor: 'var(--ink-border)',
+                      backgroundColor: 'var(--ink-paper)',
+                      color: 'var(--ink-text)',
+                    }}
                   />
                 </label>
                 <label className="block text-sm font-medium" style={{ color: 'var(--ink-text)' }}>
@@ -231,7 +299,11 @@ export default function Home() {
                     onChange={(e) => setEditIntro(e.target.value)}
                     rows={2}
                     className="mt-1 w-full rounded border px-3 py-2 text-sm"
-                    style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
+                    style={{
+                      borderColor: 'var(--ink-border)',
+                      backgroundColor: 'var(--ink-paper)',
+                      color: 'var(--ink-text)',
+                    }}
                   />
                 </label>
                 <label className="block text-sm font-medium" style={{ color: 'var(--ink-text)' }}>
@@ -241,7 +313,11 @@ export default function Home() {
                     onChange={(e) => setEditBullets(e.target.value)}
                     rows={6}
                     className="mt-1 w-full rounded border px-3 py-2 font-mono text-sm"
-                    style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
+                    style={{
+                      borderColor: 'var(--ink-border)',
+                      backgroundColor: 'var(--ink-paper)',
+                      color: 'var(--ink-text)',
+                    }}
                   />
                 </label>
                 {saveErr ? (

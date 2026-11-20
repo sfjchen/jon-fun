@@ -21,15 +21,15 @@ const field = 'w-full rounded-lg border bg-[var(--ink-bg)] px-3 py-2'
 const pill = 'rounded-full border px-4 py-2 text-sm font-semibold active:scale-95 disabled:opacity-40'
 const solid = { backgroundColor: 'var(--ink-text)', borderColor: 'var(--ink-text)', color: 'var(--ink-bg)' }
 
-type Session = { pin: string; playerId: string; playerToken:string }
+type Session = { pin: string; playerId: string; playerToken: string }
 
 /**
  * Reads the saved room session for this tab.
  */
 function readSession(): Session | null {
   try {
-    const saved=JSON.parse(sessionStorage.getItem(SESSION_KEY)??'null') as Session|null
-    return saved?.playerToken?saved:null
+    const saved = JSON.parse(sessionStorage.getItem(SESSION_KEY) ?? 'null') as Session | null
+    return saved?.playerToken ? saved : null
   } catch {
     return null
   }
@@ -38,8 +38,15 @@ function readSession(): Session | null {
 /**
  * Sends an action to the room API and returns its JSON, throwing the server's message on failure.
  */
-async function call(url: string, body: object): Promise<{ room: TriplesRoom | null; playerId?: string; playerToken?:string }> {
-  const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+async function call(
+  url: string,
+  body: object,
+): Promise<{ room: TriplesRoom | null; playerId?: string; playerToken?: string }> {
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
   const data = await r.json().catch(() => ({}))
   if (!r.ok) throw new Error(data.error ?? 'Something went wrong')
   return data
@@ -49,8 +56,12 @@ async function call(url: string, body: object): Promise<{ room: TriplesRoom | nu
  * Renders the lobby form, then the waiting room, the shared board and the final ranking.
  */
 export default function TriplesRoomPlay({ initialPin }: { initialPin: string }) {
-  const router=useRouter()
-  const hydrated = useSyncExternalStore(() => () => {}, () => true, () => false)
+  const router = useRouter()
+  const hydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  )
   const [session, setSession] = useState<Session | null>(null)
   const [room, setRoom] = useState<TriplesRoom | null>(null)
   const [name, setName, restoreName] = useDeviceName()
@@ -65,8 +76,8 @@ export default function TriplesRoomPlay({ initialPin }: { initialPin: string }) 
 
   if (hydrated && !ready) {
     setReady(true)
-    const saved=readSession()
-    setSession(saved&&(!initialPin||saved.pin===initialPin)?saved:null)
+    const saved = readSession()
+    setSession(saved && (!initialPin || saved.pin === initialPin) ? saved : null)
     try {
       restoreName(localStorage.getItem(NAME_KEY) ?? '')
     } catch {}
@@ -81,28 +92,33 @@ export default function TriplesRoomPlay({ initialPin }: { initialPin: string }) 
   }
 
   const load = useCallback(async (p: string) => {
-    try{
-    const r = await fetch(`/api/triples/rooms/${p}`)
-    if (r.status === 404) {
-      setRoom(null)
-      setSession(null)
-      try {
-        if(readSession()?.pin===p)sessionStorage.removeItem(SESSION_KEY)
-      } catch {}
-      return
+    try {
+      const r = await fetch(`/api/triples/rooms/${p}`)
+      if (r.status === 404) {
+        setRoom(null)
+        setSession(null)
+        try {
+          if (readSession()?.pin === p) sessionStorage.removeItem(SESSION_KEY)
+        } catch {}
+        return
+      }
+      if (r.ok) {
+        const next = ((await r.json()) as { room: TriplesRoom }).room
+        setRoom((cur) => (cur && cur.version > next.version ? cur : next))
+      }
+    } catch {
+      /* Keep the seat and last board while the next poll retries. */
     }
-    if (r.ok) {
-      const next = ((await r.json()) as { room: TriplesRoom }).room
-      setRoom((cur) => (cur && cur.version > next.version ? cur : next))
-    }
-    }catch{/* Keep the seat and last board while the next poll retries. */}
   }, [])
 
   const roomPin = session?.pin
   useEffect(() => {
     if (!roomPin) return
     queueMicrotask(() => void load(roomPin))
-    const ch = supabase.channel(`triples:${roomPin}`).on('broadcast', { event: 'sync' }, () => void load(roomPin)).subscribe()
+    const ch = supabase
+      .channel(`triples:${roomPin}`)
+      .on('broadcast', { event: 'sync' }, () => void load(roomPin))
+      .subscribe()
     channel.current = ch
     const poll = setInterval(() => void load(roomPin), 2000)
     return () => {
@@ -122,7 +138,11 @@ export default function TriplesRoomPlay({ initialPin }: { initialPin: string }) 
   const act = async (body: object) => {
     if (!session) return null
     try {
-      const data = await call(`/api/triples/rooms/${session.pin}`, { ...body, playerId: session.playerId,playerToken:session.playerToken })
+      const data = await call(`/api/triples/rooms/${session.pin}`, {
+        ...body,
+        playerId: session.playerId,
+        playerToken: session.playerToken,
+      })
       if (data.room) setRoom(data.room)
       void channel.current?.send({ type: 'broadcast', event: 'sync', payload: {} })
       return data
@@ -146,14 +166,15 @@ export default function TriplesRoomPlay({ initialPin }: { initialPin: string }) 
         ? await call('/api/triples/rooms', { name: n })
         : await call(`/api/triples/rooms/${pin}`, { action: 'join', name: n })
       if (!data.room || !data.playerId || !data.playerToken) throw new Error('Could not join')
-      saveDevicePlayer({name:n,group:getDevicePlayer()?.group??'public'})
+      saveDevicePlayer({ name: n, group: getDevicePlayer()?.group ?? 'public' })
       setRoom(data.room)
-      save({ pin: data.room.pin, playerId: data.playerId,playerToken:data.playerToken })
-      router.replace(`/games/triples?pin=${data.room.pin}`,{scroll:false})
+      save({ pin: data.room.pin, playerId: data.playerId, playerToken: data.playerToken })
+      router.replace(`/games/triples?pin=${data.room.pin}`, { scroll: false })
       if (!create) {
         const ch = supabase.channel(`triples:${data.room.pin}`)
         ch.subscribe((status) => {
-          if (status === 'SUBSCRIBED') void ch.send({ type: 'broadcast', event: 'sync', payload: {} }).then(() => ch.unsubscribe())
+          if (status === 'SUBSCRIBED')
+            void ch.send({ type: 'broadcast', event: 'sync', payload: {} }).then(() => ch.unsubscribe())
         })
       }
     } catch (e) {
@@ -205,7 +226,13 @@ export default function TriplesRoomPlay({ initialPin }: { initialPin: string }) 
           or
           <span className="h-px flex-1" style={{ background: 'var(--ink-border)' }} />
         </div>
-        <button type="button" className={`${pill} w-full`} style={{ borderColor: 'currentColor' }} disabled={busy} onClick={() => void enter(true)}>
+        <button
+          type="button"
+          className={`${pill} w-full`}
+          style={{ borderColor: 'currentColor' }}
+          disabled={busy}
+          onClick={() => void enter(true)}
+        >
           Create a room
         </button>
         {error && (
@@ -315,17 +342,29 @@ export default function TriplesRoomPlay({ initialPin }: { initialPin: string }) 
               {claimText}
             </span>
           </div>
-          <TriplesBoard board={room.board} selected={selected} shake={shake} disabled={busy} onPick={(c) => void pick(c)} />
-          {claim?.ok && (
-            <p className="sr-only">Last triple: {claim.cards.map(cardLabel).join(', ')}</p>
-          )}
+          <TriplesBoard
+            board={room.board}
+            selected={selected}
+            shake={shake}
+            disabled={busy}
+            onPick={(c) => void pick(c)}
+          />
+          {claim?.ok && <p className="sr-only">Last triple: {claim.cards.map(cardLabel).join(', ')}</p>}
         </>
       )}
 
       {room.status === 'finished' && (
         <div className="space-y-3 rounded-xl border p-5 text-center" style={{ borderColor: 'var(--ink-border)' }}>
           <p className="font-lora text-2xl font-semibold">
-            {ranked.filter(p=>p.score===ranked[0]?.score&&p.misses===ranked[0]?.misses).length>1?'Tie: '+ranked.filter(p=>p.score===ranked[0]?.score&&p.misses===ranked[0]?.misses).map(p=>p.name).join(' & '):ranked[0]?.id===me?.id?'You win!':`${ranked[0]?.name??'Nobody'} wins`}
+            {ranked.filter((p) => p.score === ranked[0]?.score && p.misses === ranked[0]?.misses).length > 1
+              ? 'Tie: ' +
+                ranked
+                  .filter((p) => p.score === ranked[0]?.score && p.misses === ranked[0]?.misses)
+                  .map((p) => p.name)
+                  .join(' & ')
+              : ranked[0]?.id === me?.id
+                ? 'You win!'
+                : `${ranked[0]?.name ?? 'Nobody'} wins`}
           </p>
           <ol className="mx-auto max-w-xs space-y-1 text-left">
             {ranked.map((p, i) => (

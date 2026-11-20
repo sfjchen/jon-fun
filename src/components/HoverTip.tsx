@@ -28,12 +28,19 @@ export function useHoverTip() {
     setTip({ node, x: Math.min(Math.max(r.left + r.width / 2, 128), window.innerWidth - 128), y: r.top })
   }
   const hide = () => setTip(null)
-  const on = (node: ReactNode) => ({ onPointerEnter: show(node), onPointerLeave: hide, onFocus: show(node), onBlur: hide })
+  const on = (node: ReactNode) => ({
+    onPointerEnter: show(node),
+    onPointerLeave: hide,
+    onFocus: show(node),
+    onBlur: hide,
+  })
   const el = tip && (
     <div
       aria-hidden
-      className={'pointer-events-none fixed z-[60] max-w-60 -translate-x-1/2 -translate-y-full rounded-lg bg-[var(--ink-text)] ' +
-        'px-2.5 py-1.5 text-left text-xs font-normal leading-snug text-[var(--ink-bg)] shadow-lg'}
+      className={
+        'pointer-events-none fixed z-[60] max-w-60 -translate-x-1/2 -translate-y-full rounded-lg bg-[var(--ink-text)] ' +
+        'px-2.5 py-1.5 text-left text-xs leading-snug font-normal text-[var(--ink-bg)] shadow-lg'
+      }
       style={{ left: tip.x, top: tip.y - 6 }}
     >
       {tip.node}

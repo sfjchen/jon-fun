@@ -51,8 +51,7 @@ export async function POST(request: NextRequest) {
     if (!openRouterApiKey() && !geminiApiKey()) {
       return NextResponse.json(
         {
-          error:
-            'No AI key: set OPENROUTER_API_KEY or GEMINI_API_KEY / GOOGLE_GENERATIVE_AI_API_KEY on the server.',
+          error: 'No AI key: set OPENROUTER_API_KEY or GEMINI_API_KEY / GOOGLE_GENERATIVE_AI_API_KEY on the server.',
         },
         { status: 503 },
       )

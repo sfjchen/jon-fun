@@ -27,32 +27,64 @@ export default function ConnectionsPlay({ basePath, idOrSlug, initialPuzzle, dai
   const [initialProgress] = useState<ConnectionsProgress | undefined>(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(progressKey) ?? 'null') as ConnectionsProgress | null
-      if (saved && Array.isArray(saved.guesses) && saved.guesses.every(g => Array.isArray(g) && g.length === 4 && g.every(w => typeof w === 'string'))) return saved
+      if (
+        saved &&
+        Array.isArray(saved.guesses) &&
+        saved.guesses.every((g) => Array.isArray(g) && g.length === 4 && g.every((w) => typeof w === 'string'))
+      )
+        return saved
     } catch {}
     return undefined
   })
   // Active solve time for the daily: runs while the page is visible and stops at the end of the game.
   const timeKey = `${progressKey}:time`
   const [saved] = useState<{ ms?: number; done?: boolean }>(() => {
-    try { return JSON.parse(localStorage.getItem(timeKey) ?? '{}') } catch { return {} }
+    try {
+      return JSON.parse(localStorage.getItem(timeKey) ?? '{}')
+    } catch {
+      return {}
+    }
   })
   const clock = useRef({ ms: saved.ms ?? 0, since: null as number | null, done: !!saved.done })
   const [seconds, setSeconds] = useState<number | null>(null)
   useEffect(() => {
     if (!dailyDay) return
-    const save = () => { try { localStorage.setItem(timeKey, JSON.stringify({ ms: clock.current.ms, done: clock.current.done })) } catch {} }
-    const stop = () => { const c = clock.current; if (c.since !== null) { c.ms += Date.now() - c.since; c.since = null }; save() }
-    const start = () => { const c = clock.current; if (!c.done && c.since === null && !document.hidden) c.since = Date.now() }
+    const save = () => {
+      try {
+        localStorage.setItem(timeKey, JSON.stringify({ ms: clock.current.ms, done: clock.current.done }))
+      } catch {}
+    }
+    const stop = () => {
+      const c = clock.current
+      if (c.since !== null) {
+        c.ms += Date.now() - c.since
+        c.since = null
+      }
+      save()
+    }
+    const start = () => {
+      const c = clock.current
+      if (!c.done && c.since === null && !document.hidden) c.since = Date.now()
+    }
     const visibility = () => (document.hidden ? stop() : start())
     start()
     document.addEventListener('visibilitychange', visibility)
     window.addEventListener('pagehide', stop)
-    return () => { stop(); document.removeEventListener('visibilitychange', visibility); window.removeEventListener('pagehide', stop) }
+    return () => {
+      stop()
+      document.removeEventListener('visibilitychange', visibility)
+      window.removeEventListener('pagehide', stop)
+    }
   }, [dailyDay, timeKey])
-  const saveProgress = useCallback((progress: ConnectionsProgress) => {
-    markPracticeIfFuture('connections', dailyDay)
-    try { localStorage.setItem(progressKey, JSON.stringify(progress)) } catch {}
-  }, [progressKey, dailyDay])
+  const saveProgress = useCallback(
+    (progress: ConnectionsProgress) => {
+      markPracticeIfFuture('connections', dailyDay)
+      try {
+        localStorage.setItem(progressKey, JSON.stringify(progress))
+      } catch {}
+    },
+    [progressKey, dailyDay],
+  )
 
   useEffect(() => {
     if (initialPuzzle) return
@@ -69,7 +101,7 @@ export default function ConnectionsPlay({ basePath, idOrSlug, initialPuzzle, dai
           const year = idOrSlug.slice(12, 16)
           const response = await fetch(`/puzzle-archives/connections/${year}.json`)
           if (!response.ok) throw new Error('Archive unavailable')
-          const archive = await response.json() as ConnectionsPuzzle[]
+          const archive = (await response.json()) as ConnectionsPuzzle[]
           const found = archive.find((p) => p.slug === idOrSlug)
           if (!found) throw new Error('Puzzle not found')
           if (!cancelled) setPuzzle(found)
@@ -113,17 +145,33 @@ export default function ConnectionsPlay({ basePath, idOrSlug, initialPuzzle, dai
     })()
   }, [result, puzzle])
 
-  const onComplete = useCallback((p: ConnectionsCompletePayload) => {
-    setResult(p)
-    if (!dailyDay) return
-    const c = clock.current
-    if (c.since !== null) { c.ms += Date.now() - c.since; c.since = null }
-    c.done = true
-    try { localStorage.setItem(timeKey, JSON.stringify({ ms: c.ms, done: true })) } catch {}
-    const secs = Math.round(c.ms / 1000)
-    setSeconds(secs)
-    logResult('connections', p.solvedDifficulties.length, p.solvedDifficulties.length, dailyDay, { moves: p.progress, solved: p.won, mistakes: p.wrongGuesses, n: p.solvedDifficulties.length, puzzleId: idOrSlug, sourceDate: dailyDay, seconds: secs })
-  }, [dailyDay, idOrSlug, timeKey])
+  const onComplete = useCallback(
+    (p: ConnectionsCompletePayload) => {
+      setResult(p)
+      if (!dailyDay) return
+      const c = clock.current
+      if (c.since !== null) {
+        c.ms += Date.now() - c.since
+        c.since = null
+      }
+      c.done = true
+      try {
+        localStorage.setItem(timeKey, JSON.stringify({ ms: c.ms, done: true }))
+      } catch {}
+      const secs = Math.round(c.ms / 1000)
+      setSeconds(secs)
+      logResult('connections', p.solvedDifficulties.length, p.solvedDifficulties.length, dailyDay, {
+        moves: p.progress,
+        solved: p.won,
+        mistakes: p.wrongGuesses,
+        n: p.solvedDifficulties.length,
+        puzzleId: idOrSlug,
+        sourceDate: dailyDay,
+        seconds: secs,
+      })
+    },
+    [dailyDay, idOrSlug, timeKey],
+  )
 
   const replay = useCallback(() => {
     setResult(null)
@@ -150,17 +198,27 @@ export default function ConnectionsPlay({ basePath, idOrSlug, initialPuzzle, dai
 
   return (
     <div className="mx-auto w-full max-w-xl space-y-4">
-      {!dailyDay && <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="font-lora text-xl font-semibold" style={{ color: 'var(--ink-text)' }}>
-          {puzzle.title}
-        </h1>
-        <Link href={basePath} className="text-sm underline" style={{ color: 'var(--ink-accent)' }}>
-          Library
-        </Link>
-      </div>}
-      {!result&&<p className="text-center text-base">Create four groups of four!</p>}
-      <ConnectionsBoard key={`${puzzle.id}-${runId}`} puzzle={puzzle} initialProgress={runId === 0 ? initialProgress : undefined} onProgress={saveProgress} onComplete={onComplete} />
-      {result && seconds !== null && seconds > 0 && <p className="text-center text-sm text-[var(--ink-muted)]">Time {formatTime(seconds)}</p>}
+      {!dailyDay && (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h1 className="font-lora text-xl font-semibold" style={{ color: 'var(--ink-text)' }}>
+            {puzzle.title}
+          </h1>
+          <Link href={basePath} className="text-sm underline" style={{ color: 'var(--ink-accent)' }}>
+            Library
+          </Link>
+        </div>
+      )}
+      {!result && <p className="text-center text-base">Create four groups of four!</p>}
+      <ConnectionsBoard
+        key={`${puzzle.id}-${runId}`}
+        puzzle={puzzle}
+        initialProgress={runId === 0 ? initialProgress : undefined}
+        onProgress={saveProgress}
+        onComplete={onComplete}
+      />
+      {result && seconds !== null && seconds > 0 && (
+        <p className="text-center text-sm text-[var(--ink-muted)]">Time {formatTime(seconds)}</p>
+      )}
       {result && (
         <ConnectionsResult
           title={puzzle.title}

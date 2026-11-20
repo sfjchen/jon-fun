@@ -1,9 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 
-import {
-  CONNECTIONS_E2E_SLUG,
-  installConnectionsApiMock,
-} from './helpers/connections-mock'
+import { CONNECTIONS_E2E_SLUG, installConnectionsApiMock } from './helpers/connections-mock'
 
 /**
  * Deselects the words a wrong guess leaves selected, as in the original game.
@@ -101,7 +98,8 @@ test.describe('Connections', () => {
 
     for (const fourth of ['King', 'Queen', 'Rook', 'Knight']) {
       await clearSelection(page)
-      for (const w of ['Mercury', 'Venus', 'Earth', fourth]) await page.getByRole('button', { name: w, exact: true }).click()
+      for (const w of ['Mercury', 'Venus', 'Earth', fourth])
+        await page.getByRole('button', { name: w, exact: true }).click()
       await page.getByRole('button', { name: 'Submit' }).click()
     }
     await expect(page.getByTestId('connections-result')).toBeVisible({ timeout: 10_000 })
@@ -143,7 +141,9 @@ test.describe('Connections', () => {
       if (route.request().method() === 'POST') posts.push(route.request().postDataJSON() as Record<string, unknown>)
       return route.fulfill({ json: route.request().method() === 'POST' ? { ok: true } : { rows: [] } })
     })
-    await page.addInitScript(() => localStorage.setItem('sfjc_player', JSON.stringify({ name: 'Tester', group: 'public' })))
+    await page.addInitScript(() =>
+      localStorage.setItem('sfjc_player', JSON.stringify({ name: 'Tester', group: 'public' })),
+    )
     const { puzzle } = (await (await page.request.get('/api/daily/connections')).json()) as {
       puzzle: { groups: { words: string[] }[] }
     }

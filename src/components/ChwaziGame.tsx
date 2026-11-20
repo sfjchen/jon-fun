@@ -11,24 +11,14 @@ interface TouchPoint {
   color: string
 }
 
-const CHWAZI_COLORS = [
-  '#ff5252',
-  '#ffb300',
-  '#7c4dff',
-  '#1de9b6',
-  '#40c4ff',
-  '#ff4081',
-  '#aeea00',
-  '#ff6e40',
-]
+const CHWAZI_COLORS = ['#ff5252', '#ffb300', '#7c4dff', '#1de9b6', '#40c4ff', '#ff4081', '#aeea00', '#ff6e40']
 
 const PRIME_DELAY_MS = 650
 const SELECT_DELAY_MS = 950
 
 function touchTargetIsLink(target: EventTarget | null): boolean {
   if (!(target instanceof Node)) return false
-  const el =
-    target.nodeType === Node.TEXT_NODE ? target.parentElement : (target as Element)
+  const el = target.nodeType === Node.TEXT_NODE ? target.parentElement : (target as Element)
   return el?.closest('a[href]') != null
 }
 
@@ -205,26 +195,21 @@ export default function ChwaziGame() {
   }, [evaluateState])
 
   return (
-    <div
-      ref={containerRef}
-      className="fixed inset-0 bg-[#05070f] text-white touch-none select-none overflow-hidden"
-    >
+    <div ref={containerRef} className="fixed inset-0 touch-none overflow-hidden bg-[#05070f] text-white select-none">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(64,196,255,0.08),transparent_35%),radial-gradient(circle_at_80%_30%,rgba(255,64,129,0.12),transparent_35%),radial-gradient(circle_at_50%_80%,rgba(29,233,182,0.12),transparent_35%)]" />
 
       <div className="relative h-full w-full">
-        <div className="absolute top-6 w-full flex justify-center pointer-events-none">
-          <div className="px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-sm font-medium tracking-wide text-gray-100">
-            {status === 'selecting'
-              ? 'Selecting…'
-              : status === 'winner'
-                ? 'Winner chosen'
-                : 'Chwazi'}
+        <div className="pointer-events-none absolute top-6 flex w-full justify-center">
+          <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium tracking-wide text-gray-100 backdrop-blur-sm">
+            {status === 'selecting' ? 'Selecting…' : status === 'winner' ? 'Winner chosen' : 'Chwazi'}
           </div>
         </div>
 
         {touches.size === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <p className="text-gray-400 text-xl font-semibold tracking-wide animate-pulse">Everyone hold 1 finger down</p>
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <p className="animate-pulse text-xl font-semibold tracking-wide text-gray-400">
+              Everyone hold 1 finger down
+            </p>
           </div>
         )}
 
@@ -271,7 +256,7 @@ export default function ChwaziGame() {
 
               {isWinner && (
                 <div
-                  className="absolute inset-[-14px] rounded-full animate-ping"
+                  className="absolute inset-[-14px] animate-ping rounded-full"
                   style={{ backgroundColor: `${touch.color}33` }}
                 />
               )}
@@ -280,8 +265,8 @@ export default function ChwaziGame() {
         })}
 
         {status === 'winner' && winnerId !== null && (
-          <div className="absolute bottom-10 w-full flex justify-center pointer-events-none">
-            <div className="bg-white/5 border border-white/10 px-4 py-2 rounded-full text-sm backdrop-blur-sm">
+          <div className="pointer-events-none absolute bottom-10 flex w-full justify-center">
+            <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm backdrop-blur-sm">
               Chwazi picked the highlighted finger
             </div>
           </div>

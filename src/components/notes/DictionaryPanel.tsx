@@ -66,7 +66,7 @@ export default function DictionaryPanel({ refreshKey = 0, noteId, onChange, embe
     >
       <div className={`mb-2 flex items-center ${embedded ? 'justify-end' : 'justify-between'}`}>
         {!embedded ? (
-          <p className="text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">Dictionary</p>
+          <p className="text-[10px] tracking-wide text-[var(--uv-text-muted)] uppercase">Dictionary</p>
         ) : null}
         <button
           type="button"
@@ -113,8 +113,8 @@ export default function DictionaryPanel({ refreshKey = 0, noteId, onChange, embe
 
       {entries.length === 0 && !editingKey ? (
         <p className="text-[11px] text-[var(--uv-text-muted)]">
-          No terms yet — add manually, select text and press {notesShortcutLabel('addToDictionary')}, or ask AI
-          lookup to store definitions.
+          No terms yet — add manually, select text and press {notesShortcutLabel('addToDictionary')}, or ask AI lookup
+          to store definitions.
         </p>
       ) : (
         <ul className="max-h-48 space-y-1 overflow-y-auto" key={refreshKey}>
@@ -149,11 +149,7 @@ export default function DictionaryPanel({ refreshKey = 0, noteId, onChange, embe
                         >
                           Save
                         </button>
-                        <button
-                          type="button"
-                          onClick={cancelEdit}
-                          className="text-[10px] text-[var(--uv-text-muted)]"
-                        >
+                        <button type="button" onClick={cancelEdit} className="text-[10px] text-[var(--uv-text-muted)]">
                           Cancel
                         </button>
                       </div>
@@ -172,7 +168,7 @@ export default function DictionaryPanel({ refreshKey = 0, noteId, onChange, embe
                         role="button"
                         tabIndex={0}
                         onDoubleClick={() => startEdit(e)}
-                        className="cursor-text whitespace-pre-wrap text-[10px] leading-snug text-[var(--uv-text-secondary)]"
+                        className="cursor-text text-[10px] leading-snug whitespace-pre-wrap text-[var(--uv-text-secondary)]"
                       >
                         {e.definition}
                       </p>

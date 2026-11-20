@@ -11,5 +11,5 @@ export const metadata: Metadata = {
  */
 export default async function TriplesPage({ searchParams }: { searchParams: Promise<{ pin?: string }> }) {
   const { pin } = await searchParams
-  return <Triples key={pin??'saved'} initialPin={/^\d{4}$/.test(pin ?? '') ? pin! : ''} />
+  return <Triples key={pin ?? 'saved'} initialPin={/^\d{4}$/.test(pin ?? '') ? pin! : ''} />
 }

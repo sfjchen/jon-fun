@@ -65,9 +65,10 @@ export async function PATCH(request: NextRequest, ctx: { params: Promise<{ id: s
   if (!existing) return NextResponse.json({ error: 'not_found' }, { status: 404 })
 
   const row = existing as ConnectionsDbRow
-  const fingerprint = typeof (body as Record<string, unknown>)?.authorFingerprint === 'string'
-    ? (body as Record<string, unknown>).authorFingerprint as string
-    : ''
+  const fingerprint =
+    typeof (body as Record<string, unknown>)?.authorFingerprint === 'string'
+      ? ((body as Record<string, unknown>).authorFingerprint as string)
+      : ''
   if (!fingerprint.trim() || fingerprint.trim() !== row.author_fingerprint) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 })
   }

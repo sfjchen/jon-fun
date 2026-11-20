@@ -39,7 +39,8 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
   useEffect(() => {
     const initAudio = async () => {
       try {
-        const Ctx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+        const Ctx =
+          window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
         audioContextRef.current = new Ctx!()
         cueBufferRef.current = await generateTMRCue()
         if (config.usePinkNoise) {
@@ -125,7 +126,7 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
 
         // Check which window we're in
         const currentWindow = windowsRef.current.find(
-          (w) => elapsedMinutes >= w.startMinutes && elapsedMinutes < w.endMinutes
+          (w) => elapsedMinutes >= w.startMinutes && elapsedMinutes < w.endMinutes,
         )
 
         if (currentWindow) {
@@ -222,9 +223,9 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
   }, [sessionStart, cuesPlayed, stopPinkNoise])
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="mx-auto max-w-4xl">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="mb-8 flex items-center justify-between">
         <button
           onClick={onBack}
           className="text-2xl font-bold hover:opacity-80"
@@ -233,150 +234,183 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
         >
           ← Back
         </button>
-        <h1 className="text-4xl font-bold font-lora" style={{ color: 'var(--ink-text)' }}>TMR Sleep Reactivation</h1>
+        <h1 className="font-lora text-4xl font-bold" style={{ color: 'var(--ink-text)' }}>
+          TMR Sleep Reactivation
+        </h1>
         <div className="w-16" />
       </div>
 
       {/* Info - Personalized */}
-      <div className="rounded-lg p-6 border mb-6" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-accent)' }}>
-        <h3 className="text-xl font-bold font-lora mb-2 text-center flex items-center justify-center gap-2" style={{ color: 'var(--ink-text)' }}>
-            <Image src="/doodles/sleep.svg" alt="" width={24} height={24} className="h-6 w-6" />
-            Personalized for Your Sleep
-          </h3>
+      <div
+        className="mb-6 rounded-lg border p-6"
+        style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-accent)' }}
+      >
+        <h3
+          className="mb-2 flex items-center justify-center gap-2 text-center font-lora text-xl font-bold"
+          style={{ color: 'var(--ink-text)' }}
+        >
+          <Image src="/doodles/sleep.svg" alt="" width={24} height={24} className="h-6 w-6" />
+          Personalized for Your Sleep
+        </h3>
         <p className="text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
-            Based on your Apple Watch data: First cycle is longer (~90 min), later cycles are ~75-85 min.
-            Deep sleep is concentrated in the first 2-3 hours. Windows include cushion; latency ~10-15 min.
-          </p>
-        </div>
+          Based on your Apple Watch data: First cycle is longer (~90 min), later cycles are ~75-85 min. Deep sleep is
+          concentrated in the first 2-3 hours. Windows include cushion; latency ~10-15 min.
+        </p>
+      </div>
 
       {/* Controls */}
       {!isRunning ? (
-        <div className="rounded-lg p-8 border mb-6 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-          <h2 className="text-2xl font-bold font-lora mb-6" style={{ color: 'var(--ink-text)' }}>Configure Sleep Reactivation</h2>
+        <div
+          className="mb-6 rounded-lg border p-8 shadow-sm"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
+          <h2 className="mb-6 font-lora text-2xl font-bold" style={{ color: 'var(--ink-text)' }}>
+            Configure Sleep Reactivation
+          </h2>
 
-          <div className="space-y-4 mb-6">
+          <div className="mb-6 space-y-4">
             <div>
-              <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>
+              <label className="mb-2 block" style={{ color: 'var(--ink-text)' }}>
                 Sleep Onset Delay: {delay} minutes
               </label>
-              <p className="text-sm mb-2" style={{ color: 'var(--ink-muted)' }}>
-                  Typical sleep latency is 10-15 minutes. Start when you get into bed.
-                </p>
-                <input
-                  type="range"
-                  min="0"
-                  max="30"
-                  step="5"
-                  value={delay}
-                  onChange={(e) => {
-                    const newDelay = parseInt(e.target.value)
-                    setDelay(newDelay)
-                    const newConfig = { ...config, sleepOnsetDelayMinutes: newDelay }
-                    setConfig(newConfig)
-                    saveConfig(newConfig)
-                  }}
-                  className="w-full"
-                  disabled={isRunning}
-                />
-              </div>
+              <p className="mb-2 text-sm" style={{ color: 'var(--ink-muted)' }}>
+                Typical sleep latency is 10-15 minutes. Start when you get into bed.
+              </p>
+              <input
+                type="range"
+                min="0"
+                max="30"
+                step="5"
+                value={delay}
+                onChange={(e) => {
+                  const newDelay = parseInt(e.target.value)
+                  setDelay(newDelay)
+                  const newConfig = { ...config, sleepOnsetDelayMinutes: newDelay }
+                  setConfig(newConfig)
+                  saveConfig(newConfig)
+                }}
+                className="w-full"
+                disabled={isRunning}
+              />
+            </div>
 
             <div>
-              <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>
+              <label className="mb-2 block" style={{ color: 'var(--ink-text)' }}>
                 Cue Interval: {config.sleepCueIntervalSeconds} seconds
               </label>
-                <input
-                  type="range"
-                  min="5"
-                  max="20"
-                  step="5"
-                  value={config.sleepCueIntervalSeconds}
-                  onChange={(e) => {
-                    const newConfig = { ...config, sleepCueIntervalSeconds: parseInt(e.target.value) }
-                    setConfig(newConfig)
-                    saveConfig(newConfig)
-                  }}
-                  className="w-full"
-                  disabled={isRunning}
-                />
-              </div>
+              <input
+                type="range"
+                min="5"
+                max="20"
+                step="5"
+                value={config.sleepCueIntervalSeconds}
+                onChange={(e) => {
+                  const newConfig = { ...config, sleepCueIntervalSeconds: parseInt(e.target.value) }
+                  setConfig(newConfig)
+                  saveConfig(newConfig)
+                }}
+                className="w-full"
+                disabled={isRunning}
+              />
+            </div>
 
             <div>
-              <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>
+              <label className="mb-2 block" style={{ color: 'var(--ink-text)' }}>
                 Sleep Volume: {Math.round(config.sleepVolume * 100)}%
               </label>
-              <p className="text-sm mb-2" style={{ color: 'var(--ink-muted)' }}>
-                  Keep low (10-30%) to avoid waking up
-                </p>
-                <input
-                  type="range"
-                  min="5"
-                  max="50"
-                  step="5"
-                  value={config.sleepVolume * 100}
-                  onChange={(e) => {
-                    const newConfig = { ...config, sleepVolume: parseInt(e.target.value) / 100 }
-                    setConfig(newConfig)
-                    saveConfig(newConfig)
-                  }}
-                  className="w-full"
-                  disabled={isRunning}
-                />
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <input
-                  type="checkbox"
-                  id="pinkNoise"
-                  checked={config.usePinkNoise}
-                  onChange={(e) => {
-                    const newConfig = { ...config, usePinkNoise: e.target.checked }
-                    setConfig(newConfig)
-                    saveConfig(newConfig)
-                  }}
-                  className="w-5 h-5"
-                  disabled={isRunning}
-                />
-                <label htmlFor="pinkNoise" style={{ color: 'var(--ink-text)' }}>
-                  Use pink noise background (enhances slow-wave activity)
-                </label>
-              </div>
+              <p className="mb-2 text-sm" style={{ color: 'var(--ink-muted)' }}>
+                Keep low (10-30%) to avoid waking up
+              </p>
+              <input
+                type="range"
+                min="5"
+                max="50"
+                step="5"
+                value={config.sleepVolume * 100}
+                onChange={(e) => {
+                  const newConfig = { ...config, sleepVolume: parseInt(e.target.value) / 100 }
+                  setConfig(newConfig)
+                  saveConfig(newConfig)
+                }}
+                className="w-full"
+                disabled={isRunning}
+              />
             </div>
 
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="pinkNoise"
+                checked={config.usePinkNoise}
+                onChange={(e) => {
+                  const newConfig = { ...config, usePinkNoise: e.target.checked }
+                  setConfig(newConfig)
+                  saveConfig(newConfig)
+                }}
+                className="h-5 w-5"
+                disabled={isRunning}
+              />
+              <label htmlFor="pinkNoise" style={{ color: 'var(--ink-text)' }}>
+                Use pink noise background (enhances slow-wave activity)
+              </label>
+            </div>
+          </div>
+
+          <button
+            onClick={startReactivation}
+            className="w-full rounded-lg px-6 py-3 text-lg font-bold text-white hover:opacity-90"
+            style={{ backgroundColor: 'var(--ink-accent)' }}
+          >
+            Start Sleep Reactivation
+          </button>
+        </div>
+      ) : (
+        <div
+          className="mb-6 rounded-lg border p-8 shadow-sm"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
+          <div className="text-center">
+            <h2 className="mb-4 font-lora text-3xl font-bold" style={{ color: 'var(--ink-text)' }}>
+              Reactivation Active
+            </h2>
+            <div className="mb-4 font-mono text-4xl" style={{ color: 'var(--ink-text)' }}>
+              {elapsed} min
+            </div>
+            <div className="mb-2" style={{ color: 'var(--ink-muted)' }}>
+              Status: {status}
+            </div>
+            {currentCycle > 0 && (
+              <div className="mb-2" style={{ color: 'var(--ink-muted)' }}>
+                Current Cycle: {currentCycle}
+              </div>
+            )}
+            <div className="mb-4" style={{ color: 'var(--ink-muted)' }}>
+              Cues Played: {cuesPlayed}
+            </div>
             <button
-              onClick={startReactivation}
-              className="w-full text-white px-6 py-3 rounded-lg text-lg font-bold hover:opacity-90"
-              style={{ backgroundColor: 'var(--ink-accent)' }}
+              onClick={stopReactivation}
+              className="rounded-lg bg-red-600 px-6 py-2 font-bold text-white hover:bg-red-700 hover:opacity-90"
             >
-              Start Sleep Reactivation
+              Stop Reactivation
             </button>
           </div>
-        ) : (
-          <div className="rounded-lg p-8 border mb-6 shadow-sm" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-            <div className="text-center">
-              <h2 className="text-3xl font-bold font-lora mb-4" style={{ color: 'var(--ink-text)' }}>Reactivation Active</h2>
-              <div className="text-4xl font-mono mb-4" style={{ color: 'var(--ink-text)' }}>{elapsed} min</div>
-              <div className="mb-2" style={{ color: 'var(--ink-muted)' }}>Status: {status}</div>
-              {currentCycle > 0 && (
-                <div className="mb-2" style={{ color: 'var(--ink-muted)' }}>Current Cycle: {currentCycle}</div>
-              )}
-              <div className="mb-4" style={{ color: 'var(--ink-muted)' }}>Cues Played: {cuesPlayed}</div>
-              <button
-                onClick={stopReactivation}
-                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-bold hover:opacity-90"
-              >
-                Stop Reactivation
-              </button>
-            </div>
-          </div>
-        )}
+        </div>
+      )}
 
       {/* Info */}
-      <div className="rounded-lg p-6 border" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
-        <h3 className="text-xl font-bold font-lora mb-3" style={{ color: 'var(--ink-text)' }}>Your Personalized Sleep Schedule</h3>
+      <div
+        className="rounded-lg border p-6"
+        style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}
+      >
+        <h3 className="mb-3 font-lora text-xl font-bold" style={{ color: 'var(--ink-text)' }}>
+          Your Personalized Sleep Schedule
+        </h3>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between" style={{ color: 'var(--ink-muted)' }}>
             <span>Cycle 1 (50-85 min):</span>
-            <span className="font-semibold" style={{ color: 'var(--ink-accent)' }}>Peak deep sleep</span>
+            <span className="font-semibold" style={{ color: 'var(--ink-accent)' }}>
+              Peak deep sleep
+            </span>
           </div>
           <div className="flex justify-between" style={{ color: 'var(--ink-muted)' }}>
             <span>Cycle 2 (110-155 min):</span>
@@ -391,9 +425,9 @@ export default function TMRSleepReactivation({ onBack }: { onBack: () => void })
             <span>Very light sleep</span>
           </div>
         </div>
-        <p className="text-xs mt-4" style={{ color: 'var(--ink-muted)' }}>
-            Based on your Apple Watch data: First cycle is longer (~90 min), later cycles are ~75-85 min.
-            Sleep latency is typically 10-15 minutes. Windows include cushion for drift.
+        <p className="mt-4 text-xs" style={{ color: 'var(--ink-muted)' }}>
+          Based on your Apple Watch data: First cycle is longer (~90 min), later cycles are ~75-85 min. Sleep latency is
+          typically 10-15 minutes. Windows include cushion for drift.
         </p>
       </div>
     </div>

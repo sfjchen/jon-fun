@@ -22,7 +22,14 @@ function normPoint(el: DOMRect, clientX: number, clientY: number): PenPoint {
   return { x: (clientX - el.left) / w, y: (clientY - el.top) / h }
 }
 
-export function ReaderPenLayer({ active, strokes, color, onStrokeEnd, getBlockIdAtPoint, rootRef }: ReaderPenLayerProps) {
+export function ReaderPenLayer({
+  active,
+  strokes,
+  color,
+  onStrokeEnd,
+  getBlockIdAtPoint,
+  rootRef,
+}: ReaderPenLayerProps) {
   const currentRef = useRef<{ points: PenPoint[]; blockId: string | null } | null>(null)
   const width = 2.2
 

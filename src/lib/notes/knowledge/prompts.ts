@@ -1,13 +1,16 @@
-import {
-  resolveDomainOpts,
-  resolveDomainsForNote,
-  type KnowledgeDomainId,
-} from './registry'
+import { resolveDomainOpts, resolveDomainsForNote, type KnowledgeDomainId } from './registry'
 import { formatSectionsOutline, parseNoteSections } from './sectioning'
 import { AGENT_ACTIONS_FOOTER } from '../agentActions'
 
 export type { KnowledgeDomainId } from './registry'
-export { DEFAULT_ACTIVE_DOMAIN_ID, FALLBACK_DOMAIN_ID, KNOWLEDGE_DOMAINS, getDomain, listDomains, resolveDomainsForNote } from './registry'
+export {
+  DEFAULT_ACTIVE_DOMAIN_ID,
+  FALLBACK_DOMAIN_ID,
+  KNOWLEDGE_DOMAINS,
+  getDomain,
+  listDomains,
+  resolveDomainsForNote,
+} from './registry'
 export { parseNoteSections, sectionAtLine, formatSectionsOutline, suggestTagsFromSections } from './sectioning'
 export { ensureBuiltinSources, buildBuiltinSources, isBuiltinSource } from './builtinSources'
 
@@ -19,8 +22,7 @@ const BASE_RULES = `Rules:
 - If screenshot attached, reference it naturally`
 
 /** Formula/equation/ratio/metric-definition lookups — enable LaTeX + variable list. */
-const METRIC_TERMS =
-  /\b(dpi|tvpi|rvpi|moic|irr|nav|p\/e|sharpe|sortino|alpha|beta|capm|wacc|ev\/ebitda)\b/i
+const METRIC_TERMS = /\b(dpi|tvpi|rvpi|moic|irr|nav|p\/e|sharpe|sortino|alpha|beta|capm|wacc|ev\/ebitda)\b/i
 const FORMULA_INTENT =
   /\b(formula|equation|ratio|metric definition|multiple|defined as|calculate|calculation|how (?:is|to compute)|what is the)\b/i
 

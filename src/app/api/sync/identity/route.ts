@@ -20,11 +20,16 @@ export async function GET(request: NextRequest) {
   try {
     const v = JSON.parse(request.cookies.get(COOKIE)?.value ?? '{}') as { syncKey?: unknown; deviceId?: unknown }
     const device = typeof v.deviceId === 'string' && ID_RE.test(v.deviceId) ? await getDevice(v.deviceId) : null
-    return NextResponse.json({
-      syncKey: typeof v.syncKey === 'string' ? v.syncKey : '',
-      deviceId: typeof v.deviceId === 'string' ? v.deviceId : '',
-      ...(device?.player_name ? {player:{name:device.player_name,group:device.player_group || 'public'}} : {}),
-    }, {headers:{'Cache-Control':'private, no-store'}})
+    return NextResponse.json(
+      {
+        syncKey: typeof v.syncKey === 'string' ? v.syncKey : '',
+        deviceId: typeof v.deviceId === 'string' ? v.deviceId : '',
+        ...(device?.player_name
+          ? { player: { name: device.player_name, group: device.player_group || 'public' } }
+          : {}),
+      },
+      { headers: { 'Cache-Control': 'private, no-store' } },
+    )
   } catch {
     return NextResponse.json({ syncKey: '', deviceId: '' })
   }
@@ -47,24 +52,52 @@ async function tagKind(did: string, kind: DeviceKind) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as { syncKey?: string; deviceId?: string; label?: string; kind?: string; player?: {name?: string;group?: string} }
+    const body = (await request.json()) as {
+      syncKey?: string
+      deviceId?: string
+      label?: string
+      kind?: string
+      player?: { name?: string; group?: string }
+    }
     const did = (body.deviceId ?? '').trim()
     if (!ID_RE.test(did) || (body.syncKey ?? '').length > MAX_KEY) {
       return NextResponse.json({ error: 'Invalid ids' }, { status: 400 })
     }
     const prev = await getDevice(did)
     const key = canonicalKey(body.syncKey) || prev?.sync_key || ''
-    if (body.player && (typeof body.player.name !== 'string' || !body.player.name.trim() || body.player.name.length > 24 || typeof body.player.group !== 'string' || !/^[a-z0-9-]{3,32}$/.test(body.player.group))) return NextResponse.json({error:'Invalid player'},{status:400})
-    const player = body.player ? {name:body.player.name!.trim(),group:body.player.group!} : prev?.player_name ? {name:prev.player_name,group:prev.player_group || 'public'} : undefined
+    if (
+      body.player &&
+      (typeof body.player.name !== 'string' ||
+        !body.player.name.trim() ||
+        body.player.name.length > 24 ||
+        typeof body.player.group !== 'string' ||
+        !/^[a-z0-9-]{3,32}$/.test(body.player.group))
+    )
+      return NextResponse.json({ error: 'Invalid player' }, { status: 400 })
+    const player = body.player
+      ? { name: body.player.name!.trim(), group: body.player.group! }
+      : prev?.player_name
+        ? { name: prev.player_name, group: prev.player_group || 'public' }
+        : undefined
     const kind = DEVICE_KINDS.find((k) => k === body.kind)
     if (kind) await tagKind(did, kind)
     if (key || player) {
       const label = (body.label ?? '').trim().slice(0, 80) || prev?.label || ''
-      const row: SyncDevice = { device_id: did, sync_key: key || null, label: player?.name || label, ...(kind ? { device_kind: kind } : {}), last_seen: new Date().toISOString(), ...(player ? {player_name:player.name,player_group:player.group} : {}) }
+      const row: SyncDevice = {
+        device_id: did,
+        sync_key: key || null,
+        label: player?.name || label,
+        ...(kind ? { device_kind: kind } : {}),
+        last_seen: new Date().toISOString(),
+        ...(player ? { player_name: player.name, player_group: player.group } : {}),
+      }
       const { error } = await supabaseAdmin.from(SYNC_DEVICES_TABLE).upsert(row, { onConflict: 'device_id' })
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     }
-    const res = NextResponse.json({ syncKey: key, ...(player ? {player} : {}) }, {headers:{'Cache-Control':'private, no-store'}})
+    const res = NextResponse.json(
+      { syncKey: key, ...(player ? { player } : {}) },
+      { headers: { 'Cache-Control': 'private, no-store' } },
+    )
     res.cookies.set(COOKIE, JSON.stringify({ syncKey: key, deviceId: did }), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

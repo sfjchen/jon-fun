@@ -44,12 +44,12 @@ export default function BuzzerLandingPage() {
   }, [pin, router])
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center p-4">
-      <div className="rounded-lg border shadow-sm w-full max-w-sm p-6" style={surface}>
-        <h1 className="text-3xl font-bold font-lora text-center mb-1" style={{ color: 'var(--ink-text)' }}>
+    <div className="flex min-h-[80vh] items-center justify-center p-4">
+      <div className="w-full max-w-sm rounded-lg border p-6 shadow-sm" style={surface}>
+        <h1 className="mb-1 text-center font-lora text-3xl font-bold" style={{ color: 'var(--ink-text)' }}>
           Buzzer
         </h1>
-        <p className="text-center text-sm mb-6" style={{ color: 'var(--ink-muted)' }}>
+        <p className="mb-6 text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
           Enter the 4-digit PIN from the host screen.
         </p>
 
@@ -59,15 +59,22 @@ export default function BuzzerLandingPage() {
           maxLength={4}
           value={pin}
           onChange={(e) => setPin(e.target.value.replace(/[^0-9]/g, '').slice(0, 4))}
-          onKeyDown={(e) => { if (e.key === 'Enter') void join() }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') void join()
+          }}
           placeholder="1234"
-          className="w-full text-center font-bold tracking-[0.5em] tabular-nums rounded-lg border outline-none py-4 mb-3"
-          style={{ fontSize: '2.5rem', backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+          className="mb-3 w-full rounded-lg border py-4 text-center font-bold tracking-[0.5em] tabular-nums outline-none"
+          style={{
+            fontSize: '2.5rem',
+            backgroundColor: 'var(--ink-bg)',
+            borderColor: 'var(--ink-border)',
+            color: 'var(--ink-text)',
+          }}
           autoFocus
         />
 
         {error && (
-          <div className="text-sm rounded-md px-3 py-2 mb-3" style={{ backgroundColor: '#fee2e2', color: '#991b1b' }}>
+          <div className="mb-3 rounded-md px-3 py-2 text-sm" style={{ backgroundColor: '#fee2e2', color: '#991b1b' }}>
             {error}
           </div>
         )}
@@ -75,7 +82,7 @@ export default function BuzzerLandingPage() {
         <button
           onClick={() => void join()}
           disabled={loading || pin.length < 4}
-          className="w-full py-3 rounded-lg text-white font-semibold disabled:opacity-50"
+          className="w-full rounded-lg py-3 font-semibold text-white disabled:opacity-50"
           style={{ backgroundColor: 'var(--ink-accent)' }}
         >
           {loading ? 'Joining...' : 'Join'}

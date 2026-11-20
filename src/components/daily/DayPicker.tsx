@@ -12,7 +12,8 @@ import { isTypingTarget } from '@/lib/keyboard'
 /** Whether the player last used a day picker, which keeps the arrow keys on it until they click or type elsewhere. */
 let armed = false
 
-export const action = 'rounded-full px-2 py-1.5 text-[13px] hover:bg-[var(--ink-border)]/40 disabled:opacity-30 sm:px-2.5 sm:text-sm'
+export const action =
+  'rounded-full px-2 py-1.5 text-[13px] hover:bg-[var(--ink-border)]/40 disabled:opacity-30 sm:px-2.5 sm:text-sm'
 
 type DayPickerProps = {
   day: string
@@ -28,7 +29,8 @@ type DayPickerProps = {
 }
 
 /** Shared box for the joined arrows and date field, so each arrow is a full-height button, not just its glyph. */
-const arrow = 'flex w-8 items-center justify-center text-lg leading-none hover:bg-[var(--ink-border)]/40 disabled:pointer-events-none ' +
+const arrow =
+  'flex w-8 items-center justify-center text-lg leading-none hover:bg-[var(--ink-border)]/40 disabled:pointer-events-none ' +
   'disabled:opacity-30 sm:w-9'
 
 /**
@@ -39,14 +41,22 @@ export default function DayPicker({ day, today, minDay, maxDay, go, className = 
   const nav = useRef<HTMLElement>(null)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const el = nav.current, t = e.target as HTMLElement | null, inside = !!el?.contains(t)
+      const el = nav.current,
+        t = e.target as HTMLElement | null,
+        inside = !!el?.contains(t)
       if (!el || e.metaKey || e.ctrlKey || e.altKey || e.isComposing || (inside && t?.tagName === 'INPUT')) return
       const modal = document.querySelector('[aria-modal="true"]')
       if (modal && !modal.contains(el)) return
       const typing = isTypingTarget(t)
       if (!(inside || armed || (keys && !typing))) return
-      const to = e.key === 'ArrowLeft' ? shiftDay(day, -1) : e.key === 'ArrowRight' ? shiftDay(day, 1) :
-        e.key.toLowerCase() === 't' && !typing ? today : ''
+      const to =
+        e.key === 'ArrowLeft'
+          ? shiftDay(day, -1)
+          : e.key === 'ArrowRight'
+            ? shiftDay(day, 1)
+            : e.key.toLowerCase() === 't' && !typing
+              ? today
+              : ''
       if (!to) {
         if (e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace' || e.key.startsWith('Arrow')) armed = false
         return
@@ -55,7 +65,9 @@ export default function DayPicker({ day, today, minDay, maxDay, go, className = 
       e.stopPropagation()
       if (to !== day && to >= minDay && (maxDay === undefined || to <= maxDay)) go(to)
     }
-    const onPointer = (e: PointerEvent) => { armed = !!nav.current?.contains(e.target as Node) }
+    const onPointer = (e: PointerEvent) => {
+      armed = !!nav.current?.contains(e.target as Node)
+    }
     // Runs before the game's own key handlers, so the arrows keep stepping days while the picker is in use.
     window.addEventListener('keydown', onKey, true)
     window.addEventListener('pointerdown', onPointer, true)
@@ -85,8 +97,12 @@ export default function DayPicker({ day, today, minDay, maxDay, go, className = 
           max={maxDay}
           min={minDay}
           value={day}
-          onChange={(e) => validDay(e.target.value) && e.target.value >= minDay && (maxDay === undefined || e.target.value <= maxDay) &&
-              go(e.target.value)}
+          onChange={(e) =>
+            validDay(e.target.value) &&
+            e.target.value >= minDay &&
+            (maxDay === undefined || e.target.value <= maxDay) &&
+            go(e.target.value)
+          }
         />
         <button
           type="button"
@@ -100,8 +116,11 @@ export default function DayPicker({ day, today, minDay, maxDay, go, className = 
         </button>
       </div>
       {today && day !== today && (
-        <button type="button" className="h-9 rounded-lg border border-[var(--ink-border)] px-2 text-xs sm:px-2.5 font-medium hover:bg-[var(--ink-border)]/40"
-          onClick={() => go(today)}>
+        <button
+          type="button"
+          className="h-9 rounded-lg border border-[var(--ink-border)] px-2 text-xs font-medium hover:bg-[var(--ink-border)]/40 sm:px-2.5"
+          onClick={() => go(today)}
+        >
           Today
         </button>
       )}

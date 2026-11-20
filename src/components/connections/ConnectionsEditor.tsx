@@ -60,7 +60,7 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
           setLoadErr('Library offline')
           return
         }
-        if (!r.ok) throw new Error((await r.json().catch(() => ({})) as { error?: string }).error || r.statusText)
+        if (!r.ok) throw new Error(((await r.json().catch(() => ({}))) as { error?: string }).error || r.statusText)
         const p = (await r.json()) as ConnectionsPuzzle
         if (cancelled) return
         setPuzzle(p)
@@ -91,7 +91,11 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
   }, [puzzle, editId])
 
   /* Restores the create draft once on the client, after hydration renders the default puzzle. */
-  const hydrated = useSyncExternalStore(() => () => {}, () => true, () => false)
+  const hydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  )
   const [draftRead, setDraftRead] = useState(false)
   if (hydrated && !draftRead) {
     setDraftRead(true)
@@ -214,20 +218,23 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
     }
   }, [editId, router, basePath])
 
-  const onImportFile = useCallback(async (f: File | undefined) => {
-    if (!f) return
-    setSaveErr(null)
-    try {
-      const p = await readPuzzleFromFile(f)
-      setPuzzle((prev) => ({
-        ...p,
-        id: editId ? prev.id : generateConnectionsId(),
-        updatedAt: new Date().toISOString(),
-      }))
-    } catch (e) {
-      setSaveErr(e instanceof Error ? e.message : 'Invalid file')
-    }
-  }, [editId])
+  const onImportFile = useCallback(
+    async (f: File | undefined) => {
+      if (!f) return
+      setSaveErr(null)
+      try {
+        const p = await readPuzzleFromFile(f)
+        setPuzzle((prev) => ({
+          ...p,
+          id: editId ? prev.id : generateConnectionsId(),
+          updatedAt: new Date().toISOString(),
+        }))
+      } catch (e) {
+        setSaveErr(e instanceof Error ? e.message : 'Invalid file')
+      }
+    },
+    [editId],
+  )
 
   const newBlank = useCallback(() => {
     setPuzzle(createDefaultConnectionsPuzzle())
@@ -258,11 +265,7 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
         <h1 className="font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>
           {editId ? 'Edit puzzle' : 'New puzzle'}
         </h1>
-        <Link
-          href={basePath}
-          className="text-sm underline"
-          style={{ color: 'var(--ink-accent)' }}
-        >
+        <Link href={basePath} className="text-sm underline" style={{ color: 'var(--ink-accent)' }}>
           ← Library
         </Link>
       </div>
@@ -273,7 +276,7 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
           style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
         >
           Only the browser that published this puzzle can change it. To make your own version, start a{' '}
-          <Link href={`${basePath}/new`} className="underline font-medium">
+          <Link href={`${basePath}/new`} className="font-medium underline">
             new puzzle
           </Link>{' '}
           and import its JSON.
@@ -351,19 +354,19 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
 
       <div className="space-y-4">
         {puzzle.groups.map((g, gi) => (
-          <div
-            key={gi}
-            className="rounded-lg border-2 p-4"
-            style={{ borderColor: TIER_BORDER[g.difficulty] }}
-          >
+          <div key={gi} className="rounded-lg border-2 p-4" style={{ borderColor: TIER_BORDER[g.difficulty] }}>
             <div className="mb-3 flex flex-wrap items-center gap-2">
-              <label className="text-sm flex items-center gap-2">
+              <label className="flex items-center gap-2 text-sm">
                 <span style={{ color: 'var(--ink-muted)' }}>Tier</span>
                 <select
                   value={g.difficulty}
                   onChange={(e) => changeTier(gi, e.target.value as ConnectionsDifficulty)}
                   className="rounded border px-2 py-1"
-                  style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                  style={{
+                    backgroundColor: 'var(--ink-paper)',
+                    borderColor: 'var(--ink-border)',
+                    color: 'var(--ink-text)',
+                  }}
                 >
                   {CONNECTIONS_DIFFICULTIES.map((d) => (
                     <option key={d} value={d}>
@@ -372,11 +375,15 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
                   ))}
                 </select>
               </label>
-              <label className="flex-1 min-w-48 text-sm">
+              <label className="min-w-48 flex-1 text-sm">
                 <span style={{ color: 'var(--ink-muted)' }}>Category</span>
                 <input
                   className="mt-1 w-full rounded-lg border px-3 py-2"
-                  style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                  style={{
+                    backgroundColor: 'var(--ink-paper)',
+                    borderColor: 'var(--ink-border)',
+                    color: 'var(--ink-text)',
+                  }}
                   value={g.category}
                   onChange={(e) => setGroup(gi, { category: e.target.value })}
                 />
@@ -387,7 +394,11 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
                 <input
                   key={wi}
                   className="rounded-lg border px-2 py-2 text-sm"
-                  style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                  style={{
+                    backgroundColor: 'var(--ink-paper)',
+                    borderColor: 'var(--ink-border)',
+                    color: 'var(--ink-text)',
+                  }}
                   value={w}
                   maxLength={CONNECTIONS_WORD_MAX_LEN}
                   placeholder={`Word ${wi + 1}`}
@@ -405,7 +416,7 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
         </p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {previewTiles.length === 0 ? (
-            <p className="text-sm col-span-full" style={{ color: 'var(--ink-muted)' }}>
+            <p className="col-span-full text-sm" style={{ color: 'var(--ink-muted)' }}>
               Add words to see the grid.
             </p>
           ) : (

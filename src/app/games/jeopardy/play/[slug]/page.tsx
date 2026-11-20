@@ -152,13 +152,26 @@ export default function JeopardyPlayPage() {
   if (notFound) {
     return (
       <div className="p-8 text-center">
-        <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--ink-text)' }}>Board not found</h2>
-        <button onClick={() => router.push('/games/jeopardy')} className="px-4 py-2 rounded-lg border" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>Back to menu</button>
+        <h2 className="mb-2 text-2xl font-bold" style={{ color: 'var(--ink-text)' }}>
+          Board not found
+        </h2>
+        <button
+          onClick={() => router.push('/games/jeopardy')}
+          className="rounded-lg border px-4 py-2"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+        >
+          Back to menu
+        </button>
       </div>
     )
   }
 
-  if (!board) return <div className="p-8 text-center" style={{ color: 'var(--ink-muted)' }}>Loading…</div>
+  if (!board)
+    return (
+      <div className="p-8 text-center" style={{ color: 'var(--ink-muted)' }}>
+        Loading…
+      </div>
+    )
 
   return (
     <JeopardyPlayer

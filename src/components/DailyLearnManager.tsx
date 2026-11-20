@@ -95,7 +95,11 @@ export default function DailyLearnManager() {
   }, [applySyncResult])
 
   /* Reads today's date on the client; null on the server and during hydration. */
-  const today = useSyncExternalStore(() => () => {}, getTodayDate, () => null)
+  const today = useSyncExternalStore(
+    () => () => {},
+    getTodayDate,
+    () => null,
+  )
   const [loaded, setLoaded] = useState(false)
   if (today !== null && !loaded) {
     setLoaded(true)
@@ -236,10 +240,17 @@ export default function DailyLearnManager() {
   /** Outer padding only; page background comes from `PageShell` (card routes = solid ink-bg). */
   const shellPadClass = isDailyLog ? 'rounded-lg p-4' : ''
   const layout = (title: string, children: React.ReactNode) => (
-    <div className={`max-w-5xl mx-auto ${shellPadClass}`}>
+    <div className={`mx-auto max-w-5xl ${shellPadClass}`}>
       {syncFailedBanner}
-      <div className="mb-2 flex items-center gap-2"><HomeLink className="h-10 w-10 justify-center" /><h1 className="font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>{title}</h1></div>
-      <div className="mb-4"><PlayerName /></div>
+      <div className="mb-2 flex items-center gap-2">
+        <HomeLink className="h-10 w-10 justify-center" />
+        <h1 className="font-lora text-3xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>
+          {title}
+        </h1>
+      </div>
+      <div className="mb-4">
+        <PlayerName />
+      </div>
       {children}
     </div>
   )
@@ -257,36 +268,60 @@ export default function DailyLearnManager() {
 
   const editModal = editingDate && (
     <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4"
       role="dialog"
       aria-modal="true"
-      onClick={() => { setEditingDate(null); setEditingText('') }}
+      onClick={() => {
+        setEditingDate(null)
+        setEditingText('')
+      }}
     >
       <div
-        className="rounded-lg p-6 border max-w-lg w-full shadow-lg relative z-[101]"
+        className="relative z-[101] w-full max-w-lg rounded-lg border p-6 shadow-lg"
         style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-xl font-bold font-lora mb-2" style={{ color: 'var(--ink-text)' }}>Edit {parseLocalDate(editingDate).toLocaleDateString()}</h3>
+        <h3 className="mb-2 font-lora text-xl font-bold" style={{ color: 'var(--ink-text)' }}>
+          Edit {parseLocalDate(editingDate).toLocaleDateString()}
+        </h3>
         <textarea
           value={editingText}
           onChange={(e) => setEditingText(e.target.value)}
           onKeyDown={(e) => {
-            if (isModEnter(e)) { e.preventDefault(); handleSaveEdit() }
-            if (e.key === 'Escape') { e.preventDefault(); setEditingDate(null); setEditingText('') }
+            if (isModEnter(e)) {
+              e.preventDefault()
+              handleSaveEdit()
+            }
+            if (e.key === 'Escape') {
+              e.preventDefault()
+              setEditingDate(null)
+              setEditingText('')
+            }
           }}
-          className="w-full min-h-[100px] px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
+          className="min-h-[100px] w-full rounded-lg border px-4 py-3 focus:ring-2 focus:ring-[var(--ink-accent)] focus:outline-none"
           style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
           autoFocus
         />
-        <p className="text-xs mt-2" style={{ color: 'var(--ink-muted)' }} data-testid="daily-learn-edit-shortcut-hint">
+        <p className="mt-2 text-xs" style={{ color: 'var(--ink-muted)' }} data-testid="daily-learn-edit-shortcut-hint">
           {dailyLearnSubmitHint(modKey)}
         </p>
         <div className="mt-4 flex gap-2">
-          <button onClick={handleSaveEdit} disabled={saving} className="text-white px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-60" style={{ backgroundColor: 'var(--ink-accent)' }}>
+          <button
+            onClick={handleSaveEdit}
+            disabled={saving}
+            className="rounded-lg px-4 py-2 text-white hover:opacity-90 disabled:opacity-60"
+            style={{ backgroundColor: 'var(--ink-accent)' }}
+          >
             {saving ? 'Saving…' : 'Save'}
           </button>
-          <button onClick={() => { setEditingDate(null); setEditingText('') }} className="px-4 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
+          <button
+            onClick={() => {
+              setEditingDate(null)
+              setEditingText('')
+            }}
+            className="rounded-lg border px-4 py-2 hover:opacity-90"
+            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+          >
             Cancel
           </button>
         </div>
@@ -295,183 +330,249 @@ export default function DailyLearnManager() {
   )
 
   const syncFailedBanner = syncFailed && (
-    <div className="rounded-lg p-4 mb-6 border-2 border-amber-500 bg-amber-50 text-amber-800 font-medium" role="alert">
+    <div className="mb-6 rounded-lg border-2 border-amber-500 bg-amber-50 p-4 font-medium text-amber-800" role="alert">
       Sync failed – saved locally. Will retry automatically. Check your connection.
     </div>
   )
 
   if (view === 'log') {
     return (
-      <div className={`max-w-5xl mx-auto ${shellPadClass}`}>
+      <div className={`mx-auto max-w-5xl ${shellPadClass}`}>
         {syncFailedBanner}
-        <div className="flex items-center gap-2 mb-1">
+        <div className="mb-1 flex items-center gap-2">
           <HomeLink className="h-10 w-10 justify-center" />
-          <h1 className="mr-auto font-lora text-2xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>1 Sentence Everyday</h1>
-          {syncing && <span className="text-sm" style={{ color: 'var(--ink-muted)' }}>Syncing…</span>}
+          <h1 className="mr-auto font-lora text-2xl font-semibold sm:text-4xl" style={{ color: 'var(--ink-text)' }}>
+            1 Sentence Everyday
+          </h1>
+          {syncing && (
+            <span className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+              Syncing…
+            </span>
+          )}
         </div>
-        <div className="mb-3"><PlayerName /></div>
+        <div className="mb-3">
+          <PlayerName />
+        </div>
         {entries.length === 0 && (
-          <div className="rounded-lg border p-4 mb-4" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
+          <div
+            className="mb-4 rounded-lg border p-4"
+            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+          >
             <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
               Write one sentence about today below. Have a sync password?{' '}
-              <button type="button" onClick={() => setView('sync')} className="underline" style={{ color: 'var(--ink-accent)' }}>Sync</button>
+              <button
+                type="button"
+                onClick={() => setView('sync')}
+                className="underline"
+                style={{ color: 'var(--ink-accent)' }}
+              >
+                Sync
+              </button>
             </p>
           </div>
         )}
         {/* Calendar */}
-        <div className="rounded-lg border shadow-sm p-4 mb-4" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-            <div className="flex items-center justify-between mb-3">
-              <button
-                type="button"
-                onClick={() => {
-                  if (month === 0) { setCalMonth(11); setCalYear((y) => y - 1) }
-                  else setCalMonth((m) => m - 1)
-                }}
-                className="min-h-11 min-w-11 px-4 py-2 hover:opacity-80 flex items-center justify-center"
-                style={{ color: 'var(--ink-text)' }}
-              >
-                ←
-              </button>
-              <h2 className="text-2xl font-bold font-lora" style={{ color: 'var(--ink-text)' }}>
-                {new Date(year, month).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
-              </h2>
-              <button
-                type="button"
-                onClick={() => {
-                  if (month === 11) { setCalMonth(0); setCalYear((y) => y + 1) }
-                  else setCalMonth((m) => m + 1)
-                }}
-                className="min-h-11 min-w-11 px-4 py-2 hover:opacity-80 flex items-center justify-center"
-                style={{ color: 'var(--ink-text)' }}
-              >
-                →
-              </button>
-            </div>
-            <div className="grid grid-cols-7 gap-1 text-center">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-                <div key={d} className="text-sm font-medium py-1" style={{ color: 'var(--ink-muted)' }}>
+        <div
+          className="mb-4 rounded-lg border p-4 shadow-sm"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
+          <div className="mb-3 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => {
+                if (month === 0) {
+                  setCalMonth(11)
+                  setCalYear((y) => y - 1)
+                } else setCalMonth((m) => m - 1)
+              }}
+              className="flex min-h-11 min-w-11 items-center justify-center px-4 py-2 hover:opacity-80"
+              style={{ color: 'var(--ink-text)' }}
+            >
+              ←
+            </button>
+            <h2 className="font-lora text-2xl font-bold" style={{ color: 'var(--ink-text)' }}>
+              {new Date(year, month).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+            </h2>
+            <button
+              type="button"
+              onClick={() => {
+                if (month === 11) {
+                  setCalMonth(0)
+                  setCalYear((y) => y + 1)
+                } else setCalMonth((m) => m + 1)
+              }}
+              className="flex min-h-11 min-w-11 items-center justify-center px-4 py-2 hover:opacity-80"
+              style={{ color: 'var(--ink-text)' }}
+            >
+              →
+            </button>
+          </div>
+          <div className="grid grid-cols-7 gap-1 text-center">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
+              <div key={d} className="py-1 text-sm font-medium" style={{ color: 'var(--ink-muted)' }}>
+                {d}
+              </div>
+            ))}
+            {calendarCells.map((d, i) => {
+              if (d === null) return <div key={`e-${i}`} />
+              const ds = dateStr(d)
+              const hasEntry = calendarDates.has(ds)
+              const entry = getEntryByDate(ds)
+              return (
+                <button
+                  key={ds}
+                  type="button"
+                  onClick={() => {
+                    setEditingDate(ds)
+                    setEditingText(entry?.text ?? '')
+                  }}
+                  className="cursor-pointer rounded py-2 transition-colors hover:ring-2 hover:ring-[var(--ink-accent)]"
+                  style={
+                    hasEntry ? { backgroundColor: 'var(--ink-accent)', color: 'white' } : { color: 'var(--ink-muted)' }
+                  }
+                  title={hasEntry ? `${ds}: ${capitalizeFirst(entry?.text ?? '')}` : `Add entry for ${ds}`}
+                >
                   {d}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Today's prompt */}
+        <div
+          className="mb-4 rounded-lg border p-4 shadow-sm"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
+          <p className="mb-3" style={{ color: 'var(--ink-muted)' }}>
+            Today:{' '}
+            {today
+              ? parseLocalDate(today).toLocaleDateString(undefined, {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })
+              : '…'}{' '}
+            (Resets 5am local)
+          </p>
+          <textarea
+            value={todayText}
+            onChange={(e) => {
+              todayDirtyRef.current = true
+              setRemoteTodayHint(null)
+              setTodayText(e.target.value)
+            }}
+            onKeyDown={(e) => {
+              if (isModEnter(e)) {
+                e.preventDefault()
+                handleSubmit()
+              }
+              if (e.key === 'Escape') {
+                e.preventDefault()
+                ;(e.target as HTMLTextAreaElement).blur()
+              }
+            }}
+            placeholder="One sentence (or more) about what you learned today"
+            className="min-h-[120px] w-full rounded-lg border px-4 py-3 focus:ring-2 focus:ring-[var(--ink-accent)] focus:outline-none"
+            style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+            aria-label="Today's entry"
+          />
+          <p
+            className="mt-2 text-xs"
+            style={{ color: 'var(--ink-muted)' }}
+            data-testid="daily-learn-submit-shortcut-hint"
+          >
+            {dailyLearnSubmitHint(modKey)}
+          </p>
+          {remoteTodayHint && (
+            <button
+              type="button"
+              data-testid="daily-learn-remote-today-hint"
+              onClick={applyRemoteToday}
+              className="mt-2 text-left text-sm underline hover:opacity-80"
+              style={{ color: 'var(--ink-accent)' }}
+            >
+              Newer entry on another device — tap to load
+            </button>
+          )}
+          <div className="mt-3 flex items-center gap-4">
+            <button
+              onClick={handleSubmit}
+              disabled={saving}
+              className="rounded-lg px-6 py-2 text-white transition-colors hover:opacity-90 disabled:opacity-60"
+              style={{ backgroundColor: 'var(--ink-accent)' }}
+            >
+              {saving ? 'Saving…' : 'Submit'}
+            </button>
+            {saved && <span className="text-green-600">Saved</span>}
+            {syncFailed && <span className="text-amber-600">Sync failed – saved locally, will retry</span>}
+          </div>
+        </div>
+
+        {/* History */}
+        <div
+          className="mb-4 rounded-lg border p-4 shadow-sm"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
+          <h2 className="mb-3 font-lora text-2xl font-bold" style={{ color: 'var(--ink-text)' }}>
+            History
+          </h2>
+          {entries.length === 0 ? (
+            <p style={{ color: 'var(--ink-muted)' }}>No entries yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {entries.map((e) => (
+                <div
+                  key={e.date}
+                  className="rounded-lg border p-3"
+                  style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="font-semibold" style={{ color: 'var(--ink-text)' }}>
+                      {parseLocalDate(e.date).toLocaleDateString()}
+                    </div>
+                    <button
+                      onClick={() => {
+                        setEditingDate(e.date)
+                        setEditingText(e.text)
+                      }}
+                      className="-my-2 -mr-2 min-h-10 px-2 text-sm hover:opacity-80"
+                      style={{ color: 'var(--ink-accent)' }}
+                    >
+                      Edit
+                    </button>
+                  </div>
+                  <div className="mt-1 whitespace-pre-wrap" style={{ color: 'var(--ink-muted)' }}>
+                    {capitalizeFirst(e.text)}
+                  </div>
                 </div>
               ))}
-              {calendarCells.map((d, i) => {
-                if (d === null) return <div key={`e-${i}`} />;
-                const ds = dateStr(d)
-                const hasEntry = calendarDates.has(ds)
-                const entry = getEntryByDate(ds)
-                return (
-                  <button
-                    key={ds}
-                    type="button"
-                    onClick={() => {
-                      setEditingDate(ds)
-                      setEditingText(entry?.text ?? '')
-                    }}
-                    className="py-2 rounded cursor-pointer hover:ring-2 hover:ring-[var(--ink-accent)] transition-colors"
-                    style={hasEntry ? { backgroundColor: 'var(--ink-accent)', color: 'white' } : { color: 'var(--ink-muted)' }}
-                    title={hasEntry ? `${ds}: ${capitalizeFirst(entry?.text ?? '')}` : `Add entry for ${ds}`}
-                  >
-                    {d}
-                  </button>
-                )
-              })}
             </div>
-          </div>
-
-          {/* Today's prompt */}
-          <div className="rounded-lg border shadow-sm p-4 mb-4" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-            <p className="mb-3" style={{ color: 'var(--ink-muted)' }}>
-              Today: {today ? parseLocalDate(today).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '…'} (Resets 5am local)
-            </p>
-            <textarea
-              value={todayText}
-              onChange={(e) => {
-                todayDirtyRef.current = true
-                setRemoteTodayHint(null)
-                setTodayText(e.target.value)
-              }}
-              onKeyDown={(e) => {
-                if (isModEnter(e)) { e.preventDefault(); handleSubmit() }
-                if (e.key === 'Escape') { e.preventDefault(); (e.target as HTMLTextAreaElement).blur() }
-              }}
-              placeholder="One sentence (or more) about what you learned today"
-              className="w-full min-h-[120px] px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
-              style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-              aria-label="Today's entry"
-            />
-            <p className="text-xs mt-2" style={{ color: 'var(--ink-muted)' }} data-testid="daily-learn-submit-shortcut-hint">
-              {dailyLearnSubmitHint(modKey)}
-            </p>
-            {remoteTodayHint && (
-              <button
-                type="button"
-                data-testid="daily-learn-remote-today-hint"
-                onClick={applyRemoteToday}
-                className="mt-2 text-sm text-left underline hover:opacity-80"
-                style={{ color: 'var(--ink-accent)' }}
-              >
-                Newer entry on another device — tap to load
-              </button>
-            )}
-            <div className="flex items-center gap-4 mt-3">
-              <button
-                onClick={handleSubmit}
-                disabled={saving}
-                className="text-white px-6 py-2 rounded-lg transition-colors hover:opacity-90 disabled:opacity-60"
-                style={{ backgroundColor: 'var(--ink-accent)' }}
-              >
-                {saving ? 'Saving…' : 'Submit'}
-              </button>
-              {saved && <span className="text-green-600">Saved</span>}
-              {syncFailed && <span className="text-amber-600">Sync failed – saved locally, will retry</span>}
-            </div>
-          </div>
-
-          {/* History */}
-          <div className="rounded-lg border shadow-sm p-4 mb-4" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-            <h2 className="text-2xl font-bold font-lora mb-3" style={{ color: 'var(--ink-text)' }}>History</h2>
-            {entries.length === 0 ? (
-              <p style={{ color: 'var(--ink-muted)' }}>No entries yet.</p>
-            ) : (
-              <div className="space-y-2">
-                {entries.map((e) => (
-                  <div key={e.date} className="rounded-lg border p-3" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
-                    <div className="flex items-center justify-between">
-                      <div className="font-semibold" style={{ color: 'var(--ink-text)' }}>{parseLocalDate(e.date).toLocaleDateString()}</div>
-                      <button
-                        onClick={() => {
-                          setEditingDate(e.date)
-                          setEditingText(e.text)
-                        }}
-                        className="-my-2 -mr-2 min-h-10 px-2 text-sm hover:opacity-80"
-                        style={{ color: 'var(--ink-accent)' }}
-                      >
-                        Edit
-                      </button>
-                    </div>
-                    <div className="mt-1 whitespace-pre-wrap" style={{ color: 'var(--ink-muted)' }}>{capitalizeFirst(e.text)}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {editModal}
-
-          <nav className="flex flex-wrap gap-2" aria-label="Daily log sections">
-            {(['analytics', 'export', 'sync'] as const).map((v) => (
-              <button
-                key={v}
-                onClick={() => {
-                  setView(v)
-                }}
-                className="px-4 py-2 rounded-lg border capitalize hover:opacity-90 transition-colors"
-                style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-              >
-                {v}
-              </button>
-            ))}
-          </nav>
+          )}
         </div>
+
+        {editModal}
+
+        <nav className="flex flex-wrap gap-2" aria-label="Daily log sections">
+          {(['analytics', 'export', 'sync'] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => {
+                setView(v)
+              }}
+              className="rounded-lg border px-4 py-2 capitalize transition-colors hover:opacity-90"
+              style={{
+                backgroundColor: 'var(--ink-paper)',
+                borderColor: 'var(--ink-border)',
+                color: 'var(--ink-text)',
+              }}
+            >
+              {v}
+            </button>
+          ))}
+        </nav>
+      </div>
     )
   }
 
@@ -479,27 +580,51 @@ export default function DailyLearnManager() {
     return layout(
       'Analytics',
       <>
-        <div className="rounded-lg border shadow-sm p-4 mb-4" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-          <h2 className="text-2xl font-bold font-lora mb-3" style={{ color: 'var(--ink-text)' }}>Counts</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="rounded-lg border p-3" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
-              <div className="text-3xl font-bold" style={{ color: 'var(--ink-text)' }}>{counts.total}</div>
+        <div
+          className="mb-4 rounded-lg border p-4 shadow-sm"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
+          <h2 className="mb-3 font-lora text-2xl font-bold" style={{ color: 'var(--ink-text)' }}>
+            Counts
+          </h2>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div
+              className="rounded-lg border p-3"
+              style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}
+            >
+              <div className="text-3xl font-bold" style={{ color: 'var(--ink-text)' }}>
+                {counts.total}
+              </div>
               <div style={{ color: 'var(--ink-muted)' }}>Total entries</div>
             </div>
-            <div className="rounded-lg border p-3" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
-              <div className="text-3xl font-bold" style={{ color: 'var(--ink-text)' }}>{counts.thisWeek}</div>
+            <div
+              className="rounded-lg border p-3"
+              style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}
+            >
+              <div className="text-3xl font-bold" style={{ color: 'var(--ink-text)' }}>
+                {counts.thisWeek}
+              </div>
               <div style={{ color: 'var(--ink-muted)' }}>This week</div>
             </div>
-            <div className="rounded-lg border p-3" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
-              <div className="text-3xl font-bold" style={{ color: 'var(--ink-text)' }}>{counts.thisMonth}</div>
+            <div
+              className="rounded-lg border p-3"
+              style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}
+            >
+              <div className="text-3xl font-bold" style={{ color: 'var(--ink-text)' }}>
+                {counts.thisMonth}
+              </div>
               <div style={{ color: 'var(--ink-muted)' }}>This month</div>
             </div>
           </div>
         </div>
-        <button onClick={() => setView('log')} className="px-4 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
+        <button
+          onClick={() => setView('log')}
+          className="rounded-lg border px-4 py-2 hover:opacity-90"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+        >
           ← Log
         </button>
-      </>
+      </>,
     )
   }
 
@@ -507,8 +632,13 @@ export default function DailyLearnManager() {
     return layout(
       'Sync',
       <>
-        <div className="rounded-lg border shadow-sm p-4 mb-4" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-          <h2 className="text-2xl font-bold font-lora mb-3" style={{ color: 'var(--ink-text)' }}>Sync Across Devices</h2>
+        <div
+          className="mb-4 rounded-lg border p-4 shadow-sm"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
+          <h2 className="mb-3 font-lora text-2xl font-bold" style={{ color: 'var(--ink-text)' }}>
+            Sync Across Devices
+          </h2>
           <SyncSettings
             testIdPrefix="daily-learn"
             onSync={async () => {
@@ -520,21 +650,33 @@ export default function DailyLearnManager() {
             }}
           />
         </div>
-        <button onClick={() => setView('log')} className="px-4 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
+        <button
+          onClick={() => setView('log')}
+          className="rounded-lg border px-4 py-2 hover:opacity-90"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+        >
           ← Log
         </button>
-      </>
+      </>,
     )
   }
 
   return layout(
     'Export',
     <>
-      <div className="rounded-lg border shadow-sm p-4 mb-4" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-        <h2 className="text-2xl font-bold font-lora mb-3" style={{ color: 'var(--ink-text)' }}>Export</h2>
+      <div
+        className="mb-4 rounded-lg border p-4 shadow-sm"
+        style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+      >
+        <h2 className="mb-3 font-lora text-2xl font-bold" style={{ color: 'var(--ink-text)' }}>
+          Export
+        </h2>
         <p className="mb-3" style={{ color: 'var(--ink-muted)' }}>
-          Copy as text to paste into ChatGPT or other tools, or download JSON / CSV (comma-safe quoting). Import CSV merges by date — newer{' '}
-          <code className="text-xs rounded px-1" style={{ backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}>updatedAt</code>{' '}
+          Copy as text to paste into ChatGPT or other tools, or download JSON / CSV (comma-safe quoting). Import CSV
+          merges by date — newer{' '}
+          <code className="rounded px-1 text-xs" style={{ backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}>
+            updatedAt
+          </code>{' '}
           wins when the same day appears locally and in the file.
         </p>
         <input
@@ -549,14 +691,14 @@ export default function DailyLearnManager() {
         <div className="flex flex-wrap gap-3">
           <button
             onClick={handleCopy}
-            className="text-white px-6 py-2 rounded-lg hover:opacity-90"
+            className="rounded-lg px-6 py-2 text-white hover:opacity-90"
             style={{ backgroundColor: 'var(--ink-accent)' }}
           >
             Copy as text
           </button>
           <button
             onClick={handleDownloadCsv}
-            className="px-6 py-2 rounded-lg border hover:opacity-90"
+            className="rounded-lg border px-6 py-2 hover:opacity-90"
             style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
           >
             Download CSV
@@ -564,14 +706,14 @@ export default function DailyLearnManager() {
           <button
             type="button"
             onClick={() => csvImportRef.current?.click()}
-            className="px-6 py-2 rounded-lg border hover:opacity-90"
+            className="rounded-lg border px-6 py-2 hover:opacity-90"
             style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
           >
             Import CSV (merge)
           </button>
           <button
             onClick={handleDownload}
-            className="px-6 py-2 rounded-lg border hover:opacity-90"
+            className="rounded-lg border px-6 py-2 hover:opacity-90"
             style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
           >
             Download JSON
@@ -581,7 +723,7 @@ export default function DailyLearnManager() {
           <p
             role="status"
             aria-live="polite"
-            className={`text-sm mt-4 ${
+            className={`mt-4 text-sm ${
               importStatus.startsWith('Imported')
                 ? importStatus.includes('Cloud sync failed')
                   ? 'text-amber-700'
@@ -593,9 +735,13 @@ export default function DailyLearnManager() {
           </p>
         )}
       </div>
-      <button onClick={() => setView('log')} className="px-4 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
+      <button
+        onClick={() => setView('log')}
+        className="rounded-lg border px-4 py-2 hover:opacity-90"
+        style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+      >
         ← Log
       </button>
-    </>
+    </>,
   )
 }

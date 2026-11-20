@@ -2,11 +2,7 @@
  * Knowledge domain registry — domain packs tune AI context for Notes vault.
  */
 
-export type KnowledgeDomainId =
-  | 'uvimco-endowment'
-  | 'portfolio-quant'
-  | 'cfa-l1'
-  | 'general'
+export type KnowledgeDomainId = 'uvimco-endowment' | 'portfolio-quant' | 'cfa-l1' | 'general'
 
 export interface KnowledgeDomain {
   id: KnowledgeDomainId
@@ -225,7 +221,8 @@ export function resolveDomainsForNote(opts: {
     }
   }
 
-  const haystack = `${opts.tags?.join(' ') ?? ''} ${opts.kind ?? ''} ${opts.notes ?? ''} ${opts.query ?? ''}`.toLowerCase()
+  const haystack =
+    `${opts.tags?.join(' ') ?? ''} ${opts.kind ?? ''} ${opts.notes ?? ''} ${opts.query ?? ''}`.toLowerCase()
   const tagSet = new Set((opts.tags ?? []).map((t) => t.toLowerCase()))
 
   const scores = (Object.keys(KNOWLEDGE_DOMAINS) as KnowledgeDomainId[]).map((id) => {
@@ -242,8 +239,7 @@ export function resolveDomainsForNote(opts: {
 
   scores.sort((a, b) => b.score - a.score)
   const best = scores[0]!
-  const primary =
-    best.score > 5 ? getDomain(best.id) : getDomain(DEFAULT_ACTIVE_DOMAIN_ID)
+  const primary = best.score > 5 ? getDomain(best.id) : getDomain(DEFAULT_ACTIVE_DOMAIN_ID)
 
   return { primary, scores }
 }

@@ -46,7 +46,9 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
           supabase.from('party_quiplash_answers').select('*').eq('room_pin', pin),
           matchupIds.length
             ? supabase.from('party_quiplash_votes').select('*').in('matchup_id', matchupIds)
-            : Promise.resolve({ data: [] as { id: string; matchup_id: string; voter_player_id: string; choice: number }[] }),
+            : Promise.resolve({
+                data: [] as { id: string; matchup_id: string; voter_player_id: string; choice: number }[],
+              }),
           supabase.from('party_quiplash_final_prompt').select('*').eq('room_pin', pin).maybeSingle(),
           supabase.from('party_quiplash_final_answers').select('*').eq('room_pin', pin),
           supabase.from('party_quiplash_final_votes').select('*').eq('room_pin', pin),
@@ -86,16 +88,23 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       })
     }
 
-    const [{ data: intake }, { data: rounds }, { data: allLies }, { data: allPicks }, { data: allLikes }, { data: finals }, { data: finalPicks }] =
-      await Promise.all([
-        supabase.from('party_eay_intake').select('*').eq('room_pin', pin),
-        supabase.from('party_eay_rounds').select('*').eq('room_pin', pin).order('round_index'),
-        supabase.from('party_eay_lies').select('*'),
-        supabase.from('party_eay_picks').select('*'),
-        supabase.from('party_eay_likes').select('*'),
-        supabase.from('party_eay_final').select('*').eq('room_pin', pin),
-        supabase.from('party_eay_final_picks').select('*').eq('room_pin', pin),
-      ])
+    const [
+      { data: intake },
+      { data: rounds },
+      { data: allLies },
+      { data: allPicks },
+      { data: allLikes },
+      { data: finals },
+      { data: finalPicks },
+    ] = await Promise.all([
+      supabase.from('party_eay_intake').select('*').eq('room_pin', pin),
+      supabase.from('party_eay_rounds').select('*').eq('room_pin', pin).order('round_index'),
+      supabase.from('party_eay_lies').select('*'),
+      supabase.from('party_eay_picks').select('*'),
+      supabase.from('party_eay_likes').select('*'),
+      supabase.from('party_eay_final').select('*').eq('room_pin', pin),
+      supabase.from('party_eay_final_picks').select('*').eq('room_pin', pin),
+    ])
     const eayRoundIds = new Set((rounds ?? []).map((r) => r.id))
     return NextResponse.json({
       room,
@@ -143,7 +152,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         }
         const trimmedJoinName = playerName.trim()
         if (trimmedJoinName.length > PARTY_NAME_MAX_LEN) {
-          return NextResponse.json({ error: `Player name must be at most ${PARTY_NAME_MAX_LEN} characters` }, { status: 400 })
+          return NextResponse.json(
+            { error: `Player name must be at most ${PARTY_NAME_MAX_LEN} characters` },
+            { status: 400 },
+          )
         }
         const { count } = await supabase
           .from('party_players')
@@ -236,7 +248,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         if (room.host_id !== playerId) {
           return NextResponse.json({ error: 'Only host can reset' }, { status: 403 })
         }
-        const mids = (await supabase.from('party_quiplash_matchups').select('id').eq('room_pin', pin)).data?.map((m) => m.id) ?? []
+        const mids =
+          (await supabase.from('party_quiplash_matchups').select('id').eq('room_pin', pin)).data?.map((m) => m.id) ?? []
         if (mids.length > 0) {
           await supabase.from('party_quiplash_votes').delete().in('matchup_id', mids)
         }

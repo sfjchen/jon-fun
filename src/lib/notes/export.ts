@@ -31,11 +31,7 @@ export function exportFilename(session: NoteSession, ext: 'md' | 'pdf'): string 
 }
 
 function escapeExportText(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
 function markdownLookupBlock(lk: Lookup): string {
@@ -59,42 +55,47 @@ export function buildSessionMarkdown(session: NoteSession): string {
   const lookupBlocks = session.lookups.map(markdownLookupBlock)
   const notesBody = session.notes.trim() || '_Empty_'
 
-  return [
-    `# ${title}`,
-    '',
-    `**Created:** ${formatDateTime(session.startedAt)}  `,
-    `**Modified:** ${formatDateTime(session.updatedAt)}  `,
-    tags.length ? `**Tags:** ${tags.map((t) => `\`${t}\``).join(', ')}  ` : '',
-    '',
-    '---',
-    '',
-    '## Notes',
-    '',
-    notesBody,
-    '',
-    '---',
-    '',
-    '## AI Lookups',
-    '',
-    lookupBlocks.length ? lookupBlocks.join('\n\n---\n\n') : '_None_',
-    '',
-    '---',
-    '',
-    '## Action Items',
-    '',
-    todos.length ? todos.map((t) => `- [ ] ${t.text}`).join('\n') : '_None_',
-    '',
-  ]
-    .filter((line, i, arr) => !(line === '' && arr[i - 1] === ''))
-    .join('\n')
-    .trimEnd() + '\n'
+  return (
+    [
+      `# ${title}`,
+      '',
+      `**Created:** ${formatDateTime(session.startedAt)}  `,
+      `**Modified:** ${formatDateTime(session.updatedAt)}  `,
+      tags.length ? `**Tags:** ${tags.map((t) => `\`${t}\``).join(', ')}  ` : '',
+      '',
+      '---',
+      '',
+      '## Notes',
+      '',
+      notesBody,
+      '',
+      '---',
+      '',
+      '## AI Lookups',
+      '',
+      lookupBlocks.length ? lookupBlocks.join('\n\n---\n\n') : '_None_',
+      '',
+      '---',
+      '',
+      '## Action Items',
+      '',
+      todos.length ? todos.map((t) => `- [ ] ${t.text}`).join('\n') : '_None_',
+      '',
+    ]
+      .filter((line, i, arr) => !(line === '' && arr[i - 1] === ''))
+      .join('\n')
+      .trimEnd() + '\n'
+  )
 }
 
 /** @deprecated use buildSessionMarkdown */
 export const exportSessionMarkdown = buildSessionMarkdown
 
 function htmlLookupBlock(lk: Lookup): string {
-  const parts = [`<h3>${escapeHtml(lookupLabel(lk))}</h3>`, `<p class="meta">${escapeHtml(formatDateTime(lk.triggeredAt))}</p>`]
+  const parts = [
+    `<h3>${escapeHtml(lookupLabel(lk))}</h3>`,
+    `<p class="meta">${escapeHtml(formatDateTime(lk.triggeredAt))}</p>`,
+  ]
   if (lk.conversation.length === 0) {
     parts.push('<p><em>No conversation recorded</em></p>')
   } else {
@@ -152,9 +153,7 @@ export function buildSessionExportHtml(session: NoteSession): string {
   const title = session.title?.trim() || 'Untitled'
   const tags = session.tags?.filter(Boolean) ?? []
   const todos = collectTodosFromNotes(session.notes)
-  const notesHtml = session.notes.trim()
-    ? marked.parse(session.notes) as string
-    : '<p><em>Empty</em></p>'
+  const notesHtml = session.notes.trim() ? (marked.parse(session.notes) as string) : '<p><em>Empty</em></p>'
   const lookupHtml = session.lookups.length
     ? session.lookups.map((lk) => `<div class="lookup-block">${htmlLookupBlock(lk)}</div>`).join('\n')
     : '<p><em>None</em></p>'

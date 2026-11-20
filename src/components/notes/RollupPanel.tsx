@@ -29,13 +29,7 @@ function collectArchived(sessions: NoteSession[]): TodoRollupItem[] {
   return out.sort((a, b) => b.meetingAt.localeCompare(a.meetingAt))
 }
 
-export default function RollupPanel({
-  sessions,
-  onJump,
-  onArchiveTodo,
-  onRestoreTodo,
-  embedded,
-}: RollupPanelProps) {
+export default function RollupPanel({ sessions, onJump, onArchiveTodo, onRestoreTodo, embedded }: RollupPanelProps) {
   const active = collectTodos(sessions)
   const archived = useMemo(() => collectArchived(sessions), [sessions])
   const [archiveOpen, setArchiveOpen] = useState(false)
@@ -43,7 +37,7 @@ export default function RollupPanel({
   return (
     <section className={embedded ? 'px-3 pb-2' : 'px-3 py-2'} data-testid="notes-rollup-panel">
       {!embedded ? (
-        <p className="mb-2 text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)]">All todos</p>
+        <p className="mb-2 text-[10px] tracking-wide text-[var(--uv-text-muted)] uppercase">All todos</p>
       ) : null}
       {active.length === 0 ? (
         <p className="text-[11px] text-[var(--uv-text-muted)]">No open todos — use suffix &gt; on a line.</p>
@@ -78,7 +72,7 @@ export default function RollupPanel({
             data-testid="notes-todo-archive-toggle"
             aria-expanded={archiveOpen}
             onClick={() => setArchiveOpen((o) => !o)}
-            className="flex w-full items-center gap-1 text-left text-[10px] uppercase tracking-wide text-[var(--uv-text-muted)] hover:text-[var(--uv-text-secondary)]"
+            className="flex w-full items-center gap-1 text-left text-[10px] tracking-wide text-[var(--uv-text-muted)] uppercase hover:text-[var(--uv-text-secondary)]"
           >
             <span className="inline-block w-3">{archiveOpen ? '▾' : '▸'}</span>
             Archive ({archived.length})

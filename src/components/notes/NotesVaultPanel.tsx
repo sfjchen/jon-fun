@@ -4,12 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { NoteFolder, NoteSession } from '@/lib/notes/types'
 import { childFolders, findArchiveFolder, isArchiveFolder, sessionsInFolder } from '@/lib/notes/folders'
 import { useNotesDevice } from '@/lib/notes/useNotesDevice'
-import {
-  NotesContextMenu,
-  NotesOverflowMenu,
-  NotesRowAction,
-  useNotesContextTrigger,
-} from './NotesActionUi'
+import { NotesContextMenu, NotesOverflowMenu, NotesRowAction, useNotesContextTrigger } from './NotesActionUi'
 
 import { NOTE_FOLDER_DRAG, NOTE_SESSION_DRAG } from '@/lib/notes/dragTypes'
 
@@ -199,7 +194,7 @@ function NoteRow({
         draggable={!editing}
         title="Drag to folder"
         aria-hidden
-        className="cursor-grab shrink-0 rounded px-0.5 text-[10px] text-[var(--uv-text-muted)] opacity-0 group-hover:opacity-40 hover:!opacity-70 active:cursor-grabbing"
+        className="shrink-0 cursor-grab rounded px-0.5 text-[10px] text-[var(--uv-text-muted)] opacity-0 group-hover:opacity-40 hover:!opacity-70 active:cursor-grabbing"
         data-testid={`notes-note-drag-${session.id}`}
         onDragStart={(e) => handleNoteDragStart(e, true)}
         onDragEnd={handleNoteDragEnd}
@@ -261,7 +256,7 @@ function NoteRow({
             {session.title || 'Untitled'}
           </span>
         )}
-        <span className="shrink-0 text-[10px] tabular-nums text-[var(--uv-text-muted)]">
+        <span className="shrink-0 text-[10px] text-[var(--uv-text-muted)] tabular-nums">
           {formatMeetingDate(session.updatedAt)}
         </span>
       </button>
@@ -403,7 +398,7 @@ function FolderHeader({
           e.dataTransfer.effectAllowed = 'move'
           e.stopPropagation()
         }}
-        className="cursor-grab shrink-0 rounded px-0.5 text-[10px] text-[var(--uv-text-muted)] opacity-60 hover:opacity-100 active:cursor-grabbing"
+        className="shrink-0 cursor-grab rounded px-0.5 text-[10px] text-[var(--uv-text-muted)] opacity-60 hover:opacity-100 active:cursor-grabbing"
       >
         ⠿
       </span>
@@ -515,10 +510,7 @@ function FolderBranch({
   const subfolders = childFolders(folders, folder.id)
   const locked = isArchiveFolder(folder)
 
-  const handleDropNote = useCallback(
-    (sessionId: string) => onMoveNote(sessionId, folder.id),
-    [folder.id, onMoveNote],
-  )
+  const handleDropNote = useCallback((sessionId: string) => onMoveNote(sessionId, folder.id), [folder.id, onMoveNote])
 
   const handleDropFolder = useCallback(
     (folderId: string) => onMoveFolder(folderId, folder.id),
@@ -556,10 +548,7 @@ function FolderBranch({
           onDeleteFolder={() => onDeleteFolder(folder.id)}
         />
         {open ? (
-          <div
-            className="min-h-6 py-0.5"
-            data-testid={`notes-folder-body-${folder.id}`}
-          >
+          <div className="min-h-6 py-0.5" data-testid={`notes-folder-body-${folder.id}`}>
             <ul className="space-y-0">
               {notes.map((s) => (
                 <NoteRow
@@ -628,15 +617,9 @@ export default function NotesVaultPanel({
   const inboxNotes = sessionsInFolder(sessions, null)
   const inboxOpen = expandedFolderIds.includes('__inbox__')
 
-  const handleInboxDropNote = useCallback(
-    (sessionId: string) => onMoveNote(sessionId, null),
-    [onMoveNote],
-  )
+  const handleInboxDropNote = useCallback((sessionId: string) => onMoveNote(sessionId, null), [onMoveNote])
 
-  const handleInboxDropFolder = useCallback(
-    (folderId: string) => onMoveFolder(folderId, null),
-    [onMoveFolder],
-  )
+  const handleInboxDropFolder = useCallback((folderId: string) => onMoveFolder(folderId, null), [onMoveFolder])
 
   const inboxDrop = useFolderDropHandlers(null, undefined, handleInboxDropNote, handleInboxDropFolder)
 
@@ -705,10 +688,7 @@ export default function NotesVaultPanel({
             {inboxOpen ? (
               <div className="min-h-6 py-0.5" data-testid="notes-folder-body-inbox">
                 {inboxNotes.length === 0 ? (
-                  <p
-                    className="px-2 py-1 text-[11px] text-[var(--uv-text-muted)]"
-                    data-testid="notes-inbox-empty"
-                  >
+                  <p className="px-2 py-1 text-[11px] text-[var(--uv-text-muted)]" data-testid="notes-inbox-empty">
                     Inbox empty — tap + Note or start typing.
                   </p>
                 ) : (

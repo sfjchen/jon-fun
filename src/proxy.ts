@@ -27,8 +27,10 @@ export async function proxy(req: NextRequest) {
 
   /* sfjc.dev sits behind Cloudflare; Vercel sets x-forwarded-host itself, so cf-connecting-ip is trusted only there. */
   const h = req.headers
-  const ip = (h.get('x-forwarded-host') === 'sfjc.dev' && h.get('cf-connecting-ip')) ||
-      h.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  const ip =
+    (h.get('x-forwarded-host') === 'sfjc.dev' && h.get('cf-connecting-ip')) ||
+    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    'unknown'
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`veridian:${ip}`))
   const key = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('')
 
@@ -36,13 +38,18 @@ export async function proxy(req: NextRequest) {
     const res = await fetch(`${url}/rest/v1/rpc/veridian_demo_hit`, {
       method: 'POST',
       headers: { apikey: svc, Authorization: `Bearer ${svc}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ p_key: key, p_route: route, p_burst: cap.burst, p_burst_min: cap.burstMin,
-          p_daily: cap.daily }),
+      body: JSON.stringify({
+        p_key: key,
+        p_route: route,
+        p_burst: cap.burst,
+        p_burst_min: cap.burstMin,
+        p_daily: cap.daily,
+      }),
     })
     const hit = res.ok ? ((await res.json()) as string | null) : null
     if (!hit) return pass()
-    const label = hit === 'burst' ? `${cap.burst} ${cap.noun} per ${cap.burstMin} minutes` :
-        `${cap.daily} ${cap.noun} per day`
+    const label =
+      hit === 'burst' ? `${cap.burst} ${cap.noun} per ${cap.burstMin} minutes` : `${cap.daily} ${cap.noun} per day`
     const wait = hit === 'burst' ? `${cap.burstMin} minutes` : 'tomorrow'
     return NextResponse.json({ error: `Public demo limit reached (${label}). Try again in ${wait}.` }, { status: 429 })
   } catch {

@@ -9,9 +9,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
-    const { data, error } = await supabaseAdmin
-      .from('daily_learn_entries')
-      .select('user_id')
+    const { data, error } = await supabaseAdmin.from('daily_learn_entries').select('user_id')
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     const userIds = [...new Set((data ?? []).map((r) => r.user_id).filter(Boolean))] as string[]
     return NextResponse.json({ userIds })

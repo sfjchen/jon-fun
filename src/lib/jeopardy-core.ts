@@ -22,11 +22,13 @@ export interface JeopardyBoard {
 export type BoardCoordinates = { colIndex: number; rowIndex: number }
 
 export function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 40) || 'board'
+  return (
+    input
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 40) || 'board'
+  )
 }
 
 export function generateShortId(title: string): string {

@@ -36,7 +36,10 @@ export function ReaderClientPage({ bookId, chapterId, routeBase }: ReaderClientP
 
   if (status === 'loading') {
     return (
-      <div className="rounded-3xl border px-5 py-10 text-center" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-muted)' }}>
+      <div
+        className="rounded-3xl border px-5 py-10 text-center"
+        style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-muted)' }}
+      >
         Loading your local reader library…
       </div>
     )
@@ -44,14 +47,28 @@ export function ReaderClientPage({ bookId, chapterId, routeBase }: ReaderClientP
 
   if (status === 'missing' || !publication) {
     return (
-      <div className="rounded-3xl border px-5 py-10 text-center" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-muted)' }}>
+      <div
+        className="rounded-3xl border px-5 py-10 text-center"
+        style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-muted)' }}
+      >
         <p className="mb-4">That local book is not available on this browser anymore.</p>
-        <Link href={routeBase} className="rounded-full px-4 py-2 text-sm font-semibold text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>
+        <Link
+          href={routeBase}
+          className="rounded-full px-4 py-2 text-sm font-semibold text-white"
+          style={{ backgroundColor: 'var(--ink-accent)' }}
+        >
           Back to import library
         </Link>
       </div>
     )
   }
 
-  return <ReaderShell key={`${bookId}:${chapterId}`} publication={publication} initialChapterId={chapterId} routeBase={routeBase} />
+  return (
+    <ReaderShell
+      key={`${bookId}:${chapterId}`}
+      publication={publication}
+      initialChapterId={chapterId}
+      routeBase={routeBase}
+    />
+  )
 }

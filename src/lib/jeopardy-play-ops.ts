@@ -88,9 +88,10 @@ export function normalizePlayState(raw: unknown): JeopardyPlayState {
   for (const [k, v] of Object.entries(usedRaw)) {
     if (typeof k === 'string' && /^\d+:\d+$/.test(k) && v) used[k] = true
   }
-  const la = (obj.lastAnswered && typeof obj.lastAnswered === 'object'
-    ? obj.lastAnswered
-    : null) as { col?: unknown; row?: unknown } | null
+  const la = (obj.lastAnswered && typeof obj.lastAnswered === 'object' ? obj.lastAnswered : null) as {
+    col?: unknown
+    row?: unknown
+  } | null
   const lastAnswered =
     la && typeof la.col === 'number' && typeof la.row === 'number'
       ? { col: Math.floor(la.col), row: Math.floor(la.row) }

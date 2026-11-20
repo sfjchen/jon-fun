@@ -26,8 +26,8 @@ export function ReaderChapterEndNav({
 }: ReaderChapterEndNavProps) {
   const [listOpen, setListOpen] = useState(false)
   const chapter = chapters[currentIndex]
-  const prevId = currentIndex > 0 ? chapters[currentIndex - 1]?.id ?? '' : ''
-  const nextId = currentIndex < chapters.length - 1 ? chapters[currentIndex + 1]?.id ?? '' : ''
+  const prevId = currentIndex > 0 ? (chapters[currentIndex - 1]?.id ?? '') : ''
+  const nextId = currentIndex < chapters.length - 1 ? (chapters[currentIndex + 1]?.id ?? '') : ''
 
   if (!chapter) return null
 

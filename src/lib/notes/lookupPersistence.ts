@@ -18,8 +18,7 @@ export function mergeSessionLookups(local: Lookup[], remote: Lookup[]): Lookup[]
     }
     const pickNew =
       lk.conversation.length > existing.conversation.length ||
-      (lk.conversation.length === existing.conversation.length &&
-        lk.triggeredAt >= existing.triggeredAt)
+      (lk.conversation.length === existing.conversation.length && lk.triggeredAt >= existing.triggeredAt)
     if (pickNew) byId.set(lk.id, lk)
   }
   return lookupIdsNewestFirst([...byId.values()]).map((id) => byId.get(id)!)

@@ -58,9 +58,7 @@ export function sanitizeHistoryDetail(raw: string): string {
 }
 
 /** Strip JSON-unsafe chars from session fields before push (body included). */
-export function sanitizeSessionForSync<T extends { title?: string; notes?: string; tags?: string[] }>(
-  s: T,
-): T {
+export function sanitizeSessionForSync<T extends { title?: string; notes?: string; tags?: string[] }>(s: T): T {
   return {
     ...s,
     title: s.title != null ? stripJsonUnsafe(sanitizeMetadataText(s.title, 200)) : s.title,

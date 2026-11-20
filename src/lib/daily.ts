@@ -7,7 +7,10 @@
 export const DAILY_EPOCH = '2026-11-01'
 /** The first published puzzle of each NYT daily, which is as far back as its archive goes. */
 export const NYT_FIRST_DAY = {
-  fivefold: '2021-06-19', bee: '2018-05-06', mini: '2014-08-21', connections: '2023-06-12',
+  fivefold: '2021-06-19',
+  bee: '2018-05-06',
+  mini: '2014-08-21',
+  connections: '2023-06-12',
 } as const
 export type NytGame = keyof typeof NYT_FIRST_DAY
 /** The earliest day any daily game has a puzzle. */
@@ -30,10 +33,15 @@ export function firstDay(game: string): string {
 }
 
 const pacificDate = new Intl.DateTimeFormat('en-CA', {
-  timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit', day: '2-digit',
+  timeZone: 'America/Los_Angeles',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
 })
 const pacificHour = new Intl.DateTimeFormat('en-US', {
-  timeZone: 'America/Los_Angeles', hour: '2-digit', hourCycle: 'h23',
+  timeZone: 'America/Los_Angeles',
+  hour: '2-digit',
+  hourCycle: 'h23',
 })
 
 /**

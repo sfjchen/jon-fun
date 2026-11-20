@@ -20,8 +20,7 @@ function rowToSession(r: {
   started_at: string
   updated_at: string
 }): NoteSession {
-  const meta =
-    r.metadata && typeof r.metadata === 'object' ? (r.metadata as NoteSession['metadata']) : undefined
+  const meta = r.metadata && typeof r.metadata === 'object' ? (r.metadata as NoteSession['metadata']) : undefined
   return {
     id: r.session_id,
     title: r.title ?? '',
@@ -30,9 +29,7 @@ function rowToSession(r: {
     ...(meta ? { metadata: meta } : {}),
     lookups: Array.isArray(r.lookups) ? (r.lookups as NoteSession['lookups']) : [],
     screenshots:
-      r.screenshots && typeof r.screenshots === 'object'
-        ? (r.screenshots as NoteSession['screenshots'])
-        : {},
+      r.screenshots && typeof r.screenshots === 'object' ? (r.screenshots as NoteSession['screenshots']) : {},
     startedAt: r.started_at,
     updatedAt: r.updated_at ?? r.started_at,
   }

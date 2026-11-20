@@ -40,11 +40,7 @@ export function deleteSourceLocal(id: string): void {
   saveSourcesLocal(loadSourcesLocal().filter((s) => s.id !== id))
 }
 
-export function formatSourcesForPrompt(
-  sources: NoteSource[],
-  query: string,
-  domainTagHints?: Set<string>,
-): string {
+export function formatSourcesForPrompt(sources: NoteSource[], query: string, domainTagHints?: Set<string>): string {
   const needle = query.toLowerCase()
   const ranked = sources
     .map((s) => {
@@ -63,9 +59,7 @@ export function formatSourcesForPrompt(
     .sort((a, b) => b.score - a.score)
     .slice(0, 4)
 
-  return ranked
-    .map(({ s }) => `[${s.title}]\n${s.content.slice(0, 1500)}`)
-    .join('\n\n')
+  return ranked.map(({ s }) => `[${s.title}]\n${s.content.slice(0, 1500)}`).join('\n\n')
 }
 
 export function genSourceId(): string {

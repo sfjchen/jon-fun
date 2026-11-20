@@ -82,8 +82,7 @@ export default function NotesSplitView({
 
   const onDrop = useCallback(
     (e: React.DragEvent, side: 'left' | 'right') => {
-      const sessionId =
-        e.dataTransfer.getData(NOTE_SESSION_DRAG) || e.dataTransfer.getData('text/plain')
+      const sessionId = e.dataTransfer.getData(NOTE_SESSION_DRAG) || e.dataTransfer.getData('text/plain')
       if (!sessionId) return
       e.preventDefault()
       setVaultDrag(false)
@@ -135,16 +134,14 @@ export default function NotesSplitView({
         }}
         onDrop={(e) => onDrop(e, side)}
       >
-        <span className="notes-split-drop-label">
-          {side === 'left' ? 'Open in left pane' : 'Open in right pane'}
-        </span>
+        <span className="notes-split-drop-label">{side === 'left' ? 'Open in left pane' : 'Open in right pane'}</span>
       </div>
     ) : null
 
   if (!split || !secondarySession) {
     return (
       <div
-        className={`notes-split-root notes-split-single relative flex min-h-0 flex-1 flex-col${vaultDrag ? ' notes-split-dragging' : ''}`}
+        className={`notes-split-root notes-split-single relative flex min-h-0 flex-1 flex-col${vaultDrag ? 'notes-split-dragging' : ''}`}
         data-testid="notes-split-root"
         data-split="false"
         onDragEnter={onDragEnterRoot}
@@ -152,7 +149,7 @@ export default function NotesSplitView({
         onDragEnd={onDragEnd}
       >
         <div
-          className={`notes-split-single-zones absolute inset-0 z-20 flex${vaultDrag ? ' notes-split-single-zones-active' : ''}`}
+          className={`notes-split-single-zones absolute inset-0 z-20 flex${vaultDrag ? 'notes-split-single-zones-active' : ''}`}
         >
           <div
             className={`notes-split-drop-half ${vaultDrag && hoverSide === 'left' ? 'notes-split-drop-half-active' : ''}`}
@@ -194,7 +191,7 @@ export default function NotesSplitView({
 
   return (
     <div
-      className={`notes-split-root notes-split-dual relative flex min-h-0 flex-1${vaultDrag ? ' notes-split-dragging' : ''}`}
+      className={`notes-split-root notes-split-dual relative flex min-h-0 flex-1${vaultDrag ? 'notes-split-dragging' : ''}`}
       data-testid="notes-split-root"
       data-split="true"
       onDragEnter={onDragEnterRoot}

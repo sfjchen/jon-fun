@@ -16,13 +16,24 @@ import TriplesRoomPlay from '@/components/triples/TriplesRoom'
  * Opens on With friends when the link carries a room PIN, otherwise on Solo.
  */
 export default function Triples({ initialPin }: { initialPin: string }) {
-  const [chosenMode,setMode]=useState<'solo'|'friends'|null>(initialPin?'friends':null)
-  const savedMode=useSyncExternalStore(()=>()=>{},()=>{try{return sessionStorage.getItem('triples_session')?'friends':'solo'}catch{return 'solo'}},()=> 'solo')
-  const mode=chosenMode??savedMode
+  const [chosenMode, setMode] = useState<'solo' | 'friends' | null>(initialPin ? 'friends' : null)
+  const savedMode = useSyncExternalStore(
+    () => () => {},
+    () => {
+      try {
+        return sessionStorage.getItem('triples_session') ? 'friends' : 'solo'
+      } catch {
+        return 'solo'
+      }
+    },
+    () => 'solo',
+  )
+  const mode = chosenMode ?? savedMode
   return (
     <div className="mx-auto w-full max-w-xl space-y-3 select-none" style={{ touchAction: 'manipulation' }}>
       <header className="flex items-center gap-1 border-b pb-2" style={{ borderColor: 'var(--ink-border)' }}>
-        <HomeLink className="h-10 w-10 justify-center"/><h1 className="mr-auto font-lora text-xl font-bold md:text-2xl">SET · full deck</h1>
+        <HomeLink className="h-10 w-10 justify-center" />
+        <h1 className="mr-auto font-lora text-xl font-bold md:text-2xl">SET · full deck</h1>
         <Info>
           <ul className="list-disc space-y-1 pl-4">
             <li>Each card has 4 features: count (1-3), shape, color and fill.</li>
@@ -36,8 +47,15 @@ export default function Triples({ initialPin }: { initialPin: string }) {
           </ul>
         </Info>
       </header>
-      <div className="flex items-center justify-between text-sm"><Link href="/games/set">← Daily puzzle</Link><PlayerName/></div>
-      <div className="mx-auto flex w-fit rounded-full border p-0.5 text-sm" role="tablist" style={{ borderColor: 'var(--ink-border)' }}>
+      <div className="flex items-center justify-between text-sm">
+        <Link href="/games/set">← Daily puzzle</Link>
+        <PlayerName />
+      </div>
+      <div
+        className="mx-auto flex w-fit rounded-full border p-0.5 text-sm"
+        role="tablist"
+        style={{ borderColor: 'var(--ink-border)' }}
+      >
         {(['solo', 'friends'] as const).map((m) => (
           <button
             key={m}

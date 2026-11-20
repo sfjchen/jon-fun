@@ -29,8 +29,10 @@ export function getReaderCommentDisplayName(): string {
 export function setReaderCommentDisplayName(name: string): void {
   if (typeof window === 'undefined') return
   const t = name.trim().slice(0, 64)
-  if (t) { window.localStorage.setItem(NAME_KEY, t); saveDevicePlayer({ name: t, group: getDevicePlayer()?.group ?? 'public' }) }
-  else window.localStorage.removeItem(NAME_KEY)
+  if (t) {
+    window.localStorage.setItem(NAME_KEY, t)
+    saveDevicePlayer({ name: t, group: getDevicePlayer()?.group ?? 'public' })
+  } else window.localStorage.removeItem(NAME_KEY)
 }
 
 export function getReaderCommentIdentity(): ReaderCommentIdentity {

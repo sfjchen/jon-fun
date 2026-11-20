@@ -19,10 +19,7 @@ const generateSolvableNumbers = (): number[] => {
   return numbers
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ pin: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ pin: string }> }) {
   try {
     const { pin } = await params
 
@@ -30,11 +27,7 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid room PIN' }, { status: 400 })
     }
 
-    const { data: room, error: roomError } = await supabase
-      .from('game24_rooms')
-      .select('*')
-      .eq('pin', pin)
-      .single()
+    const { data: room, error: roomError } = await supabase.from('game24_rooms').select('*').eq('pin', pin).single()
 
     if (roomError || !room) {
       return NextResponse.json({ error: 'Room not found' }, { status: 404 })
@@ -90,9 +83,7 @@ export async function GET(
         if (!byPlayer[row.player_id]) byPlayer[row.player_id] = new Set()
         byPlayer[row.player_id]!.add(row.round_number)
       })
-      playerCorrectCounts = Object.fromEntries(
-        Object.entries(byPlayer).map(([pid, rounds]) => [pid, rounds.size])
-      )
+      playerCorrectCounts = Object.fromEntries(Object.entries(byPlayer).map(([pid, rounds]) => [pid, rounds.size]))
     }
 
     return NextResponse.json({
@@ -107,10 +98,7 @@ export async function GET(
   }
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ pin: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ pin: string }> }) {
   try {
     const { pin } = await params
     const body = await request.json()
@@ -120,11 +108,7 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid room PIN' }, { status: 400 })
     }
 
-    const { data: room, error: roomError } = await supabase
-      .from('game24_rooms')
-      .select('*')
-      .eq('pin', pin)
-      .single()
+    const { data: room, error: roomError } = await supabase.from('game24_rooms').select('*').eq('pin', pin).single()
 
     if (roomError || !room) {
       return NextResponse.json({ error: 'Room not found' }, { status: 404 })
@@ -144,7 +128,10 @@ export async function POST(
           .eq('room_pin', pin)
 
         if ((count ?? 0) >= (room.max_players ?? GAME24_MAX_PLAYERS)) {
-          return NextResponse.json({ error: `Room is full (max ${room.max_players ?? GAME24_MAX_PLAYERS} players)` }, { status: 400 })
+          return NextResponse.json(
+            { error: `Room is full (max ${room.max_players ?? GAME24_MAX_PLAYERS} players)` },
+            { status: 400 },
+          )
         }
 
         const playerId = uuidv4()
@@ -192,10 +179,7 @@ export async function POST(
           })
         }
 
-        const { data: players } = await supabase
-          .from('game24_players')
-          .select('*')
-          .eq('room_pin', pin)
+        const { data: players } = await supabase.from('game24_players').select('*').eq('room_pin', pin)
 
         if (!players || players.length < 1) {
           return NextResponse.json({ error: 'Need at least 1 player to start' }, { status: 400 })
@@ -211,18 +195,16 @@ export async function POST(
         const numbers = generateSolvableNumbers()
         const roundStart = now
 
-        const { error: roundError } = await supabase
-          .from('game24_rounds')
-          .upsert(
-            {
-              id: uuidv4(),
-              room_pin: pin,
-              round_number: 1,
-              numbers,
-              started_at: roundStart,
-            },
-            { onConflict: 'room_pin,round_number' }
-          )
+        const { error: roundError } = await supabase.from('game24_rounds').upsert(
+          {
+            id: uuidv4(),
+            room_pin: pin,
+            round_number: 1,
+            numbers,
+            started_at: roundStart,
+          },
+          { onConflict: 'room_pin,round_number' },
+        )
 
         const { error: roomUpdateError } = await supabase
           .from('game24_rooms')
@@ -305,4 +287,3 @@ export async function POST(
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-

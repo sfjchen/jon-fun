@@ -7,9 +7,17 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 export const OWNER_SYNC_KEY = 'sfjc'
 export const SYNC_DEVICES_TABLE = 'sync_devices'
-export const OWNER_ONLY = 'Only the site owner\'s sync key can do this. Everything else still works locally.'
+export const OWNER_ONLY = "Only the site owner's sync key can do this. Everything else still works locally."
 
-export type SyncDevice = { device_id: string; sync_key: string | null; label: string; last_seen: string; player_name?: string; player_group?: string; device_kind?: string }
+export type SyncDevice = {
+  device_id: string
+  sync_key: string | null
+  label: string
+  last_seen: string
+  player_name?: string
+  player_group?: string
+  device_kind?: string
+}
 
 /**
  * Maps the retired owner password (still in old browsers' storage) to the owner key, so those browsers land in

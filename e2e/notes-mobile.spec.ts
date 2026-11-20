@@ -7,7 +7,7 @@ import {
   waitForNotesEditor,
   waitForNotesTrigger,
   typeInNotesEditor,
-  } from './helpers/notes-mock'
+} from './helpers/notes-mock'
 
 /** True mobile viewport — do not inherit desktop 1280px from other describe blocks. */
 const MOBILE = { width: 390, height: 844 }
@@ -78,5 +78,4 @@ test.describe('Notes mobile', () => {
     await expect(page.getByTestId('notes-side-panel')).toBeVisible({ timeout: 8000 })
     await expect(page.getByTestId('notes-side-panel')).toContainText('E2E mock answer', { timeout: 15_000 })
   })
-
 })

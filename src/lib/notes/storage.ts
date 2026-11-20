@@ -76,7 +76,6 @@ function runSyncExclusive<T>(fn: () => Promise<T>): Promise<T> {
   return run
 }
 
-
 export function createEmptySession(title?: string, folderId?: string | null): NoteSession {
   const now = new Date().toISOString()
   const defaultTitle = title ?? ''

@@ -98,7 +98,11 @@ export function loadChapterAnnotations(publicationId: string, chapterId: string)
   }
 }
 
-export function saveChapterAnnotations(publicationId: string, chapterId: string, bundle: ChapterAnnotationBundle): void {
+export function saveChapterAnnotations(
+  publicationId: string,
+  chapterId: string,
+  bundle: ChapterAnnotationBundle,
+): void {
   if (typeof window === 'undefined') return
   try {
     window.localStorage.setItem(storageKey(publicationId, chapterId), JSON.stringify(bundle))
@@ -138,7 +142,11 @@ export function resolveQuoteInParagraph(text: string, quote: TextQuoteSelector):
       const pfxEnd = idx
       const pfxStart = Math.max(0, pfxEnd - quote.prefix.length)
       const before = n.slice(pfxStart, pfxEnd)
-      if (before && !quote.prefix.endsWith(before) && !before.endsWith(quote.prefix.slice(-Math.min(8, quote.prefix.length)))) {
+      if (
+        before &&
+        !quote.prefix.endsWith(before) &&
+        !before.endsWith(quote.prefix.slice(-Math.min(8, quote.prefix.length)))
+      ) {
         /* allow weak match: still use idx */
       }
     }
@@ -205,7 +213,14 @@ export function newPenStroke(
  */
 export function mergeApiBlockComments(
   bundle: ChapterAnnotationBundle,
-  rows: { id: string; blockId: string; body: string; authorDisplay: string; authorFingerprint: string; createdAt: string }[],
+  rows: {
+    id: string
+    blockId: string
+    body: string
+    authorDisplay: string
+    authorFingerprint: string
+    createdAt: string
+  }[],
 ): ChapterAnnotationBundle {
   const seen = new Set(bundle.threads.map((t) => t.sourceApiId).filter(Boolean) as string[])
   const next = { ...bundle, threads: [...bundle.threads] }

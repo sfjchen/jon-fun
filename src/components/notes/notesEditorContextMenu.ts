@@ -2,11 +2,7 @@
 
 import type { Editor } from '@tiptap/core'
 import type { TriggerType } from '@/lib/notes/types'
-import {
-  lineIndexAtCursor,
-  plainTextFromEditor,
-  selectedTextFromEditor,
-} from '@/lib/notes/tiptap/editorCoords'
+import { lineIndexAtCursor, plainTextFromEditor, selectedTextFromEditor } from '@/lib/notes/tiptap/editorCoords'
 import { isArchivedTodoLine, parseActiveTodoLine } from '@/lib/notes/todoLines'
 import type { NotesMenuItem } from './NotesActionUi'
 

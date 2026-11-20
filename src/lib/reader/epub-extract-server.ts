@@ -91,9 +91,7 @@ function leafElements(container: HtmlElement, selector: string): HtmlElement[] {
  * and swallows the rest of the document, so `<body>` never parses — strip before parse.
  */
 function preNormalizeXhtmlForParse(xhtml: string): string {
-  return xhtml
-    .replace(/<script\b[\s\S]*?\/>/gi, '')
-    .replace(/<script\b[\s\S]*?<\/script>/gi, '')
+  return xhtml.replace(/<script\b[\s\S]*?\/>/gi, '').replace(/<script\b[\s\S]*?<\/script>/gi, '')
 }
 
 /** Collapse horizontal space per line; keep `<br>` as newlines and preserve blank lines (structuredText). */
@@ -251,10 +249,7 @@ function inferSpineChapterTitle(
   const docLower = doc.toLowerCase()
   const subtitle = pkg.includes(':') ? pkg.split(':').pop()!.trim() : ''
   const isGenericDoc =
-    !doc ||
-    docLower === pkg ||
-    /^section\s+\d+$/i.test(doc) ||
-    (subtitle.length >= 4 && docLower === subtitle)
+    !doc || docLower === pkg || /^section\s+\d+$/i.test(doc) || (subtitle.length >= 4 && docLower === subtitle)
 
   if (!paras.length) {
     return doc || `Section ${sectionIndex + 1}`
@@ -274,9 +269,10 @@ function inferSpineChapterTitle(
     if (!/^\d{1,3}$/.test(p0.trim())) return p0.slice(0, 200)
   }
 
-  const combined = /^(CHAPTER\s+(?:ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN|IX|IV|I{1,3}V?|VI{0,3}|XI{0,3}|\d+))\s*[-–—]\s*(.+)$/i.exec(
-    p0,
-  )
+  const combined =
+    /^(CHAPTER\s+(?:ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN|IX|IV|I{1,3}V?|VI{0,3}|XI{0,3}|\d+))\s*[-–—]\s*(.+)$/i.exec(
+      p0,
+    )
   if (combined) {
     return `${combined[1]} · ${combined[2]?.trim()}`.slice(0, 200).trim()
   }
@@ -480,7 +476,9 @@ export function extractEpubFromBuffer(buffer: ArrayBuffer): {
       `Merged ${mergedPairs} Calibre-style frame/story spine pair(s) (part-N + chap-N HTML files) into single sections.`,
     )
   }
-  notes.push(`Imported ${chapters.length} spine section(s) from EPUB.${skipped > 0 ? ` Skipped ${skipped} non-text or non-linear item(s).` : ''}`)
+  notes.push(
+    `Imported ${chapters.length} spine section(s) from EPUB.${skipped > 0 ? ` Skipped ${skipped} non-text or non-linear item(s).` : ''}`,
+  )
   if (packageTitle) notes.unshift(`Package title: ${packageTitle}`)
 
   return { packageTitle: packageTitle || 'Untitled EPUB', chapters, notes }

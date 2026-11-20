@@ -2,8 +2,7 @@ import { test, expect } from '@playwright/test'
 import { domClickTestId, mocStartFromIntro, mocStartRound } from './helpers/moc'
 
 /** Short timers + test selectors; see `MOC_E2E_QUERY` in `mental-obstacle-course.ts`. */
-const MOC_QUICK = (path: string) =>
-  `${path}${path.includes('?') ? '&' : '?'}mocE2e=1`
+const MOC_QUICK = (path: string) => `${path}${path.includes('?') ? '&' : '?'}mocE2e=1`
 
 const isChromiumDesktop = (projectName: string) => projectName === 'chromium'
 const isMobileProject = (projectName: string) => projectName === 'Mobile Chrome'
@@ -176,5 +175,4 @@ test.describe('Mental Obstacle Course', () => {
     await page.getByTestId('moc-run-again').click()
     await expect(page.getByTestId('moc-intro-continue')).toBeVisible()
   })
-
 })

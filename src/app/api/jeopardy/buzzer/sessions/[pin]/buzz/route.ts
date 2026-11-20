@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import {
-  findSessionByPin,
-  getPlayerOffsetMs,
-  recordBuzz,
-  rowsToBuzzes,
-} from '@/lib/jeopardy-buzzer-server'
+import { findSessionByPin, getPlayerOffsetMs, recordBuzz, rowsToBuzzes } from '@/lib/jeopardy-buzzer-server'
 import { isValidBuzzerPin } from '@/lib/jeopardy-buzzer'
 
 export const dynamic = 'force-dynamic'
@@ -30,7 +25,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pin
   if (!isValidBuzzerPin(pin)) return NextResponse.json({ error: 'Invalid PIN' }, { status: 400 })
 
   let body: { playerId?: unknown; name?: unknown; color?: unknown; clientPressAt?: unknown; clockOffsetMs?: unknown }
-  try { body = await req.json() } catch { return NextResponse.json({ error: 'Invalid body' }, { status: 400 }) }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid body' }, { status: 400 })
+  }
   const playerId = typeof body.playerId === 'string' ? body.playerId : ''
   if (!UUID_RE.test(playerId)) return NextResponse.json({ error: 'Invalid playerId' }, { status: 400 })
 
@@ -63,10 +62,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pin
     })
 
     if (result.rejectReason) {
-      return NextResponse.json(
-        { rejected: true, reason: result.rejectReason, session },
-        { status: 200 },
-      )
+      return NextResponse.json({ rejected: true, reason: result.rejectReason, session }, { status: 200 })
     }
     return NextResponse.json({
       session,

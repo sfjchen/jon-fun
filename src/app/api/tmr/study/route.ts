@@ -6,7 +6,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { userId, session } = body as {
       userId: string
-      session: { start: string; end: string; durationMinutes: number; cuesPlayed: number; cueIntervalSeconds: number; interrupted?: boolean }
+      session: {
+        start: string
+        end: string
+        durationMinutes: number
+        cuesPlayed: number
+        cueIntervalSeconds: number
+        interrupted?: boolean
+      }
     }
     if (!userId || !session?.start || !session?.end) {
       return NextResponse.json({ error: 'userId and session (start, end) required' }, { status: 400 })

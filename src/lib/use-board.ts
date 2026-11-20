@@ -29,38 +29,56 @@ async function read(key: string, query: Record<string, string | number>, signal:
  * same refresh.
  */
 export function useBoard(group: string, days: number, day: string, live = true) {
-  const histKey = `${group}:${days}`, dayKey = `${group}:${day}`
+  const histKey = `${group}:${days}`,
+    dayKey = `${group}:${day}`
   const [hist, setHist] = useState<Loaded | null>(null)
   const [fresh, setFresh] = useState<Loaded | null>(null)
   const [error, setError] = useState('')
   useEffect(() => {
     const ctl = new AbortController()
-    let ok = false, busy = false
+    let ok = false,
+      busy = false
     const load = () => {
       busy = true
-      return read(histKey, { group, days }, ctl.signal).then((next) => {
-        ok = true
-        if ((cache.get(histKey)?.at ?? 0) > next.at) return
-        cache.set(histKey, next)
-        setHist(next)
-        setError('')
-      }).catch((e: unknown) => {
-        if (!ctl.signal.aborted) setError(e instanceof Error ? e.message : 'Could not load scores')
-      }).finally(() => { busy = false })
+      return read(histKey, { group, days }, ctl.signal)
+        .then((next) => {
+          ok = true
+          if ((cache.get(histKey)?.at ?? 0) > next.at) return
+          cache.set(histKey, next)
+          setHist(next)
+          setError('')
+        })
+        .catch((e: unknown) => {
+          if (!ctl.signal.aborted) setError(e instanceof Error ? e.message : 'Could not load scores')
+        })
+        .finally(() => {
+          busy = false
+        })
     }
     void load()
-    const stop = onLiveRefresh(() => { if (!ok && !busy) void load() })
+    const stop = onLiveRefresh(() => {
+      if (!ok && !busy) void load()
+    })
     window.addEventListener(RESULTS_CHANGED, load)
-    return () => { ctl.abort(); stop(); window.removeEventListener(RESULTS_CHANGED, load) }
+    return () => {
+      ctl.abort()
+      stop()
+      window.removeEventListener(RESULTS_CHANGED, load)
+    }
   }, [group, days, histKey])
   useEffect(() => {
     if (!live) return
     const ctl = new AbortController()
-    const load = () => void read(dayKey, { group, day }, ctl.signal)
-      .then((next) => setFresh((p) => (p?.key === dayKey && p.at > next.at ? p : next))).catch(() => {})
+    const load = () =>
+      void read(dayKey, { group, day }, ctl.signal)
+        .then((next) => setFresh((p) => (p?.key === dayKey && p.at > next.at ? p : next)))
+        .catch(() => {})
     load()
     const stop = onLiveRefresh(load)
-    return () => { ctl.abort(); stop() }
+    return () => {
+      ctl.abort()
+      stop()
+    }
   }, [group, day, dayKey, live])
   const h = hist?.key === histKey ? hist : cache.get(histKey)
   // A day read that started before the history did may lack a result this device just posted, so the history wins.

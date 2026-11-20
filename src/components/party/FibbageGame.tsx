@@ -87,15 +87,21 @@ export default function FibbageGame() {
 
   const nameOf = (id: string) => players.find((p) => p.player_id === id)?.name ?? id.slice(0, 6)
   const sortedPlayers = useMemo(() => [...players].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)), [players])
-  const cardStyle = { backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' } as const
+  const cardStyle = {
+    backgroundColor: 'var(--ink-paper)',
+    borderColor: 'var(--ink-border)',
+    color: 'var(--ink-text)',
+  } as const
 
   const myLie = currentRound ? lies.find((l) => l.round_id === currentRound.id && l.player_id === playerId) : null
   const myPick = currentRound ? picks.find((p) => p.round_id === currentRound.id && p.player_id === playerId) : null
 
   return (
-    <div className={`max-w-6xl mx-auto px-4 w-full ${notebookLayout ? 'py-4 lg:py-6' : 'py-10'}`}>
-      <h1 className="font-lora text-2xl font-semibold mb-2" style={{ color: 'var(--ink-text)' }}>Fib It</h1>
-      <p className="text-sm mb-6" style={{ color: 'var(--ink-muted)' }}>
+    <div className={`mx-auto w-full max-w-6xl px-4 ${notebookLayout ? 'py-4 lg:py-6' : 'py-10'}`}>
+      <h1 className="mb-2 font-lora text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>
+        Fib It
+      </h1>
+      <p className="mb-6 text-sm" style={{ color: 'var(--ink-muted)' }}>
         Bluff-the-truth trivia: submit lies, pick the real answer, likes for flair. 2–8 players.
       </p>
 
@@ -115,59 +121,93 @@ export default function FibbageGame() {
 
       {room && (
         <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[260px_1fr]">
-          <aside className="rounded-lg border p-4 h-fit shadow-sm" style={cardStyle}>
-            <div className="text-xl font-bold tracking-widest mb-2" data-testid="party-room-pin">
+          <aside className="h-fit rounded-lg border p-4 shadow-sm" style={cardStyle}>
+            <div className="mb-2 text-xl font-bold tracking-widest" data-testid="party-room-pin">
               {room.pin}
             </div>
-            <div className="text-xs mb-3" style={{ color: 'var(--ink-muted)' }}>{phase} · R{room.round_index}</div>
+            <div className="mb-3 text-xs" style={{ color: 'var(--ink-muted)' }}>
+              {phase} · R{room.round_index}
+            </div>
             {sortedPlayers.map((p) => (
-              <div key={p.player_id} className="flex justify-between text-sm py-1 border-b" style={{ borderColor: 'var(--ink-border)' }}>
+              <div
+                key={p.player_id}
+                className="flex justify-between border-b py-1 text-sm"
+                style={{ borderColor: 'var(--ink-border)' }}
+              >
                 <span>{p.name}</span>
                 <span className="font-mono">{p.score}</span>
               </div>
             ))}
             {phase === 'lobby' && isHost && (
-              <button type="button" data-hotkey="Enter" onClick={startGame} disabled={players.length < 2} className="mt-4 w-full py-2 rounded text-white disabled:opacity-50" style={{ backgroundColor: 'var(--ink-accent)' }}>Start</button>
+              <button
+                type="button"
+                data-hotkey="Enter"
+                onClick={startGame}
+                disabled={players.length < 2}
+                className="mt-4 w-full rounded py-2 text-white disabled:opacity-50"
+                style={{ backgroundColor: 'var(--ink-accent)' }}
+              >
+                Start
+              </button>
             )}
             {phase === 'fibbage_scores' && isHost && (
-              <button type="button" data-hotkey="Enter" onClick={() => postFib({ action: 'advance' })} className="mt-4 w-full py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>Next</button>
+              <button
+                type="button"
+                data-hotkey="Enter"
+                onClick={() => postFib({ action: 'advance' })}
+                className="mt-4 w-full rounded py-2 text-white"
+                style={{ backgroundColor: 'var(--ink-accent)' }}
+              >
+                Next
+              </button>
             )}
             {phase === 'finished' && isHost && (
-              <button type="button" data-hotkey="Enter" onClick={() => void playAgain()} className="mt-4 w-full py-2 rounded text-white" style={{ backgroundColor: 'var(--ink-accent)' }}>Play again</button>
+              <button
+                type="button"
+                data-hotkey="Enter"
+                onClick={() => void playAgain()}
+                className="mt-4 w-full rounded py-2 text-white"
+                style={{ backgroundColor: 'var(--ink-accent)' }}
+              >
+                Play again
+              </button>
             )}
           </aside>
-          <main className="rounded-lg border p-4 shadow-sm space-y-4" style={cardStyle}>
+          <main className="space-y-4 rounded-lg border p-4 shadow-sm" style={cardStyle}>
             {error && (
-              <div className="text-red-600 text-sm" data-testid="party-error">
+              <div className="text-sm text-red-600" data-testid="party-error">
                 {error}
               </div>
             )}
             {currentRound && phase === 'fibbage_lie' && (
               <div>
-                <div className="text-xs mb-1" style={{ color: 'var(--ink-muted)' }}>
+                <div className="mb-1 text-xs" style={{ color: 'var(--ink-muted)' }}>
                   {currentRound.category} · picker:{' '}
                   {currentRound.picker_player_id ? nameOf(currentRound.picker_player_id) : '—'}
                 </div>
-                <p className="font-medium mb-3">{currentRound.prompt_template.replace('___', '_____')}</p>
+                <p className="mb-3 font-medium">{currentRound.prompt_template.replace('___', '_____')}</p>
                 {myLie ? (
                   <p className="text-sm text-green-700">Lie submitted</p>
                 ) : (
                   <div className="space-y-2">
-                    <LieInput onSubmit={(text) => postFib({ action: 'submitLie', text })} onSuggest={() => postFib({ action: 'submitLie', fromSuggestion: true })} />
+                    <LieInput
+                      onSubmit={(text) => postFib({ action: 'submitLie', text })}
+                      onSuggest={() => postFib({ action: 'submitLie', fromSuggestion: true })}
+                    />
                   </div>
                 )}
               </div>
             )}
             {currentRound && phase === 'fibbage_pick' && currentRound.option_order && (
               <div>
-                <p className="font-medium mb-2">Pick the truth</p>
+                <p className="mb-2 font-medium">Pick the truth</p>
                 <div className="space-y-2">
                   {currentRound.option_order.map((opt, i) => (
                     <button
                       key={i}
                       type="button"
                       disabled={!!myPick}
-                      className="w-full text-left px-3 py-2 rounded border disabled:opacity-60"
+                      className="w-full rounded border px-3 py-2 text-left disabled:opacity-60"
                       style={{ borderColor: 'var(--ink-border)' }}
                       data-hotkey={String(i + 1)}
                       onClick={() => postFib({ action: 'submitPick', pickedIndex: i })}
@@ -176,18 +216,30 @@ export default function FibbageGame() {
                     </button>
                   ))}
                 </div>
-                <p className="text-xs mt-2" style={{ color: 'var(--ink-muted)' }}>Like a player&apos;s lie (optional, during pick):</p>
-                <div className="flex flex-wrap gap-1 mt-1">
+                <p className="mt-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
+                  Like a player&apos;s lie (optional, during pick):
+                </p>
+                <div className="mt-1 flex flex-wrap gap-1">
                   {players.map((p) => (
-                    <button key={p.player_id} type="button" className="text-xs px-2 py-1 border rounded" style={{ borderColor: 'var(--ink-border)' }} onClick={() => postFib({ action: 'submitLike', targetPlayerId: p.player_id })}>
+                    <button
+                      key={p.player_id}
+                      type="button"
+                      className="rounded border px-2 py-1 text-xs"
+                      style={{ borderColor: 'var(--ink-border)' }}
+                      onClick={() => postFib({ action: 'submitLike', targetPlayerId: p.player_id })}
+                    >
                       👍 {p.name}
                     </button>
                   ))}
                 </div>
-                {myPick && <p className="text-sm text-green-700 mt-2">Pick locked</p>}
+                {myPick && <p className="mt-2 text-sm text-green-700">Pick locked</p>}
               </div>
             )}
-            {phase === 'fibbage_scores' && <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>Round scores — host Next.</p>}
+            {phase === 'fibbage_scores' && (
+              <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                Round scores — host Next.
+              </p>
+            )}
             {phase === 'finished' && <p className="font-semibold">Done!</p>}
           </main>
         </div>
@@ -201,7 +253,7 @@ function LieInput({ onSubmit, onSuggest }: { onSubmit: (t: string) => void; onSu
   return (
     <div className="space-y-2">
       <form
-        className="flex gap-2 flex-wrap"
+        className="flex flex-wrap gap-2"
         onSubmit={(e) => {
           e.preventDefault()
           if (!v.trim()) return
@@ -209,10 +261,25 @@ function LieInput({ onSubmit, onSuggest }: { onSubmit: (t: string) => void; onSu
           setV('')
         }}
       >
-        <input value={v} onChange={(e) => setV(e.target.value)} maxLength={280} className="flex-1 min-w-[180px] rounded border px-2 py-1" style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }} placeholder="Your lie" />
-        <button type="submit" className="px-3 py-1 rounded text-white text-sm" style={{ backgroundColor: 'var(--ink-accent)' }}>Submit</button>
+        <input
+          value={v}
+          onChange={(e) => setV(e.target.value)}
+          maxLength={280}
+          className="min-w-[180px] flex-1 rounded border px-2 py-1"
+          style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)' }}
+          placeholder="Your lie"
+        />
+        <button
+          type="submit"
+          className="rounded px-3 py-1 text-sm text-white"
+          style={{ backgroundColor: 'var(--ink-accent)' }}
+        >
+          Submit
+        </button>
       </form>
-      <button type="button" onClick={onSuggest} className="text-sm underline" style={{ color: 'var(--ink-accent)' }}>Lie for me</button>
+      <button type="button" onClick={onSuggest} className="text-sm underline" style={{ color: 'var(--ink-accent)' }}>
+        Lie for me
+      </button>
     </div>
   )
 }

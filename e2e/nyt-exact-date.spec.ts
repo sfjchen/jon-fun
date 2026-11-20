@@ -3,50 +3,97 @@ import { mockSyncIdentity } from './helpers/sync-identity-mock'
 const date = '2026-11-19'
 test('Wordle restores only the NYT answer run and exposes full publication history', async ({ page }) => {
   await mockSyncIdentity(page)
-  await page.route('**/api/results**',r=>r.fulfill({json:{rows:[]}}))
-  await page.route('**/api/daily/fivefold?**',r=>r.fulfill({json:{day:date,sourceDate:date,puzzle:{date,answer:'clout'}}}))
-  await page.addInitScript(() => localStorage.setItem('fivefold:v1:2026-11-19', JSON.stringify({guesses:['cigar'],elapsedMs:1000,activeSince:null})))
+  await page.route('**/api/results**', (r) => r.fulfill({ json: { rows: [] } }))
+  await page.route('**/api/daily/fivefold?**', (r) =>
+    r.fulfill({ json: { day: date, sourceDate: date, puzzle: { date, answer: 'clout' } } }),
+  )
+  await page.addInitScript(() =>
+    localStorage.setItem(
+      'fivefold:v1:2026-11-19',
+      JSON.stringify({ guesses: ['cigar'], elapsedMs: 1000, activeSince: null }),
+    ),
+  )
   await page.goto(`/games/fivefold?d=${date}`)
   await expect(page.getByTestId('fivefold-play')).toBeVisible()
   await expect(page.locator('.fivefold-tile[data-mark="typed"]')).toHaveCount(0)
-  await expect(page.locator('input[type=date]')).toHaveAttribute('min','2021-06-19')
-  await page.keyboard.type('clout'); await page.keyboard.press('Enter')
+  await expect(page.locator('input[type=date]')).toHaveAttribute('min', '2021-06-19')
+  await page.keyboard.type('clout')
+  await page.keyboard.press('Enter')
   await expect(page.getByTestId('fivefold-result')).toBeVisible()
   await expect(page.locator('.fivefold-tile[data-mark="hit"]')).toHaveCount(5)
 })
 test('Spelling Bee plays the exact selected NYT hive, and never substitutes when unavailable', async ({ page }) => {
   await mockSyncIdentity(page)
-  await page.route('**/api/results**',r=>r.fulfill({json:{rows:[]}}))
-  await page.route('**/api/daily/bee?**',r=>new URL(r.request().url()).searchParams.get('d')===date ? r.fulfill({json:{day:date,sourceDate:date,puzzle:{date,id:'kcdelnu',center:'k',outer:['c','d','e','l','n','u'],answers:['clunked','knuckled','duck'],pangrams:['clunked','knuckled'],max:30}}}) : r.fulfill({status:503,json:{error:'The original NYT puzzle for this date is unavailable.'}}))
+  await page.route('**/api/results**', (r) => r.fulfill({ json: { rows: [] } }))
+  await page.route('**/api/daily/bee?**', (r) =>
+    new URL(r.request().url()).searchParams.get('d') === date
+      ? r.fulfill({
+          json: {
+            day: date,
+            sourceDate: date,
+            puzzle: {
+              date,
+              id: 'kcdelnu',
+              center: 'k',
+              outer: ['c', 'd', 'e', 'l', 'n', 'u'],
+              answers: ['clunked', 'knuckled', 'duck'],
+              pangrams: ['clunked', 'knuckled'],
+              max: 30,
+            },
+          },
+        })
+      : r.fulfill({ status: 503, json: { error: 'The original NYT puzzle for this date is unavailable.' } }),
+  )
   await page.goto(`/games/spelling-bee?d=${date}`)
-  await expect(page.getByRole('heading',{name:'Spelling Bee',exact:true})).toBeVisible()
-  await expect(page.locator('input[type=date]')).toHaveAttribute('min','2018-05-06')
-  await page.keyboard.type('duck'); await page.keyboard.press('Enter')
-  await expect(page.getByRole('link',{name:'duck',exact:true})).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Spelling Bee', exact: true })).toBeVisible()
+  await expect(page.locator('input[type=date]')).toHaveAttribute('min', '2018-05-06')
+  await page.keyboard.type('duck')
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('link', { name: 'duck', exact: true })).toBeVisible()
   await page.locator('input[type=date]').fill('2026-11-18')
-  await expect(page.getByRole('alert').filter({hasText:'original NYT puzzle'})).toContainText('original NYT puzzle')
-  await expect(page.getByRole('link',{name:'duck',exact:true})).toHaveCount(0)
+  await expect(page.getByRole('alert').filter({ hasText: 'original NYT puzzle' })).toContainText('original NYT puzzle')
+  await expect(page.getByRole('link', { name: 'duck', exact: true })).toHaveCount(0)
 })
 
-test('Anthropeum requires an explicit time and saves its three shared no-cost hints',async({page})=>{
- await mockSyncIdentity(page)
- await page.route('**/api/results**',r=>r.fulfill({json:{rows:[]}}))
- const artifact={id:1,title:'Test artifact',images:['/icon.png'],objectDate:'13th century',beginYear:1250,endYear:1300,culture:'Example',region:'Europe',mediumClean:'Silver',metUrl:'https://www.metmuseum.org',target:{lat:40,lon:10}}
- await page.route('**/api/daily/anthropeum?**',r=>r.fulfill({json:{day:date,sourceDate:date,puzzle:{date,artifacts:Array.from({length:10},(_,i)=>({...artifact,id:i+1}))}}}))
- await page.goto(`/games/anthropeum?d=${date}`)
- await page.getByRole('button',{name:'Play today’s game',exact:true}).click()
- await page.getByText('Precise coordinates and date',{exact:true}).click()
- await page.getByRole('spinbutton',{name:'Latitude',exact:true}).fill('40')
- await page.getByRole('spinbutton',{name:'Longitude',exact:true}).fill('10')
- await expect(page.getByRole('button',{name:'Lock in guess'})).toBeDisabled()
- await page.getByRole('spinbutton',{name:'Period start',exact:true}).fill('1250')
- await expect(page.getByRole('button',{name:'Lock in guess'})).toBeEnabled()
- await page.getByRole('button',{name:'Use a hint',exact:true}).click()
- const hints=page.getByRole('dialog',{name:'Artifact hints'})
- await hints.getByRole('button',{name:'Reveal',exact:true}).first().click()
- await expect(hints).toContainText('2 left today')
- await expect(hints).toContainText('1000 CE – 2000 CE')
- await page.getByRole('button',{name:'Close hints'}).click()
- await page.reload()
- await expect(page.getByText('2 of 3 left today',{exact:true})).toBeVisible()
+test('Anthropeum requires an explicit time and saves its three shared no-cost hints', async ({ page }) => {
+  await mockSyncIdentity(page)
+  await page.route('**/api/results**', (r) => r.fulfill({ json: { rows: [] } }))
+  const artifact = {
+    id: 1,
+    title: 'Test artifact',
+    images: ['/icon.png'],
+    objectDate: '13th century',
+    beginYear: 1250,
+    endYear: 1300,
+    culture: 'Example',
+    region: 'Europe',
+    mediumClean: 'Silver',
+    metUrl: 'https://www.metmuseum.org',
+    target: { lat: 40, lon: 10 },
+  }
+  await page.route('**/api/daily/anthropeum?**', (r) =>
+    r.fulfill({
+      json: {
+        day: date,
+        sourceDate: date,
+        puzzle: { date, artifacts: Array.from({ length: 10 }, (_, i) => ({ ...artifact, id: i + 1 })) },
+      },
+    }),
+  )
+  await page.goto(`/games/anthropeum?d=${date}`)
+  await page.getByRole('button', { name: 'Play today’s game', exact: true }).click()
+  await page.getByText('Precise coordinates and date', { exact: true }).click()
+  await page.getByRole('spinbutton', { name: 'Latitude', exact: true }).fill('40')
+  await page.getByRole('spinbutton', { name: 'Longitude', exact: true }).fill('10')
+  await expect(page.getByRole('button', { name: 'Lock in guess' })).toBeDisabled()
+  await page.getByRole('spinbutton', { name: 'Period start', exact: true }).fill('1250')
+  await expect(page.getByRole('button', { name: 'Lock in guess' })).toBeEnabled()
+  await page.getByRole('button', { name: 'Use a hint', exact: true }).click()
+  const hints = page.getByRole('dialog', { name: 'Artifact hints' })
+  await hints.getByRole('button', { name: 'Reveal', exact: true }).first().click()
+  await expect(hints).toContainText('2 left today')
+  await expect(hints).toContainText('1000 CE – 2000 CE')
+  await page.getByRole('button', { name: 'Close hints' }).click()
+  await page.reload()
+  await expect(page.getByText('2 of 3 left today', { exact: true })).toBeVisible()
 })

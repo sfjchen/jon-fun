@@ -3,8 +3,7 @@ import { gridToTableContent, looksLikeTabularText } from './tableUtils'
 
 type Mark = { type: string; attrs?: Record<string, unknown> }
 
-const BULLET_LINE_RE =
-  /^(\s*)(?:[-*•●◦▪‣⁃]|\u2022|\u2023|\u25AA|\u25E6|\u2043|\u2219)\s+(.*)$/
+const BULLET_LINE_RE = /^(\s*)(?:[-*•●◦▪‣⁃]|\u2022|\u2023|\u25AA|\u25E6|\u2043|\u2219)\s+(.*)$/
 
 /** Normalize Unicode / hyphen bullets in plain paste to Notes "- " lines. */
 export function normalizePlainPasteText(text: string): string | null {
@@ -119,9 +118,7 @@ function inlineFromNodes(nodes: NodeListOf<ChildNode> | ChildNode[], inherited: 
 function isBlankInline(inline: JSONContent[]): boolean {
   if (!inline.length) return true
   return inline.every(
-    (n) =>
-      n.type === 'hardBreak' ||
-      (n.type === 'text' && !(n.text ?? '').replace(/\u00a0/g, ' ').trim()),
+    (n) => n.type === 'hardBreak' || (n.type === 'text' && !(n.text ?? '').replace(/\u00a0/g, ' ').trim()),
   )
 }
 
@@ -137,9 +134,7 @@ function blankParagraphFromInline(inline: JSONContent[]): JSONContent {
   if (!inline.length) return emptyParagraph()
   if (
     inline.every(
-      (n) =>
-        n.type === 'hardBreak' ||
-        (n.type === 'text' && !(n.text ?? '').replace(/\u00a0/g, ' ').trim()),
+      (n) => n.type === 'hardBreak' || (n.type === 'text' && !(n.text ?? '').replace(/\u00a0/g, ' ').trim()),
     ) &&
     inline.some((n) => n.type === 'hardBreak')
   ) {
@@ -255,7 +250,8 @@ function layoutTableToBlocks(table: Element): JSONContent[] {
       continue
     }
 
-    const leadEmpty = cells.length > 1 && cells.slice(0, -1).every((c) => !(c.textContent ?? '').replace(/\u00a0/g, ' ').trim())
+    const leadEmpty =
+      cells.length > 1 && cells.slice(0, -1).every((c) => !(c.textContent ?? '').replace(/\u00a0/g, ' ').trim())
     const contentCell = leadEmpty ? cells[cells.length - 1]! : cells[0]!
     const spacerDepth = leadEmpty ? cells.length - 1 : 0
     const padDepth = marginIndentDepth(contentCell)
@@ -389,8 +385,7 @@ function unwrapContainer(el: Element): Element[] {
   const tag = el.tagName.toUpperCase()
   const id = el.getAttribute('id') ?? ''
   const isDocsWrapper =
-    (tag === 'B' && id.startsWith('docs-internal-guid')) ||
-    (tag === 'DIV' && id.startsWith('docs-internal-guid'))
+    (tag === 'B' && id.startsWith('docs-internal-guid')) || (tag === 'DIV' && id.startsWith('docs-internal-guid'))
   if (isDocsWrapper) {
     return [...el.childNodes].flatMap((n) => (n.nodeType === Node.ELEMENT_NODE ? unwrapContainer(n as Element) : []))
   }

@@ -7,11 +7,7 @@ import type { PartyGameKind } from '@/lib/party/types'
 
 type LoadResult = { ok: true; data: unknown } | { ok: false }
 
-export function usePartyRoomData(
-  pin: string | null,
-  gameKind: PartyGameKind,
-  onData: (data: unknown) => void,
-) {
+export function usePartyRoomData(pin: string | null, gameKind: PartyGameKind, onData: (data: unknown) => void) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const abortRef = useRef<AbortController | null>(null)
 
@@ -49,7 +45,11 @@ export function usePartyRoomData(
 
     const chRoom = supabase
       .channel(`party:room:${pin}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'party_rooms', filter: `pin=eq.${pin}` }, scheduleLoad)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'party_rooms', filter: `pin=eq.${pin}` },
+        scheduleLoad,
+      )
       .subscribe()
 
     const chPlayers = supabase
@@ -84,7 +84,10 @@ export function usePartyRoomData(
           .subscribe(),
       )
       extra.push(
-        supabase.channel(`party:qv:${pin}`).on('postgres_changes', { event: '*', schema: 'public', table: 'party_quiplash_votes' }, scheduleLoad).subscribe(),
+        supabase
+          .channel(`party:qv:${pin}`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'party_quiplash_votes' }, scheduleLoad)
+          .subscribe(),
       )
       extra.push(
         supabase
@@ -119,13 +122,22 @@ export function usePartyRoomData(
           .subscribe(),
       )
       extra.push(
-        supabase.channel(`party:fl:${pin}`).on('postgres_changes', { event: '*', schema: 'public', table: 'party_fibbage_lies' }, scheduleLoad).subscribe(),
+        supabase
+          .channel(`party:fl:${pin}`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'party_fibbage_lies' }, scheduleLoad)
+          .subscribe(),
       )
       extra.push(
-        supabase.channel(`party:fp:${pin}`).on('postgres_changes', { event: '*', schema: 'public', table: 'party_fibbage_picks' }, scheduleLoad).subscribe(),
+        supabase
+          .channel(`party:fp:${pin}`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'party_fibbage_picks' }, scheduleLoad)
+          .subscribe(),
       )
       extra.push(
-        supabase.channel(`party:flk:${pin}`).on('postgres_changes', { event: '*', schema: 'public', table: 'party_fibbage_likes' }, scheduleLoad).subscribe(),
+        supabase
+          .channel(`party:flk:${pin}`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'party_fibbage_likes' }, scheduleLoad)
+          .subscribe(),
       )
     }
     if (gameKind === 'eay') {
@@ -150,13 +162,22 @@ export function usePartyRoomData(
           .subscribe(),
       )
       extra.push(
-        supabase.channel(`party:el:${pin}`).on('postgres_changes', { event: '*', schema: 'public', table: 'party_eay_lies' }, scheduleLoad).subscribe(),
+        supabase
+          .channel(`party:el:${pin}`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'party_eay_lies' }, scheduleLoad)
+          .subscribe(),
       )
       extra.push(
-        supabase.channel(`party:ep:${pin}`).on('postgres_changes', { event: '*', schema: 'public', table: 'party_eay_picks' }, scheduleLoad).subscribe(),
+        supabase
+          .channel(`party:ep:${pin}`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'party_eay_picks' }, scheduleLoad)
+          .subscribe(),
       )
       extra.push(
-        supabase.channel(`party:elk:${pin}`).on('postgres_changes', { event: '*', schema: 'public', table: 'party_eay_likes' }, scheduleLoad).subscribe(),
+        supabase
+          .channel(`party:elk:${pin}`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'party_eay_likes' }, scheduleLoad)
+          .subscribe(),
       )
       extra.push(
         supabase

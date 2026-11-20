@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server'
-import {
-  communalReaderBackendReady,
-  parseReadingStatePatch,
-} from '@/lib/reader/communal-server'
+import { communalReaderBackendReady, parseReadingStatePatch } from '@/lib/reader/communal-server'
 import { supabaseAdmin } from '@/lib/supabase'
 
 type RouteParams = { params: Promise<{ id: string }> }
@@ -21,7 +18,8 @@ export async function GET(_request: Request, { params }: RouteParams) {
     .maybeSingle()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!data) return NextResponse.json({ error: 'not_found' }, { status: 404 })
-  const rs = typeof data === 'object' && 'reading_state' in data ? (data as { reading_state?: unknown }).reading_state : null
+  const rs =
+    typeof data === 'object' && 'reading_state' in data ? (data as { reading_state?: unknown }).reading_state : null
   return NextResponse.json({ progress: rs ?? null })
 }
 
@@ -47,7 +45,10 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: msg }, { status: 400 })
   }
 
-  const { error } = await supabaseAdmin.from('reader_communal_publications').update({ reading_state: progress }).eq('id', id)
+  const { error } = await supabaseAdmin
+    .from('reader_communal_publications')
+    .update({ reading_state: progress })
+    .eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })
 }

@@ -54,7 +54,11 @@ export function installReaderCommunalMock(page: Page): void {
         if (body?.chapterId) readingState.set(readingStateId, body)
         return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) })
       } catch {
-        return route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ error: 'bad_json' }) })
+        return route.fulfill({
+          status: 400,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'bad_json' }),
+        })
       }
     }
 

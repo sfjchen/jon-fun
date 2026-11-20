@@ -14,4 +14,3 @@ export const scoreForElapsed = (elapsedMs: number): number => {
   const remainingRatio = 1 - clamped / GAME24_ROUND_DURATION_MS
   return Math.max(0, Math.round(2000 * remainingRatio))
 }
-

@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { supabaseAdmin } from '@/lib/supabase'
 import { generateRoomPin } from '@/lib/triples'
-import { playerToken,toRoom, type RoomRow } from '@/lib/triples-server'
+import { playerToken, toRoom, type RoomRow } from '@/lib/triples-server'
 
 /**
  * Creates the room, retrying on a PIN collision, and returns the host's player id.
@@ -19,10 +19,19 @@ export async function POST(request: NextRequest) {
   for (let attempt = 0; attempt < 8; attempt++) {
     const { data, error } = await supabaseAdmin
       .from('triples_rooms')
-      .insert({ pin: generateRoomPin(), host_id: playerId, players: [{ id: playerId, name, score: 0, misses: 0, authVersion:2 }] })
+      .insert({
+        pin: generateRoomPin(),
+        host_id: playerId,
+        players: [{ id: playerId, name, score: 0, misses: 0, authVersion: 2 }],
+      })
       .select()
       .single()
-    if (data) return NextResponse.json({ playerId, playerToken:playerToken(data.pin,playerId), room: toRoom(data as RoomRow) })
+    if (data)
+      return NextResponse.json({
+        playerId,
+        playerToken: playerToken(data.pin, playerId),
+        room: toRoom(data as RoomRow),
+      })
     if (error?.code !== '23505') return NextResponse.json({ error: 'Could not create a room' }, { status: 500 })
   }
   return NextResponse.json({ error: 'Could not find a free PIN. Try again.' }, { status: 500 })

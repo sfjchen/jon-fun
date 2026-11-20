@@ -22,10 +22,7 @@ export default function CollapsibleSection({
   borderBottom = true,
 }: CollapsibleSectionProps) {
   return (
-    <section
-      className={borderBottom ? 'border-b border-[var(--uv-border)]' : ''}
-      data-testid={testId}
-    >
+    <section className={borderBottom ? 'border-b border-[var(--uv-border)]' : ''} data-testid={testId}>
       <button
         type="button"
         onClick={onToggle}
@@ -35,9 +32,7 @@ export default function CollapsibleSection({
       >
         <span className="text-xs font-medium text-[var(--uv-text-primary)]">
           {title}
-          {badge ? (
-            <span className="ml-1.5 font-normal text-[var(--uv-text-muted)]">({badge})</span>
-          ) : null}
+          {badge ? <span className="ml-1.5 font-normal text-[var(--uv-text-muted)]">({badge})</span> : null}
         </span>
         <span className="text-[10px] text-[var(--uv-text-muted)]">{open ? '▾' : '▸'}</span>
       </button>

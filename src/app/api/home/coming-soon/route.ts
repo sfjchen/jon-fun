@@ -24,7 +24,10 @@ function jsonCopy(row: { headline: string; intro: string; bullets: string[] }): 
 
 function saveErrorForClient(message: string): string {
   const m = message.toLowerCase()
-  if (m.includes('home_coming_soon_copy') && (m.includes('schema cache') || m.includes('could not find') || m.includes('does not exist'))) {
+  if (
+    m.includes('home_coming_soon_copy') &&
+    (m.includes('schema cache') || m.includes('could not find') || m.includes('does not exist'))
+  ) {
     return (
       'The table home_coming_soon_copy is not in your Supabase project yet. Open Supabase Dashboard → SQL Editor, paste and run the migration ' +
       'supabase/migrations/20260505120000_home_coming_soon_copy.sql from this repo, then try Save again.'

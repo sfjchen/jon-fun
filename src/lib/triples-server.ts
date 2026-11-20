@@ -13,7 +13,7 @@ export type RoomRow = {
   status: TriplesRoom['status']
   deck: number[]
   board: number[]
-  players: (TriplesPlayer & {authVersion?:number})[]
+  players: (TriplesPlayer & { authVersion?: number })[]
   last_claim: TriplesClaim | null
   version: number
   started_at: string | null
@@ -25,10 +25,14 @@ export type Failure = { error: string; status: number }
  * Loads a room row, or null when it does not exist.
  */
 export async function loadRoom(pin: string): Promise<RoomRow | null> {
-  const { data,error } = await supabaseAdmin.from('triples_rooms').select('*').eq('pin', pin).maybeSingle()
-  if(error)throw Error('Room storage unavailable')
+  const { data, error } = await supabaseAdmin.from('triples_rooms').select('*').eq('pin', pin).maybeSingle()
+  if (error) throw Error('Room storage unavailable')
   // Unauthenticated pre-release rooms are retired rather than granting seats from public IDs.
-  if(data&&!data.players.some((p:TriplesPlayer&{authVersion?:number})=>p.id===data.host_id&&p.authVersion===2))return null
+  if (
+    data &&
+    !data.players.some((p: TriplesPlayer & { authVersion?: number }) => p.id === data.host_id && p.authVersion === 2)
+  )
+    return null
   return (data as RoomRow | null) ?? null
 }
 
@@ -58,38 +62,49 @@ export async function mutateRoom(
   change: (row: RoomRow) => Partial<RoomRow> | null | Failure,
 ): Promise<{ row: RoomRow | null } | Failure> {
   for (let attempt = 0; attempt < 6; attempt++) {
-    let row:RoomRow|null
-    try{row=await loadRoom(pin)}catch{return {error:'Room storage unavailable. Try again.',status:503}}
+    let row: RoomRow | null
+    try {
+      row = await loadRoom(pin)
+    } catch {
+      return { error: 'Room storage unavailable. Try again.', status: 503 }
+    }
     if (!row) return { error: 'Room not found', status: 404 }
     const next = change(row)
     if (next && 'error' in next) return next
     if (next === null) {
-      const deleted=await supabaseAdmin.from('triples_rooms').delete().eq('pin',pin).eq('version',row.version).select('pin').maybeSingle()
-      if(deleted.error)return {error:'Could not update room',status:503}
-      if(deleted.data)return {row:null}
+      const deleted = await supabaseAdmin
+        .from('triples_rooms')
+        .delete()
+        .eq('pin', pin)
+        .eq('version', row.version)
+        .select('pin')
+        .maybeSingle()
+      if (deleted.error) return { error: 'Could not update room', status: 503 }
+      if (deleted.data) return { row: null }
       continue
     }
-    const { data,error } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('triples_rooms')
       .update({ ...next, version: row.version + 1, last_activity: new Date().toISOString() })
       .eq('pin', pin)
       .eq('version', row.version)
       .select()
       .maybeSingle()
-    if(error)return {error:'Room storage unavailable. Try again.',status:503}
+    if (error) return { error: 'Room storage unavailable. Try again.', status: 503 }
     if (data) return { row: data as RoomRow }
   }
   return { error: 'The room is busy. Try again.', status: 409 }
 }
 
 /** Private seat capability; public roster IDs cannot authorize room actions. */
-export function playerToken(pin:string,playerId:string):string {
-  const secret=process.env.SUPABASE_SERVICE_ROLE_KEY
-  if(!secret)throw Error('Room credentials unavailable')
-  return createHmac('sha256',secret).update(`set-seat-v1:${pin}:${playerId}`).digest('base64url')
+export function playerToken(pin: string, playerId: string): string {
+  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!secret) throw Error('Room credentials unavailable')
+  return createHmac('sha256', secret).update(`set-seat-v1:${pin}:${playerId}`).digest('base64url')
 }
-export function validPlayerToken(pin:string,playerId:string,token:unknown):boolean {
-  if(typeof token!=='string'||!playerId)return false
-  const expected=Buffer.from(playerToken(pin,playerId)),given=Buffer.from(token)
-  return expected.length===given.length&&timingSafeEqual(expected,given)
+export function validPlayerToken(pin: string, playerId: string, token: unknown): boolean {
+  if (typeof token !== 'string' || !playerId) return false
+  const expected = Buffer.from(playerToken(pin, playerId)),
+    given = Buffer.from(token)
+  return expected.length === given.length && timingSafeEqual(expected, given)
 }

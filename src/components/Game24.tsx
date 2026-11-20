@@ -5,12 +5,7 @@ import { getDevicePlayer, saveDevicePlayer } from '@/lib/syncIdentity'
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useHotkeys } from '@/lib/keyboard'
-import {
-  GAME24_MAX_PLAYERS,
-  GAME24_MAX_ROUNDS,
-  GAME24_ROUND_DURATION_MS,
-  validateRoomPin,
-} from '@/lib/game24'
+import { GAME24_MAX_PLAYERS, GAME24_MAX_ROUNDS, GAME24_ROUND_DURATION_MS, validateRoomPin } from '@/lib/game24'
 import { Solver24 } from '@/lib/solver24'
 
 interface Card {
@@ -72,7 +67,11 @@ const formatSeconds = (seconds: number) => {
 const TOOLBAR = [
   { key: 'reset', label: 'Start over', d: 'M3 12a9 9 0 1 0 3-6.7M3 4v5h5' },
   { key: 'new', label: 'New puzzle', d: 'M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5' },
-  { key: 'solution', label: 'Show solution', d: 'M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z' },
+  {
+    key: 'solution',
+    label: 'Show solution',
+    d: 'M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z',
+  },
 ]
 
 export default function Game24() {
@@ -123,16 +122,16 @@ export default function Game24() {
     }, durationMs)
   }, [])
 
-  const saveSession = useCallback(
-    (data: { pin?: string; playerId?: string; hostId?: string; playerName?: string }) => {
-      if (typeof window === 'undefined') return
-      if (data.pin) sessionStorage.setItem('game24_pin', data.pin)
-      if (data.playerId) sessionStorage.setItem('game24_playerId', data.playerId)
-      if (data.hostId !== undefined) sessionStorage.setItem('game24_hostId', data.hostId ?? '')
-      if (data.playerName) { sessionStorage.setItem('game24_playerName', data.playerName); saveDevicePlayer({ name: data.playerName, group: getDevicePlayer()?.group ?? 'public' }) }
-    },
-    []
-  )
+  const saveSession = useCallback((data: { pin?: string; playerId?: string; hostId?: string; playerName?: string }) => {
+    if (typeof window === 'undefined') return
+    if (data.pin) sessionStorage.setItem('game24_pin', data.pin)
+    if (data.playerId) sessionStorage.setItem('game24_playerId', data.playerId)
+    if (data.hostId !== undefined) sessionStorage.setItem('game24_hostId', data.hostId ?? '')
+    if (data.playerName) {
+      sessionStorage.setItem('game24_playerName', data.playerName)
+      saveDevicePlayer({ name: data.playerName, group: getDevicePlayer()?.group ?? 'public' })
+    }
+  }, [])
 
   const loadRoomData = useCallback(async (pin: string, silent = false) => {
     if (!silent) setLoadingRoom(true)
@@ -180,7 +179,7 @@ export default function Game24() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'game24_rooms', filter: `pin=eq.${pinInput}` },
-        () => loadRoomData(pinInput)
+        () => loadRoomData(pinInput),
       )
       .on('broadcast', { event: 'game_started' }, () => loadRoomData(pinInput))
       .on('broadcast', { event: 'player_solved' }, () => loadRoomData(pinInput, true))
@@ -192,7 +191,7 @@ export default function Game24() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'game24_players', filter: `room_pin=eq.${pinInput}` },
-        () => loadRoomData(pinInput)
+        () => loadRoomData(pinInput),
       )
       .subscribe()
 
@@ -201,7 +200,7 @@ export default function Game24() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'game24_rounds', filter: `room_pin=eq.${pinInput}` },
-        () => loadRoomData(pinInput)
+        () => loadRoomData(pinInput),
       )
       .subscribe()
 
@@ -210,7 +209,7 @@ export default function Game24() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'game24_submissions', filter: `room_pin=eq.${pinInput}` },
-        () => loadRoomData(pinInput)
+        () => loadRoomData(pinInput),
       )
       .subscribe()
 
@@ -252,7 +251,7 @@ export default function Game24() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-    const startTime = room?.current_round_started_at ?? round?.started_at ?? null
+      const startTime = room?.current_round_started_at ?? round?.started_at ?? null
 
       if (room?.status === 'active' && startTime) {
         const startTs = new Date(startTime).getTime()
@@ -261,7 +260,7 @@ export default function Game24() {
         } else {
           const elapsed = Math.max(0, Date.now() - startTs)
           const remaining = Math.max(0, GAME24_ROUND_DURATION_MS - elapsed)
-        setRoundRemainingMs(remaining)
+          setRoundRemainingMs(remaining)
           if (remaining <= 0 && !pendingAdvanceRef.current && elapsed >= GAME24_ROUND_DURATION_MS) {
             pendingAdvanceRef.current = true
             advanceRound()
@@ -323,12 +322,15 @@ export default function Game24() {
     })
   }, [])
 
-  const addOperator = useCallback((op: string) => {
-    setGameState((prev) => {
-      if (phase !== 'active' || prev.selectedCard === null) return prev
-      return { ...prev, pendingOperation: op }
-    })
-  }, [phase])
+  const addOperator = useCallback(
+    (op: string) => {
+      setGameState((prev) => {
+        if (phase !== 'active' || prev.selectedCard === null) return prev
+        return { ...prev, pendingOperation: op }
+      })
+    },
+    [phase],
+  )
 
   const submitSolution = useCallback(
     async (expression: string) => {
@@ -353,61 +355,61 @@ export default function Game24() {
         await loadRoomData(pinInput, true)
       }
     },
-    [room, playerId, pinInput, hasSubmitted, phase, showTemporaryMessage, loadRoomData]
+    [room, playerId, pinInput, hasSubmitted, phase, showTemporaryMessage, loadRoomData],
   )
 
   const performOperation = useCallback(
     (secondCardIndex: number) => {
       if (phase !== 'active') return
       setGameState((prev) => {
-      if (prev.selectedCard === null || prev.pendingOperation === null) return prev
-      
-      const firstCard = prev.cards[prev.selectedCard]
-      const secondCard = prev.cards[secondCardIndex]
-      
-      if (!firstCard || !secondCard) return prev
-      
-      try {
-        let result: number
-        let expression: string
-        
-        switch (prev.pendingOperation) {
-          case '+':
-            result = firstCard.value + secondCard.value
-            expression = `(${firstCard.expression} + ${secondCard.expression})`
-            break
-          case '-':
-            result = firstCard.value - secondCard.value
-            expression = `(${firstCard.expression} - ${secondCard.expression})`
-            break
-          case '*':
-            result = firstCard.value * secondCard.value
-            expression = `(${firstCard.expression} × ${secondCard.expression})`
-            break
-          case '/':
-            if (secondCard.value === 0) {
-              showTemporaryMessage('❌ Cannot divide by zero!')
-              return { ...prev, selectedCard: null, pendingOperation: null }
-            }
-            result = firstCard.value / secondCard.value
-            expression = `(${firstCard.expression} ÷ ${secondCard.expression})`
-            break
-          default:
-            return prev
-        }
-        
+        if (prev.selectedCard === null || prev.pendingOperation === null) return prev
+
+        const firstCard = prev.cards[prev.selectedCard]
+        const secondCard = prev.cards[secondCardIndex]
+
+        if (!firstCard || !secondCard) return prev
+
+        try {
+          let result: number
+          let expression: string
+
+          switch (prev.pendingOperation) {
+            case '+':
+              result = firstCard.value + secondCard.value
+              expression = `(${firstCard.expression} + ${secondCard.expression})`
+              break
+            case '-':
+              result = firstCard.value - secondCard.value
+              expression = `(${firstCard.expression} - ${secondCard.expression})`
+              break
+            case '*':
+              result = firstCard.value * secondCard.value
+              expression = `(${firstCard.expression} × ${secondCard.expression})`
+              break
+            case '/':
+              if (secondCard.value === 0) {
+                showTemporaryMessage('❌ Cannot divide by zero!')
+                return { ...prev, selectedCard: null, pendingOperation: null }
+              }
+              result = firstCard.value / secondCard.value
+              expression = `(${firstCard.expression} ÷ ${secondCard.expression})`
+              break
+            default:
+              return prev
+          }
+
           const newCards = prev.cards
             .map((card, i) => {
               if (i === prev.selectedCard) return null
               if (i === secondCardIndex) {
-            return {
-              value: result,
+                return {
+                  value: result,
                   expression,
-              isResult: true,
+                  isResult: true,
                   position: card.position,
                 }
-            }
-            return card
+              }
+              return card
             })
             .filter((card): card is Card => card !== null)
 
@@ -415,21 +417,21 @@ export default function Game24() {
 
           if (newCards.length === 1 && Math.abs(newCards[0]!.value - 24) < 0.001) {
             submitSolution(newCards[0]!.expression)
+          }
+
+          return {
+            ...prev,
+            cards: newCards,
+            selectedCard: resultCardIndex,
+            pendingOperation: null,
+          }
+        } catch {
+          showTemporaryMessage('❌ Invalid operation')
+          return { ...prev, selectedCard: null, pendingOperation: null }
         }
-        
-        return {
-          ...prev,
-          cards: newCards,
-          selectedCard: resultCardIndex,
-          pendingOperation: null,
-        }
-      } catch {
-        showTemporaryMessage('❌ Invalid operation')
-        return { ...prev, selectedCard: null, pendingOperation: null }
-      }
-    })
+      })
     },
-    [phase, submitSolution, showTemporaryMessage]
+    [phase, submitSolution, showTemporaryMessage],
   )
 
   useEffect(() => {
@@ -568,31 +570,31 @@ export default function Game24() {
   const renderCardAtPosition = useCallback(
     (position: number) => {
       const cardIndex = gameState.cards.findIndex((card) => card.position === position)
-    
-    if (cardIndex === -1) {
-      return <div key={position} className="game-card empty" style={{ opacity: 0, pointerEvents: 'none' }} />
-    }
-    
-    const card = gameState.cards[cardIndex]
-    if (!card) {
-      return <div key={position} className="game-card empty" style={{ opacity: 0, pointerEvents: 'none' }} />
-    }
-    
-    const isSelected = gameState.selectedCard === cardIndex
-    const isResult = card.isResult
-    const isPending = gameState.pendingOperation !== null && gameState.selectedCard === cardIndex
-    
-    let cardClass = 'game-card'
-    if (isSelected) cardClass += ' selected'
-    if (isResult) cardClass += ' result'
-    if (isPending) cardClass += ' pending'
-    
-    return (
-      <button 
-        key={position}
-        className={cardClass}
-        onClick={() => selectCard(cardIndex)}
-        data-card-index={cardIndex}
+
+      if (cardIndex === -1) {
+        return <div key={position} className="game-card empty" style={{ opacity: 0, pointerEvents: 'none' }} />
+      }
+
+      const card = gameState.cards[cardIndex]
+      if (!card) {
+        return <div key={position} className="game-card empty" style={{ opacity: 0, pointerEvents: 'none' }} />
+      }
+
+      const isSelected = gameState.selectedCard === cardIndex
+      const isResult = card.isResult
+      const isPending = gameState.pendingOperation !== null && gameState.selectedCard === cardIndex
+
+      let cardClass = 'game-card'
+      if (isSelected) cardClass += ' selected'
+      if (isResult) cardClass += ' result'
+      if (isPending) cardClass += ' pending'
+
+      return (
+        <button
+          key={position}
+          className={cardClass}
+          onClick={() => selectCard(cardIndex)}
+          data-card-index={cardIndex}
           disabled={phase !== 'active'}
         >
           <div className="card-content">
@@ -602,7 +604,7 @@ export default function Game24() {
         </button>
       )
     },
-    [gameState.cards, gameState.selectedCard, gameState.pendingOperation, selectCard, phase]
+    [gameState.cards, gameState.selectedCard, gameState.pendingOperation, selectCard, phase],
   )
 
   // Practice mode helpers (offline, no timer, hint enabled)
@@ -623,7 +625,11 @@ export default function Game24() {
   }, [solver])
 
   // Prefills the saved session and deals a random practice hand once on the client, after hydration
-  const hydrated = useSyncExternalStore(() => () => {}, () => true, () => false)
+  const hydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  )
   const [restored, setRestored] = useState(false)
   if (hydrated && !restored) {
     setRestored(true)
@@ -710,7 +716,7 @@ export default function Game24() {
         return updated
       })
     },
-    [practicePendingOp, practiceSelected, generatePractice, showTemporaryMessage]
+    [practicePendingOp, practiceSelected, generatePractice, showTemporaryMessage],
   )
 
   const selectPracticeCard = useCallback(
@@ -721,13 +727,16 @@ export default function Game24() {
       }
       setPracticeSelected((prev) => (prev === index && practicePendingOp === null ? null : index))
     },
-    [practicePendingOp, practiceSelected, performPractice]
+    [practicePendingOp, practiceSelected, performPractice],
   )
 
-  const addPracticeOp = useCallback((op: string) => {
-    if (practiceSelected === null) return
-    setPracticePendingOp(op)
-  }, [practiceSelected])
+  const addPracticeOp = useCallback(
+    (op: string) => {
+      if (practiceSelected === null) return
+      setPracticePendingOp(op)
+    },
+    [practiceSelected],
+  )
 
   useEffect(() => {
     return () => {
@@ -758,15 +767,15 @@ export default function Game24() {
           className={cardClass}
           onClick={() => selectPracticeCard(cardIndex)}
           data-practice-index={cardIndex}
-      >
-        <div className="card-content">
-          <span className="card-number">{card.value}</span>
-          {isResult && <div className="card-expression">{card.expression}</div>}
-        </div>
-      </button>
-    )
+        >
+          <div className="card-content">
+            <span className="card-number">{card.value}</span>
+            {isResult && <div className="card-expression">{card.expression}</div>}
+          </div>
+        </button>
+      )
     },
-    [practiceCards, practicePendingOp, practiceSelected, selectPracticeCard]
+    [practiceCards, practicePendingOp, practiceSelected, selectPracticeCard],
   )
 
   const showPracticeSolution = useCallback(() => {
@@ -789,8 +798,8 @@ export default function Game24() {
     if (/^[1-4]$/.test(k)) return press('.game-board > *', Number(k) - 1)
     const op = { '+': 'plus', '=': 'plus', '-': 'minus', '*': 'multiply', x: 'multiply', '/': 'divide' }[k]
     if (op) return press(`.operator-btn.${op}`)
-    if (k === 'r') return resetSelections(), true
-    if (k === 'n' && phase !== 'active') return generatePractice(), true
+    if (k === 'r') return (resetSelections(), true)
+    if (k === 'n' && phase !== 'active') return (generatePractice(), true)
     if (k === 'Backspace' || k === 'Escape') {
       if (phase === 'active') clearSelections()
       else {
@@ -807,72 +816,91 @@ export default function Game24() {
       : 0
 
   const displayedScore =
-    room && room.status !== 'waiting'
-      ? players.find((p) => p.player_id === playerId)?.score ?? 0
-      : offlineScore
+    room && room.status !== 'waiting' ? (players.find((p) => p.player_id === playerId)?.score ?? 0) : offlineScore
 
   return (
     <div className="flex items-start lg:items-center">
       <div
-        className={`max-w-6xl mx-auto px-3 sm:px-4 flex flex-col gap-6 w-full ${notebookLayout ? 'py-4 lg:py-6' : 'py-10 lg:py-14'}`}
+        className={`mx-auto flex w-full max-w-6xl flex-col gap-6 px-3 sm:px-4 ${notebookLayout ? 'py-4 lg:py-6' : 'py-10 lg:py-14'}`}
       >
-        <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[320px_1fr] order-1">
-          <aside className="order-2 rounded-lg border p-4 shadow-sm lg:order-1" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
+        <div className="order-1 grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[320px_1fr]">
+          <aside
+            className="order-2 rounded-lg border p-4 shadow-sm lg:order-1"
+            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+          >
             {!room && (
               <div className="space-y-4">
                 <div>
-                  <div className="text-sm mb-1" style={{ color: 'var(--ink-muted)' }}>Name</div>
+                  <div className="mb-1 text-sm" style={{ color: 'var(--ink-muted)' }}>
+                    Name
+                  </div>
                   <input
                     value={nameInput}
                     onChange={(e) => setNameInput(e.target.value)}
-                    className="w-full rounded px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
-                    style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                    className="w-full rounded border px-3 py-2 focus:ring-2 focus:ring-[var(--ink-accent)] focus:outline-none"
+                    style={{
+                      backgroundColor: 'var(--ink-bg)',
+                      borderColor: 'var(--ink-border)',
+                      color: 'var(--ink-text)',
+                    }}
                     placeholder="Enter your name"
                   />
                 </div>
                 <div className="flex items-end gap-2">
                   <div className="flex-1">
-                    <div className="text-sm mb-1" style={{ color: 'var(--ink-muted)' }}>Room PIN</div>
+                    <div className="mb-1 text-sm" style={{ color: 'var(--ink-muted)' }}>
+                      Room PIN
+                    </div>
                     <input
                       value={pinInput}
                       onChange={(e) => setPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
                       maxLength={4}
-                      className="w-full rounded px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
-                      style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                      className="w-full rounded border px-3 py-2 focus:ring-2 focus:ring-[var(--ink-accent)] focus:outline-none"
+                      style={{
+                        backgroundColor: 'var(--ink-bg)',
+                        borderColor: 'var(--ink-border)',
+                        color: 'var(--ink-text)',
+                      }}
                       placeholder="1234"
                     />
                   </div>
-        <button 
+                  <button
                     onClick={joinRoom}
                     disabled={loadingRoom}
-                    className="text-white px-3 py-2 rounded disabled:opacity-50"
+                    className="rounded px-3 py-2 text-white disabled:opacity-50"
                     style={{ backgroundColor: 'var(--ink-accent)' }}
-        >
+                  >
                     Join
-        </button>
+                  </button>
                 </div>
                 <button
                   onClick={createRoom}
                   disabled={loadingRoom}
-                  className="w-full text-white px-3 py-2 rounded disabled:opacity-50"
+                  className="w-full rounded px-3 py-2 text-white disabled:opacity-50"
                   style={{ backgroundColor: 'rgb(22 101 52)' }}
                 >
                   Create Room
                 </button>
-                {error && <div className="text-red-600 text-sm">{error}</div>}
+                {error && <div className="text-sm text-red-600">{error}</div>}
               </div>
             )}
 
             {room && (
               <div className="space-y-4">
                 <div>
-                  <div className="text-sm" style={{ color: 'var(--ink-muted)' }}>Room PIN</div>
+                  <div className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                    Room PIN
+                  </div>
                   <div className="text-3xl font-bold tracking-widest">{room.pin}</div>
-                  <div className="text-xs mt-1" style={{ color: 'var(--ink-muted)' }}>Share the PIN to let others join</div>
+                  <div className="mt-1 text-xs" style={{ color: 'var(--ink-muted)' }}>
+                    Share the PIN to let others join
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <div className="text-sm" style={{ color: 'var(--ink-muted)' }}>Status</div>
+                  <div className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                    Status
+                  </div>
                   <div className="text-sm font-semibold">
                     {room.status === 'waiting' && 'Waiting'}
                     {room.status === 'active' && `Round ${room.round_number}/${GAME24_MAX_ROUNDS}`}
@@ -881,35 +909,51 @@ export default function Game24() {
                   </div>
                 </div>
 
-    <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-lg font-semibold">Players ({players.length}/{room.max_players ?? GAME24_MAX_PLAYERS})</div>
-                    {isHost && <span className="text-xs bg-green-600 px-2 py-1 rounded">Host</span>}
+                <div>
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="text-lg font-semibold">
+                      Players ({players.length}/{room.max_players ?? GAME24_MAX_PLAYERS})
+                    </div>
+                    {isHost && <span className="rounded bg-green-600 px-2 py-1 text-xs">Host</span>}
                   </div>
-                  <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                  <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
                     {sortedPlayers.map((p) => {
                       const roundScore = roundScores[p.player_id]
                       const showRoundScore = roundScore !== undefined && roundScore > 0 && room.status !== 'waiting'
                       return (
                         <div
                           key={p.player_id}
-                          className={`rounded-lg px-3 py-2 flex items-center justify-between border ${
+                          className={`flex items-center justify-between rounded-lg border px-3 py-2 ${
                             p.player_id === room.host_id ? 'border-green-500/50' : ''
                           }`}
-                          style={{ backgroundColor: 'var(--ink-bg)', borderColor: p.player_id === room.host_id ? undefined : 'var(--ink-border)' }}
+                          style={{
+                            backgroundColor: 'var(--ink-bg)',
+                            borderColor: p.player_id === room.host_id ? undefined : 'var(--ink-border)',
+                          }}
                         >
                           <div className="flex items-center gap-2">
-                            <div className="font-semibold truncate" style={{ color: 'var(--ink-text)' }}>{p.name}</div>
-                            {p.player_id === room.host_id && <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded">Host</span>}
+                            <div className="truncate font-semibold" style={{ color: 'var(--ink-text)' }}>
+                              {p.name}
+                            </div>
+                            {p.player_id === room.host_id && (
+                              <span className="rounded bg-green-600 px-2 py-0.5 text-xs text-white">Host</span>
+                            )}
                           </div>
-                          <div className="text-sm font-mono flex items-center gap-1" style={{ color: 'var(--ink-muted)' }}>
+                          <div
+                            className="flex items-center gap-1 font-mono text-sm"
+                            style={{ color: 'var(--ink-muted)' }}
+                          >
                             <span>{p.score ?? 0}</span>
-                            {showRoundScore && <span className="text-green-700 font-semibold">+{roundScore}</span>}
+                            {showRoundScore && <span className="font-semibold text-green-700">+{roundScore}</span>}
                           </div>
                         </div>
                       )
                     })}
-                    {players.length === 0 && <div className="text-sm" style={{ color: 'var(--ink-muted)' }}>No players yet</div>}
+                    {players.length === 0 && (
+                      <div className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                        No players yet
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -917,7 +961,7 @@ export default function Game24() {
                   <button
                     onClick={startGame}
                     disabled={players.length < 1 || loadingRoom}
-                    className="w-full text-white py-2 rounded font-semibold disabled:opacity-50"
+                    className="w-full rounded py-2 font-semibold text-white disabled:opacity-50"
                     style={{ backgroundColor: 'var(--ink-accent)' }}
                   >
                     {players.length < 1 ? 'Need at least 1 player' : 'Start Game'}
@@ -927,7 +971,7 @@ export default function Game24() {
                 {room.status === 'finished' && (
                   <button
                     onClick={playAgain}
-                    className="w-full text-white py-2 rounded font-semibold"
+                    className="w-full rounded py-2 font-semibold text-white"
                     style={{ backgroundColor: 'var(--ink-accent)' }}
                   >
                     Play Again
@@ -937,48 +981,77 @@ export default function Game24() {
                 {room && (
                   <button
                     onClick={() => leaveRoom()}
-                    className="w-full py-2 rounded font-semibold border"
-                    style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                    className="w-full rounded border py-2 font-semibold"
+                    style={{
+                      backgroundColor: 'var(--ink-paper)',
+                      borderColor: 'var(--ink-border)',
+                      color: 'var(--ink-text)',
+                    }}
                   >
                     Leave Room
                   </button>
                 )}
 
-                {error && <div className="text-red-600 text-sm">{error}</div>}
+                {error && <div className="text-sm text-red-600">{error}</div>}
               </div>
             )}
           </aside>
 
-          <main className="order-1 rounded-lg border p-3 sm:p-4 relative overflow-hidden shadow-sm lg:order-2" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
+          <main
+            className="relative order-1 overflow-hidden rounded-lg border p-3 shadow-sm sm:p-4 lg:order-2"
+            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+          >
             <div className="mb-4 flex items-center gap-2">
-              <div className="flex h-11 items-center gap-2 rounded-lg px-3" style={{ backgroundColor: 'var(--ink-bg)' }}>
+              <div
+                className="flex h-11 items-center gap-2 rounded-lg px-3"
+                style={{ backgroundColor: 'var(--ink-bg)' }}
+              >
                 <span className="text-sm font-semibold" style={{ color: 'var(--ink-muted)' }}>
                   {room && room.status !== 'waiting' ? 'Score' : 'Solved'}
                 </span>
                 <span className="text-xl font-bold tabular-nums">{displayedScore}</span>
               </div>
               <div className="ml-auto flex gap-2">
-                {TOOLBAR.filter((b) => b.key === 'reset' || phase !== 'active')
-                  .map((b) => (
-                    <button
-                      key={b.label}
-                      onClick={() => (b.key === 'reset' ? resetSelections() : b.key === 'new' ? generatePractice() : showPracticeSolution())}
-                      className="flex h-11 w-11 items-center justify-center rounded-lg border hover:opacity-80"
-                      style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
-                      aria-label={b.label}
-                      title={b.label}
+                {TOOLBAR.filter((b) => b.key === 'reset' || phase !== 'active').map((b) => (
+                  <button
+                    key={b.label}
+                    onClick={() =>
+                      b.key === 'reset'
+                        ? resetSelections()
+                        : b.key === 'new'
+                          ? generatePractice()
+                          : showPracticeSolution()
+                    }
+                    className="flex h-11 w-11 items-center justify-center rounded-lg border hover:opacity-80"
+                    style={{
+                      backgroundColor: 'var(--ink-bg)',
+                      borderColor: 'var(--ink-border)',
+                      color: 'var(--ink-text)',
+                    }}
+                    aria-label={b.label}
+                    title={b.label}
+                  >
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
                     >
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d={b.d} />
-                      </svg>
-                    </button>
-                  ))}
+                      <path d={b.d} />
+                    </svg>
+                  </button>
+                ))}
               </div>
             </div>
 
             {(room?.status === 'active' || room?.status === 'intermission') && (
               <>
-                <div className="flex items-center justify-between mb-4">
+                <div className="mb-4 flex items-center justify-between">
                   <div className="text-lg font-semibold">
                     {room?.status === 'active' ? `Round ${room.round_number}/${GAME24_MAX_ROUNDS}` : 'Intermission'}
                   </div>
@@ -986,20 +1059,30 @@ export default function Game24() {
                     {room?.status === 'intermission'
                       ? `Next round in ${formatSeconds(intermissionRemainingMs / 1000)}s`
                       : ''}
-          </div>
-        </div>
-        
-                <div className="w-full h-2 rounded-full overflow-hidden mb-4" style={{ backgroundColor: 'var(--ink-border)' }}>
+                  </div>
+                </div>
+
+                <div
+                  className="mb-4 h-2 w-full overflow-hidden rounded-full"
+                  style={{ backgroundColor: 'var(--ink-border)' }}
+                >
                   <div
                     className="h-full transition-all"
-                    style={{ width: `${roundProgressRatio * 100}%`, transition: 'width 0.18s linear', backgroundColor: 'var(--ink-accent)' }}
+                    style={{
+                      width: `${roundProgressRatio * 100}%`,
+                      transition: 'width 0.18s linear',
+                      backgroundColor: 'var(--ink-accent)',
+                    }}
                   />
                 </div>
               </>
             )}
 
-                {room?.status === 'intermission' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-10 rounded-lg" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
+            {room?.status === 'intermission' && (
+              <div
+                className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 rounded-lg"
+                style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+              >
                 <div className="text-2xl font-bold text-white">Scores</div>
                 <div className="w-full max-w-md space-y-2">
                   {sortedPlayers.map((p, idx) => {
@@ -1008,15 +1091,15 @@ export default function Game24() {
                     return (
                       <div
                         key={p.player_id}
-                        className="flex items-center justify-between bg-white/10 px-3 py-2 rounded border border-white/10"
+                        className="flex items-center justify-between rounded border border-white/10 bg-white/10 px-3 py-2"
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-300 w-6 text-right">{idx + 1}.</span>
+                          <span className="w-6 text-right text-sm text-gray-300">{idx + 1}.</span>
                           <span className="font-semibold">{p.name}</span>
                         </div>
-                        <span className="font-mono text-sm flex items-center gap-2">
+                        <span className="flex items-center gap-2 font-mono text-sm">
                           <span>{p.score ?? 0}</span>
-                          {showRoundScore && <span className="text-green-300 font-semibold">+{roundScore}</span>}
+                          {showRoundScore && <span className="font-semibold text-green-300">+{roundScore}</span>}
                         </span>
                       </div>
                     )
@@ -1027,7 +1110,10 @@ export default function Game24() {
             )}
 
             {room?.status === 'finished' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-20 rounded-lg" style={{ backgroundColor: 'rgba(0,0,0,0.75)' }}>
+              <div
+                className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 rounded-lg"
+                style={{ backgroundColor: 'rgba(0,0,0,0.75)' }}
+              >
                 <div className="text-3xl font-bold text-white">Final Rankings</div>
                 <div className="w-full max-w-md space-y-2">
                   {sortedPlayers.map((p, idx) => {
@@ -1036,34 +1122,41 @@ export default function Game24() {
                     return (
                       <div
                         key={p.player_id}
-                        className="flex items-center justify-between px-3 py-2 rounded border"
+                        className="flex items-center justify-between rounded border px-3 py-2"
                         style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-sm w-6 text-right" style={{ color: 'var(--ink-muted)' }}>{idx + 1}.</span>
-                          <span className="font-semibold" style={{ color: 'var(--ink-text)' }}>{p.name}</span>
-                          <span className="text-sm" style={{ color: 'var(--ink-muted)' }}>({correct}/{total})</span>
+                          <span className="w-6 text-right text-sm" style={{ color: 'var(--ink-muted)' }}>
+                            {idx + 1}.
+                          </span>
+                          <span className="font-semibold" style={{ color: 'var(--ink-text)' }}>
+                            {p.name}
+                          </span>
+                          <span className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                            ({correct}/{total})
+                          </span>
                         </div>
                         <span className="font-mono text-sm">{p.score ?? 0}</span>
                       </div>
                     )
                   })}
                 </div>
-        <button 
+                <button
                   onClick={playAgain}
-                  className="text-white px-4 py-2 rounded font-semibold"
+                  className="rounded px-4 py-2 font-semibold text-white"
                   style={{ backgroundColor: 'var(--ink-accent)' }}
-        >
+                >
                   Play Again
-        </button>
-      </div>
+                </button>
+              </div>
             )}
 
-            <div className="max-w-xl mx-auto sm:p-4">
+            <div className="mx-auto max-w-xl sm:p-4">
               <div
                 onClick={(e) => {
                   const t = e.target as HTMLElement
-                  if (t.closest('.game-card') || t.closest('.operator-btn') || t.closest('button') || t.closest('a')) return
+                  if (t.closest('.game-card') || t.closest('.operator-btn') || t.closest('button') || t.closest('a'))
+                    return
                   if (phase === 'active') clearSelections()
                   else if (practiceSelected !== null || practicePendingOp !== null) {
                     setPracticeSelected(null)
@@ -1075,20 +1168,20 @@ export default function Game24() {
                   <>
                     <div className="game-board mb-4">
                       {[0, 1, 2, 3].map((position) => renderCardAtPosition(position))}
-        </div>
-                    <div className="mx-auto flex max-w-[26rem] justify-between gap-2 px-1 mb-4 sm:justify-center sm:gap-4">
-          {OPERATORS.map(({ op, class: className, symbol }) => (
-            <button
-              key={op}
-              className={`operator-btn ${className} ${gameState.pendingOperation === op ? 'selected' : ''}`}
-              onClick={() => addOperator(op)}
-              aria-label={`${op} operator`}
+                    </div>
+                    <div className="mx-auto mb-4 flex max-w-[26rem] justify-between gap-2 px-1 sm:justify-center sm:gap-4">
+                      {OPERATORS.map(({ op, class: className, symbol }) => (
+                        <button
+                          key={op}
+                          className={`operator-btn ${className} ${gameState.pendingOperation === op ? 'selected' : ''}`}
+                          onClick={() => addOperator(op)}
+                          aria-label={`${op} operator`}
                           disabled={phase !== 'active'}
-            >
-              {symbol}
-            </button>
-          ))}
-        </div>
+                        >
+                          {symbol}
+                        </button>
+                      ))}
+                    </div>
                     {hasSubmitted && (
                       <div className="text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
                         Submitted. Waiting for the round to end.
@@ -1099,8 +1192,8 @@ export default function Game24() {
                   <>
                     <div className="game-board mb-4">
                       {[0, 1, 2, 3].map((position) => renderPracticeCard(position))}
-          </div>
-                    <div className="mx-auto flex max-w-[26rem] justify-between gap-2 px-1 mb-4 sm:justify-center sm:gap-4">
+                    </div>
+                    <div className="mx-auto mb-4 flex max-w-[26rem] justify-between gap-2 px-1 sm:justify-center sm:gap-4">
                       {OPERATORS.map(({ op, class: className, symbol }) => (
                         <button
                           key={op}
@@ -1111,7 +1204,7 @@ export default function Game24() {
                           {symbol}
                         </button>
                       ))}
-        </div>
+                    </div>
                   </>
                 )}
               </div>
@@ -1121,7 +1214,10 @@ export default function Game24() {
       </div>
 
       {message && (
-        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-4 py-2 rounded-lg z-50 border shadow-lg" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
+        <div
+          className="fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 transform rounded-lg border px-4 py-2 shadow-lg"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+        >
           {message}
         </div>
       )}

@@ -7,8 +7,7 @@ import { CONNECTIONS_SCHEMA_VERSION } from '../../src/lib/connections'
 export const CONNECTIONS_E2E_ID = 'a0000000-0000-4000-8000-000000000001'
 export const CONNECTIONS_E2E_SLUG = 'e2e-demo-puzzle'
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 function seedPuzzle(): ConnectionsPuzzle {
   const now = new Date().toISOString()
@@ -153,14 +152,22 @@ export function installConnectionsApiMock(page: Page): void {
           body: JSON.stringify({ ok: true, id: body.id, slug: body.slug }),
         })
       } catch {
-        return route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ error: 'bad_json' }) })
+        return route.fulfill({
+          status: 400,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'bad_json' }),
+        })
       }
     }
 
     if (!list && pathId && !record && method === 'GET') {
       const s = findStored(pathId)
       if (!s) {
-        return route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ error: 'not_found' }) })
+        return route.fulfill({
+          status: 404,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'not_found' }),
+        })
       }
       return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(s.puzzle) })
     }
@@ -170,11 +177,19 @@ export function installConnectionsApiMock(page: Page): void {
         const body = JSON.parse(req.postData() || 'null') as ConnectionsPuzzle & { authorFingerprint?: string }
         const s = findStored(pathId)
         if (!s) {
-          return route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ error: 'not_found' }) })
+          return route.fulfill({
+            status: 404,
+            contentType: 'application/json',
+            body: JSON.stringify({ error: 'not_found' }),
+          })
         }
         const fp = typeof body.authorFingerprint === 'string' ? body.authorFingerprint : ''
         if (!fp || fp !== s.puzzle.authorFingerprint) {
-          return route.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ error: 'forbidden' }) })
+          return route.fulfill({
+            status: 403,
+            contentType: 'application/json',
+            body: JSON.stringify({ error: 'forbidden' }),
+          })
         }
         const merged: ConnectionsPuzzle = {
           ...s.puzzle,
@@ -186,7 +201,11 @@ export function installConnectionsApiMock(page: Page): void {
         s.puzzle = merged
         return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) })
       } catch {
-        return route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ error: 'bad_json' }) })
+        return route.fulfill({
+          status: 400,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'bad_json' }),
+        })
       }
     }
 
@@ -195,16 +214,28 @@ export function installConnectionsApiMock(page: Page): void {
         const body = JSON.parse(req.postData() || '{}') as { authorFingerprint?: string }
         const s = findStored(pathId)
         if (!s) {
-          return route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ error: 'not_found' }) })
+          return route.fulfill({
+            status: 404,
+            contentType: 'application/json',
+            body: JSON.stringify({ error: 'not_found' }),
+          })
         }
         const fp = typeof body.authorFingerprint === 'string' ? body.authorFingerprint : ''
         if (!fp || fp !== s.puzzle.authorFingerprint) {
-          return route.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ error: 'forbidden' }) })
+          return route.fulfill({
+            status: 403,
+            contentType: 'application/json',
+            body: JSON.stringify({ error: 'forbidden' }),
+          })
         }
         store.delete(s.puzzle.id)
         return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) })
       } catch {
-        return route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ error: 'bad_json' }) })
+        return route.fulfill({
+          status: 400,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'bad_json' }),
+        })
       }
     }
 
@@ -213,16 +244,25 @@ export function installConnectionsApiMock(page: Page): void {
         const body = JSON.parse(req.postData() || 'null') as { solved?: boolean; mistakes?: number }
         const s = findStored(pathId)
         if (!s) {
-          return route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ error: 'not_found' }) })
+          return route.fulfill({
+            status: 404,
+            contentType: 'application/json',
+            body: JSON.stringify({ error: 'not_found' }),
+          })
         }
-        const mistakes = typeof body.mistakes === 'number' && Number.isFinite(body.mistakes) ? Math.floor(body.mistakes) : 0
+        const mistakes =
+          typeof body.mistakes === 'number' && Number.isFinite(body.mistakes) ? Math.floor(body.mistakes) : 0
         const clamped = Math.max(0, Math.min(4, mistakes))
         s.play_count += 1
         if (body.solved === true) s.solve_count += 1
         s.total_mistakes += clamped
         return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) })
       } catch {
-        return route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ error: 'bad_json' }) })
+        return route.fulfill({
+          status: 400,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'bad_json' }),
+        })
       }
     }
 

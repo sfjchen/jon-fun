@@ -23,15 +23,10 @@ export function appendNoteHistory(
     at: entry.at ?? new Date().toISOString(),
   }
   const history = [...(session.history ?? []), row].slice(-MAX_ENTRIES)
-  return BUMP_UPDATED_AT[entry.kind]
-    ? { ...session, history, updatedAt: row.at }
-    : { ...session, history }
+  return BUMP_UPDATED_AT[entry.kind] ? { ...session, history, updatedAt: row.at } : { ...session, history }
 }
 
-export function lastHistoryEntry(
-  session: NoteSession,
-  kind?: NoteHistoryEntry['kind'],
-): NoteHistoryEntry | null {
+export function lastHistoryEntry(session: NoteSession, kind?: NoteHistoryEntry['kind']): NoteHistoryEntry | null {
   const hist = session.history ?? []
   if (!kind) return hist[hist.length - 1] ?? null
   for (let i = hist.length - 1; i >= 0; i--) {

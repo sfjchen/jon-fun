@@ -21,11 +21,7 @@ function partyLobby(page: import('@playwright/test').Page) {
   return page.locator('aside').first()
 }
 
-async function pressPartyLobbyButton(
-  page: import('@playwright/test').Page,
-  label: string,
-  mobile: boolean,
-) {
+async function pressPartyLobbyButton(page: import('@playwright/test').Page, label: string, mobile: boolean) {
   const btn = partyLobby(page).getByRole('button', { name: label })
   await expect(btn).toBeEnabled({ timeout: 25_000 })
   if (mobile) await btn.tap()
@@ -110,10 +106,7 @@ test.describe('Party games (Quip Clash, Fib It, Enough About You)', () => {
     await waitPartyLobbyReady(page, 'Create')
     const homeLink = page.getByRole('link', { name: 'Home' })
     await expect(homeLink).toBeVisible()
-    await Promise.all([
-      page.waitForURL((url) => new URL(url).pathname === '/', { timeout: 25_000 }),
-      homeLink.click(),
-    ])
+    await Promise.all([page.waitForURL((url) => new URL(url).pathname === '/', { timeout: 25_000 }), homeLink.click()])
     await expect(page.getByRole('link', { name: /Focus Chimes/i }).first()).toBeVisible()
     await expect(page.getByRole('link', { name: /Fib It/i }).first()).toBeVisible()
   })

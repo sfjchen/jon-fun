@@ -26,7 +26,12 @@ export async function extractPdfTextFromBuffer(buffer: ArrayBuffer): Promise<{
   const parser = new PDFParse({ data: new Uint8Array(buffer) })
   try {
     const textResult = await parser.getText()
-    const linesByPage = textResult.pages.map((p) => p.text.split('\n').map((l) => l.trim()).filter(Boolean))
+    const linesByPage = textResult.pages.map((p) =>
+      p.text
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean),
+    )
     const joined = linesByPage.map((lines) => lines.join(' ')).join('\n')
     const totalChars = joined.replace(/\s+/g, ' ').length
     const pageCount = Math.max(1, textResult.total)

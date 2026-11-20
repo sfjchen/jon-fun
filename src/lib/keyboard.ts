@@ -34,7 +34,9 @@ export function dailyLearnSubmitHint(mod: 'Cmd' | 'Ctrl' = modKeyLabel()): strin
  */
 export function isTypingTarget(t: EventTarget | null): boolean {
   const el = t instanceof HTMLElement ? t.closest<HTMLElement>('input,textarea,select,[contenteditable="true"]') : null
-  return !!el && !(el instanceof HTMLInputElement && /^(range|checkbox|radio|button|submit|reset|file|color)$/.test(el.type))
+  return (
+    !!el && !(el instanceof HTMLInputElement && /^(range|checkbox|radio|button|submit|reset|file|color)$/.test(el.type))
+  )
 }
 
 /**

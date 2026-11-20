@@ -19,9 +19,7 @@ function buildDecorations(doc: PmNode, activeQueries: string[]): DecorationSet {
     }
 
     for (const { from, to } of highlightRanges(lineText)) {
-      decos.push(
-        Decoration.inline(pos + 1 + from, pos + 1 + to, { class: 'tiptap-highlight-span' }),
-      )
+      decos.push(Decoration.inline(pos + 1 + from, pos + 1 + to, { class: 'tiptap-highlight-span' }))
     }
 
     const endMatch = trimmed.match(/(\?\?|\?)$/)
@@ -29,9 +27,7 @@ function buildDecorations(doc: PmNode, activeQueries: string[]): DecorationSet {
       const query = trimmed.slice(0, -endMatch[0]!.length).trim()
       const start = pos + 1 + lineText.length - endMatch[0]!.length
       const end = pos + 1 + lineText.length
-      const cls = activeQueries.includes(query)
-        ? 'tiptap-trigger-line tiptap-trigger-active'
-        : 'tiptap-trigger-line'
+      const cls = activeQueries.includes(query) ? 'tiptap-trigger-line tiptap-trigger-active' : 'tiptap-trigger-line'
       decos.push(Decoration.inline(start, end, { class: cls }))
     }
   })

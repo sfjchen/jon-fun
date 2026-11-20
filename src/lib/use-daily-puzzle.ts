@@ -29,14 +29,17 @@ export function useDailyPuzzle<T = unknown>(game: GameId, day: string) {
       }
     }
     void load()
-    return () => { controller.abort(); clearTimeout(timer) }
+    return () => {
+      controller.abort()
+      clearTimeout(timer)
+    }
   }, [key, game, day, attempt])
 
   return {
     ...(response?.key === key ? response : undefined),
     retry: () => {
       setResponse(undefined)
-      setAttempt(value => value + 1)
+      setAttempt((value) => value + 1)
     },
   }
 }

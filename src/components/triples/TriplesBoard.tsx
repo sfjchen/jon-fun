@@ -23,7 +23,7 @@ type Props = {
 export default function TriplesBoard({ board, selected, hinted = [], shake, disabled, onPick }: Props) {
   useHotkeys((k) => {
     const card = disabled ? undefined : board[gridKeyIndex(k, matchMedia('(min-width: 640px)').matches ? 4 : 3)]
-    if (card !== undefined) return onPick(card), true
+    if (card !== undefined) return (onPick(card), true)
   })
   return (
     <div className="mx-auto w-full max-w-xl">

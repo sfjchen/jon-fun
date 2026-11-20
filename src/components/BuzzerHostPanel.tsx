@@ -3,12 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import QRCode from 'qrcode'
 import { supabase } from '@/lib/supabase'
-import {
-  annotateQueue,
-  type Buzz,
-  type BuzzerSession,
-  type BuzzerStatus,
-} from '@/lib/jeopardy-buzzer'
+import { annotateQueue, type Buzz, type BuzzerSession, type BuzzerStatus } from '@/lib/jeopardy-buzzer'
 import type { JeopardyPlayOp, JeopardyPlayState } from '@/lib/jeopardy-play-ops'
 
 interface BuzzerHostPanelProps {
@@ -86,10 +81,18 @@ function playBuzzDing() {
     osc.start()
     osc.stop(ctx.currentTime + 0.25)
     setTimeout(() => ctx.close().catch(() => {}), 400)
-  } catch { /* audio blocked — silent fail */ }
+  } catch {
+    /* audio blocked — silent fail */
+  }
 }
 
-export default function BuzzerHostPanel({ slug, playState, dispatchPlayOp, awardAmount, onClose }: BuzzerHostPanelProps) {
+export default function BuzzerHostPanel({
+  slug,
+  playState,
+  dispatchPlayOp,
+  awardAmount,
+  onClose,
+}: BuzzerHostPanelProps) {
   const [session, setSession] = useState<BuzzerSession | null>(null)
   const [queue, setQueue] = useState<Buzz[]>([])
   const [qrDataUrl, setQrDataUrl] = useState<string>('')
@@ -110,7 +113,7 @@ export default function BuzzerHostPanel({ slug, playState, dispatchPlayOp, award
           body: JSON.stringify({ slug }),
         })
         if (!res.ok) throw new Error(await res.text())
-        const data = await res.json() as { session: BuzzerSession }
+        const data = (await res.json()) as { session: BuzzerSession }
         if (cancelled) return
         setSession(data.session)
         sessionVersionRef.current = data.session.version
@@ -119,7 +122,7 @@ export default function BuzzerHostPanel({ slug, playState, dispatchPlayOp, award
         if (data.session.currentRoundId) {
           const r = await fetch(`/api/jeopardy/buzzer/sessions/${data.session.pin}`, { cache: 'no-store' })
           if (r.ok) {
-            const d = await r.json() as { queue: Buzz[] }
+            const d = (await r.json()) as { queue: Buzz[] }
             if (!cancelled) {
               setQueue(d.queue)
               d.queue.forEach((b) => seenBuzzIdsRef.current.add(b.id))
@@ -130,16 +133,24 @@ export default function BuzzerHostPanel({ slug, playState, dispatchPlayOp, award
         if (!cancelled) setError((e as Error).message || 'Failed to start buzzer session')
       }
     })()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [slug])
 
   // ----- QR code -----
   useEffect(() => {
     if (!session) return
-    const url = typeof window !== 'undefined'
-      ? `${window.location.origin}/games/jeopardy/buzz/${session.pin}`
-      : `/games/jeopardy/buzz/${session.pin}`
-    QRCode.toDataURL(url, { errorCorrectionLevel: 'M', margin: 1, width: 220, color: { dark: '#1a1a1a', light: '#ffffff' } })
+    const url =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}/games/jeopardy/buzz/${session.pin}`
+        : `/games/jeopardy/buzz/${session.pin}`
+    QRCode.toDataURL(url, {
+      errorCorrectionLevel: 'M',
+      margin: 1,
+      width: 220,
+      color: { dark: '#1a1a1a', light: '#ffffff' },
+    })
       .then(setQrDataUrl)
       .catch(() => setQrDataUrl(''))
   }, [session])
@@ -217,59 +228,70 @@ export default function BuzzerHostPanel({ slug, playState, dispatchPlayOp, award
   }, [session?.id])
 
   // ----- Host actions -----
-  const doPatch = useCallback(async (kind: 'arm' | 'clear' | 'lock' | 'unlock') => {
-    if (!session) return
-    setPendingOp(true)
-    try {
-      const res = await fetch(`/api/jeopardy/buzzer/sessions/${session.pin}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ op: { kind } }),
-      })
-      if (!res.ok) throw new Error(await res.text())
-      const data = await res.json() as { session: BuzzerSession }
-      sessionVersionRef.current = data.session.version
-      setSession(data.session)
-      if (data.session.currentRoundId !== queueRoundRef.current) {
-        queueRoundRef.current = data.session.currentRoundId
-        setQueue([])
-        seenBuzzIdsRef.current = new Set()
+  const doPatch = useCallback(
+    async (kind: 'arm' | 'clear' | 'lock' | 'unlock') => {
+      if (!session) return
+      setPendingOp(true)
+      try {
+        const res = await fetch(`/api/jeopardy/buzzer/sessions/${session.pin}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ op: { kind } }),
+        })
+        if (!res.ok) throw new Error(await res.text())
+        const data = (await res.json()) as { session: BuzzerSession }
+        sessionVersionRef.current = data.session.version
+        setSession(data.session)
+        if (data.session.currentRoundId !== queueRoundRef.current) {
+          queueRoundRef.current = data.session.currentRoundId
+          setQueue([])
+          seenBuzzIdsRef.current = new Set()
+        }
+      } catch (e) {
+        setError((e as Error).message || `Failed to ${kind}`)
+        setTimeout(() => setError(null), 3000)
+      } finally {
+        setPendingOp(false)
       }
-    } catch (e) {
-      setError((e as Error).message || `Failed to ${kind}`)
-      setTimeout(() => setError(null), 3000)
-    } finally {
-      setPendingOp(false)
-    }
-  }, [session])
+    },
+    [session],
+  )
 
   const annotatedQueue = useMemo(() => annotateQueue(queue), [queue])
 
   // ----- Award helper: find a matching team by name (case-insensitive substring) -----
-  const findTeamIndex = useCallback((playerName: string): number => {
-    const needle = playerName.trim().toLowerCase()
-    if (!needle) return -1
-    return playState.teams.findIndex((t) => {
-      const n = t.name.trim().toLowerCase()
-      return n === needle || n.includes(needle) || needle.includes(n)
-    })
-  }, [playState.teams])
+  const findTeamIndex = useCallback(
+    (playerName: string): number => {
+      const needle = playerName.trim().toLowerCase()
+      if (!needle) return -1
+      return playState.teams.findIndex((t) => {
+        const n = t.name.trim().toLowerCase()
+        return n === needle || n.includes(needle) || needle.includes(n)
+      })
+    },
+    [playState.teams],
+  )
 
-  const handleAward = useCallback((buzz: Buzz, sign: 1 | -1) => {
-    const idx = findTeamIndex(buzz.name)
-    if (idx < 0) {
-      setError(`No team matches "${buzz.name}". Award manually from the team panel.`)
-      setTimeout(() => setError(null), 3500)
-      return
-    }
-    const amount = sign * (awardAmount ?? 200)
-    dispatchPlayOp({ kind: 'adjustTeamScore', index: idx, delta: amount })
-  }, [awardAmount, dispatchPlayOp, findTeamIndex])
+  const handleAward = useCallback(
+    (buzz: Buzz, sign: 1 | -1) => {
+      const idx = findTeamIndex(buzz.name)
+      if (idx < 0) {
+        setError(`No team matches "${buzz.name}". Award manually from the team panel.`)
+        setTimeout(() => setError(null), 3500)
+        return
+      }
+      const amount = sign * (awardAmount ?? 200)
+      dispatchPlayOp({ kind: 'adjustTeamScore', index: idx, delta: amount })
+    },
+    [awardAmount, dispatchPlayOp, findTeamIndex],
+  )
 
   if (!session) {
     return (
-      <div className="mt-6 mx-auto max-w-6xl rounded-xl border p-6 text-center"
-        style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-muted)' }}>
+      <div
+        className="mx-auto mt-6 max-w-6xl rounded-xl border p-6 text-center"
+        style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-muted)' }}
+      >
         {error ?? 'Starting buzzer session...'}
       </div>
     )
@@ -280,40 +302,64 @@ export default function BuzzerHostPanel({ slug, playState, dispatchPlayOp, award
   const armed = status === 'armed'
 
   return (
-    <div className="mt-6 mx-auto max-w-6xl rounded-xl border overflow-hidden"
-      style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)' }}>
-      <div className="px-4 py-3 flex items-center justify-between border-b" style={{ borderColor: 'var(--ink-border)' }}>
+    <div
+      className="mx-auto mt-6 max-w-6xl overflow-hidden rounded-xl border"
+      style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)' }}
+    >
+      <div
+        className="flex items-center justify-between border-b px-4 py-3"
+        style={{ borderColor: 'var(--ink-border)' }}
+      >
         <div className="flex items-center gap-3">
-          <span className="font-semibold" style={{ color: 'var(--ink-text)' }}>Buzzer</span>
-          <span className="px-2 py-1 rounded text-xs font-bold uppercase" style={{ backgroundColor: statusColor, color: 'white' }}>
+          <span className="font-semibold" style={{ color: 'var(--ink-text)' }}>
+            Buzzer
+          </span>
+          <span
+            className="rounded px-2 py-1 text-xs font-bold uppercase"
+            style={{ backgroundColor: statusColor, color: 'white' }}
+          >
             {STATUS_LABEL[status]}
           </span>
         </div>
-        <button onClick={onClose}
-          className="px-3 py-1 rounded-lg border text-sm hover:opacity-90"
-          style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
+        <button
+          onClick={onClose}
+          className="rounded-lg border px-3 py-1 text-sm hover:opacity-90"
+          style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+        >
           Close
         </button>
       </div>
 
       {error && (
-        <div className="px-4 py-2 text-sm" style={{ backgroundColor: '#fee2e2', color: '#991b1b' }}>{error}</div>
+        <div className="px-4 py-2 text-sm" style={{ backgroundColor: '#fee2e2', color: '#991b1b' }}>
+          {error}
+        </div>
       )}
 
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 md:grid-cols-2 p-6">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 p-6 md:grid-cols-2">
         {/* Left: PIN + QR */}
         <div className="flex flex-col items-center gap-4">
-          <div className="text-sm uppercase tracking-wider" style={{ color: 'var(--ink-muted)' }}>Join PIN</div>
-          <div className="font-bold tracking-widest tabular-nums"
-            style={{ fontSize: '6rem', lineHeight: 1, color: 'var(--ink-text)' }}>
+          <div className="text-sm tracking-wider uppercase" style={{ color: 'var(--ink-muted)' }}>
+            Join PIN
+          </div>
+          <div
+            className="font-bold tracking-widest tabular-nums"
+            style={{ fontSize: '6rem', lineHeight: 1, color: 'var(--ink-text)' }}
+          >
             {session.pin}
           </div>
           {qrDataUrl && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={qrDataUrl} alt={`QR for join PIN ${session.pin}`} width={220} height={220}
-              className="rounded-lg border" style={{ borderColor: 'var(--ink-border)' }} />
+            <img
+              src={qrDataUrl}
+              alt={`QR for join PIN ${session.pin}`}
+              width={220}
+              height={220}
+              className="rounded-lg border"
+              style={{ borderColor: 'var(--ink-border)' }}
+            />
           )}
-          <div className="text-xs text-center" style={{ color: 'var(--ink-muted)' }}>
+          <div className="text-center text-xs" style={{ color: 'var(--ink-muted)' }}>
             sfjc.dev/games/jeopardy/buzz/{session.pin}
           </div>
         </div>
@@ -322,60 +368,91 @@ export default function BuzzerHostPanel({ slug, playState, dispatchPlayOp, award
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-3 gap-2">
             <button
-              data-hotkey="a" onClick={() => doPatch('arm')}
+              data-hotkey="a"
+              onClick={() => doPatch('arm')}
               disabled={pendingOp}
-              className="px-4 py-4 rounded-lg text-white font-bold text-lg shadow disabled:opacity-50"
-              style={{ backgroundColor: armed ? '#15803d' : '#16a34a' }}>
+              className="rounded-lg px-4 py-4 text-lg font-bold text-white shadow disabled:opacity-50"
+              style={{ backgroundColor: armed ? '#15803d' : '#16a34a' }}
+            >
               {armed ? 'Re-Arm (New Round)' : 'Arm'}
             </button>
             <button
-              data-hotkey="l" onClick={() => doPatch(status === 'locked' ? 'unlock' : 'lock')}
+              data-hotkey="l"
+              onClick={() => doPatch(status === 'locked' ? 'unlock' : 'lock')}
               disabled={pendingOp || status === 'idle'}
-              className="px-4 py-4 rounded-lg text-white font-bold text-lg shadow disabled:opacity-40"
-              style={{ backgroundColor: '#dc2626' }}>
+              className="rounded-lg px-4 py-4 text-lg font-bold text-white shadow disabled:opacity-40"
+              style={{ backgroundColor: '#dc2626' }}
+            >
               {status === 'locked' ? 'Unlock' : 'Lock'}
             </button>
             <button
-              data-hotkey="c" onClick={() => doPatch('clear')}
+              data-hotkey="c"
+              onClick={() => doPatch('clear')}
               disabled={pendingOp}
-              className="px-4 py-4 rounded-lg font-bold text-lg shadow border disabled:opacity-50"
-              style={{ backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)', borderColor: 'var(--ink-border)' }}>
+              className="rounded-lg border px-4 py-4 text-lg font-bold shadow disabled:opacity-50"
+              style={{ backgroundColor: 'var(--ink-bg)', color: 'var(--ink-text)', borderColor: 'var(--ink-border)' }}
+            >
               Clear
             </button>
           </div>
 
           <div>
-            <div className="text-xs uppercase tracking-wider mb-2" style={{ color: 'var(--ink-muted)' }}>
+            <div className="mb-2 text-xs tracking-wider uppercase" style={{ color: 'var(--ink-muted)' }}>
               Queue ({annotatedQueue.length})
             </div>
             {annotatedQueue.length === 0 ? (
-              <div className="text-sm py-6 text-center rounded-lg border"
-                style={{ color: 'var(--ink-muted)', borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-bg)' }}>
+              <div
+                className="rounded-lg border py-6 text-center text-sm"
+                style={{
+                  color: 'var(--ink-muted)',
+                  borderColor: 'var(--ink-border)',
+                  backgroundColor: 'var(--ink-bg)',
+                }}
+              >
                 {armed ? 'Waiting for first buzz...' : 'Arm the buzzer to start a round.'}
               </div>
             ) : (
               <ul className="space-y-2">
                 {annotatedQueue.map((b, i) => (
-                  <li key={b.id}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg border"
-                    style={{ backgroundColor: i === 0 ? 'rgba(22, 163, 74, 0.08)' : 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}>
-                    <span className="font-bold tabular-nums text-lg w-7 text-right"
-                      style={{ color: i === 0 ? '#15803d' : 'var(--ink-text)' }}>#{b.rank ?? i + 1}</span>
-                    <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: b.color }} aria-hidden />
-                    <span className="font-semibold flex-1 truncate" style={{ color: 'var(--ink-text)' }}>{b.name}</span>
+                  <li
+                    key={b.id}
+                    className="flex items-center gap-3 rounded-lg border px-3 py-2"
+                    style={{
+                      backgroundColor: i === 0 ? 'rgba(22, 163, 74, 0.08)' : 'var(--ink-bg)',
+                      borderColor: 'var(--ink-border)',
+                    }}
+                  >
+                    <span
+                      className="w-7 text-right text-lg font-bold tabular-nums"
+                      style={{ color: i === 0 ? '#15803d' : 'var(--ink-text)' }}
+                    >
+                      #{b.rank ?? i + 1}
+                    </span>
+                    <span
+                      className="inline-block h-3 w-3 rounded-full"
+                      style={{ backgroundColor: b.color }}
+                      aria-hidden
+                    />
+                    <span className="flex-1 truncate font-semibold" style={{ color: 'var(--ink-text)' }}>
+                      {b.name}
+                    </span>
                     <span className="text-xs tabular-nums" style={{ color: 'var(--ink-muted)' }}>
                       {i === 0 ? '0 ms' : `+${b.deltaFromFirstMs} ms`}
                     </span>
                     <button
                       onClick={() => handleAward(b, 1)}
-                      className="px-2 py-1 rounded text-white text-sm font-bold"
-                      style={{ backgroundColor: '#16a34a' }} title="Award points to matching team">
+                      className="rounded px-2 py-1 text-sm font-bold text-white"
+                      style={{ backgroundColor: '#16a34a' }}
+                      title="Award points to matching team"
+                    >
                       +
                     </button>
                     <button
                       onClick={() => handleAward(b, -1)}
-                      className="px-2 py-1 rounded text-white text-sm font-bold"
-                      style={{ backgroundColor: '#dc2626' }} title="Deduct points from matching team">
+                      className="rounded px-2 py-1 text-sm font-bold text-white"
+                      style={{ backgroundColor: '#dc2626' }}
+                      title="Deduct points from matching team"
+                    >
                       -
                     </button>
                   </li>

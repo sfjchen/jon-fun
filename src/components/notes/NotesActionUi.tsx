@@ -94,7 +94,7 @@ export function NotesOverflowMenu({
         <div
           id={menuId}
           role="menu"
-          className="absolute right-0 top-full z-50 mt-0.5 min-w-[9rem] rounded border border-[var(--uv-border)] bg-[var(--uv-bg-base)] py-0.5 shadow-md"
+          className="absolute top-full right-0 z-50 mt-0.5 min-w-[9rem] rounded border border-[var(--uv-border)] bg-[var(--uv-bg-base)] py-0.5 shadow-md"
           data-testid={testId ? `${testId}-menu` : undefined}
         >
           {items.map((item) => (
@@ -129,13 +129,7 @@ type NotesContextMenuState = {
 }
 
 /** Floating context menu — right-click (desktop) or long-press (touch) bonus path. */
-export function NotesContextMenu({
-  state,
-  onClose,
-}: {
-  state: NotesContextMenuState | null
-  onClose: () => void
-}) {
+export function NotesContextMenu({ state, onClose }: { state: NotesContextMenuState | null; onClose: () => void }) {
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -194,9 +188,7 @@ export function NotesContextMenu({
 const LONG_PRESS_MS = 500
 
 /** Open the same menu on contextmenu (desktop) or long-press (touch). */
-export function useNotesContextTrigger(
-  buildItems: (e: { clientX: number; clientY: number }) => NotesMenuItem[],
-) {
+export function useNotesContextTrigger(buildItems: (e: { clientX: number; clientY: number }) => NotesMenuItem[]) {
   const [state, setState] = useState<NotesContextMenuState | null>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const posRef = useRef({ x: 0, y: 0 })
@@ -207,11 +199,7 @@ export function useNotesContextTrigger(
     (clientX: number, clientY: number, testId?: string) => {
       const items = buildItems({ clientX, clientY })
       if (items.length === 0) return
-      setState(
-        testId
-          ? { x: clientX, y: clientY, items, testId }
-          : { x: clientX, y: clientY, items },
-      )
+      setState(testId ? { x: clientX, y: clientY, items, testId } : { x: clientX, y: clientY, items })
     },
     [buildItems],
   )

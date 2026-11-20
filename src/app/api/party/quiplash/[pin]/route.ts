@@ -20,7 +20,12 @@ async function bumpRoom(pin: string, patch: Record<string, unknown>, nowIso: str
 }
 
 async function addScore(pin: string, playerId: string, delta: number) {
-  const { data: p } = await supabase.from('party_players').select('score').eq('room_pin', pin).eq('player_id', playerId).single()
+  const { data: p } = await supabase
+    .from('party_players')
+    .select('score')
+    .eq('room_pin', pin)
+    .eq('player_id', playerId)
+    .single()
   const next = (p?.score ?? 0) + delta
   await supabase.from('party_players').update({ score: next }).eq('room_pin', pin).eq('player_id', playerId)
 }
@@ -44,7 +49,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'Room not found' }, { status: 404 })
     }
 
-    const { data: players } = await supabase.from('party_players').select('*').eq('room_pin', pin).order('joined_at', { ascending: true })
+    const { data: players } = await supabase
+      .from('party_players')
+      .select('*')
+      .eq('room_pin', pin)
+      .order('joined_at', { ascending: true })
     const playerList = players ?? []
     const now = new Date().toISOString()
 
@@ -59,7 +68,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         return NextResponse.json({ error: 'Not in answer phase' }, { status: 400 })
       }
       const round = phase === 'quiplash_1_answer' ? 1 : 2
-      const { data: m } = await supabase.from('party_quiplash_matchups').select('*').eq('id', matchupId).eq('room_pin', pin).single()
+      const { data: m } = await supabase
+        .from('party_quiplash_matchups')
+        .select('*')
+        .eq('id', matchupId)
+        .eq('room_pin', pin)
+        .single()
       if (!m || m.round_index !== round) {
         return NextResponse.json({ error: 'Invalid matchup' }, { status: 400 })
       }
@@ -88,7 +102,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       for (const mid of ids) {
         const { data: ans } = await supabase.from('party_quiplash_answers').select('player_id').eq('matchup_id', mid)
         const set = new Set((ans ?? []).map((a) => a.player_id))
-        const { data: mm } = await supabase.from('party_quiplash_matchups').select('player_a,player_b').eq('id', mid).single()
+        const { data: mm } = await supabase
+          .from('party_quiplash_matchups')
+          .select('player_a,player_b')
+          .eq('id', mid)
+          .single()
         if (!mm || !set.has(mm.player_a) || !set.has(mm.player_b)) complete = false
       }
       if (complete) {
@@ -205,7 +223,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           round_index: 3,
         })
         const deadline = new Date(Date.now() + PARTY_PHASE_SECONDS_DEFAULT * 1000).toISOString()
-        await bumpRoom(pin, { phase: 'quiplash_final_answer', round_index: 3, step_index: 0, deadline_at: deadline }, now)
+        await bumpRoom(
+          pin,
+          { phase: 'quiplash_final_answer', round_index: 3, step_index: 0, deadline_at: deadline },
+          now,
+        )
         return NextResponse.json({ success: true })
       }
       if (phase === 'quiplash_final_scores') {

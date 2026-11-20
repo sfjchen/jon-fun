@@ -43,13 +43,13 @@ function HomeTileContent({ game }: { game: GameCardGame }) {
             priority
           />
         ) : (
-          <span className="select-none text-3xl leading-none sm:text-4xl" style={{ color: 'var(--ink-text)' }}>
+          <span className="text-3xl leading-none select-none sm:text-4xl" style={{ color: 'var(--ink-text)' }}>
             {game.icon}
           </span>
         )}
       </div>
       <div
-        className="line-clamp-2 text-center font-lora text-base font-semibold leading-tight sm:text-xl sm:leading-snug"
+        className="line-clamp-2 text-center font-lora text-base leading-tight font-semibold sm:text-xl sm:leading-snug"
         style={{ color: 'var(--ink-text)' }}
       >
         {game.title}
@@ -87,9 +87,16 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDesc
     homeTileVisual
   ) : (
     <>
-      <div className={`flex h-16 items-center justify-center shrink-0 ${useCompact ? 'mb-4' : 'mb-[30px]'}`}>
+      <div className={`flex h-16 shrink-0 items-center justify-center ${useCompact ? 'mb-4' : 'mb-[30px]'}`}>
         {game.icon.startsWith('/') ? (
-          <Image src={game.icon} alt={game.title} width={64} height={64} className="h-14 w-14 sm:h-16 sm:w-16 object-contain drop-shadow-lg" priority />
+          <Image
+            src={game.icon}
+            alt={game.title}
+            width={64}
+            height={64}
+            className="h-14 w-14 object-contain drop-shadow-lg sm:h-16 sm:w-16"
+            priority
+          />
         ) : (
           <span className="text-5xl leading-none">{game.icon}</span>
         )}
@@ -101,7 +108,10 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDesc
         {game.title}
       </h2>
       {!hideDescription && (
-        <p className={`text-sm flex-1 min-h-0 ${useCompact ? 'mb-4 line-clamp-2' : 'mb-[30px] line-clamp-3'}`} style={{ color: 'var(--ink-muted)' }}>
+        <p
+          className={`min-h-0 flex-1 text-sm ${useCompact ? 'mb-4 line-clamp-2' : 'mb-[30px] line-clamp-3'}`}
+          style={{ color: 'var(--ink-muted)' }}
+        >
           {game.description}
         </p>
       )}
@@ -117,7 +127,7 @@ export function GameCard({ game, onComingSoonClick, linePaper, compact, hideDesc
         type="button"
         onClick={onComingSoonClick}
         disabled={!clientReady}
-        className={`${cardClass} disabled:opacity-50${homeTile ? ' text-center' : ''}`}
+        className={`${cardClass} disabled:opacity-50${homeTile ? 'text-center' : ''}`}
         aria-label={homeTile ? 'Preview coming soon projects' : undefined}
       >
         {content}

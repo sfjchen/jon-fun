@@ -161,7 +161,12 @@ export type SaveReaderProgressInput = {
   charOffset?: number
 }
 
-export function saveReaderProgress(bookId: string, chapterId: string, scrollY: number, anchor?: Pick<SaveReaderProgressInput, 'blockId' | 'charOffset'>) {
+export function saveReaderProgress(
+  bookId: string,
+  chapterId: string,
+  scrollY: number,
+  anchor?: Pick<SaveReaderProgressInput, 'blockId' | 'charOffset'>,
+) {
   if (!isBrowser()) return
 
   const payload: ReaderProgress = {
@@ -219,7 +224,12 @@ export function loadReaderBookmark(bookId: string): ReaderBookmark | null {
     const raw = window.localStorage.getItem(bookmarkKey(bookId))
     if (!raw) return null
     const parsed = JSON.parse(raw) as ReaderBookmark
-    if (typeof parsed.chapterId !== 'string' || typeof parsed.scrollY !== 'number' || typeof parsed.savedAt !== 'string') return null
+    if (
+      typeof parsed.chapterId !== 'string' ||
+      typeof parsed.scrollY !== 'number' ||
+      typeof parsed.savedAt !== 'string'
+    )
+      return null
     return parsed
   } catch {
     return null

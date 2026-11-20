@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin as supabase } from '@/lib/supabase'
-import {
-  applyPlayOp,
-  isJeopardyPlayOp,
-  normalizePlayState,
-  type JeopardyPlayOp,
-} from '@/lib/jeopardy-play-ops'
+import { applyPlayOp, isJeopardyPlayOp, normalizePlayState, type JeopardyPlayOp } from '@/lib/jeopardy-play-ops'
 
 function isValidSlug(s: string): boolean {
   return typeof s === 'string' && /^[a-z0-9-]{1,80}$/.test(s)

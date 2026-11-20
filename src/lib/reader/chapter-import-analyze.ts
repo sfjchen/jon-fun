@@ -95,9 +95,7 @@ export function analyzeImportDraft(
   const wordCounts = chapters.map((c) => c.wordCount)
   const totalWords = wordCounts.reduce((a, b) => a + b, 0)
   const med = median(wordCounts)
-  const tinyChapterIndices = chapters
-    .map((c, i) => (c.wordCount < tinyWordThreshold ? i : -1))
-    .filter((i) => i >= 0)
+  const tinyChapterIndices = chapters.map((c, i) => (c.wordCount < tinyWordThreshold ? i : -1)).filter((i) => i >= 0)
 
   const shortChapterFraction = chapters.length ? tinyChapterIndices.length / chapters.length : 0
 

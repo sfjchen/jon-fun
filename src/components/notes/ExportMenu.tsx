@@ -51,7 +51,7 @@ export default function ExportMenu({ onExportMd, onExportPdf, pdfBusy, hideShort
       {open ? (
         <div
           role="menu"
-          className="absolute bottom-full right-0 z-50 mb-1 min-w-[9rem] rounded border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] py-1 shadow-lg"
+          className="absolute right-0 bottom-full z-50 mb-1 min-w-[9rem] rounded border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] py-1 shadow-lg"
         >
           <button
             type="button"

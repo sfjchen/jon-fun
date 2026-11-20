@@ -87,7 +87,7 @@ function ComposerBox({
 }) {
   return (
     <div
-      className="reader-inline-composer reader-note-prose my-2 ml-1 rounded-lg border py-2 pl-4 pr-2"
+      className="reader-inline-composer reader-note-prose my-2 ml-1 rounded-lg border py-2 pr-2 pl-4"
       style={{ borderColor: 'var(--reader-border)', backgroundColor: 'var(--reader-panel)' }}
     >
       <textarea
@@ -122,9 +122,13 @@ function renderThreadCard(
   onDraft: (d: string) => void,
 ) {
   return (
-    <div key={t.id} className="reader-note-prose rounded-lg border py-2 pl-4 pr-2" style={{ borderColor: 'var(--reader-border)' }}>
+    <div
+      key={t.id}
+      className="reader-note-prose rounded-lg border py-2 pr-2 pl-4"
+      style={{ borderColor: 'var(--reader-border)' }}
+    >
       {t.messages.map((m) => (
-        <p key={m.id} className="whitespace-pre-wrap leading-relaxed" style={{ color: 'var(--reader-text)' }}>
+        <p key={m.id} className="leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--reader-text)' }}>
           <span className="text-base font-semibold" style={{ color: 'var(--reader-accent)' }}>
             {m.authorDisplay}
           </span>
@@ -174,14 +178,15 @@ function GapInterParagraphRow({
   }
 
   return (
-    <div
-      className="reader-para-gap my-0.5 w-full"
-      style={{ touchAction: 'manipulation' }}
-    >
+    <div className="reader-para-gap my-0.5 w-full" style={{ touchAction: 'manipulation' }}>
       <div
         role="separator"
-        aria-label={gCount > 0 ? 'Between paragraphs — tap to show notes, double-tap to add' : 'Between paragraphs — double-tap to add a note'}
-        className="flex min-h-2 w-full select-none items-center justify-center"
+        aria-label={
+          gCount > 0
+            ? 'Between paragraphs — tap to show notes, double-tap to add'
+            : 'Between paragraphs — double-tap to add a note'
+        }
+        className="flex min-h-2 w-full items-center justify-center select-none"
         onPointerUp={(e) => {
           if (e.button !== 0) return
           const pr = lastPtrUp.current
@@ -208,7 +213,11 @@ function GapInterParagraphRow({
         }}
       >
         {gCount > 0 ? (
-          <span className="min-h-4 text-lg leading-none opacity-40" style={{ color: 'var(--reader-muted)' }} aria-hidden>
+          <span
+            className="min-h-4 text-lg leading-none opacity-40"
+            style={{ color: 'var(--reader-muted)' }}
+            aria-hidden
+          >
             ·
           </span>
         ) : null}
@@ -251,7 +260,9 @@ export function ReaderBody({
       const a = sel.anchorNode
       if (!a) return
       const el = (
-        a.nodeType === Node.TEXT_NODE ? a.parentElement?.closest?.('[data-block-id]') : (a as HTMLElement).closest?.('[data-block-id]')
+        a.nodeType === Node.TEXT_NODE
+          ? a.parentElement?.closest?.('[data-block-id]')
+          : (a as HTMLElement).closest?.('[data-block-id]')
       ) as HTMLElement | null
       if (!el?.dataset.blockId) return
       const blockId = el.dataset.blockId
@@ -293,7 +304,7 @@ export function ReaderBody({
 
     return (
       <article
-        className="reader-prose reader-annotation-article pb-16 reader-scrollbar"
+        className="reader-prose reader-annotation-article reader-scrollbar pb-16"
         data-indent={prefs.textIndent}
         data-focus-band={focusBand ? 'on' : 'off'}
         style={proseStyle}
@@ -302,7 +313,12 @@ export function ReaderBody({
         {chapter.paragraphs.map((paragraph, index) => {
           const blockId = readerBlockIdForParagraph(chapter.id, index)
           const block = chapter.blocks?.[index]
-          if (block?.kind === 'image') return <div key={blockId} data-block-id={blockId}><ReaderIllustration block={block} /></div>
+          if (block?.kind === 'image')
+            return (
+              <div key={blockId} data-block-id={blockId}>
+                <ReaderIllustration block={block} />
+              </div>
+            )
           const ptext = normalizeParagraphText(paragraph)
           const hls = b.highlights.filter((h) => h.blockId === blockId)
           const rTs = rangeThreadsInBlock(b, blockId)
@@ -329,7 +345,8 @@ export function ReaderBody({
 
           const gapAfterPrev = index > 0 ? index - 1 : -1
           const gCount = gapAfterPrev >= 0 ? gapMessageCount(b, gapAfterPrev) : 0
-          const showGapComposer = composer?.anchor.kind === 'gap' && gapAfterPrev >= 0 && composer.anchor.afterParagraphIndex === gapAfterPrev
+          const showGapComposer =
+            composer?.anchor.kind === 'gap' && gapAfterPrev >= 0 && composer.anchor.afterParagraphIndex === gapAfterPrev
 
           const blockComposer =
             composer?.anchor.kind === 'block' && composer.anchor.blockId === blockId ? composer : null
@@ -360,9 +377,7 @@ export function ReaderBody({
                       style={{ borderColor: 'var(--reader-accent)' }}
                     >
                       {b.threads
-                        .filter(
-                          (t) => t.anchor.kind === 'gap' && t.anchor.afterParagraphIndex === gapAfterPrev,
-                        )
+                        .filter((t) => t.anchor.kind === 'gap' && t.anchor.afterParagraphIndex === gapAfterPrev)
                         .map((t) => (
                           <div key={t.id}>
                             {renderThreadCard(t, post, replyDraft[t.id] ?? '', (x) => setRep(t.id, x))}
@@ -377,7 +392,7 @@ export function ReaderBody({
                 id={block?.anchorId}
                 data-reader-kind={block?.kind}
                 role={block?.kind === 'heading' ? 'heading' : undefined}
-                aria-level={block?.kind === 'heading' ? block.level ?? 2 : undefined}
+                aria-level={block?.kind === 'heading' ? (block.level ?? 2) : undefined}
                 data-search-paragraph={index}
                 data-block-id={blockId}
                 className="min-w-0"
@@ -419,11 +434,19 @@ export function ReaderBody({
                   if (!piece) return null
                   const hasHl = seg.layers.some((l) => l.kind === 'h')
                   const cLayer = seg.layers.find((l) => l.kind === 'c')
-                  let inner: ReactNode = formattedReaderText(ptext, block, prefs, highlightQuery, seg.start, seg.end, useBionic)
+                  let inner: ReactNode = formattedReaderText(
+                    ptext,
+                    block,
+                    prefs,
+                    highlightQuery,
+                    seg.start,
+                    seg.end,
+                    useBionic,
+                  )
                   if (hasHl) {
                     const id = seg.layers.find((l) => l.kind === 'h')?.id
                     const h = b.highlights.find((x) => x.id === id)
-                    const cname = h ? HL_CLASS[h.color] ?? HL_CLASS.yellow : HL_CLASS.yellow
+                    const cname = h ? (HL_CLASS[h.color] ?? HL_CLASS.yellow) : HL_CLASS.yellow
                     inner = <span className={cname}>{inner}</span>
                   }
                   if (cLayer) {
@@ -437,7 +460,9 @@ export function ReaderBody({
                             type="button"
                             className="reader-focus ms-0.5 inline-flex h-4 min-w-4 items-center align-super text-[9px] font-bold"
                             aria-label={`${mcount} note(s)`}
-                            onClick={() => onExpand(expandedKey === `thread:${cLayer.id}` ? null : `thread:${cLayer.id}`)}
+                            onClick={() =>
+                              onExpand(expandedKey === `thread:${cLayer.id}` ? null : `thread:${cLayer.id}`)
+                            }
                           >
                             {mcount}
                           </button>
@@ -460,21 +485,23 @@ export function ReaderBody({
                 ) : null}
               </p>
 
-              {rTs.map(
-                (t) =>
-                  expandedKey === `thread:${t.id}` ? (
-                    <div
-                      key={t.id}
-                      className="reader-note-prose ml-1 border-l-2 pl-4"
-                      style={{ borderColor: 'var(--reader-accent)' }}
-                    >
+              {rTs.map((t) =>
+                expandedKey === `thread:${t.id}` ? (
+                  <div
+                    key={t.id}
+                    className="reader-note-prose ml-1 border-l-2 pl-4"
+                    style={{ borderColor: 'var(--reader-accent)' }}
+                  >
                     {renderThreadCard(t, post, replyDraft[t.id] ?? '', (x) => setRep(t.id, x))}
                   </div>
                 ) : null,
               )}
 
               {showBlock ? (
-                <div className="reader-note-prose ml-1 space-y-3 border-l-2 pl-4" style={{ borderColor: 'var(--reader-accent)' }}>
+                <div
+                  className="reader-note-prose ml-1 space-y-3 border-l-2 pl-4"
+                  style={{ borderColor: 'var(--reader-accent)' }}
+                >
                   {bTs.map((t) => (
                     <div key={t.id}>{renderThreadCard(t, post, replyDraft[t.id] ?? '', (x) => setRep(t.id, x))}</div>
                   ))}
@@ -502,14 +529,13 @@ export function ReaderBody({
             </Fragment>
           )
         })}
-
       </article>
     )
   }
 
   return (
     <article
-      className="reader-prose pb-16 reader-scrollbar"
+      className="reader-prose reader-scrollbar pb-16"
       data-indent={prefs.textIndent}
       data-focus-band={focusBand ? 'on' : 'off'}
       style={proseStyle}
@@ -518,10 +544,24 @@ export function ReaderBody({
       {chapter.paragraphs.map((paragraph, index) => {
         const blockId = readerBlockIdForParagraph(chapter.id, index)
         const block = chapter.blocks?.[index]
-        if (block?.kind === 'image') return <div key={blockId} data-block-id={blockId}><ReaderIllustration block={block} /></div>
+        if (block?.kind === 'image')
+          return (
+            <div key={blockId} data-block-id={blockId}>
+              <ReaderIllustration block={block} />
+            </div>
+          )
         const cCount = commentGutter?.countsByBlock[blockId] ?? 0
         const row = (
-          <p key={`${chapter.id}-${index}`} id={block?.anchorId} data-reader-kind={block?.kind} role={block?.kind === 'heading' ? 'heading' : undefined} aria-level={block?.kind === 'heading' ? block.level ?? 2 : undefined} data-search-paragraph={index} data-block-id={blockId} className={commentGutter ? 'min-w-0 flex-1' : undefined}>
+          <p
+            key={`${chapter.id}-${index}`}
+            id={block?.anchorId}
+            data-reader-kind={block?.kind}
+            role={block?.kind === 'heading' ? 'heading' : undefined}
+            aria-level={block?.kind === 'heading' ? (block.level ?? 2) : undefined}
+            data-search-paragraph={index}
+            data-block-id={blockId}
+            className={commentGutter ? 'min-w-0 flex-1' : undefined}
+          >
             {formattedReaderText(paragraph, block, prefs, highlightQuery)}
           </p>
         )
@@ -531,8 +571,10 @@ export function ReaderBody({
             <div className="flex w-7 shrink-0 flex-col items-center pt-1 sm:w-8">
               <button
                 type="button"
-                className={`reader-focus flex h-7 w-7 items-center justify-center rounded-lg border text-[10px] font-bold leading-none sm:h-8 sm:w-8 sm:text-xs ${
-                  commentGutter.highlightBlockId === blockId ? 'ring-2 ring-[var(--reader-accent)] ring-offset-1 ring-offset-[var(--reader-bg)]' : ''
+                className={`reader-focus flex h-7 w-7 items-center justify-center rounded-lg border text-[10px] leading-none font-bold sm:h-8 sm:w-8 sm:text-xs ${
+                  commentGutter.highlightBlockId === blockId
+                    ? 'ring-2 ring-[var(--reader-accent)] ring-offset-1 ring-offset-[var(--reader-bg)]'
+                    : ''
                 }`}
                 style={{
                   borderColor: 'var(--reader-border)',
@@ -542,7 +584,11 @@ export function ReaderBody({
                       : 'var(--reader-panel)',
                   color: 'var(--reader-text)',
                 }}
-                aria-label={cCount > 0 ? `${cCount} discussion note${cCount === 1 ? '' : 's'} on this paragraph` : 'Add discussion note on this paragraph'}
+                aria-label={
+                  cCount > 0
+                    ? `${cCount} discussion note${cCount === 1 ? '' : 's'} on this paragraph`
+                    : 'Add discussion note on this paragraph'
+                }
                 onClick={() => commentGutter.onOpenThread(blockId)}
               >
                 {cCount > 0 ? (cCount > 99 ? '99+' : cCount) : '+'}

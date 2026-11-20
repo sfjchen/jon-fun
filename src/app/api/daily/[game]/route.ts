@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { dailyPuzzle } from '@/lib/daily/server'
 import { playableDay, siteDay } from '@/lib/daily'
 import { GAME_IDS, type GameId } from '@/lib/results'
-export const maxDuration=60
+export const maxDuration = 60
 export async function GET(req: Request, { params }: { params: Promise<{ game: string }> }) {
   const { game } = await params
   const requested = new URL(req.url).searchParams.get('d')
@@ -10,6 +10,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ game: st
   if (!GAME_IDS.includes(game as GameId) || !playableDay(game, day)) {
     return NextResponse.json({ error: 'Invalid game or date' }, { status: 400 })
   }
-  try { return NextResponse.json(await dailyPuzzle(game as GameId, day), { headers: { 'Cache-Control': requested ? 'public, s-maxage=300, stale-while-revalidate=600' : 'no-store' } }) }
-  catch (e) { return NextResponse.json({ error: e instanceof Error ? e.message : 'Puzzle unavailable' }, { status: 503 }) }
+  try {
+    return NextResponse.json(await dailyPuzzle(game as GameId, day), {
+      headers: { 'Cache-Control': requested ? 'public, s-maxage=300, stale-while-revalidate=600' : 'no-store' },
+    })
+  } catch (e) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : 'Puzzle unavailable' }, { status: 503 })
+  }
 }

@@ -15,7 +15,7 @@ export default function PokerLobbyPage({ params }: { params: Promise<{ pin: stri
 
   if (!pin) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900">
         <div className="text-white">Loading...</div>
       </div>
     )
@@ -31,11 +31,6 @@ export default function PokerLobbyPage({ params }: { params: Promise<{ pin: stri
   }
 
   return (
-    <PokerLobby
-      pin={pin}
-      onStartGame={() => router.push(`${base}/games/poker/table/${pin}`)}
-      onBack={handleBack}
-    />
+    <PokerLobby pin={pin} onStartGame={() => router.push(`${base}/games/poker/table/${pin}`)} onBack={handleBack} />
   )
 }
-

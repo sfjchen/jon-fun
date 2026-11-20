@@ -1,7 +1,7 @@
 /* 1 stylesheet request for every web font. Each font file still downloads only on pages that use it. */
 @import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Lora:wght@400;600&family=Roboto:wght@400;500;700&family=VT323&family=Playfair+Display:wght@400;600;700&family=EB+Garamond:wght@400;500;600&family=Cinzel:wght@400;600&display=swap');
-@import "tailwindcss";
-@import "./game-themes.css";
+@import 'tailwindcss';
+@import './game-themes.css';
 
 /* Ink & Paper design tokens — cream + burgundy palette */
 :root {
@@ -24,7 +24,7 @@
 }
 
 /* Notebook theme: map ink vars to nb vars */
-[data-theme="notebook"] {
+[data-theme='notebook'] {
   --ink-bg: var(--nb-bg);
   --ink-text: var(--nb-text);
   --ink-muted: var(--nb-muted);
@@ -40,21 +40,21 @@ html.notebook-theme-root {
 }
 
 /* Notebook: Patrick Hand (readable handwritten); half-step between original 1.2rem/0.03em and full bump */
-[data-theme="notebook"] {
+[data-theme='notebook'] {
   font-family: 'Patrick Hand', cursive;
   font-size: 1.225rem;
   letter-spacing: 0.043em;
 }
-[data-theme="notebook"] .font-lora {
+[data-theme='notebook'] .font-lora {
   font-family: 'Patrick Hand', cursive;
 }
-[data-theme="notebook"] input,
-[data-theme="notebook"] textarea,
-[data-theme="notebook"] button,
-[data-theme="notebook"] select {
+[data-theme='notebook'] input,
+[data-theme='notebook'] textarea,
+[data-theme='notebook'] button,
+[data-theme='notebook'] select {
   font-family: inherit;
 }
-[data-theme="notebook"] .font-mono {
+[data-theme='notebook'] .font-mono {
   font-family: 'Patrick Hand', cursive;
 }
 
@@ -83,7 +83,8 @@ html.notebook-theme-root {
 }
 
 @layer base {
-  html, body {
+  html,
+  body {
     overflow-x: hidden;
   }
   body {
@@ -143,7 +144,10 @@ html.notebook-theme-root {
     border: 1px solid var(--reader-border);
     background: var(--reader-panel);
     color: var(--reader-text);
-    transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      background-color 160ms ease;
   }
 
   .reader-chip:hover {
@@ -151,7 +155,7 @@ html.notebook-theme-root {
     border-color: var(--reader-accent);
   }
 
-  .reader-chip[data-active="true"] {
+  .reader-chip[data-active='true'] {
     background: color-mix(in srgb, var(--reader-accent) 16%, var(--reader-panel));
     border-color: var(--reader-accent);
     color: var(--reader-text);
@@ -179,17 +183,22 @@ html.notebook-theme-root {
   }
 
   .reader-workspace {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family:
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      sans-serif;
     letter-spacing: normal;
   }
 
   @media (min-width: 768px) {
-    .reader-workspace[data-reader-ui="novel"] .reader-toolbar {
+    .reader-workspace[data-reader-ui='novel'] .reader-toolbar {
       position: static;
     }
   }
 
-  .reader-prose[data-indent="true"] p + p {
+  .reader-prose[data-indent='true'] p + p {
     text-indent: 1.4em;
   }
 
@@ -202,7 +211,7 @@ html.notebook-theme-root {
     margin-bottom: 0;
   }
 
-  .reader-prose [data-reader-kind="heading"] {
+  .reader-prose [data-reader-kind='heading'] {
     margin-block: 2em 1em;
     font-weight: 600;
     font-size: 1.15em;
@@ -213,7 +222,7 @@ html.notebook-theme-root {
     scroll-margin-top: 7rem;
   }
 
-  .reader-prose [data-reader-kind="preformatted"] {
+  .reader-prose [data-reader-kind='preformatted'] {
     font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
     font-size: 0.8em;
     line-height: 1.45;
@@ -224,17 +233,33 @@ html.notebook-theme-root {
     text-align: left;
   }
 
-  .reader-prose [data-reader-kind="quote"] {
+  .reader-prose [data-reader-kind='quote'] {
     padding-inline-start: 1.2em;
     border-inline-start: 2px solid var(--reader-border);
   }
 
-  .reader-prose [id] { scroll-margin-top: 7rem; }
-  .reader-prose em { font-style: italic; }
-  .reader-prose strong { font-weight: 700; }
-  .reader-prose sup { vertical-align: super; font-size: 0.75em; }
-  .reader-prose sub { vertical-align: sub; font-size: 0.75em; }
-  .reader-prose a { color: var(--reader-accent); text-decoration: underline; text-underline-offset: 0.15em; }
+  .reader-prose [id] {
+    scroll-margin-top: 7rem;
+  }
+  .reader-prose em {
+    font-style: italic;
+  }
+  .reader-prose strong {
+    font-weight: 700;
+  }
+  .reader-prose sup {
+    vertical-align: super;
+    font-size: 0.75em;
+  }
+  .reader-prose sub {
+    vertical-align: sub;
+    font-size: 0.75em;
+  }
+  .reader-prose a {
+    color: var(--reader-accent);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
 
   .reader-illustration {
     margin: 1.8em auto;
@@ -270,9 +295,19 @@ html.notebook-theme-root {
     background: var(--reader-panel);
   }
 
-  .reader-image-dialog::backdrop { background: rgb(0 0 0 / 75%); }
-  .reader-image-dialog > button { display: block; margin: 0 0 1rem auto; padding: 0.5rem 1rem; }
-  .reader-image-dialog img { max-height: 80dvh; width: auto; object-fit: contain; }
+  .reader-image-dialog::backdrop {
+    background: rgb(0 0 0 / 75%);
+  }
+  .reader-image-dialog > button {
+    display: block;
+    margin: 0 0 1rem auto;
+    padding: 0.5rem 1rem;
+  }
+  .reader-image-dialog img {
+    max-height: 80dvh;
+    width: auto;
+    object-fit: contain;
+  }
 
   .reader-prose mark.reader-search-match {
     background: color-mix(in srgb, var(--reader-accent) 38%, transparent);
@@ -313,22 +348,16 @@ html.notebook-theme-root {
   }
 
   /* Reading band: soften top/bottom of the column (focus / reduced distraction). */
-  .reader-prose[data-focus-band="on"] {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      transparent 0%,
-      #000 12%,
-      #000 88%,
-      transparent 100%
-    );
+  .reader-prose[data-focus-band='on'] {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
     mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
   }
 
-  [data-reader-ui="novel"] .reader-surface {
+  [data-reader-ui='novel'] .reader-surface {
     padding-top: 1.5rem;
     padding-bottom: 2rem;
   }
-  [data-reader-ui="study"] .reader-surface {
+  [data-reader-ui='study'] .reader-surface {
     padding-top: 2rem;
     padding-bottom: 3rem;
   }
@@ -364,7 +393,10 @@ html.notebook-theme-root {
     border: 1px solid var(--ink-border);
     background: var(--ink-bg);
     color: var(--ink-text);
-    transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      background-color 160ms ease;
   }
   .e-reader-chrome-chip:hover {
     transform: translateY(-1px);
@@ -466,15 +498,15 @@ html.notebook-theme-root {
     height: 8px;
   }
   .scrollbar-needed::-webkit-scrollbar-track {
-    background: rgba(255,255,255,0.12);
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 4px;
   }
   .scrollbar-needed::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.35);
+    background: rgba(255, 255, 255, 0.35);
     border-radius: 4px;
   }
   .scrollbar-needed::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.5);
+    background: rgba(255, 255, 255, 0.5);
   }
 
   /* Scrollbars always visible — use overflow: scroll so track is always reserved, never fades */
@@ -489,15 +521,15 @@ html.notebook-theme-root {
     height: 8px;
   }
   .scrollbar-visible::-webkit-scrollbar-track {
-    background: rgba(255,255,255,0.12);
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 4px;
   }
   .scrollbar-visible::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.35);
+    background: rgba(255, 255, 255, 0.35);
     border-radius: 4px;
   }
   .scrollbar-visible::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.5);
+    background: rgba(255, 255, 255, 0.5);
   }
 
   /* Header Section */
@@ -508,7 +540,7 @@ html.notebook-theme-root {
     align-items: center;
     justify-content: space-between;
   }
-  
+
   .header-icon {
     width: 2.5rem;
     height: 2.5rem;
@@ -522,11 +554,11 @@ html.notebook-theme-root {
     cursor: pointer;
     font-size: 1.125rem;
   }
-  
+
   .header-icon:hover {
     background-color: rgb(29 78 216);
   }
-  
+
   /* Game Board */
   .game-board {
     display: grid;
@@ -538,7 +570,7 @@ html.notebook-theme-root {
     gap: 0;
     aspect-ratio: 1;
   }
-  
+
   /* Game Cards (Ink & Paper) */
   .game-card {
     width: 100%;
@@ -557,16 +589,16 @@ html.notebook-theme-root {
     border: 2px solid var(--ink-border);
     border-radius: 0;
   }
-  
+
   .game-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transform: scale(1.05);
   }
-  
+
   .game-card:active {
     transform: scale(0.95);
   }
-  
+
   .game-card.empty {
     background-color: transparent;
     border-color: transparent;
@@ -574,12 +606,12 @@ html.notebook-theme-root {
     cursor: default;
     pointer-events: none;
   }
-  
+
   .game-card.empty:hover {
     transform: none;
     box-shadow: none;
   }
-  
+
   .game-card.selected {
     background-color: var(--ink-accent);
     border-color: var(--ink-accent);
@@ -587,7 +619,7 @@ html.notebook-theme-root {
     transform: scale(1.1);
     box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
   }
-  
+
   .game-card.pending {
     background-color: rgb(217 119 6);
     border-color: rgb(245 158 11);
@@ -596,13 +628,13 @@ html.notebook-theme-root {
     box-shadow: 0 0 0 4px rgba(245 158 11, 0.2);
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
-  
+
   .game-card.result {
     background-color: rgb(107 33 168);
     border-color: rgb(147 51 234);
     color: white;
   }
-  
+
   .card-content {
     position: relative;
     width: 100%;
@@ -613,7 +645,7 @@ html.notebook-theme-root {
     justify-content: center;
     padding: 0.5rem;
   }
-  
+
   .card-number {
     font-size: 1.875rem;
     font-weight: 700;
@@ -624,7 +656,7 @@ html.notebook-theme-root {
     font-size: clamp(2.35rem, 12vmin, 3.4rem);
     line-height: 1;
   }
-  
+
   .card-expression {
     font-size: 0.5rem;
     line-height: 0.7rem;
@@ -632,13 +664,13 @@ html.notebook-theme-root {
     margin-top: 0.25rem;
     text-align: center;
   }
-  
+
   .game-card.selected .card-expression,
   .game-card.pending .card-expression,
   .game-card.result .card-expression {
     color: rgba(255, 255, 255, 0.9);
   }
-  
+
   /* Operator Buttons (Ink & Paper - muted tones) */
   .operator-btn {
     width: 4rem;
@@ -655,103 +687,138 @@ html.notebook-theme-root {
     justify-content: center;
     border: 2px solid;
   }
-  
+
   .operator-btn:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transform: scale(1.05);
   }
-  
+
   .operator-btn:active {
     transform: scale(0.95);
   }
-  
+
   .operator-btn.plus {
     background-color: rgb(180 83 9);
     border-color: rgb(217 119 6);
     color: white;
   }
-  
+
   .operator-btn.plus:hover {
     background-color: rgb(217 119 6);
   }
-  
+
   .operator-btn.minus {
     background-color: rgb(29 78 156);
     border-color: rgb(37 99 235);
     color: white;
   }
-  
+
   .operator-btn.minus:hover {
     background-color: rgb(37 99 235);
   }
-  
+
   .operator-btn.multiply {
     background-color: rgb(194 65 12);
     border-color: rgb(234 88 12);
     color: white;
   }
-  
+
   .operator-btn.multiply:hover {
     background-color: rgb(234 88 12);
   }
-  
+
   .operator-btn.divide {
     background-color: rgb(22 101 52);
     border-color: rgb(34 197 94);
     color: white;
   }
-  
+
   .operator-btn.divide:hover {
     background-color: rgb(34 197 94);
   }
-  
+
   .operator-btn.selected {
     transform: scale(1.1);
     box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.15);
   }
-  
+
   /* Animations */
   @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
   }
-  
+
   @keyframes cardFlip {
-    0% { transform: rotateY(0deg); }
-    100% { transform: rotateY(180deg); }
+    0% {
+      transform: rotateY(0deg);
+    }
+    100% {
+      transform: rotateY(180deg);
+    }
   }
-  
+
   @keyframes cardGlow {
-    0%, 100% { box-shadow: 0 0 5px rgba(239, 68, 68, 0.5); }
-    50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
+    0%,
+    100% {
+      box-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.8);
+    }
   }
-  
+
   @keyframes cardMerge {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
-  
+
   @keyframes successPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
 
   @keyframes pearSuccess {
-    0% { transform: scale(0); opacity: 0; }
-    50% { transform: scale(1.2); opacity: 1; }
-    100% { transform: scale(1); opacity: 1; }
+    0% {
+      transform: scale(0);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.2);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
   }
-  
+
   .card-glow {
     animation: cardGlow 2s ease-in-out infinite;
   }
-  
+
   .card-merge {
     animation: cardMerge 0.5s ease-in-out;
   }
-  
+
   .success-animation {
     animation: successPulse 0.5s ease-in-out;
   }
@@ -759,7 +826,7 @@ html.notebook-theme-root {
   .pear-success {
     animation: pearSuccess 0.6s ease-out;
   }
-  
+
   /* Responsive Design */
   @media (max-width: 640px) {
     .game-board {
@@ -781,12 +848,12 @@ html.notebook-theme-root {
       height: 4rem;
       font-size: 1.5rem;
     }
-    
+
     .card-expression {
       font-size: 0.55rem;
       line-height: 0.75rem;
     }
-    
+
     .header-icon {
       width: 2rem;
       height: 2rem;

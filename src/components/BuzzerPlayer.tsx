@@ -117,18 +117,29 @@ export default function BuzzerPlayer({ pin, initialSession, initialQueue, boardT
             clockOffsetMs: offsetRef.current,
           }),
         })
-      } catch { /* ignore — clock-sync still local */ }
+      } catch {
+        /* ignore — clock-sync still local */
+      }
     })()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [identity, calibrate, pin])
 
   // Re-calibrate periodically (drift correction) + on tab refocus.
   useEffect(() => {
     if (!identity) return
-    const id = setInterval(() => { void calibrate() }, 30_000)
-    const onVis = () => { if (document.visibilityState === 'visible') void calibrate() }
+    const id = setInterval(() => {
+      void calibrate()
+    }, 30_000)
+    const onVis = () => {
+      if (document.visibilityState === 'visible') void calibrate()
+    }
     document.addEventListener('visibilitychange', onVis)
-    return () => { clearInterval(id); document.removeEventListener('visibilitychange', onVis) }
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', onVis)
+    }
   }, [identity, calibrate])
 
   // ----- Realtime subscriptions -----
@@ -210,7 +221,11 @@ export default function BuzzerPlayer({ pin, initialSession, initialQueue, boardT
     setPendingBuzz(true)
     setRejectReason(null)
     if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
-      try { navigator.vibrate(60) } catch { /* ignore */ }
+      try {
+        navigator.vibrate(60)
+      } catch {
+        /* ignore */
+      }
     }
     lastBuzzedRoundRef.current = session.currentRoundId
     try {
@@ -226,7 +241,7 @@ export default function BuzzerPlayer({ pin, initialSession, initialQueue, boardT
         }),
       })
       if (!res.ok) throw new Error(`buzz failed: ${res.status}`)
-      const data = await res.json() as { rejected?: boolean; reason?: string; queue?: Buzz[] }
+      const data = (await res.json()) as { rejected?: boolean; reason?: string; queue?: Buzz[] }
       if (data.rejected) {
         setRejectReason(data.reason ?? 'rejected')
       } else if (Array.isArray(data.queue)) {
@@ -243,26 +258,32 @@ export default function BuzzerPlayer({ pin, initialSession, initialQueue, boardT
 
   if (identity === null) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center p-4">
-        <div className="w-full max-w-sm rounded-lg border p-6"
-          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-          <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--ink-text)' }}>Pick a name</h2>
-          <p className="text-sm mb-4" style={{ color: 'var(--ink-muted)' }}>
+      <div className="flex min-h-[80vh] items-center justify-center p-4">
+        <div
+          className="w-full max-w-sm rounded-lg border p-6"
+          style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+        >
+          <h2 className="mb-2 text-xl font-bold" style={{ color: 'var(--ink-text)' }}>
+            Pick a name
+          </h2>
+          <p className="mb-4 text-sm" style={{ color: 'var(--ink-muted)' }}>
             Shown to the host and other players. PIN: <span className="font-bold tabular-nums">{pin}</span>
           </p>
           <input
             value={pendingName}
             onChange={(e) => setPendingName(e.target.value.slice(0, 40))}
-            onKeyDown={(e) => { if (e.key === 'Enter') confirmName() }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') confirmName()
+            }}
             placeholder="Your name"
-            className="w-full px-3 py-2 rounded-lg border mb-3 outline-none"
+            className="mb-3 w-full rounded-lg border px-3 py-2 outline-none"
             style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
             autoFocus
           />
           <button
             onClick={confirmName}
             disabled={!pendingName.trim()}
-            className="w-full py-3 rounded-lg text-white font-semibold disabled:opacity-50"
+            className="w-full rounded-lg py-3 font-semibold text-white disabled:opacity-50"
             style={{ backgroundColor: 'var(--ink-accent)' }}
           >
             Continue
@@ -274,23 +295,38 @@ export default function BuzzerPlayer({ pin, initialSession, initialQueue, boardT
 
   if (calibration !== 'ready') {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center p-4 text-center">
+      <div className="flex min-h-[80vh] items-center justify-center p-4 text-center">
         <div>
-          <div className="text-sm uppercase tracking-wider mb-2" style={{ color: 'var(--ink-muted)' }}>
+          <div className="mb-2 text-sm tracking-wider uppercase" style={{ color: 'var(--ink-muted)' }}>
             {calibration === 'error' ? 'Calibration failed' : 'Calibrating timing'}
           </div>
-          <div className="text-2xl font-semibold mb-4" style={{ color: 'var(--ink-text)' }}>
+          <div className="mb-4 text-2xl font-semibold" style={{ color: 'var(--ink-text)' }}>
             Levelling the playing field
           </div>
-          <div className="flex items-center justify-center gap-1 mb-4" aria-hidden>
-            <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--ink-accent)', animationDelay: '0ms' }} />
-            <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--ink-accent)', animationDelay: '150ms' }} />
-            <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--ink-accent)', animationDelay: '300ms' }} />
+          <div className="mb-4 flex items-center justify-center gap-1" aria-hidden>
+            <span
+              className="inline-block h-2 w-2 animate-pulse rounded-full"
+              style={{ backgroundColor: 'var(--ink-accent)', animationDelay: '0ms' }}
+            />
+            <span
+              className="inline-block h-2 w-2 animate-pulse rounded-full"
+              style={{ backgroundColor: 'var(--ink-accent)', animationDelay: '150ms' }}
+            />
+            <span
+              className="inline-block h-2 w-2 animate-pulse rounded-full"
+              style={{ backgroundColor: 'var(--ink-accent)', animationDelay: '300ms' }}
+            />
           </div>
           {calibration === 'error' && (
-            <button onClick={() => void calibrate()}
-              className="px-4 py-2 rounded-lg border"
-              style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>
+            <button
+              onClick={() => void calibrate()}
+              className="rounded-lg border px-4 py-2"
+              style={{
+                backgroundColor: 'var(--ink-paper)',
+                borderColor: 'var(--ink-border)',
+                color: 'var(--ink-text)',
+              }}
+            >
               Retry
             </button>
           )}
@@ -308,40 +344,68 @@ export default function BuzzerPlayer({ pin, initialSession, initialQueue, boardT
   let label = 'Waiting for host'
   let subLabel: string | null = null
   let buttonBg = '#6b7280' // gray
-  if (status === 'locked') { label = 'Locked'; subLabel = 'Host has locked the buzzer' }
-  else if (status === 'idle') { label = 'Stand by'; subLabel = 'Host has not armed yet' }
-  else if (armed && alreadyBuzzed) {
+  if (status === 'locked') {
+    label = 'Locked'
+    subLabel = 'Host has locked the buzzer'
+  } else if (status === 'idle') {
+    label = 'Stand by'
+    subLabel = 'Host has not armed yet'
+  } else if (armed && alreadyBuzzed) {
     label = `#${myRank ?? '?'}`
-    subLabel = myBuzz ? (myRank === 1 ? 'You buzzed first!' : `${annotated.find((a) => a.id === myBuzz.id)?.deltaFromFirstMs ?? 0} ms behind #1`) : null
+    subLabel = myBuzz
+      ? myRank === 1
+        ? 'You buzzed first!'
+        : `${annotated.find((a) => a.id === myBuzz.id)?.deltaFromFirstMs ?? 0} ms behind #1`
+      : null
     buttonBg = myRank === 1 ? '#15803d' : '#3b82f6'
   } else if (armed) {
     label = 'BUZZ'
     subLabel = 'Tap as fast as you can'
     buttonBg = '#dc2626'
   }
-  if (pendingBuzz) { label = 'Sending...'; subLabel = null; buttonBg = '#3b82f6' }
+  if (pendingBuzz) {
+    label = 'Sending...'
+    subLabel = null
+    buttonBg = '#3b82f6'
+  }
 
   return (
-    <div className="min-h-dvh flex flex-col">
+    <div className="flex min-h-dvh flex-col">
       {/* Header */}
-      <div className="px-4 py-2 flex items-center justify-between text-xs"
-        style={{ borderBottom: '1px solid var(--ink-border)', color: 'var(--ink-muted)', backgroundColor: 'var(--ink-paper)' }}>
+      <div
+        className="flex items-center justify-between px-4 py-2 text-xs"
+        style={{
+          borderBottom: '1px solid var(--ink-border)',
+          color: 'var(--ink-muted)',
+          backgroundColor: 'var(--ink-paper)',
+        }}
+      >
         <div className="truncate">
-          {boardTitle ? <span className="font-semibold" style={{ color: 'var(--ink-text)' }}>{boardTitle}</span> : <span>Buzzer</span>}
+          {boardTitle ? (
+            <span className="font-semibold" style={{ color: 'var(--ink-text)' }}>
+              {boardTitle}
+            </span>
+          ) : (
+            <span>Buzzer</span>
+          )}
           <span className="ml-2">PIN {pin}</span>
         </div>
         <div className="flex items-center gap-3 tabular-nums">
           <span>{identity.name}</span>
           <span title="Round-trip latency to server">RTT {rttMs}ms</span>
-          <span title="Clock offset (client → server)">Δ {offsetMs >= 0 ? '+' : ''}{offsetMs}ms</span>
+          <span title="Clock offset (client → server)">
+            Δ {offsetMs >= 0 ? '+' : ''}
+            {offsetMs}ms
+          </span>
         </div>
       </div>
 
       {/* Big button */}
       <button
-        data-hotkey="Space Enter" onClick={handleBuzz}
+        data-hotkey="Space Enter"
+        onClick={handleBuzz}
         disabled={!canBuzz}
-        className="flex-1 w-full text-white font-extrabold transition-transform active:scale-[0.97]"
+        className="w-full flex-1 font-extrabold text-white transition-transform active:scale-[0.97]"
         style={{
           backgroundColor: buttonBg,
           fontSize: 'clamp(3rem, 18vw, 8rem)',
@@ -351,27 +415,48 @@ export default function BuzzerPlayer({ pin, initialSession, initialQueue, boardT
       >
         <div className="flex flex-col items-center justify-center gap-3 px-6">
           <span>{label}</span>
-          {subLabel && <span className="text-base sm:text-lg font-medium opacity-90" style={{ letterSpacing: 0 }}>{subLabel}</span>}
+          {subLabel && (
+            <span className="text-base font-medium opacity-90 sm:text-lg" style={{ letterSpacing: 0 }}>
+              {subLabel}
+            </span>
+          )}
           {rejectReason && (
-            <span className="text-sm font-medium px-3 py-1 rounded mt-2" style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}>
-              {rejectReason === 'pressed_before_armed' ? 'Too early — wait for ARM' :
-               rejectReason === 'round_not_armed' ? 'Buzzer not armed yet' :
-               rejectReason === 'network_error' ? 'Network error, try again' :
-               rejectReason}
+            <span
+              className="mt-2 rounded px-3 py-1 text-sm font-medium"
+              style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}
+            >
+              {rejectReason === 'pressed_before_armed'
+                ? 'Too early — wait for ARM'
+                : rejectReason === 'round_not_armed'
+                  ? 'Buzzer not armed yet'
+                  : rejectReason === 'network_error'
+                    ? 'Network error, try again'
+                    : rejectReason}
             </span>
           )}
         </div>
       </button>
 
       {/* Mini queue footer */}
-      <div className="px-3 py-2" style={{ borderTop: '1px solid var(--ink-border)', backgroundColor: 'var(--ink-paper)' }}>
+      <div
+        className="px-3 py-2"
+        style={{ borderTop: '1px solid var(--ink-border)', backgroundColor: 'var(--ink-paper)' }}
+      >
         {annotated.length === 0 ? (
-          <div className="text-xs text-center" style={{ color: 'var(--ink-muted)' }}>No one has buzzed this round.</div>
+          <div className="text-center text-xs" style={{ color: 'var(--ink-muted)' }}>
+            No one has buzzed this round.
+          </div>
         ) : (
           <ol className="flex gap-2 overflow-x-auto text-xs whitespace-nowrap">
             {annotated.slice(0, 5).map((b, i) => (
-              <li key={b.id} className="flex items-center gap-1 px-2 py-1 rounded"
-                style={{ backgroundColor: i === 0 ? 'rgba(22, 163, 74, 0.1)' : 'var(--ink-bg)', color: 'var(--ink-text)' }}>
+              <li
+                key={b.id}
+                className="flex items-center gap-1 rounded px-2 py-1"
+                style={{
+                  backgroundColor: i === 0 ? 'rgba(22, 163, 74, 0.1)' : 'var(--ink-bg)',
+                  color: 'var(--ink-text)',
+                }}
+              >
                 <span className="font-bold">#{b.rank ?? i + 1}</span>
                 <span>{b.name}</span>
                 <span className="tabular-nums" style={{ color: 'var(--ink-muted)' }}>

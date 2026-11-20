@@ -1,4 +1,9 @@
-import { attachmentIdsInNotes, newAttachmentId, attachmentDataUrl, parseSpreadsheetFile } from '../src/lib/notes/attachments'
+import {
+  attachmentIdsInNotes,
+  newAttachmentId,
+  attachmentDataUrl,
+  parseSpreadsheetFile,
+} from '../src/lib/notes/attachments'
 import type { Screenshot } from '../src/lib/notes/types'
 
 const id = newAttachmentId('test')

@@ -171,9 +171,7 @@ async function runProfile(profile: ReaderFixtureProfile): Promise<boolean> {
 
 async function main(): Promise<void> {
   const onDisk = new Set(
-    existsSync(FIXTURES_DIR)
-      ? readdirSync(FIXTURES_DIR).filter((f) => /\.(pdf|epub)$/i.test(f))
-      : [],
+    existsSync(FIXTURES_DIR) ? readdirSync(FIXTURES_DIR).filter((f) => /\.(pdf|epub)$/i.test(f)) : [],
   )
   const profileNames = new Set(READER_FIXTURE_PROFILES.map((p) => p.fileName))
   for (const f of onDisk) {

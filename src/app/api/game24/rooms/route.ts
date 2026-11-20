@@ -15,21 +15,19 @@ export async function POST(request: NextRequest) {
     const hostId = uuidv4()
     const roomId = uuidv4()
     const now = new Date().toISOString()
-    let finalRoom:
-      | {
-          id: string
-          pin: string
-          host_id: string
-          status: string
-          round_number: number
-          current_round_started_at: string | null
-          intermission_until: string | null
-          max_players: number
-          created_at: string
-          updated_at: string
-          last_activity: string
-        }
-      | null = null
+    let finalRoom: {
+      id: string
+      pin: string
+      host_id: string
+      status: string
+      round_number: number
+      current_round_started_at: string | null
+      intermission_until: string | null
+      max_players: number
+      created_at: string
+      updated_at: string
+      last_activity: string
+    } | null = null
 
     for (let attempt = 0; attempt < 8 && !finalRoom; attempt++) {
       const pin = generateRoomPin()
@@ -90,4 +88,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-

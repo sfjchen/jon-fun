@@ -22,4 +22,3 @@ function PokerChips({ amount, size = 'md', showLabel = false }: PokerChipsProps)
 }
 
 export default memo(PokerChips)
-

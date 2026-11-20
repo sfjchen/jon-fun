@@ -17,7 +17,12 @@ function bionicText(text: string): ReactNode {
   return text.split(/(\s+)/).map((word, i) => {
     if (!word.trim()) return word
     const split = Math.max(1, Math.ceil(word.length * 0.45))
-    return <Fragment key={i}><strong>{word.slice(0, split)}</strong>{word.slice(split)}</Fragment>
+    return (
+      <Fragment key={i}>
+        <strong>{word.slice(0, split)}</strong>
+        {word.slice(split)}
+      </Fragment>
+    )
   })
 }
 
@@ -33,7 +38,10 @@ export function formattedReaderText(
 ): ReactNode {
   const runs = block?.runs?.map((run) => run.text).join('') === text ? block.runs : [{ text }]
   const matches = query.trim()
-    ? [...text.matchAll(new RegExp(escapeRegex(query.trim()), 'gi'))].map((m) => ({ start: m.index, end: m.index + m[0].length }))
+    ? [...text.matchAll(new RegExp(escapeRegex(query.trim()), 'gi'))].map((m) => ({
+        start: m.index,
+        end: m.index + m[0].length,
+      }))
     : []
   let offset = 0
   return runs?.map((run, i) => {
@@ -42,20 +50,35 @@ export function formattedReaderText(
     const a = Math.max(start, runStart)
     const b = Math.min(end, offset)
     if (a >= b) return null
-    const cuts = [...new Set([a, b, ...matches.flatMap((m) => [m.start, m.end]).filter((p) => p > a && p < b)])].sort((x, y) => x - y)
+    const cuts = [...new Set([a, b, ...matches.flatMap((m) => [m.start, m.end]).filter((p) => p > a && p < b)])].sort(
+      (x, y) => x - y,
+    )
     let content: ReactNode = cuts.slice(0, -1).map((point, j) => {
       const piece = text.slice(point, cuts[j + 1])
-      return matches.some((m) => m.start <= point && m.end > point)
-        ? <mark key={j} className="reader-search-match">{piece}</mark>
-        : <Fragment key={j}>{useBionic && prefs.bionic ? bionicText(piece) : piece}</Fragment>
+      return matches.some((m) => m.start <= point && m.end > point) ? (
+        <mark key={j} className="reader-search-match">
+          {piece}
+        </mark>
+      ) : (
+        <Fragment key={j}>{useBionic && prefs.bionic ? bionicText(piece) : piece}</Fragment>
+      )
     })
     if (run.italic) content = <em>{content}</em>
     if (run.bold) content = <strong>{content}</strong>
     if (run.superscript) content = <sup>{content}</sup>
     if (run.subscript) content = <sub>{content}</sub>
     const href = run.href ? safeReaderHref(run.href) : undefined
-    if (href) content = <a href={href} rel="noopener noreferrer">{content}</a>
-    return <span key={i} id={a === runStart ? run.anchorId : undefined}>{content}</span>
+    if (href)
+      content = (
+        <a href={href} rel="noopener noreferrer">
+          {content}
+        </a>
+      )
+    return (
+      <span key={i} id={a === runStart ? run.anchorId : undefined}>
+        {content}
+      </span>
+    )
   })
 }
 
@@ -65,14 +88,25 @@ export function ReaderIllustration({ block }: { block: ReaderBlock }) {
   if (!image || !isReaderImageSource(image.src)) return null
   return (
     <figure className="reader-illustration" id={block.anchorId}>
-      <button type="button" onClick={() => dialog.current?.showModal()} aria-label={`Enlarge illustration: ${image.alt}`}>
+      <button
+        type="button"
+        onClick={() => dialog.current?.showModal()}
+        aria-label={`Enlarge illustration: ${image.alt}`}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element -- Embedded EPUB raster, no remote image request. */}
         <img src={image.src} alt={image.alt} loading="lazy" decoding="async" />
       </button>
-      <dialog ref={dialog} className="reader-image-dialog" aria-label={image.alt} onClick={(e) => {
-        if (e.target === e.currentTarget) dialog.current?.close()
-      }}>
-        <button type="button" onClick={() => dialog.current?.close()} aria-label="Close illustration">Close ×</button>
+      <dialog
+        ref={dialog}
+        className="reader-image-dialog"
+        aria-label={image.alt}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) dialog.current?.close()
+        }}
+      >
+        <button type="button" onClick={() => dialog.current?.close()} aria-label="Close illustration">
+          Close ×
+        </button>
         {/* eslint-disable-next-line @next/next/no-img-element -- Original EPUB illustration for zooming. */}
         <img src={image.src} alt={image.alt} />
       </dialog>

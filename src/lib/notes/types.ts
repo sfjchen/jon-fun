@@ -4,14 +4,7 @@ export type { KnowledgeDomainId } from './knowledge/registry'
 
 export type NoteKind = 'IC' | 'GP' | 'internal' | 'other' | 'learning' | 'meeting'
 
-export type NoteHistoryKind =
-  | 'created'
-  | 'saved'
-  | 'synced'
-  | 'lookup'
-  | 'title'
-  | 'tags'
-  | 'switch'
+export type NoteHistoryKind = 'created' | 'saved' | 'synced' | 'lookup' | 'title' | 'tags' | 'switch'
 
 export interface NoteHistoryEntry {
   kind: NoteHistoryKind

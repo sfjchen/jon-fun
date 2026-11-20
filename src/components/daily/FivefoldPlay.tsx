@@ -27,7 +27,8 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
   const [run, setRun] = useState<Run>(() => {
     try {
       const r = JSON.parse(localStorage.getItem(storageKey) ?? 'null') as Run | null
-      if (r && Array.isArray(r.guesses) && r.guesses.every((g) => /^[a-z]{5}$/.test(g))) return { guesses: r.guesses.slice(0, TRIES), hard: !!r.hard }
+      if (r && Array.isArray(r.guesses) && r.guesses.every((g) => /^[a-z]{5}$/.test(g)))
+        return { guesses: r.guesses.slice(0, TRIES), hard: !!r.hard }
     } catch {}
     return { guesses: [], hard: false }
   })
@@ -36,7 +37,11 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
   const [shake, setShake] = useState(false)
   const [copied, setCopied] = useState(false)
   const [hardPref, setHardPref] = useState(() => {
-    try { return localStorage.getItem(HARD_KEY) === '1' } catch { return false }
+    try {
+      return localStorage.getItem(HARD_KEY) === '1'
+    } catch {
+      return false
+    }
   })
   const [statsOpen, setStatsOpen] = useState(false)
   const [stats, setStats] = useState<FivefoldStats | null>(null)
@@ -49,19 +54,25 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
     (r: Run) => {
       current.current = r
       setRun(r)
-      try { localStorage.setItem(storageKey, JSON.stringify(r)) } catch {}
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(r))
+      } catch {}
     },
     [storageKey],
   )
 
   useEffect(() => {
-    words ??= fetch('/fivefold/words.json').then((r) => r.json()).then((list: string[]) => new Set(list))
+    words ??= fetch('/fivefold/words.json')
+      .then((r) => r.json())
+      .then((list: string[]) => new Set(list))
   }, [])
 
   useEffect(() => {
     if (!statsOpen) return
     void loadFivefoldStats().then(setStats)
-    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setStatsOpen(false) }
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setStatsOpen(false)
+    }
     window.addEventListener('keydown', esc)
     return () => window.removeEventListener('keydown', esc)
   }, [statsOpen])
@@ -96,14 +107,21 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
       setStatsOpen(true)
       // Logged once, when the last guess lands, so reloading a finished board never re-sends it.
       const hit = draft === answer
-      logResult('fivefold', hit ? TRIES + 1 - guesses.length : 0, guesses.length, dailyDay, { solved: hit, moves: guesses, sourceDate: dailyDay, puzzleId: `nyt-wordle:${dailyDay}`, ...(final.hard ? { hard: true } : {}) })
+      logResult('fivefold', hit ? TRIES + 1 - guesses.length : 0, guesses.length, dailyDay, {
+        solved: hit,
+        moves: guesses,
+        sourceDate: dailyDay,
+        puzzleId: `nyt-wordle:${dailyDay}`,
+        ...(final.hard ? { hard: true } : {}),
+      })
     },
     [done, draft, answer, commit, dailyDay, hardPref, run.guesses.length],
   )
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey || (e.target as HTMLElement)?.closest?.('input,textarea,[role=dialog]')) return
+      if (e.metaKey || e.ctrlKey || e.altKey || (e.target as HTMLElement)?.closest?.('input,textarea,[role=dialog]'))
+        return
       const k = e.key.toLowerCase()
       if (k === 'enter' || k === 'backspace' || /^[a-z]$/.test(k)) {
         e.preventDefault()
@@ -121,20 +139,29 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
       if (!prev || RANK[m] > RANK[prev]) keyMarks.set(g[i]!, m)
     })
   }
-  const rows = Array.from({ length: TRIES }, (_, i) => run.guesses[i] ?? (i === run.guesses.length && !done ? draft : ''))
+  const rows = Array.from(
+    { length: TRIES },
+    (_, i) => run.guesses[i] ?? (i === run.guesses.length && !done ? draft : ''),
+  )
   const toggleHard = () => {
     // Like Wordle, hard mode can be dropped mid-game but only picked up before the first guess.
     if (done) return
     if (run.guesses.length && !hard) return flash('Hard mode can only be turned on at the start of the day')
     if (run.guesses.length) commit({ ...current.current, hard: false })
     setHardPref(!hard)
-    try { localStorage.setItem(HARD_KEY, hard ? '0' : '1') } catch {}
+    try {
+      localStorage.setItem(HARD_KEY, hard ? '0' : '1')
+    } catch {}
   }
   const share = () => {
     const icon: Record<Mark, string> = { hit: '🟩', near: '🟨', miss: '⬛' }
     const text = [
       `Wordle ${dailyDay} ${won ? run.guesses.length : 'X'}/6${run.hard ? '*' : ''}`,
-      ...run.guesses.map((g) => marks(g, answer).map((m) => icon[m]).join('')),
+      ...run.guesses.map((g) =>
+        marks(g, answer)
+          .map((m) => icon[m])
+          .join(''),
+      ),
       'sfjc.dev/games/wordle',
     ].join('\n')
     void navigator.clipboard.writeText(text).then(() => setCopied(true))
@@ -142,21 +169,33 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
 
   return (
     <section className="fivefold mx-auto max-w-md space-y-4" data-testid="fivefold-play">
-      <div className="flex items-center justify-between border-b pb-2 text-sm" style={{ borderColor: 'var(--ink-border)' }}>
+      <div
+        className="flex items-center justify-between border-b pb-2 text-sm"
+        style={{ borderColor: 'var(--ink-border)' }}
+      >
         <span className="flex items-center gap-3">
           <button type="button" role="switch" aria-checked={hard} className="fivefold-hard" onClick={toggleHard}>
             Hard mode <i data-on={hard} />
           </button>
-          <button type="button" className="fivefold-link" onClick={() => setStatsOpen(true)}>Stats</button>
+          <button type="button" className="fivefold-link" onClick={() => setStatsOpen(true)}>
+            Stats
+          </button>
         </span>
-        <span className="text-[var(--ink-muted)]">{isPracticeResult('fivefold', dailyDay) ? 'Practice' : `${run.guesses.length}/${TRIES}`}</span>
+        <span className="text-[var(--ink-muted)]">
+          {isPracticeResult('fivefold', dailyDay) ? 'Practice' : `${run.guesses.length}/${TRIES}`}
+        </span>
       </div>
-      <p role="status" aria-live="polite" className="min-h-6 text-center text-sm font-medium">{message}</p>
+      <p role="status" aria-live="polite" className="min-h-6 text-center text-sm font-medium">
+        {message}
+      </p>
       <div className="mx-auto grid w-full max-w-[300px] gap-1.5 sm:max-w-[340px]" aria-label="Guesses">
         {rows.map((word, r) => {
           const scored = r < run.guesses.length ? marks(word, answer) : null
           return (
-            <div key={r} className={`grid grid-cols-5 gap-1.5 ${shake && r === run.guesses.length ? 'fivefold-shake' : ''}`}>
+            <div
+              key={r}
+              className={`grid grid-cols-5 gap-1.5 ${shake && r === run.guesses.length ? 'fivefold-shake' : ''}`}
+            >
               {Array.from({ length: 5 }, (_, i) => (
                 <span key={i} className="fivefold-tile" data-mark={scored?.[i] ?? (word[i] ? 'typed' : 'empty')}>
                   {word[i] ?? ''}
@@ -168,14 +207,21 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
       </div>
       {done ? (
         <div className="space-y-2 rounded-xl bg-[var(--ink-paper)] p-4 text-center" data-testid="fivefold-result">
-          <h2 className="text-xl font-bold">{won ? `Found in ${run.guesses.length}/6${run.hard ? '*' : ''}` : `The word was ${answer.toUpperCase()}`}</h2>
+          <h2 className="text-xl font-bold">
+            {won ? `Found in ${run.guesses.length}/6${run.hard ? '*' : ''}` : `The word was ${answer.toUpperCase()}`}
+          </h2>
           <p className="text-sm text-[var(--ink-muted)]">
             {isPracticeResult('fivefold', dailyDay) ? 'Future preview · practice only' : 'Saved to your daily scores'}
           </p>
-          <button className="rounded-full bg-[var(--game-color)] px-5 py-2 text-sm font-semibold text-white" onClick={share}>
+          <button
+            className="rounded-full bg-[var(--game-color)] px-5 py-2 text-sm font-semibold text-white"
+            onClick={share}
+          >
             {copied ? 'Copied' : 'Copy result'}
           </button>
-          <button className="fivefold-link block w-full" onClick={() => setStatsOpen(true)}>Stats</button>
+          <button className="fivefold-link block w-full" onClick={() => setStatsOpen(true)}>
+            Stats
+          </button>
         </div>
       ) : (
         <div className="space-y-1.5 select-none" aria-label="Keyboard">
@@ -204,9 +250,18 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
             {stats ? (
               <>
                 <div className="grid grid-cols-4 text-center">
-                  {([['Played', stats.played], ['Win %', stats.played ? Math.round((stats.wins / stats.played) * 100) : 0],
-                    ['Current Streak', stats.cur], ['Max Streak', stats.max]] as const).map(([k, v]) => (
-                    <div key={k}><div className="text-2xl font-bold tabular-nums">{v}</div><div className="text-xs">{k}</div></div>
+                  {(
+                    [
+                      ['Played', stats.played],
+                      ['Win %', stats.played ? Math.round((stats.wins / stats.played) * 100) : 0],
+                      ['Current Streak', stats.cur],
+                      ['Max Streak', stats.max],
+                    ] as const
+                  ).map(([k, v]) => (
+                    <div key={k}>
+                      <div className="text-2xl font-bold tabular-nums">{v}</div>
+                      <div className="text-xs">{k}</div>
+                    </div>
                   ))}
                 </div>
                 <h3 className="text-center text-sm font-bold uppercase">Guess Distribution</h3>
@@ -223,8 +278,12 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
                   </div>
                 ))}
               </>
-            ) : <p className="text-center text-sm">Loading...</p>}
-            <button className="fivefold-link block w-full" onClick={() => setStatsOpen(false)}>Close</button>
+            ) : (
+              <p className="text-center text-sm">Loading...</p>
+            )}
+            <button className="fivefold-link block w-full" onClick={() => setStatsOpen(false)}>
+              Close
+            </button>
           </div>
         </div>
       )}

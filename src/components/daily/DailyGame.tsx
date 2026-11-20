@@ -91,8 +91,18 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
     </>
   )
   return (
-    <div className={`daily-game mx-auto w-full ${game==='anthropeum'||game==='krillion'?'max-w-none':game==='fivefold'?'max-w-lg':'max-w-4xl'}`} data-testid={`daily-${game}`}>
-      <DayNav title={GAMES[game].title} path={GAMES[game].url} day={day} publishedOnly={isNytGame(game)} minDay={firstDay(game)} info={info} />
+    <div
+      className={`daily-game mx-auto w-full ${game === 'anthropeum' || game === 'krillion' ? 'max-w-none' : game === 'fivefold' ? 'max-w-lg' : 'max-w-4xl'}`}
+      data-testid={`daily-${game}`}
+    >
+      <DayNav
+        title={GAMES[game].title}
+        path={GAMES[game].url}
+        day={day}
+        publishedOnly={isNytGame(game)}
+        minDay={firstDay(game)}
+        info={info}
+      />
       {data && day <= siteDay() && isPracticeResult(game, day) && (
         <p className="mb-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
           Started as a future preview · not ranked
@@ -101,7 +111,9 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
       {error && (
         <div className="rounded-lg border p-4">
           <p role="alert">{error}</p>
-          <button type="button" className="mt-2 underline" onClick={retry}>Try again</button>
+          <button type="button" className="mt-2 underline" onClick={retry}>
+            Try again
+          </button>
         </div>
       )}
       {!data && !error && <p style={{ color: 'var(--ink-muted)' }}>Loading the daily puzzle…</p>}

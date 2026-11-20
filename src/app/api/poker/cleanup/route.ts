@@ -40,12 +40,15 @@ async function runCleanup(): Promise<NextResponse<CleanupResponse | ErrorRespons
       return NextResponse.json({ error: 'Failed to fetch party rooms' }, { status: 500 })
     }
 
-    if(triplesRes.error)return NextResponse.json({error:'Failed to fetch SET rooms'},{status:500})
-    const triplesPins=triplesRes.data?.map(r=>r.pin)??[]
-    if(triplesPins.length){const removed=await supabase.from('triples_rooms').delete().in('pin',triplesPins);if(removed.error)return NextResponse.json({error:'Failed to delete SET rooms'},{status:500})}
-    const pins = pokerRes.data?.map(r => r.pin) ?? []
-    const game24Pins = game24Res.data?.map(r => r.pin) ?? []
-    const partyPins = partyRes.data?.map(r => r.pin) ?? []
+    if (triplesRes.error) return NextResponse.json({ error: 'Failed to fetch SET rooms' }, { status: 500 })
+    const triplesPins = triplesRes.data?.map((r) => r.pin) ?? []
+    if (triplesPins.length) {
+      const removed = await supabase.from('triples_rooms').delete().in('pin', triplesPins)
+      if (removed.error) return NextResponse.json({ error: 'Failed to delete SET rooms' }, { status: 500 })
+    }
+    const pins = pokerRes.data?.map((r) => r.pin) ?? []
+    const game24Pins = game24Res.data?.map((r) => r.pin) ?? []
+    const partyPins = partyRes.data?.map((r) => r.pin) ?? []
 
     // Delete related data first (foreign key constraints) - run in parallel
     await Promise.all([

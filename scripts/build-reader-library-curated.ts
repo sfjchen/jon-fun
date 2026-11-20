@@ -16,8 +16,7 @@ import { createEpubImportDraft } from '../src/lib/reader/text-chapters'
 import { stringifyPortableLibrary } from '../src/lib/reader/library-portable'
 import type { ReaderPublication } from '../src/lib/reader/types'
 
-const TINAD_FILE =
-  'There Is No Antimemetics Division (qntm) (z-library.sk, 1lib.sk, z-lib.sk).epub'
+const TINAD_FILE = 'There Is No Antimemetics Division (qntm) (z-library.sk, 1lib.sk, z-lib.sk).epub'
 
 /** Appended when present under e2e/fixtures/ (omit from repo/CI without breaking the build). */
 const CURATED_OPTIONAL_EPUBS = [

@@ -56,12 +56,14 @@ export default function PokerJoinForm({ pin, onJoin, onCancel, loading, error }:
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>Your Name</label>
+        <label className="mb-2 block" style={{ color: 'var(--ink-text)' }}>
+          Your Name
+        </label>
         <input
           type="text"
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}
-          className="w-full rounded-lg px-4 py-2 border focus:outline-none focus:ring-2 focus:ring-[var(--ink-accent)]"
+          className="w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-[var(--ink-accent)] focus:outline-none"
           style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
           placeholder="Enter your name"
           required
@@ -70,8 +72,10 @@ export default function PokerJoinForm({ pin, onJoin, onCancel, loading, error }:
       </div>
 
       <div>
-        <label className="block mb-2" style={{ color: 'var(--ink-text)' }}>Choose Your Seat (Position)</label>
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+        <label className="mb-2 block" style={{ color: 'var(--ink-text)' }}>
+          Choose Your Seat (Position)
+        </label>
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {Array.from({ length: 12 }, (_, i) => {
             const isOccupied = occupiedPositions.has(i)
             const isSelected = selectedPosition === i
@@ -81,39 +85,41 @@ export default function PokerJoinForm({ pin, onJoin, onCancel, loading, error }:
                 type="button"
                 onClick={() => !isOccupied && setSelectedPosition(i)}
                 disabled={isOccupied}
-                className={`p-3 rounded-lg border-2 transition-all ${
-                  isOccupied
-                    ? 'cursor-not-allowed opacity-50'
-                    : isSelected
-                    ? 'text-white'
-                    : ''
+                className={`rounded-lg border-2 p-3 transition-all ${
+                  isOccupied ? 'cursor-not-allowed opacity-50' : isSelected ? 'text-white' : ''
                 }`}
-                style={isOccupied ? { backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' } : isSelected ? { backgroundColor: 'rgb(22 101 52)', borderColor: 'rgb(34 197 94)' } : { backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+                style={
+                  isOccupied
+                    ? { backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }
+                    : isSelected
+                      ? { backgroundColor: 'rgb(22 101 52)', borderColor: 'rgb(34 197 94)' }
+                      : {
+                          backgroundColor: 'var(--ink-paper)',
+                          borderColor: 'var(--ink-border)',
+                          color: 'var(--ink-text)',
+                        }
+                }
               >
                 <div className="text-sm font-semibold">{getPositionLabel(i)}</div>
-                {isOccupied && <div className="text-xs mt-1">Taken</div>}
+                {isOccupied && <div className="mt-1 text-xs">Taken</div>}
               </button>
             )
           })}
         </div>
         {selectedPosition !== null && (
-          <p className="text-sm mt-2" style={{ color: 'var(--ink-muted)' }}>
+          <p className="mt-2 text-sm" style={{ color: 'var(--ink-muted)' }}>
             Selected: {getPositionLabel(selectedPosition)} (Position {selectedPosition})
           </p>
         )}
       </div>
 
-      {error && (
-        <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-lg border border-red-500/50 bg-red-500/20 p-3 text-red-200">{error}</div>}
 
       <div className="flex gap-3">
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 px-4 py-2 rounded-lg border hover:opacity-90"
+          className="flex-1 rounded-lg border px-4 py-2 hover:opacity-90"
           style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
         >
           Cancel
@@ -121,7 +127,7 @@ export default function PokerJoinForm({ pin, onJoin, onCancel, loading, error }:
         <button
           type="submit"
           disabled={loading || !playerName.trim() || selectedPosition === null}
-          className="flex-1 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 rounded-lg px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
           style={{ backgroundColor: 'rgb(22 101 52)' }}
         >
           {loading ? 'Joining...' : 'Join Room'}
@@ -130,4 +136,3 @@ export default function PokerJoinForm({ pin, onJoin, onCancel, loading, error }:
     </form>
   )
 }
-

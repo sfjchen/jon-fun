@@ -10,15 +10,15 @@ import 'katex/dist/katex.min.css'
 
 const mdComponents = {
   h1: ({ children }: { children?: React.ReactNode }) => (
-    <div className="mb-1 mt-2 text-xs font-semibold uppercase tracking-wide text-[var(--uv-text-secondary)]">
+    <div className="mt-2 mb-1 text-xs font-semibold tracking-wide text-[var(--uv-text-secondary)] uppercase">
       {children}
     </div>
   ),
   h2: ({ children }: { children?: React.ReactNode }) => (
-    <div className="mb-1 mt-2 text-xs font-semibold text-[var(--uv-text-primary)]">{children}</div>
+    <div className="mt-2 mb-1 text-xs font-semibold text-[var(--uv-text-primary)]">{children}</div>
   ),
   h3: ({ children }: { children?: React.ReactNode }) => (
-    <div className="mb-0.5 mt-1.5 text-xs font-medium text-[var(--uv-text-primary)]">{children}</div>
+    <div className="mt-1.5 mb-0.5 text-xs font-medium text-[var(--uv-text-primary)]">{children}</div>
   ),
   p: ({ children }: { children?: React.ReactNode }) => (
     <p className="mb-2 text-sm leading-relaxed text-[var(--uv-text-primary)] last:mb-0">{children}</p>
@@ -41,11 +41,7 @@ const mdComponents = {
 function AssistantBubble({ content, streaming }: { content: string; streaming?: boolean }) {
   return (
     <div className="mb-3 text-sm leading-relaxed text-[var(--uv-text-primary)]" data-testid="notes-chat-assistant">
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[rehypeKatex]}
-        components={mdComponents}
-      >
+      <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={mdComponents}>
         {content}
       </ReactMarkdown>
       {streaming ? <span className="ml-0.5 inline-block animate-pulse text-[var(--uv-accent)]">▌</span> : null}
@@ -94,11 +90,7 @@ export default function LookupConversation({
   if (empty) return null
 
   return (
-    <div
-      ref={ref}
-      className="max-h-[min(50vh,28rem)] min-h-[4rem] overflow-y-auto"
-      data-testid={testId}
-    >
+    <div ref={ref} className="max-h-[min(50vh,28rem)] min-h-[4rem] overflow-y-auto" data-testid={testId}>
       {messages.map((m: Message, i) =>
         m.role === 'user' ? (
           <UserBubble key={`u-${i}`} content={m.content} />

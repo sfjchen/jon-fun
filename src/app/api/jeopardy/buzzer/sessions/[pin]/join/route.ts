@@ -16,7 +16,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pin
   if (!isValidBuzzerPin(pin)) return NextResponse.json({ error: 'Invalid PIN' }, { status: 400 })
 
   let body: { playerId?: unknown; name?: unknown; color?: unknown; clockOffsetMs?: unknown }
-  try { body = await req.json() } catch { return NextResponse.json({ error: 'Invalid body' }, { status: 400 }) }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid body' }, { status: 400 })
+  }
   const playerId = typeof body.playerId === 'string' ? body.playerId : ''
   if (!UUID_RE.test(playerId)) return NextResponse.json({ error: 'Invalid playerId' }, { status: 400 })
 

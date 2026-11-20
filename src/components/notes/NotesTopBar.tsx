@@ -90,7 +90,7 @@ export default function NotesTopBar({
         value={title}
         onChange={(e) => onTitleChange(e.target.value)}
         title={dateHint}
-        className="w-[min(11rem,32vw)] min-w-[4.5rem] max-w-[14rem] shrink-0 bg-transparent text-sm font-semibold text-[var(--uv-text-primary)] placeholder:font-normal placeholder:italic placeholder:text-[var(--uv-text-muted)] focus:outline-none sm:w-auto sm:max-w-[16rem] sm:text-base"
+        className="w-[min(11rem,32vw)] max-w-[14rem] min-w-[4.5rem] shrink-0 bg-transparent text-sm font-semibold text-[var(--uv-text-primary)] placeholder:font-normal placeholder:text-[var(--uv-text-muted)] placeholder:italic focus:outline-none sm:w-auto sm:max-w-[16rem] sm:text-base"
         placeholder="Untitled"
         aria-label="Note title"
         data-testid={titleTestId}
@@ -107,9 +107,7 @@ export default function NotesTopBar({
         <span className="sr-only" data-testid="notes-dates">
           <span data-testid="notes-created-at">Created {formatDateTime(startedAt)}</span>
           <span data-testid="notes-modified-at">Modified {formatDateTime(updatedAt)}</span>
-          {lastDeviceLabel ? (
-            <span data-testid="notes-last-device">{lastDeviceLabel}</span>
-          ) : null}
+          {lastDeviceLabel ? <span data-testid="notes-last-device">{lastDeviceLabel}</span> : null}
         </span>
         <TagChips
           tags={tags}
@@ -173,8 +171,8 @@ function TagChips({
               data-testid={`notes-tag-chip-${t}`}
               className={
                 on
-                  ? 'rounded-full bg-[var(--uv-accent)] pl-2 pr-1 py-0.5 text-[10px] font-medium text-white'
-                  : 'rounded-full border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] pl-2 pr-1 py-0.5 text-[10px] text-[var(--uv-text-secondary)] hover:border-[var(--uv-accent)]'
+                  ? 'rounded-full bg-[var(--uv-accent)] py-0.5 pr-1 pl-2 text-[10px] font-medium text-white'
+                  : 'rounded-full border border-[var(--uv-border)] bg-[var(--uv-bg-elevated)] py-0.5 pr-1 pl-2 text-[10px] text-[var(--uv-text-secondary)] hover:border-[var(--uv-accent)]'
               }
             >
               {t}

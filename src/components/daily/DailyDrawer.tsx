@@ -16,7 +16,15 @@ import { useSiteDay } from '@/lib/play-day'
 import { usePlayer } from '@/lib/use-player'
 import { useBoard } from '@/lib/use-board'
 import {
-  GAMES, GAME_IDS, PUBLIC_GROUP, RESULT_QUEUED, compareResults, formatTime, queue, isPracticeResult, resultLabel,
+  GAMES,
+  GAME_IDS,
+  PUBLIC_GROUP,
+  RESULT_QUEUED,
+  compareResults,
+  formatTime,
+  queue,
+  isPracticeResult,
+  resultLabel,
   type BoardRow,
 } from '@/lib/results'
 import { streaks } from '@/lib/score-stats'
@@ -40,12 +48,19 @@ function useDaily(sel: string, open: boolean) {
   if (player) {
     const local = queue().filter((q) => (!q.player || q.player.name === player.name) && q.day <= day && GAMES[q.game])
     local.forEach((q) => {
-      if (!rows.some((r) => r.name === player.name && r.game === q.game && r.day === q.day)) rows.push({ ...q, name: player.name })
+      if (!rows.some((r) => r.name === player.name && r.game === q.game && r.day === q.day))
+        rows.push({ ...q, name: player.name })
     })
   }
   const mine = player ? rows.filter((r) => r.name === player.name) : []
   const done = (d: string) => new Map(mine.filter((r) => r.day === d).map((r) => [r.game, r]))
-  return { player, today: done(day), picked: done(sel), everyone: rows.filter((r) => r.day === sel), streak: streaks(mine, day).current }
+  return {
+    player,
+    today: done(day),
+    picked: done(sel),
+    everyone: rows.filter((r) => r.day === sel),
+    streak: streaks(mine, day).current,
+  }
 }
 
 /**
@@ -53,7 +68,8 @@ function useDaily(sel: string, open: boolean) {
  * and Anthropeum rounds to thousands, so every column stays a similar width.
  */
 function cellLabel(r: BoardRow): string {
-  if (r.game === 'connections') return r.score === 4 && r.stats.seconds !== undefined ? formatTime(r.stats.seconds) : `${r.stats.n ?? r.score}/4`
+  if (r.game === 'connections')
+    return r.score === 4 && r.stats.seconds !== undefined ? formatTime(r.stats.seconds) : `${r.stats.n ?? r.score}/4`
   if (r.game === 'anthropeum') return `${Math.round(r.score / 1000)}k`
   return resultLabel(r)
 }
@@ -66,18 +82,28 @@ function ScoreTable({ rows, me, q }: { rows: BoardRow[]; me: string | undefined;
   const games = GAME_IDS.filter((g) => rows.some((r) => r.game === g))
   const best = new Map(games.map((g) => [g, rows.filter((r) => r.game === g).sort(compareResults)[0]]))
   const tip = useHoverTip()
-  const names = [...new Set(rows.map((r) => r.name))].sort((a, b) =>
-    Number(b === me) - Number(a === me) ||
-      rows.filter((r) => r.name === b).length - rows.filter((r) => r.name === a).length || a.localeCompare(b))
+  const names = [...new Set(rows.map((r) => r.name))].sort(
+    (a, b) =>
+      Number(b === me) - Number(a === me) ||
+      rows.filter((r) => r.name === b).length - rows.filter((r) => r.name === a).length ||
+      a.localeCompare(b),
+  )
   return (
     <div className="-mx-1 overflow-x-auto">
       <table className="w-full border-separate border-spacing-0 text-xs">
         <thead>
           <tr>
-            <th scope="col" className="sr-only">Player</th>
+            <th scope="col" className="sr-only">
+              Player
+            </th>
             {games.map((g) => (
               <th key={g} scope="col" className="pb-1.5 font-normal">
-                <Link href={GAMES[g].url + q} aria-label={GAMES[g].title} className="inline-block" {...tip.on(`Play ${GAMES[g].title}`)}>
+                <Link
+                  href={GAMES[g].url + q}
+                  aria-label={GAMES[g].title}
+                  className="inline-block"
+                  {...tip.on(`Play ${GAMES[g].title}`)}
+                >
                   <Image src={`/doodles/notebook/${g}.svg`} alt="" width={24} height={24} className="mx-auto h-6 w-6" />
                 </Link>
               </th>
@@ -97,14 +123,29 @@ function ScoreTable({ rows, me, q }: { rows: BoardRow[]; me: string | undefined;
                 return (
                   <td
                     key={g}
-                    className={`px-0.5 py-1.5 text-center leading-tight tabular-nums ${edge} ` +
-                      (top ? 'font-semibold text-[var(--ink-text)]' : 'text-[var(--ink-muted)]')}
+                    className={
+                      `px-0.5 py-1.5 text-center leading-tight tabular-nums ${edge} ` +
+                      (top ? 'font-semibold text-[var(--ink-text)]' : 'text-[var(--ink-muted)]')
+                    }
                   >
                     {r ? (
-                      <span className="whitespace-nowrap" {...tip.on(<>{n} · {GAMES[g].title}<span className="block font-semibold">{resultLabel(r)}{top && ' · best'}</span></>)}>
+                      <span
+                        className="whitespace-nowrap"
+                        {...tip.on(
+                          <>
+                            {n} · {GAMES[g].title}
+                            <span className="block font-semibold">
+                              {resultLabel(r)}
+                              {top && ' · best'}
+                            </span>
+                          </>,
+                        )}
+                      >
                         {cellLabel(r)}
                       </span>
-                    ) : '–'}
+                    ) : (
+                      '–'
+                    )}
                   </td>
                 )
               })}
@@ -130,7 +171,10 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
   const { player, today, picked: done, everyone, streak } = useDaily(sel, open)
   const btn = useRef<HTMLButtonElement>(null)
   const panel = useRef<HTMLDivElement>(null)
-  const close = useCallback(() => { setOpen(false); btn.current?.focus() }, [])
+  const close = useCallback(() => {
+    setOpen(false)
+    btn.current?.focus()
+  }, [])
   useEffect(() => {
     if (!open) return
     const first = panel.current?.querySelector<HTMLElement>('a,button,input')
@@ -140,7 +184,8 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
       // Up and down walk the list of games, so Enter opens the one in focus.
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         const rows = [...(panel.current?.querySelectorAll<HTMLElement>('ul a') ?? [])]
-        const at = rows.indexOf(document.activeElement as HTMLElement), step = e.key === 'ArrowDown' ? 1 : -1
+        const at = rows.indexOf(document.activeElement as HTMLElement),
+          step = e.key === 'ArrowDown' ? 1 : -1
         if (!rows.length || (document.activeElement as HTMLElement | null)?.tagName === 'INPUT') return
         e.preventDefault()
         return rows[at < 0 ? (step > 0 ? 0 : rows.length - 1) : (at + step + rows.length) % rows.length]?.focus()
@@ -148,8 +193,13 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
       if (e.key !== 'Tab') return
       const items = [...(panel.current?.querySelectorAll<HTMLElement>('a[href],button:not([disabled]),input') ?? [])]
       const last = items[items.length - 1]
-      if (e.shiftKey && document.activeElement === items[0]) { e.preventDefault(); last?.focus() }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); items[0]?.focus() }
+      if (e.shiftKey && document.activeElement === items[0]) {
+        e.preventDefault()
+        last?.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        items[0]?.focus()
+      }
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
@@ -157,8 +207,15 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
   const isToday = !now || sel === now
   // Today links to the bare game path, which pins the day when it opens, and other days add the ?d= day param.
   const q = isToday ? '' : `?d=${sel}`
-  const dayName = isToday ? 'today' : new Date(`${sel}T12:00:00Z`).toLocaleDateString('en-US',
-    { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric', year: sel.slice(0, 4) === now.slice(0, 4) ? undefined : 'numeric' })
+  const dayName = isToday
+    ? 'today'
+    : new Date(`${sel}T12:00:00Z`).toLocaleDateString('en-US', {
+        timeZone: 'UTC',
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: sel.slice(0, 4) === now.slice(0, 4) ? undefined : 'numeric',
+      })
   const label = player ? `Daily ${today.size}/${GAME_IDS.length}${streak && !compact ? ` · 🔥${streak}` : ''}` : 'Daily'
   return (
     <div data-game-theme="daily" className="flex items-center gap-1.5 bg-transparent">
@@ -166,10 +223,13 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
         ref={btn}
         type="button"
         aria-haspopup="dialog"
-        onClick={() => { setPicked(''); setOpen(true) }}
+        onClick={() => {
+          setPicked('')
+          setOpen(true)
+        }}
         className={
-          'whitespace-nowrap rounded-full bg-[var(--ink-text)] font-semibold text-[var(--ink-bg)] hover:opacity-90 ' +
-            (compact ? 'px-2.5 py-1 text-xs' : 'px-3.5 py-1.5 text-sm')
+          'rounded-full bg-[var(--ink-text)] font-semibold whitespace-nowrap text-[var(--ink-bg)] hover:opacity-90 ' +
+          (compact ? 'px-2.5 py-1 text-xs' : 'px-3.5 py-1.5 text-sm')
         }
       >
         {label}
@@ -181,14 +241,29 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
           title="Daily leaderboard"
           className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--ink-text)] text-[var(--ink-bg)] hover:opacity-90"
         >
-          <svg aria-hidden viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+          <svg
+            aria-hidden
+            viewBox="0 0 24 24"
+            width="17"
+            height="17"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+          >
             <path d="M5 20v-7M12 20V4M19 20v-11" />
           </svg>
         </Link>
       )}
       {open && (
         <div data-game-theme="daily" className="fixed inset-0 z-50">
-          <button type="button" tabIndex={-1} aria-label="Close daily drawer" onClick={close} className="absolute inset-0 bg-black/40" />
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-label="Close daily drawer"
+            onClick={close}
+            className="absolute inset-0 bg-black/40"
+          />
           <div
             ref={panel}
             role="dialog"
@@ -196,17 +271,28 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
             aria-label="Daily games"
             className={
               'absolute inset-x-0 bottom-0 max-h-[85dvh] overflow-y-auto rounded-t-2xl bg-[var(--ink-bg)] p-5 text-[var(--ink-text)] shadow-2xl ' +
-              'sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-96 sm:rounded-l-2xl sm:rounded-tr-none'
+              'sm:inset-y-0 sm:right-0 sm:left-auto sm:max-h-none sm:w-96 sm:rounded-l-2xl sm:rounded-tr-none'
             }
           >
             <div className="mb-4 flex items-center gap-1">
               <h2 className="text-xl font-bold tracking-tight">Daily</h2>
               <DayPicker day={sel} today={now} minDay={FIRST_DAY} go={setPicked} className="ml-auto" keys />
-              <button type="button" onClick={close} aria-label="Close" className="-mr-2 h-9 w-9 shrink-0 rounded-full text-xl hover:bg-[var(--ink-paper)]">×</button>
+              <button
+                type="button"
+                onClick={close}
+                aria-label="Close"
+                className="-mr-2 h-9 w-9 shrink-0 rounded-full text-xl hover:bg-[var(--ink-paper)]"
+              >
+                ×
+              </button>
             </div>
             {player ? (
               <p className="mb-4 text-sm text-[var(--ink-muted)]">
-                {today.size}/{GAME_IDS.length} today · <span title={`${streak} day streak`} aria-label={`${streak} day streak`}>🔥{streak}</span> · <PlayerName />
+                {today.size}/{GAME_IDS.length} today ·{' '}
+                <span title={`${streak} day streak`} aria-label={`${streak} day streak`}>
+                  🔥{streak}
+                </span>{' '}
+                · <PlayerName />
               </p>
             ) : (
               <p className="mb-4 flex flex-wrap items-center gap-1 rounded-xl bg-[var(--ink-paper)] p-3 text-sm">
@@ -217,7 +303,9 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
               {GAME_IDS.map((g) => {
                 const r = done.get(g)
                 const row = 'flex items-center gap-3 rounded-xl border border-[var(--ink-border)] p-2.5'
-                const icon = <Image src={`/doodles/notebook/${g}.svg`} alt="" width={36} height={36} className="h-9 w-9" />
+                const icon = (
+                  <Image src={`/doodles/notebook/${g}.svg`} alt="" width={36} height={36} className="h-9 w-9" />
+                )
                 // NYT games have no puzzle before their first day or after today, and the rest none before the epoch.
                 if (sel < firstDay(g) || (isNytGame(g) && now && sel > now)) {
                   return (
@@ -237,22 +325,30 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                     >
                       {icon}
                       <span className="flex-1 font-semibold">{GAMES[g].title}</span>
-                      {r ? <span className="text-sm font-semibold tabular-nums">{resultLabel(r)}</span>
-                        : isPracticeResult(g, sel) && <span className="text-xs text-[var(--ink-muted)]">Practice</span>}
+                      {r ? (
+                        <span className="text-sm font-semibold tabular-nums">{resultLabel(r)}</span>
+                      ) : (
+                        isPracticeResult(g, sel) && <span className="text-xs text-[var(--ink-muted)]">Practice</span>
+                      )}
                     </Link>
                   </li>
                 )
               })}
             </ul>
             <section aria-label={`Scores for ${dayName}`} className="mt-5">
-              <h3 className="mb-2 text-sm font-semibold text-[var(--ink-muted)]">{isToday ? 'Today\'s scores' : `Scores · ${dayName}`}</h3>
-              {everyone.length ? <ScoreTable rows={everyone} me={player?.name} q={q} /> : (
+              <h3 className="mb-2 text-sm font-semibold text-[var(--ink-muted)]">
+                {isToday ? "Today's scores" : `Scores · ${dayName}`}
+              </h3>
+              {everyone.length ? (
+                <ScoreTable rows={everyone} me={player?.name} q={q} />
+              ) : (
                 <p className="text-sm text-[var(--ink-muted)]">
-                  {now && sel > now ? 'Future preview · practice only, not ranked.' : `No scores ${isToday ? 'yet today' : 'this day'}.`}
+                  {now && sel > now
+                    ? 'Future preview · practice only, not ranked.'
+                    : `No scores ${isToday ? 'yet today' : 'this day'}.`}
                 </p>
               )}
             </section>
-
           </div>
         </div>
       )}

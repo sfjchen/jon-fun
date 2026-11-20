@@ -5,8 +5,7 @@ const e2ePort = process.env.PLAYWRIGHT_WEB_PORT ?? '3001'
 /** Set `PLAYWRIGHT_SKIP_WEBSERVER=1` to test against a deployed URL (no local `next dev`). */
 const skipWebServer = process.env.PLAYWRIGHT_SKIP_WEBSERVER === '1'
 const defaultLocalBase = `http://127.0.0.1:${e2ePort}`
-const baseURL =
-  process.env.PLAYWRIGHT_BASE_URL ?? (skipWebServer ? 'https://sfjc.dev' : defaultLocalBase)
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? (skipWebServer ? 'https://sfjc.dev' : defaultLocalBase)
 
 const visualIgnore = /site-visual\.spec\.ts$|connections-states\.spec\.ts$/
 

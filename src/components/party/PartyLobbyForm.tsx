@@ -86,7 +86,7 @@ export default function PartyLobbyForm({
         {variant === 'labeled' ? (
           <div className="space-y-4">
             <div>
-              <div className="text-sm mb-1" style={{ color: 'var(--ink-muted)' }}>
+              <div className="mb-1 text-sm" style={{ color: 'var(--ink-muted)' }}>
                 Name
               </div>
               {nameField}
@@ -103,7 +103,7 @@ export default function PartyLobbyForm({
           type="button"
           onClick={onCreate}
           disabled={loading || !clientReady}
-          className="w-full py-2 rounded text-white"
+          className="w-full rounded py-2 text-white"
           style={{ backgroundColor: 'rgb(22 101 52)' }}
         >
           {createLabel}

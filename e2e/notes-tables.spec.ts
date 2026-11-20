@@ -85,5 +85,4 @@ test.describe('Notes inline markdown tables', () => {
     expect(md).toMatch(/Revenue/)
     expect(md).toMatch(/\|/)
   })
-
 })

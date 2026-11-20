@@ -21,8 +21,15 @@ export async function POST(req: Request) {
   const body = schema.safeParse(await req.json().catch(() => null))
   if (!body.success) return NextResponse.json({ error: 'Invalid body' }, { status: 400 })
   const { group, name, day } = body.data
-  const { data, error } = await supabaseAdmin.from('game_results').select('words').eq('group_code', group)
-    .ilike('name', likeName(name)).eq('game', 'bee').eq('day', day).order('created_at').limit(1)
+  const { data, error } = await supabaseAdmin
+    .from('game_results')
+    .select('words')
+    .eq('group_code', group)
+    .ilike('name', likeName(name))
+    .eq('game', 'bee')
+    .eq('day', day)
+    .order('created_at')
+    .limit(1)
   if (error) return NextResponse.json({ error: 'Could not load words' }, { status: 503 })
   return NextResponse.json({ words: data[0]?.words ?? [] }, { headers: { 'Cache-Control': 'no-store' } })
 }

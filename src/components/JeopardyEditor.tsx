@@ -219,17 +219,30 @@ export default function JeopardyEditor({
   }, [saveStatus, updatedAt, now])
 
   return (
-    <div className="p-4 flex flex-col">
+    <div className="flex flex-col p-4">
       {shareToast && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg z-50 text-white" style={{ backgroundColor: 'rgb(22 101 52)' }}>
+        <div
+          className="fixed top-4 left-1/2 z-50 -translate-x-1/2 transform rounded-lg px-4 py-2 text-white shadow-lg"
+          style={{ backgroundColor: 'rgb(22 101 52)' }}
+        >
           {shareToast}
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           {onBack && (
-            <button onClick={onBack} className="px-4 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>← Back</button>
+            <button
+              onClick={onBack}
+              className="rounded-lg border px-4 py-2 hover:opacity-90"
+              style={{
+                backgroundColor: 'var(--ink-paper)',
+                borderColor: 'var(--ink-border)',
+                color: 'var(--ink-text)',
+              }}
+            >
+              ← Back
+            </button>
           )}
           <div className="text-xs sm:text-sm" style={{ color: 'var(--ink-muted)' }}>
             <span aria-live="polite">{savedLabel}</span>
@@ -241,36 +254,94 @@ export default function JeopardyEditor({
           <CollaboratorChips collaborators={collaborators} selfName={identityName} onRenameSelf={onChangeName} />
         </div>
 
-        <div className="flex gap-2 flex-wrap items-center">
-          <div className="inline-flex rounded-lg border overflow-hidden" style={{ borderColor: 'var(--ink-border)' }}>
-            <button onClick={() => sendOp({ kind: 'addRow' })} className="px-3 py-2 hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }} title="Add row">+ Row</button>
-            <button onClick={() => {
-              if (rowsCount <= 1) return
-              if (!window.confirm('Remove the bottom row for everyone? This deletes the highest-value clues.')) return
-              sendOp({ kind: 'removeRow' })
-            }} className="px-3 py-2 border-l hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }} title="Remove bottom row">− Row</button>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex overflow-hidden rounded-lg border" style={{ borderColor: 'var(--ink-border)' }}>
+            <button
+              onClick={() => sendOp({ kind: 'addRow' })}
+              className="px-3 py-2 hover:opacity-90"
+              style={{ backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
+              title="Add row"
+            >
+              + Row
+            </button>
+            <button
+              onClick={() => {
+                if (rowsCount <= 1) return
+                if (!window.confirm('Remove the bottom row for everyone? This deletes the highest-value clues.')) return
+                sendOp({ kind: 'removeRow' })
+              }}
+              className="border-l px-3 py-2 hover:opacity-90"
+              style={{
+                backgroundColor: 'var(--ink-paper)',
+                borderColor: 'var(--ink-border)',
+                color: 'var(--ink-text)',
+              }}
+              title="Remove bottom row"
+            >
+              − Row
+            </button>
           </div>
-          <div className="inline-flex rounded-lg border overflow-hidden" style={{ borderColor: 'var(--ink-border)' }}>
-            <button onClick={() => sendOp({ kind: 'addCol' })} className="px-3 py-2 hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }} title="Add category column">+ Col</button>
-            <button onClick={() => {
-              if (board.categories.length <= 1) return
-              if (!window.confirm('Remove the last category for everyone? Its clues will be lost.')) return
-              sendOp({ kind: 'removeCol' })
-            }} className="px-3 py-2 border-l hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }} title="Remove last category">− Col</button>
+          <div className="inline-flex overflow-hidden rounded-lg border" style={{ borderColor: 'var(--ink-border)' }}>
+            <button
+              onClick={() => sendOp({ kind: 'addCol' })}
+              className="px-3 py-2 hover:opacity-90"
+              style={{ backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
+              title="Add category column"
+            >
+              + Col
+            </button>
+            <button
+              onClick={() => {
+                if (board.categories.length <= 1) return
+                if (!window.confirm('Remove the last category for everyone? Its clues will be lost.')) return
+                sendOp({ kind: 'removeCol' })
+              }}
+              className="border-l px-3 py-2 hover:opacity-90"
+              style={{
+                backgroundColor: 'var(--ink-paper)',
+                borderColor: 'var(--ink-border)',
+                color: 'var(--ink-text)',
+              }}
+              title="Remove last category"
+            >
+              − Col
+            </button>
           </div>
-          <button onClick={() => downloadBoard(board)} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }} title="Download JSON backup">⬇ JSON</button>
-          <button onClick={handleShare} className="px-3 py-2 rounded-lg border hover:opacity-90" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }} title="Copy shareable link">🔗 Share</button>
+          <button
+            onClick={() => downloadBoard(board)}
+            className="rounded-lg border px-3 py-2 hover:opacity-90"
+            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+            title="Download JSON backup"
+          >
+            ⬇ JSON
+          </button>
+          <button
+            onClick={handleShare}
+            className="rounded-lg border px-3 py-2 hover:opacity-90"
+            style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+            title="Copy shareable link"
+          >
+            🔗 Share
+          </button>
           {onPlay && (
-            <button onClick={onPlay} className="text-white px-4 py-2 rounded-lg hover:opacity-90" style={{ backgroundColor: 'rgb(22 101 52)' }}>Play ▶</button>
+            <button
+              onClick={onPlay}
+              className="rounded-lg px-4 py-2 text-white hover:opacity-90"
+              style={{ backgroundColor: 'rgb(22 101 52)' }}
+            >
+              Play ▶
+            </button>
           )}
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto w-full">
+      <div className="mx-auto w-full max-w-6xl">
         <input
           value={titleDraft}
           maxLength={120}
-          onFocus={() => { titleFocusedRef.current = true }}
+          onFocus={() => {
+            titleFocusedRef.current = true
+          }}
           onBlur={() => {
             titleFocusedRef.current = false
             if (titleDraft !== board.title) sendOp({ kind: 'setBoardTitle', title: titleDraft })
@@ -279,7 +350,7 @@ export default function JeopardyEditor({
           onKeyDown={(e) => {
             if (e.key === 'Enter') (e.currentTarget as HTMLInputElement).blur()
           }}
-          className="w-full text-center text-2xl sm:text-3xl md:text-4xl font-bold bg-transparent outline-none border-b pb-2 mb-6 wrap-anywhere"
+          className="mb-6 w-full border-b bg-transparent pb-2 text-center text-2xl font-bold wrap-anywhere outline-none sm:text-3xl md:text-4xl"
           style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
         />
 
@@ -289,8 +360,12 @@ export default function JeopardyEditor({
               {board.categories.map((cat, colIndex) => (
                 <div
                   key={colIndex}
-                  className="px-2 py-2 border text-center font-semibold uppercase tracking-wide text-xs sm:text-sm md:text-lg select-none rounded-t-lg"
-                  style={{ borderColor: 'var(--ink-border)', backgroundColor: 'var(--ink-paper)', color: 'var(--ink-text)' }}
+                  className="rounded-t-lg border px-2 py-2 text-center text-xs font-semibold tracking-wide uppercase select-none sm:text-sm md:text-lg"
+                  style={{
+                    borderColor: 'var(--ink-border)',
+                    backgroundColor: 'var(--ink-paper)',
+                    color: 'var(--ink-text)',
+                  }}
                   draggable
                   onDragStart={() => setDragCol(colIndex)}
                   onDragOver={(e) => e.preventDefault()}
@@ -308,15 +383,17 @@ export default function JeopardyEditor({
                       const v = catDrafts[colIndex] ?? cat.title
                       if (v !== cat.title) sendOp({ kind: 'setCategoryTitle', col: colIndex, title: v })
                     }}
-                    onChange={(e) => setCatDrafts((prev) => {
-                      const next = [...prev]
-                      next[colIndex] = e.target.value
-                      return next
-                    })}
+                    onChange={(e) =>
+                      setCatDrafts((prev) => {
+                        const next = [...prev]
+                        next[colIndex] = e.target.value
+                        return next
+                      })
+                    }
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') (e.currentTarget as HTMLInputElement).blur()
                     }}
-                    className="w-full bg-transparent text-center outline-none wrap-anywhere"
+                    className="w-full bg-transparent text-center wrap-anywhere outline-none"
                     style={{ color: 'var(--ink-text)' }}
                   />
                 </div>
@@ -325,7 +402,11 @@ export default function JeopardyEditor({
 
             <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
               {board.categories.map((cat, colIndex) => (
-                <div key={colIndex} className="grid" style={{ gridTemplateRows: `repeat(${rowsCount}, minmax(0, 1fr))` }}>
+                <div
+                  key={colIndex}
+                  className="grid"
+                  style={{ gridTemplateRows: `repeat(${rowsCount}, minmax(0, 1fr))` }}
+                >
                   {Array.from({ length: rowsCount }, (_, rowIndex) => {
                     const value = getClueValue(board, rowIndex)
                     const clue = cat.clues[rowIndex]
@@ -337,7 +418,7 @@ export default function JeopardyEditor({
                         key={rowIndex}
                         onClick={() => openCell(colIndex, rowIndex)}
                         disabled={!!lock}
-                        className="relative h-20 sm:h-24 md:h-28 lg:h-32 border text-2xl md:text-3xl font-extrabold flex items-center justify-center select-none rounded-b-lg disabled:cursor-not-allowed"
+                        className="relative flex h-20 items-center justify-center rounded-b-lg border text-2xl font-extrabold select-none disabled:cursor-not-allowed sm:h-24 md:h-28 md:text-3xl lg:h-32"
                         style={{
                           borderColor: lock ? lock.color : 'var(--ink-border)',
                           backgroundColor: isFocused && !lock ? 'var(--ink-accent)' : 'var(--ink-paper)',
@@ -350,10 +431,17 @@ export default function JeopardyEditor({
                         {lock ? (
                           <span className="flex flex-col items-center gap-1">
                             <Avatar color={lock.color} name={lock.name} small />
-                            <span className="text-xs font-normal" style={{ color: 'var(--ink-muted)' }}>editing</span>
+                            <span className="text-xs font-normal" style={{ color: 'var(--ink-muted)' }}>
+                              editing
+                            </span>
                           </span>
                         ) : filled ? (
-                          <span className="text-xs sm:text-sm px-2" style={{ color: isFocused ? 'rgba(255,255,255,0.85)' : 'var(--ink-muted)' }}>Edit · ${value}</span>
+                          <span
+                            className="px-2 text-xs sm:text-sm"
+                            style={{ color: isFocused ? 'rgba(255,255,255,0.85)' : 'var(--ink-muted)' }}
+                          >
+                            Edit · ${value}
+                          </span>
                         ) : (
                           <span>${value}</span>
                         )}
@@ -367,7 +455,8 @@ export default function JeopardyEditor({
         </div>
 
         <div className="mt-6 text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
-          Drag headers to reorder · Arrows navigate · Tab / Shift+Tab cycle · Space/Return open · Esc close · Cmd/Ctrl+Enter save
+          Drag headers to reorder · Arrows navigate · Tab / Shift+Tab cycle · Space/Return open · Esc close ·
+          Cmd/Ctrl+Enter save
         </div>
       </div>
 
@@ -379,7 +468,15 @@ export default function JeopardyEditor({
           clue={board.categories[modal.colIndex]?.clues[modal.rowIndex] ?? { question: '', answer: '' }}
           onClose={closeCell}
           onSave={(clue) => saveCell(modal.colIndex, modal.rowIndex, clue)}
-          onAutosave={(clue) => sendOp({ kind: 'setClue', col: modal.colIndex, row: modal.rowIndex, question: clue.question, answer: clue.answer })}
+          onAutosave={(clue) =>
+            sendOp({
+              kind: 'setClue',
+              col: modal.colIndex,
+              row: modal.rowIndex,
+              question: clue.question,
+              answer: clue.answer,
+            })
+          }
         />
       )}
     </div>
@@ -409,7 +506,7 @@ function CollaboratorChips({
             <button
               key={c.id}
               onClick={onRenameSelf}
-              className="rounded-full flex items-center justify-center text-xs font-bold text-white border-2 cursor-pointer hover:scale-110 transition-transform"
+              className="flex cursor-pointer items-center justify-center rounded-full border-2 text-xs font-bold text-white transition-transform hover:scale-110"
               style={baseStyle}
               title={tooltip}
             >
@@ -420,7 +517,7 @@ function CollaboratorChips({
         return (
           <div
             key={c.id}
-            className="rounded-full flex items-center justify-center text-xs font-bold text-white border-2"
+            className="flex items-center justify-center rounded-full border-2 text-xs font-bold text-white"
             style={baseStyle}
             title={tooltip}
           >
@@ -429,7 +526,9 @@ function CollaboratorChips({
         )
       })}
       {sorted.length > 6 && (
-        <div className="text-xs ml-3" style={{ color: 'var(--ink-muted)' }}>+{sorted.length - 6}</div>
+        <div className="ml-3 text-xs" style={{ color: 'var(--ink-muted)' }}>
+          +{sorted.length - 6}
+        </div>
       )}
     </div>
   )
@@ -439,7 +538,7 @@ function Avatar({ color, name, small }: { color: string; name: string; small?: b
   const size = small ? 20 : 28
   return (
     <span
-      className="inline-flex items-center justify-center rounded-full text-white font-bold"
+      className="inline-flex items-center justify-center rounded-full font-bold text-white"
       style={{ width: size, height: size, backgroundColor: color, fontSize: small ? 10 : 12 }}
     >
       {initialsFrom(name)}
@@ -471,7 +570,9 @@ function CellModal({
   /** Track what's already been persisted so we don't re-fire autosave for echoes from the server. */
   const lastSavedRef = useRef<{ q: string; a: string }>({ q: initialQ, a: initialA })
 
-  useEffect(() => { qaRef.current = { q, a } }, [q, a])
+  useEffect(() => {
+    qaRef.current = { q, a }
+  }, [q, a])
 
   useEffect(() => {
     qRef.current?.focus()
@@ -519,27 +620,64 @@ function CellModal({
   }, [onClose, onSave])
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-      <div className="w-full max-w-3xl rounded-lg border shadow-lg" style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}>
-        <div className="p-4 flex items-center justify-between border-b" style={{ borderColor: 'var(--ink-border)' }}>
-          <div className="font-semibold truncate" style={{ color: 'var(--ink-text)' }}>{categoryTitle || 'Clue'} • ${value}</div>
-          <button onClick={onClose} className="px-3 py-1 rounded-lg hover:opacity-90" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}>ESC</button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div
+        className="w-full max-w-3xl rounded-lg border shadow-lg"
+        style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
+      >
+        <div className="flex items-center justify-between border-b p-4" style={{ borderColor: 'var(--ink-border)' }}>
+          <div className="truncate font-semibold" style={{ color: 'var(--ink-text)' }}>
+            {categoryTitle || 'Clue'} • ${value}
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-lg px-3 py-1 hover:opacity-90"
+            style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+          >
+            ESC
+          </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+        <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2">
           <div>
-            <label className="text-sm" style={{ color: 'var(--ink-muted)' }}>Question Prompt</label>
-            <textarea ref={qRef} value={q} onChange={(e) => setQ(e.target.value)} className="mt-1 w-full h-40 rounded-lg p-3 outline-none border focus:ring-2 focus:ring-(--ink-accent)" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }} />
+            <label className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+              Question Prompt
+            </label>
+            <textarea
+              ref={qRef}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              className="mt-1 h-40 w-full rounded-lg border p-3 outline-none focus:ring-2 focus:ring-(--ink-accent)"
+              style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+            />
           </div>
           <div>
-            <label className="text-sm" style={{ color: 'var(--ink-muted)' }}>Correct Response</label>
-            <textarea value={a} onChange={(e) => setA(e.target.value)} className="mt-1 w-full h-40 rounded-lg p-3 outline-none border focus:ring-2 focus:ring-(--ink-accent)" style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }} />
+            <label className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+              Correct Response
+            </label>
+            <textarea
+              value={a}
+              onChange={(e) => setA(e.target.value)}
+              className="mt-1 h-40 w-full rounded-lg border p-3 outline-none focus:ring-2 focus:ring-(--ink-accent)"
+              style={{ backgroundColor: 'var(--ink-bg)', borderColor: 'var(--ink-border)', color: 'var(--ink-text)' }}
+            />
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-2 p-4 border-t" style={{ borderColor: 'var(--ink-border)' }}>
-          <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>Autosaves as you type · Esc to close · Cmd/Ctrl+Enter to save &amp; close</span>
-          <button onClick={() => onSave({ question: q, answer: a })} className="text-white px-4 py-2 rounded-lg hover:opacity-90" style={{ backgroundColor: 'rgb(22 101 52)' }}>Save &amp; close</button>
+        <div
+          className="flex items-center justify-between gap-2 border-t p-4"
+          style={{ borderColor: 'var(--ink-border)' }}
+        >
+          <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>
+            Autosaves as you type · Esc to close · Cmd/Ctrl+Enter to save &amp; close
+          </span>
+          <button
+            onClick={() => onSave({ question: q, answer: a })}
+            className="rounded-lg px-4 py-2 text-white hover:opacity-90"
+            style={{ backgroundColor: 'rgb(22 101 52)' }}
+          >
+            Save &amp; close
+          </button>
         </div>
       </div>
     </div>

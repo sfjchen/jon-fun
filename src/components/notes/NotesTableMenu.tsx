@@ -150,10 +150,7 @@ export default function NotesTableMenu({ editor }: NotesTableMenuProps) {
       data-testid="notes-table-menu"
     >
       {dims ? (
-        <span
-          className="px-1 text-[10px] text-[var(--uv-text-muted)]"
-          data-testid="notes-table-dims"
-        >
+        <span className="px-1 text-[10px] text-[var(--uv-text-muted)]" data-testid="notes-table-dims">
           {dims.rows}×{dims.cols}
         </span>
       ) : null}
@@ -178,16 +175,10 @@ export default function NotesTableMenu({ editor }: NotesTableMenuProps) {
         − col
       </TableBtn>
       <span className="mx-0.5 h-4 w-px bg-[var(--uv-border)]" />
-      <TableBtn
-        title="Toggle header row"
-        onClick={() => editor.chain().focus().toggleHeaderRow().run()}
-      >
+      <TableBtn title="Toggle header row" onClick={() => editor.chain().focus().toggleHeaderRow().run()}>
         H row
       </TableBtn>
-      <TableBtn
-        title="Toggle header column"
-        onClick={() => editor.chain().focus().toggleHeaderColumn().run()}
-      >
+      <TableBtn title="Toggle header column" onClick={() => editor.chain().focus().toggleHeaderColumn().run()}>
         H col
       </TableBtn>
       <span className="mx-0.5 h-4 w-px bg-[var(--uv-border)]" />

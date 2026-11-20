@@ -8,8 +8,18 @@ const COLOR_KEY = 'jeopardy:editor-color'
 const RECENT_KEY = 'jeopardy:recents'
 
 const COLORS = [
-  '#ef4444', '#f97316', '#f59e0b', '#84cc16', '#10b981', '#06b6d4',
-  '#3b82f6', '#8b5cf6', '#ec4899', '#22c55e', '#0ea5e9', '#a855f7',
+  '#ef4444',
+  '#f97316',
+  '#f59e0b',
+  '#84cc16',
+  '#10b981',
+  '#06b6d4',
+  '#3b82f6',
+  '#8b5cf6',
+  '#ec4899',
+  '#22c55e',
+  '#0ea5e9',
+  '#a855f7',
 ]
 
 export interface EditorIdentity {

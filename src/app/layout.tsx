@@ -9,7 +9,7 @@ import './globals.css'
 export const metadata: Metadata = {
   title: {
     default: 'sfjc.dev',
-    template: '%s | sfjc.dev'
+    template: '%s | sfjc.dev',
   },
   description: 'A collection of fun games and projects by Jonathan Chen',
   keywords: ['games', 'party games', 'puzzles', 'projects'],
@@ -25,11 +25,7 @@ export const viewport: Viewport = {
   themeColor: '#fcf9f4',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>

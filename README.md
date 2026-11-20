@@ -24,6 +24,7 @@ npm run dev                  # http://localhost:3000
 ```
 
 Scripts:
+
 - `npm run lint`, `npm run type-check`, `npm run build`
 - `npm test` (unit tests in `tests/`, Node's test runner through tsx)
 - `npm run test:e2e` (Playwright, starts the dev server), `test:e2e:visual`, `test:e2e:deploy` (against the live site). Add a spec name to run 1 area: `npm run test:e2e -- notes`
@@ -44,6 +45,7 @@ Visual baselines live in `e2e/site-visual.spec.ts-snapshots/` (`npm run test:e2e
 - `docs/` architecture map, daily games, design system, Notes and sync notes
 
 Docs:
+
 - [`docs/ARCHITECTURE-MAP.md`](docs/ARCHITECTURE-MAP.md) routes, shared libs, backends
 - [`docs/DAILY-GAMES.md`](docs/DAILY-GAMES.md) daily games: sources, cron, rules, score checks
 - [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) visual system

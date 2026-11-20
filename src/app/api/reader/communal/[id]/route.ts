@@ -12,7 +12,11 @@ export async function GET(_request: Request, { params }: RouteParams) {
   const { id } = await params
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
-  const { data, error } = await supabaseAdmin.from('reader_communal_publications').select('*').eq('id', id).maybeSingle()
+  const { data, error } = await supabaseAdmin
+    .from('reader_communal_publications')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!data) return NextResponse.json({ error: 'not_found' }, { status: 404 })
   return NextResponse.json(dbRowToPublication(data as CommunalDbRow))

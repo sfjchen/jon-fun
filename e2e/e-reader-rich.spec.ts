@@ -2,41 +2,63 @@ import { expect, test } from '@playwright/test'
 import { mockSyncIdentity } from './helpers/sync-identity-mock'
 import type { ReaderPublication } from '../src/lib/reader/types'
 
-const pixel = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aF1cAAAAASUVORK5CYII='
+const pixel =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aF1cAAAAASUVORK5CYII='
 const text = 'A little bold thought. Read note 1.'
 const diagram = '  A ---> B\n  |      |\n  C <--- D'
 const publication: ReaderPublication = {
-  id: 'rich-fixture', title: 'Formatted EPUB fixture', sourceType: 'epub',
-  createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z',
+  id: 'rich-fixture',
+  title: 'Formatted EPUB fixture',
+  sourceType: 'epub',
+  createdAt: '2026-01-01T00:00:00Z',
+  updatedAt: '2026-01-01T00:00:00Z',
   chapters: [
     {
-      id: 'chapter-one', title: 'First chapter', order: 0, wordCount: 20,
+      id: 'chapter-one',
+      title: 'First chapter',
+      order: 0,
+      wordCount: 20,
       paragraphs: ['A preserved heading', text, '', diagram],
       blocks: [
         { id: 'heading', kind: 'heading', text: 'A preserved heading', level: 3 },
-        { id: 'text', kind: 'paragraph', text, runs: [
-          { text: 'A ' }, { text: 'little ', italic: true }, { text: 'bold', bold: true },
-          { text: ' thought. Read note ' },
-          { text: '1', superscript: true, href: '/games/e-reader/read/rich-fixture/chapter-two#footnote-one' },
-          { text: '.' },
-        ] },
+        {
+          id: 'text',
+          kind: 'paragraph',
+          text,
+          runs: [
+            { text: 'A ' },
+            { text: 'little ', italic: true },
+            { text: 'bold', bold: true },
+            { text: ' thought. Read note ' },
+            { text: '1', superscript: true, href: '/games/e-reader/read/rich-fixture/chapter-two#footnote-one' },
+            { text: '.' },
+          ],
+        },
         { id: 'image', kind: 'image', text: '', image: { src: pixel, alt: 'Original diagram' } },
         { id: 'ascii', kind: 'preformatted', text: diagram },
       ],
     },
     {
-      id: 'chapter-two', title: 'Notes', order: 1, wordCount: 5,
+      id: 'chapter-two',
+      title: 'Notes',
+      order: 1,
+      wordCount: 5,
       paragraphs: ['The complete original footnote.'],
       blocks: [{ id: 'note', kind: 'paragraph', text: 'The complete original footnote.', anchorId: 'footnote-one' }],
     },
   ],
 }
 
-for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
+for (const viewport of [
+  { width: 1440, height: 1000 },
+  { width: 390, height: 844 },
+]) {
   test(`rich EPUB preserves formatting, images, search and footnotes at ${viewport.width}px`, async ({ page }) => {
     await page.setViewportSize(viewport)
     await mockSyncIdentity(page)
-    await page.route('**/api/reader/comments?**', (route) => route.fulfill({ contentType: 'application/json', body: '[]' }))
+    await page.route('**/api/reader/comments?**', (route) =>
+      route.fulfill({ contentType: 'application/json', body: '[]' }),
+    )
     await page.route('**/api/reader/communal/**', (route) => {
       const state = route.request().url().includes('/reading-state')
       return route.fulfill({ contentType: 'application/json', body: JSON.stringify(state ? null : publication) })

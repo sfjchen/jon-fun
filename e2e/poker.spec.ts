@@ -10,7 +10,7 @@ import {
   hostStartNextHand,
 } from './helpers/poker-flow'
 
-test.describe('Texas Hold\'em', () => {
+test.describe("Texas Hold'em", () => {
   test('lobby shows Create Room and Join Room tabs', async ({ page }) => {
     await page.goto('/games/poker')
     await expect(page.getByRole('heading', { name: /Texas Hold'em/i })).toBeVisible()
@@ -53,7 +53,7 @@ test.describe('Texas Hold\'em', () => {
   })
 })
 
-test.describe('Texas Hold\'em multiplayer (Supabase)', () => {
+test.describe("Texas Hold'em multiplayer (Supabase)", () => {
   test('guest appears in host lobby via realtime sync', async ({ browser }) => {
     const tag = Date.now()
     const hostName = `Host${tag}`
@@ -174,7 +174,9 @@ test.describe('Texas Hold\'em multiplayer (Supabase)', () => {
       await expect(guestPage.getByText('Your Turn')).toBeVisible({ timeout: 15_000 })
       await guestPage.getByRole('button', { name: /All-In/ }).click()
 
-      await expect(guestPage.locator('span.bg-yellow-600').filter({ hasText: 'All-In' })).toBeVisible({ timeout: 20_000 })
+      await expect(guestPage.locator('span.bg-yellow-600').filter({ hasText: 'All-In' })).toBeVisible({
+        timeout: 20_000,
+      })
       await expect(hostPage.getByText('Your Turn')).toBeVisible({ timeout: 20_000 })
     } finally {
       await hostCtx.close()

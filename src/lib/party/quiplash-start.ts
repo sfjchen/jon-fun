@@ -5,7 +5,11 @@ import { shuffle } from '@/lib/random'
 import { QUIPLASH_PROMPT_POOL } from './prompts-quiplash'
 import { buildQuiplashMatchups } from './quiplash-pairing'
 
-export async function seedQuiplashRound1(pin: string, playerIds: string[], nowIso: string): Promise<{ error?: string }> {
+export async function seedQuiplashRound1(
+  pin: string,
+  playerIds: string[],
+  nowIso: string,
+): Promise<{ error?: string }> {
   const existing = (await supabase.from('party_quiplash_matchups').select('id').eq('room_pin', pin)).data ?? []
   const mids = existing.map((m) => m.id)
   if (mids.length > 0) {

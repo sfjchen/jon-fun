@@ -15,8 +15,16 @@ export const PLAYER_IDENTITY_CHANGED = 'sfjc-player-changed'
 export function getDevicePlayer(): DevicePlayer | null {
   try {
     const p = JSON.parse(read(PLAYER) || 'null') as DevicePlayer | null
-    return p && typeof p.name === 'string' && p.name.trim() && typeof p.group === 'string' && /^[a-z0-9-]{3,32}$/.test(p.group) ? p : null
-  } catch { return null }
+    return p &&
+      typeof p.name === 'string' &&
+      p.name.trim() &&
+      typeof p.group === 'string' &&
+      /^[a-z0-9-]{3,32}$/.test(p.group)
+      ? p
+      : null
+  } catch {
+    return null
+  }
 }
 
 /** Saves the one name used by games, log device stamps and reader comments. */
@@ -30,7 +38,10 @@ export function saveDevicePlayer(player: DevicePlayer): void {
   // Serialize saves behind any in-flight restore so an older request cannot replace a rename.
   const previous = ready
   ready = null
-  void (previous ?? Promise.resolve()).then(() => { ready = null; return ensureSyncIdentity() })
+  void (previous ?? Promise.resolve()).then(() => {
+    ready = null
+    return ensureSyncIdentity()
+  })
 }
 const LEGACY_KEYS = ['daily_learn_sync_key', 'notes_sync_key']
 const LEGACY_IDS = ['daily_learn_user_id', 'notes_user_id', 'notes_device_label', 'sfjc_approved_key']
@@ -119,10 +130,28 @@ export function getDeviceLabel(): string {
  */
 function defaultLabel(): string {
   const ua = typeof navigator === 'undefined' ? '' : navigator.userAgent
-  const browser = /Edg\//.test(ua) ? 'Edge' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' :
-    /Safari\//.test(ua) ? 'Safari' : 'Browser'
-  const os = /iPhone/.test(ua) ? 'iPhone' : /iPad/.test(ua) ? 'iPad' : /Android/.test(ua) ? 'Android' :
-    /Mac OS X/.test(ua) ? 'Mac' : /Windows/.test(ua) ? 'Windows' : /Linux/.test(ua) ? 'Linux' : 'device'
+  const browser = /Edg\//.test(ua)
+    ? 'Edge'
+    : /Firefox\//.test(ua)
+      ? 'Firefox'
+      : /Chrome\//.test(ua)
+        ? 'Chrome'
+        : /Safari\//.test(ua)
+          ? 'Safari'
+          : 'Browser'
+  const os = /iPhone/.test(ua)
+    ? 'iPhone'
+    : /iPad/.test(ua)
+      ? 'iPad'
+      : /Android/.test(ua)
+        ? 'Android'
+        : /Mac OS X/.test(ua)
+          ? 'Mac'
+          : /Windows/.test(ua)
+            ? 'Windows'
+            : /Linux/.test(ua)
+              ? 'Linux'
+              : 'device'
   return `${browser} on ${os}`
 }
 
@@ -169,7 +198,8 @@ export function ensureSyncIdentity(): Promise<void> {
     if (!read(DEVICE) || minted || !getDevicePlayer()) {
       const saved = await call<{ syncKey?: string; deviceId?: string; player?: DevicePlayer }>('GET')
       // Restore the name and its ID together, even if another app minted an ID before restoration.
-      if (saved?.deviceId && (!read(DEVICE) || minted || (!getDevicePlayer() && saved.player))) write(DEVICE, saved.deviceId)
+      if (saved?.deviceId && (!read(DEVICE) || minted || (!getDevicePlayer() && saved.player)))
+        write(DEVICE, saved.deviceId)
       minted = false
       if (saved?.syncKey && !read(KEY)) write(KEY, saved.syncKey)
       if (saved?.player && !getDevicePlayer()) {
@@ -180,12 +210,17 @@ export function ensureSyncIdentity(): Promise<void> {
     if (!read(KEY)) write(KEY, LEGACY_KEYS.map(read).find(Boolean) ?? '')
     if (!read(LABEL)) write(LABEL, read('notes_device_label'))
     if (!getDevicePlayer()) {
-      const name = (getDeviceLabel() || read('reader-comment-display-name-v1') || read('jeopardy:editor-name')).trim().slice(0,24)
-      if (name) { write(PLAYER,JSON.stringify({name,group:'public'})); write(LABEL,name) }
+      const name = (getDeviceLabel() || read('reader-comment-display-name-v1') || read('jeopardy:editor-name'))
+        .trim()
+        .slice(0, 24)
+      if (name) {
+        write(PLAYER, JSON.stringify({ name, group: 'public' }))
+        write(LABEL, name)
+      }
     }
     for (const k of [...LEGACY_KEYS, ...LEGACY_IDS]) write(k, '')
     const profile = getDevicePlayer()
-    if (profile) write(LABEL,profile.name)
+    if (profile) write(LABEL, profile.name)
     const r = await call<{ syncKey: string; player?: DevicePlayer }>('POST', {
       syncKey: getSyncKey(),
       deviceId: getDeviceId(),
@@ -195,7 +230,10 @@ export function ensureSyncIdentity(): Promise<void> {
     })
     if (!r) throw new Error('link failed')
     write(KEY, r.syncKey)
-    if (r.player && !getDevicePlayer()) { write(PLAYER, JSON.stringify(r.player)); write(LABEL, r.player.name) }
+    if (r.player && !getDevicePlayer()) {
+      write(PLAYER, JSON.stringify(r.player))
+      write(LABEL, r.player.name)
+    }
     window.dispatchEvent(new Event(SYNC_IDENTITY_CHANGED))
     window.dispatchEvent(new Event(PLAYER_IDENTITY_CHANGED))
   })().catch(() => {
