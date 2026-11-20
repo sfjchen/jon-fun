@@ -47,7 +47,7 @@ export async function captureKrillion():Promise<{date:string;prompts:{id:string;
 }
 export async function krillionForDay(day:string):Promise<KrillionPuzzle> {
   const review=await krillionReview(day)
-  return {date:review.date,prompts:review.prompts.map(({id,text})=>({id,text})),answerMs:25000,previewMs:3000,officialScoring:true}
+  return {date:review.date,prompts:review.prompts.map(({id,text})=>({id,text})),answerMs:25000,officialScoring:true}
 }
 const indices=new WeakMap<object,Map<string,KrillionAnswer>>()
 export async function judgeAnswer(date:string,index:number,answer:string,final=false):Promise<KrillionJudgment> {

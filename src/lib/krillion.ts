@@ -11,7 +11,7 @@ export type KrillionTier = keyof typeof KRILLION_TIERS
 export type KrillionAnswer = { answer: string; aliases?: string[]; tier: KrillionTier; score: number; quip?: string }
 export type KrillionPrompt = { id: string; text: string; answers: KrillionAnswer[] }
 export type KrillionReview = { date: string; prompts: KrillionPrompt[] }
-export type KrillionPuzzle = { date: string; dayNumber?: number; prompts: { id: string; text: string }[]; answerMs: number; previewMs: number; officialScoring: true }
+export type KrillionPuzzle = { date: string; dayNumber?: number; prompts: { id: string; text: string }[]; answerMs: number; officialScoring: true }
 export type KrillionResult = { answer: string; accepted: boolean; score: number; tier?: KrillionTier; matchedAnswer?: string; quip?: string; reason: string }
 export type KrillionJudgment = KrillionResult & { correction?: string }
 export function answerKey(text: string): string { return text.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '') }
@@ -27,9 +27,9 @@ export function editDistance(a: string, b: string, limit: number): number {
   }
   return prev[b.length]!
 }
-export type KrillionRun = { phase:'ready'|'preview'|'answering'|'feedback'|'done'; index:number; endsAt:number|null; pausedAt:number|null; draft:string; outcomes:KrillionResult[] }
+export type KrillionRun = { phase:'ready'|'answering'|'feedback'|'done'; index:number; endsAt:number|null; pausedAt:number|null; draft:string; outcomes:KrillionResult[] }
 export function newKrillionRun():KrillionRun { return {phase:'ready',index:0,endsAt:null,pausedAt:null,draft:'',outcomes:[]} }
-export function beginKrillionRound(run:KrillionRun,now:number):KrillionRun { return {...run,phase:'preview',index:run.outcomes.length,endsAt:now+3000,pausedAt:null,draft:''} }
+export function beginKrillionRound(run:KrillionRun,now:number):KrillionRun { return {...run,phase:'answering',index:run.outcomes.length,endsAt:now+25000,pausedAt:null,draft:''} }
 export function completeKrillionRound(run:KrillionRun,result:KrillionResult):KrillionRun {
   if(run.phase!=='answering'||run.outcomes.length!==run.index)return run
   return {...run,phase:'feedback',endsAt:null,pausedAt:null,draft:'',outcomes:[...run.outcomes,result]}
@@ -38,10 +38,9 @@ export function restoreKrillionRun(value:unknown,now:number):KrillionRun {
   const r=value as KrillionRun
   if(!r||!['ready','preview','answering','feedback','done'].includes(r.phase)||!Array.isArray(r.outcomes)||r.outcomes.length>7||!Number.isInteger(r.index)||r.index<0||r.index>6||typeof r.draft!=='string'||r.outcomes.some(o=>typeof o.score!=='number'||o.score<0||o.score>100))return newKrillionRun()
   if(r.pausedAt!==null)return r
-  let run=r
-  if(run.phase==='preview'&&run.endsAt!==null&&now>=run.endsAt)run={...run,phase:'answering',endsAt:run.endsAt+25000}
+  let run=(r.phase as string)==='preview'?{...r,phase:'answering' as const,endsAt:r.endsAt===null?null:r.endsAt+25000}:r
   if(run.phase==='answering'&&run.endsAt!==null&&now>=run.endsAt)run=completeKrillionRound(run,{answer:run.draft,accepted:false,score:0,reason:'The clock expired while you were away.'})
   return run
 }
-export function pauseKrillion(run:KrillionRun,now:number):KrillionRun { return ['preview','answering'].includes(run.phase)&&run.pausedAt===null?{...run,pausedAt:now}:run }
+export function pauseKrillion(run:KrillionRun,now:number):KrillionRun { return run.phase==='answering'&&run.pausedAt===null?{...run,pausedAt:now}:run }
 export function resumeKrillion(run:KrillionRun,now:number):KrillionRun { return run.pausedAt!==null?{...run,endsAt:run.endsAt===null?null:run.endsAt+Math.max(0,now-run.pausedAt),pausedAt:null}:run }
