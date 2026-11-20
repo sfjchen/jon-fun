@@ -484,7 +484,7 @@ export default function SpellingBee() {
         <p className="mb-2 text-xs" style={{ color: 'var(--ink-muted)' }}>Started as a future preview · not ranked</p>
       )}
 
-      <div className="grid gap-3 md:grid-cols-[1fr_1fr] md:gap-10">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2 md:gap-10">
         <section className="order-2 flex flex-col items-center md:order-1">
           <div className="relative flex h-12 w-full items-center justify-center md:h-16">
             {toast && (
@@ -634,7 +634,7 @@ export default function SpellingBee() {
               }
               onClick={() => setOpen((o) => !o)}
             >
-              <span className="truncate">
+              <span className="min-w-0 truncate">
                 {open || found.length === 0 ? (
                   `You have found ${found.length} word${found.length === 1 ? '' : 's'}`
                 ) : (
