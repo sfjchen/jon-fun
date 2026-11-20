@@ -7,7 +7,7 @@ export function resumeMini(run:MiniRun,now:number):MiniRun{return run.complete?r
 export function finishMini(run:MiniRun,puzzle:MiniPuzzle,now:number):MiniRun{
   if(!puzzle.cells.every((a,i)=>!a||run.entries[i]===a))return run
   const stopped=pauseMini(run,now)
-  return{...stopped,complete:true,firstSolveSeconds:run.firstSolveSeconds??(!run.assisted?Math.floor(stopped.elapsedMs/1000):null)}
+  return{...stopped,complete:true,firstSolveSeconds:run.firstSolveSeconds??(!run.assisted?Math.round(stopped.elapsedMs/1000):null)}
 }
 export function restoreMini(value:unknown,puzzle:MiniPuzzle):MiniRun{
   const r=value as MiniRun

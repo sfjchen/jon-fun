@@ -2,16 +2,16 @@
 
 /**
  * Plays the Fivefold daily: 6 tries to find a 5-letter word, with per-letter marks, a typed or on-screen keyboard,
- * an active-time clock that pauses while the page is hidden, a saved run per day and a shareable result.
+ * a saved run per day and a shareable result. Like the original, it counts guesses only, with no clock.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { formatTime, isPracticeResult, logResult, markPracticeIfFuture } from '@/lib/results'
+import { isPracticeResult, logResult, markPracticeIfFuture } from '@/lib/results'
 import { loadFivefoldStats, type FivefoldStats } from '@/lib/daily/fivefold-stats'
 
 export type FivefoldPuzzle = { answer: string }
 type Mark = 'hit' | 'near' | 'miss'
-type Run = { guesses: string[]; elapsedMs: number; activeSince: number | null; hard: boolean }
+type Run = { guesses: string[]; hard: boolean }
 
 const TRIES = 6
 const ROWS = ['qwertyuiop', 'asdfghjkl', '↵zxcvbnm⌫']
@@ -58,11 +58,6 @@ function hardError(draft: string, guesses: string[], answer: string): string {
 }
 
 /**
- * Returns the active play time, including the running stretch.
- */
-const elapsed = (r: Run, now: number) => r.elapsedMs + (r.activeSince === null ? 0 : Math.max(0, now - r.activeSince))
-
-/**
  * Renders the board, keyboard and result for one day.
  */
 export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuzzle; dailyDay: string }) {
@@ -71,11 +66,9 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
   const [run, setRun] = useState<Run>(() => {
     try {
       const r = JSON.parse(localStorage.getItem(storageKey) ?? 'null') as Run | null
-      if (r && Array.isArray(r.guesses) && r.guesses.every((g) => /^[a-z]{5}$/.test(g)) && Number.isFinite(r.elapsedMs)) {
-        return { guesses: r.guesses.slice(0, TRIES), elapsedMs: r.elapsedMs, activeSince: null, hard: !!r.hard }
-      }
+      if (r && Array.isArray(r.guesses) && r.guesses.every((g) => /^[a-z]{5}$/.test(g))) return { guesses: r.guesses.slice(0, TRIES), hard: !!r.hard }
     } catch {}
-    return { guesses: [], elapsedMs: 0, activeSince: null, hard: false }
+    return { guesses: [], hard: false }
   })
   const [draft, setDraft] = useState('')
   const [message, setMessage] = useState('')
@@ -86,39 +79,23 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
   })
   const [statsOpen, setStatsOpen] = useState(false)
   const [stats, setStats] = useState<FivefoldStats | null>(null)
-  const [clock, setClock] = useState(() => Date.now())
   const current = useRef(run)
   const won = run.guesses.at(-1) === answer
   const done = won || run.guesses.length >= TRIES
   const hard = run.guesses.length ? !!run.hard : hardPref
-  const seconds = Math.floor(elapsed(run, clock) / 1000)
 
   const commit = useCallback(
     (r: Run) => {
       current.current = r
       setRun(r)
-      try { localStorage.setItem(storageKey, JSON.stringify({ ...r, elapsedMs: elapsed(r, Date.now()), activeSince: null })) } catch {}
+      try { localStorage.setItem(storageKey, JSON.stringify(r)) } catch {}
     },
     [storageKey],
   )
 
   useEffect(() => {
     words ??= fetch('/fivefold/words.json').then((r) => r.json()).then((list: string[]) => new Set(list))
-    const timer = setInterval(() => setClock(Date.now()), 1000)
-    const pause = () => {
-      const r = current.current
-      if (r.activeSince !== null) commit({ ...r, elapsedMs: elapsed(r, Date.now()), activeSince: null })
-    }
-    const visibility = () => { if (document.hidden) pause() }
-    document.addEventListener('visibilitychange', visibility)
-    window.addEventListener('pagehide', pause)
-    return () => {
-      clearInterval(timer)
-      document.removeEventListener('visibilitychange', visibility)
-      window.removeEventListener('pagehide', pause)
-      pause()
-    }
-  }, [commit])
+  }, [])
 
   useEffect(() => {
     if (!statsOpen) return
@@ -137,12 +114,7 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
   const press = useCallback(
     async (key: string) => {
       if (done) return
-      const r = current.current
-      // The clock starts with the first key and resumes after the page was hidden.
-      if (r.activeSince === null) {
-        markPracticeIfFuture('fivefold', dailyDay)
-        commit({ ...r, activeSince: Date.now() })
-      }
+      if (!current.current.guesses.length) markPracticeIfFuture('fivefold', dailyDay)
       setMessage('')
       if (key === '⌫' || key === 'backspace') return setDraft((d) => d.slice(0, -1))
       if (/^[a-z]$/.test(key)) return setDraft((d) => (d.length < 5 ? d + key : d))
@@ -158,12 +130,12 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
       const over = draft === answer || guesses.length >= TRIES
       setDraft('')
       if (!over) return commit({ ...latest, guesses, hard: latest.guesses.length ? latest.hard : hardPref })
-      const final = { guesses, elapsedMs: elapsed(latest, Date.now()), activeSince: null, hard: latest.guesses.length ? latest.hard : hardPref }
+      const final = { guesses, hard: latest.guesses.length ? latest.hard : hardPref }
       commit(final)
       setStatsOpen(true)
       // Logged once, when the last guess lands, so reloading a finished board never re-sends it.
       const hit = draft === answer
-      logResult('fivefold', hit ? TRIES + 1 - guesses.length : 0, guesses.length, dailyDay, { solved: hit, seconds: Math.floor(final.elapsedMs / 1000), sourceDate: dailyDay, puzzleId: `nyt-wordle:${dailyDay}`, ...(final.hard ? { hard: true } : {}) })
+      logResult('fivefold', hit ? TRIES + 1 - guesses.length : 0, guesses.length, dailyDay, { solved: hit, sourceDate: dailyDay, puzzleId: `nyt-wordle:${dailyDay}`, ...(final.hard ? { hard: true } : {}) })
     },
     [done, draft, answer, commit, dailyDay, hardPref, run.guesses.length],
   )
@@ -200,7 +172,7 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
   const share = () => {
     const icon: Record<Mark, string> = { hit: '🟩', near: '🟨', miss: '⬛' }
     const text = [
-      `Wordle ${dailyDay} ${won ? run.guesses.length : 'X'}/6${run.hard ? '*' : ''} · ${formatTime(Math.floor(run.elapsedMs / 1000))}`,
+      `Wordle ${dailyDay} ${won ? run.guesses.length : 'X'}/6${run.hard ? '*' : ''}`,
       ...run.guesses.map((g) => marks(g, answer).map((m) => icon[m]).join('')),
       'sfjc.dev/games/wordle',
     ].join('\n')
@@ -210,7 +182,6 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
   return (
     <section className="fivefold mx-auto max-w-md space-y-4" data-testid="fivefold-play">
       <div className="flex items-center justify-between border-b pb-2 text-sm" style={{ borderColor: 'var(--ink-border)' }}>
-        <span className="tabular-nums" role="timer">{formatTime(seconds)}</span>
         <span className="flex items-center gap-3">
           <button type="button" role="switch" aria-checked={hard} className="fivefold-hard" onClick={toggleHard}>
             Hard mode <i data-on={hard} />
@@ -238,7 +209,7 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
         <div className="space-y-2 rounded-xl bg-[var(--ink-paper)] p-4 text-center" data-testid="fivefold-result">
           <h2 className="text-xl font-bold">{won ? `Found in ${run.guesses.length}/6${run.hard ? '*' : ''}` : `The word was ${answer.toUpperCase()}`}</h2>
           <p className="text-sm text-[var(--ink-muted)]">
-            {formatTime(Math.floor(run.elapsedMs / 1000))} · {isPracticeResult('fivefold', dailyDay) ? 'Future preview · practice only' : 'Saved to your daily scores'}
+            {isPracticeResult('fivefold', dailyDay) ? 'Future preview · practice only' : 'Saved to your daily scores'}
           </p>
           <button className="rounded-full bg-[var(--game-color)] px-5 py-2 text-sm font-semibold text-white" onClick={share}>
             {copied ? 'Copied' : 'Copy result'}

@@ -286,7 +286,8 @@ export function ScoresHub() {
     return [...new Set(windowRows.map((r) => r.name))]
       .map((name) => {
         const own = windowRows.filter((r) => r.name === name)
-        const scores = (tab === 'connections' ? own.filter(r => r.score === 4 && r.stats.seconds !== undefined).map(r => r.stats.seconds!) : tab === 'fivefold' ? own.filter(r => r.score > 0).map(r => r.score) : own.map(r => r.score))
+        // Wordle scores are 7 minus guesses, so a loss (0) averages in as 7 guesses, as Wordle stat trackers count it.
+        const scores = (tab === 'connections' ? own.filter(r => r.score === 4 && r.stats.seconds !== undefined).map(r => r.stats.seconds!) : own.map(r => r.score))
         return {
           name,
           played: tab === 'all' ? new Set(own.map((r) => r.day)).size : own.length,

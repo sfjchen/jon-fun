@@ -19,6 +19,10 @@
       "schedule": "10 5 * * *"
     },
     {
+      "path": "/api/cron/krillion?dist=1",
+      "schedule": "55 4 * * *"
+    },
+    {
       "path": "/api/cron/nyt",
       "schedule": "15 8 * * *"
     }

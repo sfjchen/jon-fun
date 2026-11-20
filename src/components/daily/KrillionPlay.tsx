@@ -12,7 +12,7 @@ import type { KrillionPuzzle } from '@/lib/krillion'
 export default function KrillionPlay({puzzle,dailyDay}:{puzzle:KrillionPuzzle;dailyDay:string}){
   const storageKey=`krillion:v3:${dailyDay}:${puzzle.date}`
   const [run,setRunState]=useState<KrillionRun>(()=>{try{return restoreKrillionRun(JSON.parse(localStorage.getItem(storageKey)??'null'),Date.now())}catch{return newKrillionRun()}})
-  const [clock,setClock]=useState(()=>Date.now()),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[copied,setCopied]=useState(false),[saved,setSaved]=useState<{index:number;list:string[]}>({index:-1,list:[]}),[sheet,setSheet]=useState(0)
+  const [clock,setClock]=useState(()=>Date.now()),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[copied,setCopied]=useState(false),[saved,setSaved]=useState<{index:number;list:string[]}>({index:-1,list:[]}),[sheet,setSheet]=useState(0),[pct,setPct]=useState<{score:number;betterThan:number;dist:number[]}|null>(null)
   const current=useRef(run),pending=useRef(false),submittedAt=useRef(0),abort=useRef<AbortController|null>(null),input=useRef<HTMLInputElement>(null),lookups=useRef(new Map<number,Map<string,KrillionAnswer>>()),loading=useRef(new Set<number>())
   const setRun=useCallback((value:KrillionRun|((r:KrillionRun)=>KrillionRun))=>{const next=typeof value==='function'?value(current.current):value;current.current=next;setRunState(next)},[])
   const remaining=Math.max(0,(run.endsAt??clock)-clock),total=run.outcomes.reduce((sum,r)=>sum+r.score,0),feedback=run.outcomes.at(-1)
@@ -25,6 +25,13 @@ export default function KrillionPlay({puzzle,dailyDay}:{puzzle:KrillionPuzzle;da
   },[])
   useEffect(()=>{try{localStorage.setItem(storageKey,JSON.stringify(run))}catch{};if(run.phase==='done')logResult('krillion',total,run.outcomes.filter(a=>a.accepted).length,dailyDay,{solved:true,sourceDate:puzzle.date,max:700,scoringVersion:2})},[run,total,dailyDay,puzzle.date,storageKey])
   useEffect(()=>{if(run.phase==='answering')input.current?.focus()},[run.phase,run.index])
+  useEffect(()=>{
+    if(run.phase!=='done')return
+    const ctl=new AbortController()
+    fetch(`/api/krillion/percentile?d=${puzzle.date}&score=${total}`,{signal:ctl.signal}).then(r=>r.ok?r.json():null)
+      .then((d:{betterThan:number;dist:number[]}|null)=>{if(d)setPct({score:total,...d})}).catch(()=>{})
+    return()=>ctl.abort()
+  },[run.phase,puzzle.date,total])
   // Each prompt's answer key loads 1 prompt ahead, so answers are judged on the device the moment they are sent.
   useEffect(()=>{
     for(const i of [run.index,run.index+1]){
@@ -82,6 +89,21 @@ export default function KrillionPlay({puzzle,dailyDay}:{puzzle:KrillionPuzzle;da
   // The final screen mirrors the original's: dive number, depth, a log of how deep each round sank, the score band,
   // the round list, this browser's logbook and the countdown to the next dive.
   let done:null|{dive:number;band:number;log:string;next:string;share:string}=null
+  // The player curve copies the original's chart: 5-point smoothing of 20 bins, a Catmull-Rom line, the beaten
+  // area shaded up to your score and a pink YOU marker.
+  let curve:null|{line:string;area:string;x:number;y:number;label:string}=null
+  if(pct&&pct.score===total){
+    const k=[.06,.24,.4,.24,.06],sm=pct.dist.map((_,i)=>{let a=0,n=0;for(let t=-2;t<=2;t++){const v=pct.dist[i+t];if(v===undefined)continue;a+=v*k[t+2]!;n+=k[t+2]!}return a/n}),top=Math.max(...sm)
+    if(top>0){
+      const pts:[number,number][]=[[0,78],...sm.map((v,i):[number,number]=>[(i+.5)/sm.length*320,78-v/top*68]),[320,78]],x=Math.min(total,700)/700*320
+      let y=78
+      for(let i=0;i<pts.length-1;i++){const [x1,y1]=pts[i]!,[x2,y2]=pts[i+1]!;if(x>=x1&&x<=x2){y=y1+(y2-y1)*(x2===x1?0:(x-x1)/(x2-x1));break}}
+      let line=`M ${pts[0]![0]} ${pts[0]![1]}`
+      for(let i=0;i<pts.length-1;i++){const a=pts[Math.max(0,i-1)]!,b=pts[i]!,c=pts[i+1]!,d=pts[Math.min(pts.length-1,i+2)]!
+        line+=` C ${b[0]+(c[0]-a[0])/6} ${b[1]+(c[1]-a[1])/6}, ${c[0]-(d[0]-b[0])/6} ${c[1]-(d[1]-b[1])/6}, ${c[0]} ${c[1]}`}
+      curve={line,area:`${line} L 320 78 L 0 78 Z`,x,y,label:pct.betterThan>=99.5?pct.betterThan.toFixed(2):String(pct.betterThan)}
+    }
+  }
   if(run.phase==='done'){
     const days=new Map<string,number>()
     try{for(const k of Object.keys(localStorage)){
@@ -110,6 +132,13 @@ export default function KrillionPlay({puzzle,dailyDay}:{puzzle:KrillionPuzzle;da
     run.phase==='done'&&done?<div className="krillion-done" data-testid="krillion-result">
       <div className="flex items-baseline justify-between"><span className="krillion-done-krill">KRILLION</span><span className="krillion-fathom-label">Dive #{done.dive} complete</span></div>
       <p className="krillion-done-score"><strong>{total}</strong><span>-{(total*10).toLocaleString()}m</span></p>
+      {curve&&<div><svg viewBox="0 0 320 96" className="w-full" role="img" aria-label={`Score distribution of the original game's players; your score beats ${curve.label}% of them`}>
+        <defs><linearGradient id="kr-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#4de3ff" stopOpacity=".45"/><stop offset="100%" stopColor="#4de3ff" stopOpacity=".02"/></linearGradient><clipPath id="kr-beaten"><rect x="0" y="0" width={curve.x} height="96"/></clipPath></defs>
+        <path d={curve.area} fill="url(#kr-fill)" opacity=".28"/><path d={curve.area} fill="url(#kr-fill)" clipPath="url(#kr-beaten)"/><path d={curve.line} fill="none" stroke="#4de3ff" strokeWidth="1.4" strokeOpacity=".75"/><line x1="0" y1="78" x2="320" y2="78" stroke="#7d93b838"/>
+        {[100,200,300,400,500,600].map(n=>{const x=n/700*320;return <g key={n}><line x1={x} y1="78" x2={x} y2="81.5" stroke="#7d93b8" strokeOpacity=".5"/>{Math.abs(x-curve.x)>=18&&<text x={x} y="90" textAnchor="middle" fontSize="9" fill="#7d93b8" opacity=".55">{n}</text>}</g>})}
+        <line x1={curve.x} y1={Math.min(curve.y,74)-3} x2={curve.x} y2="78" stroke="#ff5d8f" strokeWidth="1.2"/><circle cx={curve.x} cy={curve.y} r="2.6" fill="#ff5d8f"/><text x={Math.min(Math.max(curve.x,14),306)} y="90" textAnchor="middle" fontSize="9" letterSpacing=".12em" fill="#ff5d8f">YOU</text>
+        <text x="0" y="90" fontSize="9" fill="#7d93b8" opacity=".6">0</text><text x="320" y="90" textAnchor="end" fontSize="9" fill="#7d93b8" opacity=".6">700</text></svg>
+        <p className="krillion-fathom-label text-[#4de3ff]">better than {curve.label}% of the original game&apos;s players</p></div>}
       {isPracticeResult('krillion',dailyDay)&&<p className="krillion-fathom-label">Future preview · practice only</p>}
       <section><h3 className="krillion-fathom"><span>dive log</span><span>deeper = rarer</span></h3>
         <svg viewBox="0 0 320 190" className="w-full" role="img" aria-label={`Dive log: ${run.outcomes.map((r,i)=>`round ${i+1} ${tierOf(r).name}`).join(', ')}`}>

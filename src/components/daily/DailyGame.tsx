@@ -43,7 +43,6 @@ const HOW: Record<Exclude<GameId, 'bee'>, string[]> = {
     'Find the hidden 5-letter word in 6 tries. Type or tap letters, then Enter.',
     'A green tile is in the right spot. A yellow tile is in the word but in another spot. A gray tile is not in the word.',
     'Hard mode (optional, set before your first guess): green letters stay put and yellow letters must be reused.',
-    'The clock starts with your first key and pauses when you leave the page.',
   ],
   anthropeum: [
     '10 museum artifacts. Pin where each was made and pick a 250-year period.',

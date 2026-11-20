@@ -2,12 +2,12 @@ import { siteDay } from '@/lib/daily'
 import { getDevicePlayer, saveDevicePlayer, ensureSyncIdentity, getDeviceId } from '@/lib/syncIdentity'
 export type GameId = 'bee' | 'connections' | 'mini' | 'krillion' | 'anthropeum' | 'fivefold'
 export const GAMES: Record<GameId, { title: string; url: string; max: number; unit: string; rules: string; lowerIsBetter?: boolean }> = {
-  krillion: { title: 'Krillion', url: '/games/krillion', max: 700, unit: 'points', rules: 'Seven 25-second rounds. Original rarity scores: 10, 15, 30, 60, 85 or 100 points per answer. Maximum 700.' },
-  anthropeum: { title: 'Anthropeum', url: '/games/anthropeum', max: 100000, unit: 'points', rules: 'Ten artifacts, 250-year guesses, up to 5,000 location and 5,000 time points each. Original scoring formulas.' },
-  connections: { title: 'Connections', url: '/games/connections/daily', max: 4, unit: 'matches', rules: 'Four groups, four mistakes maximum. Complete the puzzle to rank. Faster completion time wins; mistakes do not break ties.' },
-  fivefold: { title: 'Wordle', url: '/games/wordle', max: 6, unit: 'points', rules: 'Guess the 5-letter word in 6 tries. Ranked by fewest guesses; equal guess counts share the rank.' },
+  krillion: { title: 'Krillion', url: '/games/krillion', max: 700, unit: 'points', rules: 'Seven 25-second rounds. Original rarity scores: 10, 15, 30, 60, 85 or 100 points per answer. Maximum 700. Your first finished dive counts.' },
+  anthropeum: { title: 'Anthropeum', url: '/games/anthropeum', max: 100000, unit: 'points', rules: 'Ten artifacts, 250-year guesses, up to 5,000 location and 5,000 time points each. Original scoring formulas. Your first finished game counts.' },
+  connections: { title: 'Connections', url: '/games/connections/daily', max: 4, unit: 'matches', rules: 'Four groups, four mistakes maximum. Solved puzzles rank by time, fastest first; unsolved ones rank below by groups found. Mistakes do not break ties. Your first finished game counts.' },
+  fivefold: { title: 'Wordle', url: '/games/wordle', max: 6, unit: 'points', rules: 'Guess the 5-letter word in 6 tries. Ranked by fewest guesses; equal guess counts share the rank. A loss counts as 7 guesses in averages. Your first finished game counts.' },
   mini: { title: 'Mini', url: '/games/mini', max: 864000, unit: 'time', lowerIsBetter: true, rules: 'First unassisted solve time; lower is better. The clock pauses when you pause or leave. Checks and reveals are unranked.' },
-  bee: { title: 'Spelling Bee', url: '/games/spelling-bee', max: 1000, unit: 'points', rules: 'Word points; pangrams earn a 7-point bonus.' },
+  bee: { title: 'Spelling Bee', url: '/games/spelling-bee', max: 1000, unit: 'points', rules: 'Word points; pangrams earn a 7-point bonus. Your score grows as you find words through the day.' },
 }
 export const GAME_IDS = Object.keys(GAMES) as GameId[]
 export type Stats = { n?: number; seconds?: number; mistakes?: number; solved?: boolean; max?: number; sourceDate?: string; puzzleId?: string; scoringVersion?: number; hard?: boolean }
@@ -97,7 +97,8 @@ export function logResult(game: GameId, score: number, n?: number, day = localDa
     const item: Queued = { game, day, score, stats: { scoringVersion: scoringVersion(game), ...stats, ...(n === undefined ? {} : { n }) }, player }
     const saved = queue()
     const index = saved.findIndex(q => q.game === game && q.day === day && JSON.stringify(q.player) === JSON.stringify(player))
-    if (index >= 0 && (game === 'mini' || ((saved[index]!.stats.scoringVersion ?? 1) === (item.stats.scoringVersion ?? 1) && (saved[index]!.score > score || saved[index]!.score === score && !(game === 'connections' && (stats.mistakes??4)<(saved[index]!.stats.mistakes??4)))))) { void flushResults(); return }
+    // Every game keeps its first finished result. Spelling Bee is the exception: its score grows through the day.
+    if (index >= 0 && (game !== 'bee' || saved[index]!.score >= score)) { void flushResults(); return }
     if (index >= 0) saved[index] = item
     else saved.push(item)
     localStorage.setItem(QUEUE_KEY, JSON.stringify(saved))

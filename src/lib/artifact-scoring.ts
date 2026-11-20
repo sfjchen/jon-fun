@@ -25,9 +25,15 @@ export function regionDistance(pin:Pin,polygons:number[][][][]):number{
   }
   return closest
 }
-/** The original game's published client scores a 250-year interval and historical region. */
-export function artifactScore(artifact:Artifact,pin:Pin,year:number):{location:number;time:number;km:number;years:number;total:number}{
-  const km=artifact.polygons?.length?regionDistance(pin,artifact.polygons):artifact.target?distanceKm(pin,artifact.target):Infinity
+/** Snaps a period start to the original's 125-year steps between 3000 BCE and 1750 CE. */
+export function snapYear(year:number):number{return Math.max(-3000,Math.min(1750,Math.round(year/125)*125))}
+/**
+ * Scores a guess like the original's client: location decays as exp(-km/2000) from the historical region (0 km
+ * inside it, 0 points with no region), time decays as exp(-years/1000) from the gap between the 250-year guess
+ * and the artifact's dates. Each is worth up to 5,000.
+ */
+export function artifactScore(artifact:Artifact,pin:Pin,guessYear:number):{location:number;time:number;km:number;years:number;total:number}{
+  const year=snapYear(guessYear),km=artifact.polygons?.length?regionDistance(pin,artifact.polygons):Infinity
   const years=Math.max(artifact.beginYear-(year+ARTIFACT_TIME_WINDOW),0,year-artifact.endYear)
   const location=Number.isFinite(km)?Math.round(5000*Math.exp(-km/2000)):0,time=Math.round(5000*Math.exp(-years/1000))
   return {location,time,km:Number.isFinite(km)?Math.round(km):0,years,total:location+time}

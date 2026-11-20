@@ -24,12 +24,13 @@ export async function POST(req:Request){
   const value={...key,score,...(b.deviceId?{device_id:b.deviceId}:{}),stats:{...b.stats,scoringVersion:version,...(b.n===undefined?{}:{n:b.n})}}
   const inserted=await supabaseAdmin.from('game_results').insert(value)
   if(inserted.error&&inserted.error.code!=='23505')return NextResponse.json({error:'Could not save score. It remains queued on your device.'},{status:503})
-  if(inserted.error?.code==='23505'&&b.game!=='mini'&&b.game!=='fivefold'){
+  if(inserted.error?.code==='23505'&&b.game==='bee'){
     const update=await supabaseAdmin.from('game_results').update({score,stats:value.stats}).match(key).lt('score',score)
     if(update.error)return NextResponse.json({error:'Could not sync score'},{status:503})
 
   }
-  // The first completed Mini time and Fivefold result are immutable, even if the board is cleared and solved faster.
+  // Every game's first finished result is immutable, so clearing a board or browser data cannot replace it. Spelling
+  // Bee only grows, since its score rises as more words are found the same day.
   return NextResponse.json({ok:true})
 }
 export async function GET(req:Request){

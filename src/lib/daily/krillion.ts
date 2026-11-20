@@ -57,3 +57,34 @@ export async function judgeAnswer(date:string,index:number,answer:string):Promis
   if(!lookup){lookup=answerLookup(prompt.answers);indices.set(prompt,lookup)}
   return judgeWith(lookup,answer)
 }
+export type KrillionPercentile={betterThan:number;dist:number[];sample?:number;live:boolean}
+/**
+ * Places a score in the original game's player distribution: 20 bins of 35 points across 0-700. While the
+ * original still has the date open it answers live without recording a play, and each answer is saved, so a
+ * closed day falls back to its last saved curve with the percentile read from the bins.
+ */
+export async function krillionPercentile(date:string,score:number):Promise<KrillionPercentile|null>{
+  try{
+    const r=await fetch('https://krillion.io/api/today/complete',{method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(5000),cache:'no-store',
+      body:JSON.stringify({date,playerId:crypto.randomUUID(),score,record:false})})
+    const live=await r.json() as {betterThan?:number;dist?:number[];sample?:number}
+    if(r.ok&&typeof live.betterThan==='number'&&Array.isArray(live.dist)&&live.dist.length===20){
+      await supabaseAdmin.from('daily_game_content').upsert({game:'krillion-dist',source_day:date,payload:{dist:live.dist,sample:live.sample,at:new Date().toISOString()}})
+      return {betterThan:live.betterThan,dist:live.dist,...(live.sample?{sample:live.sample}:{}),live:true}
+    }
+  }catch{}
+  const stored=await supabaseAdmin.from('daily_game_content').select('payload').eq('game','krillion-dist').eq('source_day',date).maybeSingle()
+  const dist=stored.data?.payload?.dist as number[]|undefined
+  if(!Array.isArray(dist)||dist.length!==20)return null
+  const total=dist.reduce((a,b)=>a+b,0),bin=Math.min(19,Math.floor(score/35))
+  if(!total)return null
+  const below=dist.slice(0,bin).reduce((a,b)=>a+b,0)+dist[bin]!*((score-bin*35)/35)
+  return {betterThan:Math.round(below/total*100),dist,sample:stored.data?.payload?.sample,live:false}
+}
+/** Saves the final curve of the date the original still has open, just before it closes for the day. */
+export async function captureKrillionDist():Promise<string>{
+  const r=await fetch('https://krillion.io/api/today',{signal:AbortSignal.timeout(10000),cache:'no-store'})
+  const {date}=await r.json() as {date:string}
+  if(!validDay(date)||!(await krillionPercentile(date,0))?.live)throw Error('Could not capture the score curve')
+  return date
+}

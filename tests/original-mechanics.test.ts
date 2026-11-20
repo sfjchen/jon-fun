@@ -11,7 +11,7 @@ test('Mini accumulates only active time, pauses on leave, and records the first 
   let r=resumeMini(emptyMini(mini),1000)
   r=pauseMini(r,4500);assert.equal(miniElapsed(r,900000),3500)
   r=resumeMini(r,10000);r=finishMini({...r,entries:['A']},mini,13000)
-  assert.equal(r.firstSolveSeconds,6);assert.equal(r.elapsedMs,6500)
+  assert.equal(r.firstSolveSeconds,7);assert.equal(r.elapsedMs,6500)
   const replay=finishMini({...resumeMini({...emptyMini(mini),firstSolveSeconds:6},20000),entries:['A']},mini,21000)
   assert.equal(replay.firstSolveSeconds,6)
   assert.equal(finishMini({...emptyMini(mini),entries:['A'],assisted:true},mini,0).firstSolveSeconds,null)
