@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { artifactScore, snapYear, type Artifact, type Pin } from '@/lib/artifact-scoring'
 import { logResult, markPracticeIfFuture, isPracticeResult } from '@/lib/results'
 import ArtifactTimeline from './ArtifactTimeline'
@@ -15,15 +15,28 @@ export default function AnthropeumPlay({ puzzle, dailyDay }: { puzzle: ArtifactD
   const [pin,setPin] = useState<Pin | null>(null),[year,setYear] = useState<number | null>(null)
   const [image,setImage] = useState(0),[failedImage,setFailedImage] = useState(false),[expanded,setExpanded]=useState(false),[imageLoaded,setImageLoaded]=useState(false)
   const [hintOpen,setHintOpen]=useState(false),[imageZoom,setImageZoom]=useState(1),[copied,setCopied]=useState(false)
+  const viewer=useRef<HTMLDivElement>(null),imageCount=puzzle.artifacts[Math.min(round,puzzle.artifacts.length-1)]!.images.length
+  /*
+   * Moves to the next or previous photograph of the current artifact, wrapping around, and resets its load state and zoom.
+   */
+  const stepImage=useCallback((d:number)=>{setImage(i=>(i+d+imageCount)%imageCount);setFailedImage(false);setImageLoaded(false);setImageZoom(1)},[imageCount])
   const hintsKey=`anthropeum:hints:v1:${dailyDay}`
   const [hints,setHints]=useState<ArtifactHints>(()=>{try{return JSON.parse(localStorage.getItem(hintsKey)??'{}')}catch{return {}}})
   useEffect(()=>{try{localStorage.setItem(hintsKey,JSON.stringify(hints))}catch{}},[hints,hintsKey])
   useEffect(()=>{
     if(!expanded&&!hintOpen)return
-    const onKey=(e:KeyboardEvent)=>{if(e.key==='Escape'){setExpanded(false);setHintOpen(false)};if(expanded&&(e.key==='ArrowRight'||e.key==='ArrowLeft')){setImage(i=>(i+(e.key==='ArrowRight'?1:-1)+puzzle.artifacts[round]!.images.length)%puzzle.artifacts[round]!.images.length);setImageZoom(1)}}
+    const onKey=(e:KeyboardEvent)=>{if(e.key==='Escape'){setExpanded(false);setHintOpen(false)};if(expanded&&(e.key==='ArrowRight'||e.key==='ArrowLeft')){e.preventDefault();stepImage(e.key==='ArrowRight'?1:-1)}}
     const overflow=document.body.style.overflow;document.body.style.overflow='hidden';window.addEventListener('keydown',onKey)
     return()=>{document.body.style.overflow=overflow;window.removeEventListener('keydown',onKey)}
-  },[expanded,hintOpen,puzzle.artifacts,round])
+  },[expanded,hintOpen,stepImage])
+  // Shows the photograph viewer in true fullscreen where the browser allows it, closing the viewer when fullscreen ends.
+  useEffect(()=>{
+    const el=viewer.current
+    if(!expanded||!el?.requestFullscreen)return
+    const onChange=()=>{if(!document.fullscreenElement)setExpanded(false)}
+    el.requestFullscreen().then(()=>document.addEventListener('fullscreenchange',onChange)).catch(()=>{})
+    return()=>{document.removeEventListener('fullscreenchange',onChange);if(document.fullscreenElement)void document.exitFullscreen().catch(()=>{})}
+  },[expanded])
   const done = guesses.length === puzzle.artifacts.length
   const artifact = puzzle.artifacts[Math.min(round,puzzle.artifacts.length-1)]!
   const guess = guesses[round],detail = guess && artifactScore(artifact, guess.pin, guess.year)
@@ -56,7 +69,7 @@ export default function AnthropeumPlay({ puzzle, dailyDay }: { puzzle: ArtifactD
       <aside className="anthro-artifact"><div className="anthro-artifact-image">{!imageLoaded&&!failedImage&&<p className="absolute text-sm text-white/70">Loading artifact…</p>}{photo}<button aria-label="Expand artifact photograph" title="Expand photograph" className="absolute right-2 top-2 bg-black/70 px-2 py-1 text-white" onClick={()=>{setImageZoom(1);setExpanded(true)}}>⛶</button></div>
         <div className="anthro-artifact-copy"><p className="anthro-eyebrow">Museum open collection</p>{artifact.images.length>1&&<div className="mt-2 flex gap-2 overflow-x-auto">{artifact.images.map((src,i)=><button key={src} aria-label={`Photograph ${i+1}`} className={`h-12 w-12 shrink-0 border-2 ${i===image?'border-[#7a1f1a]':'border-transparent'}`} onClick={()=>{setImage(i);setFailedImage(false);setImageLoaded(false)}}>{/* Original museum photograph thumbnail. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={src} alt="" className="h-full w-full object-cover"/></button>)}</div>}{artifact.images.length>1&&<button className="mt-1 text-sm underline" onClick={()=>{setImage(i=>(i+1)%artifact.images.length);setFailedImage(false);setImageLoaded(false)}}>Another photo ({image+1}/{artifact.images.length})</button>}</div>
+          <img src={src} alt="" className="h-full w-full object-cover"/></button>)}</div>}{artifact.images.length>1&&<button className="mt-1 text-sm underline" onClick={()=>stepImage(1)}>Another photo ({image+1}/{artifact.images.length})</button>}</div>
         <div className="anthro-artifact-copy"><p className="anthro-eyebrow">Medium</p><p>{artifact.mediumClean||'Mixed materials'}</p></div>
         {!guess&&<div className="anthro-artifact-copy"><div className="flex items-center justify-between"><div><p className="anthro-eyebrow">Hints</p><p className="text-sm">{hintsRemaining(hints)} of 3 left today</p></div><button className="rounded border border-[#7a1f1a] px-3 py-2 text-xs uppercase" onClick={()=>setHintOpen(true)}>Use a hint</button></div>{hints[round]?.map(kind=><p key={kind} className="mt-2 text-sm"><strong>{kind==='time'?'Time':'Place'}:</strong> {artifactHintText(artifact,kind)}</p>)}</div>}
         {guess&&detail?<div className="anthro-artifact-copy space-y-2" role="status"><h3 className="font-lora text-2xl">{artifact.title}</h3><p>{artifact.culture} · {artifact.objectDate}</p><p><strong>{detail.total.toLocaleString()} / 10,000</strong></p><p>Location: {detail.location.toLocaleString()}/5,000 · {detail.km===0?'inside the historical region':`${detail.km.toLocaleString()} km from the region`}</p><p>Date: {detail.time.toLocaleString()}/5,000 · {detail.years} years outside the range</p><details><summary className="cursor-pointer underline">About this artifact</summary><p className="mt-2">{artifact.description}</p><a className="underline" href={artifact.metUrl} target="_blank" rel="noreferrer">Museum record ↗</a></details></div>:<div className="anthro-artifact-copy"><p className="anthro-eyebrow">How to play</p><p className="mt-1">Guess where this object was made and when. Drop a pin, choose a period, then submit your guess.</p></div>}
@@ -64,7 +77,12 @@ export default function AnthropeumPlay({ puzzle, dailyDay }: { puzzle: ArtifactD
       {guess?<button className="anthro-button anthro-submit" onClick={()=>{setRound(r=>r+1);setPin(null);setYear(null);setImage(0);setFailedImage(false);setImageLoaded(false)}}>{round===puzzle.artifacts.length-1?'See final score':'Next artifact →'}</button>:<button className="anthro-button anthro-submit" aria-label="Lock in guess" disabled={!pin||year===null} onClick={()=>{if(pin&&year!==null){markPracticeIfFuture('anthropeum',dailyDay);const total=artifactScore(artifact,pin,year).total;setGuesses(previous=>[...previous,{pin,year,total}])}}}>{pin&&year!==null?'Submit guess':'Drop a pin and pick a time'}</button>}
     </div>
     {!guess&&<details className="border-t px-6 py-3 text-sm"><summary className="cursor-pointer text-[var(--ink-muted)]">Precise coordinates and date</summary><div className="anthro-coordinates"><label>Latitude<input aria-label="Latitude" type="number" min={-85} max={85} step="0.1" value={pin?.lat??''} onChange={e=>setPin(p=>({lat:Math.max(-85,Math.min(85,Number(e.target.value))),lon:p?.lon??0}))}/></label><label>Longitude<input aria-label="Longitude" type="number" min={-180} max={180} step="0.1" value={pin?.lon??''} onChange={e=>setPin(p=>({lon:Math.max(-180,Math.min(180,Number(e.target.value))),lat:p?.lat??0}))}/></label><label>Period start<input aria-label="Period start" type="number" min={-3000} max={1750} step={125} value={year??''} onChange={e=>setYear(snapYear(Number(e.target.value)))}/></label></div></details>}
-    {expanded&&<div role="dialog" aria-modal="true" aria-label="Artifact photograph" className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-6" onClick={e=>{if(e.currentTarget===e.target)setExpanded(false)}} onKeyDown={e=>{if(e.key==='Escape')setExpanded(false)}}><button autoFocus aria-label="Close photograph" className="absolute right-5 top-4 text-3xl text-white" onClick={()=>setExpanded(false)}>×</button><div style={{transform:`scale(${imageZoom})`,transformOrigin:'center'}} onClick={e=>e.stopPropagation()} className="flex max-h-[90svh] max-w-5xl items-center justify-center [&_img]:max-h-[90svh] [&_img]:max-w-full [&_img]:object-contain">{photo}</div><div className="absolute bottom-4 flex gap-3"><button className="bg-white px-4 py-2 text-black" aria-label="Zoom out photograph" onClick={()=>setImageZoom(z=>Math.max(1,z-.5))}>−</button><button className="bg-white px-4 py-2 text-black" aria-label="Zoom in photograph" onClick={()=>setImageZoom(z=>Math.min(4,z+.5))}>+</button></div></div>}
+    {expanded&&<div ref={viewer} role="dialog" aria-modal="true" aria-label="Artifact photograph" className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black/95" onClick={e=>{if(e.currentTarget===e.target)setExpanded(false)}}>
+      <div style={{transform:`scale(${imageZoom})`,transformOrigin:'center'}} onClick={e=>e.stopPropagation()} className="flex h-[calc(100svh-5rem)] w-[calc(100vw-1rem)] items-center justify-center [&_img]:h-full [&_img]:w-full [&_img]:object-contain">{photo}</div>
+      <button autoFocus aria-label="Close photograph" className="absolute right-4 top-3 px-2 text-3xl text-white" onClick={()=>setExpanded(false)}>×</button>
+      {imageCount>1&&<><button aria-label="Previous photograph" className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 px-3 py-4 text-3xl text-white" onClick={()=>stepImage(-1)}>‹</button><button aria-label="Next photograph" className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 px-3 py-4 text-3xl text-white" onClick={()=>stepImage(1)}>›</button></>}
+      <div className="absolute bottom-4 flex items-center gap-3 text-white">{imageCount>1&&<span aria-live="polite" className="mr-2 text-sm">{image+1} / {imageCount}</span>}<button className="bg-white px-4 py-2 text-black" aria-label="Zoom out photograph" onClick={()=>setImageZoom(z=>Math.max(1,z-.5))}>−</button><button className="bg-white px-4 py-2 text-black" aria-label="Zoom in photograph" onClick={()=>setImageZoom(z=>Math.min(4,z+.5))}>+</button></div>
+    </div>}
     {hintOpen&&<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={e=>{if(e.target===e.currentTarget)setHintOpen(false)}}><section role="dialog" aria-modal="true" aria-label="Artifact hints" className="w-full max-w-sm border border-[#dcd2bc] bg-[#f7f3ea] p-6"><div className="flex justify-between"><h3 className="anthro-eyebrow">Hints</h3><button autoFocus aria-label="Close hints" onClick={()=>setHintOpen(false)}>×</button></div><p className="my-4">Three hints across all ten rounds. Hints never cost points. {hintsRemaining(hints)} left today.</p>{(['time','place']as const).map(kind=><div key={kind} className="flex items-center justify-between gap-4 border-t border-[#dcd2bc] py-4"><div><strong>{kind==='time'?'Time':'Place'}</strong><p className="text-sm">{hints[round]?.includes(kind)?artifactHintText(artifact,kind):kind==='time'?'A 1,000-year span':'The world region it comes from'}</p></div><button disabled={hintsRemaining(hints)===0||hints[round]?.includes(kind)} onClick={()=>setHints(h=>revealArtifactHint(h,round,kind))} className="rounded border border-[#7a1f1a] px-3 py-2 text-xs uppercase disabled:opacity-40">{hints[round]?.includes(kind)?'Revealed':'Reveal'}</button></div>)}</section></div>}
   </section>
 }
