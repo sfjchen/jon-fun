@@ -3,12 +3,20 @@
 /**
  * Renders the Spelling Bee game: daily puzzle with archive navigation, practice puzzles, honeycomb input,
  * rank progress, found-word list, hints and yesterday's answers. Progress saves per puzzle in localStorage.
+ * The word list, practice bank and past-hive dates load only when practice or the picker asks for them.
  */
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { shuffle } from '@/lib/random'
-import { PUBLIC_GROUP, RESULTS_CHANGED, getPlayer, logResult, markPracticeIfFuture, isPracticeResult } from '@/lib/results'
+import {
+  PUBLIC_GROUP,
+  RESULTS_CHANGED,
+  getPlayer,
+  logResult,
+  markPracticeIfFuture,
+  isPracticeResult,
+} from '@/lib/results'
 import { useDeviceName } from '@/lib/use-device-name'
 import { NYT_FIRST_DAY, playableDay, shiftDay, siteDay, validDay } from '@/lib/daily'
 import { usePlayDay } from '@/lib/play-day'
@@ -18,7 +26,6 @@ import {
   RANKS,
   check,
   hints,
-  includePublishedPangrams,
   isPangram,
   makePuzzle,
   praise,
@@ -29,7 +36,7 @@ import {
 } from '@/lib/spelling-bee'
 
 type HistoricalPuzzle = Puzzle & { date: string }
-type Data = { words: string[]; bank: string[]; history: HistoricalPuzzle[] }
+type Words = { words: string[]; bank: string[] }
 type Modal = 'hints' | 'yesterday' | 'ranks' | 'stats' | null
 
 const YELLOW = '#f7da21'
@@ -45,28 +52,53 @@ const CELLS: [number, number][] = [
   [-80, 46],
   [-80, -46],
 ]
-let cache: Promise<Data> | null = null
+let wordsCache: Promise<Words> | null = null
+let daysCache: Promise<string[]> | null = null
 
 /**
- * Loads the word list and puzzle bank once per page load.
+ * Loads the word list and practice bank once, only when a practice hive is asked for. A failed load is retried
+ * on the next call.
  */
-function loadData() {
-  cache ??= Promise.all([
+function loadWords() {
+  wordsCache ??= Promise.all([
     fetch('/spelling-bee/words.txt').then((r) => r.text()),
     fetch('/spelling-bee/puzzles.json').then((r) => r.json() as Promise<string[]>),
-    fetch('/puzzle-archives/bee/index.json').then(async r => {
-      if (!r.ok) throw new Error('Historical hives unavailable')
-      const dates = await r.json() as string[]
-      const years = [...new Set(dates.map(d => d.slice(0, 4)))]
-      const data = await Promise.all(years.map(async year => {
-        const response = await fetch(`/puzzle-archives/bee/${year}.json`)
-        if (!response.ok) throw new Error('Historical hives unavailable')
-        return (await response.json() as HistoricalPuzzle[]).map(includePublishedPangrams)
-      }))
-      return data.flat().sort((a, b) => a.date.localeCompare(b.date))
-    }),
-  ]).then(([w, bank, history]) => ({ words: w.split('\n'), bank, history }))
-  return cache
+  ]).then(([w, bank]) => ({ words: w.split('\n'), bank }))
+  wordsCache.catch(() => {
+    wordsCache = null
+  })
+  return wordsCache
+}
+
+/**
+ * Renders the past-hive picker. It sits in the info panel, so the list of dates loads only when that panel opens.
+ */
+function PastHives({ archive, go }: { archive: string | null; go: (q: string) => void }) {
+  const [days, setDays] = useState<string[]>([])
+  useEffect(() => {
+    daysCache ??= fetch('/puzzle-archives/bee/index.json').then((r) => (r.ok ? (r.json() as Promise<string[]>) : []))
+    daysCache.then(setDays, () => {
+      daysCache = null
+    })
+  }, [])
+  return (
+    <label className="block" style={{ color: 'var(--ink-muted)' }}>
+      Play a past hive{days.length ? ` (${days.length})` : ''}
+      <select
+        aria-label="Archive hive"
+        value={archive ?? ''}
+        onChange={(e) => go(e.target.value ? `?a=${e.target.value}` : '')}
+        className="mt-1 block w-full rounded border bg-[var(--ink-paper)] p-2"
+      >
+        <option value="">{days.length ? 'Choose a date…' : 'Loading dates…'}</option>
+        {[...days].reverse().map((d) => (
+          <option key={d} value={d}>
+            {d}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
 }
 
 /**
@@ -248,7 +280,7 @@ function Hints({ pz, found }: { pz: Puzzle; found: string[] }) {
               </tr>
             </tbody>
           </table>
-          <p className="font-mono uppercase leading-7">
+          <p className="font-mono leading-7 uppercase">
             {Object.keys(two)
               .sort()
               .map((k) => (
@@ -269,7 +301,7 @@ function Hints({ pz, found }: { pz: Puzzle; found: string[] }) {
 export default function SpellingBee() {
   const router = useRouter()
   const params = useSearchParams()
-  const [data, setData] = useState<Data | null>(null)
+  const [wb, setWb] = useState<Words | null>(null)
   const [err, setErr] = useState(false)
   const [found, setFound] = useState<string[]>([])
   const [entry, setEntry] = useState('')
@@ -284,46 +316,55 @@ export default function SpellingBee() {
   const tRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const now = siteDay()
-  const practice = params.get('p')
+  const p = params.get('p')
+  const practice = p && /^[a-rt-z]{7}$/.test(p) && new Set(p).size === 7 ? p : null
   const archive = params.get('a')
   const requested = params.get('d')
-  const date = usePlayDay(
-    playableDay('bee', requested) ? requested : null, 'bee')
+  const date = usePlayDay(playableDay('bee', requested) ? requested : null, 'bee')
 
   useEffect(() => {
-    loadData().then(setData, () => setErr(true))
-  }, [])
+    if (practice) loadWords().then(setWb, () => setErr(true))
+  }, [practice])
 
   const selectedDay = validDay(archive) ? archive : date
   const { data: official, error: officialError, retry } = useDailyPuzzle<HistoricalPuzzle>('bee', selectedDay)
-  const [previousError,setPreviousError]=useState('')
+  const [previousError, setPreviousError] = useState('')
   const [previous, setPrevious] = useState<HistoricalPuzzle | null>(null)
   useEffect(() => {
     const yesterday = shiftDay(date, -1)
-    if (modal !== 'yesterday' || data?.history.some(p => p.date === yesterday)) return
+    if (modal !== 'yesterday' || previous?.date === yesterday) return
     const controller = new AbortController()
-    fetch(`/api/daily/bee?d=${yesterday}`, { signal: controller.signal }).then(async r => {
-      if (r.ok) { setPrevious((await r.json()).puzzle); setPreviousError('') }
-      else setPreviousError('The original previous hive is unavailable.')
-    }).catch(() => {if(!controller.signal.aborted)setPreviousError('Could not load the previous hive.')})
+    fetch(`/api/daily/bee?d=${yesterday}`, { signal: controller.signal })
+      .then(async (r) => {
+        if (r.ok) {
+          setPrevious((await r.json()).puzzle)
+          setPreviousError('')
+        } else setPreviousError('The original previous hive is unavailable.')
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setPreviousError('Could not load the previous hive.')
+      })
     return () => controller.abort()
-  }, [modal, date, data])
+  }, [modal, date, previous])
 
   const pz = useMemo(() => {
-    if (!data) return null
-    const p =
-      practice && /^[a-rt-z]{7}$/.test(practice) && new Set(practice).size === 7 && makePuzzle(practice, data.words)
-    return p && p.pangrams.length && p.answers.length >= 5 ? p : official?.puzzle ?? null
-  }, [data, practice, official])
+    if (practice && !wb) return null
+    const made = practice && wb && makePuzzle(practice, wb.words)
+    return made && made.pangrams.length && made.answers.length >= 5 ? made : (official?.puzzle ?? null)
+  }, [wb, practice, official])
   const isPractice = !!pz && (pz.id === practice || (pz as HistoricalPuzzle).date === archive)
-  const key = pz && (isPractice ? `p:${archive ?? "random"}:${pz.id}` : `${date}:${pz.id}`)
+  const key = pz && (isPractice ? `p:${archive ?? 'random'}:${pz.id}` : `${date}:${pz.id}`)
 
   const [cur, setCur] = useState<string | null>(null)
   if (key !== cur) {
     setCur(key)
-    setFound(key ? loadFound(key).filter(w => pz?.answers.includes(w)) : [])
+    setFound(key ? loadFound(key).filter((w) => pz?.answers.includes(w)) : [])
     setEntry('')
-    try { setRevealed(Boolean(key && localStorage.getItem(`sb:revealed:${key}`))) } catch { setRevealed(false) }
+    try {
+      setRevealed(Boolean(key && localStorage.getItem(`sb:revealed:${key}`)))
+    } catch {
+      setRevealed(false)
+    }
     setCrowd(null)
   }
 
@@ -334,29 +375,45 @@ export default function SpellingBee() {
     if (!pz || !key || isPractice) return
     let live = true
     void remoteFound(date).then((ws) => {
-      const f = loadFound(key), add = ws.filter((w) => pz.answers.includes(w) && !f.includes(w))
+      const f = loadFound(key),
+        add = ws.filter((w) => pz.answers.includes(w) && !f.includes(w))
       if (!live || !add.length) return
       const nf = [...f, ...add]
-      try { localStorage.setItem(`sb:${key}`, JSON.stringify(nf)) } catch {}
+      try {
+        localStorage.setItem(`sb:${key}`, JSON.stringify(nf))
+      } catch {}
       setFound(nf)
     })
-    return () => { live = false }
+    return () => {
+      live = false
+    }
   }, [pz, key, isPractice, date, name])
   const [ydFound, setYdFound] = useState<string[]>([])
   useEffect(() => {
     if (modal !== 'yesterday') return
     let live = true
-    void remoteFound(shiftDay(date, -1)).then((ws) => { if (live) setYdFound(ws) })
-    return () => { live = false }
+    void remoteFound(shiftDay(date, -1)).then((ws) => {
+      if (live) setYdFound(ws)
+    })
+    return () => {
+      live = false
+    }
   }, [modal, date, name])
   // Sends this browser's earlier days once, so words found before devices shared them reach the others.
   useEffect(() => {
     try {
       if (!name || localStorage.getItem('sb:shared')) return
       for (const k of Object.keys(localStorage)) {
-        const day = /^sb:(\d{4}-\d{2}-\d{2}):[a-z]{7}$/.exec(k)?.[1], ws = loadFound(k.slice(3))
+        const day = /^sb:(\d{4}-\d{2}-\d{2}):[a-z]{7}$/.exec(k)?.[1],
+          ws = loadFound(k.slice(3))
         if (day && day < now && ws.length && !localStorage.getItem(`sb:revealed:${k.slice(3)}`))
-          logResult('bee', ws.reduce((s, w) => s + score(w), 0), ws.length, day, { moves: ws })
+          logResult(
+            'bee',
+            ws.reduce((s, w) => s + score(w), 0),
+            ws.length,
+            day,
+            { moves: ws },
+          )
       }
       localStorage.setItem('sb:shared', '1')
     } catch {}
@@ -384,24 +441,40 @@ export default function SpellingBee() {
   const n = found.length
   useEffect(() => {
     if (!pz || isPractice || revealed || pts <= 0) return
-    const t = setTimeout(() => logResult('bee', pts, n, date, { moves: found, max: pz.max, solved: pts === pz.max, puzzleId: pz.id, sourceDate: (pz as HistoricalPuzzle).date }), 1500)
+    const t = setTimeout(
+      () =>
+        logResult('bee', pts, n, date, {
+          moves: found,
+          max: pz.max,
+          solved: pts === pz.max,
+          puzzleId: pz.id,
+          sourceDate: (pz as HistoricalPuzzle).date,
+        }),
+      1500,
+    )
     return () => clearTimeout(t)
   }, [pz, n, found, pts, isPractice, revealed, date])
   // Counts the named players on this board for the day, again whenever this browser's own result is saved.
   useEffect(() => {
     if (!key || isPractice) return
     let live = true
-    const load = () => void fetch(`/api/spelling-bee/stats?group=${getPlayer()?.group ?? PUBLIC_GROUP}&day=${date}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((c: { players: number; genius: number } | null) => { if (c && live) setCrowd(c) })
-      .catch(() => {})
+    const load = () =>
+      void fetch(`/api/spelling-bee/stats?group=${getPlayer()?.group ?? PUBLIC_GROUP}&day=${date}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((c: { players: number; genius: number } | null) => {
+          if (c && live) setCrowd(c)
+        })
+        .catch(() => {})
     const saved = (e: Event) => {
       const d = (e as CustomEvent<{ game: string; day: string }>).detail
       if (d.game === 'bee' && d.day === date) load()
     }
     load()
     window.addEventListener(RESULTS_CHANGED, saved)
-    return () => { live = false; window.removeEventListener(RESULTS_CHANGED, saved) }
+    return () => {
+      live = false
+      window.removeEventListener(RESULTS_CHANGED, saved)
+    }
   }, [key, isPractice, date, name])
 
   const busy = toast?.ok === false
@@ -451,16 +524,32 @@ export default function SpellingBee() {
 
   const go = (q: string) => router.replace(`/games/spelling-bee${q}`, { scroll: false })
 
-  if (!isPractice && officialError) return <><DayNav title="Spelling Bee" path="/games/spelling-bee" day={selectedDay} publishedOnly minDay={NYT_FIRST_DAY.bee} info={<>Original NYT puzzles by publication date.</>} /><p role="alert">{officialError}</p><button type="button" className="underline" onClick={retry}>Try again</button></>
   if (err) return <p className="text-center">Couldn&apos;t load the word list. Refresh to try again.</p>
-  if (!pz || !data)
+  if (!(practice && !wb) && !isPractice && officialError)
+    return (
+      <>
+        <DayNav
+          title="Spelling Bee"
+          path="/games/spelling-bee"
+          day={selectedDay}
+          publishedOnly
+          minDay={NYT_FIRST_DAY.bee}
+          info={<>Original NYT puzzles by publication date.</>}
+        />
+        <p role="alert">{officialError}</p>
+        <button type="button" className="underline" onClick={retry}>
+          Try again
+        </button>
+      </>
+    )
+  if (!pz)
     return (
       <p className="text-center" style={{ color: 'var(--ink-muted)' }}>
         Loading the hive…
       </p>
     )
 
-  const yd = data.history.find(p => p.date === shiftDay(date, -1)) ?? (previous?.date === shiftDay(date, -1) ? previous : null)
+  const yd = previous?.date === shiftDay(date, -1) ? previous : null
   const btn = 'rounded-full border px-5 py-2.5 text-[15px] font-medium active:scale-95 transition'
   const sorted = [...found].sort()
 
@@ -474,7 +563,8 @@ export default function SpellingBee() {
         @keyframes sb-blink{50%{opacity:0}}`}</style>
 
       <DayNav
-        publishedOnly minDay={NYT_FIRST_DAY.bee}
+        publishedOnly
+        minDay={NYT_FIRST_DAY.bee}
         title="Spelling Bee"
         path="/games/spelling-bee"
         day={isPractice ? undefined : date}
@@ -487,25 +577,15 @@ export default function SpellingBee() {
               <li>Type or tap letters. Enter submits, Space shuffles.</li>
               <li>Hints shows a grid of words left by first letter and length.</li>
             </ul>
-            <label className="block" style={{ color: 'var(--ink-muted)' }}>
-              Play a past hive ({data.history.length})
-              <select
-                aria-label="Archive hive"
-                value={archive ?? ''}
-                onChange={(e) => go(e.target.value ? `?a=${e.target.value}` : '')}
-                className="mt-1 block w-full rounded border bg-[var(--ink-paper)] p-2"
-              >
-                <option value="">Choose a date…</option>
-                {[...data.history].reverse().map((p) => (
-                  <option key={p.date} value={p.date}>
-                    {p.date}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <PastHives archive={archive} go={go} />
             <button
               className="underline"
-              onClick={() => go(`?p=${data.bank[Math.floor(Math.random() * data.bank.length)]}`)}
+              onClick={() =>
+                loadWords().then(
+                  ({ bank }) => go(`?p=${bank[Math.floor(Math.random() * bank.length)]}`),
+                  () => setErr(true),
+                )
+              }
             >
               Play a random practice hive
             </button>
@@ -530,12 +610,14 @@ export default function SpellingBee() {
         </button>
       </DayNav>
       {!isPractice && date <= now && isPracticeResult('bee', date) && (
-        <p className="mb-2 text-xs" style={{ color: 'var(--ink-muted)' }}>Started as a future preview · not ranked</p>
+        <p className="mb-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
+          Started as a future preview · not ranked
+        </p>
       )}
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2 md:gap-10">
         <section className="order-2 flex flex-col items-center md:order-1">
-          <div className="relative flex h-12 w-full items-center justify-center [container-type:inline-size] md:h-16">
+          <div className="[container-type:inline-size] relative flex h-12 w-full items-center justify-center md:h-16">
             {toast && (
               <div
                 className="absolute -top-1 rounded-md px-3 py-1.5 text-sm font-semibold shadow"
@@ -555,7 +637,7 @@ export default function SpellingBee() {
             )}
             <p
               data-testid="sb-entry"
-              className="mt-4 max-w-full whitespace-nowrap text-3xl font-bold uppercase tracking-wide md:mt-6"
+              className="mt-4 max-w-full text-3xl font-bold tracking-wide whitespace-nowrap uppercase md:mt-6"
               style={{
                 animation: shake ? 'sb-shake .3s 2' : undefined,
                 // Long entries shrink to fit the column instead of spilling off a phone screen.
@@ -683,9 +765,12 @@ export default function SpellingBee() {
             <button
               className={
                 'flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm ' +
-                  'md:pointer-events-none md:px-4 md:py-3 md:text-base'
+                'md:pointer-events-none md:px-4 md:py-3 md:text-base'
               }
-              onClick={(e) => { setOpen((o) => !o); e.currentTarget.blur() }}
+              onClick={(e) => {
+                setOpen((o) => !o)
+                e.currentTarget.blur()
+              }}
             >
               <span className="min-w-0 truncate">
                 {open || found.length === 0 ? (
@@ -704,10 +789,10 @@ export default function SpellingBee() {
             <div
               className={
                 'px-4 pb-4 ' +
-                  (open
-                    ? 'max-md:absolute max-md:inset-x-[-1px] max-md:top-full max-md:z-20 max-md:max-h-[60svh] ' +
-                      'max-md:overflow-y-auto max-md:rounded-b-lg max-md:border max-md:pt-2 max-md:shadow-lg'
-                    : 'max-md:hidden')
+                (open
+                  ? 'max-md:absolute max-md:inset-x-[-1px] max-md:top-full max-md:z-20 max-md:max-h-[60svh] ' +
+                    'max-md:overflow-y-auto max-md:rounded-b-lg max-md:border max-md:pt-2 max-md:shadow-lg'
+                  : 'max-md:hidden')
               }
               style={{ background: 'var(--ink-bg)', borderColor: 'var(--ink-border)' }}
             >
@@ -720,16 +805,36 @@ export default function SpellingBee() {
                   {giveUp ? (
                     <p className="flex flex-wrap items-center gap-x-3 gap-y-2">
                       <span>Show every answer and end this puzzle?</span>
-                      <button className="rounded-md border px-2.5 py-1" style={{ borderColor: 'var(--ink-border)' }}
-                        onClick={() => { if (!isPractice && pts > 0) logResult('bee', pts, found.length, date, {moves:found,max:pz.max,puzzleId:pz.id,sourceDate:(pz as HistoricalPuzzle).date}); setRevealed(true); try { localStorage.setItem(`sb:revealed:${key}`, '1') } catch {} }}>
+                      <button
+                        className="rounded-md border px-2.5 py-1"
+                        style={{ borderColor: 'var(--ink-border)' }}
+                        onClick={() => {
+                          if (!isPractice && pts > 0)
+                            logResult('bee', pts, found.length, date, {
+                              moves: found,
+                              max: pz.max,
+                              puzzleId: pz.id,
+                              sourceDate: (pz as HistoricalPuzzle).date,
+                            })
+                          setRevealed(true)
+                          try {
+                            localStorage.setItem(`sb:revealed:${key}`, '1')
+                          } catch {}
+                        }}
+                      >
                         Reveal
                       </button>
-                      <button className="rounded-md bg-[var(--ink-text)] px-2.5 py-1 font-semibold text-[var(--ink-bg)]" onClick={() => setGiveUp(false)}>
+                      <button
+                        className="rounded-md bg-[var(--ink-text)] px-2.5 py-1 font-semibold text-[var(--ink-bg)]"
+                        onClick={() => setGiveUp(false)}
+                      >
                         Keep playing
                       </button>
                     </p>
                   ) : (
-                    <button className="opacity-50 hover:opacity-100" onClick={() => setGiveUp(true)}>Give up…</button>
+                    <button className="opacity-50 hover:opacity-100" onClick={() => setGiveUp(true)}>
+                      Give up…
+                    </button>
                   )}
                 </div>
               )}
@@ -748,14 +853,18 @@ export default function SpellingBee() {
       )}
       {modal === 'yesterday' && yd && (
         <Dialog title="Yesterday's answers" onClose={() => setModal(null)}>
-          <p className="mb-3 text-2xl font-bold uppercase tracking-widest">
+          <p className="mb-3 text-2xl font-bold tracking-widest uppercase">
             <span style={{ color: '#d4ac0d' }}>{yd.center}</span>
             {yd.outer.join('')}
           </p>
           <WordList words={yd.answers} found={new Set([...loadFound(`${shiftDay(date, -1)}:${yd.id}`), ...ydFound])} />
         </Dialog>
       )}
-      {modal === 'yesterday' && !yd && <Dialog title="Yesterday's answers" onClose={() => setModal(null)}>{previousError||'Loading the original previous hive…'}</Dialog>}
+      {modal === 'yesterday' && !yd && (
+        <Dialog title="Yesterday's answers" onClose={() => setModal(null)}>
+          {previousError || 'Loading the original previous hive…'}
+        </Dialog>
+      )}
       {modal === 'ranks' && (
         <Dialog title="Rankings" onClose={() => setModal(null)}>
           <p className="mb-3 text-sm">Ranks are based on a percentage of possible points in a puzzle.</p>
