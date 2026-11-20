@@ -45,7 +45,8 @@ export default function MiniPlay({puzzle,dailyDay}:{puzzle:MiniPuzzle;dailyDay?:
     const confirmed=autocheck&&text===puzzle.cells[i]?[...new Set([...r.confirmed,i])]:r.confirmed.filter(j=>j!==i)
     const next={...r,entries,pencil:pencil?[...new Set([...r.pencil,i])]:r.pencil.filter(j=>j!==i),confirmed,assisted:r.assisted||autocheck}
     // eslint-disable-next-line react-hooks/purity -- Called only by input events; sample the exact completion time.
-    commit(finishMini(next,puzzle,Date.now()));setClock(Date.now());setMessage('');setWrong(previous=>autocheck&&text&&text!==puzzle.cells[i]?[...new Set([...previous,i])]:previous.filter(j=>j!==i))
+    const now=Date.now()
+    commit(finishMini(next,puzzle,now));setClock(now);setMessage('');setWrong(previous=>autocheck&&text&&text!==puzzle.cells[i]?[...new Set([...previous,i])]:previous.filter(j=>j!==i))
     if(text&&!rebus)advance()
   }
   function help(reveal:boolean,scope:string){
@@ -53,14 +54,16 @@ export default function MiniPlay({puzzle,dailyDay}:{puzzle:MiniPuzzle;dailyDay?:
     const r=current.current,entries=reveal?r.entries.map((v,i)=>indices.includes(i)?puzzle.cells[i]??'':v):r.entries
     const confirmed=[...new Set([...r.confirmed,...indices.filter(i=>entries[i]&&entries[i]===puzzle.cells[i])])]
     // eslint-disable-next-line react-hooks/purity -- Called only by a help-button event, never while rendering.
-    commit(finishMini({...r,entries,confirmed,assisted:true},puzzle,Date.now()));setClock(Date.now())
+    const now=Date.now()
+    commit(finishMini({...r,entries,confirmed,assisted:true},puzzle,now));setClock(now)
     setWrong(indices.filter(i=>entries[i]&&entries[i]!==puzzle.cells[i]));setMessage(reveal?'Correct letters revealed. Assisted solve.':'Checked filled squares. Incorrect letters are marked; confirmed letters are blue.')
   }
   function clearPuzzle(){
     if(!window.confirm('Clear the grid and restart the timer? Your first recorded solve time stays unchanged.'))return
     const r={...emptyMini(puzzle),assisted:run.assisted,firstSolveSeconds:run.firstSolveSeconds}
     // eslint-disable-next-line react-hooks/purity -- Explicit clear-button event resets the active clock.
-    commit(resumeMini(r,Date.now()));setClock(Date.now());setWrong([]);setMessage('');focus(puzzle.cells.findIndex(Boolean))
+    const now=Date.now()
+    commit(resumeMini(r,now));setClock(now);setWrong([]);setMessage('');focus(puzzle.cells.findIndex(Boolean))
   }
   useEffect(()=>{if(!paused&&!run.complete)inputs.current[active]?.focus()},[paused,run.complete,active])
   const status=run.complete?'Puzzle solved':''
