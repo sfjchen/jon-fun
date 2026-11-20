@@ -1,12 +1,24 @@
-/** Rarity values observed in the original game's completed-run review. */
+/** Rarity tiers as the original game shows them: points, color, share emoji, fallback line and dive-log depth. */
 export const KRILLION_TIERS = {
-  plankton: { name: 'Plankton', score: 10, color: '#93c5d5' },
-  tooclever: { name: 'Too Clever', score: 15, color: '#edb6ba' },
-  schooler: { name: 'Schooler', score: 30, color: '#78bda9' },
-  rare: { name: 'Rare', score: 60, color: '#b2a3da' },
-  deepcut: { name: 'Deep Cut', score: 85, color: '#edb96e' },
-  krillion: { name: 'One in a Krillion', score: 100, color: '#f0d365' },
+  plankton: { name: 'Plankton', score: 10, color: '#8fa3c4', emoji: '🫧', depth: .08, blurb: 'The answer everyone blurts out.' },
+  tooclever: { name: 'Too Clever', score: 15, color: '#ff9f43', emoji: '🤡', depth: .18, blurb: 'A famously “obscure” pick. Everyone reaches for it.' },
+  schooler: { name: 'Schooler', score: 30, color: '#4de3ff', emoji: '🐟', depth: .36, blurb: 'Solid — swims with the school.' },
+  rare: { name: 'Rare', score: 60, color: '#ff5252', emoji: '🦑', depth: .6, blurb: 'Genuinely uncommon. Nice pull.' },
+  deepcut: { name: 'Deep Cut', score: 85, color: '#9d7bff', emoji: '🏮', depth: .82, blurb: 'True obscurity. Few go this deep.' },
+  krillion: { name: 'One in a Krillion', score: 100, color: '#ffd166', emoji: '🌟', depth: .97, blurb: 'The designated gem. Trench floor.' },
 } as const
+/** How a missed round draws in the dive log and share text. */
+export const KRILLION_MISS = { color: '#3d4f6e', emoji: '⬛', depth: .03 }
+/** The original's final-score verdicts, from the lowest band up. */
+export const KRILLION_BANDS = [
+  { min: 0, range: '0–150', tier: 'plankton', verdict: 'Plenty of ocean left down there.' },
+  { min: 151, range: '151–250', tier: 'schooler', verdict: 'Swimming with the school.' },
+  { min: 251, range: '251–350', tier: 'rare', verdict: 'Below the thermocline. Nice.' },
+  { min: 351, range: '351–449', tier: 'deepcut', verdict: 'Seriously deep dive.' },
+  { min: 450, range: '450+', tier: 'krillion', verdict: 'Trench dweller. Absurd.' },
+] as const
+/** Returns the original's dive number for a date, counting dive #1 on 2026-07-16. */
+export function krillionDiveNumber(date: string): number { return Math.round((Date.parse(date) - Date.parse('2026-07-16')) / 86400000) + 1 }
 export type KrillionTier = keyof typeof KRILLION_TIERS
 export type KrillionAnswer = { answer: string; aliases?: string[]; tier: KrillionTier; score: number; quip?: string }
 export type KrillionPrompt = { id: string; text: string; answers: KrillionAnswer[] }

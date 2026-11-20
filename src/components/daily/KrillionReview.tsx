@@ -2,8 +2,8 @@
 import { useEffect, useState } from 'react'
 import { KRILLION_TIERS, type KrillionAnswer } from '@/lib/krillion'
 type ReviewPage={total:number;page:number;pageSize:number;answers:KrillionAnswer[]}
-export default function KrillionReview({date,prompts}:{date:string;prompts:{id:string;text:string}[]}){
-  const [index,setIndex]=useState(0),[search,setSearch]=useState(''),[tier,setTier]=useState('all'),[page,setPage]=useState(0)
+export default function KrillionReview({date,prompts,index,onIndex:setIndex}:{date:string;prompts:{id:string;text:string}[];index:number;onIndex:(i:number)=>void}){
+  const [search,setSearch]=useState(''),[tier,setTier]=useState('all'),[page,setPage]=useState(0)
   const [response,setResponse]=useState<{key:string;data?:ReviewPage;error?:string}|null>(null)
   const key=`${date}:${index}:${search}:${tier}:${page}`
   useEffect(()=>{
@@ -15,7 +15,7 @@ export default function KrillionReview({date,prompts}:{date:string;prompts:{id:s
     return()=>{clearTimeout(timer);controller.abort()}
   },[date,index,search,tier,page,key])
   const data=response?.key===key?response.data:undefined,error=response?.key===key?response.error:undefined
-  return <section className="space-y-4 rounded-xl border p-4" data-testid="krillion-review"><h3 className="font-lora text-xl">The catch · every accepted answer</h3>
+  return <section className="space-y-4 rounded-xl border p-4" data-testid="krillion-review" id="krillion-sheet"><h3 className="font-lora text-xl">Answer sheets · every accepted answer</h3>
     <label className="block text-sm">Prompt<select aria-label="Review prompt" value={index} className="mt-2 block w-full rounded border bg-[var(--ink-paper)] p-2" onChange={e=>{setIndex(Number(e.target.value));setPage(0)}}>{prompts.map((p,i)=><option key={p.id} value={i}>{i+1}. {p.text}</option>)}</select></label>
     <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"><input aria-label="Search accepted answers" placeholder="Search answers or aliases…" value={search} className="min-w-0 flex-1 rounded border bg-[var(--ink-paper)] p-2" onChange={e=>{setSearch(e.target.value);setPage(0)}} /><select aria-label="Rarity tier" value={tier} className="rounded border bg-[var(--ink-paper)] p-2" onChange={e=>{setTier(e.target.value);setPage(0)}}><option value="all">All tiers</option>{Object.entries(KRILLION_TIERS).map(([id,t])=><option key={id} value={id}>{t.name} · {t.score}</option>)}</select></div>
     {error&&<p role="alert">{error}</p>}{!data&&!error&&<p>Loading answer key…</p>}

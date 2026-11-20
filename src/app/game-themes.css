@@ -184,3 +184,25 @@
 }
 .krillion-hud > span:first-child strong { color:#28c9e8; }
 .krillion-hud > span:last-child strong { color:#fa4e87; }
+/* Final and per-round screens follow the original Krillion layout and type scale. */
+.krillion-done { display:flex; flex-direction:column; gap:28px; width:100%; max-width:28rem; margin-inline:auto; text-align:left; }
+.krillion-done-krill { font-size:27px; letter-spacing:.12em; color:#e8f1ff; text-shadow:-2px 2px #ff5d8f,2px -2px #4de3ffd9; }
+.krillion-fathom-label { font-size:13px; text-transform:uppercase; letter-spacing:.14em; color:#7d93b8; }
+.krillion-done-score { display:flex; align-items:baseline; gap:12px; }
+.krillion-done-score strong { font-size:5rem; line-height:1; font-weight:400; color:#e8f1ff; font-variant-numeric:tabular-nums; }
+.krillion-done-score span { font-size:14px; color:#4de3ff; }
+.krillion-fathom { display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:13px; text-transform:uppercase; letter-spacing:.14em; color:#7d93b8; }
+.krillion-fathom::after { content:''; order:1; flex:1; border-top:1px dashed #7d93b838; }
+.krillion-fathom span + span { order:2; }
+.krillion-btn-descend,.krillion-btn-quiet { min-height:48px; padding:8px 18px; text-transform:uppercase; letter-spacing:.1em; clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px); }
+.krillion-btn-descend { background:#ff5d8f; color:#050a14; font-size:19px; box-shadow:0 3px 0 2px #7d1d3c; }
+.krillion-btn-quiet { background:#101d33; color:#e8f1ff; font-size:16px; }
+.krillion-catch-row { display:flex; width:100%; align-items:center; gap:10px; padding:6px 4px; border-bottom:1px solid #7d93b838; }
+.krillion-catch-row:hover { background:#101d33; }
+.krillion-landed { display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center; }
+.krillion-landed h2 { font-size:44px; line-height:1.05; letter-spacing:.06em; }
+.krillion-tans { font-size:19px; letter-spacing:.08em; color:#e8f1ff!important; overflow-wrap:anywhere; }
+.krillion-tpts { font-size:22px; color:#b3c5df; }
+.krillion-tsub { font-size:14px; letter-spacing:.14em; color:#7d93b8!important; }
+.krillion-landed .krillion-action { margin-top:16px; }
+@media(min-width:768px) { .krillion-tans { font-size:24px; } .krillion-tpts { font-size:28px; } .krillion-tsub { font-size:17px; } }
