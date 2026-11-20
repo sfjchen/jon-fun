@@ -6,7 +6,7 @@ export const GAMES: Record<GameId, { title: string; url: string; max: number; un
   anthropeum: { title: 'Anthropeum', url: '/games/anthropeum', max: 100000, unit: 'points', rules: 'Ten artifacts, 250-year guesses, up to 5,000 location and 5,000 time points each. Original scoring formulas.' },
   connections: { title: 'Connections', url: '/games/connections/daily', max: 4, unit: 'matches', rules: 'Four groups, four mistakes maximum. Complete the puzzle to rank. Faster completion time wins; mistakes do not break ties.' },
   fivefold: { title: 'Wordle', url: '/games/wordle', max: 6, unit: 'points', rules: 'Guess the 5-letter word in 6 tries. Ranked by fewest guesses; equal guess counts share the rank.' },
-  mini: { title: 'Mini Crossword', url: '/games/mini', max: 864000, unit: 'time', lowerIsBetter: true, rules: 'First unassisted solve time; lower is better. The clock pauses when you pause or leave. Checks and reveals are unranked.' },
+  mini: { title: 'Mini', url: '/games/mini', max: 864000, unit: 'time', lowerIsBetter: true, rules: 'First unassisted solve time; lower is better. The clock pauses when you pause or leave. Checks and reveals are unranked.' },
   bee: { title: 'Spelling Bee', url: '/games/spelling-bee', max: 1000, unit: 'points', rules: 'Word points; pangrams earn a 7-point bonus.' },
 }
 export const GAME_IDS = Object.keys(GAMES) as GameId[]
@@ -26,7 +26,12 @@ export function compareResults(a: Result, b: Result): number {
   return (a.score-b.score)*(GAMES[a.game].lowerIsBetter?1:-1)
 }
 export function resultLabel(r: Result): string {
-  if(r.game==='connections')return r.score===4&&r.stats.seconds!==undefined?`${formatTime(r.stats.seconds)} · solved`:`${r.stats.n??r.score}/4 · incomplete`
+  // Connections shows its solve time with the lives left out of 4, like the 4 mistake dots in the original.
+  if(r.game==='connections'){
+    const time=r.stats.seconds===undefined?'':formatTime(r.stats.seconds)
+    if(r.score===4&&time)return r.stats.mistakes===undefined?time:`${time} · ${4-r.stats.mistakes}♥`
+    return [`${r.stats.n??r.score}/4`,time].filter(Boolean).join(' · ')
+  }
   // Hard-mode Wordle results carry the same * that Wordle puts on its own share text.
   return formatGameScore(r.game,r.score)+(r.game==='fivefold'&&r.stats.hard?'*':'')
 }

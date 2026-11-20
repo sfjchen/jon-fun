@@ -68,6 +68,64 @@ function useDaily() {
 }
 
 /**
+ * Renders today's scores as a grid with a row per player and a column per game icon. The best result in each
+ * column, ties included, is bold, the saved player's row is shaded, and multi-part labels such as Connections
+ * time and lives wrap onto 2 short lines so every column stays narrow.
+ */
+function ScoreTable({ rows, me }: { rows: BoardRow[]; me: string | undefined }) {
+  const games = GAME_IDS.filter((g) => rows.some((r) => r.game === g))
+  const best = new Map(games.map((g) => [g, rows.filter((r) => r.game === g).sort(compareResults)[0]]))
+  const names = [...new Set(rows.map((r) => r.name))].sort((a, b) =>
+    Number(b === me) - Number(a === me) ||
+      rows.filter((r) => r.name === b).length - rows.filter((r) => r.name === a).length || a.localeCompare(b))
+  return (
+    <div className="-mx-1 overflow-x-auto">
+      <table className="w-full border-separate border-spacing-0 text-xs">
+        <thead>
+          <tr>
+            <th scope="col" className="sr-only">Player</th>
+            {games.map((g) => (
+              <th key={g} scope="col" className="pb-1.5 font-normal">
+                <Link href={GAMES[g].url} title={GAMES[g].title} aria-label={GAMES[g].title} className="inline-block">
+                  <Image src={`/doodles/notebook/${g}.svg`} alt="" width={24} height={24} className="mx-auto h-6 w-6" />
+                </Link>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {names.map((n) => (
+            <tr key={n} className={n === me ? 'bg-[var(--ink-paper)]' : ''}>
+              <th scope="row" title={n} className="rounded-l-md px-1 py-1.5 text-left text-sm font-medium">
+                <span className="block max-w-[5.5rem] truncate">{n}</span>
+              </th>
+              {games.map((g, i) => {
+                const r = rows.find((x) => x.name === n && x.game === g)
+                const top = r && compareResults(r, best.get(g)!) === 0
+                const edge = i === games.length - 1 ? 'rounded-r-md' : ''
+                return (
+                  <td
+                    key={g}
+                    className={`px-0.5 py-1.5 text-center leading-tight tabular-nums ${edge} ` +
+                      (top ? 'font-semibold text-[var(--ink-text)]' : 'text-[var(--ink-muted)]')}
+                  >
+                    {r
+                      ? resultLabel(r).split(' · ').map((part) => (
+                          <span key={part} className="block whitespace-nowrap">{part}</span>
+                        ))
+                      : '–'}
+                  </td>
+                )
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/**
  * Renders the header Daily button, leaderboard link and the drawer they open.
  */
 export function DailyHeader() {
@@ -154,27 +212,7 @@ export function DailyHeader() {
             </ul>
             <section aria-label="Today's scores" className="mt-5">
               <h3 className="mb-2 text-sm font-semibold text-[var(--ink-muted)]">Today&apos;s scores</h3>
-              {everyone.length ? (
-                <ul className="space-y-1.5 text-sm">
-                  {GAME_IDS.flatMap((g) => {
-                    const ranked = everyone.filter((r) => r.game === g).sort(compareResults)
-                    if (!ranked.length) return []
-                    return [
-                      <li key={g} className="flex gap-2">
-                        <span className="w-24 shrink-0 font-medium">{GAMES[g].title}</span>
-                        <span className="min-w-0 flex-1 text-[var(--ink-muted)]">
-                          {ranked.slice(0, 3).map((r, i) => (
-                            <span key={r.name} className={r.name === player?.name ? 'font-semibold text-[var(--ink-text)]' : ''}>
-                              {i ? ' · ' : ''}{r.name} {resultLabel(r)}
-                            </span>
-                          ))}
-                          {ranked.length > 3 && ` +${ranked.length - 3}`}
-                        </span>
-                      </li>,
-                    ]
-                  })}
-                </ul>
-              ) : (
+              {everyone.length ? <ScoreTable rows={everyone} me={player?.name} /> : (
                 <p className="text-sm text-[var(--ink-muted)]">No scores yet today.</p>
               )}
             </section>
