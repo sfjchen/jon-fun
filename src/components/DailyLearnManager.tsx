@@ -442,7 +442,7 @@ export default function DailyLearnManager() {
                           setEditingDate(e.date)
                           setEditingText(e.text)
                         }}
-                        className="text-sm hover:opacity-80"
+                        className="-my-2 -mr-2 min-h-10 px-2 text-sm hover:opacity-80"
                         style={{ color: 'var(--ink-accent)' }}
                       >
                         Edit
