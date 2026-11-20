@@ -81,10 +81,15 @@ test('Home shares the first control row and each daily game uses its own surface
     const home = page.getByRole('link', { name: 'Home', exact: true }),
       scores = page.getByRole('link', { name: 'Leaderboard', exact: true })
     await expect(home).toHaveCount(1)
-    const a = await home.boundingBox(),
-      b = await scores.boundingBox()
-    expect(Math.abs(a!.y + a!.height / 2 - (b!.y + b!.height / 2))).toBeLessThan(3)
-    expect(a!.x).toBeLessThan(b!.x)
+    // React swaps streamed header content into place right after it first shows, so a box read can briefly come
+    // back empty. Polls until both links have boxes, then checks they share a row with Home first.
+    await expect
+      .poll(async () => {
+        const a = await home.boundingBox(),
+          b = await scores.boundingBox()
+        return a && b ? Math.abs(a.y + a.height / 2 - (b.y + b.height / 2)) < 3 && a.x < b.x : null
+      })
+      .toBe(true)
     await expect(page.locator('[data-game-theme]').first()).toHaveCSS('background-color', bg)
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
   }
