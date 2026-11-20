@@ -10,7 +10,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import PlayerName from '@/components/PlayerName'
 import {
   GAMES, GAME_IDS, PLAYER_CHANGED, PUBLIC_GROUP, RESULTS_CHANGED, compareResults, formatTime, getPlayer, localDay, queue,
-  resultLabel,
+  onLiveRefresh, resultLabel,
   type BoardRow,
 } from '@/lib/results'
 import { streaks } from '@/lib/score-stats'
@@ -40,7 +40,8 @@ function useDaily() {
     const bump = () => setTick((t) => t + 1)
     const events = [RESULTS_CHANGED, 'sfjc-score-queued']
     events.forEach((e) => window.addEventListener(e, bump))
-    return () => events.forEach((e) => window.removeEventListener(e, bump))
+    const stopRefresh = onLiveRefresh(bump)
+    return () => { stopRefresh(); events.forEach((e) => window.removeEventListener(e, bump)) }
   }, [])
   useEffect(() => {
     const ctl = new AbortController()

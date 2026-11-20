@@ -107,3 +107,15 @@ export function logResult(game: GameId, score: number, n?: number, day = localDa
   } catch { /* Storage can be disabled in a private browser. */ }
 }
 export function pendingResults(): number { return queue().length }
+/**
+ * Calls reload whenever other players' results may have changed: every 15 seconds while the page is visible, and when
+ * the tab becomes visible, regains focus, comes back online or is restored from the back-forward cache (Safari
+ * pauses background timers and often skips focus on these). Returns a cleanup function.
+ */
+export function onLiveRefresh(reload: () => void): () => void {
+  const visible = () => { if (document.visibilityState === 'visible') reload() }
+  const timer = setInterval(visible, 15000)
+  const events: [EventTarget, string][] = [[document, 'visibilitychange'], [window, 'focus'], [window, 'online'], [window, 'pageshow']]
+  for (const [target, type] of events) target.addEventListener(type, visible)
+  return () => { clearInterval(timer); for (const [target, type] of events) target.removeEventListener(type, visible) }
+}

@@ -26,7 +26,7 @@ import {
   formatTime,
   getPlayer,
   localDay,
-  resultLabel,
+  onLiveRefresh, resultLabel,
   setPlayer,
   type BoardRow,
   type GameId,
@@ -258,14 +258,12 @@ export function ScoresHub() {
     }
     void load()
     const reload = () => void load()
-    const timer = setInterval(reload, 15000)
-    window.addEventListener('focus', reload)
+    const stopRefresh = onLiveRefresh(reload)
     window.addEventListener(RESULTS_CHANGED, reload)
     return () => {
       cancelled = true
       controller.abort()
-      clearInterval(timer)
-      window.removeEventListener('focus', reload)
+      stopRefresh()
       window.removeEventListener(RESULTS_CHANGED, reload)
     }
   }, [group])
