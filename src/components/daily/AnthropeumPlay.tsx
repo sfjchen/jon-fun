@@ -45,7 +45,7 @@ export default function AnthropeumPlay({ puzzle, dailyDay }: { puzzle: ArtifactD
   const total = guesses.reduce((sum,g) => sum + g.total,0)
   useEffect(() => {
     try { localStorage.setItem(storageKey,JSON.stringify(guesses)) } catch {}
-    if (done) logResult('anthropeum', total, guesses.length, dailyDay, { solved: true, sourceDate: puzzle.date, max: 100000, scoringVersion: 2 })
+    if (done) logResult('anthropeum', total, guesses.length, dailyDay, { moves: guesses.map(g => ({ ...g.pin, year: g.year })), solved: true, sourceDate: puzzle.date, max: 100000, scoringVersion: 2 })
   }, [guesses, done, total, dailyDay, puzzle.date, storageKey])
   /**
    * Shares the score band row through the phone share sheet, or copies it on desktop.

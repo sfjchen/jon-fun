@@ -10,7 +10,7 @@ export const GAMES: Record<GameId, { title: string; url: string; max: number; un
   bee: { title: 'Spelling Bee', url: '/games/spelling-bee', max: 1000, unit: 'points', rules: 'Word points; pangrams earn a 7-point bonus. Your score grows as you find words through the day.' },
 }
 export const GAME_IDS = Object.keys(GAMES) as GameId[]
-export type Stats = { n?: number; seconds?: number; mistakes?: number; solved?: boolean; max?: number; sourceDate?: string; puzzleId?: string; scoringVersion?: number; hard?: boolean; guesses?: string[] }
+export type Stats = { n?: number; seconds?: number; mistakes?: number; solved?: boolean; max?: number; sourceDate?: string; puzzleId?: string; scoringVersion?: number; hard?: boolean; moves?: unknown }
 export type Result = { game: GameId; day: string; score: number; stats: Stats }
 export type BoardRow = Result & { name: string }
 export function scoringVersion(game: GameId): number { return ['mini','connections','krillion','anthropeum','fivefold','bee'].includes(game) ? 2 : 1 }

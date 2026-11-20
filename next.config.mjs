@@ -1,3 +1,6 @@
+/** Every daily puzzle source the server reads: NYT archives and the Anthropeum, Krillion and Wordle snapshots. */
+const PUZZLES = ['./public/puzzle-archives/**/*', './data/anthropeum/**/*', './data/krillion/**/*', './data/fivefold/**/*']
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   /** `pdf-parse` pulls pdf.js; keep it external so the API route loads the real package (avoids bundler defineProperty errors). */
@@ -8,11 +11,11 @@ const nextConfig = {
    */
   outputFileTracingIncludes: {
     '/api/krillion/*': ['./data/krillion/**/*'],
-    // The results API replays Wordle guesses against the day's answer and word list.
-    '/api/results': ['./public/puzzle-archives/fivefold/**/*', './public/fivefold/words.json', './data/fivefold/**/*'],
+    // The results API replays every daily game's moves against the same puzzles, plus the Wordle word list.
+    '/api/results': [...PUZZLES, './public/fivefold/words.json'],
     '/api/cron/nyt': ['./public/puzzle-archives/**/*'],
     '/api/cron/krillion': ['./data/krillion/**/*'],
-    '/api/daily/*': ['./public/puzzle-archives/**/*', './data/anthropeum/**/*', './data/krillion/**/*', './data/fivefold/**/*'],
+    '/api/daily/*': PUZZLES,
     '/api/reader/extract-pdf': [
       './node_modules/pdfjs-dist/legacy/build/**/*',
       './node_modules/pdf-parse/node_modules/pdfjs-dist/legacy/build/**/*',

@@ -351,10 +351,10 @@ export default function SpellingBee() {
         .then((r) => (r.ok ? r.json() : null))
         .then((c: { players: number; genius: number } | null) => c && setCrowd(c))
         .catch(() => {})
-      if (pts > 0 && !isPractice && !revealed) logResult('bee', pts, n, date, { max: pz.max, solved: pts === pz.max, puzzleId: pz.id, sourceDate: (pz as HistoricalPuzzle).date })
+      if (pts > 0 && !isPractice && !revealed) logResult('bee', pts, n, date, { moves: found, max: pz.max, solved: pts === pz.max, puzzleId: pz.id, sourceDate: (pz as HistoricalPuzzle).date })
     }, 1500)
     return () => clearTimeout(t)
-  }, [pz, key, n, pts, isPractice, revealed, date])
+  }, [pz, key, n, found, pts, isPractice, revealed, date])
 
   const busy = toast?.ok === false
   const submit = useCallback(() => {
@@ -667,7 +667,7 @@ export default function SpellingBee() {
               {revealed && <p className="mb-3 text-sm">Answers revealed · this puzzle is finished.</p>}
               {revealed ? <WordList words={pz.answers} found={new Set(found)} /> : <WordList words={sorted} />}
               {(isPractice || date < now) && !revealed && found.length < pz.answers.length && (
-                <button className={`${link} mt-3`} onClick={() => { if (!isPractice && pts > 0) logResult('bee', pts, found.length, date, {max:pz.max,puzzleId:pz.id,sourceDate:(pz as HistoricalPuzzle).date}); setRevealed(true); try { localStorage.setItem(`sb:revealed:${key}`, '1') } catch {} }}>
+                <button className={`${link} mt-3`} onClick={() => { if (!isPractice && pts > 0) logResult('bee', pts, found.length, date, {moves:found,max:pz.max,puzzleId:pz.id,sourceDate:(pz as HistoricalPuzzle).date}); setRevealed(true); try { localStorage.setItem(`sb:revealed:${key}`, '1') } catch {} }}>
                   Reveal all answers
                 </button>
               )}

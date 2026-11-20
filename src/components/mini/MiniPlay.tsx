@@ -33,7 +33,7 @@ export default function MiniPlay({puzzle,dailyDay}:{puzzle:MiniPuzzle;dailyDay?:
     document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',leave)
     return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',leave);save(current.current)}
   },[save])
-  useEffect(()=>{if(dailyDay&&run.firstSolveSeconds!==null&&!run.assisted)logResult('mini',run.firstSolveSeconds,undefined,dailyDay,{seconds:run.firstSolveSeconds,solved:true,sourceDate:puzzle.date,puzzleId:`mini:${puzzle.date}`,scoringVersion:2})},[run.firstSolveSeconds,run.assisted,dailyDay,puzzle.date])
+  useEffect(()=>{if(dailyDay&&run.firstSolveSeconds!==null&&!run.assisted)logResult('mini',run.firstSolveSeconds,undefined,dailyDay,{moves:run.entries,seconds:run.firstSolveSeconds,solved:true,sourceDate:puzzle.date,puzzleId:`mini:${puzzle.date}`,scoringVersion:2})},[run.firstSolveSeconds,run.assisted,run.entries,dailyDay,puzzle.date])
   function focus(i:number,d=direction){if(puzzle.cells[i]){setActive(i);setDirection(d);inputs.current[i]?.focus();inputs.current[i]?.select()}}
   function nextClue(step:number){const i=puzzle.clues.indexOf(clue!),next=puzzle.clues[(i+step+puzzle.clues.length)%puzzle.clues.length]!;focus(next.cells.find(i=>!current.current.entries[i])??next.cells[0]!,next.direction)}
   function advance(){const indices=clue?.cells??[active],offset=indices.indexOf(active);const next=[...indices.slice(offset+1),...indices.slice(0,offset)].find(i=>!current.current.entries[i]);if(next!==undefined)focus(next);else if(offset<indices.length-1)focus(indices[offset+1]!);else nextClue(1)}

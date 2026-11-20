@@ -96,7 +96,7 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
       setStatsOpen(true)
       // Logged once, when the last guess lands, so reloading a finished board never re-sends it.
       const hit = draft === answer
-      logResult('fivefold', hit ? TRIES + 1 - guesses.length : 0, guesses.length, dailyDay, { solved: hit, guesses, sourceDate: dailyDay, puzzleId: `nyt-wordle:${dailyDay}`, ...(final.hard ? { hard: true } : {}) })
+      logResult('fivefold', hit ? TRIES + 1 - guesses.length : 0, guesses.length, dailyDay, { solved: hit, moves: guesses, sourceDate: dailyDay, puzzleId: `nyt-wordle:${dailyDay}`, ...(final.hard ? { hard: true } : {}) })
     },
     [done, draft, answer, commit, dailyDay, hardPref, run.guesses.length],
   )

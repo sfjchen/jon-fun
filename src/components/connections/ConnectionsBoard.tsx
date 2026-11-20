@@ -36,6 +36,8 @@ export type ConnectionsCompletePayload = {
   solvedDifficulties: ConnectionsDifficulty[]
   /** Each guess as the difficulty of its 4 words, in the order guessed, for the share grid. */
   guessColors: ConnectionsDifficulty[][]
+  /** The finished game's guesses and give-up, which the results API replays to score it. */
+  progress: ConnectionsProgress
 }
 
 /**
@@ -118,8 +120,9 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
       wrongGuesses,
       solvedDifficulties: solved.map((g) => g.difficulty),
       guessColors: progress.guesses.map((g) => g.map((w) => tier.get(wordKey(w)) ?? 'yellow')),
+      progress,
     })
-  }, [done, won, wrongGuesses, solved, onComplete, allTiles, progress.guesses])
+  }, [done, won, wrongGuesses, solved, onComplete, allTiles, progress])
 
   useEffect(() => () => clearTimeout(toastTimer.current), [])
 

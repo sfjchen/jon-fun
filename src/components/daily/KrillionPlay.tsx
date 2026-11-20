@@ -23,7 +23,7 @@ export default function KrillionPlay({puzzle,dailyDay}:{puzzle:KrillionPuzzle;da
     document.addEventListener('visibilitychange',refresh)
     return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',refresh);abort.current?.abort()}
   },[])
-  useEffect(()=>{try{localStorage.setItem(storageKey,JSON.stringify(run))}catch{};if(run.phase==='done')logResult('krillion',total,run.outcomes.filter(a=>a.accepted).length,dailyDay,{solved:true,sourceDate:puzzle.date,max:700,scoringVersion:2})},[run,total,dailyDay,puzzle.date,storageKey])
+  useEffect(()=>{try{localStorage.setItem(storageKey,JSON.stringify(run))}catch{};if(run.phase==='done')logResult('krillion',total,run.outcomes.filter(a=>a.accepted).length,dailyDay,{moves:run.outcomes.map(o=>o.accepted?o.answer:''),solved:true,sourceDate:puzzle.date,max:700,scoringVersion:2})},[run,total,dailyDay,puzzle.date,storageKey])
   useEffect(()=>{if(run.phase==='answering')input.current?.focus()},[run.phase,run.index])
   useEffect(()=>{
     if(run.phase!=='done')return
