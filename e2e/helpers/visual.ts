@@ -45,8 +45,18 @@ const REQUIRED_FONTS = ['1em "Patrick Hand"', '1em "Lora"', '1em "Charter"']
  *  2. Mid-animation captures → CSS overrides force `0s` durations.
  *  3. Next.js dev-tools indicator inconsistency → CSS hide + next.config `devIndicators: false`
  *     when `PLAYWRIGHT_HIDE_NEXT_INDICATOR=1` (set by playwright.config webServer env).
+ *  4. Random content (shuffled Connections tiles, 24 cards) → seeds `Math.random` before the page's scripts run.
  */
 export async function gotoStable(page: Page, url: string, opts: { waitFor?: string } = {}) {
+  await page.addInitScript(() => {
+    let s = 0x2f6e2b1
+    Math.random = () => {
+      s = (s + 0x6d2b79f5) | 0
+      let t = Math.imul(s ^ (s >>> 15), 1 | s)
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+    }
+  })
   await page.goto(url, { waitUntil: 'domcontentloaded' })
   await page.addStyleTag({ content: STABILIZE_CSS })
   await page.waitForLoadState('networkidle').catch(() => undefined)
