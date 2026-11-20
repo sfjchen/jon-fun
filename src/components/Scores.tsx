@@ -36,6 +36,7 @@ import {
 import { DAILY_EPOCH, shiftDay, validDay } from '@/lib/daily'
 import { average, overallDay, streaks, winners, winsByPlayer } from '@/lib/score-stats'
 import { DEVICE_KINDS } from '@/lib/syncIdentity'
+import { useHoverTip } from '@/components/HoverTip'
 
 const card = 'rounded-2xl border border-[var(--ink-border)] bg-[var(--ink-bg)] p-3 shadow-sm sm:p-4'
 const muted = 'text-[var(--ink-muted)]'
@@ -136,20 +137,44 @@ function Trend({ rows: all, day }: { rows: BoardRow[]; day: string }) {
   )
 }
 
-/** Player colors, distinct in light and dark themes. The viewer always gets the first. */
+/** Player colors, distinct in light and dark themes and dark enough for white day numbers. The viewer gets the first. */
 const COLORS = ['#2563eb', '#e11d48', '#059669', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#65a30d']
-const OTHER = '#9ca3af'
+const OTHER = '#6b7280'
 
 /**
- * Renders the month calendar in 2 views. Played splits each day's bar by the players who played, and Wins by the
- * players who won its games, sized by games won. Days the highlighted player played (or won) are tinted in their
- * color, and picking a name in the legend highlights that player.
+ * Gives each player on the board a color, in order of days played so the regulars keep the most distinct ones, so a
+ * player has the same color in the calendar, rankings and standings.
  */
-function Calendar({ rows, me, day, onPick }: { rows: BoardRow[]; me: string; day: string; onPick: (d: string) => void }) {
+function playerColors(rows: BoardRow[], me: string): (name: string) => string {
+  const days = new Map<string, Set<string>>()
+  for (const r of rows) days.set(r.name, (days.get(r.name) ?? new Set()).add(r.day))
+  const order = [...days.keys()].filter((n) => n !== me).sort((a, b) => days.get(b)!.size - days.get(a)!.size || a.localeCompare(b))
+  if (me) order.unshift(me)
+  return (n) => COLORS[order.indexOf(n)] ?? OTHER
+}
+
+/**
+ * Fills a box with equal hard-edged diagonal slices, 1 per color, so 2 players read as half and half.
+ */
+function slices(colors: string[]): string | undefined {
+  if (colors.length < 2) return colors[0]
+  return `linear-gradient(135deg, ${colors.map((c, i) => `${c} ${(i / colors.length) * 100}% ${((i + 1) / colors.length) * 100}%`).join(', ')})`
+}
+
+/**
+ * Renders the month calendar in 2 views. Played fills each day with the colors of everyone who played it, and Wins
+ * with the day's overall winners, so ties split the box evenly. Hovering a day lists who played or won, and hovering
+ * a name in the key (or tapping it to pin) fades the days that player missed.
+ */
+function Calendar({ rows, me, day, color, onPick }: {
+  rows: BoardRow[]; me: string; day: string; color: (name: string) => string; onPick: (d: string) => void
+}) {
   const [month, setMonth] = useState(day.slice(0, 7))
   const [shown, setShown] = useState(day)
   const [mode, setMode] = useState<'played' | 'wins'>('played')
-  const [focus, setFocus] = useState(me)
+  const [pinned, setPinned] = useState('')
+  const [hovered, setHovered] = useState('')
+  const tip = useHoverTip()
   if (shown !== day) {
     setShown(day)
     setMonth(day.slice(0, 7))
@@ -162,23 +187,22 @@ function Calendar({ rows, me, day, onPick }: { rows: BoardRow[]; me: string; day
   const days = Array.from({ length: count }, (_, i) => {
     const d = `${month}-${String(i + 1).padStart(2, '0')}`
     const dayRows = monthRows.filter((r) => r.day === d)
-    return { d, played: [...new Set(dayRows.map((r) => r.name))], wins: winsByPlayer(dayRows) }
+    const { names, gameWins } = overallDay(dayRows)
+    const played = [...new Set(dayRows.map((r) => r.name))]
+    const games = new Map(played.map((n) => [n, dayRows.filter((r) => r.name === n).length]))
+    return { d, n: i + 1, who: mode === 'played' ? played : names, games, gameWins }
   })
   const tally = new Map<string, number>()
-  for (const x of days) {
-    for (const n of mode === 'played' ? x.played : [...x.wins.keys()]) tally.set(n, (tally.get(n) ?? 0) + 1)
-  }
-  // Colors follow how often each player played this month, so the regulars keep the most distinct ones.
-  const order = [...new Set([...(me ? [me] : []), ...[...new Set(monthRows.map((r) => r.name))].sort((a, b) =>
-    days.filter((x) => x.played.includes(b)).length - days.filter((x) => x.played.includes(a)).length || a.localeCompare(b))])]
-  const color = (n: string) => COLORS[order.indexOf(n)] ?? OTHER
-  const lit = focus && order.includes(focus) ? focus : me
+  for (const x of days) for (const n of x.who) tally.set(n, (tally.get(n) ?? 0) + 1)
+  const names = [...new Set(monthRows.map((r) => r.name))].sort((a, b) =>
+    Number(b === me) - Number(a === me) || (tally.get(b) ?? 0) - (tally.get(a) ?? 0) || a.localeCompare(b))
+  const focus = hovered || pinned
   return (
     <section className={card} aria-label="Calendar">
       <div className="mb-2 flex items-center gap-1">
         <button
           aria-label="Previous month"
-          className="h-9 w-9 rounded-full hover:bg-[var(--ink-border)]/40 disabled:opacity-30"
+          className="h-9 w-9 rounded-lg border border-[var(--ink-border)] hover:bg-[var(--ink-border)]/40 disabled:opacity-30"
           disabled={month <= '2014-08'}
           onClick={() => setMonth(shiftDay(first, -1).slice(0, 7))}
         >
@@ -189,7 +213,7 @@ function Calendar({ rows, me, day, onPick }: { rows: BoardRow[]; me: string; day
         </h2>
         <button
           aria-label="Next month"
-          className="h-9 w-9 rounded-full hover:bg-[var(--ink-border)]/40 disabled:opacity-30"
+          className="h-9 w-9 rounded-lg border border-[var(--ink-border)] hover:bg-[var(--ink-border)]/40 disabled:opacity-30"
           disabled={month >= today.slice(0, 7)}
           onClick={() => setMonth(shiftDay(`${month}-${count}`, 1).slice(0, 7))}
         >
@@ -213,41 +237,58 @@ function Calendar({ rows, me, day, onPick }: { rows: BoardRow[]; me: string; day
         {Array.from({ length: offset }, (_, i) => (
           <span key={`b${i}`} />
         ))}
-        {days.map(({ d, played, wins }, i) => {
-          const parts = mode === 'played' ? played.map((n) => [n, 1] as const) : [...wins]
-          parts.sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0]))
-          const on = parts.some(([n]) => n === lit)
-          const what = parts.length ? parts.map(([n, k]) => (mode === 'wins' ? `${n} won ${k}` : n)).join(', ') : 'no scores'
+        {days.map(({ d, n, who, games, gameWins }) => {
+          const ordered = [...who].sort((a, b) => names.indexOf(a) - names.indexOf(b))
+          const what = ordered.length ? ordered.map((x) => (mode === 'wins' ? `${x} won ${gameWins.get(x)}` : x)).join(', ') : 'no scores'
+          const fill = slices(ordered.map(color))
+          const faded = focus && !who.includes(focus)
+          const date = new Date(`${d}T12:00:00Z`).toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' })
+          const detail = (
+            <>
+              <span className="block font-semibold">{date}</span>
+              {games.size ? [...games].sort((a, b) => names.indexOf(a[0]) - names.indexOf(b[0])).map(([x, k]) => (
+                <span key={x} className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color(x) }} />
+                  {x} · {k} {k === 1 ? 'game' : 'games'}{gameWins.get(x) ? ` · ${gameWins.get(x)} won` : ''}
+                  {mode === 'wins' && who.includes(x) && ' ★'}
+                </span>
+              )) : <span className="block">No scores</span>}
+            </>
+          )
           return (
             <button
               key={d}
-              title={`${d}: ${what}`}
               aria-label={`${d}, ${what}`}
               aria-pressed={day === d}
               disabled={d < '2014-08-21' || d > today}
               onClick={() => onPick(d)}
-              style={on ? { backgroundColor: `color-mix(in srgb, ${color(lit)} 18%, transparent)` } : undefined}
-              className={`flex aspect-square flex-col items-center justify-center gap-1 rounded-lg leading-none disabled:opacity-30 ${
-                day === d ? 'ring-2 ring-[var(--ink-text)]' : d === today ? 'ring-1 ring-[var(--ink-muted)]' : 'hover:bg-[var(--ink-border)]/40'
-              } ${on ? 'font-semibold' : ''}`}
+              {...tip.on(detail)}
+              style={fill ? { background: fill } : undefined}
+              className={`aspect-square rounded-lg tabular-nums leading-none transition-opacity disabled:opacity-30 ${
+                fill ? 'font-semibold text-white [text-shadow:0_1px_2px_rgb(0_0_0/0.35)] hover:brightness-110' : 'hover:bg-[var(--ink-border)]/40'
+              } ${day === d ? 'ring-2 ring-[var(--ink-text)] ring-offset-2 ring-offset-[var(--ink-bg)]' : d === today ? 'ring-1 ring-[var(--ink-muted)]' : ''} ${
+                faded ? 'opacity-25' : ''}`}
             >
-              {i + 1}
-              <span className="flex h-1.5 w-3/4 gap-px overflow-hidden rounded-full">
-                {parts.map(([n, k]) => <span key={n} style={{ flexGrow: k, backgroundColor: color(n) }} />)}
-              </span>
+              {n}
             </button>
           )
         })}
       </div>
-      {order.length > 0 && (
+      {tip.el}
+      {names.length > 0 && (
         <ul className="mt-3 flex flex-wrap gap-1.5 text-xs" aria-label={`Players, days ${mode === 'played' ? 'played' : 'won'} this month`}>
-          {order.map((n) => (
-            <li key={n}>
-              <button aria-pressed={lit === n} onClick={() => setFocus(n)} title={`Highlight ${n}'s days`}
-                className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 ${lit === n ? 'border-[var(--ink-text)]' : 'border-[var(--ink-border)]'}`}>
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color(n) }} />
-                <span className="max-w-24 truncate">{n}{n === me && ' (you)'}</span>
-                <span className={`tabular-nums ${muted}`}>{tally.get(n) ?? 0}</span>
+          {names.map((x) => (
+            <li key={x}>
+              <button
+                aria-pressed={pinned === x}
+                onClick={() => setPinned(pinned === x ? '' : x)}
+                onPointerEnter={(e) => e.pointerType === 'mouse' && setHovered(x)}
+                onPointerLeave={() => setHovered('')}
+                className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 ${pinned === x ? 'border-[var(--ink-text)]' : 'border-[var(--ink-border)]'}`}
+              >
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color(x) }} />
+                <span className="max-w-24 truncate">{x}{x === me && ' (you)'}</span>
+                <span className={`tabular-nums ${muted}`}>{tally.get(x) ?? 0}</span>
               </button>
             </li>
           ))}
@@ -354,6 +395,7 @@ export function ScoresHub() {
   }, [group])
 
   const rows = response?.group === group ? response.rows : []
+  const color = playerColors(rows, me)
   const games = tab === 'all' ? GAME_IDS : [tab]
   const shown = rows.filter((r) => games.includes(r.game))
   const picked = shown.filter((r) => r.day === day)
@@ -396,7 +438,7 @@ export function ScoresHub() {
       const rank = ranked.findIndex(other => compareResults(other,r) === 0)+1
       return <li key={r.name} className={`flex items-center gap-3 rounded-lg px-2 py-3 text-sm ${r.name===me?'bg-[var(--ink-border)]/30':''}`}>
         <span className={`w-5 text-right tabular-nums ${muted}`}>{rank}</span>
-        <span className="min-w-0 flex-1 truncate font-medium">{r.name}{r.name===me&&<span className={`ml-1 text-xs font-normal ${muted}`}>(you)</span>}</span>
+        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{backgroundColor:color(r.name)}}/><span className="min-w-0 flex-1 truncate font-medium">{r.name}{r.name===me&&<span className={`ml-1 text-xs font-normal ${muted}`}>(you)</span>}</span>
         {top.includes(r.name)&&<span className="text-xs text-amber-700" title="Daily winner" aria-label="Daily winner">★</span>}
         <span className="text-right tabular-nums">{resultLabel(r)}</span>
       </li>
@@ -417,9 +459,9 @@ export function ScoresHub() {
       {mineToday.length>0&&<button className={`text-xs underline ${muted}`} onClick={()=>void navigator.clipboard.writeText([`sfjc.dev · ${day}`,...mineToday.map(r=>`${GAMES[r.game].title}: ${resultLabel(r)}`)].join('\n')).then(()=>setCopied(true))}>{copied?'Copied':'Copy my results'}</button>}
     </section>}
     {view==='standings'&&<section aria-label="Standings" data-testid={tab==='all'?'standings':`board-${tab}`} className="space-y-4"><div className="flex items-center justify-between"><h2 className="text-lg font-semibold">Standings</h2><div className="flex rounded-lg bg-[var(--ink-border)]/35 p-1 text-xs">{([30,0]as const).map(n=><button key={n} aria-pressed={span===n} onClick={()=>setSpan(n)} className={`rounded-md px-3 py-1.5 ${span===n?'bg-[var(--ink-paper)] shadow-sm':''}`}>{n?'30 days':'All time'}</button>)}</div></div><p className={`text-xs ${muted}`}>Ranked by daily game wins. Each day compares the same puzzle.</p>
-      {table.length?<div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className={`border-b border-[var(--ink-border)] text-xs ${muted}`}><tr><th className="py-3 font-normal">Player</th><th className="p-3 text-right font-normal">Played</th><th className="p-3 text-right font-normal">Wins</th>{tab!=='all'&&<><th className="p-3 text-right font-normal">Avg {metricLabel.toLowerCase()}</th><th className="p-3 text-right font-normal">Best</th></>}</tr></thead><tbody>{table.map(p=><tr key={p.name} className={`border-b border-[var(--ink-border)] ${p.name===me?'font-semibold':''}`}><td className="py-4">{p.name}</td><td className="p-3 text-right tabular-nums">{p.played}</td><td className="p-3 text-right tabular-nums">{p.wins}</td>{tab!=='all'&&<><td className="p-3 text-right tabular-nums">{metric(p.avg)}</td><td className="p-3 text-right tabular-nums">{metric(p.best)}</td></>}</tr>)}</tbody></table></div>:<p className={`py-8 text-center text-sm ${muted}`}>No results in this period yet.</p>}
+      {table.length?<div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className={`border-b border-[var(--ink-border)] text-xs ${muted}`}><tr><th className="py-3 font-normal">Player</th><th className="p-3 text-right font-normal">Played</th><th className="p-3 text-right font-normal">Wins</th>{tab!=='all'&&<><th className="p-3 text-right font-normal">Avg {metricLabel.toLowerCase()}</th><th className="p-3 text-right font-normal">Best</th></>}</tr></thead><tbody>{table.map(p=><tr key={p.name} className={`border-b border-[var(--ink-border)] ${p.name===me?'font-semibold':''}`}><td className="py-4"><span className="flex items-center gap-2"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{backgroundColor:color(p.name)}}/>{p.name}</span></td><td className="p-3 text-right tabular-nums">{p.played}</td><td className="p-3 text-right tabular-nums">{p.wins}</td>{tab!=='all'&&<><td className="p-3 text-right tabular-nums">{metric(p.avg)}</td><td className="p-3 text-right tabular-nums">{metric(p.best)}</td></>}</tr>)}</tbody></table></div>:<p className={`py-8 text-center text-sm ${muted}`}>No results in this period yet.</p>}
     </section>}
-    {view==='stats'&&<section aria-label="Your stats" className="space-y-5">{me?<><h2 className="text-lg font-semibold">Your progress</h2><div className="grid grid-cols-3 gap-3 rounded-xl border border-[var(--ink-border)] py-6 text-center">{[['Days played',new Set(mine.map(r=>r.day)).size],['Current streak',streak.current],['Longest streak',streak.longest]].map(([label,value])=><div key={label}><p className="text-3xl font-semibold tabular-nums tracking-tight">{value}</p><p className={`mt-2 text-xs ${muted}`}>{label}</p></div>)}</div>{tab!=='all'&&<div><h3 className={`mb-3 text-xs ${muted}`}>Last 14 days · {metricLabel.toLowerCase()}</h3><Trend rows={mine} day={day}/></div>}<Calendar rows={shown} me={me} day={day} onPick={pick}/><div><h3 className="mb-3 text-lg font-semibold">Phone vs computer</h3><DeviceSplit rows={mine} games={games}/></div></>:<p className={`py-8 text-sm ${muted}`}>Add your name above to track your progress and streaks.</p>}</section>}
+    {view==='stats'&&<section aria-label="Your stats" className="space-y-5">{me?<><h2 className="text-lg font-semibold">Your progress</h2><div className="grid grid-cols-3 gap-3 rounded-xl border border-[var(--ink-border)] py-6 text-center">{[['Days played',new Set(mine.map(r=>r.day)).size],['Current streak',streak.current],['Longest streak',streak.longest]].map(([label,value])=><div key={label}><p className="text-3xl font-semibold tabular-nums tracking-tight">{value}</p><p className={`mt-2 text-xs ${muted}`}>{label}</p></div>)}</div>{tab!=='all'&&<div><h3 className={`mb-3 text-xs ${muted}`}>Last 14 days · {metricLabel.toLowerCase()}</h3><Trend rows={mine} day={day}/></div>}<Calendar rows={shown} me={me} day={day} color={color} onPick={pick}/><div><h3 className="mb-3 text-lg font-semibold">Phone vs computer</h3><DeviceSplit rows={mine} games={games}/></div></>:<p className={`py-8 text-sm ${muted}`}>Add your name above to track your progress and streaks.</p>}</section>}
     {!!response?.legacyRows.length&&<details className={`border-t border-[var(--ink-border)] pt-3 text-xs ${muted}`}><summary className="cursor-pointer">Earlier scoring versions ({response.legacyRows.length})</summary><ul className="mt-2 space-y-1">{response.legacyRows.map(r=><li key={`${r.game}:${r.day}:${r.name}`}>{r.day} · {r.name} · {GAMES[r.game].title}: {formatScore(r.score)}</li>)}</ul></details>}
   </div>
 }

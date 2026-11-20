@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import DayPicker from '@/components/daily/DayPicker'
 import PlayerName from '@/components/PlayerName'
+import { useHoverTip } from '@/components/HoverTip'
 import { DAILY_EPOCH, siteDay } from '@/lib/daily'
 import { NYT_FIRST_DAY, isNytGame } from '@/lib/daily/nyt-puzzles'
 import {
@@ -89,11 +90,12 @@ function cellLabel(r: BoardRow): string {
 
 /**
  * Renders today's scores as a grid with a row per player and a column per game icon. The best result in each
- * column, ties included, is bold, and the saved player's row is shaded. Hovering a cell shows the full result.
+ * column, ties included, is bold, and the saved player's row is shaded. Hovering a cell on a laptop shows the full result.
  */
 function ScoreTable({ rows, me, q }: { rows: BoardRow[]; me: string | undefined; q: string }) {
   const games = GAME_IDS.filter((g) => rows.some((r) => r.game === g))
   const best = new Map(games.map((g) => [g, rows.filter((r) => r.game === g).sort(compareResults)[0]]))
+  const tip = useHoverTip()
   const names = [...new Set(rows.map((r) => r.name))].sort((a, b) =>
     Number(b === me) - Number(a === me) ||
       rows.filter((r) => r.name === b).length - rows.filter((r) => r.name === a).length || a.localeCompare(b))
@@ -105,7 +107,7 @@ function ScoreTable({ rows, me, q }: { rows: BoardRow[]; me: string | undefined;
             <th scope="col" className="sr-only">Player</th>
             {games.map((g) => (
               <th key={g} scope="col" className="pb-1.5 font-normal">
-                <Link href={GAMES[g].url + q} title={GAMES[g].title} aria-label={GAMES[g].title} className="inline-block">
+                <Link href={GAMES[g].url + q} aria-label={GAMES[g].title} className="inline-block" {...tip.on(`Play ${GAMES[g].title}`)}>
                   <Image src={`/doodles/notebook/${g}.svg`} alt="" width={24} height={24} className="mx-auto h-6 w-6" />
                 </Link>
               </th>
@@ -115,7 +117,7 @@ function ScoreTable({ rows, me, q }: { rows: BoardRow[]; me: string | undefined;
         <tbody>
           {names.map((n) => (
             <tr key={n} className={n === me ? 'bg-[var(--ink-paper)]' : ''}>
-              <th scope="row" title={n} className="rounded-l-md px-1 py-1.5 text-left text-sm font-medium">
+              <th scope="row" {...tip.on(n)} className="rounded-l-md px-1 py-1.5 text-left text-sm font-medium">
                 <span className="block max-w-[5.5rem] truncate">{n}</span>
               </th>
               {games.map((g, i) => {
@@ -128,7 +130,11 @@ function ScoreTable({ rows, me, q }: { rows: BoardRow[]; me: string | undefined;
                     className={`px-0.5 py-1.5 text-center leading-tight tabular-nums ${edge} ` +
                       (top ? 'font-semibold text-[var(--ink-text)]' : 'text-[var(--ink-muted)]')}
                   >
-                    {r ? <span className="whitespace-nowrap" title={resultLabel(r)}>{cellLabel(r)}</span> : '–'}
+                    {r ? (
+                      <span className="whitespace-nowrap" {...tip.on(<>{n} · {GAMES[g].title}<span className="block font-semibold">{resultLabel(r)}{top && ' · best'}</span></>)}>
+                        {cellLabel(r)}
+                      </span>
+                    ) : '–'}
                   </td>
                 )
               })}
@@ -136,6 +142,7 @@ function ScoreTable({ rows, me, q }: { rows: BoardRow[]; me: string | undefined;
           ))}
         </tbody>
       </table>
+      {tip.el}
     </div>
   )
 }
@@ -253,15 +260,15 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                 }
                 return (
                   <li key={g}>
-                    <Link href={GAMES[g].url + q} onClick={close} className={`${row} hover:bg-[var(--ink-paper)]`}>
+                    <Link
+                      href={GAMES[g].url + q}
+                      onClick={close}
+                      className={`${row} ${r ? 'border-transparent bg-[var(--ink-paper)] hover:brightness-95' : 'hover:bg-[var(--ink-paper)]'}`}
+                    >
                       {icon}
                       <span className="flex-1 font-semibold">{GAMES[g].title}</span>
-                      {r ? (
-                        <span className="text-right text-sm">
-                          <span className="font-semibold">✓</span>
-                          <span className="block text-xs text-[var(--ink-muted)]">{resultLabel(r)}</span>
-                        </span>
-                      ) : isPracticeResult(g, sel) && <span className="text-xs text-[var(--ink-muted)]">Practice</span>}
+                      {r ? <span className="text-sm font-semibold tabular-nums">{resultLabel(r)}</span>
+                        : isPracticeResult(g, sel) && <span className="text-xs text-[var(--ink-muted)]">Practice</span>}
                     </Link>
                   </li>
                 )
