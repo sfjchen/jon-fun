@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import PlayerName from '@/components/PlayerName'
 import {
-  GAMES, GAME_IDS, PLAYER_CHANGED, PUBLIC_GROUP, RESULTS_CHANGED, compareResults, getPlayer, localDay, queue,
+  GAMES, GAME_IDS, PLAYER_CHANGED, PUBLIC_GROUP, RESULTS_CHANGED, compareResults, formatTime, getPlayer, localDay, queue,
   resultLabel,
   type BoardRow,
 } from '@/lib/results'
@@ -68,9 +68,18 @@ function useDaily() {
 }
 
 /**
+ * Returns a 1-line label short enough for a grid cell: Connections shows only its solve time (or groups found)
+ * and Anthropeum rounds to thousands, so every column stays a similar width.
+ */
+function cellLabel(r: BoardRow): string {
+  if (r.game === 'connections') return r.score === 4 && r.stats.seconds !== undefined ? formatTime(r.stats.seconds) : `${r.stats.n ?? r.score}/4`
+  if (r.game === 'anthropeum') return `${Math.round(r.score / 1000)}k`
+  return resultLabel(r)
+}
+
+/**
  * Renders today's scores as a grid with a row per player and a column per game icon. The best result in each
- * column, ties included, is bold, the saved player's row is shaded, and multi-part labels such as Connections
- * time and lives wrap onto 2 short lines so every column stays narrow.
+ * column, ties included, is bold, and the saved player's row is shaded. Hovering a cell shows the full result.
  */
 function ScoreTable({ rows, me }: { rows: BoardRow[]; me: string | undefined }) {
   const games = GAME_IDS.filter((g) => rows.some((r) => r.game === g))
@@ -109,11 +118,7 @@ function ScoreTable({ rows, me }: { rows: BoardRow[]; me: string | undefined }) 
                     className={`px-0.5 py-1.5 text-center leading-tight tabular-nums ${edge} ` +
                       (top ? 'font-semibold text-[var(--ink-text)]' : 'text-[var(--ink-muted)]')}
                   >
-                    {r
-                      ? resultLabel(r).split(' · ').map((part) => (
-                          <span key={part} className="block whitespace-nowrap">{part}</span>
-                        ))
-                      : '–'}
+                    {r ? <span className="whitespace-nowrap" title={resultLabel(r)}>{cellLabel(r)}</span> : '–'}
                   </td>
                 )
               })}
@@ -126,9 +131,10 @@ function ScoreTable({ rows, me }: { rows: BoardRow[]; me: string | undefined }) 
 }
 
 /**
- * Renders the header Daily button, leaderboard link and the drawer they open.
+ * Renders the header Daily button, leaderboard link and the drawer they open. Game headers pass `compact` for a
+ * smaller button without the leaderboard link, since they show their own.
  */
-export function DailyHeader() {
+export function DailyHeader({ compact = false }: { compact?: boolean }) {
   const { player, today, everyone, streak } = useDaily()
   const [open, setOpen] = useState(false)
   const btn = useRef<HTMLButtonElement>(null)
@@ -149,7 +155,7 @@ export function DailyHeader() {
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [open, close])
-  const label = player ? `Daily ${today.size}/${GAME_IDS.length}${streak ? ` · 🔥${streak}` : ''}` : 'Daily'
+  const label = player ? `Daily ${today.size}/${GAME_IDS.length}${streak && !compact ? ` · 🔥${streak}` : ''}` : 'Daily'
   return (
     <div data-game-theme="daily" className="flex items-center gap-1.5 bg-transparent">
       <button
@@ -157,10 +163,25 @@ export function DailyHeader() {
         type="button"
         aria-haspopup="dialog"
         onClick={() => setOpen(true)}
-        className="rounded-full bg-[var(--ink-text)] px-3.5 py-1.5 text-sm font-semibold text-white hover:opacity-90"
+        className={
+          'whitespace-nowrap rounded-full bg-[var(--ink-text)] font-semibold text-[var(--ink-bg)] hover:opacity-90 ' +
+            (compact ? 'px-2.5 py-1 text-xs' : 'px-3.5 py-1.5 text-sm')
+        }
       >
         {label}
       </button>
+      {!compact && (
+        <Link
+          href="/leaderboards"
+          aria-label="Daily leaderboard"
+          title="Daily leaderboard"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--ink-text)] text-[var(--ink-bg)] hover:opacity-90"
+        >
+          <svg aria-hidden viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+            <path d="M5 20v-7M12 20V4M19 20v-11" />
+          </svg>
+        </Link>
+      )}
       {open && (
         <div data-game-theme="daily" className="fixed inset-0 z-50">
           <button type="button" tabIndex={-1} aria-label="Close daily drawer" onClick={close} className="absolute inset-0 bg-black/40" />

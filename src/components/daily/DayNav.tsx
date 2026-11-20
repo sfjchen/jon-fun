@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import ScoreSync from '@/components/daily/ScoreSync'
+import { DailyHeader } from '@/components/daily/DailyDrawer'
 import { HomeLink } from '@/components/HomeLink'
 import PlayerName from '@/components/PlayerName'
 import { DAILY_EPOCH, shiftDay, siteDay } from '@/lib/daily'
@@ -91,7 +92,8 @@ export default function DayNav({ title, path, day, label, info, children, minDay
     <header className="mb-3 space-y-1 border-b pb-2" style={{ borderColor: 'var(--ink-border)' }}>
       <div className="daily-heading flex min-h-12 items-center gap-1 sm:gap-2">
         <HomeLink className="inline-flex h-10 w-10 shrink-0 items-center justify-center" />
-        <h1 className="mr-auto min-w-0 font-lora text-xl font-bold md:text-2xl">{title}</h1>
+        <h1 className="mr-auto min-w-0 truncate font-lora text-xl font-bold md:text-2xl">{title}</h1>
+        <DailyHeader compact />
         <Link href={day ? `/leaderboards?d=${day}` : '/leaderboards'} className={icon} aria-label="Leaderboard" title="Leaderboard">
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
             <path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 20h8" />
