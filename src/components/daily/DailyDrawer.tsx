@@ -220,7 +220,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
             </div>
             {player ? (
               <p className="mb-4 text-sm text-[var(--ink-muted)]">
-                {done.size}/{GAME_IDS.length} {isToday ? 'today' : `on ${dayName}`} · {streak ? `🔥 ${streak} day streak` : 'No streak yet'} · <PlayerName />
+                {today.size}/{GAME_IDS.length} today · {streak ? `🔥 ${streak} day streak` : 'No streak yet'} · <PlayerName />
               </p>
             ) : (
               <p className="mb-4 flex flex-wrap items-center gap-1 rounded-xl bg-[var(--ink-paper)] p-3 text-sm">
