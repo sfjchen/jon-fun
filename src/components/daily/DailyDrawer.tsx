@@ -75,12 +75,12 @@ function cellLabel(r: BoardRow): string {
 }
 
 /**
- * Renders today's scores as a grid with a row per player and a column per game icon. The best result in each
+ * Renders today's scores as a grid with a row per player and a column per game icon, with all 6 games shown
+ * and a dash where a player has no result. The best result in each
  * column, ties included, is bold, and the saved player's row is shaded. Hovering a cell on a laptop shows the full result.
  */
 function ScoreTable({ rows, me, q }: { rows: BoardRow[]; me: string | undefined; q: string }) {
-  const games = GAME_IDS.filter((g) => rows.some((r) => r.game === g))
-  const best = new Map(games.map((g) => [g, rows.filter((r) => r.game === g).sort(compareResults)[0]]))
+  const best = new Map(GAME_IDS.map((g) => [g, rows.filter((r) => r.game === g).sort(compareResults)[0]]))
   const tip = useHoverTip()
   const names = [...new Set(rows.map((r) => r.name))].sort(
     (a, b) =>
@@ -96,7 +96,7 @@ function ScoreTable({ rows, me, q }: { rows: BoardRow[]; me: string | undefined;
             <th scope="col" className="sr-only">
               Player
             </th>
-            {games.map((g) => (
+            {GAME_IDS.map((g) => (
               <th key={g} scope="col" className="pb-1.5 font-normal">
                 <Link
                   href={GAMES[g].url + q}
@@ -116,10 +116,10 @@ function ScoreTable({ rows, me, q }: { rows: BoardRow[]; me: string | undefined;
               <th scope="row" {...tip.on(n)} className="rounded-l-md px-1 py-1.5 text-left text-sm font-medium">
                 <span className="block max-w-[5.5rem] truncate">{n}</span>
               </th>
-              {games.map((g, i) => {
+              {GAME_IDS.map((g, i) => {
                 const r = rows.find((x) => x.name === n && x.game === g)
                 const top = r && compareResults(r, best.get(g)!) === 0
-                const edge = i === games.length - 1 ? 'rounded-r-md' : ''
+                const edge = i === GAME_IDS.length - 1 ? 'rounded-r-md' : ''
                 return (
                   <td
                     key={g}
