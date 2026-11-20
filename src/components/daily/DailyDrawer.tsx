@@ -1,21 +1,27 @@
 'use client'
 
 /*
- * Home header Daily button and drawer: today's progress, streak, links to the 6 daily games and everyone's
- * scores today. Done state merges the synced board rows with the unsynced local queue for the saved player.
+ * Home header Daily button and drawer: today's progress, streak, and a day picker that shows any day's links to the
+ * 6 daily games and everyone's scores that day. Done state merges the synced board rows with the unsynced local queue
+ * for the saved player.
  */
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import DayPicker from '@/components/daily/DayPicker'
 import PlayerName from '@/components/PlayerName'
+import { DAILY_EPOCH, siteDay } from '@/lib/daily'
+import { NYT_FIRST_DAY, isNytGame } from '@/lib/daily/nyt-puzzles'
 import {
   GAMES, GAME_IDS, PLAYER_CHANGED, PUBLIC_GROUP, RESULTS_CHANGED, compareResults, formatTime, getPlayer, localDay, queue,
-  onLiveRefresh, resultLabel,
+  isPracticeResult, onLiveRefresh, resultLabel,
   type BoardRow,
 } from '@/lib/results'
 import { streaks } from '@/lib/score-stats'
 
 const cache = new Map<string, { rows: BoardRow[] }>()
+/** The earliest day any daily game has a puzzle, so the drawer can step back to it. */
+const FIRST_DAY = [DAILY_EPOCH, ...Object.values(NYT_FIRST_DAY)].sort()[0]!
 
 /**
  * Subscribes to player and result changes made in this tab or another one.
@@ -27,10 +33,11 @@ function subscribe(cb: () => void) {
 }
 
 /**
- * Loads the group's recent results, cached per group so remounts show the last rows at once, then merges the
- * player's unsynced local queue. Returns the player's own done state and streak plus everyone's scores today.
+ * Loads the group's results back to at least 60 days or the selected day, cached per group so remounts show the last
+ * rows at once, then merges the player's unsynced local queue. Returns the player's done state today and on the
+ * selected day, the streak, and everyone's scores on the selected day.
  */
-function useDaily() {
+function useDaily(sel: string) {
   const raw = useSyncExternalStore(subscribe, () => JSON.stringify(getPlayer()), () => 'null')
   const player = JSON.parse(raw) as ReturnType<typeof getPlayer>
   const group = player?.group ?? PUBLIC_GROUP
@@ -43,9 +50,12 @@ function useDaily() {
     const stopRefresh = onLiveRefresh(bump)
     return () => { stopRefresh(); events.forEach((e) => window.removeEventListener(e, bump)) }
   }, [])
+  const day = localDay()
+  // Days before the selected one are still needed back to 60 for the streak, so the span only grows past that.
+  const span = Math.max(60, Math.round((Date.parse(day) - Date.parse(sel)) / 86400000) + 2)
   useEffect(() => {
     const ctl = new AbortController()
-    fetch(`/api/results?group=${encodeURIComponent(group)}&days=60`, { signal: ctl.signal })
+    fetch(`/api/results?group=${encodeURIComponent(group)}&days=${span}`, { signal: ctl.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((d: { rows?: BoardRow[] } | null) => {
         if (!d?.rows) return
@@ -54,8 +64,7 @@ function useDaily() {
       })
       .catch(() => {})
     return () => ctl.abort()
-  }, [group, tick])
-  const day = localDay()
+  }, [group, span, tick])
   const rows = remote.filter((r) => GAMES[r.game])
   if (player) {
     const local = queue().filter((q) => (!q.player || q.player.name === player.name) && q.day <= day && GAMES[q.game])
@@ -64,8 +73,8 @@ function useDaily() {
     })
   }
   const mine = player ? rows.filter((r) => r.name === player.name) : []
-  const today = new Map(mine.filter((r) => r.day === day).map((r) => [r.game, r]))
-  return { player, today, everyone: rows.filter((r) => r.day === day), streak: streaks(mine, day).current }
+  const done = (d: string) => new Map(mine.filter((r) => r.day === d).map((r) => [r.game, r]))
+  return { player, today: done(day), picked: done(sel), everyone: rows.filter((r) => r.day === sel), streak: streaks(mine, day).current }
 }
 
 /**
@@ -82,7 +91,7 @@ function cellLabel(r: BoardRow): string {
  * Renders today's scores as a grid with a row per player and a column per game icon. The best result in each
  * column, ties included, is bold, and the saved player's row is shaded. Hovering a cell shows the full result.
  */
-function ScoreTable({ rows, me }: { rows: BoardRow[]; me: string | undefined }) {
+function ScoreTable({ rows, me, q }: { rows: BoardRow[]; me: string | undefined; q: string }) {
   const games = GAME_IDS.filter((g) => rows.some((r) => r.game === g))
   const best = new Map(games.map((g) => [g, rows.filter((r) => r.game === g).sort(compareResults)[0]]))
   const names = [...new Set(rows.map((r) => r.name))].sort((a, b) =>
@@ -96,7 +105,7 @@ function ScoreTable({ rows, me }: { rows: BoardRow[]; me: string | undefined }) 
             <th scope="col" className="sr-only">Player</th>
             {games.map((g) => (
               <th key={g} scope="col" className="pb-1.5 font-normal">
-                <Link href={GAMES[g].url} title={GAMES[g].title} aria-label={GAMES[g].title} className="inline-block">
+                <Link href={GAMES[g].url + q} title={GAMES[g].title} aria-label={GAMES[g].title} className="inline-block">
                   <Image src={`/doodles/notebook/${g}.svg`} alt="" width={24} height={24} className="mx-auto h-6 w-6" />
                 </Link>
               </th>
@@ -136,7 +145,11 @@ function ScoreTable({ rows, me }: { rows: BoardRow[]; me: string | undefined }) 
  * smaller button without the leaderboard link, since they show their own.
  */
 export function DailyHeader({ compact = false }: { compact?: boolean }) {
-  const { player, today, everyone, streak } = useDaily()
+  /** Read only in the browser, so a server on another day (or a test clock) never mismatches the page. */
+  const now = useSyncExternalStore(() => () => {}, siteDay, () => '')
+  const [picked, setPicked] = useState('')
+  const sel = picked || now || localDay()
+  const { player, today, picked: done, everyone, streak } = useDaily(sel)
   const [open, setOpen] = useState(false)
   const btn = useRef<HTMLButtonElement>(null)
   const panel = useRef<HTMLDivElement>(null)
@@ -148,7 +161,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') return close()
       if (e.key !== 'Tab') return
-      const items = [...(panel.current?.querySelectorAll<HTMLElement>('a[href],button,input') ?? [])]
+      const items = [...(panel.current?.querySelectorAll<HTMLElement>('a[href],button:not([disabled]),input') ?? [])]
       const last = items[items.length - 1]
       if (e.shiftKey && document.activeElement === items[0]) { e.preventDefault(); last?.focus() }
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); items[0]?.focus() }
@@ -156,6 +169,11 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [open, close])
+  const isToday = !now || sel === now
+  // Today links to the bare game path, which pins the day when it opens, and other days add the ?d= day param.
+  const q = isToday ? '' : `?d=${sel}`
+  const dayName = isToday ? 'today' : new Date(`${sel}T12:00:00Z`).toLocaleDateString('en-US',
+    { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric', year: sel.slice(0, 4) === now.slice(0, 4) ? undefined : 'numeric' })
   const label = player ? `Daily ${today.size}/${GAME_IDS.length}${streak && !compact ? ` · 🔥${streak}` : ''}` : 'Daily'
   return (
     <div data-game-theme="daily" className="flex items-center gap-1.5 bg-transparent">
@@ -163,7 +181,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
         ref={btn}
         type="button"
         aria-haspopup="dialog"
-        onClick={() => setOpen(true)}
+        onClick={() => { setPicked(''); setOpen(true) }}
         className={
           'whitespace-nowrap rounded-full bg-[var(--ink-text)] font-semibold text-[var(--ink-bg)] hover:opacity-90 ' +
             (compact ? 'px-2.5 py-1 text-xs' : 'px-3.5 py-1.5 text-sm')
@@ -202,40 +220,51 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
             </div>
             {player ? (
               <p className="mb-4 text-sm text-[var(--ink-muted)]">
-                {today.size}/{GAME_IDS.length} today · {streak ? `🔥 ${streak} day streak` : 'No streak yet'} · <PlayerName />
+                {done.size}/{GAME_IDS.length} {isToday ? 'today' : `on ${dayName}`} · {streak ? `🔥 ${streak} day streak` : 'No streak yet'} · <PlayerName />
               </p>
             ) : (
               <p className="mb-4 flex flex-wrap items-center gap-1 rounded-xl bg-[var(--ink-paper)] p-3 text-sm">
                 Set your name to track scores and streaks: <PlayerName />
               </p>
             )}
+            <DayPicker day={sel} today={now} minDay={FIRST_DAY} go={setPicked} className="-mx-2 mb-3" />
             <ul className="space-y-2">
               {GAME_IDS.map((g) => {
-                const r = today.get(g)
+                const r = done.get(g)
+                const row = 'flex items-center gap-3 rounded-xl border border-[var(--ink-border)] p-2.5'
+                const icon = <Image src={`/doodles/notebook/${g}.svg`} alt="" width={36} height={36} className="h-9 w-9" />
+                // NYT games have no puzzle before their first day or after today, and the rest none before the epoch.
+                if (sel < (isNytGame(g) ? NYT_FIRST_DAY[g] : DAILY_EPOCH) || (isNytGame(g) && now && sel > now)) {
+                  return (
+                    <li key={g} className={`${row} opacity-40`}>
+                      {icon}
+                      <span className="flex-1 font-semibold">{GAMES[g].title}</span>
+                      <span className="text-xs text-[var(--ink-muted)]">No puzzle</span>
+                    </li>
+                  )
+                }
                 return (
                   <li key={g}>
-                    <Link
-                      href={GAMES[g].url}
-                      onClick={close}
-                      className="flex items-center gap-3 rounded-xl border border-[var(--ink-border)] p-2.5 hover:bg-[var(--ink-paper)]"
-                    >
-                      <Image src={`/doodles/notebook/${g}.svg`} alt="" width={36} height={36} className="h-9 w-9" />
+                    <Link href={GAMES[g].url + q} onClick={close} className={`${row} hover:bg-[var(--ink-paper)]`}>
+                      {icon}
                       <span className="flex-1 font-semibold">{GAMES[g].title}</span>
-                      {r && (
+                      {r ? (
                         <span className="text-right text-sm">
                           <span className="font-semibold">✓</span>
                           <span className="block text-xs text-[var(--ink-muted)]">{resultLabel(r)}</span>
                         </span>
-                      )}
+                      ) : isPracticeResult(g, sel) && <span className="text-xs text-[var(--ink-muted)]">Practice</span>}
                     </Link>
                   </li>
                 )
               })}
             </ul>
-            <section aria-label="Today's scores" className="mt-5">
-              <h3 className="mb-2 text-sm font-semibold text-[var(--ink-muted)]">Today&apos;s scores</h3>
-              {everyone.length ? <ScoreTable rows={everyone} me={player?.name} /> : (
-                <p className="text-sm text-[var(--ink-muted)]">No scores yet today.</p>
+            <section aria-label={`Scores for ${dayName}`} className="mt-5">
+              <h3 className="mb-2 text-sm font-semibold text-[var(--ink-muted)]">{isToday ? 'Today\'s scores' : `Scores · ${dayName}`}</h3>
+              {everyone.length ? <ScoreTable rows={everyone} me={player?.name} q={q} /> : (
+                <p className="text-sm text-[var(--ink-muted)]">
+                  {now && sel > now ? 'Future preview · practice only, not ranked.' : `No scores ${isToday ? 'yet today' : 'this day'}.`}
+                </p>
               )}
             </section>
 

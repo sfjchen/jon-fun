@@ -10,7 +10,7 @@ export const GAMES: Record<GameId, { title: string; url: string; max: number; un
   bee: { title: 'Spelling Bee', url: '/games/spelling-bee', max: 1000, unit: 'points', rules: 'Word points; pangrams earn a 7-point bonus. Your score grows as you find words through the day.' },
 }
 export const GAME_IDS = Object.keys(GAMES) as GameId[]
-export type Stats = { n?: number; seconds?: number; mistakes?: number; solved?: boolean; max?: number; sourceDate?: string; puzzleId?: string; scoringVersion?: number; hard?: boolean }
+export type Stats = { n?: number; seconds?: number; mistakes?: number; solved?: boolean; max?: number; sourceDate?: string; puzzleId?: string; scoringVersion?: number; hard?: boolean; guesses?: string[] }
 export type Result = { game: GameId; day: string; score: number; stats: Stats }
 export type BoardRow = Result & { name: string }
 export function scoringVersion(game: GameId): number { return ['mini','connections','krillion','anthropeum','fivefold','bee'].includes(game) ? 2 : 1 }
@@ -71,7 +71,8 @@ export async function flushResults(): Promise<void> {
       if (item.day > localDay()) continue
       const owner = item.player ?? player
       const response = await fetch('/api/results', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...owner, deviceId: getDeviceId(), today: item.day, game: item.game, score: item.score, stats: item.stats }) })
-      if (!response.ok) { if (response.status >= 500) break; continue }
+      // A server or rate-limit error retries later; any other rejection is final, so the result leaves the queue.
+      if (response.status >= 500 || response.status === 429) break
       // Re-read: a newer result may have arrived while this request was in flight.
       const remaining = queue().filter(q => !(q.game === item.game && q.day === item.day && (item.game === 'mini' ? q.score === item.score : q.score <= item.score) && JSON.stringify(q.player) === JSON.stringify(item.player)))
       localStorage.setItem(QUEUE_KEY, JSON.stringify(remaining))

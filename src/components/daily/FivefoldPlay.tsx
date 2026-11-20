@@ -8,54 +8,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { isPracticeResult, logResult, markPracticeIfFuture } from '@/lib/results'
 import { loadFivefoldStats, type FivefoldStats } from '@/lib/daily/fivefold-stats'
+import { FIVEFOLD_TRIES as TRIES, hardError, marks, type Mark } from '@/lib/daily/fivefold'
 
 export type FivefoldPuzzle = { answer: string }
-type Mark = 'hit' | 'near' | 'miss'
 type Run = { guesses: string[]; hard: boolean }
 
-const TRIES = 6
 const ROWS = ['qwertyuiop', 'asdfghjkl', '↵zxcvbnm⌫']
 const HARD_KEY = 'fivefold:hard'
-const ORD = ['1st', '2nd', '3rd', '4th', '5th']
 const RANK: Record<Mark, number> = { miss: 1, near: 2, hit: 3 }
 let words: Promise<Set<string>> | null = null
-
-/**
- * Marks each letter of a guess: right spot, elsewhere in the word (counting repeats), or absent.
- */
-function marks(guess: string, answer: string): Mark[] {
-  const out: Mark[] = Array(5).fill('miss')
-  const left = new Map<string, number>()
-  for (let i = 0; i < 5; i++) {
-    if (guess[i] === answer[i]) out[i] = 'hit'
-    else left.set(answer[i]!, (left.get(answer[i]!) ?? 0) + 1)
-  }
-  for (let i = 0; i < 5; i++) {
-    const n = left.get(guess[i]!) ?? 0
-    if (out[i] === 'hit' || !n) continue
-    out[i] = 'near'
-    left.set(guess[i]!, n - 1)
-  }
-  return out
-}
-
-/**
- * Returns the first hard-mode violation of a draft against earlier guesses, or an empty string.
- */
-function hardError(draft: string, guesses: string[], answer: string): string {
-  const need = new Map<string, number>()
-  for (const g of guesses) {
-    const m = marks(g, answer)
-    const n = new Map<string, number>()
-    for (let i = 0; i < 5; i++) {
-      if (m[i] === 'hit' && draft[i] !== g[i]) return `${ORD[i]} letter must be ${g[i]!.toUpperCase()}`
-      if (m[i] !== 'miss') n.set(g[i]!, (n.get(g[i]!) ?? 0) + 1)
-    }
-    n.forEach((c, l) => need.set(l, Math.max(need.get(l) ?? 0, c)))
-  }
-  for (const [l, c] of need) if ([...draft].filter((x) => x === l).length < c) return `Guess must contain ${l.toUpperCase()}`
-  return ''
-}
 
 /**
  * Renders the board, keyboard and result for one day.
@@ -135,7 +96,7 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
       setStatsOpen(true)
       // Logged once, when the last guess lands, so reloading a finished board never re-sends it.
       const hit = draft === answer
-      logResult('fivefold', hit ? TRIES + 1 - guesses.length : 0, guesses.length, dailyDay, { solved: hit, sourceDate: dailyDay, puzzleId: `nyt-wordle:${dailyDay}`, ...(final.hard ? { hard: true } : {}) })
+      logResult('fivefold', hit ? TRIES + 1 - guesses.length : 0, guesses.length, dailyDay, { solved: hit, guesses, sourceDate: dailyDay, puzzleId: `nyt-wordle:${dailyDay}`, ...(final.hard ? { hard: true } : {}) })
     },
     [done, draft, answer, commit, dailyDay, hardPref, run.guesses.length],
   )

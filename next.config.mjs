@@ -8,6 +8,8 @@ const nextConfig = {
    */
   outputFileTracingIncludes: {
     '/api/krillion/*': ['./data/krillion/**/*'],
+    // The results API replays Wordle guesses against the day's answer and word list.
+    '/api/results': ['./public/puzzle-archives/fivefold/**/*', './public/fivefold/words.json', './data/fivefold/**/*'],
     '/api/cron/nyt': ['./public/puzzle-archives/**/*'],
     '/api/cron/krillion': ['./data/krillion/**/*'],
     '/api/daily/*': ['./public/puzzle-archives/**/*', './data/anthropeum/**/*', './data/krillion/**/*', './data/fivefold/**/*'],

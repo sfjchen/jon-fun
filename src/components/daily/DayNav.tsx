@@ -9,15 +9,16 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import ScoreSync from '@/components/daily/ScoreSync'
+import DayPicker, { action } from '@/components/daily/DayPicker'
 import { DailyHeader } from '@/components/daily/DailyDrawer'
 import { HomeLink } from '@/components/HomeLink'
 import PlayerName from '@/components/PlayerName'
-import { DAILY_EPOCH, shiftDay, siteDay } from '@/lib/daily'
+import { DAILY_EPOCH, siteDay } from '@/lib/daily'
 
 const icon =
   'inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-[var(--ink-border)]/40 ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)]'
-export const action = 'rounded-full px-2 py-1.5 text-[13px] hover:bg-[var(--ink-border)]/40 disabled:opacity-30 sm:px-2.5 sm:text-sm'
+export { action }
 
 /**
  * Renders an ⓘ button that opens a small panel and closes on outside click or Escape.
@@ -105,43 +106,7 @@ export default function DayNav({ title, path, day, label, info, children, minDay
       </div>
       <div className="flex flex-wrap items-center gap-x-1 gap-y-1">
         {day ? (
-          <nav aria-label="Puzzle date" className="mr-auto flex items-center text-sm">
-            <button
-              type="button"
-              className={action}
-              aria-label="Previous day"
-              title="Previous day"
-              disabled={day <= minDay}
-              onClick={() => go(shiftDay(day, -1))}
-            >
-              ‹
-            </button>
-            <input
-              type="date"
-              aria-label="Puzzle date"
-              title="Pick a day"
-              className="w-[7.5rem] rounded-md bg-transparent py-1 text-[13px] sm:w-auto sm:px-1 sm:text-sm"
-              max={publishedOnly ? today : undefined}
-              min={minDay}
-              value={day}
-              onChange={(e) => e.target.value >= minDay && (!publishedOnly || e.target.value <= today) && go(e.target.value)}
-            />
-            <button
-              type="button"
-              className={action}
-              aria-label="Next day"
-              title="Next day"
-              disabled={publishedOnly && day >= today}
-              onClick={() => go(shiftDay(day, 1))}
-            >
-              ›
-            </button>
-            {today && day !== today && (
-              <button type="button" className={`${action} underline`} onClick={() => go(today)}>
-                Today
-              </button>
-            )}
-          </nav>
+          <DayPicker day={day} today={today} minDay={minDay} maxDay={publishedOnly ? today : undefined} go={go} className="mr-auto" />
         ) : (
           <p className="mr-auto text-sm" style={{ color: 'var(--ink-muted)' }}>
             {label}

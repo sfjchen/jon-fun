@@ -4,8 +4,13 @@ import { GAMES, GAME_IDS, scoringVersion, type GameId } from '@/lib/results'
 import { DAILY_EPOCH, siteDay, validDay } from '@/lib/daily'
 import { isNytGame, NYT_FIRST_DAY } from '@/lib/daily/nyt-puzzles'
 import { supabaseAdmin } from '@/lib/supabase'
+import { dailyPuzzle } from '@/lib/daily/server'
+import { replayFivefold } from '@/lib/daily/fivefold'
+import { readFile } from 'node:fs/promises'
+import path from 'node:path'
+let fivefoldWords:Promise<Set<string>>|null=null
 const group=z.string().regex(/^[a-z0-9-]{3,32}$/)
-const stats=z.object({n:z.number().int().min(0).max(500).optional(),seconds:z.number().int().min(0).max(864000).optional(),mistakes:z.number().int().min(0).max(100).optional(),solved:z.boolean().optional(),max:z.number().int().min(1).max(100000).optional(),sourceDate:z.string().refine(validDay).optional(),puzzleId:z.string().max(100).optional(),scoringVersion:z.number().int().min(1).max(2).optional(),hard:z.boolean().optional()})
+const stats=z.object({n:z.number().int().min(0).max(500).optional(),seconds:z.number().int().min(0).max(864000).optional(),mistakes:z.number().int().min(0).max(100).optional(),solved:z.boolean().optional(),max:z.number().int().min(1).max(100000).optional(),sourceDate:z.string().refine(validDay).optional(),puzzleId:z.string().max(100).optional(),scoringVersion:z.number().int().min(1).max(2).optional(),hard:z.boolean().optional(),guesses:z.array(z.string().regex(/^[a-z]{5}$/)).max(6).optional()})
 const schema=z.object({group,name:z.string().trim().min(1).max(24),deviceId:z.string().uuid().optional(),today:z.string().refine(validDay),game:z.enum(GAME_IDS as [GameId,...GameId[]]),score:z.number().int().min(0),n:z.number().int().min(0).max(500).optional(),stats:stats.optional()})
 export async function POST(req:Request){
   const parsed=schema.safeParse(await req.json().catch(()=>null))
@@ -15,6 +20,19 @@ export async function POST(req:Request){
   if(b.game==='mini'){
     if(b.stats?.seconds===undefined)return NextResponse.json({error:'Mini needs a completed solve time'},{status:400})
     score=b.stats.seconds;version=2
+  }
+  // Wordle scores are recomputed from the guesses against the day's answer, so a hand-made score cannot be posted.
+  // The guesses are checked, then dropped, since stored guesses would reveal the answer to anyone reading scores.
+  if(b.game==='fivefold'){
+    const {guesses,...rest}=b.stats??{}
+    if(!guesses)return NextResponse.json({error:'Wordle results need their guesses'},{status:400})
+    try{
+      fivefoldWords??=readFile(path.join(process.cwd(),'public/fivefold/words.json'),'utf8').then(t=>new Set(JSON.parse(t) as string[])).catch(e=>{fivefoldWords=null;throw e})
+      const [{puzzle},words]=await Promise.all([dailyPuzzle('fivefold',b.today),fivefoldWords])
+      const game=replayFivefold(guesses,(puzzle as {answer:string}).answer,w=>words.has(w),!!rest.hard)
+      if('error' in game)return NextResponse.json({error:game.error},{status:400})
+      score=game.score;version=2;b.stats={...rest,n:game.n,solved:game.solved,scoringVersion:2};delete b.n
+    }catch{return NextResponse.json({error:'Could not check this Wordle result. It remains queued on your device.'},{status:503})}
   }
   if(b.game==='connections'&&b.stats?.n!==undefined&&b.stats.mistakes!==undefined){score=b.stats.n;version=2}
   const maximum=version===1&&b.game==='connections'?100:version===1&&b.game==='krillion'?7000:version===1&&b.game==='anthropeum'?10000:GAMES[b.game].max
