@@ -35,7 +35,7 @@ const HOW: Record<Exclude<GameId, 'bee'>, string[]> = {
     'Check, Reveal or Autocheck mark your solve as assisted, which does not rank.',
   ],
   krillion: [
-    '7 prompts, 25 seconds each after a 3-second preview.',
+    '7 prompts, 25 seconds each.',
     'Name 1 answer per prompt. Rarer accepted answers score more, up to 100.',
     'Wrong answers can be retried while the clock runs.',
   ],
