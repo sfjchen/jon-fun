@@ -41,7 +41,7 @@ const HOW: Record<Exclude<GameId, 'bee'>, string[]> = {
   ],
   fivefold: [
     'Find the hidden 5-letter word in 6 tries. Type or tap letters, then Enter.',
-    'A filled tile is in the right spot. A tinted tile with a dot is in the word but elsewhere. A gray tile is not in the word.',
+    'A green tile is in the right spot. A yellow tile is in the word but in another spot. A gray tile is not in the word.',
     'The clock starts with your first key and pauses when you leave the page.',
   ],
   anthropeum: [

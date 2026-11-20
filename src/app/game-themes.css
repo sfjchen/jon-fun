@@ -13,13 +13,12 @@
 .fivefold-tile { position:relative; display:flex; aspect-ratio:1; align-items:center; justify-content:center; border:2px solid var(--ink-border); border-radius:10px; font-size:clamp(22px,6vw,30px); font-weight:700; text-transform:uppercase; }
 .fivefold-tile[data-mark='typed'] { border-color:var(--ink-text); }
 .fivefold-tile[data-mark='hit'] { background:var(--g-fivefold); border-color:var(--g-fivefold); color:#fff; }
-.fivefold-tile[data-mark='near'] { background:#e4edd3; border-color:var(--g-fivefold); color:#2f4d09; }
-.fivefold-tile[data-mark='near']::after { content:''; position:absolute; bottom:5px; width:6px; height:6px; border-radius:50%; background:var(--g-fivefold); }
+.fivefold-tile[data-mark='near'] { background:#d1a92c; border-color:#d1a92c; color:#fff; }
 .fivefold-tile[data-mark='miss'] { background:#8a8f98; border-color:#8a8f98; color:#fff; }
 .fivefold-key { min-width:28px; flex:1 1 0; max-width:44px; height:50px; border-radius:8px; background:var(--ink-paper); border:1px solid var(--ink-border); font-weight:600; text-transform:uppercase; font-size:14px; }
 .fivefold-key.px-3 { max-width:66px; flex-grow:1.5; font-size:12px; }
 .fivefold-key[data-mark='hit'] { background:var(--g-fivefold); border-color:var(--g-fivefold); color:#fff; }
-.fivefold-key[data-mark='near'] { background:#e4edd3; border-color:var(--g-fivefold); }
+.fivefold-key[data-mark='near'] { background:#d1a92c; border-color:#d1a92c; color:#fff; }
 .fivefold-key[data-mark='miss'] { background:#8a8f98; color:#fff; opacity:.6; }
 .fivefold-shake { animation:fivefold-shake .35s; }
 @keyframes fivefold-shake { 25% { transform:translateX(-6px) } 75% { transform:translateX(6px) } }
