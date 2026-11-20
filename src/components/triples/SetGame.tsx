@@ -7,7 +7,8 @@ import TriplesBoard from './TriplesBoard'
 import TriplesCard from './TriplesCard'
 import { dailySetBoard, allSets, setKey } from '@/lib/set-daily'
 import { brokenFeatures, isTriple } from '@/lib/triples'
-import { DAILY_EPOCH, siteDay, validDay } from '@/lib/daily'
+import { DAILY_EPOCH, validDay } from '@/lib/daily'
+import { usePlayDay } from '@/lib/play-day'
 import { formatTime } from '@/lib/results'
 type Run={found:number[][];assisted:boolean;elapsedMs:number;activeSince:number|null;started:boolean}
 const fresh=():Run=>({found:[],assisted:false,elapsedMs:0,activeSince:null,started:false})
@@ -40,7 +41,7 @@ function DailyPlay({day}:{day:string}){
   </section>
 }
 export default function SetGame(){
-  const q=useSearchParams(),raw=q.get('d'),day=validDay(raw)&&raw>=DAILY_EPOCH?raw:siteDay()
+  const q=useSearchParams(),raw=q.get('d'),day=usePlayDay(validDay(raw)&&raw>=DAILY_EPOCH?raw:null)
   const hydrated=useSyncExternalStore(()=>()=>{},()=>true,()=>false)
   return <div className="mx-auto w-full max-w-3xl"><DayNav title="SET" path="/games/set" day={day} info={<><p>Find all six sets of three cards. For color, shape, count and shading, the three cards must each be all the same or all different.</p><p>The board stays in place as you find different combinations. Use a hint if you get stuck.</p><p>These daily boards are generated on sfjc.dev.</p></>}/><nav className="mb-5 flex justify-center gap-4 text-sm"><span className="set-mode-active">Daily puzzle</span><Link href="/games/triples">Full deck & friends →</Link></nav>{hydrated?<DailyPlay key={day} day={day}/>:<p>Dealing…</p>}</div>
 }

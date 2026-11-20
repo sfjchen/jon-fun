@@ -11,6 +11,7 @@ import DayNav from '@/components/daily/DayNav'
 import MiniPlay, { type MiniPuzzle } from '@/components/mini/MiniPlay'
 import ConnectionsPlay from '@/components/connections/ConnectionsPlay'
 import { DAILY_EPOCH, siteDay, validDay } from '@/lib/daily'
+import { usePlayDay } from '@/lib/play-day'
 import { GAMES, isPracticeResult, type GameId } from '@/lib/results'
 import type { ConnectionsPuzzle } from '@/lib/connections'
 import AnthropeumPlay, { type ArtifactDay } from '@/components/daily/AnthropeumPlay'
@@ -56,7 +57,8 @@ const HOW: Record<Exclude<GameId, 'bee'>, string[]> = {
 export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
   const params = useSearchParams()
   const raw = params.get('d')
-  const day = validDay(raw) && raw >= (isNytGame(game) ? NYT_FIRST_DAY[game] : DAILY_EPOCH) && raw <= '2100-12-31' ? raw : siteDay()
+  const min = isNytGame(game) ? NYT_FIRST_DAY[game] : DAILY_EPOCH
+  const day = usePlayDay(validDay(raw) && raw >= min && raw <= '2100-12-31' ? raw : null, game)
   const [response, setResponse] = useState<{ key: string; data?: Daily; error?: string } | null>(null)
   const key = `${game}:${day}`
   useEffect(() => {

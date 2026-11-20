@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { shuffle } from '@/lib/random'
 import { localDay, logResult, markPracticeIfFuture, isPracticeResult } from '@/lib/results'
 import { validDay } from '@/lib/daily'
+import { usePlayDay } from '@/lib/play-day'
 import { NYT_FIRST_DAY } from '@/lib/daily/nyt-puzzles'
 import DayNav, { action } from '@/components/daily/DayNav'
 import {
@@ -265,7 +266,8 @@ export default function SpellingBee() {
   const practice = params.get('p')
   const archive = params.get('a')
   const requested = params.get('d')
-  const date = validDay(requested) && requested >= NYT_FIRST_DAY.bee && requested <= '2100-12-31' ? requested : now
+  const date = usePlayDay(
+    validDay(requested) && requested >= NYT_FIRST_DAY.bee && requested <= '2100-12-31' ? requested : null, 'bee')
 
   useEffect(() => {
     loadData().then(setData, () => setErr(true))

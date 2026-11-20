@@ -42,6 +42,8 @@ export type Player = { name: string; group: string }
 export const PUBLIC_GROUP = 'public'
 export function boardName(group: string): string { return group === PUBLIC_GROUP ? 'the public board' : `group ${group}` }
 const QUEUE_KEY = 'sfjc_results_queue_v2'
+/** Marks the day a player is mid-game on, per game, so usePlayDay can resume it after a reload past midnight. */
+export const PLAYING_KEY = 'sfjc_playing:'
 export const PLAYER_CHANGED = 'sfjc-player-changed'
 export const RESULTS_CHANGED = 'sfjc-results-changed'
 export function getPlayer(): Player | null {
@@ -90,6 +92,7 @@ export function isPracticeResult(game: GameId, day: string): boolean {
 /** Persist before sending; results earned before setting a player are sent after setup. */
 export function logResult(game: GameId, score: number, n?: number, day = localDay(), stats: Stats = {}): void {
   markPracticeIfFuture(game, day)
+  try { localStorage.setItem(PLAYING_KEY + game, JSON.stringify({ day, at: 0 })) } catch {}
   if (isPracticeResult(game, day) || !Number.isFinite(score) || (stats.sourceDate && stats.sourceDate !== day)) return
   try {
     const player = getPlayer()

@@ -6,7 +6,7 @@
  */
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import ScoreSync from '@/components/daily/ScoreSync'
 import { DailyHeader } from '@/components/daily/DailyDrawer'
@@ -87,7 +87,9 @@ export default function DayNav({ title, path, day, label, info, children, minDay
   const router = useRouter()
   /** Read only in the browser, so a server on another day (or a test clock) never mismatches the page. */
   const today = useSyncExternalStore(() => () => {}, siteDay, () => '')
-  const go = (d: string) => router.push(d === today ? path : `${path}?d=${d}`, { scroll: false })
+  // A bare path keeps the day pinned when the page opened, so going to today from a game kept past midnight adds ?d=.
+  const bare = !useSearchParams().get('d')
+  const go = (d: string) => router.push(d === today && !bare ? path : `${path}?d=${d}`, { scroll: false })
   return (
     <header className="mb-3 space-y-1 border-b pb-2" style={{ borderColor: 'var(--ink-border)' }}>
       <div className="daily-heading flex min-h-12 items-center gap-1 sm:gap-2">
