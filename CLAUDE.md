@@ -39,3 +39,4 @@ Next.js 16 (App Router) + TypeScript + Tailwind v4 + Supabase, deployed to Verce
 
 - Strict TypeScript, no dead code. Each file opens with a comment on what it is for, and each function has one.
 - Keep the repo lean, no generated docs or changelogs.
+- Prettier formats everything (`npm run format`, checked by `npm run format:check`). Add any format-only commit to `.git-blame-ignore-revs`.
