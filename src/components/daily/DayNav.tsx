@@ -7,7 +7,7 @@
 
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { ViewTransition, useEffect, useRef, useState } from 'react'
 import ScoreSync from '@/components/daily/ScoreSync'
 import DayPicker, { action } from '@/components/daily/DayPicker'
 import { DailyHeader } from '@/components/daily/DailyDrawer'
@@ -69,6 +69,13 @@ export function Info({ children }: { children: React.ReactNode }) {
   )
 }
 
+/**
+ * Names a game's title for page transitions, so the Daily drawer row and the game header morph into each other.
+ */
+export function titleTransition(path: string): string {
+  return `title${path.replace(/[^a-z0-9]+/gi, '-')}`
+}
+
 type DayNavProps = {
   title: string
   minDay?: string
@@ -106,7 +113,9 @@ export default function DayNav({
     <header className="mb-3 space-y-1 border-b pb-2" style={{ borderColor: 'var(--ink-border)' }}>
       <div className="daily-heading flex min-h-12 items-center gap-1 sm:gap-2">
         <HomeLink className="inline-flex h-10 w-10 shrink-0 items-center justify-center" />
-        <h1 className="mr-auto min-w-0 truncate font-lora text-xl font-bold md:text-2xl">{title}</h1>
+        <ViewTransition name={titleTransition(path)}>
+          <h1 className="mr-auto min-w-0 truncate font-lora text-xl font-bold md:text-2xl">{title}</h1>
+        </ViewTransition>
         <DailyHeader compact />
         <Link
           href={day ? `/leaderboards?d=${day}` : '/leaderboards'}

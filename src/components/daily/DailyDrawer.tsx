@@ -7,11 +7,14 @@
  */
 import Image from 'next/image'
 import Link from 'next/link'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { ViewTransition, useCallback, useEffect, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import DayPicker from '@/components/daily/DayPicker'
+import { titleTransition } from '@/components/daily/DayNav'
 import PlayerName from '@/components/PlayerName'
 import { useHoverTip } from '@/components/HoverTip'
-import { FIRST_DAY, firstDay, isNytGame, siteDay } from '@/lib/daily'
+import { disableNudges, enableNudges, nudge, usePushStatus } from '@/lib/push'
+import { FIRST_DAY, firstDay, isNytGame, shiftDay, siteDay } from '@/lib/daily'
 import { useSiteDay } from '@/lib/play-day'
 import { usePlayer } from '@/lib/use-player'
 import { useBoard } from '@/lib/use-board'
@@ -44,7 +47,8 @@ function useDaily(sel: string, open: boolean) {
     return () => window.removeEventListener(RESULT_QUEUED, bump)
   }, [])
   const day = siteDay()
-  const rows = [...useBoard(group, 60, sel, open).rows]
+  const board = useBoard(group, 60, sel, open)
+  const rows = [...board.rows]
   if (player) {
     const local = queue().filter((q) => (!q.player || q.player.name === player.name) && q.day <= day && GAMES[q.game])
     local.forEach((q) => {
@@ -60,6 +64,17 @@ function useDaily(sel: string, open: boolean) {
     picked: done(sel),
     everyone: rows.filter((r) => r.day === sel),
     streak: streaks(mine, day).current,
+    loaded: board.loaded,
+    // Up to 8 friends who played most in the last week and have games left today, with how many they finished.
+    friends: [...new Set(rows.filter((r) => r.day >= shiftDay(day, -7) && r.name !== player?.name).map((r) => r.name))]
+      .map((n) => ({
+        name: n,
+        done: rows.filter((r) => r.name === n && r.day === day).length,
+        days: new Set(rows.filter((r) => r.name === n && r.day >= shiftDay(day, -7)).map((r) => r.day)).size,
+      }))
+      .filter((f) => f.done < GAME_IDS.length)
+      .sort((a, b) => b.days - a.days || a.name.localeCompare(b.name))
+      .slice(0, 8),
   }
 }
 
@@ -159,6 +174,33 @@ function ScoreTable({ rows, me, q }: { rows: BoardRow[]; me: string | undefined;
 }
 
 /**
+ * Draws a ring of 1 slice per daily game, filling a slice for each game finished today, like an activity ring.
+ */
+function Ring({ done, size }: { done: number; size: number }) {
+  const r = 6.5,
+    c = 2 * Math.PI * r,
+    seg = c / GAME_IDS.length
+  return (
+    <svg aria-hidden viewBox="0 0 16 16" width={size} height={size} className="-rotate-90">
+      {GAME_IDS.map((g, i) => (
+        <circle
+          key={g}
+          cx="8"
+          cy="8"
+          r={r}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeDasharray={`${seg - 1.2} ${c - seg + 1.2}`}
+          strokeDashoffset={-i * seg}
+          opacity={i < done ? 1 : 0.28}
+        />
+      ))}
+    </svg>
+  )
+}
+
+/**
  * Renders the header Daily button, leaderboard link and the drawer they open. Game headers pass `compact` for a
  * smaller button without the leaderboard link, since they show their own.
  */
@@ -168,13 +210,48 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
   const [picked, setPicked] = useState('')
   const sel = picked || now || siteDay()
   const [open, setOpen] = useState(false)
-  const { player, today, picked: done, everyone, streak } = useDaily(sel, open)
+  const path = usePathname()
+  const { player, today, picked: done, everyone, streak, loaded, friends } = useDaily(sel, open)
+  const push = usePushStatus(player)
+  const [nudged, setNudged] = useState<Record<string, string>>({})
   const btn = useRef<HTMLButtonElement>(null)
   const panel = useRef<HTMLDivElement>(null)
+  // Phone sheets follow a downward drag on the handle or header and close past 90px or on a quick flick.
+  const [drag, setDrag] = useState(0)
   const close = useCallback(() => {
     setOpen(false)
+    setDrag(0)
     btn.current?.focus()
   }, [])
+  const grab = useRef<{ y: number; t: number; on: boolean } | null>(null)
+  const sheet = {
+    onPointerDown: (e: React.PointerEvent) => {
+      if (e.pointerType !== 'mouse' && window.innerWidth < 640)
+        grab.current = { y: e.clientY, t: e.timeStamp, on: false }
+    },
+    onPointerMove: (e: React.PointerEvent) => {
+      const g = grab.current
+      if (!g) return
+      const dy = e.clientY - g.y
+      if (!g.on && dy > 6) {
+        g.on = true
+        e.currentTarget.setPointerCapture(e.pointerId)
+      }
+      if (g.on) setDrag(Math.max(0, dy))
+    },
+    onPointerUp: (e: React.PointerEvent) => {
+      const g = grab.current
+      grab.current = null
+      if (!g?.on) return
+      const dy = e.clientY - g.y
+      if (dy > 90 || dy / (e.timeStamp - g.t) > 0.6) close()
+      else setDrag(0)
+    },
+    onPointerCancel: () => {
+      grab.current = null
+      setDrag(0)
+    },
+  }
   useEffect(() => {
     if (!open) return
     const first = panel.current?.querySelector<HTMLElement>('a,button,input')
@@ -204,6 +281,16 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [open, close])
+  // A nudge notification opens the site with ?daily=1, which opens the drawer once and drops the param.
+  useEffect(() => {
+    if (compact) return
+    const u = new URL(window.location.href)
+    if (u.searchParams.get('daily') !== '1') return
+    u.searchParams.delete('daily')
+    window.history.replaceState(null, '', u)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Opens once from the URL after hydration, which the server cannot see.
+    setOpen(true)
+  }, [compact])
   const isToday = !now || sel === now
   // Today links to the bare game path, which pins the day when it opens, and other days add the ?d= day param.
   const q = isToday ? '' : `?d=${sel}`
@@ -216,23 +303,39 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
         day: 'numeric',
         year: sel.slice(0, 4) === now.slice(0, 4) ? undefined : 'numeric',
       })
-  const label = player ? `Daily ${today.size}/${GAME_IDS.length}${streak && !compact ? ` · 🔥${streak}` : ''}` : 'Daily'
+  // The streak runs through yesterday until a game is played today, so a streak with no game yet today is at risk.
+  const risk = !!streak && !today.size
+  const flame = (
+    <span
+      className={risk ? 'opacity-45 grayscale' : ''}
+      title={risk ? `Play today to keep your ${streak} day streak` : `${streak} day streak`}
+    >
+      🔥{streak}
+    </span>
+  )
+  const status = player
+    ? `Daily, ${today.size} of ${GAME_IDS.length} done today${streak ? `, ${streak} day streak${risk ? ' at risk' : ''}` : ''}`
+    : 'Daily'
   return (
     <div data-game-theme="daily" className="flex items-center gap-1.5 bg-transparent">
       <button
         ref={btn}
         type="button"
         aria-haspopup="dialog"
+        aria-label={status}
         onClick={() => {
           setPicked('')
           setOpen(true)
         }}
         className={
-          'rounded-full bg-[var(--ink-text)] font-semibold whitespace-nowrap text-[var(--ink-bg)] hover:opacity-90 ' +
+          'inline-flex items-center gap-1.5 rounded-full bg-[var(--ink-text)] font-semibold whitespace-nowrap ' +
+          'text-[var(--ink-bg)] hover:opacity-90 ' +
           (compact ? 'px-2.5 py-1 text-xs' : 'px-3.5 py-1.5 text-sm')
         }
       >
-        {label}
+        Daily
+        {player && <Ring done={today.size} size={compact ? 14 : 16} />}
+        {player && !!streak && !compact && flame}
       </button>
       {!compact && (
         <Link
@@ -269,12 +372,17 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
             role="dialog"
             aria-modal="true"
             aria-label="Daily games"
+            style={drag ? { transform: `translateY(${drag}px)`, transition: 'none' } : undefined}
             className={
-              'absolute inset-x-0 bottom-0 max-h-[85dvh] overflow-y-auto rounded-t-2xl bg-[var(--ink-bg)] p-5 text-[var(--ink-text)] shadow-2xl ' +
-              'sm:inset-y-0 sm:right-0 sm:left-auto sm:max-h-none sm:w-96 sm:rounded-l-2xl sm:rounded-tr-none'
+              'absolute inset-x-0 bottom-0 max-h-[88dvh] overflow-y-auto overscroll-contain rounded-t-2xl bg-[var(--ink-bg)] ' +
+              'px-5 pt-2 pb-12 text-[var(--ink-text)] shadow-2xl transition-transform ' +
+              'sm:inset-y-0 sm:right-0 sm:left-auto sm:max-h-none sm:w-96 sm:rounded-l-2xl sm:rounded-tr-none sm:p-5'
             }
           >
-            <div className="mb-4 flex items-center gap-1">
+            <div {...sheet} className="-mx-5 -mt-2 touch-none px-5 pt-2 sm:hidden">
+              <div aria-hidden className="mx-auto mb-2 h-1.5 w-10 rounded-full bg-[var(--ink-border)]" />
+            </div>
+            <div {...sheet} className="mb-3 flex touch-none items-center gap-1 sm:mb-4 sm:touch-auto">
               <h2 className="text-xl font-bold tracking-tight">Daily</h2>
               <DayPicker day={sel} today={now} minDay={FIRST_DAY} go={setPicked} className="ml-auto" keys />
               <button
@@ -288,23 +396,51 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
             </div>
             {player ? (
               <p className="mb-4 text-sm text-[var(--ink-muted)]">
-                {today.size}/{GAME_IDS.length} today ·{' '}
-                <span title={`${streak} day streak`} aria-label={`${streak} day streak`}>
-                  🔥{streak}
-                </span>{' '}
-                · <PlayerName />
+                {today.size}/{GAME_IDS.length} today · {flame}
+                {risk && ' · play today to keep it'} · <PlayerName />
+                {(push === 'off' || push === 'on') && (
+                  <button
+                    type="button"
+                    className="ml-1 rounded-full px-1.5 py-0.5 hover:bg-[var(--ink-paper)]"
+                    aria-pressed={push === 'on'}
+                    title={
+                      push === 'on' ? 'Nudges are on. Tap to turn off.' : 'Get a notification when a friend nudges you'
+                    }
+                    onClick={() =>
+                      void (push === 'on'
+                        ? disableNudges()
+                        : enableNudges(player).then((err) => err && setNudged((m) => ({ ...m, '': err }))))
+                    }
+                  >
+                    {push === 'on' ? '🔔' : '🔕 Get nudges'}
+                  </button>
+                )}
+                {push === 'denied' && (
+                  <span
+                    className="ml-1"
+                    title="Allow notifications for sfjc.dev in your browser settings to get nudges"
+                  >
+                    🔕 blocked
+                  </span>
+                )}
               </p>
             ) : (
               <p className="mb-4 flex flex-wrap items-center gap-1 rounded-xl bg-[var(--ink-paper)] p-3 text-sm">
                 Set your name to track scores and streaks: <PlayerName />
               </p>
             )}
-            <ul className="space-y-2">
+            <ul className="space-y-1.5 sm:space-y-2">
               {GAME_IDS.map((g) => {
                 const r = done.get(g)
-                const row = 'flex items-center gap-3 rounded-xl border border-[var(--ink-border)] p-2.5'
+                const row = 'flex items-center gap-3 rounded-xl border border-[var(--ink-border)] p-2 sm:p-2.5'
                 const icon = (
-                  <Image src={`/doodles/notebook/${g}.svg`} alt="" width={36} height={36} className="h-9 w-9" />
+                  <Image
+                    src={`/doodles/notebook/${g}.svg`}
+                    alt=""
+                    width={36}
+                    height={36}
+                    className="h-8 w-8 sm:h-9 sm:w-9"
+                  />
                 )
                 // NYT games have no puzzle before their first day or after today, and the rest none before the epoch.
                 if (sel < firstDay(g) || (isNytGame(g) && now && sel > now)) {
@@ -324,7 +460,14 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                       className={`${row} ${r ? 'border-transparent bg-[var(--ink-paper)] hover:brightness-95' : 'hover:bg-[var(--ink-paper)]'}`}
                     >
                       {icon}
-                      <span className="flex-1 font-semibold">{GAMES[g].title}</span>
+                      {/* The open game's own header already holds this name, and a name may appear only once. */}
+                      {GAMES[g].url === path ? (
+                        <span className="flex-1 font-semibold">{GAMES[g].title}</span>
+                      ) : (
+                        <ViewTransition name={titleTransition(GAMES[g].url)}>
+                          <span className="flex-1 font-semibold">{GAMES[g].title}</span>
+                        </ViewTransition>
+                      )}
                       {r ? (
                         <span className="text-sm font-semibold tabular-nums">{resultLabel(r)}</span>
                       ) : (
@@ -335,12 +478,24 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                 )
               })}
             </ul>
-            <section aria-label={`Scores for ${dayName}`} className="mt-5">
+            {nudged[''] && <p className="mb-3 text-xs text-[var(--ink-muted)]">{nudged['']}</p>}
+            {push === 'install' && isToday && friends.length > 0 && (
+              <p className="mb-3 text-xs text-[var(--ink-muted)]">
+                Add sfjc.dev to your Home Screen to get nudges from friends.
+              </p>
+            )}
+            <section aria-label={`Scores for ${dayName}`} className="mt-4 sm:mt-5">
               <h3 className="mb-2 text-sm font-semibold text-[var(--ink-muted)]">
                 {isToday ? "Today's scores" : `Scores · ${dayName}`}
               </h3>
               {everyone.length ? (
                 <ScoreTable rows={everyone} me={player?.name} q={q} />
+              ) : !loaded ? (
+                <div role="status" aria-label="Loading scores" className="animate-pulse space-y-1.5">
+                  {[0, 1].map((i) => (
+                    <div key={i} className="h-8 rounded-md bg-[var(--ink-border)]/40" />
+                  ))}
+                </div>
               ) : (
                 <p className="text-sm text-[var(--ink-muted)]">
                   {now && sel > now
@@ -349,6 +504,48 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                 </p>
               )}
             </section>
+            {player && isToday && friends.length > 0 && (
+              <section aria-label="Nudge friends" className="mt-4">
+                <h3 className="mb-2 text-sm font-semibold text-[var(--ink-muted)]">Nudge friends</h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {friends.map((f) => {
+                    const sent = nudged[f.name]
+                    return (
+                      <button
+                        key={f.name}
+                        type="button"
+                        disabled={sent !== undefined}
+                        title={sent || `${f.name} has ${GAME_IDS.length - f.done} games left today`}
+                        onClick={() => {
+                          setNudged((m) => ({ ...m, [f.name]: 'Sending…' }))
+                          void nudge(player, f.name).then((err) =>
+                            setNudged((m) => ({ ...m, [f.name]: err || 'Nudged' })),
+                          )
+                        }}
+                        className={
+                          'flex items-center gap-1.5 rounded-full border border-[var(--ink-border)] px-2.5 py-1 text-xs ' +
+                          'hover:bg-[var(--ink-paper)] disabled:opacity-60'
+                        }
+                      >
+                        <span className="max-w-24 truncate font-medium">{f.name}</span>
+                        <span className="text-[var(--ink-muted)] tabular-nums">
+                          {f.done}/{GAME_IDS.length}
+                        </span>
+                        <span aria-hidden>{sent === 'Nudged' ? '✓' : '👋'}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+                {Object.entries(nudged).some(([k, v]) => k && v !== 'Nudged' && v !== 'Sending…') && (
+                  <p className="mt-1.5 text-xs text-[var(--ink-muted)]">
+                    {Object.entries(nudged)
+                      .filter(([k, v]) => k && v !== 'Nudged' && v !== 'Sending…')
+                      .map(([, v]) => v)
+                      .join(' · ')}
+                  </p>
+                )}
+              </section>
+            )}
           </div>
         </div>
       )}

@@ -1,5 +1,6 @@
 'use client'
 
+import { undoable } from '@/components/UndoBar'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { JeopardyBoard, JeopardyClue } from '@/lib/jeopardy'
 import { downloadBoard, getClueValue } from '@/lib/jeopardy'
@@ -267,8 +268,11 @@ export default function JeopardyEditor({
             <button
               onClick={() => {
                 if (rowsCount <= 1) return
-                if (!window.confirm('Remove the bottom row for everyone? This deletes the highest-value clues.')) return
-                sendOp({ kind: 'removeRow' })
+                // The shared removal waits for the undo window, since it deletes clues for everyone.
+                undoable('Removing the bottom row for everyone', {
+                  commit: () => sendOp({ kind: 'removeRow' }),
+                  undo: () => {},
+                })
               }}
               className="border-l px-3 py-2 hover:opacity-90"
               style={{
@@ -293,8 +297,10 @@ export default function JeopardyEditor({
             <button
               onClick={() => {
                 if (board.categories.length <= 1) return
-                if (!window.confirm('Remove the last category for everyone? Its clues will be lost.')) return
-                sendOp({ kind: 'removeCol' })
+                undoable('Removing the last category for everyone', {
+                  commit: () => sendOp({ kind: 'removeCol' }),
+                  undo: () => {},
+                })
               }}
               className="border-l px-3 py-2 hover:opacity-90"
               style={{

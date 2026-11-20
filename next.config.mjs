@@ -3,6 +3,8 @@ const PUZZLES = ['./public/puzzle-archives/**/*', './data/anthropeum/**/*', './d
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  /** Animates route changes with React's <ViewTransition>, so a game title glides from the Daily drawer into its page. */
+  experimental: { viewTransition: true },
   /** `pdf-parse` pulls pdf.js; keep it external so the API route loads the real package (avoids bundler defineProperty errors). */
   serverExternalPackages: ['pdf-parse', 'pdfjs-dist'],
   /**

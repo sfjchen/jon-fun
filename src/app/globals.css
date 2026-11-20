@@ -861,3 +861,17 @@ html.notebook-theme-root {
     }
   }
 }
+
+/* Page transitions: a quick crossfade between routes, and named titles morph. Reduced motion swaps instantly. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 160ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}

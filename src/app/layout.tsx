@@ -3,6 +3,8 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
 import { Suspense } from 'react'
 import Hotkeys from '@/components/Hotkeys'
+import UndoBar from '@/components/UndoBar'
+import QuickJump from '@/components/QuickJump'
 import { PageShell } from '@/components/PageShell'
 import './globals.css'
 
@@ -37,6 +39,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <PageShell>{children}</PageShell>
         </Suspense>
         <Hotkeys />
+        <UndoBar />
+        <QuickJump />
         <Analytics />
         <SpeedInsights />
       </body>

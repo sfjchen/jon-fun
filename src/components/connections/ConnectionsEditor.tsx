@@ -1,5 +1,6 @@
 'use client'
 
+import { undoable } from '@/components/UndoBar'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
@@ -199,7 +200,6 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
 
   const del = useCallback(async () => {
     if (!editId) return
-    if (!window.confirm('Delete this puzzle from the library?')) return
     setSaveErr(null)
     setSaving(true)
     try {
@@ -483,7 +483,9 @@ export default function ConnectionsEditor({ basePath, editId = null }: Connectio
         {editId && !notOwner && (
           <button
             type="button"
-            onClick={() => void del()}
+            onClick={() =>
+              undoable('Deleting this puzzle from the library', { commit: () => void del(), undo: () => {} })
+            }
             disabled={saving}
             className="rounded-lg border border-red-400 px-4 py-2 text-red-800 disabled:opacity-40"
             style={{ backgroundColor: 'var(--ink-paper)' }}

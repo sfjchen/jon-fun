@@ -64,6 +64,13 @@ export function hideReaderPublication(id: string): void {
   localStorage.setItem(HIDDEN_KEY, JSON.stringify([...new Set([...hiddenIds(), id])]))
 }
 
+/**
+ * Shows a hidden shared-shelf book on this device again, for undo and after its delete finishes.
+ */
+export function showReaderPublication(id: string): void {
+  localStorage.setItem(HIDDEN_KEY, JSON.stringify(hiddenIds().filter((h) => h !== id)))
+}
+
 export async function listReaderPublications(): Promise<ReaderPublicationSummary[]> {
   const remote = await communalList()
   if (remote === null) return listReaderPublicationsIdb()

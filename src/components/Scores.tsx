@@ -5,6 +5,7 @@
  * results, a standings table (games played, average, best, wins) and the player's own stats, split by device.
  */
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -622,11 +623,24 @@ export function ScoresHub() {
         </p>
       )}
       {!loaded && !error && (
-        <p role="status" className={`py-8 text-center text-sm ${muted}`}>
-          Loading results…
-        </p>
+        <div role="status" aria-label="Loading results" className="animate-pulse space-y-4">
+          <div className="h-6 w-32 rounded bg-[var(--ink-border)]/50" />
+          {view === 'stats' ? (
+            <div className="grid max-w-sm grid-cols-7 gap-1">
+              {Array.from({ length: 35 }, (_, i) => (
+                <div key={i} className="aspect-square rounded-lg bg-[var(--ink-border)]/40" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid gap-x-7 gap-y-5 sm:grid-cols-2">
+              {GAME_IDS.map((g) => (
+                <div key={g} className="h-32 rounded-xl bg-[var(--ink-border)]/40" />
+              ))}
+            </div>
+          )}
+        </div>
       )}
-      {view === 'day' && (
+      {loaded && view === 'day' && (
         <section aria-label="Day results" className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">{dayLabel}</h2>
@@ -677,7 +691,7 @@ export function ScoresHub() {
           )}
         </section>
       )}
-      {view === 'standings' && (
+      {loaded && view === 'standings' && (
         <section
           aria-label="Standings"
           data-testid={tab === 'all' ? 'standings' : `board-${tab}`}
@@ -748,9 +762,38 @@ export function ScoresHub() {
           )}
         </section>
       )}
-      {view === 'stats' && (
+      {loaded && view === 'stats' && (
         <section aria-label="Your stats" className="space-y-5">
-          {me ? (
+          {me && !rows.some((r) => r.name === me) ? (
+            <div className={`${card} space-y-4 text-center`}>
+              {/* A sample week shows how played days fill with color before there is any history. */}
+              <div aria-hidden className="mx-auto grid max-w-64 grid-cols-7 gap-1 opacity-70">
+                {[1, 1, 0, 1, 2, 0, 3].map((k, i) => (
+                  <div
+                    key={i}
+                    className="aspect-square rounded-md bg-[var(--ink-border)]/40"
+                    style={k ? { background: slices([color(me), COLORS[1]!, COLORS[2]!].slice(0, k)) } : undefined}
+                  />
+                ))}
+              </div>
+              <p className="text-sm">
+                Your days fill in with your color as you play. Friends on the same day share the box.
+              </p>
+              <div className="flex justify-center gap-2">
+                {GAME_IDS.map((g) => (
+                  <Link
+                    key={g}
+                    href={GAMES[g].url}
+                    aria-label={`Play ${GAMES[g].title}`}
+                    title={GAMES[g].title}
+                    className="rounded-lg p-1 hover:bg-[var(--ink-border)]/40"
+                  >
+                    <Image src={`/doodles/notebook/${g}.svg`} alt="" width={32} height={32} className="h-8 w-8" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : me ? (
             <>
               <h2 className="text-lg font-semibold">Your progress</h2>
               <div className="grid grid-cols-3 gap-3 rounded-xl border border-[var(--ink-border)] py-6 text-center">

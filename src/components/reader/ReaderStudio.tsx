@@ -1,5 +1,6 @@
 'use client'
 
+import { undoable } from '@/components/UndoBar'
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import Link from 'next/link'
@@ -23,6 +24,7 @@ import {
   getAllReaderPublications,
   getReaderPublication,
   hideReaderPublication,
+  showReaderPublication,
   importReaderPublicationsMerge,
   listReaderPublications,
   loadSamplePublications,
@@ -681,12 +683,21 @@ export function ReaderStudio({ routeBase }: ReaderStudioProps) {
                       <button
                         type="button"
                         onClick={() => {
-                          if (!isOwner) {
-                            hideReaderPublication(item.id)
-                            void loadLibrary()
-                          } else if (confirm(`Delete "${item.title}" from the shared shelf for everyone?`)) {
-                            void deleteReaderPublication(item.id).then(loadLibrary)
-                          }
+                          // The book leaves this view at once; the owner's shared delete waits for the undo window.
+                          hideReaderPublication(item.id)
+                          void loadLibrary()
+                          undoable(isOwner ? `Deleted "${item.title}" for everyone` : `Removed "${item.title}"`, {
+                            commit: () =>
+                              isOwner &&
+                              void deleteReaderPublication(item.id).then(() => {
+                                showReaderPublication(item.id)
+                                return loadLibrary()
+                              }),
+                            undo: () => {
+                              showReaderPublication(item.id)
+                              void loadLibrary()
+                            },
+                          })
                         }}
                         className="rounded-full border px-3 py-1 text-xs font-semibold"
                         style={{ borderColor: 'var(--ink-border)', color: 'var(--ink-muted)' }}

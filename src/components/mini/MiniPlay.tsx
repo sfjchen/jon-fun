@@ -1,4 +1,5 @@
 'use client'
+import { undoable } from '@/components/UndoBar'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { formatTime, logResult, isPracticeResult, markPracticeIfFuture } from '@/lib/results'
 import {
@@ -208,10 +209,18 @@ export default function MiniPlay({ puzzle, dailyDay }: { puzzle: MiniPuzzle; dai
     )
   }
   function clearPuzzle() {
-    if (!window.confirm('Clear the grid and restart the timer? Your first recorded solve time stays unchanged.')) return
     const r = { ...emptyMini(puzzle), assisted: run.assisted, firstSolveSeconds: run.firstSolveSeconds }
     // eslint-disable-next-line react-hooks/purity -- Explicit clear-button event resets the active clock.
     const now = Date.now()
+    // Undo puts back the letters and the clock as they were, without counting the seconds the grid sat cleared.
+    const prev = pauseMini(run, now)
+    undoable('Grid cleared and timer restarted', {
+      undo: () => {
+        const at = Date.now()
+        commit(resumeMini(prev, at))
+        setClock(at)
+      },
+    })
     commit(resumeMini(r, now))
     setClock(now)
     setWrong([])
