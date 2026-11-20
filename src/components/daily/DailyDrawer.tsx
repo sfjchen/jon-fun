@@ -26,6 +26,7 @@ import {
   compareResults,
   formatTime,
   queue,
+  getPlayer,
   isPracticeResult,
   resultLabel,
   type BoardRow,
@@ -173,6 +174,9 @@ function ScoreTable({ rows, me, q }: { rows: BoardRow[]; me: string | undefined;
   )
 }
 
+/** Marks that the drawer already opened by itself this session. */
+const OPENED = 'sfjc_daily_auto_opened'
+
 /**
  * Draws a ring of 1 slice per daily game, filling a slice for each game finished today, like an activity ring.
  */
@@ -281,15 +285,25 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [open, close])
-  // A nudge notification opens the site with ?daily=1, which opens the drawer once and drops the param.
+  // The drawer opens by itself on a player's first home page visit each session, and whenever a nudge notification
+  // opens the site with ?daily=1 (the param is dropped). Visitors with no saved name see the plain home page.
   useEffect(() => {
     if (compact) return
-    const u = new URL(window.location.href)
-    if (u.searchParams.get('daily') !== '1') return
-    u.searchParams.delete('daily')
-    window.history.replaceState(null, '', u)
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Opens once from the URL after hydration, which the server cannot see.
-    setOpen(true)
+    const u = new URL(window.location.href),
+      nudged = u.searchParams.get('daily') === '1'
+    let first = false
+    try {
+      first = u.pathname === '/' && !!getPlayer() && !sessionStorage.getItem(OPENED)
+      sessionStorage.setItem(OPENED, '1')
+    } catch {
+      /* Storage blocked: only the nudge link opens the drawer. */
+    }
+    if (nudged) {
+      u.searchParams.delete('daily')
+      window.history.replaceState(null, '', u)
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Opens once after hydration from state the server cannot see.
+    if (nudged || first) setOpen(true)
   }, [compact])
   const isToday = !now || sel === now
   // Today links to the bare game path, which pins the day when it opens, and other days add the ?d= day param.
