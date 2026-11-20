@@ -330,9 +330,10 @@ function LogicPhase({ onDone, quickE2e }: { onDone: (score: number) => void; qui
         {prob.prompt}
       </div>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {prob.choices.map((c) => (
+        {prob.choices.map((c, i) => (
           <button
             key={c}
+            data-hotkey={String(i + 1)}
             type="button"
             data-testid={quickE2e && c === prob.answer ? 'moc-logic-correct' : undefined}
             onClick={(e) => pick(c, e.timeStamp)}
@@ -614,6 +615,7 @@ function TriviaPhase({
         {q.choices.map((c, i) => (
           <button
             key={`${idx}-${i}-${c}`}
+            data-hotkey={String(i + 1)}
             type="button"
             data-testid={quickE2e && i === q.correct ? 'moc-trivia-correct' : undefined}
             onClick={() => pick(i)}

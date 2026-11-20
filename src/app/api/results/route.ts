@@ -53,11 +53,18 @@ export async function POST(req:Request){
 export async function GET(req:Request){
   const q=new URL(req.url).searchParams,g=group.safeParse(q.get('group'))
   if(!g.success)return NextResponse.json({error:'Invalid group'},{status:400})
+  const game = q.get('game'), day = q.get('day')
+  if ((game !== null && !GAME_IDS.includes(game as GameId)) || (day !== null && !validDay(day))) {
+    return NextResponse.json({error:'Invalid game or date'},{status:400})
+  }
   const days=Math.min(6000,Math.max(1,Number(q.get('days'))||400)),since=new Date(Date.now()-(days+1)*86400000).toISOString().slice(0,10)
   type Row={name:string;game:GameId;day:string;score:number;stats:Record<string,unknown>;scoring_version:number;device_kind:string|null}
   const all:Row[]=[]
   for(let offset=0;offset<100000;offset+=1000){
-    const {data,error}=await supabaseAdmin.from('game_results').select('name,game,day,score,stats,scoring_version,device_kind').eq('group_code',g.data).in('game',GAME_IDS).gte('day',since).order('day',{ascending:false}).order('game').order('name').order('scoring_version').range(offset,offset+999)
+    const query = supabaseAdmin.from('game_results').select('name,game,day,score,stats,scoring_version,device_kind')
+      .eq('group_code',g.data).in('game',game ? [game] : GAME_IDS)
+    const dated = day ? query.eq('day',day) : query.gte('day',since)
+    const {data,error}=await dated.order('day',{ascending:false}).order('game').order('name').order('scoring_version').range(offset,offset+999)
     if(error)return NextResponse.json({error:'Could not load scores'},{status:503})
     all.push(...data??[])
     if(!data||data.length<1000)break

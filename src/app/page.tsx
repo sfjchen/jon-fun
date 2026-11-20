@@ -124,7 +124,7 @@ export default function Home() {
 
   return (
     <>
-      <ul className="mx-auto grid w-full max-w-3xl list-none grid-cols-2 gap-2.5 p-0 sm:gap-5">
+      <ul data-arrows className="mx-auto grid w-full max-w-3xl list-none grid-cols-2 gap-2.5 p-0 sm:gap-5">
         {gridItems.map((item) => (
           <li key={item.id} className="min-h-0 flex">
             <GameCard

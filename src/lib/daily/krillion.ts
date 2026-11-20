@@ -22,11 +22,15 @@ async function storeReview(review:KrillionReview) {
 }
 async function loadReview(date:string):Promise<KrillionReview> {
   try{return checked(JSON.parse(gunzipSync(await readFile(path.join(process.cwd(),'data/krillion/review',`${date}.json.gz`))).toString()),date)}catch{}
-  const stored=await supabaseAdmin.from('daily_game_content').select('payload').eq('game','krillion-review').eq('source_day',date).maybeSingle()
-  if(stored.data?.payload?.gzipBase64) return checked(JSON.parse(gunzipSync(Buffer.from(stored.data.payload.gzipBase64,'base64')).toString()),date)
   if(date>siteDay())throw Error('This Krillion dive has not been published yet. Choose today or a past day.')
+  if(process.env.SUPABASE_SERVICE_ROLE_KEY){
+    const stored=await supabaseAdmin.from('daily_game_content').select('payload').eq('game','krillion-review').eq('source_day',date).maybeSingle()
+    if(stored.data?.payload?.gzipBase64) return checked(JSON.parse(gunzipSync(Buffer.from(stored.data.payload.gzipBase64,'base64')).toString()),date)
+  }
   const review=await downloadReview(date)
-  await storeReview(review)
+  if(process.env.SUPABASE_SERVICE_ROLE_KEY){
+    await storeReview(review)
+  }
   return review
 }
 export function krillionReview(date:string):Promise<KrillionReview> {
@@ -82,9 +86,13 @@ export async function krillionPercentile(date:string,score:number):Promise<Krill
   return {betterThan:Math.round(below/total*100),dist,sample:stored.data?.payload?.sample,live:false}
 }
 /** Saves the final curve of the date the original still has open, just before it closes for the day. */
-export async function captureKrillionDist():Promise<string>{
+export async function captureKrillionDist():Promise<string|null>{
   const r=await fetch('https://krillion.io/api/today',{signal:AbortSignal.timeout(10000),cache:'no-store'})
-  const {date}=await r.json() as {date:string}
+  if(!r.ok)throw Error('Could not read the original reset time')
+  const {date,resetsAt}=await r.json() as {date:string;resetsAt:string}
+  const untilReset=Date.parse(resetsAt)-Date.now()
+  if(!Number.isFinite(untilReset))throw Error('Invalid original reset time')
+  if(untilReset<=0||untilReset>60*60000)return null
   if(!validDay(date)||!(await krillionPercentile(date,0))?.live)throw Error('Could not capture the score curve')
   return date
 }

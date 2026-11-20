@@ -18,6 +18,7 @@ export function normalizeNytPuzzle(game: NytGame, value: unknown, day: string) {
   if (game === 'bee') {
     // The feed lists pangrams outside its answers on most days, so both lists make up the accepted words.
     const p = dated.extend({ center_letter: word.length(1), outer_letters: z.union([word.length(6), z.array(word.length(1)).length(6)]), answers: z.array(word.min(4)).nonempty(), pangrams: z.array(word).nonempty() }).parse(value)
+    // The NYT sometimes publishes a pangram only in the pangrams field.
     const center = p.center_letter, outer = [...p.outer_letters], letters = new Set([center, ...outer]), answers = [...new Set([...p.answers, ...p.pangrams])].sort()
     if (p.print_date !== day || letters.size !== 7 || answers.some(w => !w.includes(center) || [...w].some(l => !letters.has(l)))) throw Error('Invalid NYT hive or date')
     const pangrams = answers.filter(w => new Set(w).size === 7)

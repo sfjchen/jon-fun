@@ -4,7 +4,6 @@
  * Loads one day's puzzle for a daily game and renders it under the shared header.
  */
 
-import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import DayNav from '@/components/daily/DayNav'
@@ -12,6 +11,7 @@ import MiniPlay, { type MiniPuzzle } from '@/components/mini/MiniPlay'
 import ConnectionsPlay from '@/components/connections/ConnectionsPlay'
 import { DAILY_EPOCH, siteDay, validDay } from '@/lib/daily'
 import { usePlayDay } from '@/lib/play-day'
+import { useDailyPuzzle } from '@/lib/use-daily-puzzle'
 import { GAMES, isPracticeResult, type GameId } from '@/lib/results'
 import type { ConnectionsPuzzle } from '@/lib/connections'
 import AnthropeumPlay, { type ArtifactDay } from '@/components/daily/AnthropeumPlay'
@@ -19,8 +19,6 @@ import KrillionPlay, { type KrillionPuzzle } from '@/components/daily/KrillionPl
 import FivefoldPlay, { type FivefoldPuzzle } from '@/components/daily/FivefoldPlay'
 
 import { isNytGame, NYT_FIRST_DAY } from '@/lib/daily/nyt-puzzles'
-
-type Daily = { day: string; sourceDate: string; puzzle: unknown }
 
 /** How each game plays, in the order a new player needs it. */
 const HOW: Record<Exclude<GameId, 'bee'>, string[]> = {
@@ -59,23 +57,8 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
   const raw = params.get('d')
   const min = isNytGame(game) ? NYT_FIRST_DAY[game] : DAILY_EPOCH
   const day = usePlayDay(validDay(raw) && raw >= min && raw <= '2100-12-31' ? raw : null, game)
-  const [response, setResponse] = useState<{ key: string; data?: Daily; error?: string } | null>(null)
   const key = `${game}:${day}`
-  useEffect(() => {
-    const controller = new AbortController()
-    fetch(`/api/daily/${game}?d=${day}`, { signal: controller.signal })
-      .then(async (r) => {
-        const data = await r.json()
-        if (!r.ok) throw new Error(data.error ?? 'Could not load puzzle')
-        setResponse({ key, data })
-      })
-      .catch((e) => {
-        if (!controller.signal.aborted) setResponse({ key, error: e instanceof Error ? e.message : 'Could not load puzzle' })
-      })
-    return () => controller.abort()
-  }, [key, game, day])
-  const data = response?.key === key ? response.data : undefined
-  const error = response?.key === key ? response.error : undefined
+  const { data, error, retry } = useDailyPuzzle(game, day)
   const info = (
     <>
       <ul className="list-disc space-y-1 pl-4">
@@ -105,9 +88,10 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
         </p>
       )}
       {error && (
-        <p role="alert" className="rounded-lg border p-4">
-          {error}
-        </p>
+        <div className="rounded-lg border p-4">
+          <p role="alert">{error}</p>
+          <button type="button" className="mt-2 underline" onClick={retry}>Try again</button>
+        </div>
       )}
       {!data && !error && <p style={{ color: 'var(--ink-muted)' }}>Loading the daily puzzle…</p>}
       {data && game === 'mini' && <MiniPlay key={key} puzzle={data.puzzle as MiniPuzzle} dailyDay={day} />}

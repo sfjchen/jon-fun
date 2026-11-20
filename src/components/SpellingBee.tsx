@@ -12,6 +12,7 @@ import { PUBLIC_GROUP, RESULTS_CHANGED, getPlayer, localDay, logResult, markPrac
 import { useDeviceName } from '@/lib/use-device-name'
 import { validDay } from '@/lib/daily'
 import { usePlayDay } from '@/lib/play-day'
+import { useDailyPuzzle } from '@/lib/use-daily-puzzle'
 import { NYT_FIRST_DAY } from '@/lib/daily/nyt-puzzles'
 import DayNav, { action } from '@/components/daily/DayNav'
 import {
@@ -19,6 +20,7 @@ import {
   addDays,
   check,
   hints,
+  includePublishedPangrams,
   isPangram,
   makePuzzle,
   praise,
@@ -61,7 +63,7 @@ function loadData() {
       const data = await Promise.all(years.map(async year => {
         const response = await fetch(`/puzzle-archives/bee/${year}.json`)
         if (!response.ok) throw new Error('Historical hives unavailable')
-        return response.json() as Promise<HistoricalPuzzle[]>
+        return (await response.json() as HistoricalPuzzle[]).map(includePublishedPangrams)
       }))
       return data.flat().sort((a, b) => a.date.localeCompare(b.date))
     }),
@@ -154,6 +156,7 @@ function Dialog({ title, onClose, children }: { title: string; onClose: () => vo
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
       <div
         role="dialog"
+        aria-modal="true"
         aria-label={title}
         className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-xl p-5 shadow-xl"
         style={{ background: 'var(--ink-bg)', color: 'var(--ink-text)' }}
@@ -161,7 +164,7 @@ function Dialog({ title, onClose, children }: { title: string; onClose: () => vo
       >
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-lora text-lg font-semibold">{title}</h2>
-          <button onClick={onClose} aria-label="Close" className="px-2 text-xl leading-none">
+          <button data-hotkey="Escape" onClick={onClose} aria-label="Close" className="px-2 text-xl leading-none">
             ×
           </button>
         </div>
@@ -294,18 +297,9 @@ export default function SpellingBee() {
   }, [])
 
   const selectedDay = validDay(archive) ? archive : date
-  const [official, setOfficial] = useState<{ day: string; puzzle?: HistoricalPuzzle; error?: string } | null>(null)
+  const { data: official, error: officialError, retry } = useDailyPuzzle<HistoricalPuzzle>('bee', selectedDay)
   const [previousError,setPreviousError]=useState('')
   const [previous, setPrevious] = useState<HistoricalPuzzle | null>(null)
-  useEffect(() => {
-    const controller = new AbortController()
-    fetch(`/api/daily/bee?d=${selectedDay}`, { signal: controller.signal }).then(async r => {
-      const value = await r.json()
-      if (!r.ok) throw Error(value.error ?? 'Original hive unavailable')
-      setOfficial({ day: selectedDay, puzzle: value.puzzle })
-    }).catch(e => { if (!controller.signal.aborted) setOfficial({ day: selectedDay, error: e.message }) })
-    return () => controller.abort()
-  }, [selectedDay, practice])
   useEffect(() => {
     const yesterday = addDays(date, -1)
     if (modal !== 'yesterday' || data?.history.some(p => p.date === yesterday)) return
@@ -321,8 +315,8 @@ export default function SpellingBee() {
     if (!data) return null
     const p =
       practice && /^[a-rt-z]{7}$/.test(practice) && new Set(practice).size === 7 && makePuzzle(practice, data.words)
-    return p && p.pangrams.length && p.answers.length >= 5 ? p : official?.day === selectedDay ? official.puzzle ?? null : null
-  }, [data, practice, official, selectedDay])
+    return p && p.pangrams.length && p.answers.length >= 5 ? p : official?.puzzle ?? null
+  }, [data, practice, official])
   const isPractice = !!pz && (pz.id === practice || (pz as HistoricalPuzzle).date === archive)
   const key = pz && (isPractice ? `p:${archive ?? "random"}:${pz.id}` : `${date}:${pz.id}`)
 
@@ -459,7 +453,7 @@ export default function SpellingBee() {
 
   const go = (q: string) => router.replace(`/games/spelling-bee${q}`, { scroll: false })
 
-  if (!isPractice && official?.day === selectedDay && official.error) return <><DayNav title="Spelling Bee" path="/games/spelling-bee" day={selectedDay} publishedOnly minDay={NYT_FIRST_DAY.bee} info={<>Original NYT puzzles by publication date.</>} /><p role="alert">{official.error}</p></>
+  if (!isPractice && officialError) return <><DayNav title="Spelling Bee" path="/games/spelling-bee" day={selectedDay} publishedOnly minDay={NYT_FIRST_DAY.bee} info={<>Original NYT puzzles by publication date.</>} /><p role="alert">{officialError}</p><button type="button" className="underline" onClick={retry}>Try again</button></>
   if (err) return <p className="text-center">Couldn&apos;t load the word list. Refresh to try again.</p>
   if (!pz || !data)
     return (

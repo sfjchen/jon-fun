@@ -11,7 +11,8 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import DayPicker from '@/components/daily/DayPicker'
 import PlayerName from '@/components/PlayerName'
 import { useHoverTip } from '@/components/HoverTip'
-import { DAILY_EPOCH, siteDay } from '@/lib/daily'
+import { DAILY_EPOCH } from '@/lib/daily'
+import { useSiteDay } from '@/lib/play-day'
 import { NYT_FIRST_DAY, isNytGame } from '@/lib/daily/nyt-puzzles'
 import {
   GAMES, GAME_IDS, PLAYER_CHANGED, PUBLIC_GROUP, RESULTS_CHANGED, compareResults, formatTime, getPlayer, localDay, queue,
@@ -153,7 +154,7 @@ function ScoreTable({ rows, me, q }: { rows: BoardRow[]; me: string | undefined;
  */
 export function DailyHeader({ compact = false }: { compact?: boolean }) {
   /** Read only in the browser, so a server on another day (or a test clock) never mismatches the page. */
-  const now = useSyncExternalStore(() => () => {}, siteDay, () => '')
+  const now = useSiteDay()
   const [picked, setPicked] = useState('')
   const sel = picked || now || localDay()
   const { player, today, picked: done, everyone, streak } = useDaily(sel)

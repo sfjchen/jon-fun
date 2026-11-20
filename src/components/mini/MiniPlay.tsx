@@ -82,7 +82,7 @@ export default function MiniPlay({puzzle,dailyDay}:{puzzle:MiniPuzzle;dailyDay?:
       <Menu label="Reveal" items={[['Square',()=>help(true,'square')],['Word',()=>help(true,'word')],['Puzzle',()=>help(true,'puzzle')],['Clear puzzle',clearPuzzle]]} />
     </>}
   </div>
-  if(paused)return <section className="space-y-4">{toolbar}<div className="space-y-4 rounded-xl border bg-[var(--ink-paper)] p-8 text-center" role="dialog" aria-label="Mini paused"><h3 className="font-lora text-2xl">Paused</h3><p className="text-sm text-[var(--ink-muted)]">By {puzzle.constructors.join(', ')}</p><button className="rounded-full bg-[var(--ink-text)] px-8 py-3 font-semibold text-[var(--ink-bg)]" aria-label="Continue puzzle" data-hotkey="Enter Space" onClick={()=>{setClock(Date.now());commit(resumeMini(current.current,Date.now()))}}>Continue</button></div></section>
+  if(paused)return <section className="space-y-4">{toolbar}<div className="space-y-4 rounded-xl border bg-[var(--ink-paper)] p-8 text-center" role="dialog" aria-label="Mini paused"><h3 className="font-lora text-2xl">Paused</h3><p className="text-sm text-[var(--ink-muted)]">By {puzzle.constructors.join(', ')}</p><button className="rounded-full bg-[var(--ink-text)] px-8 py-3 font-semibold text-[var(--ink-bg)]" aria-label="Continue puzzle" data-hotkey="Enter Space Escape" onClick={()=>{setClock(Date.now());commit(resumeMini(current.current,Date.now()))}}>Continue</button></div></section>
   return <section className="space-y-3">{toolbar}
     {rebus&&<p className="text-sm">Rebus: type several letters, then Enter. Escape exits.</p>}
     <div className="mx-auto w-full max-w-sm space-y-2">
@@ -91,7 +91,13 @@ export default function MiniPlay({puzzle,dailyDay}:{puzzle:MiniPuzzle;dailyDay?:
     </div>
     <div className="grid w-full border-2 border-black" style={{gridTemplateColumns:`repeat(${puzzle.width},minmax(0,1fr))`}}>
       {puzzle.cells.map((answer,i)=>{const number=puzzle.clues.find(c=>c.cells[0]===i)?.number;return <div key={i} className="relative aspect-square border" style={{background:answer?i===active?'#f9df6d':clue?.cells.includes(i)?'#dce7fa':'var(--ink-paper)':'#222'}}>{number&&<span className="pointer-events-none absolute left-1 top-0 z-10 text-xs text-black">{number}</span>}{answer&&<input ref={e=>{inputs.current[i]=e}} aria-label={`Row ${Math.floor(i/puzzle.width)+1}, column ${i%puzzle.width+1}${number?`, ${number}`:''}`} aria-invalid={wrong.includes(i)} autoComplete="off" autoCapitalize="characters" spellCheck={false} readOnly={run.complete} value={run.entries[i]} className="h-full w-full min-w-0 bg-transparent pt-2 text-center text-xl font-semibold outline-offset-[-3px]" style={{color:wrong.includes(i)?'#b91c1c':run.confirmed.includes(i)?'#1d4ed8':run.pencil.includes(i)?'#71717a':'#222'}} onFocus={e=>{setActive(i);e.currentTarget.select()}} onPointerDown={e=>{if(document.activeElement===e.currentTarget)setDirection(d=>d==='Across'?'Down':'Across')}} onChange={e=>enter(i,e.target.value)} onKeyDown={e=>{
+        // Alt+S, W or P checks the square, word or puzzle, and with Shift reveals it.
+        if(e.altKey&&!e.metaKey&&!e.ctrlKey){const scope=({KeyS:'square',KeyW:'word',KeyP:'puzzle'} as const)[e.code as 'KeyS'];if(scope&&!run.complete){e.preventDefault();help(e.shiftKey,scope)}return}
         if(e.key==='Tab'){e.preventDefault();nextClue(e.shiftKey?-1:1);return}
+        if(e.key==='['||e.key===']'){e.preventDefault();nextClue(e.key==='['?-1:1);return}
+        if(e.key==='Home'||e.key==='End'){e.preventDefault();const cs=clue?.cells;if(cs)focus(e.key==='Home'?cs[0]!:cs[cs.length-1]!);return}
+        if(e.key==='Escape'&&e.shiftKey&&!run.complete){e.preventDefault();setClock(Date.now());commit(pauseMini(current.current,Date.now()));return}
+        if(e.key==='Delete'&&!rebus&&!run.complete){e.preventDefault();enter(i,'');return}
         if(e.key==='Escape'){e.preventDefault();setRebus(v=>!v);return}
         if(e.key==='Enter'){e.preventDefault();if(rebus){setRebus(false);advance()}else nextClue(1);return}
         if(e.key===' '){e.preventDefault();setDirection(d=>d==='Across'?'Down':'Across');return}

@@ -7,13 +7,14 @@
 
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import ScoreSync from '@/components/daily/ScoreSync'
 import DayPicker, { action } from '@/components/daily/DayPicker'
 import { DailyHeader } from '@/components/daily/DailyDrawer'
 import { HomeLink } from '@/components/HomeLink'
 import PlayerName from '@/components/PlayerName'
-import { DAILY_EPOCH, siteDay } from '@/lib/daily'
+import { DAILY_EPOCH } from '@/lib/daily'
+import { useSiteDay } from '@/lib/play-day'
 
 const icon =
   'inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-[var(--ink-border)]/40 ' +
@@ -45,6 +46,7 @@ export function Info({ children }: { children: React.ReactNode }) {
         className={icon}
         aria-label="How to play"
         title="How to play"
+        data-hotkey="?"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
@@ -87,8 +89,8 @@ type DayNavProps = {
 export default function DayNav({ title, path, day, label, info, children, minDay = DAILY_EPOCH, publishedOnly = false }: DayNavProps) {
   const router = useRouter()
   /** Read only in the browser, so a server on another day (or a test clock) never mismatches the page. */
-  const today = useSyncExternalStore(() => () => {}, siteDay, () => '')
-  // A bare path keeps the day pinned when the page opened, so going to today from a game kept past midnight adds ?d=.
+  const today = useSiteDay()
+  // A bare path can still show an unfinished puzzle from yesterday.
   const bare = !useSearchParams().get('d')
   const go = (d: string) => router.push(d === today && !bare ? path : `${path}?d=${d}`, { scroll: false })
   return (

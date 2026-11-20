@@ -68,5 +68,8 @@ const GRID_ROWS = ['1234567', 'qwertyu', 'asdfghj', 'zxcvbnm']
  */
 export function gridKeyIndex(key: string, cols: number): number {
   const row = GRID_ROWS.findIndex((r) => r.slice(0, cols).includes(key))
-  return row < 0 ? -1 : row * cols + GRID_ROWS[row]!.indexOf(key)
+  if (row >= 0) return row * cols + GRID_ROWS[row]!.indexOf(key)
+  // Extra rows past the 4th continue on the next keys to the right, 3 at a time, as Set with Friends lays them out.
+  const extra = cols === 3 ? 'rtyfghvbn'.indexOf(key) : -1
+  return extra < 0 ? -1 : 12 + extra
 }

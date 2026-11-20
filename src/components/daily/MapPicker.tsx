@@ -278,9 +278,9 @@ export default function MapPicker({ pin, onChange, target, region }: { pin: Pin 
   const times = 2 ** (zoom.z - zoom.min)
   return <div>
     <div className="flex items-center gap-2">
-      <button type="button" aria-label="Zoom in map" className="rounded border px-3 py-1" onClick={() => zoomBy(1)} disabled={zoom.z >= MAX_ZOOM}>+</button>
-      <button type="button" aria-label="Zoom out map" className="rounded border px-3 py-1" onClick={() => zoomBy(-1)} disabled={zoom.z <= zoom.min + 0.01}>−</button>
-      <button type="button" className="text-sm underline" onClick={() => resetRef.current()}>Reset map</button>
+      <button type="button" aria-label="Zoom in map" data-hotkey="+ =" className="rounded border px-3 py-1" onClick={() => zoomBy(1)} disabled={zoom.z >= MAX_ZOOM}>+</button>
+      <button type="button" aria-label="Zoom out map" data-hotkey="- _" className="rounded border px-3 py-1" onClick={() => zoomBy(-1)} disabled={zoom.z <= zoom.min + 0.01}>−</button>
+      <button type="button" data-hotkey="0" className="text-sm underline" onClick={() => resetRef.current()}>Reset map</button>
       <span className="text-xs">{times < 10 ? times.toFixed(1) : Math.round(times)}× · drag or scroll to pan · pinch to zoom</span>
     </div>
     <div ref={box} className="anthro-leaflet" role="application" aria-label="World map. Click to place a pin; drag, scroll or use arrow keys to pan; pinch or +/- to zoom." />

@@ -5,7 +5,7 @@ import {
   answerLookup, beginKrillionRound, completeKrillionRound, judgeWith, krillionDiveNumber, newKrillionRun, restoreKrillionRun,
   KRILLION_BANDS, KRILLION_MISS, KRILLION_TIERS, type AnswerLookup, type KrillionAnswer, type KrillionRun, type KrillionResult, type KrillionJudgment,
 } from '@/lib/krillion'
-import { shiftDay, siteDay } from '@/lib/daily'
+import { nextSiteMidnight, shiftDay, siteDay } from '@/lib/daily'
 import KrillionReview from './KrillionReview'
 export type { KrillionPuzzle } from '@/lib/krillion'
 import type { KrillionPuzzle } from '@/lib/krillion'
@@ -119,9 +119,7 @@ export default function KrillionPlay({puzzle,dailyDay}:{puzzle:KrillionPuzzle;da
     let streak=0
     for(let d=dailyDay;days.has(d);d=shiftDay(d,-1))streak++
     const scores=[...days.values()],dive=krillionDiveNumber(puzzle.date)
-    const t=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',hourCycle:'h23',hour:'2-digit',minute:'2-digit',second:'2-digit'})
-      .formatToParts(new Date(clock)).map(p=>[p.type,Number(p.value)]))
-    const left=86400-(t.hour!*3600+t.minute!*60+t.second!)
+    const left = Math.max(0, Math.ceil((nextSiteMidnight(new Date(clock)) - clock) / 1000))
     done={dive,band:KRILLION_BANDS.findLastIndex(b=>total>=b.min),
       log:`Streak ${streak} · Played ${scores.length} · Avg ${Math.round(scores.reduce((a,b)=>a+b,0)/scores.length)} · Best ${Math.max(...scores)}`,
       next:dailyDay===siteDay()?[left/3600,left/60%60,left%60].map(n=>String(Math.floor(n)).padStart(2,'0')).join(':'):'',

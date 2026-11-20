@@ -29,7 +29,7 @@ export default function TriplesBoard({ board, selected, hinted = [], shake, disa
     <div className="mx-auto w-full max-w-xl">
       <StripeDefs />
       <style>{`@keyframes tp-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}`}</style>
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3">
+      <div data-arrows="grab" className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3">
         {board.map((card) => (
           <TriplesCard
             key={card}

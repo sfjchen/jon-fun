@@ -5,7 +5,10 @@ export async function GET(req: Request) {
   if (process.env.CRON_SECRET && req.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`) return NextResponse.json({error:'Unauthorized'},{status:401})
   // The ?dist run fires just before the original's day ends to keep that day's final player curve.
   if (new URL(req.url).searchParams.has('dist')) {
-    try { return NextResponse.json({ok:true,distDate:await captureKrillionDist()}) }
+    try {
+      const date = await captureKrillionDist()
+      return NextResponse.json(date ? {ok:true,distDate:date} : {skipped:true})
+    }
     catch { return NextResponse.json({error:'Krillion curve capture failed'},{status:503}) }
   }
   try { const puzzle = await captureKrillion(); return NextResponse.json({ok:true,sourceDate:puzzle.date,prompts:puzzle.prompts.length}) }

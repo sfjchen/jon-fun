@@ -200,18 +200,10 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
     return () => window.removeEventListener('keydown', onKey)
   }, [done, selectedKeys.size, submit])
 
-  // Tiles map to the 1234 / QWER / ASDF / ZXCV key block by position, arrows walk the tiles, Backspace or Escape
-  // clears the picks and Space shuffles.
+  // Tiles map to the 1234 / QWER / ASDF / ZXCV key block by position, Backspace or Escape clears the picks and Space
+  // shuffles. The arrows walk the tiles through the grid's data-arrows group.
   useHotkeys((k) => {
     if (done) return
-    const tiles = [...document.querySelectorAll<HTMLElement>('[data-cx-tile]')]
-    if (k.startsWith('Arrow')) {
-      const at = tiles.indexOf(document.activeElement as HTMLElement)
-      const to = at < 0 ? 0 : at + (k === 'ArrowLeft' ? -1 : k === 'ArrowRight' ? 1 : k === 'ArrowUp' ? -4 : 4)
-      if (at >= 0 && (k === 'ArrowLeft' || k === 'ArrowRight') && Math.floor(to / 4) !== Math.floor(at / 4)) return true
-      tiles[to]?.focus()
-      return true
-    }
     if (k === 'Backspace' || k === 'Escape') return deselectAll(), true
     if (k === ' ') return shufflePool(), true
     const t = pool[gridKeyIndex(k, 4)]
@@ -232,7 +224,7 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
           {toast}
         </div>
       )}
-      <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+      <div data-arrows="grab" className="grid grid-cols-4 gap-1.5 sm:gap-2">
         {revealed.map((g) => (
           <div
             key={`${g.difficulty}-${g.category}`}
