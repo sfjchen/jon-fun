@@ -76,7 +76,7 @@ test('Home shares the first control row and each daily game uses its own surface
     ['connections/daily', 'rgb(255, 255, 255)'],
     ['mini', 'rgb(255, 255, 255)'],
     ['spelling-bee', 'rgb(255, 255, 255)'],
-  ]) {
+  ] as const) {
     await page.goto(`/games/${game}`)
     const home = page.getByRole('link', { name: 'Home', exact: true }),
       scores = page.getByRole('link', { name: 'Leaderboard', exact: true })
