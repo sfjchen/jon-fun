@@ -494,6 +494,16 @@ export default function PokerTable({ pin, onBack }: PokerTableProps) {
                   min={minBet}
                   max={maxBet}
                 />
+                {[1, -1].map((d) => (
+                  <button
+                    key={d}
+                    tabIndex={-1}
+                    className="sr-only"
+                    data-hotkey={d > 0 ? 'ArrowUp' : 'ArrowDown'}
+                    aria-label={d > 0 ? 'Raise the bet amount' : 'Lower the bet amount'}
+                    onClick={() => setBetAmount(Math.max(minBet, Math.min(maxBet, (betAmount || minBet) + d * minBet)))}
+                  />
+                ))}
                 {canOpenBet ? (
                   <button
                     data-hotkey="b" onClick={() => handleAction('bet')}

@@ -190,7 +190,8 @@ export default function FiveCanGame() {
       return
     }
     if (e.key === 'n' || e.key === 'N') {
-      if (e.metaKey || e.ctrlKey || e.altKey) return
+      // Deals again only after a win, so a stray press never throws away a game in progress.
+      if (e.metaKey || e.ctrlKey || e.altKey || !g.won) return
       e.preventDefault()
       newGame()
       return

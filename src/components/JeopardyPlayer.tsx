@@ -45,7 +45,7 @@ export default function JeopardyPlayer({ board, playState, dispatchPlayOp, onBac
     setRevealed(false)
   }, [revealed, dispatchPlayOp])
 
-  // Only clue overlay hotkeys; board navigation is mouse/touch only
+  // Clue overlay hotkeys. The arrows walk the board through its data-arrows group while no clue is open.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (open) {
@@ -134,7 +134,7 @@ export default function JeopardyPlayer({ board, playState, dispatchPlayOp, onBac
               ))}
             </div>
 
-            <div className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
+            <div data-arrows={open ? undefined : 'grab'} className="grid" style={{ gridTemplateColumns: `repeat(${board.categories.length}, minmax(0, 1fr))` }}>
               {board.categories.map((cat, colIndex) => (
                 <div key={colIndex} className="grid" style={{ gridTemplateRows: `repeat(${rowsCount}, minmax(0, 1fr))` }}>
                   {Array.from({ length: rowsCount }, (_, rowIndex) => {

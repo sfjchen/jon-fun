@@ -745,6 +745,13 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
         return
       }
 
+      // Left and right turn a page, which here is most of a screen of the scrolling text.
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault()
+        window.scrollBy({ top: (e.key === 'ArrowRight' ? 0.9 : -0.9) * window.innerHeight, behavior: prefersReducedMotion ? 'auto' : 'smooth' })
+        return
+      }
+
       if (e.key === 'g' && !e.shiftKey) {
         e.preventDefault()
         chapterSelectRef.current?.focus()
@@ -753,7 +760,7 @@ export function ReaderShell({ publication, initialChapterId, routeBase }: Reader
 
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [goToChapter, hits.length, mobile, nextChapterId, nextHit, prevChapterId, prevHit, runFind])
+  }, [goToChapter, hits.length, mobile, nextChapterId, nextHit, prefersReducedMotion, prevChapterId, prevHit, runFind])
 
   const handleReset = useCallback(() => {
     setPrefs({ ...defaultReaderPreferences })

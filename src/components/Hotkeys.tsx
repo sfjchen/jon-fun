@@ -43,7 +43,7 @@ function rove(root: ParentNode, key: string): boolean {
 export default function Hotkeys() {
   useHotkeys((k) => {
     const root: ParentNode = document.querySelector('[aria-modal="true"]') ?? document
-    if (k.startsWith('Arrow') || k === 'Home' || k === 'End') return rove(root, k)
+    if ((k.startsWith('Arrow') || k === 'Home' || k === 'End') && rove(root, k)) return true
     const name = k === ' ' ? 'Space' : k
     for (const el of root.querySelectorAll<HTMLElement>('[data-hotkey]')) {
       if (!el.dataset.hotkey!.split(' ').includes(name) || (el as HTMLButtonElement).disabled || !el.getClientRects().length) continue
