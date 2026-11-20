@@ -1,0 +1,8 @@
+# Generated, vendored or data files that Prettier leaves alone. Files in .gitignore are skipped already.
+public/
+data/
+.next/
+supabase/migrations/
+**/*-snapshots/
+package-lock.json
+*.lock

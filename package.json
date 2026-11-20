@@ -36,7 +36,9 @@
     "smoke:notes-llm": "tsx scripts/smoke-notes-llm.ts",
     "test:e2e": "playwright test --project=chromium --project=mobile-chromium",
     "test:e2e:visual": "playwright test --project=visual-desktop",
-    "test:e2e:deploy": "PLAYWRIGHT_SKIP_WEBSERVER=1 CI=1 playwright test --project=chromium"
+    "test:e2e:deploy": "PLAYWRIGHT_SKIP_WEBSERVER=1 CI=1 playwright test --project=chromium",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.81.1",
@@ -86,6 +88,8 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "prettier": "3.10.1",
+    "prettier-plugin-tailwindcss": "0.8.1",
     "tsx": "^4.20.5",
     "typescript": "^5"
   }
