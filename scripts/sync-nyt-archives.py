@@ -14,9 +14,9 @@ def normalize(game,d,date):
   answer=d['solution'].lower();assert len(answer)==5 and answer.isascii() and answer.isalpha()
   return dict(date=date,answer=answer,id=d['id'],number=d['days_since_launch'],editor=d.get('editor',''))
  if game=='bee':
-  center=d.get('center_letter',d.get('centerLetter'));outer=list(d.get('outer_letters',d.get('outerLetters',[])));letters=center+''.join(outer);answers=sorted(set(d['answers']))
-  assert len(set(letters))==7 and len(outer)==6 and answers and all(len(w)>=4 and center in w and set(w)<=set(letters)for w in answers),'Published answers conflict with hive letters or center'
-  return dict(date=date,id=letters,center=center,outer=outer,answers=answers,pangrams=sorted(d['pangrams']),max=sum((1 if len(w)==4 else len(w))+(7 if len(set(w))==7 else 0)for w in answers))
+  center=d.get('center_letter',d.get('centerLetter'));outer=list(d.get('outer_letters',d.get('outerLetters',[])));letters=center+''.join(outer);answers=sorted(set(d['answers'])|set(d['pangrams']))
+  assert len(set(letters))==7 and len(outer)==6 and answers and all(len(w)>=4 and center in w and set(w)<=set(letters)for w in answers),'Published answers conflict with hive letters or center';assert len(d['pangrams'])==sum(len(set(w))==7 for w in answers),'Incomplete pangrams'
+  return dict(date=date,id=letters,center=center,outer=outer,answers=answers,pangrams=[w for w in answers if len(set(w))==7],max=sum((1 if len(w)==4 else len(w))+(7 if len(set(w))==7 else 0)for w in answers))
  if game=='mini':
   b=d['body'][0];width,height=b['dimensions']['width'],b['dimensions']['height'];cells=[c.get('answer')or None for c in b['cells']];assert len(cells)==width*height and any(cells)
   clues=[dict(number=str(c['label']),direction=c['direction'],text=''.join(t.get('plain','')for t in c['text']),cells=c['cells'],answer=''.join(cells[i]for i in c['cells']))for c in b['clues']]

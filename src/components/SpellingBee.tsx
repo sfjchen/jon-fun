@@ -8,7 +8,8 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { shuffle } from '@/lib/random'
-import { localDay, logResult, markPracticeIfFuture, isPracticeResult } from '@/lib/results'
+import { PUBLIC_GROUP, RESULTS_CHANGED, getPlayer, localDay, logResult, markPracticeIfFuture, isPracticeResult } from '@/lib/results'
+import { useDeviceName } from '@/lib/use-device-name'
 import { validDay } from '@/lib/daily'
 import { usePlayDay } from '@/lib/play-day'
 import { NYT_FIRST_DAY } from '@/lib/daily/nyt-puzzles'
@@ -74,6 +75,24 @@ function loadData() {
 function loadFound(id: string): string[] {
   try {
     return JSON.parse(localStorage.getItem(`sb:${id}`) ?? '[]') as string[]
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Fetches the words this player's other devices found on a day, or none without a name or a connection.
+ */
+async function remoteFound(day: string): Promise<string[]> {
+  const p = getPlayer()
+  if (!p) return []
+  try {
+    const r = await fetch('/api/spelling-bee/words', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...p, day }),
+    })
+    return r.ok ? ((await r.json()).words as string[]) : []
   } catch {
     return []
   }
@@ -316,6 +335,41 @@ export default function SpellingBee() {
     setCrowd(null)
   }
 
+  // Merges in the words found under this name on other devices. The saved list is re-read when the reply lands, so
+  // a word typed meanwhile is kept.
+  const [name] = useDeviceName()
+  useEffect(() => {
+    if (!pz || !key || isPractice) return
+    let live = true
+    void remoteFound(date).then((ws) => {
+      const f = loadFound(key), add = ws.filter((w) => pz.answers.includes(w) && !f.includes(w))
+      if (!live || !add.length) return
+      const nf = [...f, ...add]
+      try { localStorage.setItem(`sb:${key}`, JSON.stringify(nf)) } catch {}
+      setFound(nf)
+    })
+    return () => { live = false }
+  }, [pz, key, isPractice, date, name])
+  const [ydFound, setYdFound] = useState<string[]>([])
+  useEffect(() => {
+    if (modal !== 'yesterday') return
+    let live = true
+    void remoteFound(addDays(date, -1)).then((ws) => { if (live) setYdFound(ws) })
+    return () => { live = false }
+  }, [modal, date, name])
+  // Sends this browser's earlier days once, so words found before devices shared them reach the others.
+  useEffect(() => {
+    try {
+      if (!name || localStorage.getItem('sb:shared')) return
+      for (const k of Object.keys(localStorage)) {
+        const day = /^sb:(\d{4}-\d{2}-\d{2}):[a-z]{7}$/.exec(k)?.[1], ws = loadFound(k.slice(3))
+        if (day && day < now && ws.length && !localStorage.getItem(`sb:revealed:${k.slice(3)}`))
+          logResult('bee', ws.reduce((s, w) => s + score(w), 0), ws.length, day, { moves: ws })
+      }
+      localStorage.setItem('sb:shared', '1')
+    } catch {}
+  }, [name, now])
+
   const pts = found.reduce((s, w) => s + score(w), 0)
   const rk = pz ? rankIdx(pts, pz.max) : 0
   const mins = pz ? rankMins(pz.max) : []
@@ -337,25 +391,26 @@ export default function SpellingBee() {
 
   const n = found.length
   useEffect(() => {
-    if (!pz || !key) return
-    const t = setTimeout(() => {
-      let device = ''
-      try {
-        device = localStorage.getItem('sb_device') ?? ''
-        if (!device) localStorage.setItem('sb_device', (device = crypto.randomUUID()))
-      } catch {}
-      fetch('/api/spelling-bee/stats', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ device, puzzle: key, words: n, score: pts, max: pz.max }),
-      })
-        .then((r) => (r.ok ? r.json() : null))
-        .then((c: { players: number; genius: number } | null) => c && setCrowd(c))
-        .catch(() => {})
-      if (pts > 0 && !isPractice && !revealed) logResult('bee', pts, n, date, { moves: found, max: pz.max, solved: pts === pz.max, puzzleId: pz.id, sourceDate: (pz as HistoricalPuzzle).date })
-    }, 1500)
+    if (!pz || isPractice || revealed || pts <= 0) return
+    const t = setTimeout(() => logResult('bee', pts, n, date, { moves: found, max: pz.max, solved: pts === pz.max, puzzleId: pz.id, sourceDate: (pz as HistoricalPuzzle).date }), 1500)
     return () => clearTimeout(t)
-  }, [pz, key, n, found, pts, isPractice, revealed, date])
+  }, [pz, n, found, pts, isPractice, revealed, date])
+  // Counts the named players on this board for the day, again whenever this browser's own result is saved.
+  useEffect(() => {
+    if (!key || isPractice) return
+    let live = true
+    const load = () => void fetch(`/api/spelling-bee/stats?group=${getPlayer()?.group ?? PUBLIC_GROUP}&day=${date}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((c: { players: number; genius: number } | null) => { if (c && live) setCrowd(c) })
+      .catch(() => {})
+    const saved = (e: Event) => {
+      const d = (e as CustomEvent<{ game: string; day: string }>).detail
+      if (d.game === 'bee' && d.day === date) load()
+    }
+    load()
+    window.addEventListener(RESULTS_CHANGED, saved)
+    return () => { live = false; window.removeEventListener(RESULTS_CHANGED, saved) }
+  }, [key, isPractice, date, name])
 
   const busy = toast?.ok === false
   const submit = useCallback(() => {
@@ -624,7 +679,7 @@ export default function SpellingBee() {
                 rk < 7 && `${mins[8]![1] - pts} to Genius`,
                 crowd?.players &&
                   `${crowd.players} player${crowd.players === 1 ? '' : 's'} ` +
-                    `${isPractice || date !== now ? 'on this puzzle' : 'today'}` +
+                    `${date !== now ? 'on this puzzle' : 'today'}` +
                     (crowd.genius ? ` (${crowd.genius} Genius)` : ''),
               ]
                 .filter(Boolean)
@@ -705,7 +760,7 @@ export default function SpellingBee() {
             <span style={{ color: '#d4ac0d' }}>{yd.center}</span>
             {yd.outer.join('')}
           </p>
-          <WordList words={yd.answers} found={new Set(loadFound(`${addDays(date, -1)}:${yd.id}`))} />
+          <WordList words={yd.answers} found={new Set([...loadFound(`${addDays(date, -1)}:${yd.id}`), ...ydFound])} />
         </Dialog>
       )}
       {modal === 'yesterday' && !yd && <Dialog title="Yesterday's answers" onClose={() => setModal(null)}>{previousError||'Loading the original previous hive…'}</Dialog>}

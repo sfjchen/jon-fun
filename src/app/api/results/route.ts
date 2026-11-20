@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { GAMES, GAME_IDS, scoringVersion, type GameId } from '@/lib/results'
+import { GAMES, GAME_IDS, likeName, scoringVersion, type GameId } from '@/lib/results'
+import { score as beeScore } from '@/lib/spelling-bee'
 import { DAILY_EPOCH, siteDay, validDay } from '@/lib/daily'
 import { isNytGame, NYT_FIRST_DAY } from '@/lib/daily/nyt-puzzles'
 import { supabaseAdmin } from '@/lib/supabase'
@@ -27,17 +28,23 @@ export async function POST(req:Request){
   const version=scoringVersion(b.game),score=game.score
   // Names are unique per board regardless of case and spacing, so "jon" on a phone files under an existing "Jon".
   const clean=b.name.replace(/\s+/g,' ')
-  const same=await supabaseAdmin.from('game_results').select('name').eq('group_code',b.group).ilike('name',clean.replace(/[\\%_]/g,'\\$&')).order('created_at').limit(1)
+  const same=await supabaseAdmin.from('game_results').select('name').eq('group_code',b.group).ilike('name',likeName(clean)).order('created_at').limit(1)
   if(same.error)return NextResponse.json({error:'Could not save score. It remains queued on your device.'},{status:503})
   const name=same.data[0]?.name??clean
   const key={group_code:b.group,name,game:b.game,day:b.today,scoring_version:version}
-  const value={...key,score,...(b.deviceId?{device_id:b.deviceId}:{}),...(b.device?{device_kind:b.device}:{}),stats:{...rest,...game.stats,scoringVersion:version}}
+  // Spelling Bee keeps its checked words in a column the leaderboard never reads, so a player's devices share them.
+  const words=b.game==='bee'?[...new Set(m.data as string[])]:null
+  const value={...key,score,...(words?{words}:{}),...(b.deviceId?{device_id:b.deviceId}:{}),...(b.device?{device_kind:b.device}:{}),stats:{...rest,...game.stats,scoringVersion:version}}
   const inserted=await supabaseAdmin.from('game_results').insert(value)
   if(inserted.error&&inserted.error.code!=='23505')return NextResponse.json({error:'Could not save score. It remains queued on your device.'},{status:503})
-  if(inserted.error?.code==='23505'&&b.game==='bee'){
-    const update=await supabaseAdmin.from('game_results').update({score,stats:value.stats}).match(key).lt('score',score)
+  if(inserted.error?.code==='23505'&&words){
+    // Another device already filed this day, so the saved words grow to cover both and the score follows them.
+    const old=await supabaseAdmin.from('game_results').select('score,words').match(key).single()
+    if(old.error)return NextResponse.json({error:'Could not sync score'},{status:503})
+    const all=[...new Set([...(old.data.words as string[]|null??[]),...words])],pts=all.reduce((t,w)=>t+beeScore(w),0)
+    const update=await supabaseAdmin.from('game_results').update({words:all,
+      ...(pts>old.data.score?{score:pts,stats:{...value.stats,n:all.length,solved:pts===value.stats.max}}:{})}).match(key)
     if(update.error)return NextResponse.json({error:'Could not sync score'},{status:503})
-
   }
   // Every game's first finished result is immutable, so clearing a board or browser data cannot replace it. Spelling
   // Bee only grows, since its score rises as more words are found the same day.

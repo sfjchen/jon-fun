@@ -8,7 +8,7 @@ test('Wordle uses publication date and puzzle number, never answer-list rotation
   assert.throws(() => normalizeNytPuzzle('fivefold', { print_date: '2026-11-18', solution: 'blurt', id: 1, days_since_launch: 1978 }, date))
 })
 test('Bee keeps the exact accepted words and validates pangrams and center letter', () => {
-  const p = { print_date: date, center_letter: 'k', outer_letters: 'cdelnu', answers: ['clunked','knuckled','duck'], pangrams: ['clunked','knuckled'] }
+  const p = { print_date: date, center_letter: 'k', outer_letters: 'cdelnu', answers: ['clunked','duck'], pangrams: ['clunked','knuckled'] }
   const result = normalizeNytPuzzle('bee',p,date)
   assert('max' in result && result.max === 30)
   assert('answers' in result && result.answers.length === 3)

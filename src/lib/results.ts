@@ -40,6 +40,8 @@ export function formatScore(score: number): string { return Math.round(score).to
 export function formatTime(seconds: number): string { return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` }
 export type Player = { name: string; group: string }
 export const PUBLIC_GROUP = 'public'
+/** Collapses a name's spacing and escapes it for a case-insensitive exact match, so "jon" finds "Jon". */
+export function likeName(name: string): string { return name.replace(/\s+/g, ' ').replace(/[\\%_]/g, '\\$&') }
 export function boardName(group: string): string { return group === PUBLIC_GROUP ? 'the public board' : `group ${group}` }
 const QUEUE_KEY = 'sfjc_results_queue_v2'
 /** Marks the day a player is mid-game on, per game, so usePlayDay can resume it after a reload past midnight. */
