@@ -74,18 +74,19 @@
 .anthro-button:disabled { background:#ded4be; color:#97896b; }
 .anthro-topline { padding:8px 24px; display:flex; justify-content:space-between; align-items:center; background:#f7f3ea; }
 .anthro-timeline { padding:12px 24px; background:#ede7d7; border-block:1px solid #dcd2bc; }
+.anthro-timeline > * { max-width:1100px; margin-inline:auto; }
 .anthro-ticks { display:flex; justify-content:space-between; font-size:11px; margin-top:4px; }
-.anthro-arena { position:relative; min-height:650px; background:#ccd8dc; }
-.anthro-map { position:absolute; inset:0; }
-.anthro-map > div { height:100%; }
+.anthro-arena { position:relative; min-height:650px; background:#ccd8dc; display:grid; grid-template-columns:minmax(0,1fr) 340px; }
+.anthro-map { position:relative; }
+.anthro-map > div { position:absolute; inset:0; }
 .anthro-map svg { height:100%; width:100%; min-height:650px; border:0; border-radius:0; background:#ccd8dc; }
 .anthro-map > div > div:first-child { position:absolute; top:12px; left:12px; z-index:2; background:#f7f3ea; padding:5px; box-shadow:0 1px 4px #0002; }
 .anthro-map > div > p:last-child { position:absolute; bottom:8px; left:16px; background:#f7f3eae6; padding:4px 8px; }
-.anthro-artifact { position:relative; z-index:3; width:340px; margin-left:auto; margin-right:16px; top:16px; background:#f7f3ea; box-shadow:0 1px 8px #44371e22; border:1px solid #dcd2bc; }
+.anthro-artifact { position:relative; z-index:3; background:#f7f3ea; border-left:1px solid #dcd2bc; }
 .anthro-artifact-image { background:#29261f; position:relative; display:flex; align-items:center; justify-content:center; min-height:310px; }
 .anthro-artifact-image img { width:100%; max-height:430px; object-fit:contain; }
 .anthro-artifact-copy { padding:12px 16px; border-top:1px solid #dcd2bc; font-size:16px; }
-.anthro-submit { position:absolute; bottom:36px; left:calc((100% - 356px)/2); transform:translateX(-50%); z-index:3; }
+.anthro-submit { position:absolute; bottom:36px; left:calc((100% - 340px)/2); transform:translateX(-50%); z-index:3; }
 .anthro-coordinates { display:flex; flex-wrap:wrap; gap:12px; align-items:center; padding:12px 24px; border-top:1px solid #dcd2bc; font-size:14px; }
 .anthro-coordinates input { width:85px; border-bottom:1px solid #8a795b; margin-left:8px; padding:2px; }
 .anthro-results { max-width:900px; margin:auto; padding:32px 24px; }
@@ -98,7 +99,7 @@
   .anthro-arena { min-height:0; display:flex; flex-direction:column; }
   .anthro-map { position:relative; height:310px; order:2; }
   .anthro-map svg { min-height:310px; }
-  .anthro-artifact { top:0; width:100%; margin:0; border-inline:0; order:1; box-shadow:none; }
+  .anthro-artifact { width:100%; border-inline:0; order:1; }
   .anthro-artifact-image { min-height:190px; }
   .anthro-artifact-image img { height:230px; width:auto; max-width:100%; }
   .anthro-artifact-copy { padding:8px 16px; }
