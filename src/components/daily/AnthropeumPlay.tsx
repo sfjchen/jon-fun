@@ -30,8 +30,10 @@ export default function AnthropeumPlay({ puzzle, dailyDay }: { puzzle: ArtifactD
     return()=>{document.body.style.overflow=overflow;window.removeEventListener('keydown',onKey)}
   },[expanded,hintOpen,stepImage])
   // Shows the photograph viewer in true fullscreen where the browser allows it, closing the viewer when fullscreen ends.
+  // Focus goes to the viewer itself rather than its close button, so no focus ring appears on opening.
   useEffect(()=>{
     const el=viewer.current
+    if(expanded)el?.focus({preventScroll:true})
     if(!expanded||!el?.requestFullscreen)return
     const onChange=()=>{if(!document.fullscreenElement)setExpanded(false)}
     el.requestFullscreen().then(()=>document.addEventListener('fullscreenchange',onChange)).catch(()=>{})
@@ -77,9 +79,9 @@ export default function AnthropeumPlay({ puzzle, dailyDay }: { puzzle: ArtifactD
       {guess?<button className="anthro-button anthro-submit" onClick={()=>{setRound(r=>r+1);setPin(null);setYear(null);setImage(0);setFailedImage(false);setImageLoaded(false)}}>{round===puzzle.artifacts.length-1?'See final score':'Next artifact →'}</button>:<button className="anthro-button anthro-submit" aria-label="Lock in guess" disabled={!pin||year===null} onClick={()=>{if(pin&&year!==null){markPracticeIfFuture('anthropeum',dailyDay);const total=artifactScore(artifact,pin,year).total;setGuesses(previous=>[...previous,{pin,year,total}])}}}>{pin&&year!==null?'Submit guess':'Drop a pin and pick a time'}</button>}
     </div>
     {!guess&&<details className="border-t px-6 py-3 text-sm"><summary className="cursor-pointer text-[var(--ink-muted)]">Precise coordinates and date</summary><div className="anthro-coordinates"><label>Latitude<input aria-label="Latitude" type="number" min={-85} max={85} step="0.1" value={pin?.lat??''} onChange={e=>setPin(p=>({lat:Math.max(-85,Math.min(85,Number(e.target.value))),lon:p?.lon??0}))}/></label><label>Longitude<input aria-label="Longitude" type="number" min={-180} max={180} step="0.1" value={pin?.lon??''} onChange={e=>setPin(p=>({lon:Math.max(-180,Math.min(180,Number(e.target.value))),lat:p?.lat??0}))}/></label><label>Period start<input aria-label="Period start" type="number" min={-3000} max={1750} step={125} value={year??''} onChange={e=>setYear(snapYear(Number(e.target.value)))}/></label></div></details>}
-    {expanded&&<div ref={viewer} role="dialog" aria-modal="true" aria-label="Artifact photograph" className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black/95" onClick={e=>{if(e.currentTarget===e.target)setExpanded(false)}}>
+    {expanded&&<div ref={viewer} role="dialog" aria-modal="true" aria-label="Artifact photograph" tabIndex={-1} className="fixed inset-0 z-50 outline-none flex items-center justify-center overflow-hidden bg-black/95" onClick={e=>{if(e.currentTarget===e.target)setExpanded(false)}}>
       <div style={{transform:`scale(${imageZoom})`,transformOrigin:'center'}} onClick={e=>e.stopPropagation()} className="flex h-[calc(100svh-5rem)] w-[calc(100vw-1rem)] items-center justify-center [&_img]:h-full [&_img]:w-full [&_img]:object-contain">{photo}</div>
-      <button autoFocus aria-label="Close photograph" className="absolute right-4 top-3 px-2 text-3xl text-white" onClick={()=>setExpanded(false)}>×</button>
+      <button aria-label="Close photograph" className="absolute right-4 top-3 px-2 text-3xl text-white" onClick={()=>setExpanded(false)}>×</button>
       {imageCount>1&&<><button aria-label="Previous photograph" className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 px-3 py-4 text-3xl text-white" onClick={()=>stepImage(-1)}>‹</button><button aria-label="Next photograph" className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 px-3 py-4 text-3xl text-white" onClick={()=>stepImage(1)}>›</button></>}
       <div className="absolute bottom-4 flex items-center gap-3 text-white">{imageCount>1&&<span aria-live="polite" className="mr-2 text-sm">{image+1} / {imageCount}</span>}<button className="bg-white px-4 py-2 text-black" aria-label="Zoom out photograph" onClick={()=>setImageZoom(z=>Math.max(1,z-.5))}>−</button><button className="bg-white px-4 py-2 text-black" aria-label="Zoom in photograph" onClick={()=>setImageZoom(z=>Math.min(4,z+.5))}>+</button></div>
     </div>}
