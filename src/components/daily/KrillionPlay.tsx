@@ -8,7 +8,9 @@ import {
   judgeWith,
   krillionDiveNumber,
   newKrillionRun,
+  pauseKrillionRun,
   restoreKrillionRun,
+  resumeKrillionRun,
   KRILLION_BANDS,
   KRILLION_MISS,
   KRILLION_TIERS,
@@ -51,7 +53,7 @@ export default function KrillionPlay({ puzzle, dailyDay }: { puzzle: KrillionPuz
     current.current = next
     setRunState(next)
   }, [])
-  const remaining = Math.max(0, (run.endsAt ?? clock) - clock),
+  const remaining = Math.max(0, (run.endsAt ?? clock) - (run.pausedAt ?? clock)),
     total = run.outcomes.reduce((sum, r) => sum + r.score, 0),
     feedback = run.outcomes.at(-1)
   const finish = useCallback(
@@ -65,14 +67,34 @@ export default function KrillionPlay({ puzzle, dailyDay }: { puzzle: KrillionPuz
   )
   useEffect(() => {
     const timer = setInterval(() => setClock(Date.now()), 100)
-    const refresh = () => setClock(Date.now())
-    document.addEventListener('visibilitychange', refresh)
+    // The round clock stands still while the page is hidden, closed or left, and picks up on return. The pause is
+    // written straight to storage because a closing page never reaches the effect that saves the run.
+    const hold = (away: boolean) => {
+      const now = Date.now()
+      const next = (away ? pauseKrillionRun : resumeKrillionRun)(current.current, now)
+      if (next !== current.current) {
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(next))
+        } catch {}
+        setRun(next)
+      }
+      setClock(now)
+    }
+    const sync = () => hold(document.hidden)
+    const leave = () => hold(true)
+    sync()
+    document.addEventListener('visibilitychange', sync)
+    window.addEventListener('pageshow', sync)
+    window.addEventListener('pagehide', leave)
     return () => {
       clearInterval(timer)
-      document.removeEventListener('visibilitychange', refresh)
+      document.removeEventListener('visibilitychange', sync)
+      window.removeEventListener('pageshow', sync)
+      window.removeEventListener('pagehide', leave)
+      leave()
       abort.current?.abort()
     }
-  }, [])
+  }, [setRun, storageKey])
   useEffect(() => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(run))
@@ -182,7 +204,7 @@ export default function KrillionPlay({ puzzle, dailyDay }: { puzzle: KrillionPuz
   )
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
-      if (run.phase === 'answering' && run.endsAt !== null && clock >= run.endsAt) {
+      if (run.phase === 'answering' && run.endsAt !== null && run.pausedAt === undefined && clock >= run.endsAt) {
         if (pending.current) {
           if (clock >= Math.max(run.endsAt, submittedAt.current) + 4000) {
             abort.current?.abort()

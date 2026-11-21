@@ -173,6 +173,8 @@ export type KrillionRun = {
   phase: 'ready' | 'answering' | 'feedback' | 'done'
   index: number
   endsAt: number | null
+  /** When the page was hidden or closed mid-round. The round clock stands still from then until the player returns. */
+  pausedAt?: number | undefined
   draft: string
   outcomes: KrillionResult[]
 }
@@ -180,11 +182,33 @@ export function newKrillionRun(): KrillionRun {
   return { phase: 'ready', index: 0, endsAt: null, draft: '', outcomes: [] }
 }
 export function beginKrillionRound(run: KrillionRun, now: number): KrillionRun {
-  return { ...run, phase: 'answering', index: run.outcomes.length, endsAt: now + 25000, draft: '' }
+  return { ...run, phase: 'answering', index: run.outcomes.length, endsAt: now + 25000, pausedAt: undefined, draft: '' }
 }
 export function completeKrillionRound(run: KrillionRun, result: KrillionResult): KrillionRun {
   if (run.phase !== 'answering' || run.outcomes.length !== run.index) return run
-  return { ...run, phase: 'feedback', endsAt: null, draft: '', outcomes: [...run.outcomes, result] }
+  return {
+    ...run,
+    phase: 'feedback',
+    endsAt: null,
+    pausedAt: undefined,
+    draft: '',
+    outcomes: [...run.outcomes, result],
+  }
+}
+/**
+ * Stops the round clock at `now`, for when the page is hidden or closed. A round already out of time stays expired.
+ */
+export function pauseKrillionRun(run: KrillionRun, now: number): KrillionRun {
+  if (run.phase !== 'answering' || run.endsAt === null || run.pausedAt !== undefined || now >= run.endsAt) return run
+  return { ...run, pausedAt: now }
+}
+/**
+ * Restarts a paused round clock at `now` with the time it had left when it stopped.
+ */
+export function resumeKrillionRun(run: KrillionRun, now: number): KrillionRun {
+  if (run.pausedAt === undefined) return run
+  const away = Math.max(0, now - run.pausedAt)
+  return { ...run, pausedAt: undefined, endsAt: run.endsAt === null ? null : run.endsAt + away }
 }
 export function restoreKrillionRun(value: unknown, now: number): KrillionRun {
   const r = value as KrillionRun
@@ -197,10 +221,11 @@ export function restoreKrillionRun(value: unknown, now: number): KrillionRun {
     r.index < 0 ||
     r.index > 6 ||
     typeof r.draft !== 'string' ||
+    (r.pausedAt !== undefined && typeof r.pausedAt !== 'number') ||
     r.outcomes.some((o) => typeof o.score !== 'number' || o.score < 0 || o.score > 100)
   )
     return newKrillionRun()
-  let run = r
+  let run = resumeKrillionRun(r, now)
   if (run.phase === 'answering' && run.endsAt !== null && now >= run.endsAt)
     run = completeKrillionRound(run, {
       answer: run.draft,

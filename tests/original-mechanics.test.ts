@@ -1,7 +1,13 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { emptyMini, miniElapsed, pauseMini, resumeMini, finishMini, type MiniPuzzle } from '../src/lib/mini'
-import { newKrillionRun, beginKrillionRound, restoreKrillionRun, completeKrillionRound } from '../src/lib/krillion'
+import {
+  newKrillionRun,
+  beginKrillionRound,
+  restoreKrillionRun,
+  completeKrillionRound,
+  pauseKrillionRun,
+} from '../src/lib/krillion'
 import { artifactScore, regionDistance, type Artifact } from '../src/lib/artifact-scoring'
 import { winners } from '../src/lib/score-stats'
 import { score, check, rankIdx } from '../src/lib/spelling-bee'
@@ -43,6 +49,15 @@ test('Krillion reload cannot reset an expired timer', () => {
     completeKrillionRound(expired, { answer: 'x', accepted: true, score: 100, reason: 'Test catch' }).outcomes.length,
     1,
   )
+})
+test('Krillion clock stands still while the page is closed', () => {
+  const left = pauseKrillionRun(beginKrillionRound(newKrillionRun(), 1000), 6000)
+  const back = restoreKrillionRun(JSON.parse(JSON.stringify(left)), 900000)
+  assert.equal(back.phase, 'answering')
+  assert.equal(back.endsAt, 920000)
+  assert.equal(back.pausedAt, undefined)
+  const late = beginKrillionRound(newKrillionRun(), 1000)
+  assert.equal(pauseKrillionRun(late, 26000), late)
 })
 test('Original same-day Krillion key reproduces the completed reference run and includes exact aliases', async () => {
   const answers = ['Zootopia', 'Taco', 'Rhinoceros', 'Michael Jordan', 'Louisville', 'Apple', 'Jett']
