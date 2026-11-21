@@ -306,6 +306,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
     if (nudged || first) setOpen(true)
   }, [compact])
   const isToday = !now || sel === now
+  const canNudge = isToday && friends.length > 0
   // Today links to the bare game path, which pins the day when it opens, and other days add the ?d= day param.
   const q = isToday ? '' : `?d=${sel}`
   const dayName = isToday
@@ -492,8 +493,8 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                 )
               })}
             </ul>
-            {nudged[''] && <p className="mb-3 text-xs text-[var(--ink-muted)]">{nudged['']}</p>}
-            {push === 'install' && isToday && friends.length > 0 && (
+            {nudged[''] && !canNudge && <p className="mt-3 text-xs text-[var(--ink-muted)]">{nudged['']}</p>}
+            {push === 'install' && canNudge && (
               <p className="mb-3 text-xs text-[var(--ink-muted)]">
                 Add sfjc.dev to your Home Screen to get nudges from friends.
               </p>
@@ -518,7 +519,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                 </p>
               )}
             </section>
-            {player && isToday && friends.length > 0 && (
+            {player && canNudge && (
               <section aria-label="Nudge friends" className="mt-4">
                 <h3 className="mb-2 text-sm font-semibold text-[var(--ink-muted)]">Nudge friends</h3>
                 <div className="flex flex-wrap gap-1.5">
@@ -528,13 +529,27 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                       <button
                         key={f.name}
                         type="button"
-                        disabled={sent !== undefined}
+                        disabled={sent !== undefined || push === 'loading'}
                         title={sent || `${f.name} has ${GAME_IDS.length - f.done} games left today`}
                         onClick={() => {
-                          setNudged((m) => ({ ...m, [f.name]: 'Sending…' }))
-                          void nudge(player, f.name).then((err) =>
-                            setNudged((m) => ({ ...m, [f.name]: err || 'Nudged' })),
-                          )
+                          // Senders turn on their own nudges first, so the tap asks for notifications when they are off.
+                          const gate =
+                            push === 'off'
+                              ? enableNudges(player)
+                              : Promise.resolve(
+                                  push === 'denied'
+                                    ? 'Allow notifications for sfjc.dev in your browser settings to nudge friends.'
+                                    : push === 'install'
+                                      ? 'Add sfjc.dev to your Home Screen and turn on nudges to nudge friends.'
+                                      : '',
+                                )
+                          void gate.then((block) => {
+                            if (block) return setNudged((m) => ({ ...m, '': block }))
+                            setNudged((m) => ({ ...m, '': '', [f.name]: 'Sending…' }))
+                            void nudge(player, f.name).then((err) =>
+                              setNudged((m) => ({ ...m, [f.name]: err || 'Nudged' })),
+                            )
+                          })
                         }}
                         className={
                           'flex items-center gap-1.5 rounded-full border border-[var(--ink-border)] px-2.5 py-1 text-xs ' +
@@ -550,10 +565,10 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                     )
                   })}
                 </div>
-                {Object.entries(nudged).some(([k, v]) => k && v !== 'Nudged' && v !== 'Sending…') && (
-                  <p className="mt-1.5 text-xs text-[var(--ink-muted)]">
+                {Object.values(nudged).some((v) => v && v !== 'Nudged' && v !== 'Sending…') && (
+                  <p role="status" className="mt-1.5 text-xs text-[var(--ink-muted)]">
                     {Object.entries(nudged)
-                      .filter(([k, v]) => k && v !== 'Nudged' && v !== 'Sending…')
+                      .filter(([, v]) => v && v !== 'Nudged' && v !== 'Sending…')
                       .map(([, v]) => v)
                       .join(' · ')}
                   </p>
