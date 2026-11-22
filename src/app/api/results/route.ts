@@ -43,7 +43,8 @@ export async function POST(req: Request) {
   if (isNytGame(b.game) && b.stats?.sourceDate && b.stats.sourceDate !== b.today)
     return NextResponse.json({ error: 'Puzzle source date does not match the result date' }, { status: 400 })
   // Every score is recomputed from the game's moves against the day's puzzle, so a hand-made score cannot be posted.
-  // The moves are checked, then dropped, since stored moves would reveal the answers to anyone reading scores.
+  // The checked moves are kept in a column the leaderboard never reads, so the player's other devices can show the
+  // finished game (/api/results/run) while score reads never carry answers.
   const { moves, ...rest } = b.stats ?? {},
     v = VERIFIERS[b.game],
     m = v.moves.safeParse(moves)
@@ -81,7 +82,8 @@ export async function POST(req: Request) {
   const value = {
     ...key,
     score,
-    ...(words ? { words } : {}),
+    words,
+    moves: words ? null : m.data,
     ...(b.deviceId ? { device_id: b.deviceId } : {}),
     ...(b.device ? { device_kind: b.device } : {}),
     stats: { ...rest, ...game.stats, scoringVersion: version },
@@ -89,6 +91,9 @@ export async function POST(req: Request) {
   const inserted = await supabaseAdmin.from('game_results').insert(value)
   if (inserted.error && inserted.error.code !== '23505')
     return NextResponse.json({ error: 'Could not save score. It remains queued on your device.' }, { status: 503 })
+  // A result saved before moves were kept gains them when the same game is sent again, matched by its score.
+  if (inserted.error?.code === '23505' && !words)
+    await supabaseAdmin.from('game_results').update({ moves: m.data }).match(key).eq('score', score).is('moves', null)
   if (inserted.error?.code === '23505' && words) {
     // Another device already filed this day, so the saved words grow to cover both and the score follows them.
     // merge_bee_words adds the words in 1 statement, so 2 devices syncing at once cannot drop each other's.

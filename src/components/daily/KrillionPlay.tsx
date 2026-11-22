@@ -1,6 +1,7 @@
 'use client'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { logResult, markPracticeIfFuture, isPracticeResult } from '@/lib/results'
+import { runKey } from '@/lib/daily/saved-run'
 import {
   answerLookup,
   beginKrillionRound,
@@ -25,7 +26,7 @@ import KrillionReview from './KrillionReview'
 export type { KrillionPuzzle } from '@/lib/krillion'
 import type { KrillionPuzzle } from '@/lib/krillion'
 export default function KrillionPlay({ puzzle, dailyDay }: { puzzle: KrillionPuzzle; dailyDay: string }) {
-  const storageKey = `krillion:v3:${dailyDay}:${puzzle.date}`
+  const storageKey = runKey('krillion', dailyDay, puzzle.date)
   const [run, setRunState] = useState<KrillionRun>(() => {
     try {
       return restoreKrillionRun(JSON.parse(localStorage.getItem(storageKey) ?? 'null'), Date.now())

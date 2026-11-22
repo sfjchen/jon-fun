@@ -7,6 +7,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { isPracticeResult, logResult, markPracticeIfFuture } from '@/lib/results'
+import { runKey } from '@/lib/daily/saved-run'
 import { loadFivefoldStats, type FivefoldStats } from '@/lib/daily/fivefold-stats'
 import { FIVEFOLD_TRIES as TRIES, hardError, marks, type Mark } from '@/lib/daily/fivefold'
 
@@ -23,7 +24,7 @@ let words: Promise<Set<string>> | null = null
  */
 export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuzzle; dailyDay: string }) {
   const answer = puzzle.answer
-  const storageKey = `fivefold:nyt-v2:${dailyDay}:${answer}`
+  const storageKey = runKey('fivefold', dailyDay, answer)
   const [run, setRun] = useState<Run>(() => {
     try {
       const r = JSON.parse(localStorage.getItem(storageKey) ?? 'null') as Run | null
@@ -48,7 +49,6 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
   const current = useRef(run)
   const won = run.guesses.at(-1) === answer
   const done = won || run.guesses.length >= TRIES
-  const hard = run.guesses.length ? !!run.hard : hardPref
 
   const commit = useCallback(
     (r: Run) => {
@@ -144,14 +144,16 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
     (_, i) => run.guesses[i] ?? (i === run.guesses.length && !done ? draft : ''),
   )
   const toggleHard = () => {
-    // Like Wordle, hard mode can be dropped mid-game but only picked up before the first guess.
-    if (done) return
-    if (run.guesses.length && !hard) return flash('Hard mode can only be turned on at the start of the day')
-    if (run.guesses.length) commit({ ...current.current, hard: false })
-    setHardPref(!hard)
+    // The switch is the saved preference for every puzzle from now on, so it also works on a finished board. Like
+    // Wordle, a game under way can drop hard mode but only picks it up before the first guess.
+    const on = !hardPref
+    setHardPref(on)
     try {
-      localStorage.setItem(HARD_KEY, hard ? '0' : '1')
+      localStorage.setItem(HARD_KEY, on ? '1' : '0')
     } catch {}
+    if (done || !run.guesses.length) return
+    if (on) setMessage('Hard mode starts with your next puzzle')
+    else if (current.current.hard) commit({ ...current.current, hard: false })
   }
   const share = () => {
     const icon: Record<Mark, string> = { hit: '🟩', near: '🟨', miss: '⬛' }
@@ -168,27 +170,27 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
   }
 
   return (
-    <section className="fivefold mx-auto max-w-md space-y-4" data-testid="fivefold-play">
+    <section className="fivefold mx-auto max-w-md space-y-4 md:max-w-xl" data-testid="fivefold-play">
       <div
         className="flex items-center justify-between border-b pb-2 text-sm"
         style={{ borderColor: 'var(--ink-border)' }}
       >
         <span className="flex items-center gap-3">
-          <button type="button" role="switch" aria-checked={hard} className="fivefold-hard" onClick={toggleHard}>
-            Hard mode <i data-on={hard} />
+          <button type="button" role="switch" aria-checked={hardPref} className="fivefold-hard" onClick={toggleHard}>
+            Hard mode <i data-on={hardPref} />
           </button>
           <button type="button" className="fivefold-link" onClick={() => setStatsOpen(true)}>
             Stats
           </button>
         </span>
         <span className="text-[var(--ink-muted)]">
-          {isPracticeResult('fivefold', dailyDay) ? 'Practice' : `${run.guesses.length}/${TRIES}`}
+          {isPracticeResult('fivefold', dailyDay) ? 'Practice' : `${run.guesses.length}/${TRIES}${run.hard ? '*' : ''}`}
         </span>
       </div>
       <p role="status" aria-live="polite" className="min-h-6 text-center text-sm font-medium">
         {message}
       </p>
-      <div className="mx-auto grid w-full max-w-[300px] gap-1.5 sm:max-w-[340px]" aria-label="Guesses">
+      <div className="fivefold-board" aria-label="Guesses">
         {rows.map((word, r) => {
           const scored = r < run.guesses.length ? marks(word, answer) : null
           return (
@@ -224,14 +226,15 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
           </button>
         </div>
       ) : (
-        <div className="space-y-1.5 select-none" aria-label="Keyboard">
+        <div className="fivefold-keys select-none" aria-label="Keyboard">
           {ROWS.map((row) => (
-            <div key={row} className="flex justify-center gap-1">
+            <div key={row}>
               {[...row].map((k) => (
                 <button
                   key={k}
                   type="button"
-                  className={`fivefold-key ${k === '↵' || k === '⌫' ? 'px-3' : ''}`}
+                  className="fivefold-key"
+                  data-wide={k === '↵' || k === '⌫'}
                   data-mark={keyMarks.get(k) ?? 'none'}
                   aria-label={k === '↵' ? 'Enter' : k === '⌫' ? 'Delete' : k}
                   onClick={() => void press(k)}

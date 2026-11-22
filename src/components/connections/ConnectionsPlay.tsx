@@ -8,6 +8,7 @@ import ConnectionsBoard, { type ConnectionsCompletePayload } from '@/components/
 import ConnectionsResult from '@/components/connections/ConnectionsResult'
 import type { ConnectionsProgress } from '@/lib/connections'
 import { formatTime, logResult, markPracticeIfFuture } from '@/lib/results'
+import { runKey } from '@/lib/daily/saved-run'
 import { SAMPLE_PUZZLE } from '@/lib/connections-sample'
 
 export type ConnectionsPlayProps = {
@@ -23,7 +24,7 @@ export default function ConnectionsPlay({ basePath, idOrSlug, initialPuzzle, dai
   const [loading, setLoading] = useState(!initialPuzzle)
   const [result, setResult] = useState<ConnectionsCompletePayload | null>(null)
   const [runId, setRunId] = useState(0)
-  const progressKey = `connections:v2:${dailyDay ?? 'archive'}:${idOrSlug}`
+  const progressKey = runKey('connections', dailyDay ?? 'archive', idOrSlug)
   const [initialProgress] = useState<ConnectionsProgress | undefined>(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(progressKey) ?? 'null') as ConnectionsProgress | null

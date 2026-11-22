@@ -2,6 +2,7 @@
 import { undoable } from '@/components/UndoBar'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { formatTime, logResult, isPracticeResult, markPracticeIfFuture } from '@/lib/results'
+import { runKey } from '@/lib/daily/saved-run'
 import {
   emptyMini,
   miniElapsed,
@@ -61,7 +62,7 @@ function Menu({ label, items }: { label: string; items: [string, () => void][] }
 }
 
 export default function MiniPlay({ puzzle, dailyDay }: { puzzle: MiniPuzzle; dailyDay?: string }) {
-  const storageKey = `mini:v3:${dailyDay ?? 'archive'}:${puzzle.date}`
+  const storageKey = runKey('mini', dailyDay ?? 'archive', puzzle.date)
   // A fresh puzzle starts its clock on load; only a puzzle paused by leaving the page asks to continue.
   const [run, setRun] = useState<MiniRun>(() => {
     let r: MiniRun

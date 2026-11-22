@@ -13,7 +13,8 @@ import type { MiniPuzzle } from '@/components/mini/MiniPlay'
 import { firstDay, isNytGame, playableDay, siteDay } from '@/lib/daily'
 import { usePlayDay } from '@/lib/play-day'
 import { useDailyPuzzle } from '@/lib/use-daily-puzzle'
-import { GAMES, isPracticeResult, type GameId } from '@/lib/results'
+import { GAMES, getPlayer, isPracticeResult, resultLabel, type GameId } from '@/lib/results'
+import { useSavedRun } from '@/lib/daily/saved-run'
 import type { ConnectionsPuzzle } from '@/lib/connections'
 import type { ArtifactDay } from '@/components/daily/AnthropeumPlay'
 import type { KrillionPuzzle } from '@/components/daily/KrillionPlay'
@@ -54,7 +55,7 @@ const HOW: Record<Exclude<GameId, 'bee'>, string[]> = {
   fivefold: [
     'Find the hidden 5-letter word in 6 tries. Type or tap letters, then Enter.',
     'A green tile is in the right spot. A yellow tile is in the word but in another spot. A gray tile is not in the word.',
-    'Hard mode (optional, set before your first guess): green letters stay put and yellow letters must be reused.',
+    'Hard mode (optional, stays on until you turn it off, starts before a first guess): green letters stay put and yellow letters must be reused.',
   ],
   anthropeum: [
     '10 museum artifacts. Pin where each was made and pick a 250-year period.',
@@ -70,7 +71,10 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
   const raw = params.get('d')
   const day = usePlayDay(playableDay(game, raw) ? raw : null, game)
   const key = `${game}:${day}`
-  const { data, error, retry } = useDailyPuzzle(game, day)
+  const { data: loaded, error, retry } = useDailyPuzzle(game, day)
+  // A day already finished under this name opens on its saved result, so the game waits for that check.
+  const saved = useSavedRun(game, day, loaded?.puzzle)
+  const data = saved.ready && !saved.played ? loaded : undefined
   // Fetches the player's code alongside the puzzle instead of after it.
   useEffect(() => void LOAD[game](), [game])
   const info = (
@@ -92,7 +96,7 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
   )
   return (
     <div
-      className={`daily-game mx-auto w-full ${game === 'anthropeum' || game === 'krillion' ? 'max-w-none' : game === 'fivefold' ? 'max-w-lg' : 'max-w-4xl'}`}
+      className={`daily-game mx-auto w-full ${game === 'anthropeum' || game === 'krillion' ? 'max-w-none' : game === 'fivefold' ? 'max-w-lg md:max-w-xl' : 'max-w-4xl'}`}
       data-testid={`daily-${game}`}
     >
       <DayNav
@@ -116,7 +120,15 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
           </button>
         </div>
       )}
-      {!data && !error && <p style={{ color: 'var(--ink-muted)' }}>Loading the daily puzzle…</p>}
+      {!data && !error && !saved.played && <p style={{ color: 'var(--ink-muted)' }}>Loading the daily puzzle…</p>}
+      {saved.played && (
+        <div className="rounded-xl bg-[var(--ink-paper)] p-4 text-center" data-testid="daily-played">
+          <h2 className="text-xl font-bold">{resultLabel({ game, day, ...saved.played })}</h2>
+          <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+            {getPlayer()?.name} already played this day · saved to your daily scores
+          </p>
+        </div>
+      )}
       {data && game === 'mini' && <MiniPlay key={key} puzzle={data.puzzle as MiniPuzzle} dailyDay={day} />}
       {data && game === 'connections' && (
         <ConnectionsPlay

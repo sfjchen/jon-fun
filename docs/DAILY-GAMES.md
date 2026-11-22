@@ -7,7 +7,7 @@ Wordle (id `fivefold`), Mini, Connections, Spelling Bee (`bee`), Krillion and An
 - 1 calendar for everyone - the Pacific date (`siteDay` in `src/lib/daily.ts`). Originals that reset on Eastern time lag by a few hours.
 - A game started before midnight keeps its puzzle and result date. A reload within 1 hour after midnight resumes it (`src/lib/play-day.ts`).
 - `?d=YYYY-MM-DD` plays another day. `firstDay(game)` to `MAX_DAY` is the accepted range. Future days are unranked previews, and NYT games have none.
-- Each game keeps its first finished result, on the device and on the server. Spelling Bee is the exception - its score grows as words are found, and found words merge across a player's devices.
+- Each game keeps its first finished result, on the device and on the server. A day already finished under the same name on another device opens on that saved result (`src/lib/daily/saved-run.ts`, `POST /api/results/run`). Spelling Bee is the exception - its score grows as words are found, and found words merge across a player's devices.
 - Results save to a device queue first, then sync and retry (`src/lib/results.ts`). A 429 or 5xx stays queued, any other rejection is dropped.
 
 ## Code map
@@ -46,7 +46,7 @@ Adding a daily game - add it to `GAMES`, give it a verifier (the build fails wit
 
 - Mini - active solve time, paused when you pause or leave. First unassisted time ranks, lower wins. Check, Reveal and Autocheck mark the solve as assisted.
 - Connections - 4 groups, 4 mistakes, one-away hint, no repeat guesses. Solved puzzles rank by time. Unsolved ones rank below by groups found and never win the day. Mistakes do not break ties.
-- Wordle - 6 tries, the original's marks and hard mode (on only before the first guess). No clock. Ranked by guesses, a loss counts as 7 in averages, hard-mode results show `*`.
+- Wordle - 6 tries, the original's marks and hard mode. The switch is a saved preference for every later puzzle, and a game picks it up only before its first guess. No clock. Ranked by guesses, a loss counts as 7 in averages, hard-mode results show `*`.
 - Spelling Bee - the day's exact answer list, center letter required, 4-letter minimum, original points and rank thresholds.
 - Krillion - 7 prompts, 25 seconds each on wall time, so a reload never grants a new clock. Wrong answers can be retried, and the draft is judged once at expiry. Answers are judged on the device from the prompt's answer key, with the server as fallback. Matching ignores accents, case, punctuation and a leading "the". From 5 letters, the closest answer within min(3, 0.28 × length) edits comes back as `"typed" → "answer"` and scores when sent again. Rarity scores are 10, 15, 30, 60, 85 or 100, maximum 700. No AI judging.
 - Anthropeum - 10 artifacts, a map pin and a 250-year period each (125-year steps, 3000 BCE to 1750 CE). Up to 5,000 points for place (distance to the nearest polygon edge) and 5,000 for time, 100,000 overall. 3 free hints per game. The results page shows the original's score histogram and estimated placement.
@@ -58,7 +58,7 @@ Adding a daily game - add it to `GAMES`, give it a verifier (the build fails wit
 - Every result sends its moves (`stats.moves`). `/api/results` replays them against the day's puzzle and stores its own score, so a hand-made score cannot be posted.
 - Wordle - guesses, word list, hard mode. Bee - found words. Connections - guesses and give-up. Anthropeum - pins and periods. Krillion - each round's accepted answer, judged again. Mini - the solved grid.
 - Solve times (Mini, Connections) and Krillion's round clock cannot be replayed and stay as sent. Mini and Connections times under a floor no person can reach (0.15 s per Mini cell, 1 s per Connections guess) are rejected.
-- Moves are dropped after the check, so stored results never reveal answers.
+- Checked moves are kept in a `moves` column that score reads never return, so boards never reveal answers. Only `/api/results/run` reads it, to rebuild a player's finished game. Results saved before 2026-11-21 have no moves and show their score only, until the device that played them opens the day again.
 
 ## Players
 

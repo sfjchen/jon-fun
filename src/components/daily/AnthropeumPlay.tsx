@@ -2,13 +2,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { artifactScore, snapYear, type Artifact, type Pin } from '@/lib/artifact-scoring'
 import { logResult, markPracticeIfFuture, isPracticeResult } from '@/lib/results'
+import { runKey } from '@/lib/daily/saved-run'
 import ArtifactTimeline from './ArtifactTimeline'
 import AnthropeumResults, { type ArtifactGuess } from './AnthropeumResults'
 import { artifactHintText, hintsRemaining, revealArtifactHint, type ArtifactHints } from '@/lib/artifact-hints'
 import MapPicker from '@/components/daily/MapPicker'
 export type ArtifactDay = { date: string; artifacts: Artifact[] }
 export default function AnthropeumPlay({ puzzle, dailyDay }: { puzzle: ArtifactDay; dailyDay: string }) {
-  const storageKey = `anthropeum:v2:${dailyDay}:${puzzle.date}`
+  const storageKey = runKey('anthropeum', dailyDay, puzzle.date)
   const [guesses, setGuesses] = useState<ArtifactGuess[]>(() => {
     try {
       return JSON.parse(localStorage.getItem(storageKey) ?? '[]') as ArtifactGuess[]

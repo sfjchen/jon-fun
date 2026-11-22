@@ -2,7 +2,7 @@
  * Recomputes every daily game's result on the server from the moves the browser sends, using the same rules the
  * game plays by, so the stored score never comes from the browser. Each game names the shape of its moves and a
  * check that replays them against that day's puzzle. The registry is typed by GameId, so a new daily game cannot
- * build without one. Moves are checked, then dropped by the results API, since stored moves would reveal answers.
+ * build without one. The results API keeps checked moves apart from the scores it serves, so boards never reveal answers.
  */
 
 import { readFile } from 'node:fs/promises'
