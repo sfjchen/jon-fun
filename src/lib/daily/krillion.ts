@@ -135,33 +135,41 @@ export async function judgeAnswer(
 }
 export type KrillionPercentile = { betterThan: number; dist: number[]; sample?: number; live: boolean }
 /**
+ * Asks the original where a score sits among the players of a date it still has open, without recording a play,
+ * and saves the curve that comes back. Returns null once the original has closed the date.
+ */
+async function liveKrillionCurve(date: string, score: number) {
+  const r = await fetch('https://krillion.io/api/today/complete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    signal: AbortSignal.timeout(5000),
+    cache: 'no-store',
+    body: JSON.stringify({ date, playerId: crypto.randomUUID(), score, record: false }),
+  })
+  const live = (await r.json()) as { betterThan?: number; dist?: number[]; sample?: number }
+  if (!r.ok || typeof live.betterThan !== 'number' || !Array.isArray(live.dist) || live.dist.length !== 20) return null
+  const { error } = await supabaseAdmin.from('daily_game_content').upsert({
+    game: 'krillion-dist',
+    source_day: date,
+    payload: { dist: live.dist, sample: live.sample, at: new Date().toISOString() },
+  })
+  return { betterThan: live.betterThan, dist: live.dist, sample: live.sample, saved: !error }
+}
+/**
  * Places a score in the original game's player distribution: 20 bins of 35 points across 0-700. While the
- * original still has the date open it answers live without recording a play, and each answer is saved, so a
- * closed day falls back to its last saved curve with the percentile read from the bins.
+ * original still has the date open it answers live, and each answer is saved, so a closed day falls back to its
+ * last saved curve with the percentile read from the bins.
  */
 export async function krillionPercentile(date: string, score: number): Promise<KrillionPercentile | null> {
   try {
-    const r = await fetch('https://krillion.io/api/today/complete', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(5000),
-      cache: 'no-store',
-      body: JSON.stringify({ date, playerId: crypto.randomUUID(), score, record: false }),
-    })
-    const live = (await r.json()) as { betterThan?: number; dist?: number[]; sample?: number }
-    if (r.ok && typeof live.betterThan === 'number' && Array.isArray(live.dist) && live.dist.length === 20) {
-      await supabaseAdmin.from('daily_game_content').upsert({
-        game: 'krillion-dist',
-        source_day: date,
-        payload: { dist: live.dist, sample: live.sample, at: new Date().toISOString() },
-      })
+    const live = await liveKrillionCurve(date, score)
+    if (live)
       return {
         betterThan: live.betterThan,
         dist: live.dist,
         ...(live.sample ? { sample: live.sample } : {}),
         live: true,
       }
-    }
   } catch {}
   const stored = await supabaseAdmin
     .from('daily_game_content')
@@ -177,14 +185,15 @@ export async function krillionPercentile(date: string, score: number): Promise<K
   const below = dist.slice(0, bin).reduce((a, b) => a + b, 0) + dist[bin]! * ((score - bin * 35) / 35)
   return { betterThan: Math.round((below / total) * 100), dist, sample: stored.data?.payload?.sample, live: false }
 }
-/** Saves the final curve of the date the original still has open, just before it closes for the day. */
-export async function captureKrillionDist(): Promise<string | null> {
+/**
+ * Saves the player curve of the date the original has open right now and returns that date. Every cron run calls
+ * it, at any hour, so each day has a curve even when nobody played here, and the last run before the original's
+ * reset leaves the most complete one. A closed date's curve can no longer be fetched, so a failed save throws.
+ */
+export async function captureKrillionDist(): Promise<string> {
   const r = await fetch('https://krillion.io/api/today', { signal: AbortSignal.timeout(10000), cache: 'no-store' })
-  if (!r.ok) throw Error('Could not read the original reset time')
-  const { date, resetsAt } = (await r.json()) as { date: string; resetsAt: string }
-  const untilReset = Date.parse(resetsAt) - Date.now()
-  if (!Number.isFinite(untilReset)) throw Error('Invalid original reset time')
-  if (untilReset <= 0 || untilReset > 60 * 60000) return null
-  if (!validDay(date) || !(await krillionPercentile(date, 0))?.live) throw Error('Could not capture the score curve')
+  if (!r.ok) throw Error('Could not read the original open date')
+  const { date } = (await r.json()) as { date: string }
+  if (!validDay(date) || !(await liveKrillionCurve(date, 0))?.saved) throw Error('Could not save the score curve')
   return date
 }

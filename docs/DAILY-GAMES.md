@@ -37,7 +37,7 @@ Adding a daily game - add it to `GAMES`, give it a verifier (the build fails wit
 ## Cron (`vercel.json`)
 
 - `/api/cron/daily` runs at 07, 08, 09, 10 and 11 UTC. Hobby crons fire anywhere inside their hour and are not retried, so the runs overlap: 07 and 08 cover Pacific midnight in both offsets, the rest recover late feeds. The handler skips unless the Pacific hour is 0-3, fetches all 6 puzzles for the day, and saves the previous day's Anthropeum player statistics.
-- `/api/cron/krillion` runs at 03:55 and 04:55 UTC to keep the original's final player curve before its Eastern reset.
+- `/api/cron/krillion` runs in each hour from 00 to 04 UTC and saves the original's player curve for its open day on every run, as does `/api/cron/daily`. The curve cannot be fetched after the original's Eastern reset (04:00 or 05:00 UTC), so the last run before it leaves the saved one, and a day nobody played here still has a curve.
 - `/api/poker/cleanup` removes rooms idle for 24 hours (poker, 24, party, Triples).
 - Every cron route needs `CRON_SECRET` and rejects all calls when it is unset (`src/lib/api-guards.ts`).
 - Requests also fetch on demand, so a late feed recovers without waiting for the next run.

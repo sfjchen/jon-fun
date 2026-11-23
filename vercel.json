@@ -35,12 +35,24 @@
       "schedule": "0 11 * * *"
     },
     {
+      "path": "/api/cron/krillion?utc=00",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/krillion?utc=01",
+      "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/krillion?utc=02",
+      "schedule": "0 2 * * *"
+    },
+    {
       "path": "/api/cron/krillion?utc=03",
-      "schedule": "55 3 * * *"
+      "schedule": "0 3 * * *"
     },
     {
       "path": "/api/cron/krillion?utc=04",
-      "schedule": "55 4 * * *"
+      "schedule": "0 4 * * *"
     }
   ]
 }
