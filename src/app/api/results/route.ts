@@ -31,6 +31,17 @@ const schema = z.object({
   n: z.number().int().min(0).max(500).optional(),
   stats: stats.optional(),
 })
+/**
+ * Serializes a value with object keys in sorted order, so moves read back from the database (which reorders keys)
+ * compare equal to the same moves as sent.
+ */
+function canonical(v: unknown): string {
+  return JSON.stringify(v, (_, x: unknown) =>
+    x && typeof x === 'object' && !Array.isArray(x)
+      ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => a.localeCompare(b)))
+      : x,
+  )
+}
 export async function POST(req: Request) {
   // Each post replays a game and may fetch its puzzle, so a burst from 1 address waits. The device queue retries a 429.
   if (rateLimited(req, 'results', 60))
@@ -91,9 +102,27 @@ export async function POST(req: Request) {
   const inserted = await supabaseAdmin.from('game_results').insert(value)
   if (inserted.error && inserted.error.code !== '23505')
     return NextResponse.json({ error: 'Could not save score. It remains queued on your device.' }, { status: 503 })
-  // A result saved before moves were kept gains them when the same game is sent again, matched by its score.
-  if (inserted.error?.code === '23505' && !words)
+  if (inserted.error?.code === '23505' && !words) {
+    // A result saved before moves were kept gains them when the same game is sent again, matched by its score.
     await supabaseAdmin.from('game_results').update({ moves: m.data }).match(key).eq('score', score).is('moves', null)
+    // A different finished game from another device under the same name is kept beside the first one as a
+    // conflict, instead of being dropped. The first result still ranks, and only the first such game is kept.
+    const first = await supabaseAdmin.from('game_results').select('device_id,score,moves,conflict').match(key)
+    const kept = first.data?.[0]
+    if (
+      kept &&
+      !kept.conflict &&
+      b.deviceId &&
+      kept.device_id &&
+      kept.device_id !== b.deviceId &&
+      (kept.score !== score || (kept.moves && canonical(kept.moves) !== canonical(m.data)))
+    )
+      await supabaseAdmin
+        .from('game_results')
+        .update({ conflict: { score, stats: value.stats, device: b.device ?? null, at: new Date().toISOString() } })
+        .match(key)
+        .is('conflict', null)
+  }
   if (inserted.error?.code === '23505' && words) {
     // Another device already filed this day, so the saved words grow to cover both and the score follows them.
     // merge_bee_words adds the words in 1 statement, so 2 devices syncing at once cannot drop each other's.
@@ -146,13 +175,14 @@ export async function GET(req: Request) {
     stats: Record<string, unknown>
     scoring_version: number
     device_kind: string | null
+    conflict: { score: number; stats: Record<string, unknown>; device: string | null } | null
   }
   const all: Row[] = []
   // 20 pages of 1,000 rows is far past any board's history and bounds the work of 1 read.
   for (let offset = 0; offset < 20000; offset += 1000) {
     const query = supabaseAdmin
       .from('game_results')
-      .select('name,game,day,score,stats,scoring_version,device_kind')
+      .select('name,game,day,score,stats,scoring_version,device_kind,conflict')
       .eq('group_code', g.data)
       .in('game', game ? [game] : GAME_IDS)
     const dated = day ? query.eq('day', day) : query.gte('day', since)
@@ -173,8 +203,8 @@ export async function GET(req: Request) {
         r.stats.puzzleId.slice(12) === r.day))
   const current = (r: Row) => r.scoring_version === SCORING_VERSION && exact(r)
   const out = (r: Row) => {
-    const { device_kind, ...rest } = r
-    return device_kind ? { ...rest, device: device_kind } : rest
+    const { device_kind, conflict, ...rest } = r
+    return { ...rest, ...(device_kind ? { device: device_kind } : {}), ...(conflict ? { conflict } : {}) }
   }
   return NextResponse.json(
     { rows: all.filter(current).map(out), legacyRows: all.filter((r) => !current(r)).map(out) },

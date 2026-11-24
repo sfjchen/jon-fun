@@ -2,6 +2,7 @@
  * 1 Sentence Everyday sync API (Application Programming Interface).
  * Rows keep the client's updatedAt, and a write only lands when it is newer than the stored row, so
  * repeated full pushes from stale devices never overwrite newer entries. Empty text marks a deleted day.
+ * `conflict` carries another device's text for the same day, set by the client that found the clash.
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
     if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })
     const { data, error } = await supabaseAdmin
       .from(TABLE)
-      .select('date, text, updated_at')
+      .select('date, text, updated_at, conflict')
       .eq('user_id', who.uid)
       .order('date', { ascending: false })
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -29,6 +30,7 @@ export async function GET(request: NextRequest) {
       date: r.date,
       text: r.text ?? '',
       updatedAt: r.updated_at ?? new Date(0).toISOString(),
+      ...(r.conflict ? { conflict: r.conflict as string } : {}),
     }))
     return NextResponse.json({ entries })
   } catch {
@@ -36,14 +38,15 @@ export async function GET(request: NextRequest) {
   }
 }
 
-type Row = { user_id: string; date: string; text: string; updated_at: string }
+type Row = { user_id: string; date: string; text: string; updated_at: string; conflict: string | null }
+type Incoming = { date?: string; text?: string; updatedAt?: string; conflict?: string | null }
 
 /**
  * Upserts only the rows that are new or newer than what is stored.
  * Future timestamps are clamped to now so a fast device clock cannot pin an entry forever.
  * A row without updatedAt (older cached clients) only fills a missing date.
  */
-async function writeNewer(userId: string, incoming: Array<{ date?: string; text?: string; updatedAt?: string }>) {
+async function writeNewer(userId: string, incoming: Incoming[]) {
   const now = Date.now()
   const byDate = new Map<string, { row: Row; ms: number | null }>()
   for (const e of incoming) {
@@ -59,6 +62,7 @@ async function writeNewer(userId: string, incoming: Array<{ date?: string; text?
         date: e.date,
         text: (e.text ?? '').trim(),
         updated_at: new Date(ms ?? now).toISOString(),
+        conflict: typeof e.conflict === 'string' && e.conflict.trim() ? e.conflict.slice(0, 20000) : null,
       },
     })
   }
@@ -85,7 +89,7 @@ export async function POST(request: NextRequest) {
   try {
     const { userId, entries } = (await request.json()) as {
       userId?: string
-      entries?: Array<{ date?: string; text?: string; updatedAt?: string }>
+      entries?: Incoming[]
     }
     const who = resolveSyncUser(userId)
     if ('error' in who) return NextResponse.json({ error: who.error }, { status: who.status })

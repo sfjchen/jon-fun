@@ -77,7 +77,9 @@ export type Stats = {
   moves?: unknown
 }
 export type Result = { game: GameId; day: string; score: number; stats: Stats }
-export type BoardRow = Result & { name: string; device?: DeviceKind }
+/** A different finished game the same player sent from another device. The first result is the one that ranks. */
+export type ResultConflict = { score: number; stats: Stats; device: DeviceKind | null }
+export type BoardRow = Result & { name: string; device?: DeviceKind; conflict?: ResultConflict }
 /** The version of the scoring rules that current results use. Rows stored under an older one stay off the boards. */
 export const SCORING_VERSION = 2
 export function formatGameScore(game: GameId, score: number): string {

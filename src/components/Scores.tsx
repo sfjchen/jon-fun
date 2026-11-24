@@ -582,7 +582,17 @@ export function ScoresHub() {
                   ★
                 </span>
               )}
-              <span className="text-right tabular-nums">{resultLabel(r)}</span>
+              <span className="text-right tabular-nums">
+                {r.conflict && (
+                  <span
+                    className="mr-1.5 text-xs text-amber-700"
+                    title={`Conflict: also played on another device (${resultLabel({ ...r, ...r.conflict })}). The first result counts.`}
+                  >
+                    ⚠ {resultLabel({ ...r, ...r.conflict })}
+                  </span>
+                )}
+                {resultLabel(r)}
+              </span>
             </li>
           )
         })}

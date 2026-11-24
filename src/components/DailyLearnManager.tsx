@@ -7,6 +7,7 @@ import { HomeLink } from '@/components/HomeLink'
 import {
   loadEntries,
   saveEntry,
+  conflictTexts,
   getEntryByDate,
   getTodayDate,
   getCounts,
@@ -188,6 +189,16 @@ export default function DailyLearnManager() {
     } else setSyncFailed(true)
     refresh()
   }, [editingDate, editingText, refresh])
+
+  /** Settles a day's conflict by saving the chosen text, which replaces the entry on every device. */
+  const settle = useCallback(
+    async (date: string, text: string) => {
+      setSyncFailed(!(await saveEntry({ date, text })))
+      refresh()
+    },
+    [refresh],
+  )
+  const pick = 'shrink-0 underline hover:opacity-80'
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(exportAsText())
@@ -546,6 +557,35 @@ export default function DailyLearnManager() {
                   <div className="mt-1 whitespace-pre-wrap" style={{ color: 'var(--ink-muted)' }}>
                     {capitalizeFirst(e.text)}
                   </div>
+                  {e.conflict && (
+                    <div
+                      className="mt-2 rounded border border-amber-600/50 p-2 text-sm"
+                      data-testid="daily-learn-conflict"
+                    >
+                      <p className="font-semibold text-amber-700">
+                        Conflict · another device wrote a different entry for this day
+                      </p>
+                      {conflictTexts(e).map((other) => (
+                        <div key={other} className="mt-1 flex items-start justify-between gap-2">
+                          <span style={{ color: 'var(--ink-text)' }}>{other}</span>
+                          <button className={pick} onClick={() => void settle(e.date, other)}>
+                            Use this
+                          </button>
+                        </div>
+                      ))}
+                      <div className="mt-2 flex gap-3">
+                        <button className={pick} onClick={() => void settle(e.date, e.text)}>
+                          Keep the one shown
+                        </button>
+                        <button
+                          className={pick}
+                          onClick={() => void settle(e.date, [e.text, ...conflictTexts(e)].join('\n'))}
+                        >
+                          Keep both
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

@@ -428,7 +428,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                         : enableNudges(player).then((err) => err && setNudged((m) => ({ ...m, '': err }))))
                     }
                   >
-                    {push === 'on' ? '🔔 Nudges on' : '🔕 Get nudges'}
+                    {push === 'on' ? '🔔' : '🔕 Get nudges'}
                   </button>
                 )}
                 {push === 'denied' && (

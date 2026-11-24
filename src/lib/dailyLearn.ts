@@ -1,7 +1,9 @@
 /**
  * 1 Sentence Everyday – localStorage utilities and cross-device sync.
  * One entry per calendar day. Sync merges by date with the latest updatedAt winning, and deletions
- * travel as empty-text tombstones so a stale device cannot bring a deleted entry back.
+ * travel as empty-text tombstones so a stale device cannot bring a deleted entry back. When 2 devices each wrote a
+ * different text for the same day before syncing, the newer one shows and the other is kept beside it as a conflict
+ * until the user picks.
  */
 
 import { formatDailyLearnCsv, parseDailyLearnCsv } from './dailyLearnCsv'
@@ -11,6 +13,8 @@ export interface DailyLearnEntry {
   date: string // 'YYYY-MM-DD'
   text: string
   updatedAt: string // ISO timestamp
+  /** Another device's text for the same day (several separated by newlines), kept until the user picks. */
+  conflict?: string
 }
 
 export interface DailyLearnCounts {
@@ -66,17 +70,61 @@ function tsMs(iso: string | undefined): number {
   return Number.isNaN(t) ? 0 : t
 }
 
+/** Splits a conflict field into its texts. */
+export function conflictTexts(e: DailyLearnEntry): string[] {
+  return (e.conflict ?? '').split('\n').filter(Boolean)
+}
+
 /**
  * Merges entries by date, keeping the latest updatedAt (ties keep the first list's copy).
  * Empty-text entries are tombstones: they carry a deletion across devices instead of letting it resurrect.
+ *
+ * `synced` maps each date to the updatedAt this device last had in step with the server. With it, a day is a clash
+ * when both sides hold a different text and neither is that synced version, which means each device wrote its own
+ * since they last agreed. The newer text then shows and the other is kept in `conflict`, under a fresh updatedAt so
+ * every device receives the pair. A side that already carries the other's text is taken as is, so a clash is
+ * recorded once. Without `synced` (a file import) the newest simply wins.
  */
-export function mergeEntries(local: DailyLearnEntry[], remote: DailyLearnEntry[]): DailyLearnEntry[] {
-  const byDate = new Map<string, DailyLearnEntry>()
-  for (const e of [...local, ...remote]) {
-    const prev = byDate.get(e.date)
-    if (!prev || tsMs(e.updatedAt) > tsMs(prev.updatedAt)) {
-      byDate.set(e.date, { ...e, text: capitalizeFirst((e.text ?? '').trim()) })
+export function mergeEntries(
+  local: DailyLearnEntry[],
+  remote: DailyLearnEntry[],
+  synced?: Record<string, string>,
+): DailyLearnEntry[] {
+  const clean = (e: DailyLearnEntry): DailyLearnEntry => ({ ...e, text: capitalizeFirst((e.text ?? '').trim()) })
+  const byDate = new Map(local.map((e) => [e.date, clean(e)]))
+  for (const raw of remote) {
+    const r = clean(raw),
+      l = byDate.get(r.date)
+    const [newer, older] = !l || tsMs(r.updatedAt) > tsMs(l.updatedAt) ? [r, l] : [l, r]
+    // A side knows the other's text when it already holds every line of it, as its own text or as a kept one. This
+    // covers a clash the other device recorded first, and a settled entry that joins both texts.
+    const knows = (a: DailyLearnEntry, b: DailyLearnEntry) => {
+      const held = [a.text, ...conflictTexts(a)].flatMap((t) => t.split('\n'))
+      return b.text.split('\n').every((line) => held.includes(line))
     }
+    const clash =
+      synced &&
+      older &&
+      l &&
+      l.text &&
+      r.text &&
+      l.text !== r.text &&
+      ![l.updatedAt, r.updatedAt].includes(synced[r.date] ?? '') &&
+      !knows(l, r) &&
+      !knows(r, l)
+    byDate.set(
+      r.date,
+      clash
+        ? {
+            ...newer,
+            updatedAt: new Date().toISOString(),
+            // Line breaks separate the kept texts, so a kept text is stored on 1 line.
+            conflict: [
+              ...new Set([older.text.replace(/\n+/g, ' '), ...conflictTexts(older), ...conflictTexts(newer)]),
+            ].join('\n'),
+          }
+        : newer,
+    )
   }
   return sortByDateDesc([...byDate.values()])
 }
@@ -109,6 +157,7 @@ async function fetchEntriesFromServer(): Promise<DailyLearnEntry[] | null> {
   }
 }
 
+const SEEDED_KEY = 'daily_learn_synced_seeded'
 const PUSH_RETRIES = 3
 const RETRY_DELAY_MS = 500
 
@@ -116,7 +165,7 @@ const RETRY_DELAY_MS = 500
 async function pushWithRetry(entries: DailyLearnEntry[]): Promise<boolean> {
   const body = JSON.stringify({
     ...syncCredentials(),
-    entries: entries.map((e) => ({ date: e.date, text: e.text, updatedAt: e.updatedAt })),
+    entries: entries.map((e) => ({ date: e.date, text: e.text, updatedAt: e.updatedAt, conflict: e.conflict ?? null })),
   })
   for (let i = 0; i < PUSH_RETRIES; i++) {
     try {
@@ -143,13 +192,42 @@ export function isEntryTextDirty(localText: string, saved?: DailyLearnEntry): bo
  * Fetches from the server, merges with local, saves local, and pushes the merge back.
  * A failed fetch still pushes local data (the server keeps whichever copy is newer) but reports not ok.
  */
-export async function syncWithServer(): Promise<{ entries: DailyLearnEntry[]; pushOk: boolean }> {
-  if (typeof window === 'undefined') return { entries: [], pushOk: true }
+export function syncWithServer(): Promise<{ entries: DailyLearnEntry[]; pushOk: boolean }> {
+  if (typeof window === 'undefined') return Promise.resolve({ entries: [], pushOk: true })
+  // Syncs run 1 at a time, so 2 overlapping ones cannot each record the same clash under its own timestamp.
+  const next = syncing.then(syncOnce, syncOnce)
+  syncing = next.catch(() => undefined)
+  return next
+}
+
+let syncing: Promise<unknown> = Promise.resolve()
+
+/**
+ * Runs 1 fetch, merge and push for syncWithServer.
+ */
+async function syncOnce(): Promise<{ entries: DailyLearnEntry[]; pushOk: boolean }> {
   await ensureSyncIdentity()
   const remote = await fetchEntriesFromServer()
-  const merged = mergeEntries(loadAllEntries(), remote ?? [])
+  // The synced versions are kept per account, so a device that joins another sync key compares from scratch.
+  const syncedKey = `daily_learn_synced:${syncCredentials().userId}`
+  let synced: Record<string, string> = {}
+  try {
+    // A browser that synced before conflicts existed starts from what it holds, so its older copies of days edited
+    // elsewhere update quietly instead of all showing as conflicts.
+    if (!localStorage.getItem(SEEDED_KEY)) {
+      localStorage.setItem(SEEDED_KEY, '1')
+      localStorage.setItem(
+        syncedKey,
+        JSON.stringify(Object.fromEntries(loadAllEntries().map((e) => [e.date, e.updatedAt]))),
+      )
+    }
+    synced = JSON.parse(localStorage.getItem(syncedKey) ?? '{}') as Record<string, string>
+  } catch {}
+  const merged = mergeEntries(loadAllEntries(), remote ?? [], remote ? synced : undefined)
   localStorage.setItem(DAILY_LEARN_ENTRIES_KEY, JSON.stringify(merged))
   const pushOk = (await pushWithRetry(merged)) && remote !== null
+  if (pushOk)
+    localStorage.setItem(syncedKey, JSON.stringify(Object.fromEntries(merged.map((e) => [e.date, e.updatedAt]))))
   return { entries: visible(merged), pushOk }
 }
 
@@ -158,7 +236,10 @@ export function loadEntries(): DailyLearnEntry[] {
   return visible(loadAllEntries())
 }
 
-/** Saves an entry (empty text writes a tombstone) and syncs. Returns false if the sync failed. */
+/**
+ * Saves an entry (empty text writes a tombstone) and syncs. Returns false if the sync failed. A save replaces the
+ * whole entry, so saving a day that holds a conflict settles it.
+ */
 export async function saveEntry(entry: { date: string; text: string }): Promise<boolean> {
   if (typeof window === 'undefined') return false
   const all = loadAllEntries()
