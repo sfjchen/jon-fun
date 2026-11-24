@@ -7,6 +7,8 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 export const OWNER_SYNC_KEY = 'sfjc'
 export const SYNC_DEVICES_TABLE = 'sync_devices'
+/** The HttpOnly cookie that carries a browser's device ID and sync key to /api/sync routes. */
+export const SYNC_COOKIE = 'sfjc_ids'
 export const OWNER_ONLY = "Only the site owner's sync key can do this. Everything else still works locally."
 
 export type SyncDevice = {
@@ -16,6 +18,8 @@ export type SyncDevice = {
   last_seen: string
   player_name?: string
   player_group?: string
+  /** The name this device played as before an admin renamed it, until the device adopts the new one. */
+  player_was?: string | null
   device_kind?: string
 }
 

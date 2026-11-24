@@ -73,17 +73,28 @@ export function usePushStatus(player: Player | null): PushStatus {
   return status
 }
 
+let enabling: Promise<string> | null = null
+
 /**
  * Asks for notification permission (call from a tap) and subscribes this browser for the player's nudges. Returns
- * an error message, or '' on success.
+ * an error message, or '' on success. Taps made while the permission prompt is open share the first tap's request,
+ * so the browser subscribes once.
  */
-export async function enableNudges(player: Player): Promise<string> {
+export function enableNudges(player: Player): Promise<string> {
+  enabling ??= subscribe(player).finally(() => {
+    enabling = null
+    window.dispatchEvent(new Event(CHANGED))
+  })
+  return enabling
+}
+
+/**
+ * Runs the permission prompt and the subscription for enableNudges.
+ */
+async function subscribe(player: Player): Promise<string> {
   const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
   if (!pub) return 'Nudges are not set up yet.'
-  if ((await Notification.requestPermission()) !== 'granted') {
-    window.dispatchEvent(new Event(CHANGED))
-    return 'Notifications are blocked for this site.'
-  }
+  if ((await Notification.requestPermission()) !== 'granted') return 'Notifications are blocked for this site.'
   const reg = await registerReaderServiceWorker()
   if (!reg) return 'This browser cannot receive nudges.'
   await navigator.serviceWorker.ready
@@ -95,9 +106,7 @@ export async function enableNudges(player: Player): Promise<string> {
         userVisibleOnly: true,
         applicationServerKey: Uint8Array.from(raw, (c) => c.charCodeAt(0)),
       }))
-    const ok = await save(sub, player)
-    window.dispatchEvent(new Event(CHANGED))
-    return ok ? '' : 'Could not turn on nudges. Try again.'
+    return (await save(sub, player)) ? '' : 'Could not turn on nudges. Try again.'
   } catch {
     return 'Could not turn on nudges. Try again.'
   }
@@ -117,6 +126,35 @@ export async function disableNudges(): Promise<void> {
     await sub.unsubscribe()
   }
   window.dispatchEvent(new Event(CHANGED))
+}
+
+export type NudgeState = { nudged: string[]; reachable: string[] }
+
+/**
+ * Loads, while the drawer is open, who the player already nudged today and which players can receive nudges, both
+ * as lowercased names. Null until the first reply.
+ */
+export function useNudgeState(player: Player | null, open: boolean): NudgeState | null {
+  const [state, setState] = useState<NudgeState | null>(null)
+  const key = player && open ? `${player.group}:${player.name}` : ''
+  useEffect(() => {
+    if (!key || !player) return
+    let live = true
+    const load = () =>
+      void fetch(`/api/push/nudge?group=${player.group}&from=${encodeURIComponent(player.name)}`)
+        .then((r) => (r.ok ? (r.json() as Promise<NudgeState>) : null))
+        .then((d) => live && d && setState(d))
+        .catch(() => {})
+    load()
+    window.addEventListener(CHANGED, load)
+    return () => {
+      live = false
+      window.removeEventListener(CHANGED, load)
+    }
+    // Reloads only when the name or group changes, or the drawer opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key])
+  return state
 }
 
 /**

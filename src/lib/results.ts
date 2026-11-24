@@ -120,6 +120,8 @@ export function formatTime(seconds: number): string {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
 }
 export type Player = { name: string; group: string }
+/** Devices playing under this name can rename and remove players on their board (/api/sync/players). */
+export const ADMIN_NAME = 'jon'
 export const PUBLIC_GROUP = 'public'
 /** Collapses a name's spacing and escapes it for a case-insensitive exact match, so "jon" finds "Jon". */
 export function likeName(name: string): string {
@@ -262,6 +264,15 @@ export function logResult(game: GameId, score: number, n?: number, day = siteDay
   } catch {
     /* Storage can be disabled in a private browser. */
   }
+}
+/**
+ * Reloads every open board after a change made outside the results queue, skipping copies cached before it.
+ */
+export function boardChanged(): void {
+  try {
+    sessionStorage.setItem(POSTED_KEY, String(Date.now()))
+  } catch {}
+  window.dispatchEvent(new Event(RESULTS_CHANGED))
 }
 export function pendingResults(): number {
   return queue().length

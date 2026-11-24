@@ -13,7 +13,7 @@ import DayPicker from '@/components/daily/DayPicker'
 import { titleTransition } from '@/components/daily/DayNav'
 import PlayerName from '@/components/PlayerName'
 import { useHoverTip } from '@/components/HoverTip'
-import { disableNudges, enableNudges, nudge, usePushStatus } from '@/lib/push'
+import { disableNudges, enableNudges, nudge, useNudgeState, usePushStatus } from '@/lib/push'
 import { FIRST_DAY, firstDay, isNytGame, shiftDay, siteDay } from '@/lib/daily'
 import { useSiteDay } from '@/lib/play-day'
 import { usePlayer } from '@/lib/use-player'
@@ -217,6 +217,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
   const path = usePathname()
   const { player, today, picked: done, everyone, streak, loaded, friends } = useDaily(sel, open)
   const push = usePushStatus(player)
+  const nudges = useNudgeState(player, open)
   const [nudged, setNudged] = useState<Record<string, string>>({})
   const btn = useRef<HTMLButtonElement>(null)
   const panel = useRef<HTMLDivElement>(null)
@@ -427,7 +428,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                         : enableNudges(player).then((err) => err && setNudged((m) => ({ ...m, '': err }))))
                     }
                   >
-                    {push === 'on' ? '🔔' : '🔕 Get nudges'}
+                    {push === 'on' ? '🔔 Nudges on' : '🔕 Get nudges'}
                   </button>
                 )}
                 {push === 'denied' && (
@@ -524,13 +525,22 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                 <h3 className="mb-2 text-sm font-semibold text-[var(--ink-muted)]">Nudge friends</h3>
                 <div className="flex flex-wrap gap-1.5">
                   {friends.map((f) => {
-                    const sent = nudged[f.name]
+                    const key = f.name.toLowerCase()
+                    // A friend nudged earlier today stays ticked after a reload, and one with nudges off is marked.
+                    const sent = nudged[f.name] ?? (nudges?.nudged.includes(key) ? 'Nudged' : undefined)
+                    const off = !!nudges && !nudges.reachable.includes(key)
                     return (
                       <button
                         key={f.name}
                         type="button"
                         disabled={sent !== undefined || push === 'loading'}
-                        title={sent || `${f.name} has ${GAME_IDS.length - f.done} games left today`}
+                        title={
+                          sent === 'Nudged'
+                            ? `You nudged ${f.name} today`
+                            : off
+                              ? `${f.name} has not turned on nudges, so a nudge cannot reach them yet`
+                              : sent || `Nudge ${f.name}: ${GAME_IDS.length - f.done} games left today`
+                        }
                         onClick={() => {
                           // Senders turn on their own nudges first, so the tap asks for notifications when they are off.
                           const gate =
@@ -553,18 +563,21 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                         }}
                         className={
                           'flex items-center gap-1.5 rounded-full border border-[var(--ink-border)] px-2.5 py-1 text-xs ' +
-                          'hover:bg-[var(--ink-paper)] disabled:opacity-60'
+                          `hover:bg-[var(--ink-paper)] disabled:opacity-60 ${off && !sent ? 'opacity-50' : ''}`
                         }
                       >
                         <span className="max-w-24 truncate font-medium">{f.name}</span>
                         <span className="text-[var(--ink-muted)] tabular-nums">
                           {f.done}/{GAME_IDS.length}
                         </span>
-                        <span aria-hidden>{sent === 'Nudged' ? '✓' : '👋'}</span>
+                        <span aria-hidden>{sent === 'Nudged' ? '✓' : off ? '🔕' : '👋'}</span>
                       </button>
                     )
                   })}
                 </div>
+                <p className="mt-1.5 text-xs text-[var(--ink-muted)]">
+                  ✓ sent today · 🔕 has nudges off · a nudge goes to all of a friend&apos;s devices
+                </p>
                 {Object.values(nudged).some((v) => v && v !== 'Nudged' && v !== 'Sending…') && (
                   <p role="status" className="mt-1.5 text-xs text-[var(--ink-muted)]">
                     {Object.entries(nudged)

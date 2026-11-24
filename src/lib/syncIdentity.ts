@@ -221,7 +221,7 @@ export function ensureSyncIdentity(): Promise<void> {
     for (const k of [...LEGACY_KEYS, ...LEGACY_IDS]) write(k, '')
     const profile = getDevicePlayer()
     if (profile) write(LABEL, profile.name)
-    const r = await call<{ syncKey: string; player?: DevicePlayer }>('POST', {
+    const r = await call<{ syncKey: string; player?: DevicePlayer; renamed?: boolean }>('POST', {
       syncKey: getSyncKey(),
       deviceId: getDeviceId(),
       label: getDeviceLabel() || defaultLabel(),
@@ -230,7 +230,8 @@ export function ensureSyncIdentity(): Promise<void> {
     })
     if (!r) throw new Error('link failed')
     write(KEY, r.syncKey)
-    if (r.player && !getDevicePlayer()) {
+    // An admin rename replaces the name this device holds.
+    if (r.player && (!getDevicePlayer() || r.renamed)) {
       write(PLAYER, JSON.stringify(r.player))
       write(LABEL, r.player.name)
     }

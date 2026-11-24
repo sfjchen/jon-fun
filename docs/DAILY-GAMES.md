@@ -63,6 +63,8 @@ Adding a daily game - add it to `GAMES`, give it a verifier (the build fails wit
 ## Players
 
 - Games share the device ID of Daily Log and Notes ([SYNC.md](SYNC.md)). The name is stored locally and on the server, and comes back with the device cookie if local storage is cleared.
+- A device playing as `Jon` is an admin of its board: Standings shows rename and remove beside each name (`POST /api/sync/players`, which checks the device's saved name from the sync cookie). A rename moves results and nudge subscriptions, and the renamed player's devices adopt the new name on their next visit (`sync_devices.player_was`). A remove deletes the player's results on that board.
+- Friend nudges are web push (`src/lib/push.ts`, `/api/push/*`, handler in `public/e-reader-sw.js`). A subscription is 1 browser filed under a board name, and a nudge goes to every subscription under the friend's name, so all their devices get it. A browser that turns nudges on gets 1 confirming notification. iPhones need the site on the Home Screen. A desktop browser must be running (no tab needed), and a closed one gets the nudge when it next starts, within 12 hours.
 - Names are unique per board regardless of case, backed by a unique index on the lowercased name. Editing a name does not rewrite earlier results.
 
 ## Scripts and tests

@@ -14,10 +14,12 @@ import DayPicker from '@/components/daily/DayPicker'
 import { HomeLink } from '@/components/HomeLink'
 import PlayerName, { PencilIcon } from '@/components/PlayerName'
 import {
+  ADMIN_NAME,
   GAMES,
   GAME_IDS,
   PUBLIC_GROUP,
   bestGameScore,
+  boardChanged,
   boardName,
   compareResults,
   flushResults,
@@ -41,6 +43,54 @@ import { useHoverTip } from '@/components/HoverTip'
 const card = 'rounded-2xl border border-[var(--ink-border)] bg-[var(--ink-bg)] p-3 shadow-sm sm:p-4'
 const muted = 'text-[var(--ink-muted)]'
 type Tab = GameId | 'all'
+
+/**
+ * Admin controls beside a player's name in Standings: rename the player, or remove them with all their results.
+ * Shown only to a device playing as the admin name, and the server checks that device again.
+ */
+function PlayerAdmin({ player, name }: { player: Player; name: string }) {
+  const send = async (change: { action: 'rename'; to: string } | { action: 'remove' }) => {
+    const r = await fetch('/api/sync/players', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...change, group: player.group, name }),
+    }).catch(() => null)
+    const d = (await r?.json().catch(() => null)) as { error?: string; name?: string } | null
+    if (!r?.ok) return window.alert(d?.error ?? 'Could not change this player')
+    // Renaming the admin's own name moves this device with it.
+    if (d?.name && name === player.name) setPlayer({ ...player, name: d.name })
+    boardChanged()
+  }
+  const button = 'rounded px-1 text-xs font-normal opacity-50 hover:bg-[var(--ink-paper)] hover:opacity-100'
+  return (
+    <span className="ml-1 flex gap-0.5">
+      <button
+        type="button"
+        className={button}
+        title={`Rename ${name}`}
+        aria-label={`Rename ${name}`}
+        onClick={() => {
+          const to = window.prompt(`Rename ${name} to`, name)?.trim().slice(0, 24)
+          if (to && to !== name) void send({ action: 'rename', to })
+        }}
+      >
+        <PencilIcon />
+      </button>
+      <button
+        type="button"
+        className={button}
+        title={`Remove ${name}`}
+        aria-label={`Remove ${name}`}
+        onClick={() => {
+          if (window.confirm(`Remove ${name} and all their results from this board? This cannot be undone.`))
+            void send({ action: 'remove' })
+        }}
+      >
+        ✕
+      </button>
+    </span>
+  )
+}
 
 /**
  * Collects the name and, optionally, a private group code that results are filed under.
@@ -742,6 +792,7 @@ export function ScoresHub() {
                             style={{ backgroundColor: color(p.name) }}
                           />
                           {p.name}
+                          {player && me.toLowerCase() === ADMIN_NAME && <PlayerAdmin player={player} name={p.name} />}
                         </span>
                       </td>
                       <td className="p-3 text-right tabular-nums">{p.played}</td>
