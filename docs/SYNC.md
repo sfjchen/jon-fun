@@ -13,9 +13,9 @@ Daily Learn, Notes and Reader share 1 sync identity (`src/lib/syncIdentity.ts`, 
   check for it (`isOwnerKey` on the server, `isOwnerDevice` on the client).
 - `SFJC_SYNC_PASSWORD` (Vercel env) is the retired owner password. The server maps it to `sfjc`.
 
-Merge rules: Daily Learn keeps the newest `updatedAt` per day, with empty text as a delete tombstone. When 2
-devices each wrote a different text for a day since they last agreed (tracked per account in
-`daily_learn_synced:<key>`), the newer shows and the other is kept in the entry's `conflict` until the user picks
-in History. Notes keeps the newest session. Sync never replaces either side. Daily games keep the first finished
+Merge rules: Daily Learn keeps the newest `updatedAt` per day, with empty text as a delete tombstone. Devices on
+the same account never conflict. Only the first sync after a device joins a sync key (no `daily_learn_synced:<key>`
+flag yet) can: where the 2 histories hold a different text for a day, the newer shows and the other is kept in the
+entry's `conflict` until the user picks in History. Notes keeps the newest session. Sync never replaces either side. Daily games keep the first finished
 result, and a different game sent from another device under the same name is stored in `game_results.conflict`
 and shown beside it on the daily board.

@@ -148,18 +148,16 @@ test('Bee scoring, center-letter requirements, duplicate checks, and Genius/Quee
   assert.equal(rankIdx(97, 97), 9)
 })
 
-test('Daily Learn keeps both texts when 2 devices wrote the same day, and updates quietly otherwise', async () => {
+test('Daily Learn keeps both texts only when a device joins a sync key, and takes the newest otherwise', async () => {
   const { mergeEntries } = await import('../src/lib/dailyLearn')
   const a = { date: '2026-11-01', text: 'From laptop', updatedAt: '2026-11-01T10:00:00.000Z' }
   const b = { date: '2026-11-01', text: 'From phone', updatedAt: '2026-11-01T11:00:00.000Z' }
-  // Neither side is the last synced version, so the newer shows and the older is kept.
-  const [clash] = mergeEntries([a], [b], {})
+  // Joining a sync key meets a different text, so the newer shows and the older is kept.
+  const [clash] = mergeEntries([a], [b], true)
   assert.deepEqual([clash!.text, clash!.conflict], ['From phone', 'From laptop'])
-  // The other device already holds the pair, so it takes it without recording the clash again.
-  assert.equal(mergeEntries([a], [clash!], {})[0]!.conflict, 'From laptop')
-  // A device whose copy is the synced version just receives the edit.
-  assert.equal(mergeEntries([a], [b], { [a.date]: a.updatedAt })[0]!.conflict, undefined)
-  // A local edit over a synced remote version is a plain update, and an import never records a clash.
-  assert.equal(mergeEntries([b], [a], { [a.date]: a.updatedAt })[0]!.conflict, undefined)
-  assert.equal(mergeEntries([a], [b])[0]!.conflict, undefined)
+  // A side that already holds the pair takes it without recording the clash again.
+  assert.equal(mergeEntries([a], [clash!], true)[0]!.conflict, 'From laptop')
+  // The same account on another device, or an import, just takes the newest.
+  assert.deepEqual([mergeEntries([a], [b])[0]!.text, mergeEntries([a], [b])[0]!.conflict], ['From phone', undefined])
+  assert.equal(mergeEntries([b], [a])[0]!.text, 'From phone')
 })

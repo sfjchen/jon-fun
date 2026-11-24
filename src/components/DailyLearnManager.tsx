@@ -563,7 +563,7 @@ export default function DailyLearnManager() {
                       data-testid="daily-learn-conflict"
                     >
                       <p className="font-semibold text-amber-700">
-                        Conflict · another device wrote a different entry for this day
+                        Conflict · the synced account had a different entry for this day
                       </p>
                       {conflictTexts(e).map((other) => (
                         <div key={other} className="mt-1 flex items-start justify-between gap-2">
