@@ -1,4 +1,5 @@
 import { siteDay } from '@/lib/daily'
+import { rankAutochecked, type MiniRun } from '@/lib/mini'
 import {
   getDevicePlayer,
   saveDevicePlayer,
@@ -52,7 +53,7 @@ export const GAMES: Record<
     unit: 'time',
     lowerIsBetter: true,
     rules:
-      'First unassisted solve time; lower is better. The clock pauses when you pause or leave. Checks and reveals are unranked.',
+      'First unassisted solve time; lower is better. The clock pauses when you pause or leave. Autocheck ranks. Checks and reveals are unranked.',
   },
   bee: {
     title: 'Spelling Bee',
@@ -273,6 +274,34 @@ export function boardChanged(): void {
     sessionStorage.setItem(POSTED_KEY, String(Date.now()))
   } catch {}
   window.dispatchEvent(new Event(RESULTS_CHANGED))
+}
+/**
+ * Sends, once per browser, the daily Minis this browser finished with Autocheck before Autocheck solves ranked.
+ * Each stored run is upgraded in place, so its page shows the ranked time too.
+ */
+export function sendAutocheckedMinis(): void {
+  try {
+    if (localStorage.getItem('mini:autocheck-sent')) return
+    localStorage.setItem('mini:autocheck-sent', '1')
+    for (const key of Object.keys(localStorage)) {
+      const day = /^mini:v3:(\d{4}-\d{2}-\d{2}):\1$/.exec(key)?.[1]
+      if (!day) continue
+      const old = JSON.parse(localStorage.getItem(key) ?? 'null') as MiniRun | null
+      if (!old || old.v === 2 || !Array.isArray(old.entries)) continue
+      const run = rankAutochecked(old)
+      localStorage.setItem(key, JSON.stringify(run))
+      if (run.firstSolveSeconds !== null && !run.assisted && old.assisted)
+        logResult('mini', run.firstSolveSeconds, undefined, day, {
+          moves: run.entries,
+          seconds: run.firstSolveSeconds,
+          solved: true,
+          sourceDate: day,
+          puzzleId: `mini:${day}`,
+        })
+    }
+  } catch {
+    /* Storage can be disabled in a private browser. */
+  }
 }
 export function pendingResults(): number {
   return queue().length

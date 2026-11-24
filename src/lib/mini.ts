@@ -17,6 +17,8 @@ export type MiniRun = {
   firstSolveSeconds: number | null
   pencil: number[]
   confirmed: number[]
+  /** 2 for runs saved since Autocheck stopped counting as help. Older runs have none (rankAutochecked). */
+  v?: number
 }
 export function emptyMini(puzzle: MiniPuzzle): MiniRun {
   return {
@@ -29,6 +31,7 @@ export function emptyMini(puzzle: MiniPuzzle): MiniRun {
     firstSolveSeconds: null,
     pencil: [],
     confirmed: [],
+    v: 2,
   }
 }
 export function miniElapsed(run: MiniRun, now: number): number {
@@ -49,6 +52,17 @@ export function finishMini(run: MiniRun, puzzle: MiniPuzzle, now: number): MiniR
     firstSolveSeconds: run.firstSolveSeconds ?? (!run.assisted ? Math.round(stopped.elapsedMs / 1000) : null),
   }
 }
+/**
+ * Upgrades a run saved while Autocheck still counted as help. Those runs did not record which kind of help was
+ * used, so a finished one marked assisted is taken as an Autocheck solve: it loses the mark and its solve time
+ * becomes its ranked time. Runs still in progress keep their mark.
+ */
+export function rankAutochecked(r: MiniRun): MiniRun {
+  if (r.v === 2) return r
+  return r.complete && r.assisted && r.firstSolveSeconds === null
+    ? { ...r, v: 2, assisted: false, firstSolveSeconds: Math.round(r.elapsedMs / 1000) }
+    : { ...r, v: 2 }
+}
 export function restoreMini(value: unknown, puzzle: MiniPuzzle): MiniRun {
   const r = value as MiniRun
   if (
@@ -63,5 +77,9 @@ export function restoreMini(value: unknown, puzzle: MiniPuzzle): MiniRun {
     !Array.isArray(r.confirmed)
   )
     return emptyMini(puzzle)
-  return { ...r, activeSince: null, complete: puzzle.cells.every((a, i) => !a || r.entries[i] === a) }
+  return rankAutochecked({
+    ...r,
+    activeSince: null,
+    complete: puzzle.cells.every((a, i) => !a || r.entries[i] === a),
+  })
 }

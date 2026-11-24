@@ -45,7 +45,7 @@ const HOW: Record<Exclude<GameId, 'bee'>, string[]> = {
   mini: [
     'Fill the grid. Tap a square twice, or press Space, to switch Across and Down.',
     'Tab jumps to the next clue. The timer pauses when you leave the page.',
-    'Check, Reveal or Autocheck mark your solve as assisted, which does not rank.',
+    'Autocheck marks wrong letters as you type and still ranks. Check and Reveal mark your solve as assisted, which does not rank.',
   ],
   krillion: [
     '7 prompts, 25 seconds each.',

@@ -44,7 +44,7 @@ Adding a daily game - add it to `GAMES`, give it a verifier (the build fails wit
 
 ## Rules and ranking
 
-- Mini - active solve time, paused when you pause or leave. First unassisted time ranks, lower wins. Check, Reveal and Autocheck mark the solve as assisted.
+- Mini - active solve time, paused when you pause or leave. First unassisted time ranks, lower wins. Autocheck ranks. Check and Reveal mark the solve as assisted. Runs finished before 2026-11-24 did not record which help was used, so a finished assisted one counts as an Autocheck solve and is sent once from the device that holds it (`sendAutocheckedMinis`).
 - Connections - 4 groups, 4 mistakes, one-away hint, no repeat guesses. Solved puzzles rank by time. Unsolved ones rank below by groups found and never win the day. Mistakes do not break ties.
 - Wordle - 6 tries, the original's marks and hard mode. The switch is a saved preference for every later puzzle, and a game picks it up only before its first guess. No clock. Ranked by guesses, a loss counts as 7 in averages, hard-mode results show `*`.
 - Spelling Bee - the day's exact answer list, center letter required, 4-letter minimum, original points and rank thresholds.

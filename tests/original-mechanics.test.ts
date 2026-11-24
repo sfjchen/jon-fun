@@ -1,6 +1,14 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { emptyMini, miniElapsed, pauseMini, resumeMini, finishMini, type MiniPuzzle } from '../src/lib/mini'
+import {
+  emptyMini,
+  miniElapsed,
+  pauseMini,
+  resumeMini,
+  finishMini,
+  rankAutochecked,
+  type MiniPuzzle,
+} from '../src/lib/mini'
 import {
   newKrillionRun,
   beginKrillionRound,
@@ -36,6 +44,11 @@ test('Mini accumulates only active time, pauses on leave, and records the first 
   )
   assert.equal(replay.firstSolveSeconds, 6)
   assert.equal(finishMini({ ...emptyMini(mini), entries: ['A'], assisted: true }, mini, 0).firstSolveSeconds, null)
+  // A finished assisted run from before Autocheck ranked becomes a ranked solve, and a current one stays assisted.
+  const legacy = { ...emptyMini(mini), entries: ['A'], assisted: true, complete: true, elapsedMs: 41400, v: 1 }
+  assert.deepEqual([rankAutochecked(legacy).assisted, rankAutochecked(legacy).firstSolveSeconds], [false, 41])
+  assert.equal(rankAutochecked({ ...legacy, v: 2 }).assisted, true)
+  assert.equal(rankAutochecked({ ...legacy, complete: false }).assisted, true)
 })
 test('Krillion reload cannot reset an expired timer', () => {
   let r = beginKrillionRound(newKrillionRun(), 1000)

@@ -174,7 +174,6 @@ export default function MiniPlay({ puzzle, dailyDay }: { puzzle: MiniPuzzle; dai
       entries,
       pencil: pencil ? [...new Set([...r.pencil, i])] : r.pencil.filter((j) => j !== i),
       confirmed,
-      assisted: r.assisted || autocheck,
     }
     // eslint-disable-next-line react-hooks/purity -- Called only by input events; sample the exact completion time.
     const now = Date.now()
@@ -287,9 +286,7 @@ export default function MiniPlay({ puzzle, dailyDay }: { puzzle: MiniPuzzle; dai
               [
                 'Autocheck' + (autocheck ? ' ✓' : ''),
                 () => {
-                  const on = !autocheck
-                  setAutocheck(on)
-                  if (on) commit({ ...current.current, assisted: true })
+                  setAutocheck(!autocheck)
                 },
               ],
               ['Square', () => help(false, 'square')],

@@ -575,9 +575,6 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                     )
                   })}
                 </div>
-                <p className="mt-1.5 text-xs text-[var(--ink-muted)]">
-                  ✓ sent today · 🔕 has nudges off · a nudge goes to all of a friend&apos;s devices
-                </p>
                 {Object.values(nudged).some((v) => v && v !== 'Nudged' && v !== 'Sending…') && (
                   <p role="status" className="mt-1.5 text-xs text-[var(--ink-muted)]">
                     {Object.entries(nudged)

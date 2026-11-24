@@ -14,6 +14,7 @@ import {
   PLAYER_CHANGED,
   RESULT_QUEUED,
   RESULTS_CHANGED,
+  sendAutocheckedMinis,
 } from '@/lib/results'
 
 /**
@@ -24,6 +25,7 @@ export default function ScoreSync() {
   useEffect(() => {
     const refresh = () => setStatus(!getPlayer() ? '' : pendingResults() ? 'Score saved here · syncing…' : '')
     const sync = () => void flushResults().then(refresh)
+    sendAutocheckedMinis()
     refresh()
     sync()
     const quiet = [PLAYER_CHANGED, RESULTS_CHANGED, RESULT_QUEUED, 'storage']
