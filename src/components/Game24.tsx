@@ -65,8 +65,8 @@ const formatSeconds = (seconds: number) => {
 }
 
 const TOOLBAR = [
-  { key: 'reset', label: 'Start over', d: 'M3 12a9 9 0 1 0 3-6.7M3 4v5h5' },
-  { key: 'new', label: 'New puzzle', d: 'M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5' },
+  { key: 'reset', keys: 'r', label: 'Start over', d: 'M3 12a9 9 0 1 0 3-6.7M3 4v5h5' },
+  { key: 'new', keys: 'n', label: 'New puzzle', d: 'M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5' },
   {
     key: 'solution',
     label: 'Show solution',
@@ -1030,6 +1030,7 @@ export default function Game24() {
                     }}
                     aria-label={b.label}
                     title={b.label}
+                    data-keys={b.keys}
                   >
                     <svg
                       width="22"
@@ -1176,6 +1177,7 @@ export default function Game24() {
                           className={`operator-btn ${className} ${gameState.pendingOperation === op ? 'selected' : ''}`}
                           onClick={() => addOperator(op)}
                           aria-label={`${op} operator`}
+                          data-keys={op}
                           disabled={phase !== 'active'}
                         >
                           {symbol}
@@ -1200,6 +1202,7 @@ export default function Game24() {
                           className={`operator-btn ${className} ${practicePendingOp === op ? 'selected' : ''}`}
                           onClick={() => addPracticeOp(op)}
                           aria-label={`${op} operator`}
+                          data-keys={op}
                         >
                           {symbol}
                         </button>

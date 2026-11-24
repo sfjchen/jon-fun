@@ -19,7 +19,7 @@ import { useSiteDay } from '@/lib/play-day'
 const icon =
   'inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-[var(--ink-border)]/40 ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)]'
-export { action }
+export { action, icon }
 
 /**
  * Renders an ⓘ button that opens a small panel and closes on outside click or Escape.

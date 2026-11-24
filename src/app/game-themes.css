@@ -835,14 +835,13 @@
   text-align: center;
 }
 
-/* One result view at a time; tables share quiet type, spacing and numeric alignment. */
+/* The leaderboard is 1 scroll; its lists share quiet type, spacing and numeric alignment. */
 .scores-hub {
   font-family: ui-sans-serif, system-ui, sans-serif;
   letter-spacing: normal;
 }
 .scores-hub button,
 .scores-hub a,
-.scores-hub select,
 .scores-hub input {
   transition:
     background-color 0.15s,
@@ -852,12 +851,6 @@
 .scores-hub a:focus-visible {
   outline: 2px solid var(--ink-accent);
   outline-offset: 3px;
-}
-.scores-hub [aria-label='Calendar'] {
-  max-width: 400px;
-  padding: 20px;
-  box-shadow: none;
-  background: transparent;
 }
 [data-game-theme='krillion'] .game-page-main {
   padding-inline: 0;

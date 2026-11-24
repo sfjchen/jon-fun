@@ -150,7 +150,12 @@ export default function TriplesSolo() {
             {found} sets · {hints} hint{hints === 1 ? '' : 's'}
             {best ? ` · best ${formatTime(best)} (no hints)` : ''}
           </p>
-          <button className={pill} style={{ borderColor: 'currentColor' }} onClick={() => restart(Date.now())}>
+          <button
+            className={pill}
+            style={{ borderColor: 'currentColor' }}
+            data-keys="Enter"
+            onClick={() => restart(Date.now())}
+          >
             New game
           </button>
         </div>
@@ -160,6 +165,7 @@ export default function TriplesSolo() {
             className={pill}
             style={{ borderColor: 'currentColor' }}
             title="Highlights a card from a triple; tap again for more"
+            data-keys="h"
             onClick={hint}
           >
             Hint

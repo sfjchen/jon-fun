@@ -135,7 +135,7 @@ function DailyPlay({ day }: { day: string }) {
           {formatTime(Math.floor(elapsed(run, clock) / 1000))}
         </span>
         {!paused && !done && (
-          <button className="underline" onClick={pause}>
+          <button className="underline" data-keys="p" onClick={pause}>
             Pause
           </button>
         )}
@@ -145,7 +145,7 @@ function DailyPlay({ day }: { day: string }) {
           <p className="set-wordmark">SET</p>
           <h2>{run.started ? 'Puzzle paused' : 'Find the six sets'}</h2>
           <p>Twelve cards. Six different sets. Every feature must be all alike or all different.</p>
-          <button className="set-primary" onClick={resume}>
+          <button className="set-primary" data-keys="Enter Space p" onClick={resume}>
             {run.started ? 'Continue puzzle' : 'Play daily puzzle'}
           </button>
         </div>
@@ -157,10 +157,15 @@ function DailyPlay({ day }: { day: string }) {
           <TriplesBoard board={board} selected={selected} hinted={hinted} disabled={done} onPick={pick} />
           {!done && (
             <div className="flex justify-center gap-3">
-              <button className="set-secondary" onClick={hint}>
+              <button className="set-secondary" data-keys="h" onClick={hint}>
                 Hint
               </button>
-              <button className="set-secondary" onClick={() => setSelected([])} disabled={!selected.length}>
+              <button
+                className="set-secondary"
+                data-keys="Backspace Escape"
+                onClick={() => setSelected([])}
+                disabled={!selected.length}
+              >
                 Deselect
               </button>
             </div>

@@ -690,13 +690,19 @@ export default function SpellingBee() {
           </svg>
 
           <div className="flex items-center gap-3">
-            <button className={btn} style={{ borderColor: '#dcdcdc' }} onClick={() => setEntry((v) => v.slice(0, -1))}>
+            <button
+              className={btn}
+              style={{ borderColor: '#dcdcdc' }}
+              data-keys="Backspace"
+              onClick={() => setEntry((v) => v.slice(0, -1))}
+            >
               Delete
             </button>
             <button
               className={`${btn} px-3.5`}
               style={{ borderColor: '#dcdcdc' }}
               onClick={reorder}
+              data-keys="Space"
               aria-label="Shuffle"
             >
               <svg
@@ -711,7 +717,7 @@ export default function SpellingBee() {
                 <path d="M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.2L3 16M3 21v-5h5" />
               </svg>
             </button>
-            <button className={btn} style={{ borderColor: '#dcdcdc' }} onClick={submit}>
+            <button className={btn} style={{ borderColor: '#dcdcdc' }} data-keys="Enter" onClick={submit}>
               Enter
             </button>
           </div>

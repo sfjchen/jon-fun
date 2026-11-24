@@ -83,7 +83,7 @@ export default function DayPicker({ day, today, minDay, maxDay, go, className = 
           type="button"
           className={arrow}
           aria-label="Previous day"
-          title="Previous day"
+          data-keys={keys ? 'ArrowLeft' : undefined}
           disabled={day <= minDay}
           onClick={() => go(shiftDay(day, -1))}
         >
@@ -108,7 +108,7 @@ export default function DayPicker({ day, today, minDay, maxDay, go, className = 
           type="button"
           className={arrow}
           aria-label="Next day"
-          title="Next day"
+          data-keys={keys ? 'ArrowRight' : undefined}
           disabled={maxDay !== undefined && day >= maxDay}
           onClick={() => go(shiftDay(day, 1))}
         >
@@ -118,6 +118,7 @@ export default function DayPicker({ day, today, minDay, maxDay, go, className = 
       {today && day !== today && (
         <button
           type="button"
+          data-keys={keys ? 't' : undefined}
           className="h-9 rounded-lg border border-[var(--ink-border)] px-2 text-xs font-medium hover:bg-[var(--ink-border)]/40 sm:px-2.5"
           onClick={() => go(today)}
         >

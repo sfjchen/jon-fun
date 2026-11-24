@@ -284,7 +284,7 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
           <div className="flex justify-center gap-2">
             <button
               type="button"
-              title="Shuffle the tiles"
+              data-keys="Space"
               className={pill}
               style={{ borderColor: 'currentColor' }}
               onClick={shufflePool}
@@ -295,6 +295,7 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
               type="button"
               className={pill}
               style={{ borderColor: 'currentColor' }}
+              data-keys="Backspace Escape"
               disabled={!selectedKeys.size}
               onClick={deselectAll}
             >
@@ -302,7 +303,7 @@ export default function ConnectionsBoard({ puzzle, onComplete, initialProgress, 
             </button>
             <button
               type="button"
-              title="Submit (Enter)"
+              data-keys="Enter"
               className={pill}
               disabled={selectedKeys.size !== 4}
               onClick={submit}

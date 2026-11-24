@@ -12,7 +12,7 @@ import { usePathname } from 'next/navigation'
 import DayPicker from '@/components/daily/DayPicker'
 import { titleTransition } from '@/components/daily/DayNav'
 import PlayerName from '@/components/PlayerName'
-import { useHoverTip } from '@/components/HoverTip'
+import ScoreTable from '@/components/daily/ScoreTable'
 import { disableNudges, enableNudges, nudge, useNudgeState, usePushStatus } from '@/lib/push'
 import { FIRST_DAY, firstDay, isNytGame, shiftDay, siteDay } from '@/lib/daily'
 import { useSiteDay } from '@/lib/play-day'
@@ -23,13 +23,10 @@ import {
   GAME_IDS,
   PUBLIC_GROUP,
   RESULT_QUEUED,
-  compareResults,
-  formatTime,
   queue,
   getPlayer,
   isPracticeResult,
   resultLabel,
-  type BoardRow,
 } from '@/lib/results'
 import { streaks } from '@/lib/score-stats'
 
@@ -77,101 +74,6 @@ function useDaily(sel: string, open: boolean) {
       .sort((a, b) => b.days - a.days || a.name.localeCompare(b.name))
       .slice(0, 8),
   }
-}
-
-/**
- * Returns a 1-line label short enough for a grid cell: Connections shows only its solve time (or groups found)
- * and Anthropeum rounds to thousands, so every column stays a similar width.
- */
-function cellLabel(r: BoardRow): string {
-  if (r.game === 'connections')
-    return r.score === 4 && r.stats.seconds !== undefined ? formatTime(r.stats.seconds) : `${r.stats.n ?? r.score}/4`
-  if (r.game === 'anthropeum') return `${Math.round(r.score / 1000)}k`
-  return resultLabel(r)
-}
-
-/**
- * Renders today's scores as a grid with a row per player and a column per game icon, with all 6 games shown
- * and a dash where a player has no result. The best result in each
- * column, ties included, is bold, and the saved player's row is shaded. Hovering a cell on a laptop shows the full result.
- */
-function ScoreTable({ rows, me, q }: { rows: BoardRow[]; me: string | undefined; q: string }) {
-  const best = new Map(GAME_IDS.map((g) => [g, rows.filter((r) => r.game === g).sort(compareResults)[0]]))
-  const tip = useHoverTip()
-  const names = [...new Set(rows.map((r) => r.name))].sort(
-    (a, b) =>
-      Number(b === me) - Number(a === me) ||
-      rows.filter((r) => r.name === b).length - rows.filter((r) => r.name === a).length ||
-      a.localeCompare(b),
-  )
-  return (
-    <div className="-mx-1 overflow-x-auto">
-      <table className="w-full border-separate border-spacing-0 text-xs">
-        <thead>
-          <tr>
-            <th scope="col" className="sr-only">
-              Player
-            </th>
-            {GAME_IDS.map((g) => (
-              <th key={g} scope="col" className="pb-1.5 font-normal">
-                <Link
-                  href={GAMES[g].url + q}
-                  aria-label={GAMES[g].title}
-                  className="inline-block"
-                  {...tip.on(`Play ${GAMES[g].title}`)}
-                >
-                  <Image src={`/doodles/notebook/${g}.svg`} alt="" width={24} height={24} className="mx-auto h-6 w-6" />
-                </Link>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {names.map((n) => (
-            <tr key={n} className={n === me ? 'bg-[var(--ink-paper)]' : ''}>
-              <th scope="row" {...tip.on(n)} className="rounded-l-md px-1 py-1.5 text-left text-sm font-medium">
-                <span className="block max-w-[5.5rem] truncate">{n}</span>
-              </th>
-              {GAME_IDS.map((g, i) => {
-                const r = rows.find((x) => x.name === n && x.game === g)
-                const top = r && compareResults(r, best.get(g)!) === 0
-                const edge = i === GAME_IDS.length - 1 ? 'rounded-r-md' : ''
-                return (
-                  <td
-                    key={g}
-                    className={
-                      `px-0.5 py-1.5 text-center leading-tight tabular-nums ${edge} ` +
-                      (top ? 'font-semibold text-[var(--ink-text)]' : 'text-[var(--ink-muted)]')
-                    }
-                  >
-                    {r ? (
-                      <span
-                        className="whitespace-nowrap"
-                        {...tip.on(
-                          <>
-                            {n} · {GAMES[g].title}
-                            <span className="block font-semibold">
-                              {resultLabel(r)}
-                              {top && ' · best'}
-                            </span>
-                          </>,
-                        )}
-                      >
-                        {cellLabel(r)}
-                      </span>
-                    ) : (
-                      '–'
-                    )}
-                  </td>
-                )
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {tip.el}
-    </div>
-  )
 }
 
 /** Marks that the drawer already opened by itself this session. */
@@ -412,8 +314,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
             </div>
             {player ? (
               <p className="mb-4 text-sm text-[var(--ink-muted)]">
-                {today.size}/{GAME_IDS.length} today · {flame}
-                {risk && ' · play today to keep it'} · <PlayerName />
+                {today.size}/{GAME_IDS.length} today · {flame} · <PlayerName />
                 {(push === 'off' || push === 'on') && (
                   <button
                     type="button"

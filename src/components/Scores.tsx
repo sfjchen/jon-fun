@@ -1,18 +1,20 @@
 'use client'
 
 /**
- * Renders the leaderboard: a game filter, a month calendar colored by player, the picked day's
- * results, a standings table (games played, average, best, wins) and the player's own stats, split by device.
+ * Renders the leaderboard as 1 scroll: the picked day's score grid, whose game icons filter the page to 1 game,
+ * the standings by daily wins, and the player's own stats (streaks, month calendar colored by player, device split)
+ * behind 1 disclosure.
  */
 
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Info } from '@/components/daily/DayNav'
+import { Info, icon } from '@/components/daily/DayNav'
 import DayPicker from '@/components/daily/DayPicker'
 import { HomeLink } from '@/components/HomeLink'
-import PlayerName, { PencilIcon } from '@/components/PlayerName'
+import { PencilIcon } from '@/components/PlayerName'
+import ScoreTable from '@/components/daily/ScoreTable'
 import {
   ADMIN_NAME,
   GAMES,
@@ -40,7 +42,7 @@ import { average, overallDay, streaks, winners, winsByPlayer } from '@/lib/score
 import { DEVICE_KINDS } from '@/lib/syncIdentity'
 import { useHoverTip } from '@/components/HoverTip'
 
-const card = 'rounded-2xl border border-[var(--ink-border)] bg-[var(--ink-bg)] p-3 shadow-sm sm:p-4'
+const card = 'rounded-xl border border-[var(--ink-border)] bg-[var(--ink-bg)] p-3 sm:p-4'
 const muted = 'text-[var(--ink-muted)]'
 type Tab = GameId | 'all'
 
@@ -260,7 +262,7 @@ function Calendar({
   )
   const focus = hovered || pinned
   return (
-    <section className={card} aria-label="Calendar">
+    <section className="max-w-sm" aria-label="Calendar">
       <div className="mb-2 flex items-center gap-1">
         <button
           aria-label="Previous month"
@@ -392,20 +394,14 @@ function Calendar({
 }
 
 /**
- * Compares the player's results by device kind: days played, then each game's average and play count per device,
- * with the better average in bold. Results from before devices were tagged show as Unknown.
+ * Compares the player's results by device kind: days played, then each game's average (solve time for Connections)
+ * and play count per device, with the better average in bold. Results from before devices were tagged show as Unknown.
  */
 function DeviceSplit({ rows, games }: { rows: BoardRow[]; games: GameId[] }) {
   const kinds = [
     ...DEVICE_KINDS.filter((k) => rows.some((r) => r.device === k)),
     ...(rows.some((r) => !r.device) ? ['unknown'] : []),
   ]
-  if (!rows.some((r) => r.device))
-    return (
-      <p className={`text-sm ${muted}`}>
-        Your scores split by phone and computer starting with the next game you finish on each.
-      </p>
-    )
   const of = (k: string) => rows.filter((r) => (r.device ?? 'unknown') === k)
   const avg = (g: GameId, k: string) => {
     const own = of(k).filter(
@@ -471,9 +467,6 @@ function DeviceSplit({ rows, games }: { rows: BoardRow[]; games: GameId[] }) {
             })}
         </tbody>
       </table>
-      <p className={`mt-2 text-xs ${muted}`}>
-        Averages per device. Connections uses solve time. Bold marks the better device.
-      </p>
     </div>
   )
 }
@@ -488,10 +481,10 @@ export function ScoresHub() {
   const me = player?.name ?? ''
   const [editing, setEditing] = useState(false)
   const asked = params.get('d')
-  const day = asked && validDay(asked) && asked >= FIRST_DAY ? asked : siteDay()
+  const today = siteDay()
+  const day = asked && validDay(asked) && asked >= FIRST_DAY ? asked : today
   const game = params.get('game')
   const [tab, setTab] = useState<Tab>(() => (GAME_IDS.includes(game as GameId) ? (game as GameId) : 'all'))
-  const [view, setView] = useState<'day' | 'standings' | 'stats'>('day')
   const [span, setSpan] = useState<30 | 0>(30)
   const [copied, setCopied] = useState(false)
   const group = player?.group ?? PUBLIC_GROUP
@@ -507,14 +500,14 @@ export function ScoresHub() {
   const color = playerColors(rows, me)
   const games = tab === 'all' ? GAME_IDS : [tab]
   const shown = rows.filter((r) => games.includes(r.game))
-  const picked = shown.filter((r) => r.day === day)
+  const dayRows = rows.filter((r) => r.day === day)
   const since = span ? shiftDay(day, 1 - span) : DAILY_EPOCH
   const windowRows = shown.filter((r) => r.day >= since && r.day <= day)
-  const pick = (d: string) => {
-    router.push(`/leaderboards?d=${d}`, { scroll: false })
-    setCopied(false)
-  }
+  const q = day === today ? '' : `?d=${day}`
+  /** Opens the leaderboard on another day. */
+  const pick = (d: string) => router.push(`/leaderboards?d=${d}`, { scroll: false })
 
+  // The standings rows for the window and picked game, most daily wins first.
   const table = (() => {
     const wins = winsByPlayer(windowRows)
     return [...new Set(windowRows.map((r) => r.name))]
@@ -542,15 +535,22 @@ export function ScoresHub() {
   })()
 
   const mine = shown.filter((r) => r.name === me && r.day <= day)
-  const mineToday = rows.filter((r) => r.name === me && r.day === day)
-  const streak = streaks(mine, day)
-  const overall = overallDay(rows.filter((r) => r.day === day))
-  const dayLabel =
-    day === siteDay()
-      ? 'Today'
-      : new Date(`${day}T12:00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-
-  const metricLabel = tab === 'connections' || tab === 'mini' ? 'Solve time' : tab === 'fivefold' ? 'Guesses' : 'Points'
+  const mineToday = dayRows.filter((r) => r.name === me)
+  // Streaks and days played count every game, so they match the Daily drawer whatever game is picked.
+  const mineAll = rows.filter((r) => r.name === me && r.day <= day)
+  const streak = streaks(mineAll, day)
+  const overall = overallDay(dayRows)
+  const lead = overall.gameWins.get(overall.names[0] ?? '')
+  // Friends who played in the last week and have nothing in today yet.
+  const waiting =
+    day === today
+      ? [...new Set(rows.filter((r) => r.day >= shiftDay(day, -7) && r.name !== me).map((r) => r.name))].filter(
+          (n) => !dayRows.some((r) => r.name === n),
+        )
+      : []
+  const ranked = tab === 'all' ? [] : dayRows.filter((r) => r.game === tab).sort(compareResults)
+  const top = winners(ranked)
+  /** Formats a standings average or best in the picked game's unit. */
   const metric = (value: number | null) =>
     value === null
       ? '—'
@@ -559,183 +559,27 @@ export function ScoresHub() {
         : tab === 'all'
           ? String(value)
           : formatGameScore(tab, value)
-  const ranking = (g: GameId, values: BoardRow[], compact = false) => {
-    const ranked = [...values].sort(compareResults),
-      top = winners(values)
-    return ranked.length ? (
-      <ol className="divide-y divide-[var(--ink-border)]">
-        {(compact ? ranked.slice(0, 3) : ranked).map((r) => {
-          const rank = ranked.findIndex((other) => compareResults(other, r) === 0) + 1
-          return (
-            <li
-              key={r.name}
-              className={`flex items-center gap-3 rounded-lg px-2 py-3 text-sm ${r.name === me ? 'bg-[var(--ink-border)]/30' : ''}`}
-            >
-              <span className={`w-5 text-right tabular-nums ${muted}`}>{rank}</span>
-              <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: color(r.name) }} />
-              <span className="min-w-0 flex-1 truncate font-medium">
-                {r.name}
-                {r.name === me && <span className={`ml-1 text-xs font-normal ${muted}`}>(you)</span>}
-              </span>
-              {top.includes(r.name) && (
-                <span className="text-xs text-amber-700" title="Daily winner" aria-label="Daily winner">
-                  ★
-                </span>
-              )}
-              <span className="text-right tabular-nums">
-                {r.conflict && (
-                  <span
-                    className="mr-1.5 text-xs text-amber-700"
-                    title={`Conflict: also played on another device (${resultLabel({ ...r, ...r.conflict })}). The first result counts.`}
-                  >
-                    ⚠ {resultLabel({ ...r, ...r.conflict })}
-                  </span>
-                )}
-                {resultLabel(r)}
-              </span>
-            </li>
-          )
-        })}
-      </ol>
-    ) : (
-      <p className={`py-5 text-sm ${muted}`}>
-        No results yet.{' '}
-        <Link href={`${GAMES[g].url}?d=${day}`} className="underline">
-          Play {GAMES[g].title} →
-        </Link>
-      </p>
-    )
-  }
   return (
-    <div className="scores-hub mx-auto max-w-4xl space-y-5" data-testid="scores-hub">
-      <header className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <HomeLink className="inline-flex h-10 w-10 shrink-0 items-center justify-center" />
-        <div className="mr-auto">
-          <h1 className="text-2xl font-semibold tracking-tight">Leaderboard</h1>
-          <p className={`flex items-center gap-1 text-xs ${muted}`}>
-            {boardName(group)}
-            <button
-              aria-label="Edit leaderboard group"
-              title="Edit leaderboard group"
-              className="-my-2 h-8 w-8 rounded-full p-2 hover:bg-[var(--ink-border)]/40"
-              onClick={() => setEditing((v) => !v)}
-            >
-              <PencilIcon />
-            </button>
-          </p>
-        </div>
-        <PlayerName />
-        <Info>
-          <ul className="space-y-2">
-            {GAME_IDS.map((g) => (
-              <li key={g}>
-                <strong>{GAMES[g].title}:</strong> {GAMES[g].rules}
-              </li>
-            ))}
-          </ul>
-          <p>Daily wins require two players. Equal results share the rank.</p>
-        </Info>
-      </header>
-      {editing && (
-        <PlayerForm key={`${player?.name}:${player?.group}`} player={player} onDone={() => setEditing(false)} />
-      )}
-      <div className="flex flex-wrap items-end gap-3 border-y border-[var(--ink-border)] py-4">
-        <label className="mr-auto min-w-40 text-xs text-[var(--ink-muted)]">
-          Game
-          <select
-            aria-label="Game"
-            value={tab}
-            onChange={(e) => setTab(e.target.value as Tab)}
-            className="mt-1 block w-full rounded-lg border border-[var(--ink-border)] bg-[var(--ink-paper)] px-3 py-2 text-sm text-[var(--ink-text)]"
-          >
-            <option value="all">All games</option>
-            {GAME_IDS.map((g) => (
-              <option key={g} value={g}>
-                {GAMES[g].title}
-              </option>
-            ))}
-          </select>
-        </label>
-        <DayPicker day={day} today={siteDay()} minDay={FIRST_DAY} maxDay={siteDay()} go={pick} keys />
-      </div>
-      <nav aria-label="Leaderboard views" className="flex gap-5 border-b border-[var(--ink-border)] text-sm">
-        {(
-          [
-            ['day', 'Daily results'],
-            ['standings', 'Standings'],
-            ['stats', 'Your stats'],
-          ] as const
-        ).map(([id, label]) => (
-          <button
-            key={id}
-            data-hotkey={String(['day', 'standings', 'stats'].indexOf(id) + 1)}
-            aria-pressed={view === id}
-            onClick={() => setView(id)}
-            className={`border-b-2 pb-3 ${view === id ? 'border-[var(--ink-accent)] font-semibold' : 'border-transparent text-[var(--ink-muted)]'}`}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
-      {error && (
-        <p role="alert" className="rounded-lg border border-red-200 p-3 text-sm">
-          {error}
-        </p>
-      )}
-      {!loaded && !error && (
-        <div role="status" aria-label="Loading results" className="animate-pulse space-y-4">
-          <div className="h-6 w-32 rounded bg-[var(--ink-border)]/50" />
-          {view === 'stats' ? (
-            <div className="grid max-w-sm grid-cols-7 gap-1">
-              {Array.from({ length: 35 }, (_, i) => (
-                <div key={i} className="aspect-square rounded-lg bg-[var(--ink-border)]/40" />
-              ))}
-            </div>
-          ) : (
-            <div className="grid gap-x-7 gap-y-5 sm:grid-cols-2">
-              {GAME_IDS.map((g) => (
-                <div key={g} className="h-32 rounded-xl bg-[var(--ink-border)]/40" />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-      {loaded && view === 'day' && (
-        <section aria-label="Day results" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">{dayLabel}</h2>
-            {tab === 'all' && overall.names.length > 0 && (
-              <span className={`text-xs ${muted}`}>Most wins: {overall.names.join(' & ')}</span>
-            )}
-          </div>
-          {tab === 'all' ? (
-            <div className="grid gap-x-7 gap-y-5 sm:grid-cols-2">
-              {GAME_IDS.map((g) => (
-                <section key={g} className="min-w-0 rounded-xl border border-[var(--ink-border)] p-4">
-                  <Link
-                    href={`${GAMES[g].url}?d=${day}`}
-                    className="flex items-center justify-between text-sm font-semibold"
-                  >
-                    {GAMES[g].title}
-                    <span className={muted}>↗</span>
-                  </Link>
-                  {ranking(
-                    g,
-                    picked.filter((r) => r.game === g),
-                    true,
-                  )}
-                </section>
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-xl border border-[var(--ink-border)] p-4">
-              <p className={`mb-2 text-xs ${muted}`}>{GAMES[tab].rules}</p>
-              {ranking(tab, picked)}
-            </div>
-          )}
+    <div
+      className="scores-hub mx-auto max-w-xl space-y-4"
+      data-testid="scores-hub"
+      // A picked game lends the page its accent, as on that game's own page.
+      style={
+        tab === 'all'
+          ? undefined
+          : ({ '--game-color': `var(--g-${tab})`, '--ink-accent': `var(--g-${tab})` } as React.CSSProperties)
+      }
+    >
+      <header className="space-y-1 border-b border-[var(--ink-border)] pb-2">
+        <div className="daily-heading flex min-h-12 items-center gap-1 sm:gap-2">
+          <HomeLink className="inline-flex h-10 w-10 shrink-0 items-center justify-center" />
+          <h1 className="mr-auto min-w-0 truncate font-lora text-xl font-bold md:text-2xl">Leaderboard</h1>
           {mineToday.length > 0 && (
             <button
-              className={`text-xs underline ${muted}`}
+              type="button"
+              className={icon}
+              aria-label="Copy my results"
+              title={copied ? 'Copied' : 'Copy my results'}
               onClick={() =>
                 void navigator.clipboard
                   .writeText(
@@ -743,161 +587,285 @@ export function ScoresHub() {
                       '\n',
                     ),
                   )
-                  .then(() => setCopied(true))
+                  .then(
+                    () => {
+                      setCopied(true)
+                      setTimeout(() => setCopied(false), 1500)
+                    },
+                    () => {},
+                  )
               }
             >
-              {copied ? 'Copied' : 'Copy my results'}
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                {copied ? (
+                  <path d="m5 12.5 4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" />
+                ) : (
+                  <path d="M9 9h10v11H9zM15 9V4H5v11h4" strokeLinejoin="round" />
+                )}
+              </svg>
             </button>
           )}
-        </section>
-      )}
-      {loaded && view === 'standings' && (
-        <section
-          aria-label="Standings"
-          data-testid={tab === 'all' ? 'standings' : `board-${tab}`}
-          className="space-y-4"
-        >
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Standings</h2>
-            <div className="flex rounded-lg bg-[var(--ink-border)]/35 p-1 text-xs">
-              {([30, 0] as const).map((n) => (
-                <button
-                  key={n}
-                  aria-pressed={span === n}
-                  onClick={() => setSpan(n)}
-                  className={`rounded-md px-3 py-1.5 ${span === n ? 'bg-[var(--ink-paper)] shadow-sm' : ''}`}
-                >
-                  {n ? '30 days' : 'All time'}
-                </button>
+          <Info>
+            <ul className="space-y-2">
+              {GAME_IDS.map((g) => (
+                <li key={g}>
+                  <strong>{GAMES[g].title}:</strong> {GAMES[g].rules}
+                </li>
               ))}
+            </ul>
+            <p>Daily wins require two players. Equal results share the rank.</p>
+          </Info>
+        </div>
+        <div className="flex flex-wrap items-center gap-1">
+          <DayPicker day={day} today={today} minDay={FIRST_DAY} maxDay={today} go={pick} className="mr-auto" keys />
+          <button
+            type="button"
+            title="Edit name and group"
+            aria-expanded={editing}
+            onClick={() => setEditing((v) => !v)}
+            className={
+              'inline-flex h-9 max-w-full items-center gap-1.5 rounded-full border border-[var(--ink-border)] px-2.5 ' +
+              'text-xs hover:bg-[var(--ink-paper)]'
+            }
+          >
+            {player ? (
+              <>
+                <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: color(me) }} />
+                <span data-testid="device-player-name" className="max-w-32 truncate font-medium">
+                  {me}
+                </span>
+                {group !== PUBLIC_GROUP && <span className={muted}>{boardName(group)}</span>}
+              </>
+            ) : (
+              'Add your name'
+            )}
+            <PencilIcon />
+          </button>
+        </div>
+      </header>
+      {editing && (
+        <PlayerForm key={`${player?.name}:${player?.group}`} player={player} onDone={() => setEditing(false)} />
+      )}
+      {error && (
+        <p role="alert" className="rounded-lg border border-red-200 p-3 text-sm">
+          {error}
+        </p>
+      )}
+      {!loaded && !error && (
+        <div role="status" aria-label="Loading results" className={`${card} animate-pulse space-y-2`}>
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="h-8 rounded-md bg-[var(--ink-border)]/40" />
+          ))}
+        </div>
+      )}
+      {loaded && (
+        <section id="day-results" aria-label="Day results" className="scroll-mt-4 space-y-2">
+          {(overall.names.length > 0 || streak.current > 0 || waiting.length > 0) && (
+            <div className="flex flex-wrap items-baseline gap-x-3 px-1 text-sm">
+              {overall.names.length > 0 && (
+                <p className="font-semibold">
+                  👑 {overall.names.join(' & ')}
+                  <span className={`ml-1.5 font-normal ${muted}`}>
+                    {lead} {lead === 1 ? 'win' : 'wins'}
+                    {overall.names.length > 1 && ' each'}
+                  </span>
+                </p>
+              )}
+              {waiting.length > 0 && (
+                <p className={`text-xs ${muted}`}>
+                  Waiting on {waiting.slice(0, 4).join(', ')}
+                  {waiting.length > 4 && ` +${waiting.length - 4}`}
+                </p>
+              )}
+              {streak.current > 0 && (
+                <span
+                  role="img"
+                  className="ml-auto tabular-nums"
+                  title={`${streak.current} day streak`}
+                  aria-label={`${streak.current} day streak`}
+                >
+                  🔥{streak.current}
+                </span>
+              )}
             </div>
-          </div>
-          <p className={`text-xs ${muted}`}>Ranked by daily game wins. Each day compares the same puzzle.</p>
-          {table.length ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className={`border-b border-[var(--ink-border)] text-xs ${muted}`}>
-                  <tr>
-                    <th className="py-3 font-normal">Player</th>
-                    <th className="p-3 text-right font-normal">Played</th>
-                    <th className="p-3 text-right font-normal">Wins</th>
-                    {tab !== 'all' && (
-                      <>
-                        <th className="p-3 text-right font-normal">Avg {metricLabel.toLowerCase()}</th>
-                        <th className="p-3 text-right font-normal">Best</th>
-                      </>
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {table.map((p) => (
-                    <tr
-                      key={p.name}
-                      className={`border-b border-[var(--ink-border)] ${p.name === me ? 'font-semibold' : ''}`}
-                    >
-                      <td className="py-4">
-                        <span className="flex items-center gap-2">
+          )}
+          {dayRows.length ? (
+            <div className={card}>
+              <ScoreTable
+                rows={dayRows}
+                me={me}
+                q={q}
+                wins={overall.gameWins}
+                color={color}
+                game={tab}
+                onGame={(g) => setTab(tab === g ? 'all' : g)}
+              />
+              {tab !== 'all' && (
+                <div className="mt-3 border-t border-[var(--ink-border)] pt-3">
+                  <Link href={GAMES[tab].url + q} className="px-2 text-sm font-semibold text-[var(--ink-accent)]">
+                    {GAMES[tab].title} ↗
+                  </Link>
+                  {ranked.length ? (
+                    <ol className="mt-1">
+                      {ranked.map((r) => (
+                        <li
+                          key={r.name}
+                          className={`flex items-center gap-3 rounded-lg px-2 py-2 text-sm ${r.name === me ? 'bg-[var(--ink-paper)]' : ''}`}
+                        >
+                          <span className={`w-5 text-right tabular-nums ${muted}`}>
+                            {ranked.findIndex((other) => compareResults(other, r) === 0) + 1}
+                          </span>
                           <span
                             className="h-2.5 w-2.5 shrink-0 rounded-full"
-                            style={{ backgroundColor: color(p.name) }}
+                            style={{ backgroundColor: color(r.name) }}
                           />
-                          {p.name}
-                          {player && me.toLowerCase() === ADMIN_NAME && <PlayerAdmin player={player} name={p.name} />}
-                        </span>
-                      </td>
-                      <td className="p-3 text-right tabular-nums">{p.played}</td>
-                      <td className="p-3 text-right tabular-nums">{p.wins}</td>
-                      {tab !== 'all' && (
-                        <>
-                          <td className="p-3 text-right tabular-nums">{metric(p.avg)}</td>
-                          <td className="p-3 text-right tabular-nums">{metric(p.best)}</td>
-                        </>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                          <span className="min-w-0 flex-1 truncate font-medium">{r.name}</span>
+                          {top.includes(r.name) && (
+                            <span className="text-xs text-amber-700" title="Daily winner" aria-label="Daily winner">
+                              ★
+                            </span>
+                          )}
+                          {r.conflict && (
+                            <span
+                              className="text-xs text-amber-700"
+                              title={`Also played on another device (${resultLabel({ ...r, ...r.conflict })}). The first result counts.`}
+                            >
+                              ⚠
+                            </span>
+                          )}
+                          <span className="text-right tabular-nums">{resultLabel(r)}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <p className={`px-2 py-3 text-sm ${muted}`}>No results yet.</p>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
-            <p className={`py-8 text-center text-sm ${muted}`}>No results in this period yet.</p>
-          )}
-        </section>
-      )}
-      {loaded && view === 'stats' && (
-        <section aria-label="Your stats" className="space-y-5">
-          {me && !rows.some((r) => r.name === me) ? (
-            <div className={`${card} space-y-4 text-center`}>
-              {/* A sample week shows how played days fill with color before there is any history. */}
-              <div aria-hidden className="mx-auto grid max-w-64 grid-cols-7 gap-1 opacity-70">
-                {[1, 1, 0, 1, 2, 0, 3].map((k, i) => (
-                  <div
-                    key={i}
-                    className="aspect-square rounded-md bg-[var(--ink-border)]/40"
-                    style={k ? { background: slices([color(me), COLORS[1]!, COLORS[2]!].slice(0, k)) } : undefined}
-                  />
-                ))}
-              </div>
-              <p className="text-sm">
-                Your days fill in with your color as you play. Friends on the same day share the box.
-              </p>
+            <div className={`${card} space-y-3 py-6 text-center sm:py-8`}>
+              <p className="text-sm">{day === today ? 'Nobody has played yet. Be first.' : 'No scores this day.'}</p>
               <div className="flex justify-center gap-2">
                 {GAME_IDS.map((g) => (
                   <Link
                     key={g}
-                    href={GAMES[g].url}
+                    href={GAMES[g].url + q}
                     aria-label={`Play ${GAMES[g].title}`}
                     title={GAMES[g].title}
-                    className="rounded-lg p-1 hover:bg-[var(--ink-border)]/40"
+                    className="rounded-lg p-1 hover:bg-[var(--ink-paper)]"
                   >
                     <Image src={`/doodles/notebook/${g}.svg`} alt="" width={32} height={32} className="h-8 w-8" />
                   </Link>
                 ))}
               </div>
             </div>
-          ) : me ? (
-            <>
-              <h2 className="text-lg font-semibold">Your progress</h2>
-              <div className="grid grid-cols-3 gap-3 rounded-xl border border-[var(--ink-border)] py-6 text-center">
-                {[
-                  ['Days played', new Set(mine.map((r) => r.day)).size],
-                  ['Current streak', streak.current],
-                  ['Longest streak', streak.longest],
-                ].map(([label, value]) => (
-                  <div key={label}>
-                    <p className="text-3xl font-semibold tracking-tight tabular-nums">{value}</p>
-                    <p className={`mt-2 text-xs ${muted}`}>{label}</p>
-                  </div>
-                ))}
-              </div>
-              {tab !== 'all' && (
-                <div>
-                  <h3 className={`mb-3 text-xs ${muted}`}>Last 14 days · {metricLabel.toLowerCase()}</h3>
-                  <Trend rows={mine} day={day} />
-                </div>
-              )}
-              <Calendar rows={shown} me={me} day={day} color={color} onPick={pick} />
-              <div>
-                <h3 className="mb-3 text-lg font-semibold">Phone vs computer</h3>
-                <DeviceSplit rows={mine} games={games} />
-              </div>
-            </>
-          ) : (
-            <p className={`py-8 text-sm ${muted}`}>Add your name above to track your progress and streaks.</p>
           )}
         </section>
       )}
-      {!!legacyRows.length && (
-        <details className={`border-t border-[var(--ink-border)] pt-3 text-xs ${muted}`}>
-          <summary className="cursor-pointer">Earlier scoring versions ({legacyRows.length})</summary>
-          <ul className="mt-2 space-y-1">
-            {legacyRows.map((r) => (
-              <li key={`${r.game}:${r.day}:${r.name}`}>
-                {r.day} · {r.name} · {GAMES[r.game].title}: {formatScore(r.score)}
-              </li>
-            ))}
-          </ul>
+      {loaded && table.length > 0 && (
+        <section aria-label="Standings" data-testid={tab === 'all' ? 'standings' : `board-${tab}`} className={card}>
+          <div className="mb-1 flex items-center justify-between px-2">
+            <h2 className="text-sm font-semibold">
+              Standings
+              {tab !== 'all' && <span className={`font-normal ${muted}`}> · {GAMES[tab].title}</span>}
+            </h2>
+            <button
+              type="button"
+              className={`-mr-2 px-2 py-2 text-xs underline ${muted}`}
+              aria-label={`Show ${span ? 'all time' : 'last 30 days'}`}
+              onClick={() => setSpan(span ? 0 : 30)}
+            >
+              {span ? 'Last 30 days' : 'All time'} ⇄
+            </button>
+          </div>
+          <ol>
+            {table.map((p) => {
+              // Ties share a rank, and a medal shows only while everyone tied for it still fits on the podium.
+              const rank = table.findIndex((o) => o.wins === p.wins) + 1
+              const podium = p.wins > 0 && table.filter((o) => o.wins >= p.wins).length <= 3
+              return (
+                <li
+                  key={p.name}
+                  className={`flex items-center gap-2 rounded-lg px-2 py-2 text-sm ${p.name === me ? 'bg-[var(--ink-paper)]' : ''}`}
+                >
+                  <span className={`w-6 shrink-0 text-center tabular-nums ${muted}`}>
+                    {podium ? ['🥇', '🥈', '🥉'][rank - 1] : rank}
+                  </span>
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: color(p.name) }} />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center font-medium">
+                      <span className="truncate">{p.name}</span>
+                      {player && me.toLowerCase() === ADMIN_NAME && <PlayerAdmin player={player} name={p.name} />}
+                    </span>
+                    {tab !== 'all' && (
+                      <span className={`block text-xs ${muted}`}>
+                        avg {metric(p.avg)} · best {metric(p.best)}
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-right tabular-nums">
+                    <span className="font-semibold">{p.wins}</span>
+                    <span className={muted}>
+                      {' '}
+                      {p.wins === 1 ? 'win' : 'wins'} · {p.played} {tab === 'all' ? 'day' : 'game'}
+                      {p.played === 1 ? '' : 's'}
+                    </span>
+                  </span>
+                </li>
+              )
+            })}
+          </ol>
+        </section>
+      )}
+      {loaded && me && rows.some((r) => r.name === me) && (
+        <details className={card}>
+          <summary className="-my-2 cursor-pointer px-2 py-2 text-sm font-semibold">Your stats</summary>
+          <div className="mt-4 space-y-5 px-2">
+            <div className="grid grid-cols-3 gap-3 text-center">
+              {[
+                ['Days played', new Set(mineAll.map((r) => r.day)).size],
+                ['Current streak', streak.current],
+                ['Longest streak', streak.longest],
+              ].map(([label, value]) => (
+                <div key={label}>
+                  <p className="text-3xl font-semibold tracking-tight tabular-nums">{value}</p>
+                  <p className={`mt-1 text-xs ${muted}`}>{label}</p>
+                </div>
+              ))}
+            </div>
+            {tab !== 'all' && <Trend rows={mine} day={day} />}
+            <Calendar
+              rows={shown}
+              me={me}
+              day={day}
+              color={color}
+              onPick={(d) => {
+                pick(d)
+                document.getElementById('day-results')?.scrollIntoView({ behavior: 'smooth' })
+              }}
+            />
+            {mine.some((r) => r.device) && <DeviceSplit rows={mine} games={games} />}
+          </div>
         </details>
       )}
+      <footer className={`space-y-2 px-1 text-xs ${muted}`}>
+        <Link href="/leaderboards?tab=multiplayer" className="inline-block py-2 underline">
+          Multiplayer: 24 and Set →
+        </Link>
+        {!!legacyRows.length && (
+          <details>
+            <summary className="cursor-pointer">Earlier scoring versions ({legacyRows.length})</summary>
+            <ul className="mt-2 space-y-1">
+              {legacyRows.map((r) => (
+                <li key={`${r.game}:${r.day}:${r.name}`}>
+                  {r.day} · {r.name} · {GAMES[r.game].title}: {formatScore(r.score)}
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
+      </footer>
     </div>
   )
 }
