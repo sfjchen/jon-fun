@@ -138,6 +138,8 @@ test.describe('Connections', () => {
   test('a lost daily game posts a 0 score for the saved player', async ({ page }) => {
     const posts: Record<string, unknown>[] = []
     await page.route('**/api/results**', (route) => {
+      // The saved-run lookup shares this address prefix. It answers that no earlier result exists.
+      if (new URL(route.request().url()).pathname.endsWith('/run')) return route.fulfill({ json: { result: null } })
       if (route.request().method() === 'POST') posts.push(route.request().postDataJSON() as Record<string, unknown>)
       return route.fulfill({ json: route.request().method() === 'POST' ? { ok: true } : { rows: [] } })
     })

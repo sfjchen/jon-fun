@@ -12,6 +12,8 @@ async function scoreMock(page: Page, player = true) {
     )
   await page.route('**/api/results**', async (route) => {
     const request = route.request()
+    // The saved-run lookup shares this address prefix. It answers that no earlier result exists.
+    if (new URL(request.url()).pathname.endsWith('/run')) return route.fulfill({ json: { result: null } })
     if (request.method() === 'POST') {
       const b = request.postDataJSON()
       const index = rows.findIndex((r) => r.name === b.name && r.day === b.today && r.game === b.game)

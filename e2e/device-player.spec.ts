@@ -12,6 +12,8 @@ test('one device name survives navigation, local-storage loss, and a rename; fut
   const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
   const posted: Record<string, unknown>[] = []
   await page.route('**/api/results**', async (route) => {
+    // The saved-run lookup shares this address prefix. It answers that no earlier result exists.
+    if (new URL(route.request().url()).pathname.endsWith('/run')) return route.fulfill({ json: { result: null } })
     if (route.request().method() === 'POST') posted.push(route.request().postDataJSON())
     await route.fulfill({ json: { ok: true, rows: [] } })
   })
