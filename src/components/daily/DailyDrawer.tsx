@@ -1,9 +1,10 @@
 'use client'
 
 /*
- * Home header Daily button and drawer: today's progress, streak, and a day picker beside the title that shows any day's links to the
- * 6 daily games and who has played them that day, as not done, started or completed marks with no scores. Done state merges the synced board rows with the unsynced local queue
- * for the saved player.
+ * Home header Daily button and drawer: today's progress, streak, and a day picker beside the title that shows any
+ * day's links to the 6 daily games and who has played them that day, as not done, started or completed marks with
+ * no scores (Spelling Bee shows its words found). Done state merges the synced board rows with the unsynced local
+ * queue for the saved player.
  */
 import Image from 'next/image'
 import Link from 'next/link'
@@ -12,7 +13,7 @@ import { usePathname } from 'next/navigation'
 import DayPicker from '@/components/daily/DayPicker'
 import { titleTransition } from '@/components/daily/DayNav'
 import PlayerName from '@/components/PlayerName'
-import ScoreTable, { Mark, playState, type PlayState } from '@/components/daily/ScoreTable'
+import ScoreTable, { Mark, beeWords, playState, type PlayState } from '@/components/daily/ScoreTable'
 import { disableNudges, enableNudges, nudge, useNudgeState, usePushStatus } from '@/lib/push'
 import { FIRST_DAY, firstDay, isNytGame, shiftDay, siteDay } from '@/lib/daily'
 import { useSiteDay } from '@/lib/play-day'
@@ -398,6 +399,8 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                       )}
                       {!r && isPracticeResult(g, sel) ? (
                         <span className="text-xs text-[var(--ink-muted)]">Practice</span>
+                      ) : r?.game === 'bee' ? (
+                        <span className="text-sm font-semibold tabular-nums">{beeWords(r)}</span>
                       ) : (
                         <Mark state={state} />
                       )}

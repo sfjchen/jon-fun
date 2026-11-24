@@ -3,7 +3,7 @@
 /*
  * Score grid shared by the Daily drawer and the leaderboard: a row per player and a column per daily game, headed by
  * the game's doodle, with all 6 games shown and a dash where a player has no result. The drawer shows a completion
- * mark in each cell and the leaderboard shows the score.
+ * mark in each cell, or the words found for Spelling Bee, and the leaderboard shows the score.
  */
 import Image from 'next/image'
 import Link from 'next/link'
@@ -30,6 +30,13 @@ const STATE_NAME: Record<PlayState, string> = { none: 'Not done', started: 'Star
  */
 export function playState(r: BoardRow | undefined): PlayState {
   return !r ? 'none' : r.game === 'bee' && !r.stats.solved ? 'started' : 'done'
+}
+
+/**
+ * Names a Spelling Bee result by its words found, which the drawer shows in place of a completion mark.
+ */
+export function beeWords(r: BoardRow): string {
+  return `${r.stats.n ?? 0} ${r.stats.n === 1 ? 'word' : 'words'}`
 }
 
 /**
@@ -165,7 +172,11 @@ export default function ScoreTable({ rows, me, q, wins, color, game = 'all', onG
                       (top ? 'font-semibold text-[var(--ink-text)]' : 'text-[var(--ink-muted)]')
                     }
                   >
-                    {marks ? (
+                    {marks && r?.game === 'bee' ? (
+                      <span className="font-semibold text-[var(--ink-text)]" {...tip.on(`${n} · ${beeWords(r)}`)}>
+                        {r.stats.n ?? 0}
+                      </span>
+                    ) : marks ? (
                       <span {...tip.on(`${n} · ${GAMES[g].title} · ${STATE_NAME[playState(r)]}`)}>
                         <Mark state={playState(r)} size={16} />
                       </span>
