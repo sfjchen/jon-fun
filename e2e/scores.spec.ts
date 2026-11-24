@@ -64,6 +64,9 @@ test('home shelf uses Set and Wordle and links the leaderboard beside Daily', as
   )
   await page.getByRole('button', { name: 'Daily', exact: true }).click()
   const shelf = page.getByRole('dialog', { name: 'Daily games' })
-  await expect(shelf.getByRole('link', { name: 'Wordle', exact: true })).toHaveAttribute('href', '/games/wordle')
+  await expect(shelf.getByRole('link', { name: 'Wordle Not done', exact: true })).toHaveAttribute(
+    'href',
+    '/games/wordle',
+  )
   await expect(shelf.getByRole('link', { name: 'Daily leaderboard', exact: true })).toHaveCount(0)
 })

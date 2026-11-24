@@ -2,7 +2,8 @@
 
 /*
  * Score grid shared by the Daily drawer and the leaderboard: a row per player and a column per daily game, headed by
- * the game's doodle, with all 6 games shown and a dash where a player has no result.
+ * the game's doodle, with all 6 games shown and a dash where a player has no result. The drawer shows a completion
+ * mark in each cell and the leaderboard shows the score.
  */
 import Image from 'next/image'
 import Link from 'next/link'
@@ -20,6 +21,54 @@ function cellLabel(r: BoardRow): string {
   return resultLabel(r)
 }
 
+export type PlayState = 'none' | 'started' | 'done'
+const STATE_NAME: Record<PlayState, string> = { none: 'Not done', started: 'Started', done: 'Completed' }
+
+/**
+ * Tells how far a result is: Spelling Bee stays started until every word is found, and any other result is a
+ * finished game.
+ */
+export function playState(r: BoardRow | undefined): PlayState {
+  return !r ? 'none' : r.game === 'bee' && !r.stats.solved ? 'started' : 'done'
+}
+
+/**
+ * Draws a completion mark: an empty ring for not done, a half-filled ring for started and a filled check for
+ * completed.
+ */
+export function Mark({ state, size = 18 }: { state: PlayState; size?: number }) {
+  return (
+    <svg
+      role="img"
+      aria-label={STATE_NAME[state]}
+      viewBox="0 0 20 20"
+      width={size}
+      height={size}
+      className={`inline-block ${state === 'none' ? 'text-[var(--ink-border)]' : 'text-[var(--ink-text)]'}`}
+    >
+      <circle
+        cx="10"
+        cy="10"
+        r="8"
+        fill={state === 'done' ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+      {state === 'started' && <path d="M10 2a8 8 0 0 1 0 16z" fill="currentColor" />}
+      {state === 'done' && (
+        <path
+          d="M6 10.5l2.7 2.7L14 7.5"
+          fill="none"
+          stroke="var(--ink-bg)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      )}
+    </svg>
+  )
+}
+
 type ScoreTableProps = {
   rows: BoardRow[]
   me: string | undefined
@@ -32,13 +81,16 @@ type ScoreTableProps = {
   /** The picked game, and the handler that turns the column heads into game filter buttons instead of links. */
   game?: GameId | 'all'
   onGame?: (g: GameId) => void
+  /** Shows a completion mark in each cell in place of the score. */
+  marks?: boolean
 }
 
 /**
  * Renders the grid. The best result in each column, ties included, is bold, and the saved player's row is shaded.
- * Hovering a cell on a laptop shows the full result. With a picked game the other columns fade.
+ * Hovering a cell on a laptop shows the full result. With a picked game the other columns fade. With marks, cells
+ * hold only completion marks and no result is bold.
  */
-export default function ScoreTable({ rows, me, q, wins, color, game = 'all', onGame }: ScoreTableProps) {
+export default function ScoreTable({ rows, me, q, wins, color, game = 'all', onGame, marks }: ScoreTableProps) {
   const best = new Map(GAME_IDS.map((g) => [g, rows.filter((r) => r.game === g).sort(compareResults)[0]]))
   const tip = useHoverTip()
   const count = (n: string) => rows.filter((r) => r.name === n).length
@@ -102,7 +154,7 @@ export default function ScoreTable({ rows, me, q, wins, color, game = 'all', onG
               </th>
               {GAME_IDS.map((g, i) => {
                 const r = rows.find((x) => x.name === n && x.game === g)
-                const top = r && compareResults(r, best.get(g)!) === 0
+                const top = !marks && r && compareResults(r, best.get(g)!) === 0
                 const edge = i === GAME_IDS.length - 1 ? 'rounded-r-md' : ''
                 return (
                   <td
@@ -113,7 +165,11 @@ export default function ScoreTable({ rows, me, q, wins, color, game = 'all', onG
                       (top ? 'font-semibold text-[var(--ink-text)]' : 'text-[var(--ink-muted)]')
                     }
                   >
-                    {r ? (
+                    {marks ? (
+                      <span {...tip.on(`${n} · ${GAMES[g].title} · ${STATE_NAME[playState(r)]}`)}>
+                        <Mark state={playState(r)} size={16} />
+                      </span>
+                    ) : r ? (
                       <span
                         className="whitespace-nowrap"
                         {...tip.on(

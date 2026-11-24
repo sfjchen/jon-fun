@@ -2,7 +2,7 @@
 
 /*
  * Home header Daily button and drawer: today's progress, streak, and a day picker beside the title that shows any day's links to the
- * 6 daily games and everyone's scores that day. Done state merges the synced board rows with the unsynced local queue
+ * 6 daily games and who has played them that day, as not done, started or completed marks with no scores. Done state merges the synced board rows with the unsynced local queue
  * for the saved player.
  */
 import Image from 'next/image'
@@ -12,7 +12,7 @@ import { usePathname } from 'next/navigation'
 import DayPicker from '@/components/daily/DayPicker'
 import { titleTransition } from '@/components/daily/DayNav'
 import PlayerName from '@/components/PlayerName'
-import ScoreTable from '@/components/daily/ScoreTable'
+import ScoreTable, { Mark, playState, type PlayState } from '@/components/daily/ScoreTable'
 import { disableNudges, enableNudges, nudge, useNudgeState, usePushStatus } from '@/lib/push'
 import { FIRST_DAY, firstDay, isNytGame, shiftDay, siteDay } from '@/lib/daily'
 import { useSiteDay } from '@/lib/play-day'
@@ -22,18 +22,18 @@ import {
   GAMES,
   GAME_IDS,
   PUBLIC_GROUP,
+  PLAYING_KEY,
   RESULT_QUEUED,
   queue,
   getPlayer,
   isPracticeResult,
-  resultLabel,
 } from '@/lib/results'
 import { streaks } from '@/lib/score-stats'
 
 /**
  * Loads the group's last 60 days once for the button's count and streak, and polls the selected day only while the
  * drawer is open, then merges the player's unsynced local queue. Returns the player's done state today and on the
- * selected day, the streak, and everyone's scores on the selected day.
+ * selected day, the streak, and everyone's results on the selected day.
  */
 function useDaily(sel: string, open: boolean) {
   const player = usePlayer()
@@ -349,6 +349,17 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
             <ul className="space-y-1.5 sm:space-y-2">
               {GAME_IDS.map((g) => {
                 const r = done.get(g)
+                // With no result yet, a game this browser has played on the day without finishing it is started.
+                let state: PlayState = playState(r)
+                try {
+                  const mark = JSON.parse(localStorage.getItem(PLAYING_KEY + g) ?? 'null') as {
+                    day?: string
+                    at?: number
+                  }
+                  if (!r && mark?.day === sel && mark.at) state = 'started'
+                } catch {
+                  /* Storage can be disabled in a private browser. */
+                }
                 const row = 'flex items-center gap-3 rounded-xl border border-[var(--ink-border)] p-2 sm:p-2.5'
                 const icon = (
                   <Image
@@ -385,10 +396,10 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                           <span className="flex-1 font-semibold">{GAMES[g].title}</span>
                         </ViewTransition>
                       )}
-                      {r ? (
-                        <span className="text-sm font-semibold tabular-nums">{resultLabel(r)}</span>
+                      {!r && isPracticeResult(g, sel) ? (
+                        <span className="text-xs text-[var(--ink-muted)]">Practice</span>
                       ) : (
-                        isPracticeResult(g, sel) && <span className="text-xs text-[var(--ink-muted)]">Practice</span>
+                        <Mark state={state} />
                       )}
                     </Link>
                   </li>
@@ -401,14 +412,14 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                 Add sfjc.dev to your Home Screen to get nudges from friends.
               </p>
             )}
-            <section aria-label={`Scores for ${dayName}`} className="mt-4 sm:mt-5">
+            <section aria-label={`Played ${dayName}`} className="mt-4 sm:mt-5">
               <h3 className="mb-2 text-sm font-semibold text-[var(--ink-muted)]">
-                {isToday ? "Today's scores" : `Scores · ${dayName}`}
+                {isToday ? 'Played today' : `Played · ${dayName}`}
               </h3>
               {everyone.length ? (
-                <ScoreTable rows={everyone} me={player?.name} q={q} />
+                <ScoreTable rows={everyone} me={player?.name} q={q} marks />
               ) : !loaded ? (
-                <div role="status" aria-label="Loading scores" className="animate-pulse space-y-1.5">
+                <div role="status" aria-label="Loading players" className="animate-pulse space-y-1.5">
                   {[0, 1].map((i) => (
                     <div key={i} className="h-8 rounded-md bg-[var(--ink-border)]/40" />
                   ))}
@@ -417,7 +428,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                 <p className="text-sm text-[var(--ink-muted)]">
                   {now && sel > now
                     ? 'Future preview · practice only, not ranked.'
-                    : `No scores ${isToday ? 'yet today' : 'this day'}.`}
+                    : `Nobody has played ${isToday ? 'yet today' : 'this day'}.`}
                 </p>
               )}
             </section>
