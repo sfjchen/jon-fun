@@ -38,6 +38,9 @@ export const roomPath: Record<RoomGame, string> = {
   crossword: '/games/crossword',
 }
 
+/** The title every Mini edition room carries, which tells it apart from the full-size daily. */
+export const MINI_TITLE = 'Daily Mini Crossword'
+
 export const roomTopic = (id: string) => `puzzle-room:${id}`
 export const validRoomId = (id: string) => /^[a-zA-Z0-9_-]{16}$/.test(id)
 

@@ -5,6 +5,8 @@
 
 import { ORBS_FIRST_DAY } from '@/lib/orbs'
 
+/** The first edition in the full-size crossword schedule (`data/crossword/full-size.json`). */
+export const CROSSWORD_FIRST_DAY = '2026-11-20'
 /** The first day of the dailies that sfjc.dev serves itself (Krillion, Anthropeum, SET). */
 export const DAILY_EPOCH = '2026-11-01'
 /** The first published puzzle of each NYT daily, which is as far back as its archive goes. */
@@ -32,6 +34,7 @@ export function isNytGame(game: string): game is NytGame {
  */
 export function firstDay(game: string): string {
   if (game === 'orbs') return ORBS_FIRST_DAY
+  if (game === 'crossword') return CROSSWORD_FIRST_DAY
   return isNytGame(game) ? NYT_FIRST_DAY[game] : DAILY_EPOCH
 }
 

@@ -12,17 +12,17 @@ Wordle (id `fivefold`), Mini, Connections, Spelling Bee (`bee`), Krillion, Anthr
 
 ## Code map
 
-| Piece                                        | Where                                                                               |
-| -------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Game registry (title, url, max, rules, tier) | `GAMES` in `src/lib/results.ts`                                                     |
-| Dates, playable range, NYT first days        | `src/lib/daily.ts`                                                                  |
-| Puzzle for a day                             | `GET /api/daily/[game]` → `dailyPuzzle` in `src/lib/daily/server.ts`                |
-| NYT fetch, validation, snapshots             | `src/lib/daily/nyt.ts`, `nyt-puzzles.ts`                                            |
-| Krillion and Anthropeum sources              | `src/lib/daily/krillion.ts`, `anthropeum.ts`                                        |
-| Orbs bank and archive index                  | `data/orbs/<year>.json`, `public/orbs/categories.json`                              |
-| Page shell for 6 games                       | `src/components/daily/DailyGame.tsx` (Spelling Bee has its own, for practice hives) |
-| Score check                                  | `POST /api/results` → `VERIFIERS` in `src/lib/daily/verify.ts`                      |
-| Boards and stats                             | `/leaderboards` (`src/components/Scores.tsx`), Daily drawer (`DailyDrawer.tsx`)     |
+| Piece                                         | Where                                                                               |
+| --------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Game registry (title, url, max, rules, order) | `GAMES` in `src/lib/results.ts`                                                     |
+| Dates, playable range, NYT first days         | `src/lib/daily.ts`                                                                  |
+| Puzzle for a day                              | `GET /api/daily/[game]` → `dailyPuzzle` in `src/lib/daily/server.ts`                |
+| NYT fetch, validation, snapshots              | `src/lib/daily/nyt.ts`, `nyt-puzzles.ts`                                            |
+| Krillion and Anthropeum sources               | `src/lib/daily/krillion.ts`, `anthropeum.ts`                                        |
+| Orbs bank and archive index                   | `data/orbs/<year>.json`, `public/orbs/categories.json`                              |
+| Page shell for 6 games                        | `src/components/daily/DailyGame.tsx` (Spelling Bee has its own, for practice hives) |
+| Score check                                   | `POST /api/results` → `VERIFIERS` in `src/lib/daily/verify.ts`                      |
+| Boards and stats                              | `/leaderboards` (`src/components/Scores.tsx`), Daily drawer (`DailyDrawer.tsx`)     |
 
 Adding a daily game - add it to `GAMES`, give it a verifier (the build fails without one), a branch in `dailyPuzzle`, a player component and its route in `PageShell`.
 
@@ -57,7 +57,8 @@ Adding a daily game - add it to `GAMES`, give it a verifier (the build fails wit
 - Anthropeum - 10 artifacts, a map pin and a 250-year period each (125-year steps, 3000 BCE to 1750 CE). Up to 5,000 points for place (distance to the nearest polygon edge) and 5,000 for time, 100,000 overall. 3 free hints per game. The results page shows the original's score histogram and estimated placement.
 - Orbs - Four themed puzzles open on separate screens. Formats include written clues, two-tap matching, sorting and a short quiz. Each puzzle has three lives, and a puzzle ends when every clue is solved or the lives run out. The first complete daily ranks with one orb per correct clue, up to 12. An archive round saves only its own mark.
 - SET (`/games/set`) - a generated daily board of 12 cards with exactly 6 sets, not the original's board. Not on the leaderboard. `/games/triples` is the full 81-card game with PIN rooms, where each seat holds a private credential and claims use version checks.
-- Tier 1 (Wordle, Connections, Mini and Spelling Bee) counts toward overall wins, streaks, Daily drawer progress and nudges. Tier 2 (Krillion, Anthropeum and Orbs) and future Tier 3 games have individual rankings and appear under More games.
+- All 8 games (`GAME_IDS`) count the same toward overall wins, streaks, Daily drawer progress and nudges, and all show at once in the drawer and score grids.
+- Crossword - the full-size daily counts as solved for every player in a room once its grid is correct. The result carries the room and the player's seat, and the server checks both against the day's puzzle. Mini-edition rooms do not count.
 - Boards - 1 page: the day's score grid (its game icons filter to 1 game), standings by wins, and Your stats. Equal results share a rank. Rows stored under an older `SCORING_VERSION`, or with a source date that differs from their day, stay off the current boards.
 
 ## Verified scores

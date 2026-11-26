@@ -2,13 +2,15 @@
 
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { action } from '@/components/daily/DayNav'
 import { NYT_FIRST_DAY, validDay } from '@/lib/daily'
 import { useSiteDay } from '@/lib/play-day'
+import { logResult } from '@/lib/results'
 import {
   cellEntry,
   cleanCellEntry,
+  MINI_TITLE,
   type CrosswordBoard,
   type CrosswordClue,
   type RoomEdit,
@@ -60,7 +62,14 @@ export default function Crossword({ firstFullDay }: { firstFullDay: string }) {
   )
 }
 
-function SharedCrossword({ room, edit, controls }: RoomBoardProps) {
+function SharedCrossword({ room, seat, edit, controls }: RoomBoardProps) {
+  const { id, solved, puzzle } = room
+  const day = puzzle.board.date
+  const daily = puzzle.game === 'crossword' && puzzle.board.title !== MINI_TITLE
+  // A solved full-size room is each player's daily result. The server checks the room and this seat before it counts.
+  useEffect(() => {
+    if (solved && daily) logResult('crossword', 1, 1, day, { moves: { room: id, seat }, solved: true })
+  }, [solved, daily, day, id, seat])
   if (room.puzzle.game !== 'crossword') return null
   return (
     <>

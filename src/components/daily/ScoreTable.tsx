@@ -8,8 +8,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useHoverTip } from '@/components/HoverTip'
-import TierGroups from '@/components/daily/TierGroups'
-import { GAMES, compareResults, formatTime, resultLabel, type BoardRow, type GameId } from '@/lib/results'
+import { GAMES, GAME_IDS, compareResults, formatTime, resultLabel, type BoardRow, type GameId } from '@/lib/results'
 
 /**
  * Returns a 1-line label short enough for a grid cell: Connections shows only its solve time (or groups found)
@@ -77,13 +76,6 @@ export function Mark({ state, size = 18, label }: { state: PlayState; size?: num
   )
 }
 
-/** Divides adjacent tiers when the additional columns are expanded. */
-function tierDivider(games: GameId[], index: number) {
-  return index > 0 && GAMES[games[index]!].tier !== GAMES[games[index - 1]!].tier
-    ? 'border-l border-[var(--ink-border)]'
-    : ''
-}
-
 type ScoreTableProps = {
   rows: BoardRow[]
   me: string | undefined
@@ -105,17 +97,7 @@ type ScoreTableProps = {
  * Hovering a cell on a laptop shows the full result. With a picked game the other columns fade. With marks, cells
  * hold only completion marks and no result is bold.
  */
-export default function ScoreTable(props: ScoreTableProps) {
-  const { game, onGame } = props
-  return (
-    <TierGroups selected={game} onClear={game && game !== 'all' && onGame ? () => onGame(game) : undefined}>
-      {(games) => <ScoreGrid {...props} games={games} />}
-    </TierGroups>
-  )
-}
-
-/** Builds a single table with matching headers and cells for the currently visible games. */
-function ScoreGrid({
+export default function ScoreTable({
   rows: allRows,
   me,
   q,
@@ -124,8 +106,8 @@ function ScoreGrid({
   game = 'all',
   onGame,
   marks,
-  games,
-}: ScoreTableProps & { games: GameId[] }) {
+}: ScoreTableProps) {
+  const games = GAME_IDS
   const rows = allRows.filter((row) => games.includes(row.game))
   const best = new Map(games.map((g) => [g, rows.filter((r) => r.game === g).sort(compareResults)[0]]))
   const tip = useHoverTip()
@@ -144,12 +126,18 @@ function ScoreGrid({
             <th scope="col" className="sr-only">
               Player
             </th>
-            {games.map((g, i) => {
+            {games.map((g) => {
               const icon = (
-                <Image src={`/doodles/notebook/${g}.svg`} alt="" width={24} height={24} className="mx-auto h-6 w-6" />
+                <Image
+                  src={`/doodles/notebook/${g}.svg`}
+                  alt=""
+                  width={24}
+                  height={24}
+                  className="mx-auto h-5 w-5 sm:h-6 sm:w-6"
+                />
               )
               return (
-                <th key={g} scope="col" className={`pb-1.5 font-normal ${tierDivider(games, i)}`}>
+                <th key={g} scope="col" className={`pb-1.5 font-normal`}>
                   {onGame ? (
                     <button
                       type="button"
@@ -158,7 +146,7 @@ function ScoreGrid({
                       onClick={() => onGame(g)}
                       {...tip.on(game === g ? 'Show all games' : GAMES[g].title)}
                       className={
-                        'rounded-lg border-b-2 p-1.5 hover:bg-[var(--ink-paper)] ' +
+                        'rounded-lg border-b-2 p-1 hover:bg-[var(--ink-paper)] sm:p-1.5 ' +
                         (game === g ? 'border-[var(--game-color)] bg-[var(--ink-paper)]' : 'border-transparent')
                       }
                     >
@@ -196,7 +184,7 @@ function ScoreGrid({
                   <td
                     key={g}
                     className={
-                      `px-0.5 py-1.5 text-center leading-tight tabular-nums transition-opacity ${edge} ${tierDivider(games, i)} ` +
+                      `px-0.5 py-1.5 text-center leading-tight tabular-nums transition-opacity ${edge} ` +
                       `${game !== 'all' && game !== g ? 'opacity-35' : ''} ` +
                       (top ? 'font-semibold text-[var(--ink-text)]' : 'text-[var(--ink-muted)]')
                     }

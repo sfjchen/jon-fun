@@ -7,7 +7,7 @@ import { crosswordFirstDay, crosswordForDay, type CrosswordPuzzle } from './cros
 import { cellEntry, type Room, type RoomGame, type RoomPuzzle } from './types'
 
 type StoredPuzzle = Extract<RoomPuzzle, { game: 'bee' }> | { game: 'crossword'; board: CrosswordPuzzle }
-type Player = { seat: string; name: string; seq: number; device?: string }
+type Player = { seat: string; name: string; seq: number; device?: string; late?: true }
 type Row = {
   id: string
   puzzle: StoredPuzzle
@@ -142,7 +142,8 @@ function apply(row: Row, action: z.infer<typeof roomAction>): Change | null {
     return {
       players: [
         ...row.players.filter((p) => !dropped.includes(p)),
-        { name: action.name, seat: action.seat, seq: 0, ...(device && { device }) },
+        // A seat taken after the solve can look at the grid but earns no daily result for it.
+        { name: action.name, seat: action.seat, seq: 0, ...(device && { device }), ...(row.solved && { late: true }) },
       ],
     }
   }
@@ -201,4 +202,20 @@ export async function pruneRooms(): Promise<number> {
     .select('id')
   if (error) throw error
   return data.length
+}
+
+/**
+ * Tells whether a seat finished the day's full-size crossword in a room, for the results check. A Mini room, another
+ * day's puzzle, or a seat that never joined or joined after the solve does not count.
+ */
+export async function solvedCrossword(id: string, seat: string, day: string): Promise<boolean> {
+  const row = await loadRoom(id)
+  if (
+    !row?.solved ||
+    row.puzzle.game !== 'crossword' ||
+    !row.players.some((player) => player.seat === seat && !player.late)
+  )
+    return false
+  const { solution } = await crosswordForDay(day, false)
+  return row.puzzle.board.date === day && row.puzzle.board.solution.join() === solution.join()
 }

@@ -1,5 +1,5 @@
 import { shiftDay } from '@/lib/daily'
-import { CORE_IDS, compareResults, type BoardRow, type GameId } from '@/lib/results'
+import { compareResults, type BoardRow, type GameId } from '@/lib/results'
 export function winners(rows: BoardRow[]): string[] {
   if (new Set(rows.map((r) => r.name)).size < 2) return []
   const eligible = rows.filter(
@@ -40,9 +40,7 @@ export function overallDay(
   rows: BoardRow[],
   game: GameId | 'all' = 'all',
 ): { names: string[]; gameWins: Map<string, number> } {
-  const gameWins = winsByPlayer(
-    rows.filter((row) => (game === 'all' ? CORE_IDS.includes(row.game) : row.game === game)),
-  )
+  const gameWins = winsByPlayer(game === 'all' ? rows : rows.filter((row) => row.game === game))
   const best = Math.max(0, ...gameWins.values())
   return { names: [...gameWins].filter(([, n]) => n === best).map(([name]) => name), gameWins }
 }

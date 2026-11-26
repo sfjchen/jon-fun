@@ -19,7 +19,6 @@ import {
   ADMIN_NAME,
   GAMES,
   GAME_IDS,
-  CORE_IDS,
   PUBLIC_GROUP,
   bestGameScore,
   boardChanged,
@@ -39,7 +38,6 @@ import {
 import { DAILY_EPOCH, FIRST_DAY, shiftDay, siteDay, validDay } from '@/lib/daily'
 import { usePlayer } from '@/lib/use-player'
 import { useBoard } from '@/lib/use-board'
-import TierGroups from '@/components/daily/TierGroups'
 import { average, overallDay, streaks, winners, winsByPlayer } from '@/lib/score-stats'
 import { DEVICE_KINDS } from '@/lib/syncIdentity'
 import { useHoverTip } from '@/components/HoverTip'
@@ -502,7 +500,7 @@ export function ScoresHub() {
   }, [group])
 
   const color = playerColors(rows, me)
-  const games = tab === 'all' ? CORE_IDS : [tab]
+  const games = tab === 'all' ? GAME_IDS : [tab]
   const shown = rows.filter((r) => games.includes(r.game))
   const dayRows = rows.filter((r) => r.day === day)
   const since = span ? shiftDay(day, 1 - span) : DAILY_EPOCH
@@ -540,20 +538,16 @@ export function ScoresHub() {
 
   const mine = shown.filter((r) => r.name === me && r.day <= day)
   const mineToday = dayRows.filter((r) => r.name === me)
-  // Streaks use the same core games as the Daily drawer, regardless of the active filter.
+  // Streaks count every game like the Daily drawer, regardless of the active filter.
   const mineAll = rows.filter((r) => r.name === me && r.day <= day)
-  const streak = streaks(
-    mineAll.filter((r) => CORE_IDS.includes(r.game)),
-    day,
-  )
+  const streak = streaks(mineAll, day)
   const overall = overallDay(dayRows)
   const lead = overall.gameWins.get(overall.names[0] ?? '')
-  // Friends with core-game activity in the last week who have yet to play a core game today.
-  const coreRows = rows.filter((r) => CORE_IDS.includes(r.game))
+  // Friends who played in the last week and have yet to play today.
   const waiting =
     day === today
-      ? [...new Set(coreRows.filter((r) => r.day >= shiftDay(day, -7) && r.name !== me).map((r) => r.name))].filter(
-          (n) => !coreRows.some((r) => r.day === day && r.name === n),
+      ? [...new Set(rows.filter((r) => r.day >= shiftDay(day, -7) && r.name !== me).map((r) => r.name))].filter(
+          (n) => !rows.some((r) => r.day === day && r.name === n),
         )
       : []
   const ranked = tab === 'all' ? [] : dayRows.filter((r) => r.game === tab).sort(compareResults)
@@ -757,23 +751,19 @@ export function ScoresHub() {
           ) : (
             <div className={`${card} space-y-3 py-6 text-center sm:py-8`}>
               <p className="text-sm">{day === today ? 'Nobody has played yet. Be first.' : 'No scores this day.'}</p>
-              <TierGroups>
-                {(visibleGames) => (
-                  <div className="flex flex-wrap justify-center gap-2">
-                    {visibleGames.map((g) => (
-                      <Link
-                        key={g}
-                        href={GAMES[g].url + q}
-                        aria-label={`Play ${GAMES[g].title}`}
-                        title={GAMES[g].title}
-                        className="rounded-lg p-1 hover:bg-[var(--ink-paper)]"
-                      >
-                        <Image src={`/doodles/notebook/${g}.svg`} alt="" width={32} height={32} className="h-8 w-8" />
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </TierGroups>
+              <div className="flex flex-wrap justify-center gap-2">
+                {GAME_IDS.map((g) => (
+                  <Link
+                    key={g}
+                    href={GAMES[g].url + q}
+                    aria-label={`Play ${GAMES[g].title}`}
+                    title={GAMES[g].title}
+                    className="rounded-lg p-1 hover:bg-[var(--ink-paper)]"
+                  >
+                    <Image src={`/doodles/notebook/${g}.svg`} alt="" width={32} height={32} className="h-8 w-8" />
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
         </section>

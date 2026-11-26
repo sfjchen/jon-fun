@@ -18,6 +18,8 @@ import { artifactScore, type Artifact } from '@/lib/artifact-scoring'
 import { ORBS_MAX, type OrbsPuzzle } from '@/lib/orbs'
 import { isOrbsMoveSet, replayOrbsDay, type OrbsMoveSet } from '@/lib/orbs-run'
 import type { MiniPuzzle } from '@/lib/mini'
+import { solvedCrossword } from '@/lib/puzzle-rooms/server'
+import { validRoomId } from '@/lib/puzzle-rooms/types'
 
 /** A recomputed result: the score to store and the stats it replaces, or the reason the moves are not a valid game. */
 type Replayed = { score: number; stats: Stats } | string
@@ -120,6 +122,15 @@ export const VERIFIERS: Record<GameId, Verifier> = {
       const pts = pins.reduce((t, p, i) => t + artifactScore(artifacts[i]!, p, p.year).total, 0)
       return { score: pts, stats: { n: pins.length, solved: true, max: 100000 } }
     },
+  ),
+  // The crossword is solved in a shared room, so the room is the proof: it must hold the day's full-size puzzle,
+  // be solved, and have the sender's seat in it. Every player in the room earns the same solve.
+  crossword: verifier(
+    z.object({ room: z.string().refine(validRoomId), seat: z.uuid() }),
+    async (day, { room, seat }) =>
+      (await solvedCrossword(room, seat, day))
+        ? { score: 1, stats: { n: 1, solved: true } }
+        : 'This room has not solved that day’s full-size crossword',
   ),
   // Orbs replays old single picks and the current per-puzzle lives.
   orbs: verifier(

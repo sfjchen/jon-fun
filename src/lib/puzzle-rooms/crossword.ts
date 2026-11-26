@@ -4,7 +4,7 @@ import { NYT_FIRST_DAY, validDay } from '@/lib/daily'
 import { nytPuzzle } from '@/lib/daily/nyt'
 import type { MiniPuzzle } from '@/lib/mini'
 import { supabaseAdmin } from '@/lib/supabase'
-import { cellEntry, type CrosswordBoard } from './types'
+import { cellEntry, MINI_TITLE, type CrosswordBoard } from './types'
 
 export type CrosswordPuzzle = CrosswordBoard & { solution: (string | null)[] }
 
@@ -90,7 +90,7 @@ export async function crosswordForDay(day: string, miniOnly: boolean): Promise<C
     return normalizeCrossword(
       {
         ...mini,
-        title: 'Daily Mini Crossword',
+        title: MINI_TITLE,
         credit: [mini.constructors.join(', '), mini.copyright].filter(Boolean).join(' · ') || 'The New York Times',
       },
       day,

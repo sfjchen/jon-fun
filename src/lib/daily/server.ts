@@ -19,6 +19,13 @@ export async function dailyPuzzle(
     const { orbsForDay } = await import('@/lib/daily/orbs')
     return { day, sourceDate: day, puzzle: await orbsForDay(day) }
   }
+  if (game === 'crossword') {
+    // The solution stays on the server: rooms check entries against it.
+    const { crosswordForDay } = await import('@/lib/puzzle-rooms/crossword')
+    const board = await crosswordForDay(day, false)
+    const puzzle = Object.fromEntries(Object.entries(board).filter(([key]) => key !== 'solution'))
+    return { day, sourceDate: board.date, puzzle }
+  }
   if (isNytGame(game)) return { day, sourceDate: day, puzzle: await nytPuzzle(game, day) }
   throw new Error('Unknown daily game')
 }

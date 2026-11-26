@@ -13,8 +13,8 @@ import type { MiniPuzzle } from '@/components/mini/MiniPlay'
 import { firstDay, isNytGame, playableDay, siteDay } from '@/lib/daily'
 import { usePlayDay } from '@/lib/play-day'
 import { useDailyPuzzle } from '@/lib/use-daily-puzzle'
-import { GAMES, getPlayer, isPracticeResult, resultLabel, type GameId } from '@/lib/results'
-import { useSavedRun } from '@/lib/daily/saved-run'
+import { GAMES, getPlayer, isPracticeResult, resultLabel } from '@/lib/results'
+import { useSavedRun, type DailyGameId } from '@/lib/daily/saved-run'
 import type { ConnectionsPuzzle } from '@/lib/connections'
 import type { ArtifactDay } from '@/components/daily/AnthropeumPlay'
 import type { KrillionPuzzle } from '@/components/daily/KrillionPlay'
@@ -38,7 +38,7 @@ const OrbsPlay = dynamic(LOAD.orbs)
 const FivefoldPlay = dynamic(LOAD.fivefold)
 
 /** How each game plays, in the order a new player needs it. */
-const HOW: Record<Exclude<GameId, 'bee'>, string[]> = {
+const HOW: Record<DailyGameId, string[]> = {
   connections: [
     'Find 4 groups of 4 words that share something.',
     'Select 4 words and tap Submit. A wrong guess costs 1 of your 4 mistakes.',
@@ -73,7 +73,7 @@ const HOW: Record<Exclude<GameId, 'bee'>, string[]> = {
 /**
  * Renders the daily game for the `?d=` day, or today.
  */
-export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
+export default function DailyGame({ game }: { game: DailyGameId }) {
   const params = useSearchParams()
   const raw = params.get('d')
   const day = usePlayDay(playableDay(game, raw) ? raw : null, game)

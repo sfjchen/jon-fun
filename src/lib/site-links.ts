@@ -64,27 +64,11 @@ export const HOME_ITEMS: GameCardGame[] = [
     available: true,
   },
   {
-    id: 'crossword',
-    title: 'Crossword Together',
-    description: 'Solve the daily crossword with friends on one live grid',
-    icon: `${nb}/mini.svg`,
-    href: '/games/crossword',
-    available: true,
-  },
-  {
     id: 'set',
     title: 'Set',
     description: 'Race friends in a room, or clear a full deck',
     icon: `${nb}/triples.svg`,
     href: '/games/triples',
-    available: true,
-  },
-  {
-    id: 'orbs',
-    title: 'Orbs',
-    description: 'Twelve daily trivia questions across four categories',
-    icon: `${nb}/orbs.svg`,
-    href: '/games/orbs',
     available: true,
   },
   {

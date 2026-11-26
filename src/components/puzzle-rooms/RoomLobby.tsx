@@ -8,7 +8,7 @@ import { useDeviceName } from '@/lib/use-device-name'
 import { roomPath, roomTopic, validRoomId, type Room, type RoomEdit, type RoomGame } from '@/lib/puzzle-rooms/types'
 
 type Session = { seat: string; seq: number; batch: RoomEdit[]; queued: RoomEdit[] }
-export type RoomBoardProps = { room: Room; edit: (edit: RoomEdit) => void; controls: ReactNode }
+export type RoomBoardProps = { room: Room; seat: string; edit: (edit: RoomEdit) => void; controls: ReactNode }
 type Props = {
   game: RoomGame
   day: string
@@ -401,5 +401,5 @@ function Lobby({ game, id, day, mini, board: Board }: Props) {
       )}
     </div>
   )
-  return <Board room={sharedProgress(room, pending)} edit={edit} controls={controls} />
+  return <Board room={sharedProgress(room, pending)} seat={session.seat} edit={edit} controls={controls} />
 }

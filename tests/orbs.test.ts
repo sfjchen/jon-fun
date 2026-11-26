@@ -77,14 +77,14 @@ test('Orbs gives each puzzle three lives and rejects attempts after it ends', as
   assert.equal(await verifier.check(ORBS_BOARD_FIRST_DAY, moves as never, {}), 'Invalid or unfinished Orbs run')
 })
 
-test('a lower-tier win counts for its game but does not decide the overall day', () => {
+test('every game counts the same toward the overall day', () => {
   const rows: BoardRow[] = [
     { name: 'Alice', game: 'fivefold', day: ORBS_FIRST_DAY, score: 5, stats: {} },
     { name: 'Bob', game: 'fivefold', day: ORBS_FIRST_DAY, score: 3, stats: {} },
     { name: 'Alice', game: 'orbs', day: ORBS_FIRST_DAY, score: 9, stats: {} },
     { name: 'Bob', game: 'orbs', day: ORBS_FIRST_DAY, score: 12, stats: {} },
   ]
-  assert.deepEqual(overallDay(rows).names, ['Alice'])
+  assert.deepEqual(overallDay(rows).names, ['Alice', 'Bob'])
   assert.deepEqual(overallDay(rows, 'orbs').names, ['Bob'])
 })
 

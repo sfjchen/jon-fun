@@ -16,7 +16,8 @@ import { isOrbsMoveSet, legacyOrbsPicks, replayOrbsDay } from '@/lib/orbs-run'
 import { FIVEFOLD_TRIES } from '@/lib/daily/fivefold'
 import { getPlayer, isPracticeResult, onLiveRefresh, PLAYER_CHANGED, type GameId, type Stats } from '@/lib/results'
 
-export type DailyGameId = Exclude<GameId, 'bee'>
+/** The games that play inside the shared daily shell. Spelling Bee and the crossword rooms have their own pages. */
+export type DailyGameId = Exclude<GameId, 'bee' | 'crossword'>
 export type SavedResult = { score: number; stats: Stats; moves: unknown }
 
 const PREFIX: Record<DailyGameId, string> = {

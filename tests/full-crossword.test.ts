@@ -1,14 +1,15 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import schedule from '../data/crossword/full-size.json'
-import { shiftDay } from '../src/lib/daily'
+import { firstDay, shiftDay } from '../src/lib/daily'
 import { normalizeCrossword } from '../src/lib/puzzle-rooms/crossword'
 
 test('full-size crossword editions have consecutive dates and distinct fully checked grids', () => {
   const grids = new Set<string>()
-  const firstDay = schedule[0]!.date
+  const first = schedule[0]!.date
+  assert.equal(firstDay('crossword'), first, 'CROSSWORD_FIRST_DAY matches the schedule')
   for (const [index, edition] of schedule.entries()) {
-    const day = shiftDay(firstDay, index)
+    const day = shiftDay(first, index)
     const board = normalizeCrossword(edition, day)
     assert.equal(board.width, 15, day)
     assert.equal(board.height, 15, day)
