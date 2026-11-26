@@ -121,7 +121,9 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
         info={info}
       >
         {game === 'mini' && day <= siteDay() && (
-          <Link className={action} href={`/games/crossword?edition=mini&d=${day}`}>Play together</Link>
+          <Link className={action} href={`/games/crossword?edition=mini&d=${day}`}>
+            Play together
+          </Link>
         )}
         {game === 'orbs' && (
           <Link className="px-2 py-1.5 text-sm font-medium underline" href="/games/orbs/archive">

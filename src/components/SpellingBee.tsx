@@ -607,61 +607,65 @@ function Bee({ team }: { team?: Team }) {
           {team.controls}
           <div className="mb-2 flex items-center justify-between">
             <p className="text-sm text-[var(--ink-muted)]">{date}</p>
-            <button className={action} onClick={() => setModal('hints')}>Hints</button>
+            <button className={action} onClick={() => setModal('hints')}>
+              Hints
+            </button>
           </div>
         </>
-      ) : <DayNav
-        publishedOnly
-        minDay={NYT_FIRST_DAY.bee}
-        title="Spelling Bee"
-        path="/games/spelling-bee"
-        day={isPractice ? undefined : date}
-        label={archive ? `Past hive · ${archive} · practice` : 'Random hive · practice'}
-        info={
-          <>
-            <ul className="list-disc space-y-1 pl-4">
-              <li>Make words of 4+ letters from the hive. Every word uses the center letter. Letters can repeat.</li>
-              <li>4-letter words score 1. Longer words score 1 per letter. A pangram uses all 7 letters: +7.</li>
-              <li>Type or tap letters. Enter submits, Space shuffles.</li>
-              <li>Hints shows a grid of words left by first letter and length.</li>
-            </ul>
-            <PastHives archive={archive} go={go} />
-            <button
-              className="underline"
-              onClick={() =>
-                loadWords().then(
-                  ({ bank }) => go(`?p=${bank[Math.floor(Math.random() * bank.length)]}`),
-                  () => setErr(true),
-                )
-              }
-            >
-              Play a random practice hive
+      ) : (
+        <DayNav
+          publishedOnly
+          minDay={NYT_FIRST_DAY.bee}
+          title="Spelling Bee"
+          path="/games/spelling-bee"
+          day={isPractice ? undefined : date}
+          label={archive ? `Past hive · ${archive} · practice` : 'Random hive · practice'}
+          info={
+            <>
+              <ul className="list-disc space-y-1 pl-4">
+                <li>Make words of 4+ letters from the hive. Every word uses the center letter. Letters can repeat.</li>
+                <li>4-letter words score 1. Longer words score 1 per letter. A pangram uses all 7 letters: +7.</li>
+                <li>Type or tap letters. Enter submits, Space shuffles.</li>
+                <li>Hints shows a grid of words left by first letter and length.</li>
+              </ul>
+              <PastHives archive={archive} go={go} />
+              <button
+                className="underline"
+                onClick={() =>
+                  loadWords().then(
+                    ({ bank }) => go(`?p=${bank[Math.floor(Math.random() * bank.length)]}`),
+                    () => setErr(true),
+                  )
+                }
+              >
+                Play a random practice hive
+              </button>
+            </>
+          }
+        >
+          {!practice && selectedDay <= now && (
+            <Link className={action} href={`/games/spelling-bee?co-op=1&d=${selectedDay}`}>
+              Play together
+            </Link>
+          )}
+          {isPractice && (
+            <button className={action} onClick={() => go('')}>
+              Today
             </button>
-          </>
-        }
-      >
-        {!practice && selectedDay <= now && (
-          <Link className={action} href={`/games/spelling-bee?co-op=1&d=${selectedDay}`}>
-            Play together
-          </Link>
-        )}
-        {isPractice && (
-          <button className={action} onClick={() => go('')}>
-            Today
+          )}
+          <button className={action} title="Words left by letter and length" onClick={() => setModal('hints')}>
+            Hints
           </button>
-        )}
-        <button className={action} title="Words left by letter and length" onClick={() => setModal('hints')}>
-          Hints
-        </button>
-        {!isPractice && date > NYT_FIRST_DAY.bee && (
-          <button className={action} title="Yesterday's answers" onClick={() => setModal('yesterday')}>
-            Yesterday
+          {!isPractice && date > NYT_FIRST_DAY.bee && (
+            <button className={action} title="Yesterday's answers" onClick={() => setModal('yesterday')}>
+              Yesterday
+            </button>
+          )}
+          <button className={action} title="Your stats and share" onClick={() => setModal('stats')}>
+            Stats
           </button>
-        )}
-        <button className={action} title="Your stats and share" onClick={() => setModal('stats')}>
-          Stats
-        </button>
-      </DayNav>}
+        </DayNav>
+      )}
       {!shared && !isPractice && date <= now && isPracticeResult('bee', date) && (
         <p className="mb-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
           Started as a future preview · not ranked
@@ -839,7 +843,8 @@ function Bee({ team }: { team?: Team }) {
                 )}
                 {!open && found.length > 0 && (
                   <span className="hidden md:inline">
-                    {shared ? 'Together you found' : 'You have found'} {found.length} word{found.length === 1 ? '' : 's'}
+                    {shared ? 'Together you found' : 'You have found'} {found.length} word
+                    {found.length === 1 ? '' : 's'}
                   </span>
                 )}
               </span>

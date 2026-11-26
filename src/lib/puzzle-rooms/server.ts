@@ -57,14 +57,15 @@ export const roomAction = z.discriminatedUnion('action', [
 ])
 
 function publicRoom(row: Row): Room {
-  const { id, puzzle, players, words, entries, solved, version } = row
-  if (puzzle.game === 'bee')
-    return { id, puzzle, players: players.map((player) => player.name), words, entries, solved, version }
+  const { id, puzzle, words, entries, solved, version } = row
+  // A player who rejoins from a new tab takes a new seat, so the roster lists each name once.
+  const players = [...new Set(row.players.map((player) => player.name))]
+  if (puzzle.game === 'bee') return { id, puzzle, players, words, entries, solved, version }
   const { date, title, credit, width, height, blocks, clues } = puzzle.board
   return {
     id,
     puzzle: { game: 'crossword', board: { date, title, credit, width, height, blocks, clues } },
-    players: players.map((player) => player.name),
+    players,
     words,
     entries,
     solved,

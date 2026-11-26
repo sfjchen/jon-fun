@@ -318,6 +318,12 @@ function Lobby({ game, id, day, mini, board: Board }: Props) {
               void enter()
             }}
           >
+            {room && (
+              <p className="w-full text-sm text-[var(--ink-muted)]">
+                {room.players.join(' · ')} · <time dateTime={room.puzzle.board.date}>{room.puzzle.board.date}</time>{' '}
+                puzzle{room.solved && ' · solved'}
+              </p>
+            )}
             <label className="grid gap-1 text-sm">
               Your name
               <input
@@ -363,6 +369,7 @@ function Lobby({ game, id, day, mini, board: Board }: Props) {
             try {
               await navigator.clipboard.writeText(url.href)
               setCopied(true)
+              setTimeout(() => setCopied(false), 2000)
             } catch {
               window.prompt('Copy this invite link', url.href)
             }

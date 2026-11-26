@@ -97,16 +97,17 @@ function CrosswordGrid({
     focus(clue.cells.find((cell) => !entries[cell]) ?? clue.cells[0]!)
   }
 
-  function nextCell(cell: number, offset: number) {
-    const cells = selected?.cells ?? []
-    const next = cells[cells.indexOf(cell) + offset]
-    if (next !== undefined) focus(next)
-  }
-
-  function fill(cell: number, value: string) {
+  /**
+   * Writes entries into consecutive squares of the selected word, then moves past the last one written, stopping at
+   * the word's end.
+   */
+  function fill(cell: number, values: string[]) {
     if (solved) return
-    edit({ cell, value })
-    if (value) nextCell(cell, 1)
+    const cells = selected?.cells.includes(cell) ? selected.cells : [cell]
+    const start = cells.indexOf(cell)
+    const written = values.slice(0, cells.length - start)
+    written.forEach((value, offset) => edit({ cell: cells[start + offset]!, value }))
+    if (written.at(-1)) focus(cells[Math.min(start + written.length, cells.length - 1)]!)
   }
 
   function clear(cell: number, back: boolean) {
@@ -125,7 +126,7 @@ function CrosswordGrid({
     const key = event.key
     if (key.length === 1 && cellEntry.test(key.toUpperCase())) {
       event.preventDefault()
-      fill(cell, key.toUpperCase())
+      fill(cell, [key.toUpperCase()])
       return
     }
     if (key === 'Backspace' || key === 'Delete') {
@@ -242,10 +243,16 @@ function CrosswordGrid({
                       event.currentTarget.select()
                     }}
                     onKeyDown={(event) => onKey(event, cell)}
+                    autoFocus={active === cell}
                     onChange={(event) => {
+                      // Phone keyboards, swipe typing and dictation send no key events, so their text arrives here:
+                      // only the newly typed letters count, 1 per square. A paste fills the square as a rebus.
+                      const { inputType, data } = event.nativeEvent as InputEvent
                       const value = cleanCellEntry(event.target.value)
-                      if (value) fill(cell, value)
-                      else clear(cell, false)
+                      const typed = inputType === 'insertFromPaste' ? '' : cleanCellEntry(data ?? '')
+                      if (typed) fill(cell, [...typed])
+                      else if (!value) clear(cell, false)
+                      else if (inputType === 'insertFromPaste') fill(cell, [value])
                     }}
                   />
                 </div>
@@ -271,7 +278,7 @@ function CrosswordGrid({
                   className="flex flex-wrap items-center gap-2 text-sm"
                   onSubmit={(event) => {
                     event.preventDefault()
-                    fill(active, rebusValue)
+                    fill(active, [rebusValue])
                     setRebus(false)
                     if (!rebusValue) focus(active)
                   }}
