@@ -71,19 +71,24 @@ export default function PlayerName() {
       </form>
     )
   return (
-    <span className="inline-flex min-w-0 items-center gap-1 text-sm" data-testid="device-player-name">
-      <span className="max-w-36 truncate">{player?.name}</span>
+    <span className="inline-flex min-w-0 items-center text-sm" data-testid="device-player-name">
+      {/* The name itself opens the editor, so a device with no name shows a plain "Add name" to tap. */}
       <button
         type="button"
         aria-label={player ? 'Edit your name' : 'Add your name'}
         title={player ? 'Edit your name' : 'Add your name'}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-full opacity-70 hover:opacity-100 focus-visible:outline-2"
+        className="inline-flex h-8 min-w-0 items-center gap-1 rounded-full px-1 focus-visible:outline-2"
         onClick={() => {
           setDraft(player?.name ?? '')
           setEditing(true)
         }}
       >
-        <PencilIcon />
+        <span className={`max-w-36 truncate ${player ? '' : 'underline opacity-70'}`}>
+          {player?.name ?? 'Add name'}
+        </span>
+        <span className="opacity-70">
+          <PencilIcon />
+        </span>
       </button>
     </span>
   )

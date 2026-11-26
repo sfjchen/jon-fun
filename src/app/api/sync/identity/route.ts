@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { canonicalKey, getDevice, SYNC_COOKIE as COOKIE, SYNC_DEVICES_TABLE, type SyncDevice } from '@/lib/syncAccess'
-import { DEVICE_KINDS, tidyName, type DeviceKind } from '@/lib/syncIdentity'
+import { DEVICE_KINDS, tidyName, type DeviceKind, type LinkedDevice } from '@/lib/syncIdentity'
 import { likeName } from '@/lib/results'
 
 const MAX_AGE_S = 400 * 24 * 60 * 60
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       !!prev?.player_was &&
       !!prev.player_name &&
       body.player.name!.trim().toLowerCase() === prev.player_was.toLowerCase()
-    const player = renamed
+    let player = renamed
       ? { name: prev.player_name!, group: prev.player_group || 'public' }
       : body.player
         ? { name: tidyName(body.player.name!), group: body.player.group! }
@@ -102,6 +102,25 @@ export async function POST(request: NextRequest) {
       respelled = !!board && board !== player.name
       if (respelled) player.name = board!
     }
+    // The other devices on this key, newest first. The client shows them as proof the key links its devices, and a
+    // device that joins without a name plays as the key's most recent one, so its daily games follow the key too.
+    const { data: others } = key
+      ? await supabaseAdmin
+          .from(SYNC_DEVICES_TABLE)
+          .select('player_name,player_group,device_kind,last_seen')
+          .eq('sync_key', key)
+          .neq('device_id', did)
+          .order('last_seen', { ascending: false })
+          .limit(9)
+      : { data: null }
+    const devices: LinkedDevice[] = ((others ?? []) as SyncDevice[]).map((d) => ({
+      kind: DEVICE_KINDS.find((k) => k === d.device_kind) ?? null,
+      name: d.player_name ?? '',
+      group: d.player_group || 'public',
+      lastSeen: d.last_seen,
+    }))
+    const named = devices.find((d) => d.name)
+    if (!player && named) player = { name: named.name, group: named.group }
     const kind = DEVICE_KINDS.find((k) => k === body.kind)
     if (kind) await tagKind(did, kind)
     if (key || player) {
@@ -119,7 +138,12 @@ export async function POST(request: NextRequest) {
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     }
     const res = NextResponse.json(
-      { syncKey: key, ...(player ? { player } : {}), ...(renamed || respelled ? { renamed: true } : {}) },
+      {
+        syncKey: key,
+        ...(player ? { player } : {}),
+        ...(renamed || respelled ? { renamed: true } : {}),
+        ...(key ? { devices } : {}),
+      },
       { headers: { 'Cache-Control': 'private, no-store' } },
     )
     res.cookies.set(COOKIE, JSON.stringify({ syncKey: key, deviceId: did }), {

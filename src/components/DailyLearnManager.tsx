@@ -370,7 +370,7 @@ export default function DailyLearnManager() {
             style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
           >
             <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-              Write one sentence about today below. Have a sync password?{' '}
+              Write one sentence about today below. Have a sync key?{' '}
               <button
                 type="button"
                 onClick={() => setView('sync')}

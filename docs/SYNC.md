@@ -9,6 +9,8 @@ Daily Learn, Notes and Reader share 1 sync identity (`src/lib/syncIdentity.ts`, 
 - `sync_devices` ties each device ID to its key on the server. A device that comes back without its key gets it
   back from that row.
 - Data with no key lives under the device ID.
+- A device that links a key without a name takes the name the key's most recent device plays as, so its daily
+  games follow the key. The link reply lists the key's other devices, which the Sync form shows.
 - The owner key is `sfjc`. Owner-only features (Notes AI, Reader shelf deletes, Coming Soon tile, owner tags)
   check for it (`isOwnerKey` on the server, `isOwnerDevice` on the client).
 - `SFJC_SYNC_PASSWORD` (Vercel env) is the retired owner password. The server maps it to `sfjc`.

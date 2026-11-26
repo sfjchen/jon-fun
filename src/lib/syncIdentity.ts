@@ -11,6 +11,14 @@ const LABEL = 'sfjc_device_label'
 const PLAYER = 'sfjc_player'
 export type DevicePlayer = { name: string; group: string }
 export const PLAYER_IDENTITY_CHANGED = 'sfjc-player-changed'
+/** Another device on this browser's sync key: its kind, the name it plays as and when it last linked. */
+export type LinkedDevice = { kind: DeviceKind | null; name: string; group: string; lastSeen: string }
+let linked: LinkedDevice[] = []
+
+/** Returns the other devices on this browser's sync key as of the last link, newest first. */
+export function getLinkedDevices(): LinkedDevice[] {
+  return linked
+}
 
 /**
  * Tidies a typed name: collapses its spacing and capitalizes the first letter, so "jon" and "Jon" are 1 player.
@@ -233,15 +241,19 @@ export function ensureSyncIdentity(): Promise<void> {
     for (const k of [...LEGACY_KEYS, ...LEGACY_IDS]) write(k, '')
     const profile = getDevicePlayer()
     if (profile) write(LABEL, profile.name)
-    const r = await call<{ syncKey: string; player?: DevicePlayer; renamed?: boolean }>('POST', {
-      syncKey: getSyncKey(),
-      deviceId: getDeviceId(),
-      label: getDeviceLabel() || defaultLabel(),
-      kind: deviceKind(),
-      ...(profile ? { player: profile } : {}),
-    })
+    const r = await call<{ syncKey: string; player?: DevicePlayer; renamed?: boolean; devices?: LinkedDevice[] }>(
+      'POST',
+      {
+        syncKey: getSyncKey(),
+        deviceId: getDeviceId(),
+        label: getDeviceLabel() || defaultLabel(),
+        kind: deviceKind(),
+        ...(profile ? { player: profile } : {}),
+      },
+    )
     if (!r) throw new Error('link failed')
     write(KEY, r.syncKey)
+    linked = r.devices ?? []
     // An admin rename, or the spelling the board already holds for this name, replaces the name this device holds.
     if (r.player && (!getDevicePlayer() || r.renamed)) {
       write(PLAYER, JSON.stringify(r.player))
