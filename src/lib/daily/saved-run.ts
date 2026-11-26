@@ -10,8 +10,8 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { siteDay } from '@/lib/daily'
 import { artifactScore, type Artifact } from '@/lib/artifact-scoring'
-import { ORBS_BOARD_FIRST_DAY, ORBS_MAX } from '@/lib/orbs'
-import { validOrbsPicks } from '@/lib/orbs-storage'
+import { ORBS_BOARD_FIRST_DAY, type OrbsPuzzle } from '@/lib/orbs'
+import { isOrbsMoveSet, legacyOrbsPicks, replayOrbsDay } from '@/lib/orbs-run'
 import { FIVEFOLD_TRIES } from '@/lib/daily/fivefold'
 import { getPlayer, isPracticeResult, PLAYER_CHANGED, type GameId, type Stats } from '@/lib/results'
 
@@ -92,14 +92,18 @@ const LOCAL: { [G in DailyGameId]: (day: string, puzzle: never) => Local } = {
       }),
     }
   },
-  orbs: (day) => {
+  orbs: (day, puzzle: OrbsPuzzle) => {
     const key = orbsRunKey(day)
+    const finished = (value: unknown) => {
+      const moves = isOrbsMoveSet(value) ? value : legacyOrbsPicks(value)
+      return replayOrbsDay(puzzle, moves)?.every((state) => state.done) === true
+    }
     return {
       key,
-      done: (run: { picks?: unknown } | null) => validOrbsPicks(run?.picks) && run.picks.length === ORBS_MAX,
+      done: (run: { picks?: unknown } | null) => finished(isOrbsMoveSet(run) ? run : run?.picks),
       fill: ({ moves }) => {
-        if (!validOrbsPicks(moves) || moves.length !== ORBS_MAX) throw new Error('Invalid saved Orbs run')
-        return { [key]: { picks: moves } }
+        if (!finished(moves)) throw new Error('Invalid saved Orbs run')
+        return { [key]: isOrbsMoveSet(moves) ? { ...moves, complete: true } : { picks: moves } }
       },
     }
   },

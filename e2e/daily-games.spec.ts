@@ -27,7 +27,7 @@ async function scoreMock(page: Page, player = true) {
   })
   return rows
 }
-test('Orbs resumes a partial run, posts twelve picks and restores its result', async ({ page }) => {
+test('Orbs resumes a partial run, posts its attempts and restores its result', async ({ page }) => {
   const rows = await scoreMock(page)
   const { puzzle }: { puzzle: OrbsPuzzle } = await (
     await page.request.get(`/api/daily/orbs?d=${ORBS_FIRST_DAY}`)
@@ -42,13 +42,13 @@ test('Orbs resumes a partial run, posts twelve picks and restores its result', a
   }
   await page.goto(`/games/orbs?d=${ORBS_FIRST_DAY}`)
   const last = puzzle.categories.at(-1)!
-  await nav.getByRole('button', { name: new RegExp(last.title) }).click()
+  await nav.getByRole('link', { name: new RegExp(last.title) }).click()
   await play(last.questions[1]!)
   await page.reload()
-  await nav.getByRole('button', { name: new RegExp(last.title) }).click()
   await expect(page.getByText(`Correct · ${last.questions[1]!.options[last.questions[1]!.answer]}`)).toBeVisible()
   for (const category of puzzle.categories) {
-    await nav.getByRole('button', { name: new RegExp(category.title) }).click()
+    await page.getByRole('link', { name: /Back to puzzles/ }).click()
+    await nav.getByRole('link', { name: new RegExp(category.title) }).click()
     for (const question of category.questions) {
       if (question !== last.questions[1]) await play(question)
     }
@@ -58,7 +58,7 @@ test('Orbs resumes a partial run, posts twelve picks and restores its result', a
     .poll(() => rows.find((row) => row.game === 'orbs'))
     .toMatchObject({
       score: 12,
-      stats: { moves: questions.map((question) => question.answer) },
+      stats: { moves: { rounds: expect.any(Array) } },
     })
   await page.reload()
   await expect(page.getByTestId('orbs-result')).toHaveText('12/12 orbs')

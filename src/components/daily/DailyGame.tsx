@@ -61,8 +61,8 @@ const HOW: Record<Exclude<GameId, 'bee'>, string[]> = {
     'Hard mode (optional, stays on until you turn it off, starts before a first guess): green letters stay put and yellow letters must be reused.',
   ],
   orbs: [
-    'Open any puzzle to start. The four puzzles can be played in any order.',
-    'Each correct answer earns an orb. Your first complete day is ranked.',
+    'Open any puzzle to start. In matching puzzles, tap one tile from each column.',
+    'Correct answers earn orbs. A miss uses one of that puzzle’s three lives.',
   ],
   anthropeum: [
     '10 museum artifacts. Pin where each was made and pick a 250-year period.',
@@ -108,7 +108,7 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
   )
   return (
     <div
-      className={`daily-game mx-auto w-full ${game === 'anthropeum' || game === 'krillion' ? 'max-w-none' : game === 'fivefold' ? 'max-w-lg md:max-w-xl' : 'max-w-4xl'}`}
+      className={`daily-game mx-auto w-full ${game === 'anthropeum' || game === 'krillion' ? 'max-w-none' : game === 'fivefold' ? 'max-w-lg md:max-w-xl' : game === 'orbs' ? 'max-w-3xl' : 'max-w-4xl'}`}
       data-testid={`daily-${game}`}
     >
       <DayNav

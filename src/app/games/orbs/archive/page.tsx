@@ -8,8 +8,8 @@ import { useEffect, useState } from 'react'
 import { Mark, playState } from '@/components/daily/ScoreTable'
 import { playableDay } from '@/lib/daily'
 import { orbsRunKey } from '@/lib/daily/saved-run'
-import { ORBS_CATEGORIES, ORBS_MAX, orbsArchiveHref, type OrbsCategoryId, type OrbsIndex } from '@/lib/orbs'
-import { archiveRoundDone, readOrbsPicks } from '@/lib/orbs-storage'
+import { ORBS_CATEGORIES, orbsArchiveHref, type OrbsCategoryId, type OrbsIndex } from '@/lib/orbs'
+import { archiveRoundDone, orbsDailyDone } from '@/lib/orbs-storage'
 import { useSiteDay } from '@/lib/play-day'
 import { boardUrl, isPracticeResult, type BoardRow } from '@/lib/results'
 import { usePlayer } from '@/lib/use-player'
@@ -67,11 +67,7 @@ export default function ArchivePage() {
 
   /** Uses the ranked board or a finished daily run on this device for the daily mark. */
   function dailyDone(day: string) {
-    return (
-      syncedDays?.has(day) ||
-      (!isPracticeResult('orbs', day) &&
-        readOrbsPicks(orbsRunKey(day)).filter((pick) => pick !== null).length === ORBS_MAX)
-    )
+    return syncedDays?.has(day) || (!isPracticeResult('orbs', day) && orbsDailyDone(orbsRunKey(day)))
   }
 
   return (

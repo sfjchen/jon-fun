@@ -41,11 +41,6 @@ export function orbsArchiveHref(day: string, category?: OrbsCategoryId): string 
   return `/games/orbs/archive/play?d=${day}${category ? `&c=${category}` : ''}`
 }
 
-/** Counts one orb for each correct pick. */
-export function scoreOrbs(questions: OrbsQuestion[], picks: (number | null)[]): number {
-  return picks.filter((pick, index) => pick === questions[index]?.answer).length
-}
-
 /** Converts a written answer into the same replayable pick used by the other formats. */
 export function orbsWrittenPick(question: OrbsQuestion, input: string): OrbsPick {
   const normalize = (value: string) =>

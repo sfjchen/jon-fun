@@ -15,7 +15,8 @@ import { judgeAnswer } from '@/lib/daily/krillion'
 import { score as beeScore } from '@/lib/spelling-bee'
 import { findMatchingGroup, wordKey, type ConnectionsPuzzle } from '@/lib/connections'
 import { artifactScore, type Artifact } from '@/lib/artifact-scoring'
-import { ORBS_MAX, scoreOrbs, type OrbsPuzzle } from '@/lib/orbs'
+import { ORBS_MAX, type OrbsPuzzle } from '@/lib/orbs'
+import { isOrbsMoveSet, replayOrbsDay, type OrbsMoveSet } from '@/lib/orbs-run'
 import type { MiniPuzzle } from '@/lib/mini'
 
 /** A recomputed result: the score to store and the stats it replaces, or the reason the moves are not a valid game. */
@@ -120,15 +121,17 @@ export const VERIFIERS: Record<GameId, Verifier> = {
       return { score: pts, stats: { n: pins.length, solved: true, max: 100000 } }
     },
   ),
-  // Orbs checks every pick against the original answer key.
-  orbs: verifier(z.array(z.number().int().min(0).max(2)).length(ORBS_MAX), async (day, picks) => {
-    const { categories } = (await dailyPuzzle('orbs', day)).puzzle as OrbsPuzzle
-    const score = scoreOrbs(
-      categories.flatMap((category) => category.questions),
-      picks,
-    )
-    return { score, stats: { n: score, solved: score === ORBS_MAX } }
-  }),
+  // Orbs replays old single picks and the current per-puzzle lives.
+  orbs: verifier(
+    z.union([z.array(z.number().int().min(0).max(2)).length(ORBS_MAX), z.custom<OrbsMoveSet>(isOrbsMoveSet)]),
+    async (day, moves) => {
+      const { puzzle } = await dailyPuzzle('orbs', day)
+      const states = replayOrbsDay(puzzle as OrbsPuzzle, moves)
+      if (!states?.every((state) => state.done)) return 'Invalid or unfinished Orbs run'
+      const score = states.reduce((sum, state) => sum + state.score, 0)
+      return { score, stats: { n: score, solved: score === ORBS_MAX } }
+    },
+  ),
   // Krillion re-judges each round's accepted answer against the original's answer list. A round sends '' when nothing
   // was accepted, which scores 0, and the per-round clock cannot be replayed.
   krillion: verifier(z.array(z.string().max(256)).length(7), async (day, answers) => {

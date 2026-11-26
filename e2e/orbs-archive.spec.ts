@@ -63,8 +63,9 @@ test('Orbs archives reopen the full dated edition with the same puzzles and inde
   const editionNav = page.getByRole('navigation', { name: 'Daily Orbs puzzles' })
   const firstQuestion = first.questions[0]!
   await page.goto(`/games/orbs?d=${day}`)
-  await expect(editionNav.getByRole('button')).toHaveCount(4)
-  const dailyTitles = await editionNav.getByRole('button').allTextContents()
+  await expect(editionNav.getByRole('link')).toHaveCount(4)
+  const dailyTitles = await editionNav.getByRole('link').allTextContents()
+  await editionNav.getByRole('link', { name: new RegExp(first.title) }).click()
   const dailyClues = await page
     .getByRole('region', { name: first.title, exact: true })
     .getByRole('heading', { level: 3 })
@@ -73,8 +74,9 @@ test('Orbs archives reopen the full dated edition with the same puzzles and inde
   await page.goto('/games/orbs/archive')
   await page.getByText('Browse complete editions').click()
   await page.getByRole('link', { name: day, exact: true }).click()
-  await expect(editionNav.getByRole('button')).toHaveCount(4)
-  expect(await editionNav.getByRole('button').allTextContents()).toEqual(dailyTitles)
+  await expect(editionNav.getByRole('link')).toHaveCount(4)
+  expect(await editionNav.getByRole('link').allTextContents()).toEqual(dailyTitles)
+  await editionNav.getByRole('link', { name: new RegExp(first.title) }).click()
   const board = page.getByRole('region', { name: first.title, exact: true })
   expect(await board.getByRole('heading', { level: 3 }).allTextContents()).toEqual(dailyClues)
   await expect(page.getByRole('link', { name: /Publisher’s edition/ })).toHaveAttribute(

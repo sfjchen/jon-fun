@@ -59,8 +59,9 @@
 }
 [data-game-theme='orbs'] {
   --game-color: var(--g-orbs);
-  --orbs-strip: #26345f;
-  --orbs-strip-text: #f2f5ff;
+  --ink-paper: #f7f4ed;
+  --ink-border: #dfdace;
+  --orbs-highlight: #e5e9f8;
 }
 [data-game-theme='fivefold'] {
   --game-color: var(--g-fivefold);

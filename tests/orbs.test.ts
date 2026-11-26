@@ -5,6 +5,7 @@ import { test } from 'node:test'
 import { dailyPuzzle } from '../src/lib/daily/server'
 import { VERIFIERS } from '../src/lib/daily/verify'
 import { ORBS_BOARD_FIRST_DAY, ORBS_FIRST_DAY, ORBS_MAX, orbsWrittenPick, type OrbsPuzzle } from '../src/lib/orbs'
+import { ORBS_LIVES, replayOrbsRound } from '../src/lib/orbs-run'
 import { overallDay } from '../src/lib/score-stats'
 import type { BoardRow } from '../src/lib/results'
 
@@ -42,6 +43,38 @@ test('a mixed-format Orbs board replays to the same maximum and normalizes writt
   const picks = categories.flatMap((category) => category.questions.map((question) => question.answer))
   const result = await VERIFIERS.orbs.check(ORBS_BOARD_FIRST_DAY, picks as never, {})
   assert.deepEqual(result, { score: ORBS_MAX, stats: { n: ORBS_MAX, solved: true } })
+})
+
+test('Orbs gives each puzzle three lives and rejects attempts after it ends', async () => {
+  const { puzzle } = await dailyPuzzle('orbs', ORBS_BOARD_FIRST_DAY)
+  const { categories } = puzzle as OrbsPuzzle
+  const match = categories.find((category) => category.format === 'match')!
+  const correct = match.questions[0]!.answer
+  const wrong = ((correct + 1) % 3) as 0 | 1 | 2
+  const opened = { legacy: [], attempts: [{ clue: 0, pick: wrong }] }
+  assert.equal(replayOrbsRound(match, opened)?.lives, ORBS_LIVES - 1)
+  const retry = { ...opened, attempts: [...opened.attempts, { clue: 0, pick: correct }] }
+  assert.equal(replayOrbsRound(match, retry)?.score, 1)
+  assert.equal(replayOrbsRound(match, { ...retry, attempts: [...retry.attempts, { clue: 1, pick: correct }] }), null)
+
+  const moves = {
+    rounds: categories.map((category, index) => ({
+      legacy: [],
+      attempts:
+        index === 0
+          ? Array.from({ length: ORBS_LIVES }, () => ({ clue: 0, pick: (category.questions[0]!.answer + 1) % 3 }))
+          : category.questions.map((question, clue) => ({ clue, pick: question.answer })),
+    })),
+  }
+  const verifier = VERIFIERS.orbs
+  const parsed = verifier.moves.safeParse(moves)
+  assert.ok(parsed.success)
+  assert.deepEqual(await verifier.check(ORBS_BOARD_FIRST_DAY, parsed.data as never, {}), {
+    score: 9,
+    stats: { n: 9, solved: false },
+  })
+  moves.rounds[0]!.attempts.push({ clue: 0, pick: categories[0]!.questions[0]!.answer })
+  assert.equal(await verifier.check(ORBS_BOARD_FIRST_DAY, moves as never, {}), 'Invalid or unfinished Orbs run')
 })
 
 test('a lower-tier win counts for its game but does not decide the overall day', () => {
