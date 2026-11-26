@@ -17,11 +17,11 @@ import {
   type OrbsPuzzle,
   type OrbsQuestion,
 } from '@/lib/orbs'
-import { readOrbsPicks, saveArchiveRound, validOrbsPicks } from '@/lib/orbs-storage'
+import { archiveKey, readOrbsPicks, saveArchivePicks, validOrbsPicks } from '@/lib/orbs-storage'
 import { isPracticeResult, logResult, markPracticeIfFuture } from '@/lib/results'
 
 type Props = { puzzle: OrbsPuzzle; dailyDay: string } & (
-  { mode?: 'daily'; category?: never } | { mode: 'archive'; category: OrbsCategoryId }
+  { mode?: 'daily'; category?: never } | { mode: 'archive'; category?: OrbsCategoryId }
 )
 
 const categoryColor: Record<OrbsCategoryId, string> = {
@@ -135,11 +135,18 @@ function Clue({
 export default function OrbsPlay(props: Props) {
   const { puzzle, dailyDay } = props
   const archive = props.mode === 'archive'
-  const categories = archive ? puzzle.categories.filter((item) => item.id === props.category) : puzzle.categories
+  const solo = archive && props.category !== undefined
+  const categories = solo ? puzzle.categories.filter((item) => item.id === props.category) : puzzle.categories
   const questions = categories.flatMap((category) => category.questions)
   const key = orbsRunKey(dailyDay)
   const [picks, setPicks] = useState(() => {
-    const saved = archive ? [] : readOrbsPicks(key)
+    if (archive) {
+      return categories.flatMap((category) => {
+        const saved = readOrbsPicks(archiveKey(dailyDay, category.id))
+        return category.questions.map((_, index) => saved[index] ?? null)
+      })
+    }
+    const saved = readOrbsPicks(key)
     return questions.map((_, index) => saved[index] ?? null)
   })
   const [active, setActive] = useState(() => {
@@ -160,8 +167,10 @@ export default function OrbsPlay(props: Props) {
     if (picks[index] !== null) return
     const next = picks.map((previous, i) => (i === index ? option : previous))
     setPicks(next)
-    if (props.mode === 'archive') {
-      if (next.every((pick) => pick !== null)) saveArchiveRound(dailyDay, props.category, scoreOrbs(questions, next))
+    if (archive && selected) {
+      const round = next.slice(offset, offset + selected.questions.length)
+      const score = validOrbsPicks(round) ? scoreOrbs(selected.questions, round) : undefined
+      saveArchivePicks(dailyDay, selected.id, round, score)
       return
     }
     markPracticeIfFuture('orbs', dailyDay)
@@ -185,16 +194,22 @@ export default function OrbsPlay(props: Props) {
         className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[var(--orbs-strip)] px-4 py-3 text-[var(--orbs-strip-text)] sm:px-5"
       >
         <div>
-          <h2 className="text-xl font-bold">{archive ? 'Archive round' : 'Daily puzzle board'}</h2>
+          <h2 className="text-xl font-bold">
+            {archive ? (solo ? 'Archive round' : 'Archived puzzle board') : 'Daily puzzle board'}
+          </h2>
           <p className="text-sm opacity-85">
             {completed
               ? archive
-                ? 'Archive round complete'
+                ? solo
+                  ? 'Archive round complete'
+                  : 'Archived edition complete'
                 : isPracticeResult('orbs', dailyDay)
                   ? 'Practice complete'
                   : 'Daily complete'
               : archive
-                ? ORBS_CATEGORIES[selected.id]
+                ? solo
+                  ? ORBS_CATEGORIES[selected.id]
+                  : 'Pick any puzzle to play.'
                 : 'Pick a puzzle to start.'}
           </p>
         </div>
@@ -206,8 +221,8 @@ export default function OrbsPlay(props: Props) {
           {score}/{questions.length} orbs
         </p>
       </section>
-      <div className={archive ? '' : 'grid gap-4 md:grid-cols-[minmax(13rem,0.85fr)_minmax(0,1.8fr)]'}>
-        {!archive && (
+      <div className={solo ? '' : 'grid gap-4 md:grid-cols-[minmax(13rem,0.85fr)_minmax(0,1.8fr)]'}>
+        {!solo && (
           <nav aria-label="Daily Orbs puzzles" className="grid grid-cols-2 gap-2 self-start md:grid-cols-1">
             {categories.map((category, index) => {
               const categoryPicks = picks.slice(index * ORBS_CATEGORY_SIZE, (index + 1) * ORBS_CATEGORY_SIZE)
@@ -245,6 +260,19 @@ export default function OrbsPlay(props: Props) {
               {selected.title}
             </h2>
             {selected.note && <p className="mt-1 text-sm text-[var(--ink-muted)]">{selected.note}</p>}
+            {solo && completed && (
+              <button
+                type="button"
+                className="mt-2 min-h-9 text-sm font-medium text-[var(--ink-accent)] underline"
+                onClick={() => {
+                  const reset = selected.questions.map(() => null)
+                  setPicks(reset)
+                  saveArchivePicks(dailyDay, selected.id, reset)
+                }}
+              >
+                Play again
+              </button>
+            )}
           </header>
           {selected.questions.map((question, index) => (
             <Clue

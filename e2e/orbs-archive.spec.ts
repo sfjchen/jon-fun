@@ -2,7 +2,7 @@
 
 import { test, expect } from '@playwright/test'
 import { siteDay } from '../src/lib/daily'
-import type { OrbsPuzzle } from '../src/lib/orbs'
+import { ORBS_FIRST_DAY, type OrbsPuzzle } from '../src/lib/orbs'
 import { mockSyncIdentity } from './helpers/sync-identity-mock'
 
 test('a random archive round saves an archive mark and sends no ranked score', async ({ page }) => {
@@ -33,7 +33,7 @@ test('a random archive round saves an archive mark and sends no ranked score', a
     await page.getByRole('button', { name: question.options[question.answer], exact: true }).click()
   }
   await expect(page.getByTestId('orbs-result')).toHaveText('3/3 orbs')
-  await page.getByRole('link', { name: 'Back to categories' }).click()
+  await page.getByRole('link', { name: 'Back to archive' }).click()
   await expect(trivia.getByText(/^1 of \d+ rounds played$/)).toBeVisible()
   await trivia.getByText('Choose a date').click()
   const played = trivia.getByRole('listitem').filter({ hasText: day })
@@ -47,5 +47,49 @@ test('a random archive round saves an archive mark and sends no ranked score', a
   expect(rankedPosts).toEqual([])
 
   await page.goto(`/games/orbs/archive/play?d=${siteDay()}&c=trivia`)
-  await expect(page.getByRole('alert').filter({ hasText: 'Choose a category and a past date' })).toBeVisible()
+  await expect(page.getByRole('alert').filter({ hasText: 'Choose a past date' })).toBeVisible()
+})
+
+test('Orbs archives reopen the full dated edition with the same puzzles and independent progress', async ({ page }) => {
+  await mockSyncIdentity(page)
+  const rankedPosts: string[] = []
+  await page.route('**/api/results**', (route) => {
+    if (route.request().method() === 'POST') rankedPosts.push(route.request().url())
+    return route.fulfill({ json: { rows: [] } })
+  })
+  const day = ORBS_FIRST_DAY
+  const { puzzle }: { puzzle: OrbsPuzzle } = await (await page.request.get(`/api/daily/orbs?d=${day}`)).json()
+  const first = puzzle.categories[0]!
+  const editionNav = page.getByRole('navigation', { name: 'Daily Orbs puzzles' })
+  const firstQuestion = first.questions[0]!
+  await page.goto(`/games/orbs?d=${day}`)
+  await expect(editionNav.getByRole('button')).toHaveCount(4)
+  const dailyTitles = await editionNav.getByRole('button').allTextContents()
+  const dailyClues = await page
+    .getByRole('region', { name: first.title, exact: true })
+    .getByRole('heading', { level: 3 })
+    .allTextContents()
+
+  await page.goto('/games/orbs/archive')
+  await page.getByText('Browse complete editions').click()
+  await page.getByRole('link', { name: day, exact: true }).click()
+  await expect(editionNav.getByRole('button')).toHaveCount(4)
+  expect(await editionNav.getByRole('button').allTextContents()).toEqual(dailyTitles)
+  const board = page.getByRole('region', { name: first.title, exact: true })
+  expect(await board.getByRole('heading', { level: 3 }).allTextContents()).toEqual(dailyClues)
+  await expect(page.getByRole('link', { name: /Publisher’s edition/ })).toHaveAttribute(
+    'href',
+    `https://dailyorbs.com/${day}`,
+  )
+  await board
+    .getByRole('group', { name: firstQuestion.prompt, exact: true })
+    .getByRole('button', { name: firstQuestion.options[firstQuestion.answer], exact: true })
+    .click()
+  await page.reload()
+  await expect(board.getByText(`Correct · ${firstQuestion.options[firstQuestion.answer]}`)).toBeVisible()
+  await page.goto(`/games/orbs/archive/play?d=${day}&c=${first.id}`)
+  await expect(board.getByText(`Correct · ${firstQuestion.options[firstQuestion.answer]}`)).toBeVisible()
+  await page.goto(`/games/orbs?d=${day}`)
+  await expect(page.getByRole('region', { name: 'Orbs progress' })).toContainText('0/12 orbs')
+  expect(rankedPosts).toEqual([])
 })

@@ -9,7 +9,7 @@ export function validOrbsPicks(picks: unknown): picks is OrbsPick[] {
   )
 }
 
-/** Reads a daily run without failing when storage is unavailable. */
+/** Reads saved picks without failing when storage is unavailable. */
 export function readOrbsPicks(key: string): (OrbsPick | null)[] {
   try {
     const run = JSON.parse(localStorage.getItem(key) ?? 'null')
@@ -21,7 +21,7 @@ export function readOrbsPicks(key: string): (OrbsPick | null)[] {
 }
 
 /** Names a completion for a single archive day and category. */
-function archiveKey(day: string, category: OrbsCategoryId): string {
+export function archiveKey(day: string, category: OrbsCategoryId): string {
   return `sfjc_orbs_archive:${day}:${category}`
 }
 
@@ -35,9 +35,17 @@ export function archiveRoundDone(day: string, category: OrbsCategoryId): boolean
   }
 }
 
-/** Keeps archive completions on this device. */
-export function saveArchiveRound(day: string, category: OrbsCategoryId, score: number): void {
+/** Saves partial picks and retains any previous completion mark during a replay. */
+export function saveArchivePicks(
+  day: string,
+  category: OrbsCategoryId,
+  picks: (OrbsPick | null)[],
+  score?: number,
+): void {
   try {
-    localStorage.setItem(archiveKey(day, category), JSON.stringify({ n: score, at: Date.now() }))
+    const key = archiveKey(day, category)
+    const previous = archiveRoundDone(day, category) ? JSON.parse(localStorage.getItem(key) ?? '{}') : {}
+    const mark = score === undefined ? previous : { n: score, at: Date.now() }
+    localStorage.setItem(key, JSON.stringify({ ...mark, picks }))
   } catch {}
 }

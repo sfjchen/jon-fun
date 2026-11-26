@@ -34,7 +34,7 @@ Adding a daily game - add it to `GAMES`, give it a verifier (the build fails wit
 - Krillion uses the original's same-date prompts and answer review (accepted answers, aliases, rarity scores). A day's review is bundled or fetched from the original on first request, then stored.
 - Anthropeum uses the original's public artifacts and historical polygons, bundled per day in `data/anthropeum`.
 - Orbs reads original questions from `data/orbs/<year>.json`, starting 2026-11-21. After adding a day, regenerate the date-only archive index with `npx tsx scripts/build-orbs-index.ts`. Use `--check` to verify the index after editing the bank.
-- `/games/orbs/archive` groups past Orbs rounds by category through yesterday. Archive completions are per date, category and browser. Daily marks come from ranked scores or completed local daily runs.
+- `/games/orbs/archive` groups past Orbs rounds by category through yesterday. A date can also open its full four-puzzle edition with the same title, clues, option order and player as its daily route. Archive progress is per date, category and browser. Daily marks come from ranked scores or completed local daily runs.
 - `/games/archives` browses all 4 NYT games by date and offers each year's puzzles and word lists.
 
 ## Cron (`vercel.json`)

@@ -1,24 +1,46 @@
 'use client'
 
-/** Opens a past Orbs category without initializing a ranked daily run. */
+/** Opens a past dated edition or category without initializing a ranked daily run. */
 
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
+import DayPicker from '@/components/daily/DayPicker'
 import OrbsPlay from '@/components/daily/OrbsPlay'
-import { playableDay } from '@/lib/daily'
-import { isOrbsCategory, ORBS_CATEGORIES, type OrbsCategoryId, type OrbsPuzzle } from '@/lib/orbs'
+import { firstDay, playableDay, shiftDay } from '@/lib/daily'
+import { isOrbsCategory, orbsArchiveHref, type OrbsCategoryId, type OrbsPuzzle } from '@/lib/orbs'
 import { useSiteDay } from '@/lib/play-day'
 import { useDailyPuzzle } from '@/lib/use-daily-puzzle'
 
-/** Loads and displays one past category from the exact day's puzzle. */
-function Round({ day, category }: { day: string; category: OrbsCategoryId }) {
+/** Loads the same dated puzzle that the daily route uses. */
+function Round({ day, today, category }: { day: string; today: string; category: OrbsCategoryId | undefined }) {
+  const router = useRouter()
   const { data, error, retry } = useDailyPuzzle<OrbsPuzzle>('orbs', day)
   return (
     <>
-      <p className="mb-3 text-sm text-[var(--ink-muted)]">
-        {ORBS_CATEGORIES[category]} · {day}
-      </p>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+        <DayPicker
+          day={day}
+          today=""
+          minDay={firstDay('orbs')}
+          maxDay={shiftDay(today, -1)}
+          go={(to) => router.replace(orbsArchiveHref(to, category), { scroll: false })}
+          className="mr-auto"
+        />
+        {category && (
+          <Link className="text-[var(--ink-accent)] underline" href={orbsArchiveHref(day)}>
+            Full edition
+          </Link>
+        )}
+        <a
+          className="text-[var(--ink-accent)] underline"
+          href={`https://dailyorbs.com/${day}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Publisher’s edition ↗
+        </a>
+      </div>
       {error ? (
         <div role="alert">
           <p>{error}</p>
@@ -28,8 +50,14 @@ function Round({ day, category }: { day: string; category: OrbsCategoryId }) {
         </div>
       ) : !data ? (
         <p role="status">Loading the round…</p>
-      ) : data.puzzle.categories.some((item) => item.id === category) ? (
-        <OrbsPlay key={`${day}:${category}`} puzzle={data.puzzle} dailyDay={day} mode="archive" category={category} />
+      ) : !category || data.puzzle.categories.some((item) => item.id === category) ? (
+        <OrbsPlay
+          key={`${day}:${category ?? 'edition'}`}
+          puzzle={data.puzzle}
+          dailyDay={day}
+          mode="archive"
+          {...(category ? { category } : {})}
+        />
       ) : (
         <p role="alert">This category has no round on that date.</p>
       )}
@@ -47,12 +75,12 @@ function ArchiveRound() {
   return (
     <div className="space-y-3">
       <Link href="/games/orbs/archive" className="inline-block text-sm font-medium text-[var(--ink-accent)] underline">
-        Back to categories
+        Back to archive
       </Link>
-      {playableDay('orbs', day) && day < today && isOrbsCategory(category) ? (
-        <Round day={day} category={category} />
+      {playableDay('orbs', day) && day < today && (category === null || isOrbsCategory(category)) ? (
+        <Round day={day} today={today} category={category ?? undefined} />
       ) : (
-        <p role="alert">Choose a category and a past date from the archive.</p>
+        <p role="alert">Choose a past date from the archive.</p>
       )}
     </div>
   )

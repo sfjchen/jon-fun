@@ -8,18 +8,13 @@ import { useEffect, useState } from 'react'
 import { Mark, playState } from '@/components/daily/ScoreTable'
 import { playableDay } from '@/lib/daily'
 import { orbsRunKey } from '@/lib/daily/saved-run'
-import { ORBS_CATEGORIES, ORBS_MAX, type OrbsCategoryId, type OrbsIndex } from '@/lib/orbs'
+import { ORBS_CATEGORIES, ORBS_MAX, orbsArchiveHref, type OrbsCategoryId, type OrbsIndex } from '@/lib/orbs'
 import { archiveRoundDone, readOrbsPicks } from '@/lib/orbs-storage'
 import { useSiteDay } from '@/lib/play-day'
 import { boardUrl, isPracticeResult, type BoardRow } from '@/lib/results'
 import { usePlayer } from '@/lib/use-player'
 
 const categories = Object.keys(ORBS_CATEGORIES) as OrbsCategoryId[]
-
-/** Links to a single dated archive round. */
-function roundHref(day: string, category: OrbsCategoryId) {
-  return `/games/orbs/archive/play?d=${day}&c=${category}`
-}
 
 /** Loads the category index and the current player's ranked Orbs completions. */
 export default function ArchivePage() {
@@ -65,6 +60,9 @@ export default function ArchivePage() {
     return () => controller.abort()
   }, [group, name])
 
+  const editions = [...new Set(Object.values(index ?? {}).flat())]
+    .filter((day) => playableDay('orbs', day) && day < today)
+    .sort((a, b) => b.localeCompare(a))
   const syncedDays = board && board.name === name && board.group === group ? board.days : undefined
 
   /** Uses the ranked board or a finished daily run on this device for the daily mark. */
@@ -79,7 +77,7 @@ export default function ArchivePage() {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-        <p className="text-[var(--ink-muted)]">Pick a theme and revisit a past puzzle.</p>
+        <p className="text-[var(--ink-muted)]">Pick a date for the full edition, or browse by theme.</p>
         <Link href="/games/orbs" className="font-medium text-[var(--ink-accent)] underline">
           Play today’s Orbs
         </Link>
@@ -104,7 +102,26 @@ export default function ArchivePage() {
         </p>
       ) : (
         <>
-          <p className="text-xs text-[var(--ink-muted)]">Each date shows two marks: Archive and Daily.</p>
+          <details className="rounded-2xl border border-[var(--ink-border)] bg-[var(--ink-paper)] p-4">
+            <summary className="cursor-pointer font-semibold">Browse complete editions</summary>
+            {editions.length ? (
+              <ul className="mt-3 grid gap-2 sm:grid-cols-3">
+                {editions.map((day) => (
+                  <li key={day}>
+                    <Link
+                      className="block rounded-lg bg-[var(--ink-bg)] px-3 py-2 text-sm underline"
+                      href={orbsArchiveHref(day)}
+                    >
+                      {day}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 text-sm text-[var(--ink-muted)]">No past editions yet.</p>
+            )}
+          </details>
+          <p className="text-xs text-[var(--ink-muted)]">Each theme shows Archive and Daily completion marks.</p>
           <div className="grid gap-3 sm:grid-cols-2">
             {categories.map((category) => {
               const days = (index[category] ?? []).filter((day) => playableDay('orbs', day) && day < today).reverse()
@@ -123,7 +140,7 @@ export default function ArchivePage() {
                       disabled={!pool.length}
                       onClick={() => {
                         const day = pool[Math.floor(Math.random() * pool.length)]
-                        if (day) router.push(roundHref(day, category))
+                        if (day) router.push(orbsArchiveHref(day, category))
                       }}
                       className="min-h-10 rounded-full border border-[var(--ink-border)] bg-[var(--ink-bg)] px-3 text-sm font-medium hover:border-[var(--ink-accent)] disabled:opacity-50"
                     >
@@ -139,7 +156,7 @@ export default function ArchivePage() {
                       <ul className="mt-1">
                         {days.map((day) => (
                           <li key={day} className="flex items-center gap-2 border-t border-[var(--ink-border)] py-2">
-                            <Link className="mr-auto text-sm underline" href={roundHref(day, category)}>
+                            <Link className="mr-auto text-sm underline" href={orbsArchiveHref(day, category)}>
                               {day}
                             </Link>
                             <Mark state={archiveRoundDone(day, category) ? 'done' : 'none'} label="Archive" size={17} />

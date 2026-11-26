@@ -36,6 +36,11 @@ export function isOrbsCategory(value: string | null): value is OrbsCategoryId {
   return value !== null && Object.hasOwn(ORBS_CATEGORIES, value)
 }
 
+/** Links to a past edition, optionally focused on one theme. */
+export function orbsArchiveHref(day: string, category?: OrbsCategoryId): string {
+  return `/games/orbs/archive/play?d=${day}${category ? `&c=${category}` : ''}`
+}
+
 /** Counts one orb for each correct pick. */
 export function scoreOrbs(questions: OrbsQuestion[], picks: (number | null)[]): number {
   return picks.filter((pick, index) => pick === questions[index]?.answer).length
