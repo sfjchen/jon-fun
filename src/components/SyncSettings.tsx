@@ -32,7 +32,11 @@ export default function SyncSettings({ onSync, testIdPrefix: t }: Props) {
   const [status, setStatus] = useState<{ ok: boolean; message: string } | null>(null)
 
   useEffect(() => {
-    const bump = () => setTick((n) => n + 1)
+    // A key restored from the server after load fills the empty field, so it matches the "synced" status.
+    const bump = () => {
+      setTick((n) => n + 1)
+      setKeyInput((v) => v || getSyncKey())
+    }
     window.addEventListener(SYNC_IDENTITY_CHANGED, bump)
     void ensureSyncIdentity()
     return () => window.removeEventListener(SYNC_IDENTITY_CHANGED, bump)
@@ -64,6 +68,7 @@ export default function SyncSettings({ onSync, testIdPrefix: t }: Props) {
           onChange={(e) => setKeyInput(e.target.value)}
           placeholder="Sync key"
           aria-label="Sync key"
+          maxLength={200}
           data-testid={`${t}-sync-key-input`}
           autoCapitalize="off"
           autoCorrect="off"

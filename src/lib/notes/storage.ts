@@ -315,6 +315,8 @@ async function pushWithRetry(sessions: NoteSession[]): Promise<PushResult> {
 }
 
 export async function pushAllToServer(): Promise<PushResult> {
+  // Waits for the restored ids, so a push never lands under a device ID minted before the saved key came back.
+  await ensureSyncIdentity()
   return runSyncExclusive(() => pushWithRetry(loadSessions()))
 }
 
@@ -326,7 +328,10 @@ export async function syncWithServer(): Promise<{
   if (typeof window === 'undefined') return { sessions: loadSessions(), pushOk: true }
   await ensureSyncIdentity()
   return runSyncExclusive(async () => {
-    const { sessions: remoteRaw } = await fetchRawSessionsFromServer()
+    const { sessions: remoteRaw, error } = await fetchRawSessionsFromServer()
+    // A failed pull is not an empty account: pushing now would replace newer notes on the server with this
+    // device's copies, so the sync stops and reports the failure.
+    if (error) return { sessions: loadSessions(), pushOk: false, pushError: error }
     const local = loadSessions()
     syncFoldersFromSessions([...local, ...remoteRaw])
     const merged = mergeSessions(local, remoteRaw)
@@ -346,6 +351,7 @@ export async function syncWithServer(): Promise<{
 export async function saveSessionToServer(session: NoteSession): Promise<PushResult> {
   return runSyncExclusive(async () => {
     upsertSession(session)
+    await ensureSyncIdentity()
     return pushWithRetry(loadSessions())
   })
 }

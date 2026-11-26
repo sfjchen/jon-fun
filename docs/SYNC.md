@@ -19,3 +19,8 @@ flag yet) can: where the 2 histories hold a different text for a day, the newer 
 entry's `conflict` until the user picks in History. Notes keeps the newest session. Sync never replaces either side. Daily games keep the first finished
 result, and a different game sent from another device under the same name is stored in `game_results.conflict`
 and shown beside it on the daily board.
+
+Daily games sync by player name, not by sync key. Names are tidied where they are saved (`tidyName`: single
+spaces, first letter capitalized) and matched without regard to case, and a device adopts the spelling its board
+already holds on its next identity link. An open page pulls the name's Spelling Bee words on every live refresh
+and checks for a day finished on another device each time the player returns to it.

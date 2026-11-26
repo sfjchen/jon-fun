@@ -7,6 +7,7 @@ import {
   ensureSyncIdentity,
   getDeviceId,
   deviceKind,
+  tidyName,
   PLAYER_IDENTITY_CHANGED,
   type DeviceKind,
 } from '@/lib/syncIdentity'
@@ -174,24 +175,30 @@ export function setPlayer(p: Player): void {
   void flushResults()
 }
 type Queued = Result & { player: Player | null }
-/** Reads the results saved on this device that are not yet synced. */
+/** Reads the results saved on this device that are not yet synced, under the tidied name they were played as. */
 export function queue(): Queued[] {
   try {
-    return (JSON.parse(localStorage.getItem(QUEUE_KEY) ?? '[]') as Queued[]).filter((q) => q.game in GAMES)
+    return (JSON.parse(localStorage.getItem(QUEUE_KEY) ?? '[]') as Queued[])
+      .filter((q) => q.game in GAMES)
+      .map((q) => (q.player ? { ...q, player: { ...q.player, name: tidyName(q.player.name) } } : q))
   } catch {
     return []
   }
 }
 let flushing = false,
   again = false
-export async function flushResults(): Promise<void> {
+/**
+ * Sends the queued results in order. Resolves false when a pass already in flight will cover this call, so the
+ * caller cannot yet tell what is left behind.
+ */
+export async function flushResults(): Promise<boolean> {
   await ensureSyncIdentity()
   const player = getPlayer()
-  if (!player) return
+  if (!player) return true
   // A result queued during a flush gets its own pass right after, instead of waiting for the next timer.
   if (flushing) {
     again = true
-    return
+    return false
   }
   flushing = true
   try {
@@ -213,8 +220,10 @@ export async function flushResults(): Promise<void> {
           stats: item.stats,
         }),
       })
-      // A server or rate-limit error retries later; any other rejection is final, so the result leaves the queue.
-      if (response.status >= 500 || response.status === 429) break
+      // A rate limit stops this pass. A server error keeps only that result for the next pass, so 1 result the
+      // server cannot check never holds back the rest. Any other rejection is final, so the result leaves the queue.
+      if (response.status === 429) break
+      if (response.status >= 500) continue
       // The board keeps 1 spelling per name, so adopt its spelling when this device typed the name in another case.
       const saved = response.ok ? ((await response.json()) as { name?: string }).name : undefined
       const current = getPlayer()
@@ -243,6 +252,7 @@ export async function flushResults(): Promise<void> {
       void flushResults()
     }
   }
+  return true
 }
 /** Future previews stay practice even after their calendar date arrives. */
 export function markPracticeIfFuture(game: GameId, day?: string): void {
@@ -351,13 +361,14 @@ export function boardUrl(query: Record<string, string | number>): string {
 /**
  * Calls reload whenever other players' results may have changed: every 15 seconds while the page is visible, and when
  * the tab becomes visible, regains focus, comes back online or is restored from the back-forward cache (Safari
- * pauses background timers and often skips focus on these). Returns a cleanup function.
+ * pauses background timers and often skips focus on these). Without `poll` only the returns to the page count.
+ * Returns a cleanup function.
  */
-export function onLiveRefresh(reload: () => void): () => void {
+export function onLiveRefresh(reload: () => void, poll = true): () => void {
   const visible = () => {
     if (document.visibilityState === 'visible') reload()
   }
-  const timer = setInterval(visible, 15000)
+  const timer = poll ? setInterval(visible, 15000) : undefined
   const events: [EventTarget, string][] = [
     [document, 'visibilitychange'],
     [window, 'focus'],

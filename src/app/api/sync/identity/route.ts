@@ -6,7 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { canonicalKey, getDevice, SYNC_COOKIE as COOKIE, SYNC_DEVICES_TABLE, type SyncDevice } from '@/lib/syncAccess'
-import { DEVICE_KINDS, type DeviceKind } from '@/lib/syncIdentity'
+import { DEVICE_KINDS, tidyName, type DeviceKind } from '@/lib/syncIdentity'
+import { likeName } from '@/lib/results'
 
 const MAX_AGE_S = 400 * 24 * 60 * 60
 const ID_RE = /^[A-Za-z0-9-]{8,64}$/
@@ -82,10 +83,25 @@ export async function POST(request: NextRequest) {
     const player = renamed
       ? { name: prev.player_name!, group: prev.player_group || 'public' }
       : body.player
-        ? { name: body.player.name!.trim(), group: body.player.group! }
+        ? { name: tidyName(body.player.name!), group: body.player.group! }
         : prev?.player_name
           ? { name: prev.player_name, group: prev.player_group || 'public' }
           : undefined
+    // A name already on the board keeps the board's spelling, so a device that typed "JON" plays as the "Jon" its
+    // results sit under and sees them as its own.
+    let respelled = false
+    if (body.player && !renamed && player) {
+      const { data } = await supabaseAdmin
+        .from('game_results')
+        .select('name')
+        .eq('group_code', player.group)
+        .ilike('name', likeName(player.name))
+        .order('created_at')
+        .limit(1)
+      const board = data?.[0]?.name as string | undefined
+      respelled = !!board && board !== player.name
+      if (respelled) player.name = board!
+    }
     const kind = DEVICE_KINDS.find((k) => k === body.kind)
     if (kind) await tagKind(did, kind)
     if (key || player) {
@@ -103,7 +119,7 @@ export async function POST(request: NextRequest) {
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     }
     const res = NextResponse.json(
-      { syncKey: key, ...(player ? { player } : {}), ...(renamed ? { renamed: true } : {}) },
+      { syncKey: key, ...(player ? { player } : {}), ...(renamed || respelled ? { renamed: true } : {}) },
       { headers: { 'Cache-Control': 'private, no-store' } },
     )
     res.cookies.set(COOKIE, JSON.stringify({ syncKey: key, deviceId: did }), {

@@ -12,6 +12,18 @@ const PLAYER = 'sfjc_player'
 export type DevicePlayer = { name: string; group: string }
 export const PLAYER_IDENTITY_CHANGED = 'sfjc-player-changed'
 
+/**
+ * Tidies a typed name: collapses its spacing and capitalizes the first letter, so "jon" and "Jon" are 1 player.
+ */
+export function tidyName(name: string): string {
+  const n = name.trim().replace(/\s+/g, ' ').slice(0, 24)
+  return n.charAt(0).toUpperCase() + n.slice(1)
+}
+
+/**
+ * Returns the name and board saved on this device, or null before a name is set. Names saved before they were
+ * tidied read back tidied.
+ */
 export function getDevicePlayer(): DevicePlayer | null {
   try {
     const p = JSON.parse(read(PLAYER) || 'null') as DevicePlayer | null
@@ -20,7 +32,7 @@ export function getDevicePlayer(): DevicePlayer | null {
       p.name.trim() &&
       typeof p.group === 'string' &&
       /^[a-z0-9-]{3,32}$/.test(p.group)
-      ? p
+      ? { name: tidyName(p.name), group: p.group }
       : null
   } catch {
     return null
@@ -29,7 +41,7 @@ export function getDevicePlayer(): DevicePlayer | null {
 
 /** Saves the one name used by games, log device stamps and reader comments. */
 export function saveDevicePlayer(player: DevicePlayer): void {
-  const name = player.name.trim().slice(0, 24)
+  const name = tidyName(player.name)
   if (!name || !/^[a-z0-9-]{3,32}$/.test(player.group)) return
   write(PLAYER, JSON.stringify({ name, group: player.group }))
   write(LABEL, name)
@@ -230,7 +242,7 @@ export function ensureSyncIdentity(): Promise<void> {
     })
     if (!r) throw new Error('link failed')
     write(KEY, r.syncKey)
-    // An admin rename replaces the name this device holds.
+    // An admin rename, or the spelling the board already holds for this name, replaces the name this device holds.
     if (r.player && (!getDevicePlayer() || r.renamed)) {
       write(PLAYER, JSON.stringify(r.player))
       write(LABEL, r.player.name)
@@ -257,6 +269,8 @@ export function subscribeSyncIdentity(cb: () => void): () => void {
  * Sets the sync key (shared by every app) and ties this device to it on the server.
  */
 export async function connectSyncKey(key: string): Promise<void> {
+  // Waits out a link already in flight, whose reply would otherwise write back the key it was sent with.
+  await ready
   write(KEY, key.trim())
   ready = null
   await ensureSyncIdentity()

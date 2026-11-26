@@ -5,7 +5,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { validDay } from '@/lib/daily'
-import { likeName } from '@/lib/results'
+import { SCORING_VERSION, likeName } from '@/lib/results'
 import { supabaseAdmin } from '@/lib/supabase'
 
 const schema = z.object({
@@ -28,6 +28,7 @@ export async function POST(req: Request) {
     .ilike('name', likeName(name))
     .eq('game', 'bee')
     .eq('day', day)
+    .eq('scoring_version', SCORING_VERSION)
     .order('created_at')
     .limit(1)
   if (error) return NextResponse.json({ error: 'Could not load words' }, { status: 503 })

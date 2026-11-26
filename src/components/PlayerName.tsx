@@ -52,6 +52,7 @@ export default function PlayerName() {
           ref={input}
           aria-label="Your name"
           autoComplete="nickname"
+          autoCapitalize="words"
           maxLength={24}
           required
           value={draft}

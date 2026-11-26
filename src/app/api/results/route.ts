@@ -6,7 +6,7 @@ import { firstDay, isNytGame, siteDay, validDay } from '@/lib/daily'
 import { rateLimited } from '@/lib/api-guards'
 import { supabaseAdmin } from '@/lib/supabase'
 import { VERIFIERS } from '@/lib/daily/verify'
-import { DEVICE_KINDS } from '@/lib/syncIdentity'
+import { DEVICE_KINDS, tidyName } from '@/lib/syncIdentity'
 const group = z.string().regex(/^[a-z0-9-]{3,32}$/)
 const stats = z.object({
   n: z.number().int().min(0).max(500).optional(),
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
     score = game.score
   // Names are unique per board regardless of case and spacing, so "jon" on a phone files under an existing "Jon".
   // A unique index on the lowercased name backs this when 2 devices post a new name at the same moment.
-  const clean = b.name.replace(/\s+/g, ' ')
+  const clean = tidyName(b.name)
   const same = await supabaseAdmin
     .from('game_results')
     .select('name')

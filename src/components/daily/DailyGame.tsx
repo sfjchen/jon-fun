@@ -77,11 +77,12 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
   const params = useSearchParams()
   const raw = params.get('d')
   const day = usePlayDay(playableDay(game, raw) ? raw : null, game)
-  const key = `${game}:${day}`
   const { data: loaded, error, retry } = useDailyPuzzle(game, day)
   // A day already finished under this name opens on its saved result, so the game waits for that check.
   const saved = useSavedRun(game, day, loaded?.puzzle)
   const data = saved.ready && !saved.played ? loaded : undefined
+  // A run finished on another device while this page was open remounts the game on its result.
+  const key = `${game}:${day}:${saved.rev}`
   // Fetches the player's code alongside the puzzle instead of after it.
   useEffect(() => void LOAD[game](), [game])
   const info = (

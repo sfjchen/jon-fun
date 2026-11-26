@@ -16,6 +16,7 @@ import {
   logResult,
   markPracticeIfFuture,
   isPracticeResult,
+  onLiveRefresh,
 } from '@/lib/results'
 import { useDeviceName } from '@/lib/use-device-name'
 import { NYT_FIRST_DAY, playableDay, shiftDay, siteDay, validDay } from '@/lib/daily'
@@ -368,24 +369,29 @@ export default function SpellingBee() {
     setCrowd(null)
   }
 
-  // Merges in the words found under this name on other devices. The saved list is re-read when the reply lands, so
-  // a word typed meanwhile is kept.
+  // Merges in the words found under this name on other devices, on load and on every live refresh, so an open page
+  // picks up a phone's words without a reload. The saved list is re-read when the reply lands, so a word typed
+  // meanwhile is kept.
   const [name] = useDeviceName()
   useEffect(() => {
     if (!pz || !key || isPractice) return
     let live = true
-    void remoteFound(date).then((ws) => {
-      const f = loadFound(key),
-        add = ws.filter((w) => pz.answers.includes(w) && !f.includes(w))
-      if (!live || !add.length) return
-      const nf = [...f, ...add]
-      try {
-        localStorage.setItem(`sb:${key}`, JSON.stringify(nf))
-      } catch {}
-      setFound(nf)
-    })
+    const pull = () =>
+      void remoteFound(date).then((ws) => {
+        const f = loadFound(key),
+          add = ws.filter((w) => pz.answers.includes(w) && !f.includes(w))
+        if (!live || !add.length) return
+        const nf = [...f, ...add]
+        try {
+          localStorage.setItem(`sb:${key}`, JSON.stringify(nf))
+        } catch {}
+        setFound(nf)
+      })
+    pull()
+    const stop = onLiveRefresh(pull)
     return () => {
       live = false
+      stop()
     }
   }, [pz, key, isPractice, date, name])
   const [ydFound, setYdFound] = useState<string[]>([])

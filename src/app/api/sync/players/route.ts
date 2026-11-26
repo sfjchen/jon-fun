@@ -9,6 +9,7 @@ import { rateLimited } from '@/lib/api-guards'
 import { ADMIN_NAME, likeName } from '@/lib/results'
 import { getDevice, SYNC_COOKIE, SYNC_DEVICES_TABLE } from '@/lib/syncAccess'
 import { supabaseAdmin } from '@/lib/supabase'
+import { tidyName } from '@/lib/syncIdentity'
 
 const name = z.string().trim().min(1).max(24)
 const body = z.object({
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
     if (done.some((d) => d.error)) return failed()
     return NextResponse.json({ ok: true, removed: done[0].count ?? 0 })
   }
-  const to = p.data.to?.replace(/\s+/g, ' ')
+  const to = p.data.to && tidyName(p.data.to)
   if (!to || to === old) return NextResponse.json({ error: 'Enter a new name' }, { status: 400 })
   // Another player's name is refused. A change of spelling or case of the same name is not another player.
   if (to.toLowerCase() !== lower) {
