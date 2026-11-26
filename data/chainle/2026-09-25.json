@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-25",
+  "pairs": [
+    {
+      "anchors": [
+        "second",
+        "queen"
+      ],
+      "answers": [
+        {
+          "word": "premier",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "payment",
+        "fleet"
+      ],
+      "answers": [
+        {
+          "word": "shipping",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "furniture",
+        "instrument"
+      ],
+      "answers": [
+        {
+          "word": "piano",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "essay",
+        "petition",
+        "meeting"
+      ],
+      "answers": [
+        {
+          "word": "proposal",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "court"
+      ],
+      "answers": [
+        {
+          "word": "judge",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

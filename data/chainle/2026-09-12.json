@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-12",
+  "pairs": [
+    {
+      "anchors": [
+        "garage",
+        "wood"
+      ],
+      "answers": [
+        {
+          "word": "furniture",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "sample",
+        "audio"
+      ],
+      "answers": [
+        {
+          "word": "demo",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "community",
+        "trip"
+      ],
+      "answers": [
+        {
+          "word": "mission",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "cable",
+        "port",
+        "conversation"
+      ],
+      "answers": [
+        {
+          "word": "connection",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "punk"
+      ],
+      "answers": [
+        {
+          "word": "rock",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

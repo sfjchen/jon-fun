@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-20",
+  "pairs": [
+    {
+      "anchors": [
+        "mount",
+        "meeting"
+      ],
+      "answers": [
+        {
+          "word": "summit",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "light",
+        "wave"
+      ],
+      "answers": [
+        {
+          "word": "beam",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "root",
+        "factory"
+      ],
+      "answers": [
+        {
+          "word": "plant",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "pool",
+        "establishment",
+        "hill"
+      ],
+      "answers": [
+        {
+          "word": "lodge",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "document"
+      ],
+      "answers": [
+        {
+          "word": "declaration",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-23",
+  "pairs": [
+    {
+      "anchors": [
+        "wall",
+        "logo"
+      ],
+      "answers": [
+        {
+          "word": "poster",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "bed",
+        "healthcare"
+      ],
+      "answers": [
+        {
+          "word": "hospital",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "couple",
+        "summer"
+      ],
+      "answers": [
+        {
+          "word": "week",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "wound",
+        "shoulder",
+        "stomach"
+      ],
+      "answers": [
+        {
+          "word": "neck",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "outfit"
+      ],
+      "answers": [
+        {
+          "word": "dress",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

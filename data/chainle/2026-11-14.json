@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-14",
+  "pairs": [
+    {
+      "anchors": [
+        "landscape",
+        "panel"
+      ],
+      "answers": [
+        {
+          "word": "interior",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "brother",
+        "death"
+      ],
+      "answers": [
+        {
+          "word": "widow",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "nursing",
+        "removal"
+      ],
+      "answers": [
+        {
+          "word": "surgical",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "court",
+        "village",
+        "deal"
+      ],
+      "answers": [
+        {
+          "word": "settlement",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "rest"
+      ],
+      "answers": [
+        {
+          "word": "remainder",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

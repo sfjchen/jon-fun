@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-20",
+  "pairs": [
+    {
+      "anchors": [
+        "veteran",
+        "personnel"
+      ],
+      "answers": [
+        {
+          "word": "military",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "democrat",
+        "file"
+      ],
+      "answers": [
+        {
+          "word": "attorney",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "reader",
+        "editing"
+      ],
+      "answers": [
+        {
+          "word": "editor",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "assembly",
+        "bedroom",
+        "jury"
+      ],
+      "answers": [
+        {
+          "word": "chamber",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "mortgage"
+      ],
+      "answers": [
+        {
+          "word": "loan",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

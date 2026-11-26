@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-12",
+  "pairs": [
+    {
+      "anchors": [
+        "rally",
+        "prayer"
+      ],
+      "answers": [
+        {
+          "word": "petition",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "audio",
+        "shoulder"
+      ],
+      "answers": [
+        {
+          "word": "ear",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "chat",
+        "league"
+      ],
+      "answers": [
+        {
+          "word": "conference",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "mount",
+        "university",
+        "ministry"
+      ],
+      "answers": [
+        {
+          "word": "temple",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "hour"
+      ],
+      "answers": [
+        {
+          "word": "minute",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

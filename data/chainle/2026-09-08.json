@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-08",
+  "pairs": [
+    {
+      "anchors": [
+        "present",
+        "title"
+      ],
+      "answers": [
+        {
+          "word": "entitled",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "tag",
+        "evaluation"
+      ],
+      "answers": [
+        {
+          "word": "identification",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "mortgage",
+        "supply"
+      ],
+      "answers": [
+        {
+          "word": "purchasing",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "minute",
+        "deposit",
+        "jail"
+      ],
+      "answers": [
+        {
+          "word": "charge",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "lighting"
+      ],
+      "answers": [
+        {
+          "word": "lamp",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

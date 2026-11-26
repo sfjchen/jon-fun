@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-21",
+  "pairs": [
+    {
+      "anchors": [
+        "schedule",
+        "hundred"
+      ],
+      "answers": [
+        {
+          "word": "hour",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "transmission",
+        "script"
+      ],
+      "answers": [
+        {
+          "word": "message",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "skin",
+        "shopping"
+      ],
+      "answers": [
+        {
+          "word": "clothing",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "morning",
+        "statistics",
+        "editor"
+      ],
+      "answers": [
+        {
+          "word": "news",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "lion"
+      ],
+      "answers": [
+        {
+          "word": "tiger",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

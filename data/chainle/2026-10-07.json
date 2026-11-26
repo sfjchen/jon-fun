@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-07",
+  "pairs": [
+    {
+      "anchors": [
+        "metal",
+        "angle"
+      ],
+      "answers": [
+        {
+          "word": "blade",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "summary",
+        "stock"
+      ],
+      "answers": [
+        {
+          "word": "listing",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "billion",
+        "governor"
+      ],
+      "answers": [
+        {
+          "word": "fiscal",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "coast",
+        "damage",
+        "shelter"
+      ],
+      "answers": [
+        {
+          "word": "hurricane",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "cop"
+      ],
+      "answers": [
+        {
+          "word": "police",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-06",
+  "pairs": [
+    {
+      "anchors": [
+        "sand",
+        "rain"
+      ],
+      "answers": [
+        {
+          "word": "mud",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "electricity",
+        "tape"
+      ],
+      "answers": [
+        {
+          "word": "cable",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "night",
+        "peak"
+      ],
+      "answers": [
+        {
+          "word": "sunset",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "box",
+        "note",
+        "pair"
+      ],
+      "answers": [
+        {
+          "word": "case",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "war"
+      ],
+      "answers": [
+        {
+          "word": "battle",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

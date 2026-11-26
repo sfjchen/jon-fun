@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-24",
+  "pairs": [
+    {
+      "anchors": [
+        "ring",
+        "arm"
+      ],
+      "answers": [
+        {
+          "word": "finger",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "charter",
+        "portion"
+      ],
+      "answers": [
+        {
+          "word": "chapter",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "petition",
+        "mechanism"
+      ],
+      "answers": [
+        {
+          "word": "motion",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "scene",
+        "channel",
+        "truck"
+      ],
+      "answers": [
+        {
+          "word": "station",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "golf"
+      ],
+      "answers": [
+        {
+          "word": "tennis",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

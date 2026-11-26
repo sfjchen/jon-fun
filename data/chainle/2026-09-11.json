@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-11",
+  "pairs": [
+    {
+      "anchors": [
+        "ceremony",
+        "campus"
+      ],
+      "answers": [
+        {
+          "word": "graduation",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "comedy",
+        "player"
+      ],
+      "answers": [
+        {
+          "word": "actor",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "flag",
+        "shirt"
+      ],
+      "answers": [
+        {
+          "word": "logo",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "library",
+        "warning",
+        "text"
+      ],
+      "answers": [
+        {
+          "word": "reference",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "daughter"
+      ],
+      "answers": [
+        {
+          "word": "son",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

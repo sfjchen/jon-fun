@@ -1,0 +1,70 @@
+{
+  "date": "2026-08-30",
+  "pairs": [
+    {
+      "anchors": [
+        "account",
+        "resident"
+      ],
+      "answers": [
+        {
+          "word": "registered",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "clothing",
+        "shield"
+      ],
+      "answers": [
+        {
+          "word": "helmet",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "conversation",
+        "hunting"
+      ],
+      "answers": [
+        {
+          "word": "gathering",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "bedroom",
+        "doctor",
+        "telephone"
+      ],
+      "answers": [
+        {
+          "word": "office",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "chief"
+      ],
+      "answers": [
+        {
+          "word": "deputy",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

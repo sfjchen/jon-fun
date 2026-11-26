@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-09",
+  "pairs": [
+    {
+      "anchors": [
+        "owner",
+        "broadcast"
+      ],
+      "answers": [
+        {
+          "word": "host",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "divorce",
+        "photographer"
+      ],
+      "answers": [
+        {
+          "word": "wedding",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "post",
+        "edge"
+      ],
+      "answers": [
+        {
+          "word": "tip",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "damage",
+        "beach",
+        "garage"
+      ],
+      "answers": [
+        {
+          "word": "property",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "competition"
+      ],
+      "answers": [
+        {
+          "word": "contest",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

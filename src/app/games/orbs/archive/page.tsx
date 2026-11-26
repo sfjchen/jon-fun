@@ -6,9 +6,9 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Mark, playState } from '@/components/daily/ScoreTable'
-import { playableDay } from '@/lib/daily'
+import { playableDay, shiftDay } from '@/lib/daily'
 import { orbsRunKey } from '@/lib/daily/saved-run'
-import { ORBS_CATEGORIES, orbsArchiveHref, type OrbsCategoryId, type OrbsIndex } from '@/lib/orbs'
+import { ORBS_ROTATION_START, ORBS_CATEGORIES, orbsArchiveHref, type OrbsCategoryId, type OrbsIndex } from '@/lib/orbs'
 import { archiveRoundDone, orbsDailyDone } from '@/lib/orbs-storage'
 import { useSiteDay } from '@/lib/play-day'
 import { boardUrl, isPracticeResult, type BoardRow } from '@/lib/results'
@@ -26,6 +26,7 @@ export default function ArchivePage() {
   const [index, setIndex] = useState<OrbsIndex>()
   const [error, setError] = useState(false)
   const [attempt, retry] = useState(0)
+  const [publisherDay, setPublisherDay] = useState('')
   const [board, setBoard] = useState<{ name: string; group: string; days: Set<string> }>()
 
   useEffect(() => {
@@ -60,7 +61,9 @@ export default function ArchivePage() {
     return () => controller.abort()
   }, [group, name])
 
-  const editions = [...new Set(Object.values(index ?? {}).flat())]
+  const rotation: string[] = []
+  for (let day = ORBS_ROTATION_START; day < today; day = shiftDay(day, 1)) rotation.push(day)
+  const editions = [...new Set([...Object.values(index ?? {}).flat(), ...rotation])]
     .filter((day) => playableDay('orbs', day) && day < today)
     .sort((a, b) => b.localeCompare(a))
   const syncedDays = board && board.name === name && board.group === group ? board.days : undefined
@@ -78,6 +81,20 @@ export default function ArchivePage() {
           Play today’s Orbs
         </Link>
       </div>
+      {today && (
+        <form
+          className="flex flex-wrap items-center gap-2 text-sm"
+          onSubmit={(event) => {
+            event.preventDefault()
+            window.location.assign(`https://dailyorbs.com/${publisherDay || today}`)
+          }}
+        >
+          <label htmlFor="publisher-day">Publisher’s archive</label>
+          <input id="publisher-day" type="date" required min="2026-04-17" max={today}
+            value={publisherDay || today} onChange={(event) => setPublisherDay(event.target.value)} />
+          <button className="underline">Open original edition ↗</button>
+        </form>
+      )}
       {error ? (
         <div role="alert" className="rounded-xl border border-[var(--ink-border)] p-4 text-sm">
           <p>Could not load the archive.</p>
@@ -120,7 +137,7 @@ export default function ArchivePage() {
           <p className="text-xs text-[var(--ink-muted)]">Each theme shows Archive and Daily completion marks.</p>
           <div className="grid gap-3 sm:grid-cols-2">
             {categories.map((category) => {
-              const days = (index[category] ?? []).filter((day) => playableDay('orbs', day) && day < today).reverse()
+              const days = [...new Set([...index[category], ...rotation])].sort().filter((day) => playableDay('orbs', day) && day < today).reverse()
               const unplayed = days.filter((day) => !archiveRoundDone(day, category))
               const pool = unplayed.length ? unplayed : days
               return (

@@ -1,0 +1,70 @@
+{
+  "date": "2026-08-20",
+  "pairs": [
+    {
+      "anchors": [
+        "host",
+        "cup"
+      ],
+      "answers": [
+        {
+          "word": "tournament",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "noise",
+        "field"
+      ],
+      "answers": [
+        {
+          "word": "crowd",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "twist",
+        "trail"
+      ],
+      "answers": [
+        {
+          "word": "loop",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "resort",
+        "village",
+        "franchise"
+      ],
+      "answers": [
+        {
+          "word": "restaurant",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "neighborhood"
+      ],
+      "answers": [
+        {
+          "word": "downtown",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-22",
+  "pairs": [
+    {
+      "anchors": [
+        "sheet",
+        "dialogue"
+      ],
+      "answers": [
+        {
+          "word": "text",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "painting",
+        "video"
+      ],
+      "answers": [
+        {
+          "word": "photograph",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "cable",
+        "tune"
+      ],
+      "answers": [
+        {
+          "word": "radio",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "copy",
+        "planet",
+        "footage"
+      ],
+      "answers": [
+        {
+          "word": "disc",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "shower"
+      ],
+      "answers": [
+        {
+          "word": "bath",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

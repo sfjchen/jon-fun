@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-03",
+  "pairs": [
+    {
+      "anchors": [
+        "mill",
+        "pants"
+      ],
+      "answers": [
+        {
+          "word": "cotton",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "program",
+        "designer"
+      ],
+      "answers": [
+        {
+          "word": "project",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "assistant",
+        "top"
+      ],
+      "answers": [
+        {
+          "word": "head",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "destination",
+        "gap",
+        "constitution"
+      ],
+      "answers": [
+        {
+          "word": "passage",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "element"
+      ],
+      "answers": [
+        {
+          "word": "component",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-15",
+  "pairs": [
+    {
+      "anchors": [
+        "shock",
+        "door"
+      ],
+      "answers": [
+        {
+          "word": "knock",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "internet",
+        "thread"
+      ],
+      "answers": [
+        {
+          "word": "web",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "page",
+        "brand"
+      ],
+      "answers": [
+        {
+          "word": "advertising",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "departure",
+        "mile",
+        "plan"
+      ],
+      "answers": [
+        {
+          "word": "route",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "roof"
+      ],
+      "answers": [
+        {
+          "word": "ceiling",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

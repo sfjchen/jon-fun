@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-07",
+  "pairs": [
+    {
+      "anchors": [
+        "movement",
+        "baseball"
+      ],
+      "answers": [
+        {
+          "word": "swing",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "degree",
+        "resident"
+      ],
+      "answers": [
+        {
+          "word": "student",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "robot",
+        "steam"
+      ],
+      "answers": [
+        {
+          "word": "vacuum",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "evening",
+        "guest",
+        "clothes"
+      ],
+      "answers": [
+        {
+          "word": "occasion",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "search"
+      ],
+      "answers": [
+        {
+          "word": "quest",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

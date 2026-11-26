@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-30",
+  "pairs": [
+    {
+      "anchors": [
+        "crew",
+        "club"
+      ],
+      "answers": [
+        {
+          "word": "squad",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "population",
+        "flow"
+      ],
+      "answers": [
+        {
+          "word": "migration",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "pilot",
+        "season"
+      ],
+      "answers": [
+        {
+          "word": "episode",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "bass",
+        "beef",
+        "hook"
+      ],
+      "answers": [
+        {
+          "word": "fish",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "brick"
+      ],
+      "answers": [
+        {
+          "word": "stone",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

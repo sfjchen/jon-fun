@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-10",
+  "pairs": [
+    {
+      "anchors": [
+        "scene",
+        "post"
+      ],
+      "answers": [
+        {
+          "word": "pic",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "store",
+        "department"
+      ],
+      "answers": [
+        {
+          "word": "warehouse",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "convention",
+        "literature"
+      ],
+      "answers": [
+        {
+          "word": "lecture",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "bus",
+        "roof",
+        "jet"
+      ],
+      "answers": [
+        {
+          "word": "car",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "station"
+      ],
+      "answers": [
+        {
+          "word": "railway",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

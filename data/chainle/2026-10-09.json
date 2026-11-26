@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-09",
+  "pairs": [
+    {
+      "anchors": [
+        "kit",
+        "face"
+      ],
+      "answers": [
+        {
+          "word": "makeup",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "aid",
+        "highlight"
+      ],
+      "answers": [
+        {
+          "word": "enhance",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "cake",
+        "girlfriend"
+      ],
+      "answers": [
+        {
+          "word": "bride",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "board",
+        "fan",
+        "forum"
+      ],
+      "answers": [
+        {
+          "word": "member",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "turkey"
+      ],
+      "answers": [
+        {
+          "word": "chicken",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

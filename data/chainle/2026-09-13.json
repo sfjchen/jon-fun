@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-13",
+  "pairs": [
+    {
+      "anchors": [
+        "present",
+        "leader"
+      ],
+      "answers": [
+        {
+          "word": "representative",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "trial",
+        "cash"
+      ],
+      "answers": [
+        {
+          "word": "bail",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "jail",
+        "district"
+      ],
+      "answers": [
+        {
+          "word": "county",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "album",
+        "creator",
+        "season"
+      ],
+      "answers": [
+        {
+          "word": "premiere",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "south"
+      ],
+      "answers": [
+        {
+          "word": "north",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

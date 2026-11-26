@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-16",
+  "pairs": [
+    {
+      "anchors": [
+        "actor",
+        "leader"
+      ],
+      "answers": [
+        {
+          "word": "director",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "infection",
+        "campaign"
+      ],
+      "answers": [
+        {
+          "word": "viral",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "empire",
+        "opening"
+      ],
+      "answers": [
+        {
+          "word": "grand",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "column",
+        "gallery",
+        "search"
+      ],
+      "answers": [
+        {
+          "word": "page",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "pub"
+      ],
+      "answers": [
+        {
+          "word": "bar",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

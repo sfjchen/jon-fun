@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-28",
+  "pairs": [
+    {
+      "anchors": [
+        "field",
+        "forest"
+      ],
+      "answers": [
+        {
+          "word": "grass",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "examination",
+        "plan"
+      ],
+      "answers": [
+        {
+          "word": "preparation",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "dollar",
+        "consumption"
+      ],
+      "answers": [
+        {
+          "word": "spending",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "range",
+        "gulf",
+        "darkness"
+      ],
+      "answers": [
+        {
+          "word": "horizon",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "hotel"
+      ],
+      "answers": [
+        {
+          "word": "inn",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

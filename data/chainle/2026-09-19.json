@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-19",
+  "pairs": [
+    {
+      "anchors": [
+        "dust",
+        "pool"
+      ],
+      "answers": [
+        {
+          "word": "sand",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "sea",
+        "director"
+      ],
+      "answers": [
+        {
+          "word": "captain",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "trigger",
+        "rally"
+      ],
+      "answers": [
+        {
+          "word": "action",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "application",
+        "computer",
+        "pole"
+      ],
+      "answers": [
+        {
+          "word": "installation",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "bathroom"
+      ],
+      "answers": [
+        {
+          "word": "toilet",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

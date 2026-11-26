@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-16",
+  "pairs": [
+    {
+      "anchors": [
+        "cave",
+        "coat"
+      ],
+      "answers": [
+        {
+          "word": "closet",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "executive",
+        "distribution"
+      ],
+      "answers": [
+        {
+          "word": "marketing",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "copyright",
+        "journal"
+      ],
+      "answers": [
+        {
+          "word": "publishing",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "sword",
+        "silver",
+        "worker"
+      ],
+      "answers": [
+        {
+          "word": "steel",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "pressure"
+      ],
+      "answers": [
+        {
+          "word": "tension",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

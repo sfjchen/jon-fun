@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-27",
+  "pairs": [
+    {
+      "anchors": [
+        "reporter",
+        "treasury"
+      ],
+      "answers": [
+        {
+          "word": "bureau",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "index",
+        "route"
+      ],
+      "answers": [
+        {
+          "word": "map",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "bathroom",
+        "gate"
+      ],
+      "answers": [
+        {
+          "word": "door",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "lieutenant",
+        "store",
+        "office"
+      ],
+      "answers": [
+        {
+          "word": "clerk",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "protein"
+      ],
+      "answers": [
+        {
+          "word": "gene",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

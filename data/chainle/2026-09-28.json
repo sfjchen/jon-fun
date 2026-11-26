@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-28",
+  "pairs": [
+    {
+      "anchors": [
+        "chain",
+        "tail"
+      ],
+      "answers": [
+        {
+          "word": "collar",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "inspector",
+        "gate"
+      ],
+      "answers": [
+        {
+          "word": "security",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "telephone",
+        "bottom"
+      ],
+      "answers": [
+        {
+          "word": "line",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "guardian",
+        "audio",
+        "warning"
+      ],
+      "answers": [
+        {
+          "word": "monitor",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "calendar"
+      ],
+      "answers": [
+        {
+          "word": "schedule",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

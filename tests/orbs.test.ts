@@ -87,3 +87,16 @@ test('a lower-tier win counts for its game but does not decide the overall day',
   assert.deepEqual(overallDay(rows).names, ['Alice'])
   assert.deepEqual(overallDay(rows, 'orbs').names, ['Bob'])
 })
+
+test('unbanked Orbs editions replay across the bank cutoff and a missing year file', async () => {
+  for (const day of ['2026-12-07', '2027-01-01']) {
+    const { puzzle, sourceDate } = await dailyPuzzle('orbs', day)
+    assert.equal(sourceDate, day)
+    const { categories } = puzzle as OrbsPuzzle
+    assert.deepEqual(categories.map((category) => category.id), ['trivia', 'words', 'geography', 'science'])
+    const picks = categories.flatMap((category) => category.questions.map((question) => question.answer))
+    assert.deepEqual(await VERIFIERS.orbs.check(day, picks as never, {}), {
+      score: ORBS_MAX, stats: { n: ORBS_MAX, solved: true },
+    })
+  }
+})

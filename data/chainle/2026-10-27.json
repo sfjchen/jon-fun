@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-27",
+  "pairs": [
+    {
+      "anchors": [
+        "guitar",
+        "venue"
+      ],
+      "answers": [
+        {
+          "word": "concert",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "fleet",
+        "chain"
+      ],
+      "answers": [
+        {
+          "word": "command",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "case",
+        "address"
+      ],
+      "answers": [
+        {
+          "word": "issue",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "state",
+        "composition",
+        "fund"
+      ],
+      "answers": [
+        {
+          "word": "commission",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "target"
+      ],
+      "answers": [
+        {
+          "word": "aim",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

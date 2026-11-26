@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-02",
+  "pairs": [
+    {
+      "anchors": [
+        "rest",
+        "region"
+      ],
+      "answers": [
+        {
+          "word": "throughout",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "transportation",
+        "pizza"
+      ],
+      "answers": [
+        {
+          "word": "delivery",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "mayor",
+        "wing"
+      ],
+      "answers": [
+        {
+          "word": "ward",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "tourist",
+        "episode",
+        "interview"
+      ],
+      "answers": [
+        {
+          "word": "guest",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "settlement"
+      ],
+      "answers": [
+        {
+          "word": "agreement",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

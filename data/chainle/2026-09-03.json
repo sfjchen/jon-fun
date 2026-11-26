@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-03",
+  "pairs": [
+    {
+      "anchors": [
+        "presentation",
+        "flag"
+      ],
+      "answers": [
+        {
+          "word": "display",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "salary",
+        "celebration"
+      ],
+      "answers": [
+        {
+          "word": "annual",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "rugby",
+        "college"
+      ],
+      "answers": [
+        {
+          "word": "football",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "infrastructure",
+        "mining",
+        "property"
+      ],
+      "answers": [
+        {
+          "word": "construction",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "airport"
+      ],
+      "answers": [
+        {
+          "word": "flight",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

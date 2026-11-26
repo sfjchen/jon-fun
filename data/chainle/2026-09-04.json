@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-04",
+  "pairs": [
+    {
+      "anchors": [
+        "owner",
+        "producer"
+      ],
+      "answers": [
+        {
+          "word": "founder",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "office",
+        "east"
+      ],
+      "answers": [
+        {
+          "word": "district",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "pace",
+        "period"
+      ],
+      "answers": [
+        {
+          "word": "timing",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "promotion",
+        "venue",
+        "gang"
+      ],
+      "answers": [
+        {
+          "word": "organised",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "symbol"
+      ],
+      "answers": [
+        {
+          "word": "icon",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

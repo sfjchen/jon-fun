@@ -1,0 +1,70 @@
+{
+  "date": "2026-08-29",
+  "pairs": [
+    {
+      "anchors": [
+        "medium",
+        "tape"
+      ],
+      "answers": [
+        {
+          "word": "broadcast",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "battle",
+        "theater"
+      ],
+      "answers": [
+        {
+          "word": "arena",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "moon",
+        "rain"
+      ],
+      "answers": [
+        {
+          "word": "sun",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "guide",
+        "newspaper",
+        "certificate"
+      ],
+      "answers": [
+        {
+          "word": "document",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "yoga"
+      ],
+      "answers": [
+        {
+          "word": "workout",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

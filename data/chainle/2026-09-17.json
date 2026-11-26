@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-17",
+  "pairs": [
+    {
+      "anchors": [
+        "printing",
+        "stream"
+      ],
+      "answers": [
+        {
+          "word": "output",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "self",
+        "crack"
+      ],
+      "answers": [
+        {
+          "word": "addiction",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "department",
+        "facility"
+      ],
+      "answers": [
+        {
+          "word": "institution",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "alarm",
+        "ear",
+        "cycle"
+      ],
+      "answers": [
+        {
+          "word": "ring",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "auction"
+      ],
+      "answers": [
+        {
+          "word": "sale",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

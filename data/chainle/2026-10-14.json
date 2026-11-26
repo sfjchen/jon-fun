@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-14",
+  "pairs": [
+    {
+      "anchors": [
+        "table",
+        "bread"
+      ],
+      "answers": [
+        {
+          "word": "dish",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "gold",
+        "duck"
+      ],
+      "answers": [
+        {
+          "word": "eagle",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "debate",
+        "pot"
+      ],
+      "answers": [
+        {
+          "word": "heated",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "lover",
+        "museum",
+        "writer"
+      ],
+      "answers": [
+        {
+          "word": "artist",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "silence"
+      ],
+      "answers": [
+        {
+          "word": "quiet",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "date": "2026-08-22",
+  "pairs": [
+    {
+      "anchors": [
+        "ball",
+        "sight"
+      ],
+      "answers": [
+        {
+          "word": "shot",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "partner",
+        "employee"
+      ],
+      "answers": [
+        {
+          "word": "employer",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "infection",
+        "dose"
+      ],
+      "answers": [
+        {
+          "word": "vaccine",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "door",
+        "blog",
+        "fence"
+      ],
+      "answers": [
+        {
+          "word": "portal",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "bus"
+      ],
+      "answers": [
+        {
+          "word": "taxi",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

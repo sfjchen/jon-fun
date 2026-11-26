@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-16",
+  "pairs": [
+    {
+      "anchors": [
+        "shoe",
+        "trip"
+      ],
+      "answers": [
+        {
+          "word": "walking",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "crash",
+        "storm"
+      ],
+      "answers": [
+        {
+          "word": "disaster",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "butter",
+        "engine"
+      ],
+      "answers": [
+        {
+          "word": "oil",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "club",
+        "maker",
+        "furniture"
+      ],
+      "answers": [
+        {
+          "word": "shop",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "mate"
+      ],
+      "answers": [
+        {
+          "word": "buddy",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

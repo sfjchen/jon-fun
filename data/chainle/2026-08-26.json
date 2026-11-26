@@ -1,0 +1,70 @@
+{
+  "date": "2026-08-26",
+  "pairs": [
+    {
+      "anchors": [
+        "frame",
+        "suit"
+      ],
+      "answers": [
+        {
+          "word": "fit",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "income",
+        "parking"
+      ],
+      "answers": [
+        {
+          "word": "fee",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "registration",
+        "office"
+      ],
+      "answers": [
+        {
+          "word": "appointment",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "recording",
+        "training",
+        "railroad"
+      ],
+      "answers": [
+        {
+          "word": "track",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "chamber"
+      ],
+      "answers": [
+        {
+          "word": "room",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

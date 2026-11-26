@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-15",
+  "pairs": [
+    {
+      "anchors": [
+        "toy",
+        "bag"
+      ],
+      "answers": [
+        {
+          "word": "plastic",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "experiment",
+        "side"
+      ],
+      "answers": [
+        {
+          "word": "effect",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "dragon",
+        "hall"
+      ],
+      "answers": [
+        {
+          "word": "castle",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "father",
+        "soil",
+        "seed"
+      ],
+      "answers": [
+        {
+          "word": "farmer",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "studio"
+      ],
+      "answers": [
+        {
+          "word": "workshop",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

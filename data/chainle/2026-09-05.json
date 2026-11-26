@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-05",
+  "pairs": [
+    {
+      "anchors": [
+        "ride",
+        "craft"
+      ],
+      "answers": [
+        {
+          "word": "boat",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "parent",
+        "size"
+      ],
+      "answers": [
+        {
+          "word": "relative",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "principal",
+        "staff"
+      ],
+      "answers": [
+        {
+          "word": "chief",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "moon",
+        "registration",
+        "vacation"
+      ],
+      "answers": [
+        {
+          "word": "calendar",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "salary"
+      ],
+      "answers": [
+        {
+          "word": "wage",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

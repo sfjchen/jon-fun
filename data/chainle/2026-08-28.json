@@ -1,0 +1,70 @@
+{
+  "date": "2026-08-28",
+  "pairs": [
+    {
+      "anchors": [
+        "application",
+        "address"
+      ],
+      "answers": [
+        {
+          "word": "request",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "dog",
+        "creator"
+      ],
+      "answers": [
+        {
+          "word": "owner",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "evaluation",
+        "prison"
+      ],
+      "answers": [
+        {
+          "word": "trial",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "present",
+        "firm",
+        "engineer"
+      ],
+      "answers": [
+        {
+          "word": "employed",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "bull"
+      ],
+      "answers": [
+        {
+          "word": "cow",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

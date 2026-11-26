@@ -1,0 +1,70 @@
+{
+  "date": "2026-08-31",
+  "pairs": [
+    {
+      "anchors": [
+        "gallery",
+        "atmosphere"
+      ],
+      "answers": [
+        {
+          "word": "venue",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "agriculture",
+        "committee"
+      ],
+      "answers": [
+        {
+          "word": "commissioner",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "supply",
+        "ice"
+      ],
+      "answers": [
+        {
+          "word": "cooling",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "sector",
+        "ministry",
+        "lab"
+      ],
+      "answers": [
+        {
+          "word": "department",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "plane"
+      ],
+      "answers": [
+        {
+          "word": "aircraft",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

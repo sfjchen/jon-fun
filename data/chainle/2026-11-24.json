@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-24",
+  "pairs": [
+    {
+      "anchors": [
+        "infection",
+        "camera"
+      ],
+      "answers": [
+        {
+          "word": "exposure",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "sight",
+        "radiation"
+      ],
+      "answers": [
+        {
+          "word": "laser",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "concert",
+        "airport"
+      ],
+      "answers": [
+        {
+          "word": "stadium",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "sun",
+        "side",
+        "frame"
+      ],
+      "answers": [
+        {
+          "word": "mirror",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "quarter"
+      ],
+      "answers": [
+        {
+          "word": "half",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

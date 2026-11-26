@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-25",
+  "pairs": [
+    {
+      "anchors": [
+        "length",
+        "dragon"
+      ],
+      "answers": [
+        {
+          "word": "tail",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "dollar",
+        "sale"
+      ],
+      "answers": [
+        {
+          "word": "price",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "chief",
+        "emperor"
+      ],
+      "answers": [
+        {
+          "word": "governor",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "cell",
+        "radar",
+        "infrastructure"
+      ],
+      "answers": [
+        {
+          "word": "wireless",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "bar"
+      ],
+      "answers": [
+        {
+          "word": "pub",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

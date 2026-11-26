@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-19",
+  "pairs": [
+    {
+      "anchors": [
+        "pilot",
+        "fee"
+      ],
+      "answers": [
+        {
+          "word": "charter",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "tourist",
+        "season"
+      ],
+      "answers": [
+        {
+          "word": "holiday",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "officer",
+        "chamber"
+      ],
+      "answers": [
+        {
+          "word": "council",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "voice",
+        "virus",
+        "suspension"
+      ],
+      "answers": [
+        {
+          "word": "transmission",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "block"
+      ],
+      "answers": [
+        {
+          "word": "street",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

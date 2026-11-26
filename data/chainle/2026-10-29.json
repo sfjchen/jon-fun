@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-29",
+  "pairs": [
+    {
+      "anchors": [
+        "acid",
+        "laboratory"
+      ],
+      "answers": [
+        {
+          "word": "chemical",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "list",
+        "corner"
+      ],
+      "answers": [
+        {
+          "word": "shelf",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "aid",
+        "construction"
+      ],
+      "answers": [
+        {
+          "word": "funding",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "household",
+        "personnel",
+        "territory"
+      ],
+      "answers": [
+        {
+          "word": "occupation",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "exam"
+      ],
+      "answers": [
+        {
+          "word": "test",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

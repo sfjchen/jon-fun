@@ -1,0 +1,70 @@
+{
+  "date": "2026-08-21",
+  "pairs": [
+    {
+      "anchors": [
+        "poetry",
+        "craft"
+      ],
+      "answers": [
+        {
+          "word": "artistic",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "shirt",
+        "manual"
+      ],
+      "answers": [
+        {
+          "word": "button",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "publication",
+        "composition"
+      ],
+      "answers": [
+        {
+          "word": "writing",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "north",
+        "leader",
+        "trip"
+      ],
+      "answers": [
+        {
+          "word": "headed",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "league"
+      ],
+      "answers": [
+        {
+          "word": "playoff",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

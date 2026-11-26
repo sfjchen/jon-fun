@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-29",
+  "pairs": [
+    {
+      "anchors": [
+        "street",
+        "score"
+      ],
+      "answers": [
+        {
+          "word": "yard",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "wireless",
+        "inspector"
+      ],
+      "answers": [
+        {
+          "word": "controller",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "pregnancy",
+        "minute"
+      ],
+      "answers": [
+        {
+          "word": "period",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "poll",
+        "war",
+        "earnings"
+      ],
+      "answers": [
+        {
+          "word": "win",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "tune"
+      ],
+      "answers": [
+        {
+          "word": "song",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

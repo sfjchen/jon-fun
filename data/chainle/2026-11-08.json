@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-08",
+  "pairs": [
+    {
+      "anchors": [
+        "industry",
+        "captain"
+      ],
+      "answers": [
+        {
+          "word": "executive",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "air",
+        "rain"
+      ],
+      "answers": [
+        {
+          "word": "wind",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "volume",
+        "map"
+      ],
+      "answers": [
+        {
+          "word": "index",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "response",
+        "monitor",
+        "band"
+      ],
+      "answers": [
+        {
+          "word": "frequency",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "toy"
+      ],
+      "answers": [
+        {
+          "word": "doll",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

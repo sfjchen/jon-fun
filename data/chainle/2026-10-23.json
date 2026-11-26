@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-23",
+  "pairs": [
+    {
+      "anchors": [
+        "medal",
+        "post"
+      ],
+      "answers": [
+        {
+          "word": "pin",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "wireless",
+        "frame"
+      ],
+      "answers": [
+        {
+          "word": "camera",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "counter",
+        "sequence"
+      ],
+      "answers": [
+        {
+          "word": "array",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "trading",
+        "assistant",
+        "designer"
+      ],
+      "answers": [
+        {
+          "word": "analyst",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "monitor"
+      ],
+      "answers": [
+        {
+          "word": "surveillance",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-24",
+  "pairs": [
+    {
+      "anchors": [
+        "villa",
+        "log"
+      ],
+      "answers": [
+        {
+          "word": "cabin",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "jazz",
+        "fuel"
+      ],
+      "answers": [
+        {
+          "word": "fusion",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "league",
+        "brand"
+      ],
+      "answers": [
+        {
+          "word": "franchise",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "exit",
+        "surprise",
+        "presentation"
+      ],
+      "answers": [
+        {
+          "word": "announcement",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "trash"
+      ],
+      "answers": [
+        {
+          "word": "garbage",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

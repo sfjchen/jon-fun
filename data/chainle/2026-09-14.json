@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-14",
+  "pairs": [
+    {
+      "anchors": [
+        "sample",
+        "class"
+      ],
+      "answers": [
+        {
+          "word": "exam",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "beach",
+        "beast"
+      ],
+      "answers": [
+        {
+          "word": "shark",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "lot",
+        "week"
+      ],
+      "answers": [
+        {
+          "word": "lately",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "bench",
+        "sink",
+        "coffee"
+      ],
+      "answers": [
+        {
+          "word": "counter",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "radar"
+      ],
+      "answers": [
+        {
+          "word": "satellite",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-12",
+  "pairs": [
+    {
+      "anchors": [
+        "finance",
+        "candidate"
+      ],
+      "answers": [
+        {
+          "word": "advisor",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "panic",
+        "discussion"
+      ],
+      "answers": [
+        {
+          "word": "concern",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "labor",
+        "warrant"
+      ],
+      "answers": [
+        {
+          "word": "contract",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "lane",
+        "link",
+        "voice"
+      ],
+      "answers": [
+        {
+          "word": "access",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "agent"
+      ],
+      "answers": [
+        {
+          "word": "seller",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

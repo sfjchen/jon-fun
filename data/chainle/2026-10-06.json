@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-06",
+  "pairs": [
+    {
+      "anchors": [
+        "fever",
+        "radiation"
+      ],
+      "answers": [
+        {
+          "word": "heat",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "technology",
+        "oxygen"
+      ],
+      "answers": [
+        {
+          "word": "silicon",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "flash",
+        "boom"
+      ],
+      "answers": [
+        {
+          "word": "burst",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "planet",
+        "crystal",
+        "eye"
+      ],
+      "answers": [
+        {
+          "word": "sky",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "commonwealth"
+      ],
+      "answers": [
+        {
+          "word": "state",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

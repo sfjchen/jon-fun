@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-05",
+  "pairs": [
+    {
+      "anchors": [
+        "capital",
+        "residence"
+      ],
+      "answers": [
+        {
+          "word": "headquarters",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "budget",
+        "fuel"
+      ],
+      "answers": [
+        {
+          "word": "economy",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "margin",
+        "documentary"
+      ],
+      "answers": [
+        {
+          "word": "segment",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "sequence",
+        "tissue",
+        "illness"
+      ],
+      "answers": [
+        {
+          "word": "genetic",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "pope"
+      ],
+      "answers": [
+        {
+          "word": "bishop",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

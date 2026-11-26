@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-15",
+  "pairs": [
+    {
+      "anchors": [
+        "chain",
+        "name"
+      ],
+      "answers": [
+        {
+          "word": "brand",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "secretary",
+        "door"
+      ],
+      "answers": [
+        {
+          "word": "cabinet",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "vacation",
+        "deposit"
+      ],
+      "answers": [
+        {
+          "word": "rental",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "coach",
+        "faculty",
+        "account"
+      ],
+      "answers": [
+        {
+          "word": "administrator",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "stranger"
+      ],
+      "answers": [
+        {
+          "word": "alien",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

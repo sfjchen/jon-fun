@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-25",
+  "pairs": [
+    {
+      "anchors": [
+        "detective",
+        "panel"
+      ],
+      "answers": [
+        {
+          "word": "inquiry",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "bone",
+        "brain"
+      ],
+      "answers": [
+        {
+          "word": "skull",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "war",
+        "poetry"
+      ],
+      "answers": [
+        {
+          "word": "epic",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "coach",
+        "collection",
+        "assembly"
+      ],
+      "answers": [
+        {
+          "word": "lineup",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "cent"
+      ],
+      "answers": [
+        {
+          "word": "penny",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

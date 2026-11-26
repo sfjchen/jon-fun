@@ -1,0 +1,70 @@
+{
+  "date": "2026-08-23",
+  "pairs": [
+    {
+      "anchors": [
+        "employee",
+        "banking"
+      ],
+      "answers": [
+        {
+          "word": "corporate",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "surface",
+        "avenue"
+      ],
+      "answers": [
+        {
+          "word": "floor",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "soccer",
+        "girl"
+      ],
+      "answers": [
+        {
+          "word": "junior",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "facility",
+        "railway",
+        "foundation"
+      ],
+      "answers": [
+        {
+          "word": "infrastructure",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "emperor"
+      ],
+      "answers": [
+        {
+          "word": "king",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

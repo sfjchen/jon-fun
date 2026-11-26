@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-01",
+  "pairs": [
+    {
+      "anchors": [
+        "trailer",
+        "pitch"
+      ],
+      "answers": [
+        {
+          "word": "tent",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "portrait",
+        "store"
+      ],
+      "answers": [
+        {
+          "word": "gallery",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "television",
+        "fashion"
+      ],
+      "answers": [
+        {
+          "word": "journalism",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "firm",
+        "lieutenant",
+        "physics"
+      ],
+      "answers": [
+        {
+          "word": "engineer",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "sea"
+      ],
+      "answers": [
+        {
+          "word": "ocean",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

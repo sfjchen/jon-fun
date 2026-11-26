@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-07",
+  "pairs": [
+    {
+      "anchors": [
+        "cooking",
+        "facility"
+      ],
+      "answers": [
+        {
+          "word": "laundry",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "button",
+        "replacement"
+      ],
+      "answers": [
+        {
+          "word": "switch",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "mortgage",
+        "profit"
+      ],
+      "answers": [
+        {
+          "word": "equity",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "employee",
+        "leather",
+        "supply"
+      ],
+      "answers": [
+        {
+          "word": "factory",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "bottle"
+      ],
+      "answers": [
+        {
+          "word": "wine",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

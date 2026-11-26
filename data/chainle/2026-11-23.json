@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-23",
+  "pairs": [
+    {
+      "anchors": [
+        "tongue",
+        "mask"
+      ],
+      "answers": [
+        {
+          "word": "nose",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "hockey",
+        "thread"
+      ],
+      "answers": [
+        {
+          "word": "net",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "scale",
+        "promotion"
+      ],
+      "answers": [
+        {
+          "word": "rank",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "math",
+        "legislation",
+        "funding"
+      ],
+      "answers": [
+        {
+          "word": "education",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "iron"
+      ],
+      "answers": [
+        {
+          "word": "aluminum",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

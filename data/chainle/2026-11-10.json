@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-10",
+  "pairs": [
+    {
+      "anchors": [
+        "road",
+        "cent"
+      ],
+      "answers": [
+        {
+          "word": "mile",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "load",
+        "report"
+      ],
+      "answers": [
+        {
+          "word": "file",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "delivery",
+        "entry"
+      ],
+      "answers": [
+        {
+          "word": "arrival",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "facility",
+        "data",
+        "wildlife"
+      ],
+      "answers": [
+        {
+          "word": "resource",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "stem"
+      ],
+      "answers": [
+        {
+          "word": "root",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

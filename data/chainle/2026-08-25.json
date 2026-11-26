@@ -1,0 +1,70 @@
+{
+  "date": "2026-08-25",
+  "pairs": [
+    {
+      "anchors": [
+        "tourism",
+        "road"
+      ],
+      "answers": [
+        {
+          "word": "travelling",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "base",
+        "dinner"
+      ],
+      "answers": [
+        {
+          "word": "plate",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "species",
+        "apple"
+      ],
+      "answers": [
+        {
+          "word": "amazon",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "summer",
+        "institution",
+        "associate"
+      ],
+      "answers": [
+        {
+          "word": "college",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "seat"
+      ],
+      "answers": [
+        {
+          "word": "chair",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

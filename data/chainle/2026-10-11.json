@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-11",
+  "pairs": [
+    {
+      "anchors": [
+        "foot",
+        "weight"
+      ],
+      "answers": [
+        {
+          "word": "height",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "beef",
+        "horse"
+      ],
+      "answers": [
+        {
+          "word": "cattle",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "lunch",
+        "bullet"
+      ],
+      "answers": [
+        {
+          "word": "bite",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "scope",
+        "signal",
+        "globe"
+      ],
+      "answers": [
+        {
+          "word": "spectrum",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "radio"
+      ],
+      "answers": [
+        {
+          "word": "broadcasting",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

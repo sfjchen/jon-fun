@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-09",
+  "pairs": [
+    {
+      "anchors": [
+        "team",
+        "maintenance"
+      ],
+      "answers": [
+        {
+          "word": "personnel",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "occupation",
+        "copy"
+      ],
+      "answers": [
+        {
+          "word": "description",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "tale",
+        "railway"
+      ],
+      "answers": [
+        {
+          "word": "journey",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "tower",
+        "developer",
+        "traffic"
+      ],
+      "answers": [
+        {
+          "word": "construction",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "shadow"
+      ],
+      "answers": [
+        {
+          "word": "darkness",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

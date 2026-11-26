@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-13",
+  "pairs": [
+    {
+      "anchors": [
+        "powder",
+        "pan"
+      ],
+      "answers": [
+        {
+          "word": "flour",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "paper",
+        "staff"
+      ],
+      "answers": [
+        {
+          "word": "editorial",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "membership",
+        "entrance"
+      ],
+      "answers": [
+        {
+          "word": "admission",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "dad",
+        "operator",
+        "office"
+      ],
+      "answers": [
+        {
+          "word": "boss",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "cave"
+      ],
+      "answers": [
+        {
+          "word": "den",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

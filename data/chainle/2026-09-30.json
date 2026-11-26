@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-30",
+  "pairs": [
+    {
+      "anchors": [
+        "tale",
+        "shock"
+      ],
+      "answers": [
+        {
+          "word": "horror",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "hardware",
+        "firm"
+      ],
+      "answers": [
+        {
+          "word": "manufacturer",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "account",
+        "pen"
+      ],
+      "answers": [
+        {
+          "word": "wallet",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "logo",
+        "ambassador",
+        "chief"
+      ],
+      "answers": [
+        {
+          "word": "official",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "decade"
+      ],
+      "answers": [
+        {
+          "word": "century",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

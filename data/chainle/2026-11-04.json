@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-04",
+  "pairs": [
+    {
+      "anchors": [
+        "parliament",
+        "interview"
+      ],
+      "answers": [
+        {
+          "word": "session",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "chair",
+        "conversation"
+      ],
+      "answers": [
+        {
+          "word": "speaker",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "section",
+        "performance"
+      ],
+      "answers": [
+        {
+          "word": "act",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "pump",
+        "button",
+        "terminal"
+      ],
+      "answers": [
+        {
+          "word": "plug",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "lake"
+      ],
+      "answers": [
+        {
+          "word": "river",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-26",
+  "pairs": [
+    {
+      "anchors": [
+        "avenue",
+        "shelter"
+      ],
+      "answers": [
+        {
+          "word": "residence",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "hood",
+        "diamond"
+      ],
+      "answers": [
+        {
+          "word": "crown",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "code",
+        "treaty"
+      ],
+      "answers": [
+        {
+          "word": "protocol",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "reader",
+        "chapter",
+        "press"
+      ],
+      "answers": [
+        {
+          "word": "edition",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "birth"
+      ],
+      "answers": [
+        {
+          "word": "born",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

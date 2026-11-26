@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-21",
+  "pairs": [
+    {
+      "anchors": [
+        "label",
+        "pump"
+      ],
+      "answers": [
+        {
+          "word": "bottle",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "seat",
+        "truck"
+      ],
+      "answers": [
+        {
+          "word": "passenger",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "neck",
+        "suit"
+      ],
+      "answers": [
+        {
+          "word": "shirt",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "piano",
+        "document",
+        "design"
+      ],
+      "answers": [
+        {
+          "word": "composition",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "star"
+      ],
+      "answers": [
+        {
+          "word": "galaxy",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

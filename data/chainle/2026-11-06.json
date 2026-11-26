@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-06",
+  "pairs": [
+    {
+      "anchors": [
+        "flood",
+        "telephone"
+      ],
+      "answers": [
+        {
+          "word": "emergency",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "bridge",
+        "application"
+      ],
+      "answers": [
+        {
+          "word": "platform",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "pole",
+        "length"
+      ],
+      "answers": [
+        {
+          "word": "meter",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "memorial",
+        "utility",
+        "advertising"
+      ],
+      "answers": [
+        {
+          "word": "service",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "bed"
+      ],
+      "answers": [
+        {
+          "word": "sleeping",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

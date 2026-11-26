@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-26",
+  "pairs": [
+    {
+      "anchors": [
+        "fence",
+        "fighter"
+      ],
+      "answers": [
+        {
+          "word": "cage",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "villa",
+        "chemistry"
+      ],
+      "answers": [
+        {
+          "word": "compound",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "hardware",
+        "population"
+      ],
+      "answers": [
+        {
+          "word": "data",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "address",
+        "stream",
+        "subject"
+      ],
+      "answers": [
+        {
+          "word": "current",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "movement"
+      ],
+      "answers": [
+        {
+          "word": "activist",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

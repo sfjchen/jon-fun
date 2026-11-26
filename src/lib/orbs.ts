@@ -1,5 +1,6 @@
 /** Rules and puzzle types shared by the Orbs player, bank tooling and score verifier. */
 
+export const ORBS_ROTATION_START = '2026-12-07'
 export const ORBS_FIRST_DAY = '2026-11-21'
 export const ORBS_CATEGORY_SIZE = 3
 export const ORBS_BOARD_FIRST_DAY = '2026-11-27'

@@ -1,0 +1,70 @@
+{
+  "date": "2026-08-24",
+  "pairs": [
+    {
+      "anchors": [
+        "edition",
+        "rocket"
+      ],
+      "answers": [
+        {
+          "word": "launch",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "race",
+        "price"
+      ],
+      "answers": [
+        {
+          "word": "prize",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "parliament",
+        "bar"
+      ],
+      "answers": [
+        {
+          "word": "lobby",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "palace",
+        "entrance",
+        "deposit"
+      ],
+      "answers": [
+        {
+          "word": "hotel",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "border"
+      ],
+      "answers": [
+        {
+          "word": "boundary",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

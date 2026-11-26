@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-05",
+  "pairs": [
+    {
+      "anchors": [
+        "cycle",
+        "stroke"
+      ],
+      "answers": [
+        {
+          "word": "spin",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "license",
+        "worker"
+      ],
+      "answers": [
+        {
+          "word": "driver",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "fence",
+        "soldier"
+      ],
+      "answers": [
+        {
+          "word": "guard",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "silence",
+        "mirror",
+        "tone"
+      ],
+      "answers": [
+        {
+          "word": "echo",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "loop"
+      ],
+      "answers": [
+        {
+          "word": "circle",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

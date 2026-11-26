@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-22",
+  "pairs": [
+    {
+      "anchors": [
+        "community",
+        "atmosphere"
+      ],
+      "answers": [
+        {
+          "word": "environment",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "anniversary",
+        "surprise"
+      ],
+      "answers": [
+        {
+          "word": "birthday",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "sand",
+        "dose"
+      ],
+      "answers": [
+        {
+          "word": "powder",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "prince",
+        "spy",
+        "representative"
+      ],
+      "answers": [
+        {
+          "word": "ambassador",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "scene"
+      ],
+      "answers": [
+        {
+          "word": "footage",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

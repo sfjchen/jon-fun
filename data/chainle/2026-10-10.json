@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-10",
+  "pairs": [
+    {
+      "anchors": [
+        "steam",
+        "cheese"
+      ],
+      "answers": [
+        {
+          "word": "oven",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "evening",
+        "voting"
+      ],
+      "answers": [
+        {
+          "word": "party",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "wildlife",
+        "apartment"
+      ],
+      "answers": [
+        {
+          "word": "park",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "plot",
+        "stage",
+        "record"
+      ],
+      "answers": [
+        {
+          "word": "setting",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "load"
+      ],
+      "answers": [
+        {
+          "word": "burden",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

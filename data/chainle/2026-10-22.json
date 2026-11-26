@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-22",
+  "pairs": [
+    {
+      "anchors": [
+        "domain",
+        "infrastructure"
+      ],
+      "answers": [
+        {
+          "word": "network",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "employee",
+        "producer"
+      ],
+      "answers": [
+        {
+          "word": "manager",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "android",
+        "player"
+      ],
+      "answers": [
+        {
+          "word": "keyboard",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "top",
+        "membership",
+        "basketball"
+      ],
+      "answers": [
+        {
+          "word": "roster",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "word"
+      ],
+      "answers": [
+        {
+          "word": "phrase",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

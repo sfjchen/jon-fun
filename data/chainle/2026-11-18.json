@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-18",
+  "pairs": [
+    {
+      "anchors": [
+        "carbon",
+        "punk"
+      ],
+      "answers": [
+        {
+          "word": "metal",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "present",
+        "card"
+      ],
+      "answers": [
+        {
+          "word": "gift",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "framework",
+        "professor"
+      ],
+      "answers": [
+        {
+          "word": "curriculum",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "chairman",
+        "maintenance",
+        "constitution"
+      ],
+      "answers": [
+        {
+          "word": "assembly",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "honey"
+      ],
+      "answers": [
+        {
+          "word": "bee",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

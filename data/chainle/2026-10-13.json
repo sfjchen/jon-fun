@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-13",
+  "pairs": [
+    {
+      "anchors": [
+        "vision",
+        "genius"
+      ],
+      "answers": [
+        {
+          "word": "imagination",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "tap",
+        "singer"
+      ],
+      "answers": [
+        {
+          "word": "pop",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "chairman",
+        "degree"
+      ],
+      "answers": [
+        {
+          "word": "professor",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "bath",
+        "island",
+        "household"
+      ],
+      "answers": [
+        {
+          "word": "cottage",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "photo"
+      ],
+      "answers": [
+        {
+          "word": "picture",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

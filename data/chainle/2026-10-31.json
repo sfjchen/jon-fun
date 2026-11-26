@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-31",
+  "pairs": [
+    {
+      "anchors": [
+        "appointment",
+        "tourism"
+      ],
+      "answers": [
+        {
+          "word": "minister",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "representative",
+        "tax"
+      ],
+      "answers": [
+        {
+          "word": "legislative",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "form",
+        "model"
+      ],
+      "answers": [
+        {
+          "word": "pattern",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "listing",
+        "publication",
+        "opponent"
+      ],
+      "answers": [
+        {
+          "word": "submission",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "guardian"
+      ],
+      "answers": [
+        {
+          "word": "keeper",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

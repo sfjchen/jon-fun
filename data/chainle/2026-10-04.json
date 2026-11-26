@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-04",
+  "pairs": [
+    {
+      "anchors": [
+        "ghost",
+        "brick"
+      ],
+      "answers": [
+        {
+          "word": "mansion",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "list",
+        "competition"
+      ],
+      "answers": [
+        {
+          "word": "selection",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "senator",
+        "award"
+      ],
+      "answers": [
+        {
+          "word": "nomination",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "circle",
+        "iron",
+        "bow"
+      ],
+      "answers": [
+        {
+          "word": "arc",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "farm"
+      ],
+      "answers": [
+        {
+          "word": "agricultural",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

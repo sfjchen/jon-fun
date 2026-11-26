@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-08",
+  "pairs": [
+    {
+      "anchors": [
+        "year",
+        "crash"
+      ],
+      "answers": [
+        {
+          "word": "fall",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "universe",
+        "mask"
+      ],
+      "answers": [
+        {
+          "word": "superman",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "suspension",
+        "boss"
+      ],
+      "answers": [
+        {
+          "word": "interim",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "branch",
+        "press",
+        "gas"
+      ],
+      "answers": [
+        {
+          "word": "outlet",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "fund"
+      ],
+      "answers": [
+        {
+          "word": "financing",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-17",
+  "pairs": [
+    {
+      "anchors": [
+        "android",
+        "sea"
+      ],
+      "answers": [
+        {
+          "word": "navigation",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "wheel",
+        "steel"
+      ],
+      "answers": [
+        {
+          "word": "machinery",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "top",
+        "team"
+      ],
+      "answers": [
+        {
+          "word": "elite",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "muscle",
+        "cricket",
+        "bronze"
+      ],
+      "answers": [
+        {
+          "word": "athlete",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "retirement"
+      ],
+      "answers": [
+        {
+          "word": "pension",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

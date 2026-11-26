@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-21",
+  "pairs": [
+    {
+      "anchors": [
+        "laboratory",
+        "mother"
+      ],
+      "answers": [
+        {
+          "word": "biological",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "user",
+        "organization"
+      ],
+      "answers": [
+        {
+          "word": "website",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "scene",
+        "anime"
+      ],
+      "answers": [
+        {
+          "word": "animation",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "maintenance",
+        "manual",
+        "trial"
+      ],
+      "answers": [
+        {
+          "word": "procedure",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "tape"
+      ],
+      "answers": [
+        {
+          "word": "recording",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

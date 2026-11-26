@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-02",
+  "pairs": [
+    {
+      "anchors": [
+        "tree",
+        "paper"
+      ],
+      "answers": [
+        {
+          "word": "leaf",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "officer",
+        "teacher"
+      ],
+      "answers": [
+        {
+          "word": "principal",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "neighborhood",
+        "band"
+      ],
+      "answers": [
+        {
+          "word": "gang",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "chef",
+        "host",
+        "computer"
+      ],
+      "answers": [
+        {
+          "word": "server",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "farming"
+      ],
+      "answers": [
+        {
+          "word": "agriculture",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

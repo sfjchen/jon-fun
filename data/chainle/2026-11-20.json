@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-20",
+  "pairs": [
+    {
+      "anchors": [
+        "war",
+        "journalist"
+      ],
+      "answers": [
+        {
+          "word": "veteran",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "canal",
+        "hook"
+      ],
+      "answers": [
+        {
+          "word": "anchor",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "medium",
+        "pound"
+      ],
+      "answers": [
+        {
+          "word": "heavy",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "island",
+        "commonwealth",
+        "fleet"
+      ],
+      "answers": [
+        {
+          "word": "pacific",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "trial"
+      ],
+      "answers": [
+        {
+          "word": "jury",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

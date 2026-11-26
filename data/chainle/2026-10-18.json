@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-18",
+  "pairs": [
+    {
+      "anchors": [
+        "block",
+        "fellow"
+      ],
+      "answers": [
+        {
+          "word": "neighbor",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "pump",
+        "milk"
+      ],
+      "answers": [
+        {
+          "word": "liquid",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "carbon",
+        "river"
+      ],
+      "answers": [
+        {
+          "word": "pollution",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "pipe",
+        "pit",
+        "spider"
+      ],
+      "answers": [
+        {
+          "word": "snake",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "inch"
+      ],
+      "answers": [
+        {
+          "word": "diameter",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

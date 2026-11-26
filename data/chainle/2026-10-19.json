@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-19",
+  "pairs": [
+    {
+      "anchors": [
+        "swimming",
+        "contest"
+      ],
+      "answers": [
+        {
+          "word": "wrestling",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "landscape",
+        "glass"
+      ],
+      "answers": [
+        {
+          "word": "lens",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "evidence",
+        "tip"
+      ],
+      "answers": [
+        {
+          "word": "clue",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "valley",
+        "soldier",
+        "guard"
+      ],
+      "answers": [
+        {
+          "word": "fort",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "destruction"
+      ],
+      "answers": [
+        {
+          "word": "ruin",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

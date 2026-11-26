@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-01",
+  "pairs": [
+    {
+      "anchors": [
+        "accident",
+        "agency"
+      ],
+      "answers": [
+        {
+          "word": "insurance",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "note",
+        "client"
+      ],
+      "answers": [
+        {
+          "word": "account",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "circuit",
+        "draft"
+      ],
+      "answers": [
+        {
+          "word": "round",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "territory",
+        "chip",
+        "corner"
+      ],
+      "answers": [
+        {
+          "word": "edge",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "unit"
+      ],
+      "answers": [
+        {
+          "word": "division",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

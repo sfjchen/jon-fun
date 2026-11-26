@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-11",
+  "pairs": [
+    {
+      "anchors": [
+        "weapon",
+        "twist"
+      ],
+      "answers": [
+        {
+          "word": "arm",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "customer",
+        "software"
+      ],
+      "answers": [
+        {
+          "word": "user",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "presentation",
+        "note"
+      ],
+      "answers": [
+        {
+          "word": "summary",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "port",
+        "bus",
+        "border"
+      ],
+      "answers": [
+        {
+          "word": "rail",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "essay"
+      ],
+      "answers": [
+        {
+          "word": "thesis",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

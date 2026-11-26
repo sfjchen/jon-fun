@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-17",
+  "pairs": [
+    {
+      "anchors": [
+        "view",
+        "dialogue"
+      ],
+      "answers": [
+        {
+          "word": "commentary",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "cabinet",
+        "transport"
+      ],
+      "answers": [
+        {
+          "word": "storage",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "trade",
+        "expansion"
+      ],
+      "answers": [
+        {
+          "word": "acquisition",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "industry",
+        "capacity",
+        "software"
+      ],
+      "answers": [
+        {
+          "word": "productivity",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "email"
+      ],
+      "answers": [
+        {
+          "word": "mail",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

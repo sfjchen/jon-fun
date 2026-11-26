@@ -1,0 +1,70 @@
+{
+  "date": "2026-08-27",
+  "pairs": [
+    {
+      "anchors": [
+        "employment",
+        "log"
+      ],
+      "answers": [
+        {
+          "word": "posting",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "heart",
+        "tournament"
+      ],
+      "answers": [
+        {
+          "word": "beating",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "blog",
+        "opening"
+      ],
+      "answers": [
+        {
+          "word": "entry",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "arrest",
+        "reporter",
+        "husband"
+      ],
+      "answers": [
+        {
+          "word": "officer",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "prayer"
+      ],
+      "answers": [
+        {
+          "word": "worship",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

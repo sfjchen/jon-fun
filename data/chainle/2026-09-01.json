@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-01",
+  "pairs": [
+    {
+      "anchors": [
+        "meeting",
+        "sauce"
+      ],
+      "answers": [
+        {
+          "word": "dinner",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "port",
+        "design"
+      ],
+      "answers": [
+        {
+          "word": "interface",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "hook",
+        "row"
+      ],
+      "answers": [
+        {
+          "word": "string",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "center",
+        "yard",
+        "factory"
+      ],
+      "answers": [
+        {
+          "word": "warehouse",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "compensation"
+      ],
+      "answers": [
+        {
+          "word": "salary",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

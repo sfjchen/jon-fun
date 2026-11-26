@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-18",
+  "pairs": [
+    {
+      "anchors": [
+        "bear",
+        "jacket"
+      ],
+      "answers": [
+        {
+          "word": "fur",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "accounting",
+        "index"
+      ],
+      "answers": [
+        {
+          "word": "inventory",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "gun",
+        "cable"
+      ],
+      "answers": [
+        {
+          "word": "bolt",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "mirror",
+        "actor",
+        "television"
+      ],
+      "answers": [
+        {
+          "word": "screen",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "basketball"
+      ],
+      "answers": [
+        {
+          "word": "soccer",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

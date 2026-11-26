@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-26",
+  "pairs": [
+    {
+      "anchors": [
+        "congress",
+        "mall"
+      ],
+      "answers": [
+        {
+          "word": "capitol",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "laboratory",
+        "study"
+      ],
+      "answers": [
+        {
+          "word": "research",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "title",
+        "route"
+      ],
+      "answers": [
+        {
+          "word": "heading",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "trailer",
+        "population",
+        "flat"
+      ],
+      "answers": [
+        {
+          "word": "housing",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "muscle"
+      ],
+      "answers": [
+        {
+          "word": "nerve",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}

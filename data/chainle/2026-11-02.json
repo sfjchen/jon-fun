@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-02",
+  "pairs": [
+    {
+      "anchors": [
+        "bike",
+        "distance"
+      ],
+      "answers": [
+        {
+          "word": "race",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "president",
+        "draft"
+      ],
+      "answers": [
+        {
+          "word": "committee",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "fishing",
+        "neck"
+      ],
+      "answers": [
+        {
+          "word": "bow",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "immigration",
+        "institution",
+        "warrant"
+      ],
+      "answers": [
+        {
+          "word": "judicial",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    },
+    {
+      "anchors": [
+        "row"
+      ],
+      "answers": [
+        {
+          "word": "consecutive",
+          "points": 1000
+        }
+      ],
+      "accepted": []
+    }
+  ]
+}
