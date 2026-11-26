@@ -15,6 +15,10 @@ export async function dailyPuzzle(
     const puzzle = await krillionForDay(day)
     return { day, sourceDate: puzzle.date, puzzle }
   }
+  if (game === 'orbs') {
+    const { orbsForDay } = await import('@/lib/daily/orbs')
+    return { day, sourceDate: day, puzzle: await orbsForDay(day) }
+  }
   if (isNytGame(game)) return { day, sourceDate: day, puzzle: await nytPuzzle(game, day) }
   throw new Error('Unknown daily game')
 }

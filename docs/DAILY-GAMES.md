@@ -1,6 +1,6 @@
 # Daily games
 
-Wordle (id `fivefold`), Mini, Connections, Spelling Bee (`bee`), Krillion and Anthropeum, plus a daily SET. Local playable versions of the originals, not embeds. Nothing is ever submitted to an upstream game.
+Wordle (id `fivefold`), Mini, Connections, Spelling Bee (`bee`), Krillion, Anthropeum and Orbs, plus a daily SET. Local playable versions of the originals, not embeds. Nothing is ever submitted to an upstream game.
 
 ## How a day works
 
@@ -12,16 +12,17 @@ Wordle (id `fivefold`), Mini, Connections, Spelling Bee (`bee`), Krillion and An
 
 ## Code map
 
-| Piece                                  | Where                                                                               |
-| -------------------------------------- | ----------------------------------------------------------------------------------- |
-| Game registry (title, url, max, rules) | `GAMES` in `src/lib/results.ts`                                                     |
-| Dates, playable range, NYT first days  | `src/lib/daily.ts`                                                                  |
-| Puzzle for a day                       | `GET /api/daily/[game]` → `dailyPuzzle` in `src/lib/daily/server.ts`                |
-| NYT fetch, validation, snapshots       | `src/lib/daily/nyt.ts`, `nyt-puzzles.ts`                                            |
-| Krillion and Anthropeum sources        | `src/lib/daily/krillion.ts`, `anthropeum.ts`                                        |
-| Page shell for 5 games                 | `src/components/daily/DailyGame.tsx` (Spelling Bee has its own, for practice hives) |
-| Score check                            | `POST /api/results` → `VERIFIERS` in `src/lib/daily/verify.ts`                      |
-| Boards and stats                       | `/leaderboards` (`src/components/Scores.tsx`), Daily drawer (`DailyDrawer.tsx`)     |
+| Piece                                        | Where                                                                               |
+| -------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Game registry (title, url, max, rules, tier) | `GAMES` in `src/lib/results.ts`                                                     |
+| Dates, playable range, NYT first days        | `src/lib/daily.ts`                                                                  |
+| Puzzle for a day                             | `GET /api/daily/[game]` → `dailyPuzzle` in `src/lib/daily/server.ts`                |
+| NYT fetch, validation, snapshots             | `src/lib/daily/nyt.ts`, `nyt-puzzles.ts`                                            |
+| Krillion and Anthropeum sources              | `src/lib/daily/krillion.ts`, `anthropeum.ts`                                        |
+| Orbs bank and archive index                  | `data/orbs/<year>.json`, `public/orbs/categories.json`                              |
+| Page shell for 6 games                       | `src/components/daily/DailyGame.tsx` (Spelling Bee has its own, for practice hives) |
+| Score check                                  | `POST /api/results` → `VERIFIERS` in `src/lib/daily/verify.ts`                      |
+| Boards and stats                             | `/leaderboards` (`src/components/Scores.tsx`), Daily drawer (`DailyDrawer.tsx`)     |
 
 Adding a daily game - add it to `GAMES`, give it a verifier (the build fails without one), a branch in `dailyPuzzle`, a player component and its route in `PageShell`.
 
@@ -32,11 +33,13 @@ Adding a daily game - add it to `GAMES`, give it a verifier (the build fails wit
 - Wordle accepts the 14,855 words of the NYT client (`public/fivefold/words.json`, refreshed by `scripts/sync-wordle-words.py`).
 - Krillion uses the original's same-date prompts and answer review (accepted answers, aliases, rarity scores). A day's review is bundled or fetched from the original on first request, then stored.
 - Anthropeum uses the original's public artifacts and historical polygons, bundled per day in `data/anthropeum`.
+- Orbs reads original questions from `data/orbs/<year>.json`, starting 2026-11-21. After adding a day, regenerate the date-only archive index with `npx tsx scripts/build-orbs-index.ts`. Use `--check` to verify the index after editing the bank.
+- `/games/orbs/archive` groups past Orbs rounds by category through yesterday. Archive completions are per date, category and browser. Daily marks come from ranked scores or completed local daily runs.
 - `/games/archives` browses all 4 NYT games by date and offers each year's puzzles and word lists.
 
 ## Cron (`vercel.json`)
 
-- `/api/cron/daily` runs at 07, 08, 09, 10 and 11 UTC. Hobby crons fire anywhere inside their hour and are not retried, so the runs overlap: 07 and 08 cover Pacific midnight in both offsets, the rest recover late feeds. The handler skips unless the Pacific hour is 0-3, fetches all 6 puzzles for the day, and saves the previous day's Anthropeum player statistics.
+- `/api/cron/daily` runs at 07, 08, 09, 10 and 11 UTC. Hobby crons fire anywhere inside their hour and are not retried, so the runs overlap: 07 and 08 cover Pacific midnight in both offsets, the rest recover late feeds. The handler skips unless the Pacific hour is 0-3, fetches all registered puzzles for the day, and saves the previous day's Anthropeum player statistics.
 - `/api/cron/krillion` runs in each hour from 00 to 04 UTC and saves the original's player curve for its open day on every run, as does `/api/cron/daily`. The curve cannot be fetched after the original's Eastern reset (04:00 or 05:00 UTC), so the last run before it leaves the saved one, and a day nobody played here still has a curve.
 - `/api/poker/cleanup` removes rooms idle for 24 hours (poker, 24, party, Triples).
 - Every cron route needs `CRON_SECRET` and rejects all calls when it is unset (`src/lib/api-guards.ts`).
@@ -50,13 +53,15 @@ Adding a daily game - add it to `GAMES`, give it a verifier (the build fails wit
 - Spelling Bee - the day's exact answer list, center letter required, 4-letter minimum, original points and rank thresholds.
 - Krillion - 7 prompts, 25 seconds each on wall time, so a reload never grants a new clock. Wrong answers can be retried, and the draft is judged once at expiry. Answers are judged on the device from the prompt's answer key, with the server as fallback. Matching ignores accents, case, punctuation and a leading "the". From 5 letters, the closest answer within min(3, 0.28 × length) edits comes back as `"typed" → "answer"` and scores when sent again. Rarity scores are 10, 15, 30, 60, 85 or 100, maximum 700. No AI judging.
 - Anthropeum - 10 artifacts, a map pin and a 250-year period each (125-year steps, 3000 BCE to 1750 CE). Up to 5,000 points for place (distance to the nearest polygon edge) and 5,000 for time, 100,000 overall. 3 free hints per game. The results page shows the original's score histogram and estimated placement.
+- Orbs - Four categories of three questions each. One orb per correct answer, up to 12. The first finished daily ranks. Archive rounds play one category and save only its archive mark.
 - SET (`/games/set`) - a generated daily board of 12 cards with exactly 6 sets, not the original's board. Not on the leaderboard. `/games/triples` is the full 81-card game with PIN rooms, where each seat holds a private credential and claims use version checks.
+- Tier 1 (Wordle, Connections, Mini and Spelling Bee) counts toward overall wins, streaks, Daily drawer progress and nudges. Tier 2 (Krillion, Anthropeum and Orbs) and future Tier 3 games have individual rankings and appear under More games.
 - Boards - 1 page: the day's score grid (its game icons filter to 1 game), standings by wins, and Your stats. Equal results share a rank. Rows stored under an older `SCORING_VERSION`, or with a source date that differs from their day, stay off the current boards.
 
 ## Verified scores
 
 - Every result sends its moves (`stats.moves`). `/api/results` replays them against the day's puzzle and stores its own score, so a hand-made score cannot be posted.
-- Wordle - guesses, word list, hard mode. Bee - found words. Connections - guesses and give-up. Anthropeum - pins and periods. Krillion - each round's accepted answer, judged again. Mini - the solved grid.
+- Wordle - guesses, word list, hard mode. Bee - found words. Connections - guesses and give-up. Anthropeum - pins and periods. Krillion - each round's accepted answer, judged again. Mini - the solved grid. Orbs - all 12 option indices.
 - Solve times (Mini, Connections) and Krillion's round clock cannot be replayed and stay as sent. Mini and Connections times under a floor no person can reach (0.15 s per Mini cell, 1 s per Connections guess) are rejected.
 - Checked moves are kept in a `moves` column that score reads never return, so boards never reveal answers. Only `/api/results/run` reads it, to rebuild a player's finished game. Results saved before 2026-11-21 have no moves and show their score only, until the device that played them opens the day again.
 

@@ -53,11 +53,51 @@ test('public results are readable without naming a player and the group editor s
   await page.getByTestId('device-player-name').click()
   await expect(page.getByLabel('Your name', { exact: true })).toHaveValue('Tester')
 })
+test('extra games are folded and keep their own scores without adding core wins or progress', async ({ page }) => {
+  await mockSyncIdentity(page)
+  const day = siteDay()
+  await page.addInitScript(() =>
+    localStorage.setItem('sfjc_player', JSON.stringify({ name: 'Me', group: 'e2e-group' })),
+  )
+  await page.route('**/api/results**', (route) =>
+    route.fulfill({
+      json: {
+        rows: [
+          { name: 'Me', game: 'fivefold', day, score: 4, stats: {} },
+          { name: 'Jon', game: 'fivefold', day, score: 3, stats: {} },
+          { name: 'Me', game: 'orbs', day, score: 8, stats: {} },
+          { name: 'Jon', game: 'orbs', day, score: 12, stats: {} },
+        ],
+      },
+    }),
+  )
+  await page.goto('/leaderboards')
+  const board = page.getByRole('region', { name: 'Day results' })
+  await expect(board.getByRole('button', { name: 'Orbs', exact: true })).toHaveCount(0)
+  await expect(page.getByTestId('standings').getByRole('listitem').first()).toContainText('Me')
+  await expect(page.getByTestId('standings').getByRole('listitem').first()).toContainText('1 win')
+  await board.getByRole('button', { name: 'More games' }).click()
+  await board.getByRole('button', { name: 'Orbs', exact: true }).click()
+  await expect(page.getByTestId('board-orbs').getByRole('listitem').first()).toContainText('Jon')
+  await expect(board.getByText('12/12', { exact: true }).first()).toBeVisible()
+  await board.getByRole('button', { name: 'Fewer games' }).click()
+  await expect(board.getByRole('button', { name: 'Orbs', exact: true })).toHaveCount(0)
+
+  await page.goto('/games/orbs')
+  await page.getByRole('button', { name: /^Daily, 1 of 4 done today/ }).click()
+  const drawer = page.getByRole('dialog', { name: 'Daily games' })
+  await expect(drawer.getByText('1/4 today', { exact: false })).toBeVisible()
+  await expect(drawer.getByRole('link', { name: 'Orbs Completed' })).toHaveCount(0)
+  await drawer.getByRole('button', { name: 'More games' }).first().click()
+  await expect(drawer.getByRole('link', { name: 'Orbs Completed' })).toBeVisible()
+})
+
 test('home shelf uses Set and Wordle and links the leaderboard beside Daily', async ({ page }) => {
   await mockSyncIdentity(page)
   await page.route('**/api/results**', (r) => r.fulfill({ json: { rows: [] } }))
   await page.goto('/')
   await expect(page.getByRole('link', { name: 'Open Set', exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Open Orbs', exact: true })).toHaveAttribute('href', '/games/orbs')
   await expect(page.getByRole('link', { name: 'Daily leaderboard', exact: true })).toHaveAttribute(
     'href',
     '/leaderboards',

@@ -1,4 +1,5 @@
 import { siteDay } from '@/lib/daily'
+import { ORBS_MAX } from '@/lib/orbs'
 import { rankAutochecked, type MiniRun } from '@/lib/mini'
 import {
   getDevicePlayer,
@@ -9,12 +10,14 @@ import {
   PLAYER_IDENTITY_CHANGED,
   type DeviceKind,
 } from '@/lib/syncIdentity'
-export type GameId = 'bee' | 'connections' | 'mini' | 'krillion' | 'anthropeum' | 'fivefold'
+export type GameId = 'bee' | 'connections' | 'mini' | 'krillion' | 'anthropeum' | 'fivefold' | 'orbs'
+export type GameTier = 1 | 2 | 3
 export const GAMES: Record<
   GameId,
-  { title: string; url: string; max: number; unit: string; rules: string; lowerIsBetter?: boolean }
+  { title: string; url: string; max: number; unit: string; tier: GameTier; rules: string; lowerIsBetter?: boolean }
 > = {
   krillion: {
+    tier: 2,
     title: 'Krillion',
     url: '/games/krillion',
     max: 700,
@@ -23,6 +26,7 @@ export const GAMES: Record<
       'Seven 25-second rounds. Original rarity scores: 10, 15, 30, 60, 85 or 100 points per answer. Maximum 700. Your first finished dive counts.',
   },
   anthropeum: {
+    tier: 2,
     title: 'Anthropeum',
     url: '/games/anthropeum',
     max: 100000,
@@ -31,6 +35,7 @@ export const GAMES: Record<
       'Ten artifacts, 250-year guesses, up to 5,000 location and 5,000 time points each. Original scoring formulas. Your first finished game counts.',
   },
   connections: {
+    tier: 1,
     title: 'Connections',
     url: '/games/connections/daily',
     max: 4,
@@ -39,6 +44,7 @@ export const GAMES: Record<
       'Four groups, four mistakes maximum. Solved puzzles rank by time, fastest first; unsolved ones rank below by groups found. Mistakes do not break ties. Your first finished game counts.',
   },
   fivefold: {
+    tier: 1,
     title: 'Wordle',
     url: '/games/wordle',
     max: 6,
@@ -47,6 +53,7 @@ export const GAMES: Record<
       'Guess the 5-letter word in 6 tries. Ranked by fewest guesses; equal guess counts share the rank. A loss counts as 7 guesses in averages. Your first finished game counts.',
   },
   mini: {
+    tier: 1,
     title: 'Mini',
     url: '/games/mini',
     max: 864000,
@@ -56,14 +63,32 @@ export const GAMES: Record<
       'First unassisted solve time; lower is better. The clock pauses when you pause or leave. Autocheck ranks. Checks and reveals are unranked.',
   },
   bee: {
+    tier: 1,
     title: 'Spelling Bee',
     url: '/games/spelling-bee',
     max: 1000,
     unit: 'points',
     rules: 'Word points; pangrams earn a 7-point bonus. Your score grows as you find words through the day.',
   },
+  orbs: {
+    tier: 2,
+    title: 'Orbs',
+    url: '/games/orbs',
+    max: ORBS_MAX,
+    unit: 'orbs',
+    rules: 'Four categories, three questions each. One orb per correct answer. Your first finished game counts.',
+  },
 }
-export const GAME_IDS = Object.keys(GAMES) as GameId[]
+
+/** Games in priority order, preserving the registry order within each tier. */
+export const GAME_IDS = (Object.keys(GAMES) as GameId[]).sort((a, b) => GAMES[a].tier - GAMES[b].tier)
+
+/** Returns games in the requested tier. */
+export function gamesInTier(tier: GameTier): GameId[] {
+  return GAME_IDS.filter((game) => GAMES[game].tier === tier)
+}
+
+export const CORE_IDS = gamesInTier(1)
 export type Stats = {
   n?: number
   seconds?: number
@@ -83,6 +108,7 @@ export type BoardRow = Result & { name: string; device?: DeviceKind; conflict?: 
 /** The version of the scoring rules that current results use. Rows stored under an older one stay off the boards. */
 export const SCORING_VERSION = 2
 export function formatGameScore(game: GameId, score: number): string {
+  if (game === 'orbs') return `${Number.isInteger(score) ? score : score.toFixed(1)}/${ORBS_MAX}`
   return game === 'mini'
     ? formatTime(Math.round(score))
     : game === 'connections'

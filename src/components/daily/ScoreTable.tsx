@@ -2,13 +2,14 @@
 
 /*
  * Score grid shared by the Daily drawer and the leaderboard: a row per player and a column per daily game, headed by
- * the game's doodle, with all 6 games shown and a dash where a player has no result. The drawer shows a completion
+ * the game's doodle and a dash where a player has no result. The drawer shows a completion
  * mark in each cell, or the words found for Spelling Bee, and the leaderboard shows the score.
  */
 import Image from 'next/image'
 import Link from 'next/link'
 import { useHoverTip } from '@/components/HoverTip'
-import { GAMES, GAME_IDS, compareResults, formatTime, resultLabel, type BoardRow, type GameId } from '@/lib/results'
+import TierGroups from '@/components/daily/TierGroups'
+import { GAMES, compareResults, formatTime, resultLabel, type BoardRow, type GameId } from '@/lib/results'
 
 /**
  * Returns a 1-line label short enough for a grid cell: Connections shows only its solve time (or groups found)
@@ -43,11 +44,11 @@ export function beeWords(r: BoardRow): string {
  * Draws a completion mark: an empty ring for not done, a half-filled ring for started and a filled check for
  * completed.
  */
-export function Mark({ state, size = 18 }: { state: PlayState; size?: number }) {
+export function Mark({ state, size = 18, label }: { state: PlayState; size?: number; label?: string }) {
   return (
     <svg
       role="img"
-      aria-label={STATE_NAME[state]}
+      aria-label={label ? `${label}: ${STATE_NAME[state]}` : STATE_NAME[state]}
       viewBox="0 0 20 20"
       width={size}
       height={size}
@@ -76,6 +77,13 @@ export function Mark({ state, size = 18 }: { state: PlayState; size?: number }) 
   )
 }
 
+/** Divides adjacent tiers when the additional columns are expanded. */
+function tierDivider(games: GameId[], index: number) {
+  return index > 0 && GAMES[games[index]!].tier !== GAMES[games[index - 1]!].tier
+    ? 'border-l border-[var(--ink-border)]'
+    : ''
+}
+
 type ScoreTableProps = {
   rows: BoardRow[]
   me: string | undefined
@@ -97,8 +105,29 @@ type ScoreTableProps = {
  * Hovering a cell on a laptop shows the full result. With a picked game the other columns fade. With marks, cells
  * hold only completion marks and no result is bold.
  */
-export default function ScoreTable({ rows, me, q, wins, color, game = 'all', onGame, marks }: ScoreTableProps) {
-  const best = new Map(GAME_IDS.map((g) => [g, rows.filter((r) => r.game === g).sort(compareResults)[0]]))
+export default function ScoreTable(props: ScoreTableProps) {
+  const { game, onGame } = props
+  return (
+    <TierGroups selected={game} onClear={game && game !== 'all' && onGame ? () => onGame(game) : undefined}>
+      {(games) => <ScoreGrid {...props} games={games} />}
+    </TierGroups>
+  )
+}
+
+/** Builds a single table with matching headers and cells for the currently visible games. */
+function ScoreGrid({
+  rows: allRows,
+  me,
+  q,
+  wins,
+  color,
+  game = 'all',
+  onGame,
+  marks,
+  games,
+}: ScoreTableProps & { games: GameId[] }) {
+  const rows = allRows.filter((row) => games.includes(row.game))
+  const best = new Map(games.map((g) => [g, rows.filter((r) => r.game === g).sort(compareResults)[0]]))
   const tip = useHoverTip()
   const count = (n: string) => rows.filter((r) => r.name === n).length
   const names = [...new Set(rows.map((r) => r.name))].sort(
@@ -115,12 +144,12 @@ export default function ScoreTable({ rows, me, q, wins, color, game = 'all', onG
             <th scope="col" className="sr-only">
               Player
             </th>
-            {GAME_IDS.map((g) => {
+            {games.map((g, i) => {
               const icon = (
                 <Image src={`/doodles/notebook/${g}.svg`} alt="" width={24} height={24} className="mx-auto h-6 w-6" />
               )
               return (
-                <th key={g} scope="col" className="pb-1.5 font-normal">
+                <th key={g} scope="col" className={`pb-1.5 font-normal ${tierDivider(games, i)}`}>
                   {onGame ? (
                     <button
                       type="button"
@@ -159,15 +188,15 @@ export default function ScoreTable({ rows, me, q, wins, color, game = 'all', onG
                   <span className="truncate">{n}</span>
                 </span>
               </th>
-              {GAME_IDS.map((g, i) => {
+              {games.map((g, i) => {
                 const r = rows.find((x) => x.name === n && x.game === g)
                 const top = !marks && r && compareResults(r, best.get(g)!) === 0
-                const edge = i === GAME_IDS.length - 1 ? 'rounded-r-md' : ''
+                const edge = i === games.length - 1 ? 'rounded-r-md' : ''
                 return (
                   <td
                     key={g}
                     className={
-                      `px-0.5 py-1.5 text-center leading-tight tabular-nums transition-opacity ${edge} ` +
+                      `px-0.5 py-1.5 text-center leading-tight tabular-nums transition-opacity ${edge} ${tierDivider(games, i)} ` +
                       `${game !== 'all' && game !== g ? 'opacity-35' : ''} ` +
                       (top ? 'font-semibold text-[var(--ink-text)]' : 'text-[var(--ink-muted)]')
                     }

@@ -3,6 +3,8 @@
  * helpers and each game's playable range, with no dependencies, so both the browser and the server import it.
  */
 
+import { ORBS_FIRST_DAY } from '@/lib/orbs'
+
 /** The first day of the dailies that sfjc.dev serves itself (Krillion, Anthropeum, SET). */
 export const DAILY_EPOCH = '2026-11-01'
 /** The first published puzzle of each NYT daily, which is as far back as its archive goes. */
@@ -29,6 +31,7 @@ export function isNytGame(game: string): game is NytGame {
  * Returns the first day a daily game can be played.
  */
 export function firstDay(game: string): string {
+  if (game === 'orbs') return ORBS_FIRST_DAY
   return isNytGame(game) ? NYT_FIRST_DAY[game] : DAILY_EPOCH
 }
 

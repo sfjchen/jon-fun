@@ -19,6 +19,7 @@ import {
   ADMIN_NAME,
   GAMES,
   GAME_IDS,
+  CORE_IDS,
   PUBLIC_GROUP,
   bestGameScore,
   boardChanged,
@@ -38,6 +39,7 @@ import {
 import { DAILY_EPOCH, FIRST_DAY, shiftDay, siteDay, validDay } from '@/lib/daily'
 import { usePlayer } from '@/lib/use-player'
 import { useBoard } from '@/lib/use-board'
+import TierGroups from '@/components/daily/TierGroups'
 import { average, overallDay, streaks, winners, winsByPlayer } from '@/lib/score-stats'
 import { DEVICE_KINDS } from '@/lib/syncIdentity'
 import { useHoverTip } from '@/components/HoverTip'
@@ -221,12 +223,14 @@ function slices(colors: string[]): string | undefined {
  */
 function Calendar({
   rows,
+  game,
   me,
   day,
   color,
   onPick,
 }: {
   rows: BoardRow[]
+  game: Tab
   me: string
   day: string
   color: (name: string) => string
@@ -250,7 +254,7 @@ function Calendar({
   const days = Array.from({ length: count }, (_, i) => {
     const d = `${month}-${String(i + 1).padStart(2, '0')}`
     const dayRows = monthRows.filter((r) => r.day === d)
-    const { names, gameWins } = overallDay(dayRows)
+    const { names, gameWins } = overallDay(dayRows, game)
     const played = [...new Set(dayRows.map((r) => r.name))]
     const games = new Map(played.map((n) => [n, dayRows.filter((r) => r.name === n).length]))
     return { d, n: i + 1, who: mode === 'played' ? played : names, games, gameWins }
@@ -498,7 +502,7 @@ export function ScoresHub() {
   }, [group])
 
   const color = playerColors(rows, me)
-  const games = tab === 'all' ? GAME_IDS : [tab]
+  const games = tab === 'all' ? CORE_IDS : [tab]
   const shown = rows.filter((r) => games.includes(r.game))
   const dayRows = rows.filter((r) => r.day === day)
   const since = span ? shiftDay(day, 1 - span) : DAILY_EPOCH
@@ -536,16 +540,20 @@ export function ScoresHub() {
 
   const mine = shown.filter((r) => r.name === me && r.day <= day)
   const mineToday = dayRows.filter((r) => r.name === me)
-  // Streaks and days played count every game, so they match the Daily drawer whatever game is picked.
+  // Streaks use the same core games as the Daily drawer, regardless of the active filter.
   const mineAll = rows.filter((r) => r.name === me && r.day <= day)
-  const streak = streaks(mineAll, day)
+  const streak = streaks(
+    mineAll.filter((r) => CORE_IDS.includes(r.game)),
+    day,
+  )
   const overall = overallDay(dayRows)
   const lead = overall.gameWins.get(overall.names[0] ?? '')
-  // Friends who played in the last week and have nothing in today yet.
+  // Friends with core-game activity in the last week who have yet to play a core game today.
+  const coreRows = rows.filter((r) => CORE_IDS.includes(r.game))
   const waiting =
     day === today
-      ? [...new Set(rows.filter((r) => r.day >= shiftDay(day, -7) && r.name !== me).map((r) => r.name))].filter(
-          (n) => !dayRows.some((r) => r.name === n),
+      ? [...new Set(coreRows.filter((r) => r.day >= shiftDay(day, -7) && r.name !== me).map((r) => r.name))].filter(
+          (n) => !coreRows.some((r) => r.day === day && r.name === n),
         )
       : []
   const ranked = tab === 'all' ? [] : dayRows.filter((r) => r.game === tab).sort(compareResults)
@@ -613,7 +621,10 @@ export function ScoresHub() {
                 </li>
               ))}
             </ul>
-            <p>Daily wins require two players. Equal results share the rank.</p>
+            <p>
+              Core games count toward overall daily wins and streaks. Game wins require two players. Equal results share
+              the rank.
+            </p>
           </Info>
         </div>
         <div className="flex flex-wrap items-center gap-1">
@@ -746,19 +757,23 @@ export function ScoresHub() {
           ) : (
             <div className={`${card} space-y-3 py-6 text-center sm:py-8`}>
               <p className="text-sm">{day === today ? 'Nobody has played yet. Be first.' : 'No scores this day.'}</p>
-              <div className="flex justify-center gap-2">
-                {GAME_IDS.map((g) => (
-                  <Link
-                    key={g}
-                    href={GAMES[g].url + q}
-                    aria-label={`Play ${GAMES[g].title}`}
-                    title={GAMES[g].title}
-                    className="rounded-lg p-1 hover:bg-[var(--ink-paper)]"
-                  >
-                    <Image src={`/doodles/notebook/${g}.svg`} alt="" width={32} height={32} className="h-8 w-8" />
-                  </Link>
-                ))}
-              </div>
+              <TierGroups>
+                {(visibleGames) => (
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {visibleGames.map((g) => (
+                      <Link
+                        key={g}
+                        href={GAMES[g].url + q}
+                        aria-label={`Play ${GAMES[g].title}`}
+                        title={GAMES[g].title}
+                        className="rounded-lg p-1 hover:bg-[var(--ink-paper)]"
+                      >
+                        <Image src={`/doodles/notebook/${g}.svg`} alt="" width={32} height={32} className="h-8 w-8" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </TierGroups>
             </div>
           )}
         </section>
@@ -836,7 +851,8 @@ export function ScoresHub() {
             </div>
             {tab !== 'all' && <Trend rows={mine} day={day} />}
             <Calendar
-              rows={shown}
+              rows={tab === 'all' ? rows : shown}
+              game={tab}
               me={me}
               day={day}
               color={color}
@@ -845,7 +861,8 @@ export function ScoresHub() {
                 document.getElementById('day-results')?.scrollIntoView({ behavior: 'smooth' })
               }}
             />
-            {mine.some((r) => r.device) && <DeviceSplit rows={mine} games={games} />}
+            {tab === 'all' && mineAll.some((r) => r.device) && <DeviceSplit rows={mineAll} games={GAME_IDS} />}
+            {tab !== 'all' && mine.some((r) => r.device) && <DeviceSplit rows={mine} games={games} />}
           </div>
         </details>
       )}

@@ -2,7 +2,7 @@
 
 /*
  * Home header Daily button and drawer: today's progress, streak, and a day picker beside the title that shows any
- * day's links to the 6 daily games and who has played them that day, as not done, started or completed marks with
+ * day's links to the daily games and who has played them that day, as not done, started or completed marks with
  * no scores (Spelling Bee shows its words found). Done state merges the synced board rows with the unsynced local
  * queue for the saved player.
  */
@@ -12,6 +12,7 @@ import { ViewTransition, useCallback, useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import DayPicker from '@/components/daily/DayPicker'
 import { titleTransition } from '@/components/daily/DayNav'
+import TierGroups from '@/components/daily/TierGroups'
 import PlayerName from '@/components/PlayerName'
 import ScoreTable, { Mark, beeWords, playState, type PlayState } from '@/components/daily/ScoreTable'
 import { disableNudges, enableNudges, nudge, useNudgeState, usePushStatus } from '@/lib/push'
@@ -21,7 +22,7 @@ import { usePlayer } from '@/lib/use-player'
 import { useBoard } from '@/lib/use-board'
 import {
   GAMES,
-  GAME_IDS,
+  CORE_IDS,
   PUBLIC_GROUP,
   PLAYING_KEY,
   RESULT_QUEUED,
@@ -56,22 +57,26 @@ function useDaily(sel: string, open: boolean) {
     })
   }
   const mine = player ? rows.filter((r) => r.name === player.name) : []
+  const core = rows.filter((row) => CORE_IDS.includes(row.game))
   const done = (d: string) => new Map(mine.filter((r) => r.day === d).map((r) => [r.game, r]))
   return {
     player,
-    today: done(day),
+    todayCount: core.filter((row) => row.name === player?.name && row.day === day).length,
     picked: done(sel),
     everyone: rows.filter((r) => r.day === sel),
-    streak: streaks(mine, day).current,
+    streak: streaks(
+      core.filter((row) => row.name === player?.name),
+      day,
+    ).current,
     loaded: board.loaded,
     // Up to 8 friends who played most in the last week and have games left today, with how many they finished.
-    friends: [...new Set(rows.filter((r) => r.day >= shiftDay(day, -7) && r.name !== player?.name).map((r) => r.name))]
+    friends: [...new Set(core.filter((r) => r.day >= shiftDay(day, -7) && r.name !== player?.name).map((r) => r.name))]
       .map((n) => ({
         name: n,
-        done: rows.filter((r) => r.name === n && r.day === day).length,
-        days: new Set(rows.filter((r) => r.name === n && r.day >= shiftDay(day, -7)).map((r) => r.day)).size,
+        done: core.filter((r) => r.name === n && r.day === day).length,
+        days: new Set(core.filter((r) => r.name === n && r.day >= shiftDay(day, -7)).map((r) => r.day)).size,
       }))
-      .filter((f) => f.done < GAME_IDS.length)
+      .filter((f) => f.done < CORE_IDS.length)
       .sort((a, b) => b.days - a.days || a.name.localeCompare(b.name))
       .slice(0, 8),
   }
@@ -86,10 +91,10 @@ const OPENED = 'sfjc_daily_auto_opened'
 function Ring({ done, size }: { done: number; size: number }) {
   const r = 6.5,
     c = 2 * Math.PI * r,
-    seg = c / GAME_IDS.length
+    seg = c / CORE_IDS.length
   return (
     <svg aria-hidden viewBox="0 0 16 16" width={size} height={size} className="-rotate-90">
-      {GAME_IDS.map((g, i) => (
+      {CORE_IDS.map((g, i) => (
         <circle
           key={g}
           cx="8"
@@ -118,7 +123,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
   const sel = picked || now || siteDay()
   const [open, setOpen] = useState(false)
   const path = usePathname()
-  const { player, today, picked: done, everyone, streak, loaded, friends } = useDaily(sel, open)
+  const { player, todayCount, picked: done, everyone, streak, loaded, friends } = useDaily(sel, open)
   const push = usePushStatus(player)
   const nudges = useNudgeState(player, open)
   const [nudged, setNudged] = useState<Record<string, string>>({})
@@ -223,7 +228,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
         year: sel.slice(0, 4) === now.slice(0, 4) ? undefined : 'numeric',
       })
   // The streak runs through yesterday until a game is played today, so a streak with no game yet today is at risk.
-  const risk = !!streak && !today.size
+  const risk = !!streak && !todayCount
   const flame = (
     <span
       className={risk ? 'opacity-45 grayscale' : ''}
@@ -233,7 +238,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
     </span>
   )
   const status = player
-    ? `Daily, ${today.size} of ${GAME_IDS.length} done today${streak ? `, ${streak} day streak${risk ? ' at risk' : ''}` : ''}`
+    ? `Daily, ${todayCount} of ${CORE_IDS.length} done today${streak ? `, ${streak} day streak${risk ? ' at risk' : ''}` : ''}`
     : 'Daily'
   return (
     <div data-game-theme="daily" className="flex items-center gap-1.5 bg-transparent">
@@ -253,7 +258,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
         }
       >
         Daily
-        {player && <Ring done={today.size} size={compact ? 14 : 16} />}
+        {player && <Ring done={todayCount} size={compact ? 14 : 16} />}
         {player && !!streak && !compact && flame}
       </button>
       {!compact && (
@@ -315,7 +320,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
             </div>
             {player ? (
               <p className="mb-4 text-sm text-[var(--ink-muted)]">
-                {today.size}/{GAME_IDS.length} today · {flame} · <PlayerName />
+                {todayCount}/{CORE_IDS.length} today · {flame} · <PlayerName />
                 {(push === 'off' || push === 'on') && (
                   <button
                     type="button"
@@ -347,68 +352,72 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                 Set your name to track scores and streaks: <PlayerName />
               </p>
             )}
-            <ul className="space-y-1.5 sm:space-y-2">
-              {GAME_IDS.map((g) => {
-                const r = done.get(g)
-                // With no result yet, a game this browser has played on the day without finishing it is started.
-                let state: PlayState = playState(r)
-                try {
-                  const mark = JSON.parse(localStorage.getItem(PLAYING_KEY + g) ?? 'null') as {
-                    day?: string
-                    at?: number
-                  }
-                  if (!r && mark?.day === sel && mark.at) state = 'started'
-                } catch {
-                  /* Storage can be disabled in a private browser. */
-                }
-                const row = 'flex items-center gap-3 rounded-xl border border-[var(--ink-border)] p-2 sm:p-2.5'
-                const icon = (
-                  <Image
-                    src={`/doodles/notebook/${g}.svg`}
-                    alt=""
-                    width={36}
-                    height={36}
-                    className="h-8 w-8 sm:h-9 sm:w-9"
-                  />
-                )
-                // NYT games have no puzzle before their first day or after today, and the rest none before the epoch.
-                if (sel < firstDay(g) || (isNytGame(g) && now && sel > now)) {
-                  return (
-                    <li key={g} className={`${row} opacity-40`}>
-                      {icon}
-                      <span className="flex-1 font-semibold">{GAMES[g].title}</span>
-                      <span className="text-xs text-[var(--ink-muted)]">No puzzle</span>
-                    </li>
-                  )
-                }
-                return (
-                  <li key={g}>
-                    <Link
-                      href={GAMES[g].url + q}
-                      onClick={close}
-                      className={`${row} ${r ? 'border-transparent bg-[var(--ink-paper)] hover:brightness-95' : 'hover:bg-[var(--ink-paper)]'}`}
-                    >
-                      {icon}
-                      {/* The open game's own header already holds this name, and a name may appear only once. */}
-                      {GAMES[g].url === path ? (
-                        <span className="flex-1 font-semibold">{GAMES[g].title}</span>
-                      ) : (
-                        <ViewTransition name={titleTransition(GAMES[g].url)}>
+            <TierGroups>
+              {(games) => (
+                <ul className="space-y-1.5 sm:space-y-2">
+                  {games.map((g) => {
+                    const r = done.get(g)
+                    // With no result yet, a game this browser has played on the day without finishing it is started.
+                    let state: PlayState = playState(r)
+                    try {
+                      const mark = JSON.parse(localStorage.getItem(PLAYING_KEY + g) ?? 'null') as {
+                        day?: string
+                        at?: number
+                      }
+                      if (!r && mark?.day === sel && mark.at) state = 'started'
+                    } catch {
+                      /* Storage can be disabled in a private browser. */
+                    }
+                    const row = 'flex items-center gap-3 rounded-xl border border-[var(--ink-border)] p-2 sm:p-2.5'
+                    const icon = (
+                      <Image
+                        src={`/doodles/notebook/${g}.svg`}
+                        alt=""
+                        width={36}
+                        height={36}
+                        className="h-8 w-8 sm:h-9 sm:w-9"
+                      />
+                    )
+                    // NYT games have no puzzle before their first day or after today, and the rest none before the epoch.
+                    if (sel < firstDay(g) || (isNytGame(g) && now && sel > now)) {
+                      return (
+                        <li key={g} className={`${row} opacity-40`}>
+                          {icon}
                           <span className="flex-1 font-semibold">{GAMES[g].title}</span>
-                        </ViewTransition>
-                      )}
-                      {!r && isPracticeResult(g, sel) ? (
-                        <span className="text-xs text-[var(--ink-muted)]">Practice</span>
-                      ) : r?.game === 'bee' ? (
-                        <span className="text-sm font-semibold tabular-nums">{beeWords(r)}</span>
-                      ) : (
-                        <Mark state={state} />
-                      )}
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
+                          <span className="text-xs text-[var(--ink-muted)]">No puzzle</span>
+                        </li>
+                      )
+                    }
+                    return (
+                      <li key={g}>
+                        <Link
+                          href={GAMES[g].url + q}
+                          onClick={close}
+                          className={`${row} ${r ? 'border-transparent bg-[var(--ink-paper)] hover:brightness-95' : 'hover:bg-[var(--ink-paper)]'}`}
+                        >
+                          {icon}
+                          {/* The open game's own header already holds this name, and a name may appear only once. */}
+                          {GAMES[g].url === path ? (
+                            <span className="flex-1 font-semibold">{GAMES[g].title}</span>
+                          ) : (
+                            <ViewTransition name={titleTransition(GAMES[g].url)}>
+                              <span className="flex-1 font-semibold">{GAMES[g].title}</span>
+                            </ViewTransition>
+                          )}
+                          {!r && isPracticeResult(g, sel) ? (
+                            <span className="text-xs text-[var(--ink-muted)]">Practice</span>
+                          ) : r?.game === 'bee' ? (
+                            <span className="text-sm font-semibold tabular-nums">{beeWords(r)}</span>
+                          ) : (
+                            <Mark state={state} />
+                          )}
+                        </Link>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </TierGroups>
             {nudged[''] && !canNudge && <p className="mt-3 text-xs text-[var(--ink-muted)]">{nudged['']}</p>}
             {push === 'install' && canNudge && (
               <p className="mb-3 text-xs text-[var(--ink-muted)]">
@@ -454,7 +463,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                             ? `You nudged ${f.name} today`
                             : off
                               ? `${f.name} has not turned on nudges, so a nudge cannot reach them yet`
-                              : sent || `Nudge ${f.name}: ${GAME_IDS.length - f.done} games left today`
+                              : sent || `Nudge ${f.name}: ${CORE_IDS.length - f.done} games left today`
                         }
                         onClick={() => {
                           // Senders turn on their own nudges first, so the tap asks for notifications when they are off.
@@ -483,7 +492,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                       >
                         <span className="max-w-24 truncate font-medium">{f.name}</span>
                         <span className="text-[var(--ink-muted)] tabular-nums">
-                          {f.done}/{GAME_IDS.length}
+                          {f.done}/{CORE_IDS.length}
                         </span>
                         <span aria-hidden>{sent === 'Nudged' ? '✓' : off ? '🔕' : '👋'}</span>
                       </button>

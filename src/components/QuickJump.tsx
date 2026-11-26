@@ -23,7 +23,7 @@ const ITEMS: Item[] = [
   { title: 'Leaderboard', href: '/leaderboards', group: 'Pages' },
   { title: 'Past NYT puzzles', href: '/games/archives', group: 'Pages' },
   { title: 'Home', href: '/', group: 'Pages' },
-  ...HOME_ITEMS.filter((i) => i.available).map((i) => ({
+  ...HOME_ITEMS.filter((i) => i.available && !GAME_IDS.some((game) => GAMES[game].url === i.href)).map((i) => ({
     title: i.title,
     href: i.href,
     icon: i.icon,

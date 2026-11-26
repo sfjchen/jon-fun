@@ -1,5 +1,10 @@
 /** Every daily puzzle source the server reads: the NYT archives and the Anthropeum and Krillion snapshots. */
-const PUZZLES = ['./public/puzzle-archives/**/*', './data/anthropeum/**/*', './data/krillion/review/**/*']
+const PUZZLES = [
+  './public/puzzle-archives/**/*',
+  './data/anthropeum/**/*',
+  './data/krillion/review/**/*',
+  './data/orbs/**/*',
+]
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

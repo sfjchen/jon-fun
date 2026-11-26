@@ -45,6 +45,9 @@ export function PageShell({ children }: PageShellProps) {
     '/games/krillion',
     '/games/anthropeum',
     '/games/wordle',
+    '/games/orbs',
+    '/games/orbs/archive',
+    '/games/orbs/archive/play',
     '/games/spelling-bee',
     '/games/connections/daily',
     '/leaderboards',
@@ -66,7 +69,9 @@ export function PageShell({ children }: PageShellProps) {
                 ? 'anthropeum'
                 : pathname === '/games/wordle'
                   ? 'fivefold'
-                  : undefined
+                  : pathname === '/games/orbs' || pathname?.startsWith('/games/orbs/archive')
+                    ? 'orbs'
+                    : undefined
   const notesPage = isNotesPage(pathname ?? '')
   const isMobile = useSyncExternalStore(
     (cb) => {

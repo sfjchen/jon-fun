@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 import { siteDay, shiftDay } from '../src/lib/daily'
+import { ORBS_FIRST_DAY, type OrbsPuzzle } from '../src/lib/orbs'
 import type { BoardRow } from '../src/lib/results'
 import { mockSyncIdentity } from './helpers/sync-identity-mock'
 const today = siteDay()
@@ -26,6 +27,43 @@ async function scoreMock(page: Page, player = true) {
   })
   return rows
 }
+test('Orbs resumes a partial run, posts twelve picks and restores its result', async ({ page }) => {
+  const rows = await scoreMock(page)
+  const { puzzle }: { puzzle: OrbsPuzzle } = await (
+    await page.request.get(`/api/daily/orbs?d=${ORBS_FIRST_DAY}`)
+  ).json()
+  const questions = puzzle.categories.flatMap((category) => category.questions)
+  const play = async (index: number) => {
+    const question = questions[index]!
+    await page.getByRole('button', { name: question.options[question.answer], exact: true }).click()
+    await page
+      .getByRole('button', { name: index === questions.length - 1 ? 'See result' : 'Next question', exact: true })
+      .click()
+  }
+  await page.goto(`/games/orbs?d=${ORBS_FIRST_DAY}`)
+  await play(0)
+  await page.reload()
+  await expect(page.getByRole('heading', { name: questions[1]!.prompt })).toBeVisible()
+  for (let index = 1; index < questions.length; index++) await play(index)
+  await expect(page.getByTestId('orbs-result')).toHaveText('12/12 orbs')
+  await expect
+    .poll(() => rows.find((row) => row.game === 'orbs'))
+    .toMatchObject({
+      score: 12,
+      stats: { moves: questions.map((question) => question.answer) },
+    })
+  await page.reload()
+  await expect(page.getByTestId('orbs-result')).toHaveText('12/12 orbs')
+  await page.evaluate((day) => localStorage.removeItem(`orbs:v1:${day}:${day}`), ORBS_FIRST_DAY)
+  await page.route('**/api/results/run', (route) =>
+    route.fulfill({
+      json: { result: { score: 12, stats: { n: 12 }, moves: questions.map((question) => question.answer) } },
+    }),
+  )
+  await page.reload()
+  await expect(page.getByTestId('orbs-result')).toHaveText('12/12 orbs')
+})
+
 test('Mini solves, saves, restores, navigates dates, and ranks only unassisted play', async ({ page }) => {
   const rows = await scoreMock(page)
   const api = await page.request.get(`/api/daily/mini?d=${today}`)

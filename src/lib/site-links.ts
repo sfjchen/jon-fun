@@ -72,6 +72,14 @@ export const HOME_ITEMS: GameCardGame[] = [
     available: true,
   },
   {
+    id: 'orbs',
+    title: 'Orbs',
+    description: 'Twelve daily trivia questions across four categories',
+    icon: `${nb}/orbs.svg`,
+    href: '/games/orbs',
+    available: true,
+  },
+  {
     id: 'jeopardy',
     title: 'Jeopardy with Friends',
     description: 'Create and play custom boards locally',

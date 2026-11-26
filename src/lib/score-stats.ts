@@ -1,5 +1,5 @@
 import { shiftDay } from '@/lib/daily'
-import { compareResults, type BoardRow } from '@/lib/results'
+import { CORE_IDS, compareResults, type BoardRow, type GameId } from '@/lib/results'
 export function winners(rows: BoardRow[]): string[] {
   if (new Set(rows.map((r) => r.name)).size < 2) return []
   const eligible = rows.filter(
@@ -36,8 +36,13 @@ export function average(values: number[]): number {
   return values.length ? values.reduce((s, v) => s + v, 0) / values.length : 0
 }
 /** Most game wins determines an overall day winner; ties have no outright winner. */
-export function overallDay(rows: BoardRow[]): { names: string[]; gameWins: Map<string, number> } {
-  const gameWins = winsByPlayer(rows)
+export function overallDay(
+  rows: BoardRow[],
+  game: GameId | 'all' = 'all',
+): { names: string[]; gameWins: Map<string, number> } {
+  const gameWins = winsByPlayer(
+    rows.filter((row) => (game === 'all' ? CORE_IDS.includes(row.game) : row.game === game)),
+  )
   const best = Math.max(0, ...gameWins.values())
   return { names: [...gameWins].filter(([, n]) => n === best).map(([name]) => name), gameWins }
 }
