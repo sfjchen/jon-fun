@@ -16,7 +16,7 @@ test('a random archive round saves an archive mark and sends no ranked score', a
     return route.fulfill({ json: { rows: [{ name: 'Alice', game: 'orbs', day: '2026-11-21', score: 0, stats: {} }] } })
   })
   await page.goto('/games/orbs/archive')
-  const trivia = page.getByRole('region', { name: 'Trivia', exact: true })
+  const trivia = page.getByRole('region', { name: 'Arts & Culture', exact: true })
   await trivia.getByText('Choose a date').click()
   await expect(trivia.getByText(siteDay(), { exact: true })).toHaveCount(0)
   const finishedDaily = trivia.getByRole('listitem').filter({ hasText: '2026-11-21' })
@@ -29,9 +29,8 @@ test('a random archive round saves an archive mark and sends no ranked score', a
   await expect(page).toHaveURL(/\/archive\/play\?d=.+&c=trivia/)
   const day = new URL(page.url()).searchParams.get('d')!
   const { puzzle }: { puzzle: OrbsPuzzle } = await (await page.request.get(`/api/daily/orbs?d=${day}`)).json()
-  for (const [index, question] of puzzle.categories.find((item) => item.id === 'trivia')!.questions.entries()) {
+  for (const question of puzzle.categories.find((item) => item.id === 'trivia')!.questions) {
     await page.getByRole('button', { name: question.options[question.answer], exact: true }).click()
-    await page.getByRole('button', { name: index === 2 ? 'See result' : 'Next question', exact: true }).click()
   }
   await expect(page.getByTestId('orbs-result')).toHaveText('3/3 orbs')
   await page.getByRole('link', { name: 'Back to categories' }).click()
@@ -40,7 +39,7 @@ test('a random archive round saves an archive mark and sends no ranked score', a
   const played = trivia.getByRole('listitem').filter({ hasText: day })
   await expect(played.getByRole('img', { name: 'Archive: Completed' })).toBeVisible()
   await expect(played.getByRole('img', { name: 'Daily: Not done' })).toBeVisible()
-  const words = page.getByRole('region', { name: 'Words', exact: true })
+  const words = page.getByRole('region', { name: 'Wordplay', exact: true })
   await expect(words.getByText(/^0 of \d+ rounds played$/)).toBeVisible()
   await trivia.getByRole('button', { name: 'Random' }).click()
   await expect(page).toHaveURL(/\/archive\/play\?d=.+&c=trivia/)

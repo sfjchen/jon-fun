@@ -14,13 +14,16 @@ const bankSchema = z.record(
       .array(
         z.object({
           id: z.enum(categories),
-          title: z.string(),
+          title: z.string().trim().min(1),
+          note: z.string().trim().min(1).optional(),
+          format: z.enum(['choice', 'type', 'match', 'sort']).optional(),
           questions: z
             .array(
               z.object({
                 prompt: z.string().trim().min(1),
                 options: z.tuple([z.string().trim().min(1), z.string().trim().min(1), z.string().trim().min(1)]),
                 answer: z.number().int().min(0).max(2),
+                aliases: z.array(z.string().trim().min(1)).optional(),
               }),
             )
             .length(ORBS_CATEGORY_SIZE),
@@ -41,12 +44,19 @@ async function main() {
       if (!validDay(day) || !day.startsWith(file.slice(0, 4)) || day !== expected)
         throw new Error(`${file}: expected ${expected}, found ${day}`)
       const ids = new Set<OrbsCategoryId>()
-      for (const { id, title, questions } of bank[day]!.categories) {
-        if (ids.has(id) || title !== ORBS_CATEGORIES[id]) throw new Error(`${day}: invalid ${id} category`)
+      for (const { id, format, questions } of bank[day]!.categories) {
+        if (ids.has(id)) throw new Error(`${day}: duplicate ${id} category`)
         ids.add(id)
         for (const question of questions) {
           if (new Set(question.options).size !== question.options.length)
             throw new Error(`${day}: duplicate option for "${question.prompt}"`)
+        }
+        if (format === 'match' || format === 'sort') {
+          const labels = questions[0]!.options
+          if (questions.some((question) => question.options.some((option, i) => option !== labels[i])))
+            throw new Error(`${day}: ${id} needs a shared set of labels`)
+          if (format === 'match' && new Set(questions.map((question) => question.answer)).size !== questions.length)
+            throw new Error(`${day}: ${id} needs one clue per label`)
         }
         index[id].push(day)
       }

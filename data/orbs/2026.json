@@ -683,7 +683,7 @@
     "categories": [
       {
         "id": "trivia",
-        "title": "Trivia",
+        "title": "Music, Courts and Boards",
         "questions": [
           {
             "prompt": "What kind of key signature has no sharps or flats in its major scale?",
@@ -716,7 +716,7 @@
       },
       {
         "id": "words",
-        "title": "Words",
+        "title": "Opposites and Double Meanings",
         "questions": [
           {
             "prompt": "What is the antonym of “scarce”?",
@@ -725,7 +725,11 @@
               "Tiny",
               "Rare"
             ],
-            "answer": 0
+            "answer": 0,
+            "aliases": [
+              "plentiful",
+              "ample"
+            ]
           },
           {
             "prompt": "Which word can mean both a season and a metal coil?",
@@ -743,46 +747,55 @@
               "Anticipate",
               "Aggravate"
             ],
-            "answer": 2
+            "answer": 2,
+            "aliases": [
+              "worsen",
+              "exacerbate",
+              "intensify"
+            ]
           }
-        ]
+        ],
+        "format": "type",
+        "note": "Type a word that fits each definition."
       },
       {
         "id": "geography",
-        "title": "Geography",
+        "title": "Capitals and Coastlines",
         "questions": [
           {
             "prompt": "Which country's capital is Wellington?",
             "options": [
               "New Zealand",
-              "Australia",
-              "Fiji"
+              "Seine",
+              "Atlantic"
             ],
             "answer": 0
           },
           {
             "prompt": "Which river flows through Paris?",
             "options": [
-              "Loire",
+              "New Zealand",
               "Seine",
-              "Elbe"
+              "Atlantic"
             ],
             "answer": 1
           },
           {
             "prompt": "Which ocean borders Namibia?",
             "options": [
-              "Indian",
-              "Pacific",
+              "New Zealand",
+              "Seine",
               "Atlantic"
             ],
             "answer": 2
           }
-        ]
+        ],
+        "format": "match",
+        "note": "Match each clue with one of the three answers. Each answer can be used once."
       },
       {
         "id": "science",
-        "title": "Science",
+        "title": "Rocks, Blood and Planets",
         "questions": [
           {
             "prompt": "What kind of rock is formed when magma or lava cools?",
@@ -819,32 +832,34 @@
     "categories": [
       {
         "id": "trivia",
-        "title": "Trivia",
+        "title": "From the orchestra",
+        "note": "Choose the best answer for each clue.",
+        "format": "choice",
         "questions": [
           {
-            "prompt": "What is the primary ingredient in hummus?",
+            "prompt": "What instrument usually gives an orchestra its tuning note?",
             "options": [
-              "Lentils",
-              "White rice",
-              "Chickpeas"
+              "Oboe",
+              "Tuba",
+              "Viola"
+            ],
+            "answer": 0
+          },
+          {
+            "prompt": "Which brass instrument normally uses a long slide?",
+            "options": [
+              "Trumpet",
+              "French horn",
+              "Trombone"
             ],
             "answer": 2
           },
           {
-            "prompt": "Which percussion instrument is a tuned wooden bar instrument?",
+            "prompt": "What does pizzicato tell a string player to do?",
             "options": [
-              "Triangle",
-              "Xylophone",
-              "Tambourine"
-            ],
-            "answer": 1
-          },
-          {
-            "prompt": "In what game can a player be in check?",
-            "options": [
-              "Go",
-              "Chess",
-              "Dominoes"
+              "Bow",
+              "Pluck",
+              "Tap the music stand"
             ],
             "answer": 1
           }
@@ -852,32 +867,34 @@
       },
       {
         "id": "words",
-        "title": "Words",
+        "title": "Shared endings",
+        "note": "Write an answer for each clue.",
+        "format": "type",
         "questions": [
           {
-            "prompt": "Which word has the same letters as “below”?",
+            "prompt": "Type the word that can end day___ and flash___.",
             "options": [
-              "Bowelled",
-              "Blown",
-              "Elbow"
-            ],
-            "answer": 2
-          },
-          {
-            "prompt": "Which prefix in “underwater” indicates position?",
-            "options": [
-              "Under‑",
-              "Water‑",
-              "Re‑"
+              "light",
+              "(incorrect)",
+              "(unanswered)"
             ],
             "answer": 0
           },
           {
-            "prompt": "Which word can describe both an edge of a river and a financial institution?",
+            "prompt": "Type the word that can end tooth___ and paint___.",
             "options": [
-              "Banker",
-              "Bank",
-              "Shore"
+              "(incorrect)",
+              "(unanswered)",
+              "brush"
+            ],
+            "answer": 2
+          },
+          {
+            "prompt": "Type the word that can end note___ and sketch___.",
+            "options": [
+              "(incorrect)",
+              "book",
+              "(unanswered)"
             ],
             "answer": 1
           }
@@ -885,67 +902,71 @@
       },
       {
         "id": "geography",
-        "title": "Geography",
+        "title": "Cities by the water",
+        "note": "Name the river each city stands on.",
+        "format": "match",
         "questions": [
           {
-            "prompt": "Which European country contains Kraków?",
+            "prompt": "Rome",
             "options": [
-              "Austria",
-              "Poland",
-              "Slovakia"
+              "Seine",
+              "Tiber",
+              "Thames"
             ],
             "answer": 1
           },
           {
-            "prompt": "Which island is shared by Haiti and the Dominican Republic?",
+            "prompt": "London",
             "options": [
-              "Hispaniola",
-              "Jamaica",
-              "Cuba"
+              "Seine",
+              "Tiber",
+              "Thames"
+            ],
+            "answer": 2
+          },
+          {
+            "prompt": "Paris",
+            "options": [
+              "Seine",
+              "Tiber",
+              "Thames"
             ],
             "answer": 0
-          },
-          {
-            "prompt": "Which continent has no permanent civilian population native to it?",
-            "options": [
-              "Australia",
-              "Antarctica",
-              "Europe"
-            ],
-            "answer": 1
           }
         ]
       },
       {
         "id": "science",
-        "title": "Science",
+        "title": "States of matter",
+        "note": "Sort each material at room temperature and ordinary pressure.",
+        "format": "sort",
         "questions": [
           {
-            "prompt": "Which gas makes up the largest share of Earth's dry atmosphere?",
+            "prompt": "Table salt",
             "options": [
-              "Oxygen",
-              "Nitrogen",
-              "Carbon dioxide"
-            ],
-            "answer": 1
-          },
-          {
-            "prompt": "Which organelle is the main site of photosynthesis in plant cells?",
-            "options": [
-              "Chloroplast",
-              "Golgi apparatus",
-              "Lysosome"
+              "Solid",
+              "Liquid",
+              "Gas"
             ],
             "answer": 0
           },
           {
-            "prompt": "What is the chemical symbol for calcium?",
+            "prompt": "Olive oil",
             "options": [
-              "Cl",
-              "Ca",
-              "C"
+              "Solid",
+              "Liquid",
+              "Gas"
             ],
             "answer": 1
+          },
+          {
+            "prompt": "Helium",
+            "options": [
+              "Solid",
+              "Liquid",
+              "Gas"
+            ],
+            "answer": 2
           }
         ]
       }
@@ -955,131 +976,139 @@
     "categories": [
       {
         "id": "trivia",
-        "title": "Trivia",
+        "title": "Print and paper",
+        "note": "Choose the best answer for each clue.",
+        "format": "choice",
         "questions": [
           {
-            "prompt": "Which sport has a position called goalkeeper?",
+            "prompt": "Which tool is used to spread ink in relief printmaking?",
             "options": [
-              "Basketball",
-              "Soccer",
-              "Baseball"
+              "Palette knife",
+              "Brayer",
+              "Compass"
             ],
             "answer": 1
           },
           {
-            "prompt": "What is tofu traditionally made from?",
+            "prompt": "Which printmaking process can use a carved block of wood?",
             "options": [
-              "Wheat",
-              "Potatoes",
-              "Soybeans"
-            ],
-            "answer": 2
-          },
-          {
-            "prompt": "Which instrument family does a bassoon belong to?",
-            "options": [
-              "Woodwind",
-              "Brass",
-              "Strings"
+              "Woodcut",
+              "Etching",
+              "Lithography"
             ],
             "answer": 0
+          },
+          {
+            "prompt": "Which process uses water-based paint applied to wet plaster?",
+            "options": [
+              "Gouache",
+              "Encaustic",
+              "Fresco"
+            ],
+            "answer": 2
           }
         ]
       },
       {
         "id": "words",
-        "title": "Words",
+        "title": "Two meanings",
+        "note": "Write an answer for each clue.",
+        "format": "type",
         "questions": [
           {
-            "prompt": "What is the comparative form of “good”?",
+            "prompt": "A charge for crossing a bridge, or the sound of a large bell striking.",
             "options": [
-              "Better",
-              "Best",
-              "Goodest"
+              "(incorrect)",
+              "toll",
+              "(unanswered)"
+            ],
+            "answer": 1
+          },
+          {
+            "prompt": "A place to keep money, or the sloped edge of a river.",
+            "options": [
+              "bank",
+              "(incorrect)",
+              "(unanswered)"
             ],
             "answer": 0
           },
           {
-            "prompt": "Which word is a synonym for “repair”?",
+            "prompt": "The outer layer of a tree, or the sound a dog makes.",
             "options": [
-              "Misplace",
-              "Remove",
-              "Mend"
+              "(incorrect)",
+              "(unanswered)",
+              "bark"
             ],
             "answer": 2
-          },
-          {
-            "prompt": "Which word means a list of books or sources used in a work?",
-            "options": [
-              "Bibliography",
-              "Biography",
-              "Glossary"
-            ],
-            "answer": 0
           }
         ]
       },
       {
         "id": "geography",
-        "title": "Geography",
+        "title": "Mountain ranges",
+        "note": "Match each peak to its mountain range.",
+        "format": "match",
         "questions": [
           {
-            "prompt": "Which large island lies off the southeast coast of mainland Africa?",
+            "prompt": "Aconcagua",
             "options": [
-              "Madagascar",
-              "Crete",
-              "Sumatra"
+              "Andes",
+              "Alps",
+              "Himalayas"
             ],
             "answer": 0
           },
           {
-            "prompt": "What is the capital of Vietnam?",
+            "prompt": "Matterhorn",
             "options": [
-              "Da Nang",
-              "Ho Chi Minh City",
-              "Hanoi"
+              "Andes",
+              "Alps",
+              "Himalayas"
+            ],
+            "answer": 1
+          },
+          {
+            "prompt": "Mount Everest",
+            "options": [
+              "Andes",
+              "Alps",
+              "Himalayas"
             ],
             "answer": 2
-          },
-          {
-            "prompt": "Which country contains the Yucatán city of Mérida?",
-            "options": [
-              "Mexico",
-              "Belize",
-              "Honduras"
-            ],
-            "answer": 0
           }
         ]
       },
       {
         "id": "science",
-        "title": "Science",
+        "title": "Life on a pond",
+        "note": "Sort by broad animal group.",
+        "format": "sort",
         "questions": [
           {
-            "prompt": "What particle has a negative electric charge?",
+            "prompt": "Dragonfly",
             "options": [
-              "Electron",
-              "Proton",
-              "Neutron"
+              "Insect",
+              "Amphibian",
+              "Bird"
             ],
             "answer": 0
           },
           {
-            "prompt": "Which scale commonly expresses acidity or alkalinity?",
+            "prompt": "Newt",
             "options": [
-              "Celsius",
-              "Beaufort",
-              "pH"
+              "Insect",
+              "Amphibian",
+              "Bird"
             ],
-            "answer": 2
+            "answer": 1
           },
           {
-            "prompt": "Which part of a flower commonly produces pollen?",
+            "prompt": "Heron",
             "options": [
-              "Stigma",
-              "Sepal",
-              "Anther"
+              "Insect",
+              "Amphibian",
+              "Bird"
             ],
             "answer": 2
           }
@@ -1091,133 +1120,141 @@
     "categories": [
       {
         "id": "trivia",
-        "title": "Trivia",
+        "title": "Stage directions",
+        "note": "Choose the best answer for each clue.",
+        "format": "choice",
         "questions": [
           {
-            "prompt": "What do you cross over each other to tie a square knot?",
+            "prompt": "What is the written text of an opera called?",
             "options": [
-              "Two uncut hoops",
-              "Two rigid rods",
-              "Two rope ends"
+              "Overture",
+              "Chorus",
+              "Libretto"
             ],
             "answer": 2
           },
           {
-            "prompt": "Which sport uses a puck?",
+            "prompt": "Which term names the opening orchestral piece before an opera proper?",
             "options": [
-              "Lacrosse",
-              "Ice hockey",
-              "Field hockey"
+              "Solo",
+              "Overture",
+              "Da capo"
             ],
             "answer": 1
           },
           {
-            "prompt": "What shape has four equal straight sides and four right angles?",
+            "prompt": "Which figure directs an orchestra from a podium?",
             "options": [
-              "Pentagon",
-              "Regular hexagon",
-              "Square"
+              "Conductor",
+              "Dramaturg",
+              "Playwright"
             ],
-            "answer": 2
+            "answer": 0
           }
         ]
       },
       {
         "id": "words",
-        "title": "Words",
+        "title": "Missing middle",
+        "note": "Write an answer for each clue.",
+        "format": "type",
         "questions": [
           {
-            "prompt": "Which word contains a silent b?",
+            "prompt": "Type the word that follows moon and goes before house.",
             "options": [
-              "Debit",
-              "Detail",
-              "Debt"
+              "(incorrect)",
+              "(unanswered)",
+              "light"
             ],
             "answer": 2
           },
           {
-            "prompt": "Which word means “occurring once every two years”?",
+            "prompt": "Type the word that follows sail and goes before yard.",
             "options": [
-              "Centennial",
-              "Biennial",
-              "Annual"
+              "(incorrect)",
+              "boat",
+              "(unanswered)"
             ],
             "answer": 1
           },
           {
-            "prompt": "Which verb can mean to see something or to ignore it?",
+            "prompt": "Type the word that follows book and goes before down.",
             "options": [
-              "Outline",
-              "Overtake",
-              "Overlook"
+              "mark",
+              "(incorrect)",
+              "(unanswered)"
             ],
-            "answer": 2
+            "answer": 0
           }
         ]
       },
       {
         "id": "geography",
-        "title": "Geography",
+        "title": "Island neighbors",
+        "note": "Match the island to its country.",
+        "format": "match",
         "questions": [
           {
-            "prompt": "Which city is on the River Thames?",
+            "prompt": "Crete",
             "options": [
-              "Dublin",
-              "Edinburgh",
-              "London"
+              "Greece",
+              "Japan",
+              "Indonesia"
+            ],
+            "answer": 0
+          },
+          {
+            "prompt": "Hokkaido",
+            "options": [
+              "Greece",
+              "Japan",
+              "Indonesia"
+            ],
+            "answer": 1
+          },
+          {
+            "prompt": "Java",
+            "options": [
+              "Greece",
+              "Japan",
+              "Indonesia"
             ],
             "answer": 2
-          },
-          {
-            "prompt": "Which country contains the city of Jaipur?",
-            "options": [
-              "Nepal",
-              "India",
-              "Pakistan"
-            ],
-            "answer": 1
-          },
-          {
-            "prompt": "Which US state lies directly south of Georgia?",
-            "options": [
-              "Kentucky",
-              "Florida",
-              "Virginia"
-            ],
-            "answer": 1
           }
         ]
       },
       {
         "id": "science",
-        "title": "Science",
+        "title": "From seed to stem",
+        "note": "Sort each example by the part of the plant you normally eat.",
+        "format": "sort",
         "questions": [
           {
-            "prompt": "What is the phase change from a gas to a liquid called?",
+            "prompt": "Carrot",
             "options": [
-              "Vaporization",
-              "Melting",
-              "Condensation"
-            ],
-            "answer": 2
-          },
-          {
-            "prompt": "Which of these animals has an exoskeleton?",
-            "options": [
-              "Crab",
-              "Trout",
-              "Robin"
+              "Root",
+              "Stem",
+              "Leaf"
             ],
             "answer": 0
           },
           {
-            "prompt": "What kind of lens converges parallel light rays in air?",
+            "prompt": "Asparagus spear",
             "options": [
-              "Concave",
-              "Convex",
-              "Plane"
+              "Root",
+              "Stem",
+              "Leaf"
             ],
             "answer": 1
+          },
+          {
+            "prompt": "Lettuce",
+            "options": [
+              "Root",
+              "Stem",
+              "Leaf"
+            ],
+            "answer": 2
           }
         ]
       }
@@ -1227,32 +1264,34 @@
     "categories": [
       {
         "id": "trivia",
-        "title": "Trivia",
+        "title": "Kiln and wheel",
+        "note": "Choose the best answer for each clue.",
+        "format": "choice",
         "questions": [
           {
-            "prompt": "What is the wooden hammer in croquet called?",
+            "prompt": "What tool lets a potter shape a rotating lump of clay?",
             "options": [
-              "Paddle",
-              "Mallet",
-              "Cue"
-            ],
-            "answer": 1
-          },
-          {
-            "prompt": "What plant gives classic Earl Grey tea its characteristic added aroma?",
-            "options": [
-              "Bergamot",
-              "Jasmine",
-              "Mint"
+              "Potter’s wheel",
+              "Brayer",
+              "Loom"
             ],
             "answer": 0
           },
           {
-            "prompt": "Which numbered ball is black in standard eight-ball pool?",
+            "prompt": "What type of coating creates a glassy finish after firing?",
             "options": [
-              "7",
-              "8",
-              "9"
+              "Slip paper",
+              "Oil paint",
+              "Glaze"
+            ],
+            "answer": 2
+          },
+          {
+            "prompt": "What does a kiln use to fire ceramics?",
+            "options": [
+              "Pressure alone",
+              "Heat",
+              "Sound"
             ],
             "answer": 1
           }
@@ -1260,100 +1299,106 @@
       },
       {
         "id": "words",
-        "title": "Words",
+        "title": "Add a letter",
+        "note": "Write an answer for each clue.",
+        "format": "type",
         "questions": [
           {
-            "prompt": "Which word names a word with the opposite meaning of another word?",
+            "prompt": "Add one letter to INK to make a word meaning “to go below water.”",
             "options": [
-              "Homophone",
-              "Antonym",
-              "Pronoun"
+              "sink",
+              "(incorrect)",
+              "(unanswered)"
+            ],
+            "answer": 0
+          },
+          {
+            "prompt": "Add one letter to EAR to make something a tree produces.",
+            "options": [
+              "(incorrect)",
+              "(unanswered)",
+              "pear"
+            ],
+            "answer": 2
+          },
+          {
+            "prompt": "Add one letter to LATE to make something you eat off.",
+            "options": [
+              "(incorrect)",
+              "plate",
+              "(unanswered)"
             ],
             "answer": 1
-          },
-          {
-            "prompt": "Which word means “to put off until later”?",
-            "options": [
-              "Postpone",
-              "Precede",
-              "Prevail"
-            ],
-            "answer": 0
-          },
-          {
-            "prompt": "Which word has the same sound as “sole”?",
-            "options": [
-              "Soul",
-              "Soil",
-              "Seal"
-            ],
-            "answer": 0
           }
         ]
       },
       {
         "id": "geography",
-        "title": "Geography",
+        "title": "Capital initials",
+        "note": "Match each capital to its country.",
+        "format": "match",
         "questions": [
           {
-            "prompt": "Which desert spans parts of Mongolia and China?",
+            "prompt": "Prague",
             "options": [
-              "Sahara",
-              "Gobi",
-              "Kalahari"
-            ],
-            "answer": 1
-          },
-          {
-            "prompt": "Which city is the capital of Argentina?",
-            "options": [
-              "Montevideo",
-              "Santiago",
-              "Buenos Aires"
+              "Austria",
+              "Hungary",
+              "Czechia"
             ],
             "answer": 2
           },
           {
-            "prompt": "Which Italian island lies immediately south of the Strait of Messina?",
+            "prompt": "Vienna",
             "options": [
-              "Sicily",
-              "Sardinia",
-              "Capri"
+              "Austria",
+              "Hungary",
+              "Czechia"
             ],
             "answer": 0
+          },
+          {
+            "prompt": "Budapest",
+            "options": [
+              "Austria",
+              "Hungary",
+              "Czechia"
+            ],
+            "answer": 1
           }
         ]
       },
       {
         "id": "science",
-        "title": "Science",
+        "title": "Sky objects",
+        "note": "Sort each object by what it is.",
+        "format": "sort",
         "questions": [
           {
-            "prompt": "What is the main component of the Sun by mass?",
+            "prompt": "Titan",
             "options": [
-              "Hydrogen",
-              "Oxygen",
-              "Iron"
+              "Planet",
+              "Natural satellite",
+              "Star"
+            ],
+            "answer": 1
+          },
+          {
+            "prompt": "Venus",
+            "options": [
+              "Planet",
+              "Natural satellite",
+              "Star"
             ],
             "answer": 0
           },
           {
-            "prompt": "What unit measures frequency?",
+            "prompt": "Sirius",
             "options": [
-              "Watt",
-              "Pascal",
-              "Hertz"
+              "Planet",
+              "Natural satellite",
+              "Star"
             ],
             "answer": 2
-          },
-          {
-            "prompt": "Which sense relies on the retina?",
-            "options": [
-              "Sight",
-              "Taste",
-              "Touch"
-            ],
-            "answer": 0
           }
         ]
       }
@@ -1363,32 +1408,34 @@
     "categories": [
       {
         "id": "trivia",
-        "title": "Trivia",
+        "title": "Wood, brass, strings",
+        "note": "Choose the best answer for each clue.",
+        "format": "choice",
         "questions": [
           {
-            "prompt": "What art form uses small colored pieces called tesserae?",
+            "prompt": "What is used to draw sound out of a cello in a sustained note?",
             "options": [
-              "Mosaic",
-              "Watercolor",
-              "Etching"
+              "A mallet",
+              "A bow",
+              "A plectrum"
+            ],
+            "answer": 1
+          },
+          {
+            "prompt": "Which instrument belongs to the double-reed family?",
+            "options": [
+              "Bassoon",
+              "Clarinet",
+              "Flute"
             ],
             "answer": 0
           },
           {
-            "prompt": "Which kitchen tool measures the temperature inside a loaf of bread?",
+            "prompt": "Which item sits on a violin's strings to transmit vibration into the body?",
             "options": [
-              "Kitchen timer",
-              "Measuring cup",
-              "Probe thermometer"
-            ],
-            "answer": 2
-          },
-          {
-            "prompt": "In a standard major scale, what is the interval from the first to the eighth note?",
-            "options": [
-              "Perfect fifth",
-              "Major third",
-              "Octave"
+              "Scroll",
+              "Peg",
+              "Bridge"
             ],
             "answer": 2
           }
@@ -1396,32 +1443,34 @@
       },
       {
         "id": "words",
-        "title": "Words",
+        "title": "Drop the first letter",
+        "note": "Write an answer for each clue.",
+        "format": "type",
         "questions": [
           {
-            "prompt": "Which word means “a written account of one's own life”?",
+            "prompt": "Remove the first letter of SCARF, then rearrange the remaining letters to name a small group of vehicles (plural).",
             "options": [
-              "Autobiography",
-              "Anthology",
-              "Atlas"
-            ],
-            "answer": 0
-          },
-          {
-            "prompt": "Which word is a palindrome?",
-            "options": [
-              "River",
-              "Radar",
-              "Racer"
+              "(incorrect)",
+              "cars",
+              "(unanswered)"
             ],
             "answer": 1
           },
           {
-            "prompt": "Which is the correct spelling for a table of dates?",
+            "prompt": "Remove the first letter of BLEND to get a word meaning loan.",
             "options": [
-              "Calender",
-              "Calandar",
-              "Calendar"
+              "lend",
+              "(incorrect)",
+              "(unanswered)"
+            ],
+            "answer": 0
+          },
+          {
+            "prompt": "Remove the first letter of STONE, then rearrange the remaining letters to name a musical sound.",
+            "options": [
+              "(incorrect)",
+              "(unanswered)",
+              "note"
             ],
             "answer": 2
           }
@@ -1429,32 +1478,34 @@
       },
       {
         "id": "geography",
-        "title": "Geography",
+        "title": "Border crossings",
+        "note": "Match each city to the country it is in.",
+        "format": "match",
         "questions": [
           {
-            "prompt": "Which country surrounds Lesotho?",
+            "prompt": "Bilbao",
             "options": [
-              "Botswana",
-              "Mozambique",
-              "South Africa"
+              "Spain",
+              "Portugal",
+              "France"
             ],
-            "answer": 2
+            "answer": 0
           },
           {
-            "prompt": "Which city lies at the southern end of Lake Michigan?",
+            "prompt": "Braga",
             "options": [
-              "Cleveland",
-              "Chicago",
-              "Detroit"
+              "Spain",
+              "Portugal",
+              "France"
             ],
             "answer": 1
           },
           {
-            "prompt": "Which ocean lies between Africa and Australia?",
+            "prompt": "Bordeaux",
             "options": [
-              "Atlantic",
-              "Arctic",
-              "Indian"
+              "Spain",
+              "Portugal",
+              "France"
             ],
             "answer": 2
           }
@@ -1462,32 +1513,34 @@
       },
       {
         "id": "science",
-        "title": "Science",
+        "title": "Rock records",
+        "note": "Sort by how the rock forms.",
+        "format": "sort",
         "questions": [
           {
-            "prompt": "What is frozen water called in everyday usage?",
+            "prompt": "Basalt",
             "options": [
-              "Steam",
-              "Vapor",
-              "Ice"
+              "Igneous",
+              "Sedimentary",
+              "Metamorphic"
             ],
-            "answer": 2
+            "answer": 0
           },
           {
-            "prompt": "Which organ removes waste from blood to form urine?",
+            "prompt": "Sandstone",
             "options": [
-              "Stomach",
-              "Kidney",
-              "Pancreas"
+              "Igneous",
+              "Sedimentary",
+              "Metamorphic"
             ],
             "answer": 1
           },
           {
-            "prompt": "What is the chemical formula of ordinary table salt?",
+            "prompt": "Marble",
             "options": [
-              "NaOH",
-              "CO₂",
-              "NaCl"
+              "Igneous",
+              "Sedimentary",
+              "Metamorphic"
             ],
             "answer": 2
           }
@@ -1499,133 +1552,141 @@
     "categories": [
       {
         "id": "trivia",
-        "title": "Trivia",
+        "title": "Stitch by stitch",
+        "note": "Choose the best answer for each clue.",
+        "format": "choice",
         "questions": [
           {
-            "prompt": "In baseball, how many outs end a team's half-inning?",
+            "prompt": "What does a thimble primarily protect?",
             "options": [
-              "Two",
-              "Four",
-              "Three"
+              "A bobbin",
+              "A knot",
+              "A fingertip"
             ],
             "answer": 2
           },
           {
-            "prompt": "Which seed is the main ingredient in tahini?",
+            "prompt": "Which object is used to unpick stitches?",
             "options": [
-              "Sesame",
-              "Sunflower",
-              "Pumpkin"
-            ],
-            "answer": 0
-          },
-          {
-            "prompt": "What instrument has a bow and is usually held upright between a seated player's knees?",
-            "options": [
-              "Violin",
-              "Cello",
-              "Mandolin"
+              "Tape measure",
+              "Seam ripper",
+              "Embroidery hoop"
             ],
             "answer": 1
+          },
+          {
+            "prompt": "What is the spinning spool that supplies lower thread in many sewing machines?",
+            "options": [
+              "Bobbin",
+              "Presser foot",
+              "Feed dog"
+            ],
+            "answer": 0
           }
         ]
       },
       {
         "id": "words",
-        "title": "Words",
+        "title": "Read it backward",
+        "note": "Write an answer for each clue.",
+        "format": "type",
         "questions": [
           {
-            "prompt": "Which word can mean both a bird and the act of lowering your head?",
+            "prompt": "Reverse LIVE to make a word meaning wicked.",
             "options": [
-              "Goose",
-              "Duck",
-              "Swan"
+              "(incorrect)",
+              "(unanswered)",
+              "evil"
+            ],
+            "answer": 2
+          },
+          {
+            "prompt": "Reverse STOP to get the plural of a kitchen container.",
+            "options": [
+              "(incorrect)",
+              "pots",
+              "(unanswered)"
             ],
             "answer": 1
           },
           {
-            "prompt": "What does the prefix “sub‑” usually mean?",
+            "prompt": "Reverse DRAW to get a hospital division.",
             "options": [
-              "Under",
-              "Above",
-              "Across"
+              "ward",
+              "(incorrect)",
+              "(unanswered)"
             ],
             "answer": 0
-          },
-          {
-            "prompt": "Which word names a word or phrase made by rearranging another's letters?",
-            "options": [
-              "Anecdote",
-              "Anagram",
-              "Analogy"
-            ],
-            "answer": 1
           }
         ]
       },
       {
         "id": "geography",
-        "title": "Geography",
+        "title": "South American cities",
+        "note": "Match each city to its country.",
+        "format": "match",
         "questions": [
           {
-            "prompt": "What is the capital of South Korea?",
+            "prompt": "Valparaíso",
             "options": [
-              "Busan",
-              "Seoul",
-              "Incheon"
+              "Argentina",
+              "Chile",
+              "Colombia"
             ],
             "answer": 1
           },
           {
-            "prompt": "Which European country has Porto and Braga?",
+            "prompt": "Córdoba",
             "options": [
-              "Portugal",
-              "Belgium",
-              "Ireland"
+              "Argentina",
+              "Chile",
+              "Colombia"
             ],
             "answer": 0
           },
           {
-            "prompt": "The Canary Islands belong to which country?",
+            "prompt": "Medellín",
             "options": [
-              "Portugal",
-              "Spain",
-              "Morocco"
+              "Argentina",
+              "Chile",
+              "Colombia"
             ],
-            "answer": 1
+            "answer": 2
           }
         ]
       },
       {
         "id": "science",
-        "title": "Science",
+        "title": "Change of phase",
+        "note": "Sort by the phase change described.",
+        "format": "sort",
         "questions": [
           {
-            "prompt": "Which layer of Earth is liquid and surrounds the solid inner core?",
+            "prompt": "Water in an ice tray turning solid",
             "options": [
-              "Crust",
-              "Outer core",
-              "Upper mantle"
+              "Melting",
+              "Freezing",
+              "Condensation"
             ],
             "answer": 1
           },
           {
-            "prompt": "What kind of energy does a moving object have by virtue of its motion?",
+            "prompt": "Butter becoming liquid in a hot pan",
             "options": [
-              "Kinetic",
-              "Chemical",
-              "Elastic"
+              "Melting",
+              "Freezing",
+              "Condensation"
             ],
             "answer": 0
           },
           {
-            "prompt": "Which group of animals includes salamanders?",
+            "prompt": "Water droplets forming on the outside of a cold glass",
             "options": [
-              "Amphibians",
-              "Reptiles",
-              "Mammals"
+              "Melting",
+              "Freezing",
+              "Condensation"
             ],
-            "answer": 0
+            "answer": 2
           }
         ]
       }
@@ -1635,98 +1696,104 @@
     "categories": [
       {
         "id": "trivia",
-        "title": "Trivia",
+        "title": "Shapes in a gallery",
+        "note": "Choose the best answer for each clue.",
+        "format": "choice",
         "questions": [
           {
-            "prompt": "Which liquid is used to make a traditional sourdough starter with flour?",
+            "prompt": "Which branch of art uses stones or tiles fitted together to make images?",
             "options": [
-              "Water",
-              "Vinegar",
-              "Olive oil"
+              "Mosaic",
+              "Watercolor",
+              "Calligraphy"
             ],
             "answer": 0
           },
           {
-            "prompt": "In standard Sudoku, how many digits go in each 3 by 3 box?",
+            "prompt": "Which medium traditionally uses powdered pigment bound with egg yolk?",
             "options": [
-              "Three",
-              "Six",
-              "Nine"
+              "Graphite",
+              "Charcoal",
+              "Tempera"
             ],
             "answer": 2
           },
           {
-            "prompt": "Which number is on the opposite face from one on a standard six-sided die?",
+            "prompt": "What is a painting made on a ceiling or wall called in general?",
             "options": [
-              "Six",
-              "Four",
-              "Five"
+              "Miniature",
+              "Mural",
+              "Collage"
             ],
-            "answer": 0
+            "answer": 1
           }
         ]
       },
       {
         "id": "words",
-        "title": "Words",
+        "title": "Match the rhyme",
+        "note": "Write an answer for each clue.",
+        "format": "type",
         "questions": [
           {
-            "prompt": "Which word means “no longer in general use”?",
+            "prompt": "The part of a plant that draws up water and rhymes with BOOT.",
             "options": [
-              "Obsolete",
-              "Obscure",
-              "Obvious"
+              "root",
+              "(incorrect)",
+              "(unanswered)"
             ],
             "answer": 0
           },
           {
-            "prompt": "Which word is spelled with a silent final b?",
+            "prompt": "What falls from a deciduous tree in autumn and rhymes with BEEF?",
             "options": [
-              "Cramp",
-              "Critic",
-              "Crumb"
+              "(incorrect)",
+              "(unanswered)",
+              "leaf"
             ],
             "answer": 2
           },
           {
-            "prompt": "Which plural keeps the same form as its singular?",
+            "prompt": "The protective outer layer of a tree that rhymes with DARK.",
             "options": [
-              "Sheep",
-              "Goose",
-              "Mouse"
+              "(incorrect)",
+              "bark",
+              "(unanswered)"
             ],
-            "answer": 0
+            "answer": 1
           }
         ]
       },
       {
         "id": "geography",
-        "title": "Geography",
+        "title": "Northern ports",
+        "note": "Match each city to its country.",
+        "format": "match",
         "questions": [
           {
-            "prompt": "Which of these African countries has a Mediterranean coastline?",
+            "prompt": "Bergen",
             "options": [
-              "Egypt",
-              "Ethiopia",
-              "Niger"
+              "Norway",
+              "Finland",
+              "Denmark"
             ],
             "answer": 0
           },
           {
-            "prompt": "Which river crosses Rome?",
+            "prompt": "Turku",
             "options": [
-              "Arno",
-              "Po",
-              "Tiber"
+              "Norway",
+              "Finland",
+              "Denmark"
             ],
-            "answer": 2
+            "answer": 1
           },
           {
-            "prompt": "Which continent contains the Namib Desert?",
+            "prompt": "Aarhus",
             "options": [
-              "Asia",
-              "South America",
-              "Africa"
+              "Norway",
+              "Finland",
+              "Denmark"
             ],
             "answer": 2
           }
@@ -1734,32 +1801,34 @@
       },
       {
         "id": "science",
-        "title": "Science",
+        "title": "Ocean life",
+        "note": "Sort each animal by group.",
+        "format": "sort",
         "questions": [
           {
-            "prompt": "Which instrument uses a magnetic needle to indicate direction?",
+            "prompt": "Orca",
             "options": [
-              "Compass",
-              "Barometer",
-              "Thermometer"
+              "Mammal",
+              "Fish",
+              "Mollusk"
             ],
             "answer": 0
           },
           {
-            "prompt": "What is the process that divides a eukaryotic nucleus into two genetically similar nuclei?",
+            "prompt": "Mackerel",
             "options": [
-              "Diffusion",
-              "Mitosis",
-              "Fermentation"
+              "Mammal",
+              "Fish",
+              "Mollusk"
             ],
             "answer": 1
           },
           {
-            "prompt": "Which part of a plant primarily takes up water from soil?",
+            "prompt": "Squid",
             "options": [
-              "Petals",
-              "Seeds",
-              "Roots"
+              "Mammal",
+              "Fish",
+              "Mollusk"
             ],
             "answer": 2
           }
@@ -1771,32 +1840,34 @@
     "categories": [
       {
         "id": "trivia",
-        "title": "Trivia",
+        "title": "The darkroom",
+        "note": "Choose the best answer for each clue.",
+        "format": "choice",
         "questions": [
           {
-            "prompt": "What is the name for the raised dots used to read Braille?",
+            "prompt": "What part of a camera opens and closes to control exposure time?",
             "options": [
-              "Morse dashes",
-              "Printed syllables",
-              "Cells of dots"
-            ],
-            "answer": 2
-          },
-          {
-            "prompt": "Which sport calls a score of zero “love”?",
-            "options": [
-              "Baseball",
-              "Tennis",
-              "Basketball"
+              "Tripod",
+              "Shutter",
+              "Viewfinder"
             ],
             "answer": 1
           },
           {
-            "prompt": "What tool is commonly used to check if a shelf is horizontal?",
+            "prompt": "Which part of a lens determines the opening through which light enters?",
             "options": [
-              "Caliper",
-              "Protractor",
-              "Spirit level"
+              "Aperture",
+              "Lens cap",
+              "Flash shoe"
+            ],
+            "answer": 0
+          },
+          {
+            "prompt": "Which term names the depth between the nearest and farthest acceptably sharp points?",
+            "options": [
+              "White balance",
+              "Focal length",
+              "Depth of field"
             ],
             "answer": 2
           }
@@ -1804,32 +1875,322 @@
       },
       {
         "id": "words",
-        "title": "Words",
+        "title": "Opposite numbers",
+        "note": "Write an answer for each clue.",
+        "format": "type",
         "questions": [
           {
-            "prompt": "What does “ambidextrous” describe?",
+            "prompt": "Type the opposite of even when describing an integer.",
             "options": [
-              "Able to speak two languages",
-              "Able to hear very quiet sounds",
-              "Able to use either hand skillfully"
-            ],
-            "answer": 2
-          },
-          {
-            "prompt": "Which word can name both a written message and a character of the alphabet?",
-            "options": [
-              "Sentence",
-              "Letter",
-              "Paragraph"
+              "(incorrect)",
+              "odd",
+              "(unanswered)"
             ],
             "answer": 1
           },
           {
-            "prompt": "Which pair of words are homophones?",
+            "prompt": "Type the opposite of positive when describing a number below zero.",
             "options": [
-              "Floor and flower",
-              "Flour and flower",
-              "Flow and flour"
+              "negative",
+              "(incorrect)",
+              "(unanswered)"
+            ],
+            "answer": 0
+          },
+          {
+            "prompt": "Type the opposite of ascending when sorting numbers from largest to smallest.",
+            "options": [
+              "(incorrect)",
+              "(unanswered)",
+              "descending"
+            ],
+            "answer": 2
+          }
+        ]
+      },
+      {
+        "id": "geography",
+        "title": "Landlocked capitals",
+        "note": "Match each capital to its country.",
+        "format": "match",
+        "questions": [
+          {
+            "prompt": "Bern",
+            "options": [
+              "Switzerland",
+              "Bolivia",
+              "Nepal"
+            ],
+            "answer": 0
+          },
+          {
+            "prompt": "Sucre",
+            "options": [
+              "Switzerland",
+              "Bolivia",
+              "Nepal"
+            ],
+            "answer": 1
+          },
+          {
+            "prompt": "Kathmandu",
+            "options": [
+              "Switzerland",
+              "Bolivia",
+              "Nepal"
+            ],
+            "answer": 2
+          }
+        ]
+      },
+      {
+        "id": "science",
+        "title": "Tiny particles",
+        "note": "Sort the subatomic particles by electric charge.",
+        "format": "sort",
+        "questions": [
+          {
+            "prompt": "Proton",
+            "options": [
+              "Positive",
+              "Neutral",
+              "Negative"
+            ],
+            "answer": 0
+          },
+          {
+            "prompt": "Neutron",
+            "options": [
+              "Positive",
+              "Neutral",
+              "Negative"
+            ],
+            "answer": 1
+          },
+          {
+            "prompt": "Electron",
+            "options": [
+              "Positive",
+              "Neutral",
+              "Negative"
+            ],
+            "answer": 2
+          }
+        ]
+      }
+    ]
+  },
+  "2026-12-05": {
+    "categories": [
+      {
+        "id": "trivia",
+        "title": "Book anatomy",
+        "note": "Choose the best answer for each clue.",
+        "format": "choice",
+        "questions": [
+          {
+            "prompt": "Which part of a bound book is visible when it sits upright and closed on a shelf?",
+            "options": [
+              "Endpaper",
+              "Fore edge",
+              "Spine"
+            ],
+            "answer": 2
+          },
+          {
+            "prompt": "What is a short quotation at the beginning of a book or chapter called?",
+            "options": [
+              "Index",
+              "Epigraph",
+              "Afterword"
+            ],
+            "answer": 1
+          },
+          {
+            "prompt": "What alphabetized section helps you find where topics are discussed?",
+            "options": [
+              "Index",
+              "Dedication",
+              "Preface"
+            ],
+            "answer": 0
+          }
+        ]
+      },
+      {
+        "id": "words",
+        "title": "Hidden foods",
+        "note": "Write an answer for each clue.",
+        "format": "type",
+        "questions": [
+          {
+            "prompt": "Type the grain hidden inside PRICELESS.",
+            "options": [
+              "(incorrect)",
+              "(unanswered)",
+              "rice"
+            ],
+            "answer": 2
+          },
+          {
+            "prompt": "Type the drink hidden inside STEAK.",
+            "options": [
+              "(incorrect)",
+              "tea",
+              "(unanswered)"
+            ],
+            "answer": 1
+          },
+          {
+            "prompt": "Type the fruit hidden inside PINEAPPLE that starts with A.",
+            "options": [
+              "apple",
+              "(incorrect)",
+              "(unanswered)"
+            ],
+            "answer": 0
+          }
+        ]
+      },
+      {
+        "id": "geography",
+        "title": "Big lakes",
+        "note": "Match each lake to a place it borders.",
+        "format": "match",
+        "questions": [
+          {
+            "prompt": "Loch Ness",
+            "options": [
+              "Scotland",
+              "Switzerland",
+              "Canada"
+            ],
+            "answer": 0
+          },
+          {
+            "prompt": "Lake Geneva",
+            "options": [
+              "Scotland",
+              "Switzerland",
+              "Canada"
+            ],
+            "answer": 1
+          },
+          {
+            "prompt": "Great Slave Lake",
+            "options": [
+              "Scotland",
+              "Switzerland",
+              "Canada"
+            ],
+            "answer": 2
+          }
+        ]
+      },
+      {
+        "id": "science",
+        "title": "Moving heat",
+        "note": "Sort by the main way heat moves in each example.",
+        "format": "sort",
+        "questions": [
+          {
+            "prompt": "A metal spoon warming from the end dipped in hot soup",
+            "options": [
+              "Conduction",
+              "Convection",
+              "Radiation"
+            ],
+            "answer": 0
+          },
+          {
+            "prompt": "Warm air rising over a heater",
+            "options": [
+              "Conduction",
+              "Convection",
+              "Radiation"
+            ],
+            "answer": 1
+          },
+          {
+            "prompt": "Feeling the Sun warm your face",
+            "options": [
+              "Conduction",
+              "Convection",
+              "Radiation"
+            ],
+            "answer": 2
+          }
+        ]
+      }
+    ]
+  },
+  "2026-12-06": {
+    "categories": [
+      {
+        "id": "trivia",
+        "title": "Music on the page",
+        "note": "Choose the best answer for each clue.",
+        "format": "choice",
+        "questions": [
+          {
+            "prompt": "Which mark raises a written pitch by a semitone?",
+            "options": [
+              "Sharp",
+              "Flat",
+              "Fermata"
+            ],
+            "answer": 0
+          },
+          {
+            "prompt": "What is the name for a symbol that represents silence for a specified duration?",
+            "options": [
+              "Clef",
+              "Tie",
+              "Rest"
+            ],
+            "answer": 2
+          },
+          {
+            "prompt": "Which symbol usually extends how long a note is held at the performer’s discretion?",
+            "options": [
+              "Accidental",
+              "Fermata",
+              "Bar line"
+            ],
+            "answer": 1
+          }
+        ]
+      },
+      {
+        "id": "words",
+        "title": "First and last",
+        "note": "Write an answer for each clue.",
+        "format": "type",
+        "questions": [
+          {
+            "prompt": "Type a three-letter word that means a flying mammal and begins and ends with different consonants; it starts with B.",
+            "options": [
+              "bat",
+              "(incorrect)",
+              "(unanswered)"
+            ],
+            "answer": 0
+          },
+          {
+            "prompt": "Type a four-letter name for a fizzy drink, starting with S and ending with A.",
+            "options": [
+              "(incorrect)",
+              "(unanswered)",
+              "soda"
+            ],
+            "answer": 2
+          },
+          {
+            "prompt": "Type the four-letter word for the part of the face used to smell, starting with N.",
+            "options": [
+              "(incorrect)",
+              "nose",
+              "(unanswered)"
             ],
             "answer": 1
           }
@@ -1837,67 +2198,71 @@
       },
       {
         "id": "geography",
-        "title": "Geography",
+        "title": "City skylines",
+        "note": "Match each landmark to its city.",
+        "format": "match",
         "questions": [
           {
-            "prompt": "Which country has Oslo as its capital?",
+            "prompt": "Space Needle",
             "options": [
-              "Denmark",
-              "Sweden",
-              "Norway"
-            ],
-            "answer": 2
-          },
-          {
-            "prompt": "Which US state contains the city of Santa Fe?",
-            "options": [
-              "New Mexico",
-              "Arizona",
-              "Colorado"
+              "Seattle",
+              "Toronto",
+              "Sydney"
             ],
             "answer": 0
           },
           {
-            "prompt": "Which sea lies between Italy and Croatia?",
+            "prompt": "CN Tower",
             "options": [
-              "Black Sea",
-              "Adriatic Sea",
-              "North Sea"
+              "Seattle",
+              "Toronto",
+              "Sydney"
             ],
             "answer": 1
+          },
+          {
+            "prompt": "Sydney Opera House",
+            "options": [
+              "Seattle",
+              "Toronto",
+              "Sydney"
+            ],
+            "answer": 2
           }
         ]
       },
       {
         "id": "science",
-        "title": "Science",
+        "title": "The living kingdoms",
+        "note": "Sort each example by broad biological group.",
+        "format": "sort",
         "questions": [
           {
-            "prompt": "Which element is represented by the symbol Fe?",
+            "prompt": "Fern",
             "options": [
-              "Fluorine",
-              "Iron",
-              "Francium"
-            ],
-            "answer": 1
-          },
-          {
-            "prompt": "Which unit is used to express force?",
-            "options": [
-              "Newton",
-              "Joule",
-              "Kelvin"
+              "Plant",
+              "Animal",
+              "Fungus"
             ],
             "answer": 0
           },
           {
-            "prompt": "Which blood vessels carry blood away from the heart?",
+            "prompt": "Sponge",
             "options": [
-              "Veins",
-              "Arteries",
-              "Venules"
+              "Plant",
+              "Animal",
+              "Fungus"
             ],
             "answer": 1
+          },
+          {
+            "prompt": "Morel",
+            "options": [
+              "Plant",
+              "Animal",
+              "Fungus"
+            ],
+            "answer": 2
           }
         ]
       }

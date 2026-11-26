@@ -1,19 +1,21 @@
 /** Browser storage for Orbs daily picks and independent archive completions. */
 
-import { ORBS_CATEGORY_SIZE, ORBS_MAX, type OrbsCategoryId } from '@/lib/orbs'
+import { ORBS_CATEGORY_SIZE, ORBS_MAX, type OrbsCategoryId, type OrbsPick } from '@/lib/orbs'
 
 /** Checks a stored list of picks before resuming it. */
-export function validOrbsPicks(picks: unknown): picks is number[] {
+export function validOrbsPicks(picks: unknown): picks is OrbsPick[] {
   return (
     Array.isArray(picks) && picks.length <= ORBS_MAX && picks.every((pick) => pick === 0 || pick === 1 || pick === 2)
   )
 }
 
 /** Reads a daily run without failing when storage is unavailable. */
-export function readOrbsPicks(key: string): number[] {
+export function readOrbsPicks(key: string): (OrbsPick | null)[] {
   try {
     const run = JSON.parse(localStorage.getItem(key) ?? 'null')
-    if (validOrbsPicks(run?.picks)) return run.picks
+    if (!Array.isArray(run?.picks) || run.picks.length > ORBS_MAX) return []
+    const picks: unknown[] = run.picks
+    if (validOrbsPicks(picks.filter((pick) => pick !== null))) return picks as (OrbsPick | null)[]
   } catch {}
   return []
 }

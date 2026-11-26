@@ -7,7 +7,7 @@
   --g-krillion: #0e7490;
   --g-anthropeum: #9f1239;
   --g-fivefold: #4d7c0f;
-  --g-orbs: #397067;
+  --g-orbs: #344986;
   --game-color: #111318;
   --ink-bg: #fff;
   --ink-paper: #f5f6f8;
@@ -59,6 +59,8 @@
 }
 [data-game-theme='orbs'] {
   --game-color: var(--g-orbs);
+  --orbs-strip: #26345f;
+  --orbs-strip-text: #f2f5ff;
 }
 [data-game-theme='fivefold'] {
   --game-color: var(--g-fivefold);

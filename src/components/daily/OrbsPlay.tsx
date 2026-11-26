@@ -1,128 +1,264 @@
 'use client'
 
-/** Plays a ranked Orbs day or one unranked archive category. */
+/** Plays four independent Orbs puzzles, or one unranked archive round. */
 
-import { useEffect, useRef, useState } from 'react'
-import { runKey } from '@/lib/daily/saved-run'
-import { ORBS_MAX, scoreOrbs, type OrbsCategoryId, type OrbsPuzzle } from '@/lib/orbs'
-import { readOrbsPicks, saveArchiveRound } from '@/lib/orbs-storage'
+import { useState } from 'react'
+import { orbsRunKey } from '@/lib/daily/saved-run'
+import {
+  ORBS_CATEGORIES,
+  ORBS_CATEGORY_SIZE,
+  ORBS_FORMATS,
+  ORBS_MAX,
+  orbsWrittenPick,
+  scoreOrbs,
+  type OrbsCategory,
+  type OrbsCategoryId,
+  type OrbsPick,
+  type OrbsPuzzle,
+  type OrbsQuestion,
+} from '@/lib/orbs'
+import { readOrbsPicks, saveArchiveRound, validOrbsPicks } from '@/lib/orbs-storage'
 import { isPracticeResult, logResult, markPracticeIfFuture } from '@/lib/results'
 
 type Props = { puzzle: OrbsPuzzle; dailyDay: string } & (
   { mode?: 'daily'; category?: never } | { mode: 'archive'; category: OrbsCategoryId }
 )
 
-/** Shows one question at a time and locks each pick before revealing the answer. */
+const categoryColor: Record<OrbsCategoryId, string> = {
+  trivia: 'bg-rose-100 text-rose-900',
+  words: 'bg-violet-100 text-violet-900',
+  geography: 'bg-sky-100 text-sky-900',
+  science: 'bg-emerald-100 text-emerald-900',
+}
+const card = 'rounded-2xl border border-[var(--ink-border)] bg-[var(--ink-bg)]'
+const optionStyle =
+  'min-h-10 rounded-lg border border-[var(--ink-border)] bg-[var(--ink-bg)] px-3 py-1.5 text-left text-sm font-medium hover:border-[var(--ink-accent)] focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] disabled:opacity-45'
+
+/** Renders the appropriate input for a single clue and announces the answer when locked. */
+function Clue({
+  question,
+  format,
+  id,
+  pick,
+  used,
+  answer,
+}: {
+  question: OrbsQuestion
+  format: NonNullable<OrbsCategory['format']>
+  id: string
+  pick: OrbsPick | null
+  used: (OrbsPick | null)[]
+  answer: (choice: OrbsPick) => void
+}) {
+  const [draft, setDraft] = useState('')
+  const [match, setMatch] = useState('')
+  const locked = pick !== null
+  return (
+    <div className="min-w-0 space-y-2 rounded-xl border border-[var(--ink-border)] bg-[var(--ink-paper)] p-3 sm:p-4">
+      <h3 id={id} className="font-semibold">
+        {question.prompt}
+      </h3>
+      <div aria-live="polite" className="text-sm">
+        {locked && (
+          <p className={pick === question.answer ? 'text-emerald-800' : 'text-rose-800'}>
+            {pick === question.answer ? 'Correct · ' : 'Answer · '}
+            {question.options[question.answer]}
+          </p>
+        )}
+      </div>
+      {!locked && format === 'type' && (
+        <form
+          className="flex flex-wrap gap-2"
+          onSubmit={(event) => {
+            event.preventDefault()
+            if (draft.trim()) answer(orbsWrittenPick(question, draft))
+          }}
+        >
+          <input
+            aria-labelledby={id}
+            autoComplete="off"
+            maxLength={100}
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            placeholder="Type your answer"
+            className={`${optionStyle} min-w-0 flex-1`}
+          />
+          <button type="submit" className={optionStyle} disabled={!draft.trim()}>
+            Check
+          </button>
+        </form>
+      )}
+      {!locked && format === 'match' && (
+        <form
+          className="flex flex-wrap gap-2"
+          onSubmit={(event) => {
+            event.preventDefault()
+            if (match !== '' && !used.includes(Number(match) as OrbsPick)) answer(Number(match) as OrbsPick)
+          }}
+        >
+          <select
+            aria-labelledby={id}
+            value={match}
+            onChange={(event) => setMatch(event.target.value)}
+            className={`${optionStyle} min-w-0 flex-1`}
+          >
+            <option value="">Choose a match</option>
+            {question.options.map((label, option) => (
+              <option value={option} key={label} disabled={used.includes(option as OrbsPick)}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            className={optionStyle}
+            disabled={match === '' || used.includes(Number(match) as OrbsPick)}
+          >
+            Match
+          </button>
+        </form>
+      )}
+      {!locked && (format === 'choice' || format === 'sort') && (
+        <div className="flex flex-wrap gap-2" role="group" aria-labelledby={id}>
+          {question.options.map((label, option) => (
+            <button type="button" key={label} className={optionStyle} onClick={() => answer(option as OrbsPick)}>
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Lets players jump between puzzles and preserves both old sequential and new out-of-order runs. */
 export default function OrbsPlay(props: Props) {
   const { puzzle, dailyDay } = props
   const archive = props.mode === 'archive'
   const categories = archive ? puzzle.categories.filter((item) => item.id === props.category) : puzzle.categories
-  const questions = categories.flatMap((item) =>
-    item.questions.map((question) => ({ ...question, category: item.title })),
-  )
-  const total = questions.length
-  const key = runKey('orbs', dailyDay, dailyDay)
-  const [picks, setPicks] = useState(() => (archive ? [] : readOrbsPicks(key)))
-  const [index, setIndex] = useState(picks.length)
-  const heading = useRef<HTMLHeadingElement>(null)
-  const moved = useRef(false)
-  const question = questions[index]
-  const pick = picks[index]
+  const questions = categories.flatMap((category) => category.questions)
+  const key = orbsRunKey(dailyDay)
+  const [picks, setPicks] = useState(() => {
+    const saved = archive ? [] : readOrbsPicks(key)
+    return questions.map((_, index) => saved[index] ?? null)
+  })
+  const [active, setActive] = useState(() => {
+    const firstPending = picks.indexOf(null)
+    const category = categories.find(
+      (_, index) => firstPending >= index * ORBS_CATEGORY_SIZE && firstPending < (index + 1) * ORBS_CATEGORY_SIZE,
+    )
+    return category?.id ?? categories[0]?.id
+  })
+  const completed = picks.every((pick) => pick !== null)
   const score = scoreOrbs(questions, picks)
+  const selected = categories.find((category) => category.id === active)
+  const offset = selected ? categories.indexOf(selected) * ORBS_CATEGORY_SIZE : 0
+  const format = selected?.format ?? 'choice'
 
-  useEffect(() => {
-    if (moved.current) heading.current?.focus()
-  }, [index])
-
-  /** Saves the current pick and records the appropriate result when the final answer lands. */
-  function answer(option: number) {
-    if (picks.length !== index) return
-    const next = [...picks, option]
+  /** Saves the pick immediately and records a result only once all required clues are answered. */
+  function answer(index: number, option: OrbsPick) {
+    if (picks[index] !== null) return
+    const next = picks.map((previous, i) => (i === index ? option : previous))
     setPicks(next)
     if (props.mode === 'archive') {
-      if (next.length === total) saveArchiveRound(dailyDay, props.category, scoreOrbs(questions, next))
+      if (next.every((pick) => pick !== null)) saveArchiveRound(dailyDay, props.category, scoreOrbs(questions, next))
       return
     }
-    if (!index) markPracticeIfFuture('orbs', dailyDay)
+    markPracticeIfFuture('orbs', dailyDay)
     try {
       localStorage.setItem(key, JSON.stringify({ picks: next }))
     } catch {
-      // The current run still works when local storage is disabled.
+      // The current run remains playable when storage is unavailable.
     }
-    if (next.length === ORBS_MAX) {
+    if (next.length === ORBS_MAX && validOrbsPicks(next)) {
       const earned = scoreOrbs(questions, next)
       logResult('orbs', earned, earned, dailyDay, { moves: next, solved: earned === ORBS_MAX })
     }
   }
 
-  if (!question) {
-    return (
-      <section className="rounded-2xl border border-[var(--ink-border)] bg-[var(--ink-paper)] p-6 text-center">
-        <h2 ref={heading} tabIndex={-1} className="text-3xl font-bold tabular-nums" data-testid="orbs-result">
-          {score}/{total} orbs
-        </h2>
-        <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          {archive
-            ? 'Archive round complete'
-            : isPracticeResult('orbs', dailyDay)
-              ? 'Practice complete'
-              : 'Daily complete'}
-        </p>
-      </section>
-    )
-  }
+  if (!selected) return null
 
   return (
-    <section className="space-y-4 rounded-2xl border border-[var(--ink-border)] bg-[var(--ink-paper)] p-4 sm:p-6">
-      <div className="flex items-center justify-between gap-2 text-sm font-medium text-[var(--ink-muted)]">
-        <span>
-          {question.category} · {index + 1} of {total}
-        </span>
-        <span className="tabular-nums">
-          {score} {score === 1 ? 'orb' : 'orbs'}
-        </span>
-      </div>
-      <h2 ref={heading} tabIndex={-1} className="text-xl font-bold sm:text-2xl">
-        {question.prompt}
-      </h2>
-      <div className="grid gap-2">
-        {question.options.map((option, value) => (
-          <button
-            key={option}
-            type="button"
-            aria-disabled={pick !== undefined}
-            onClick={() => answer(value)}
-            className={
-              'min-h-11 rounded-xl border px-4 py-2 text-left font-medium ' +
-              (pick === undefined
-                ? 'border-[var(--ink-border)] bg-[var(--ink-bg)] hover:border-[var(--ink-accent)]'
-                : value === question.answer
-                  ? 'border-emerald-700 bg-emerald-50 text-emerald-950'
-                  : value === pick
-                    ? 'border-red-700 bg-red-50 text-red-950'
-                    : 'border-[var(--ink-border)] text-[var(--ink-muted)]')
-            }
-          >
-            {option}
-          </button>
-        ))}
-      </div>
-      <div aria-live="polite" className="text-sm">
-        {pick !== undefined &&
-          (pick === question.answer ? 'Correct!' : `Correct answer: ${question.options[question.answer]}`)}
-      </div>
-      {pick !== undefined && (
-        <button
-          type="button"
-          onClick={() => {
-            moved.current = true
-            setIndex(index + 1)
-          }}
-          className="min-h-11 rounded-xl bg-[var(--ink-accent)] px-4 py-2 font-semibold text-white hover:opacity-90"
+    <div className="space-y-4">
+      <section
+        aria-label="Orbs progress"
+        className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[var(--orbs-strip)] px-4 py-3 text-[var(--orbs-strip-text)] sm:px-5"
+      >
+        <div>
+          <h2 className="text-xl font-bold">{archive ? 'Archive round' : 'Daily puzzle board'}</h2>
+          <p className="text-sm opacity-85">
+            {completed
+              ? archive
+                ? 'Archive round complete'
+                : isPracticeResult('orbs', dailyDay)
+                  ? 'Practice complete'
+                  : 'Daily complete'
+              : archive
+                ? ORBS_CATEGORIES[selected.id]
+                : 'Pick a puzzle to start.'}
+          </p>
+        </div>
+        <p
+          className="text-lg font-semibold tabular-nums"
+          data-testid={completed ? 'orbs-result' : undefined}
+          aria-live="polite"
         >
-          {index + 1 === total ? 'See result' : 'Next question'}
-        </button>
-      )}
-    </section>
+          {score}/{questions.length} orbs
+        </p>
+      </section>
+      <div className={archive ? '' : 'grid gap-4 md:grid-cols-[minmax(13rem,0.85fr)_minmax(0,1.8fr)]'}>
+        {!archive && (
+          <nav aria-label="Daily Orbs puzzles" className="grid grid-cols-2 gap-2 self-start md:grid-cols-1">
+            {categories.map((category, index) => {
+              const categoryPicks = picks.slice(index * ORBS_CATEGORY_SIZE, (index + 1) * ORBS_CATEGORY_SIZE)
+              const done = categoryPicks.every((pick) => pick !== null)
+              const found = scoreOrbs(category.questions, categoryPicks)
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  aria-pressed={category.id === active}
+                  aria-controls="orbs-current-puzzle"
+                  className={`${card} flex min-h-24 min-w-0 flex-col items-start gap-1 px-3 py-2.5 text-left hover:border-[var(--ink-accent)] aria-pressed:border-[var(--ink-accent)] aria-pressed:ring-1 aria-pressed:ring-[var(--ink-accent)]`}
+                  onClick={() => setActive(category.id)}
+                >
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${categoryColor[category.id]}`}>
+                    {ORBS_CATEGORIES[category.id]}
+                  </span>
+                  <span className="text-sm leading-tight font-bold sm:text-base">{category.title}</span>
+                  <span className="text-xs text-[var(--ink-muted)]">
+                    {done ? `${found}/${category.questions.length} orbs` : ORBS_FORMATS[category.format ?? 'choice']}
+                  </span>
+                </button>
+              )
+            })}
+          </nav>
+        )}
+        <section
+          id="orbs-current-puzzle"
+          aria-labelledby="orbs-category-title"
+          className={`${card} space-y-3 p-3 sm:p-5`}
+        >
+          <header>
+            <p className="text-xs font-semibold text-[var(--ink-accent)]">{ORBS_FORMATS[format]}</p>
+            <h2 id="orbs-category-title" className="text-xl font-bold sm:text-2xl">
+              {selected.title}
+            </h2>
+            {selected.note && <p className="mt-1 text-sm text-[var(--ink-muted)]">{selected.note}</p>}
+          </header>
+          {selected.questions.map((question, index) => (
+            <Clue
+              key={`${selected.id}:${index}`}
+              id={`orbs-clue-${index}`}
+              question={question}
+              format={format}
+              pick={picks[offset + index] ?? null}
+              used={picks.slice(offset, offset + selected.questions.length)}
+              answer={(option) => answer(offset + index, option)}
+            />
+          ))}
+        </section>
+      </div>
+    </div>
   )
 }

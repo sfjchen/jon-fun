@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Mark, playState } from '@/components/daily/ScoreTable'
 import { playableDay } from '@/lib/daily'
-import { runKey } from '@/lib/daily/saved-run'
+import { orbsRunKey } from '@/lib/daily/saved-run'
 import { ORBS_CATEGORIES, ORBS_MAX, type OrbsCategoryId, type OrbsIndex } from '@/lib/orbs'
 import { archiveRoundDone, readOrbsPicks } from '@/lib/orbs-storage'
 import { useSiteDay } from '@/lib/play-day'
@@ -71,14 +71,15 @@ export default function ArchivePage() {
   function dailyDone(day: string) {
     return (
       syncedDays?.has(day) ||
-      (!isPracticeResult('orbs', day) && readOrbsPicks(runKey('orbs', day, day)).length === ORBS_MAX)
+      (!isPracticeResult('orbs', day) &&
+        readOrbsPicks(orbsRunKey(day)).filter((pick) => pick !== null).length === ORBS_MAX)
     )
   }
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-        <p className="text-[var(--ink-muted)]">Play three questions from any past category.</p>
+        <p className="text-[var(--ink-muted)]">Pick a theme and revisit a past puzzle.</p>
         <Link href="/games/orbs" className="font-medium text-[var(--ink-accent)] underline">
           Play today’s Orbs
         </Link>

@@ -76,7 +76,7 @@ export const GAMES: Record<
     url: '/games/orbs',
     max: ORBS_MAX,
     unit: 'orbs',
-    rules: 'Four categories, three questions each. One orb per correct answer. Your first finished game counts.',
+    rules: 'Four puzzles, three clues each. One orb per correct answer. Your first finished day counts.',
   },
 }
 

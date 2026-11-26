@@ -10,7 +10,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { siteDay } from '@/lib/daily'
 import { artifactScore, type Artifact } from '@/lib/artifact-scoring'
-import { ORBS_MAX } from '@/lib/orbs'
+import { ORBS_BOARD_FIRST_DAY, ORBS_MAX } from '@/lib/orbs'
 import { validOrbsPicks } from '@/lib/orbs-storage'
 import { FIVEFOLD_TRIES } from '@/lib/daily/fivefold'
 import { getPlayer, isPracticeResult, PLAYER_CHANGED, type GameId, type Stats } from '@/lib/results'
@@ -33,6 +33,11 @@ const PREFIX: Record<DailyGameId, string> = {
  */
 export function runKey(game: DailyGameId, day: string, id: string): string {
   return `${PREFIX[game]}:${day}:${id}`
+}
+
+/** Gives revised Orbs boards their own storage entry, keeping earlier dailies and their marks intact. */
+export function orbsRunKey(day: string): string {
+  return runKey('orbs', day, day < ORBS_BOARD_FIRST_DAY ? day : `${day}:board`)
 }
 
 /** A game's stored run: the entry that shows it is finished, the finished test, and the entries a saved result fills. */
@@ -88,7 +93,7 @@ const LOCAL: { [G in DailyGameId]: (day: string, puzzle: never) => Local } = {
     }
   },
   orbs: (day) => {
-    const key = runKey('orbs', day, day)
+    const key = orbsRunKey(day)
     return {
       key,
       done: (run: { picks?: unknown } | null) => validOrbsPicks(run?.picks) && run.picks.length === ORBS_MAX,
