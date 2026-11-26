@@ -20,9 +20,9 @@ def save(day, directory):
     if destination.exists():
         return
     edition = fetch(f"{API}?date={day}")
-    if edition.get("dateKey") != day or edition.get("state") != "ready" or not edition.get("puzzles"):
+    if edition.get("dateKey") != day or edition.get("state") not in ("ready", "deja-vu") or not edition.get("puzzles"):
         raise ValueError(f"No published edition for {day}")
-    snapshot = {key: edition[key] for key in ("dateKey", "originalDate", "puzzles") if key in edition}
+    snapshot = {key: edition[key] for key in ("dateKey", "state", "originalDate", "puzzles") if key in edition}
     with NamedTemporaryFile("w", dir=directory, delete=False) as output:
         json.dump(snapshot, output, ensure_ascii=False, separators=(",", ":"))
         output.write("\n")
