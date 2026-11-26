@@ -311,7 +311,7 @@ function Lobby({ game, id, day, mini, board: Board }: Props) {
     return (
       <div className="space-y-3">
         <p role="alert">{error || 'Invalid room link.'}</p>
-        <Link className={button} href={back}>
+        <Link className={button} href={back} prefetch={false}>
           Back to {game === 'bee' ? 'Spelling Bee' : 'Crossword'}
         </Link>
       </div>
@@ -358,7 +358,7 @@ function Lobby({ game, id, day, mini, board: Board }: Props) {
           </form>
         )}
         {game === 'bee' && (
-          <Link className={button} href={back}>
+          <Link className={button} href={back} prefetch={false}>
             Back to solo
           </Link>
         )}
@@ -389,7 +389,7 @@ function Lobby({ game, id, day, mini, board: Board }: Props) {
         >
           {copied ? 'Invite copied' : 'Copy invite'}
         </button>
-        <Link className={button} href={back}>
+        <Link className={button} href={back} prefetch={false}>
           {game === 'bee' ? 'Solo' : 'Change puzzle'}
         </Link>
       </div>

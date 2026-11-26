@@ -295,7 +295,10 @@ export default function OrbsPlay(props: Props) {
   const active = params.get('puzzle')
   const selected = categories.find((category) => category.id === (solo ?? (isOrbsCategory(active) ? active : null)))
 
-  /** Keeps the exact edition date when opening or closing a puzzle. */
+  /**
+   * Keeps the exact edition date when opening or closing a puzzle. These links stay on this page and change only the
+   * query, so they skip prefetching: a prefetched same-page link makes the production router ignore the day arrows.
+   */
   function href(category?: OrbsCategoryId) {
     const query = new URLSearchParams(params.toString())
     if (category) query.set('puzzle', category)
@@ -344,7 +347,7 @@ export default function OrbsPlay(props: Props) {
       >
         <h2 className="font-semibold">
           {selected && !solo ? (
-            <Link href={href()} className="underline underline-offset-4">
+            <Link href={href()} prefetch={false} className="underline underline-offset-4">
               ← Back to puzzles
             </Link>
           ) : archive ? (
@@ -378,6 +381,7 @@ export default function OrbsPlay(props: Props) {
               <li key={category.id}>
                 <Link
                   href={href(category.id)}
+                  prefetch={false}
                   className={`flex min-h-24 items-start justify-between gap-3 rounded-2xl border border-l-4 bg-[var(--ink-bg)] px-4 py-3 hover:bg-[var(--ink-paper)] sm:px-5 ${colors[category.id]}`}
                 >
                   <div className="min-w-0 text-[var(--ink-text)]">

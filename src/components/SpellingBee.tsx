@@ -644,7 +644,7 @@ function Bee({ team }: { team?: Team }) {
           }
         >
           {!practice && selectedDay <= now && (
-            <Link className={action} href={`/games/spelling-bee?co-op=1&d=${selectedDay}`}>
+            <Link className={action} href={`/games/spelling-bee?co-op=1&d=${selectedDay}`} prefetch={false}>
               Play together
             </Link>
           )}

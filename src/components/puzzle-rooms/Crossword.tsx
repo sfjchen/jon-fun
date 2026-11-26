@@ -36,6 +36,7 @@ export default function Crossword({ firstFullDay }: { firstFullDay: string }) {
             <Link
               className={action}
               href={mini ? '/games/crossword' : '/games/crossword?edition=mini'}
+              prefetch={false}
               onClick={() => setDraft(undefined)}
             >
               {mini ? 'Switch to full-size' : 'Switch to Mini'}

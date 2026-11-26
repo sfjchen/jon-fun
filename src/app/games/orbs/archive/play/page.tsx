@@ -28,7 +28,7 @@ function Round({ day, today, category }: { day: string; today: string; category:
           className="mr-auto"
         />
         {category && (
-          <Link className="text-[var(--ink-accent)] underline" href={orbsArchiveHref(day)}>
+          <Link className="text-[var(--ink-accent)] underline" href={orbsArchiveHref(day)} prefetch={false}>
             Full edition
           </Link>
         )}
