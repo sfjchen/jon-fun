@@ -7,12 +7,13 @@ import type { GameId } from '@/lib/results'
 type Daily<T> = { day: string; sourceDate: string; puzzle: T }
 
 /** Retry temporary source errors on today's puzzle while keeping the selected date fixed. */
-export function useDailyPuzzle<T = unknown>(game: GameId, day: string) {
+export function useDailyPuzzle<T = unknown>(game: GameId, day: string, enabled = true) {
   const key = `${game}:${day}`
   const [response, setResponse] = useState<{ key: string; data?: Daily<T>; error?: string }>()
   const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
+    if (!enabled) return
     const controller = new AbortController()
     let timer: ReturnType<typeof setTimeout>
     async function load() {
@@ -33,7 +34,7 @@ export function useDailyPuzzle<T = unknown>(game: GameId, day: string) {
       controller.abort()
       clearTimeout(timer)
     }
-  }, [key, game, day, attempt])
+  }, [key, game, day, attempt, enabled])
 
   return {
     ...(response?.key === key ? response : undefined),

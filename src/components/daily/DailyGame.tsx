@@ -8,7 +8,7 @@ import dynamic from 'next/dynamic'
 import { useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import DayNav from '@/components/daily/DayNav'
+import DayNav, { action } from '@/components/daily/DayNav'
 import type { MiniPuzzle } from '@/components/mini/MiniPlay'
 import { firstDay, isNytGame, playableDay, siteDay } from '@/lib/daily'
 import { usePlayDay } from '@/lib/play-day'
@@ -120,6 +120,9 @@ export default function DailyGame({ game }: { game: Exclude<GameId, 'bee'> }) {
         minDay={firstDay(game)}
         info={info}
       >
+        {game === 'mini' && day <= siteDay() && (
+          <Link className={action} href={`/games/crossword?edition=mini&d=${day}`}>Play together</Link>
+        )}
         {game === 'orbs' && (
           <Link className="px-2 py-1.5 text-sm font-medium underline" href="/games/orbs/archive">
             Archive

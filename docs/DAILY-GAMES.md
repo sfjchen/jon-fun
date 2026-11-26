@@ -79,3 +79,19 @@ Adding a daily game - add it to `GAMES`, give it a verifier (the build fails wit
 - `npx tsx scripts/verify-nyt-daily.ts [day]` checks that all 4 NYT games return that exact day.
 - `npm test` runs `tests/*.test.ts` (NYT validation, original mechanics, ranking, SET). `e2e/daily-games.spec.ts` plays each game through to score delivery.
 - `scripts/build-basemap.py` rebuilds the Anthropeum map tiles in `public/maps/basemap`.
+
+## Collaborative puzzle rooms
+
+Use **Play together** on Spelling Bee or Mini, or open **Crossword Together** from the home page.
+Create a room for a published Pacific date and share its invite link. Each room keeps a snapshot
+of its puzzle and saves shared progress in Supabase. The same tab can resume the room after a
+reload, including edits waiting to sync.
+
+By default, Crossword Together uses the existing daily Mini archive and fetch pipeline. An
+authorized daily crossword feed can be configured with the server-only environment variable
+`CROSSWORD_DAILY_FEED_URL` and an optional `CROSSWORD_DAILY_FEED_TOKEN` bearer token. It receives
+a `date=YYYY-MM-DD` query parameter. The response is a JSON object with `date`, `title`, `credit`,
+`width`, `height`, `cells`, and `clues`. List solution cells in row-major order with `null` for
+blocks, and give each clue a string `number`, an `Across` or `Down` `direction`, plain `text`, and
+zero-based `cells`. The daily cron syncs configured feeds, and the first validated response for each date is stored
+in `daily_game_content`. Rooms started from the Mini page continue to use the Mini.

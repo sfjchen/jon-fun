@@ -42,6 +42,7 @@ export function PageShell({ children }: PageShellProps) {
     '/games/set',
     '/games/triples',
     '/games/mini',
+    '/games/crossword',
     '/games/krillion',
     '/games/anthropeum',
     '/games/wordle',
@@ -57,7 +58,7 @@ export function PageShell({ children }: PageShellProps) {
     ? 'set'
     : pathname?.startsWith('/games/connections')
       ? 'connections'
-      : pathname === '/games/mini'
+      : pathname === '/games/mini' || pathname === '/games/crossword'
         ? 'mini'
         : pathname === '/leaderboards'
           ? 'daily'
