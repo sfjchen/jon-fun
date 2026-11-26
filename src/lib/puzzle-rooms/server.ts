@@ -7,7 +7,7 @@ import { crosswordForDay, type CrosswordPuzzle } from './crossword'
 import { cellEntry, type Room, type RoomGame, type RoomPuzzle } from './types'
 
 type StoredPuzzle = Extract<RoomPuzzle, { game: 'bee' }> | { game: 'crossword'; board: CrosswordPuzzle }
-type Player = { seat: string; name: string; seq: number }
+type Player = { seat: string; name: string; seq: number; device?: string }
 type Row = {
   id: string
   puzzle: StoredPuzzle
@@ -30,16 +30,22 @@ export class RoomError extends Error {
 
 const name = z.string().trim().min(1).max(32)
 const seat = z.uuid()
+const device = z.uuid().optional()
+/** Rooms left untouched this long are deleted by the daily cron. */
+const IDLE_DAYS = 30
+/** A browser keeps this many seats, so a few open tabs can all edit while repeat joins stop adding up. */
+const DEVICE_SEATS = 3
 export const createRoomBody = z.object({
   game: z.enum(['bee', 'crossword']),
   day: z.string(),
   name,
   seat,
+  device,
   id: z.string(),
   mini: z.boolean().optional(),
 })
 export const roomAction = z.discriminatedUnion('action', [
-  z.object({ action: z.literal('join'), name, seat, game: z.enum(['bee', 'crossword']) }),
+  z.object({ action: z.literal('join'), name, seat, device, game: z.enum(['bee', 'crossword']) }),
   z.object({
     action: z.literal('edit'),
     seat,
@@ -91,7 +97,7 @@ async function getPuzzle(game: RoomGame, day: string, mini: boolean): Promise<St
 }
 
 export async function createRoom(input: z.infer<typeof createRoomBody>): Promise<Room> {
-  const { id, game, day, name, seat } = input
+  const { id, game, day, name, seat, device } = input
   const existing = await loadRoom(id)
   if (existing) {
     if (existing.players[0]?.seat === seat) return publicRoom(existing)
@@ -100,7 +106,7 @@ export async function createRoom(input: z.infer<typeof createRoomBody>): Promise
   const puzzle = await getPuzzle(game, day, input.mini ?? false)
   const { data, error } = await supabaseAdmin
     .from('puzzle_rooms')
-    .insert({ id, puzzle, players: [{ name, seat, seq: 0 }] })
+    .insert({ id, puzzle, players: [{ name, seat, seq: 0, ...(device && { device }) }] })
     .select()
     .single()
   if (!error) return publicRoom(data as Row)
@@ -123,8 +129,19 @@ function apply(row: Row, action: z.infer<typeof roomAction>): Change | null {
   if (action.action === 'join') {
     if (row.puzzle.game !== action.game) throw new RoomError('This link is for a different game.', 400)
     if (player) return null
-    if (row.players.length >= 24) throw new RoomError('This room already has 24 players.', 409)
-    return { players: [...row.players, { name: action.name, seat: action.seat, seq: 0 }] }
+    // A new tab takes a new seat, since each seat numbers its own edits. Seats are counted per browser, and a
+    // browser's oldest seats are dropped, so rejoining never fills the room.
+    const { device } = action
+    const mine = device ? row.players.filter((p) => p.device === device) : []
+    if (!mine.length && new Set(row.players.map((p) => p.device ?? p.seat)).size >= 24)
+      throw new RoomError('This room already has 24 players.', 409)
+    const dropped = mine.slice(0, Math.max(0, mine.length - DEVICE_SEATS + 1))
+    return {
+      players: [
+        ...row.players.filter((p) => !dropped.includes(p)),
+        { name: action.name, seat: action.seat, seq: 0, ...(device && { device }) },
+      ],
+    }
   }
   if (!player) throw new RoomError('Join this room to edit the puzzle.', 403)
   if (action.seq <= player.seq) return null
@@ -170,4 +187,15 @@ export async function updateRoom(id: string, action: z.infer<typeof roomAction>)
     if (data) return publicRoom(data as Row)
   }
   throw new RoomError('The room is busy. Retrying…', 503)
+}
+
+/** Deletes rooms nobody has joined or edited for IDLE_DAYS and returns how many went. */
+export async function pruneRooms(): Promise<number> {
+  const { data, error } = await supabaseAdmin
+    .from('puzzle_rooms')
+    .delete()
+    .lt('updated_at', new Date(Date.now() - IDLE_DAYS * 86_400_000).toISOString())
+    .select('id')
+  if (error) throw error
+  return data.length
 }

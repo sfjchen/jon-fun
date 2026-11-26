@@ -85,7 +85,8 @@ Adding a daily game - add it to `GAMES`, give it a verifier (the build fails wit
 Use **Play together** on Spelling Bee or Mini, or open **Crossword Together** from the home page.
 Create a room for a published Pacific date and share its invite link. Each room keeps a snapshot
 of its puzzle and saves shared progress in Supabase. The same tab can resume the room after a
-reload, including edits waiting to sync.
+reload, including edits waiting to sync. A browser that rejoins from new tabs counts as 1 of the
+24 players and keeps its 3 newest seats. The daily cron deletes rooms left untouched for 30 days.
 
 By default, Crossword Together uses the existing daily Mini archive and fetch pipeline. An
 authorized daily crossword feed can be configured with the server-only environment variable

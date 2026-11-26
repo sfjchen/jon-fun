@@ -27,6 +27,17 @@ function newRoomId() {
 }
 const defaultSession = (): Session => ({ seat: crypto.randomUUID(), seq: 0, batch: [], queued: [] })
 
+/** Returns this browser's room ID, which lets the server count its tabs as 1 player. It is used nowhere else. */
+function deviceId(): string | undefined {
+  try {
+    const saved = localStorage.getItem('puzzle-room:device') ?? crypto.randomUUID()
+    localStorage.setItem('puzzle-room:device', saved)
+    return saved
+  } catch {
+    return undefined
+  }
+}
+
 function readSession(id: string): Session | null {
   if (!id) return null
   try {
@@ -277,9 +288,10 @@ function Lobby({ game, id, day, mini, board: Board }: Props) {
       }
       const draft = attempt.current
       const seat = draft.session.seat
+      const device = deviceId()
       const next = id
-        ? await request(roomApi(id), { action: 'join', name, game, seat })
-        : await request(roomApi(''), { name, game, seat, day, id: draft.id, mini })
+        ? await request(roomApi(id), { action: 'join', name, game, seat, device })
+        : await request(roomApi(''), { name, game, seat, device, day, id: draft.id, mini })
       saveSession(next.id, draft.session)
       accept(next)
       setSession(draft.session)

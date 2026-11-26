@@ -5,6 +5,7 @@ import { captureAnthropeumDistribution } from '@/lib/daily/anthropeum'
 import { captureKrillionDist } from '@/lib/daily/krillion'
 import { dailyPuzzle } from '@/lib/daily/server'
 import { crosswordForDay } from '@/lib/puzzle-rooms/crossword'
+import { pruneRooms } from '@/lib/puzzle-rooms/server'
 import { GAME_IDS } from '@/lib/results'
 
 export const maxDuration = 60
@@ -18,7 +19,7 @@ export async function GET(req: Request) {
   // is still 11 p.m. The later runs retry late or failed feeds through the 3 a.m. hour.
   if (siteHour() > 3) return NextResponse.json({ skipped: true, krillionCurve })
   const day = siteDay()
-  const [results, stats, crossword] = await Promise.all([
+  const [results, stats, crossword, roomsDeleted] = await Promise.all([
     Promise.allSettled(GAME_IDS.map((game) => dailyPuzzle(game, day))),
     captureAnthropeumDistribution(shiftDay(day, -1)).then(
       (players) => ({ players }),
@@ -30,6 +31,8 @@ export async function GET(req: Request) {
           () => ({ error: 'Could not sync the daily crossword feed' }),
         )
       : null,
+    // A failed cleanup is retried by the next run, so it never fails the puzzle sync.
+    pruneRooms().catch((error) => ({ error: String(error) })),
   ])
   const games = Object.fromEntries(
     results.map((result, i) => [
@@ -42,7 +45,7 @@ export async function GET(req: Request) {
     results.every((result) => result.status === 'fulfilled' && result.value.sourceDate === day) &&
     (!crossword || ('sourceDate' in crossword && crossword.sourceDate === day))
   return NextResponse.json(
-    { ok, day, games, previousAnthropeumStats: stats, krillionCurve },
+    { ok, day, games, previousAnthropeumStats: stats, krillionCurve, roomsDeleted },
     { status: ok ? 200 : 503 },
   )
 }
