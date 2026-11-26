@@ -90,8 +90,15 @@ export default function ArchivePage() {
           }}
         >
           <label htmlFor="publisher-day">Publisher’s archive</label>
-          <input id="publisher-day" type="date" required min="2026-04-17" max={today}
-            value={publisherDay || today} onChange={(event) => setPublisherDay(event.target.value)} />
+          <input
+            id="publisher-day"
+            type="date"
+            required
+            min="2026-04-17"
+            max={today}
+            value={publisherDay || today}
+            onChange={(event) => setPublisherDay(event.target.value)}
+          />
           <button className="underline">Open original edition ↗</button>
         </form>
       )}
@@ -137,7 +144,10 @@ export default function ArchivePage() {
           <p className="text-xs text-[var(--ink-muted)]">Each theme shows Archive and Daily completion marks.</p>
           <div className="grid gap-3 sm:grid-cols-2">
             {categories.map((category) => {
-              const days = [...new Set([...index[category], ...rotation])].sort().filter((day) => playableDay('orbs', day) && day < today).reverse()
+              const days = [...new Set([...index[category], ...rotation])]
+                .sort()
+                .filter((day) => playableDay('orbs', day) && day < today)
+                .reverse()
               const unplayed = days.filter((day) => !archiveRoundDone(day, category))
               const pool = unplayed.length ? unplayed : days
               return (

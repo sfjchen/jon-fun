@@ -160,6 +160,9 @@ export function useSavedRun(
   const request = useRef<{ key: string; saved: Promise<SavedResult | null | undefined> }>(undefined)
   // The run this hook filled in, which counts as finished even after the leaving game rewrote its own entry.
   const filled = useRef('')
+  // The key whose first check has finished. Only checks after that one are returns that may leave the page as it is:
+  // a return while the first check is still out (a tab opened in the background, then switched to) must still settle.
+  const checked = useRef('')
   const [settled, setSettled] = useState<{ key: string; rev: number; played?: SavedResult }>()
   // Counts the player's returns to the open page. Each one checks again for a run finished on another device.
   const [seen, setSeen] = useState(0)
@@ -187,7 +190,7 @@ export function useSavedRun(
       }
     }
     // A run this browser already finished has nothing to gain from a later check.
-    if (seen && puzzle && done()) return
+    if (checked.current === key && puzzle && done()) return
     // The request starts with the puzzle's own, so the 2 overlap and the game waits for the slower one.
     const asked = `${key}:${seen}`
     if (request.current?.key !== asked) {
@@ -210,7 +213,8 @@ export function useSavedRun(
     void request.current.saved.then((saved) => {
       if (!live) return
       // A later check that fails or finds nothing new leaves the page as it is.
-      if (seen && (!saved || done())) return
+      if (checked.current === key && (!saved || done())) return
+      checked.current = key
       try {
         if (!saved || done()) return setSettled({ key, rev: seen })
         if (saved.moves == null) return setSettled({ key, rev: seen, played: saved })

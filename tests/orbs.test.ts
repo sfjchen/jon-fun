@@ -93,10 +93,14 @@ test('unbanked Orbs editions replay across the bank cutoff and a missing year fi
     const { puzzle, sourceDate } = await dailyPuzzle('orbs', day)
     assert.equal(sourceDate, day)
     const { categories } = puzzle as OrbsPuzzle
-    assert.deepEqual(categories.map((category) => category.id), ['trivia', 'words', 'geography', 'science'])
+    assert.deepEqual(
+      categories.map((category) => category.id),
+      ['trivia', 'words', 'geography', 'science'],
+    )
     const picks = categories.flatMap((category) => category.questions.map((question) => question.answer))
     assert.deepEqual(await VERIFIERS.orbs.check(day, picks as never, {}), {
-      score: ORBS_MAX, stats: { n: ORBS_MAX, solved: true },
+      score: ORBS_MAX,
+      stats: { n: ORBS_MAX, solved: true },
     })
   }
 })
