@@ -1,9 +1,10 @@
 'use client'
 
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useRef, useState, type KeyboardEvent } from 'react'
 import { action } from '@/components/daily/DayNav'
-import { NYT_FIRST_DAY, playableDay } from '@/lib/daily'
+import { NYT_FIRST_DAY, validDay } from '@/lib/daily'
 import { useSiteDay } from '@/lib/play-day'
 import {
   cellEntry,
@@ -15,31 +16,40 @@ import {
 import RoomHeader from './RoomHeader'
 import RoomLobby, { type RoomBoardProps } from './RoomLobby'
 
-export default function Crossword({ hasDailyFeed }: { hasDailyFeed: boolean }) {
+export default function Crossword({ firstFullDay }: { firstFullDay: string }) {
   const params = useSearchParams()
   const today = useSiteDay()
   const id = params.get('room') ?? ''
   const selected = params.get('d')
   const mini = params.get('edition') === 'mini'
-  const [draft, setDraft] = useState('')
-  const day = draft || (playableDay('mini', selected) && selected <= today ? selected : today)
+  const minDay = mini ? NYT_FIRST_DAY.mini : firstFullDay
+  const [draft, setDraft] = useState<{ mini: boolean; date: string }>()
+  const requested = draft?.mini === mini ? draft.date : selected
+  const day = validDay(requested) && requested >= minDay && requested <= today ? requested : today
   return (
     <div className="mx-auto w-full max-w-5xl">
       <RoomHeader title="Crossword Together" />
       {!id && (
         <div className="mb-5 space-y-3">
-          <p>
-            Solve the {hasDailyFeed && !mini ? 'daily crossword' : 'daily Mini Crossword'} with friends on one grid.
-          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <p>{mini ? 'NYT Daily Mini' : 'Full-size daily crossword'}</p>
+            <Link
+              className={action}
+              href={mini ? '/games/crossword' : '/games/crossword?edition=mini'}
+              onClick={() => setDraft(undefined)}
+            >
+              {mini ? 'Switch to full-size' : 'Switch to Mini'}
+            </Link>
+          </div>
           <label className="flex flex-wrap items-center gap-2 text-sm">
             Puzzle date
             <input
               className="rounded-md border border-[var(--ink-border)] bg-[var(--ink-bg)] p-2"
               type="date"
-              min={NYT_FIRST_DAY.mini}
+              min={minDay}
               max={today}
               value={day}
-              onChange={(event) => setDraft(event.target.value)}
+              onChange={(event) => setDraft({ mini, date: event.target.value })}
             />
           </label>
         </div>
@@ -159,7 +169,15 @@ function CrosswordGrid({
           <h2 className="font-lora text-lg font-semibold">
             {puzzle.title} · <time dateTime={puzzle.date}>{puzzle.date}</time>
           </h2>
-          <p className="text-xs text-[var(--ink-muted)]">{puzzle.credit}</p>
+          <p className="text-xs text-[var(--ink-muted)]">
+            {puzzle.creditUrl ? (
+              <a className="underline underline-offset-2" href={puzzle.creditUrl}>
+                {puzzle.credit}
+              </a>
+            ) : (
+              puzzle.credit
+            )}
+          </p>
         </div>
         <p className="text-sm font-semibold" role="status">
           {solved

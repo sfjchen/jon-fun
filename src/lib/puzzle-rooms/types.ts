@@ -11,6 +11,7 @@ export type CrosswordBoard = {
   date: string
   title: string
   credit: string
+  creditUrl?: string
   width: number
   height: number
   blocks: boolean[]

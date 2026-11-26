@@ -3,7 +3,7 @@ import { firstDay, siteDay, validDay } from '@/lib/daily'
 import { nytPuzzle } from '@/lib/daily/nyt'
 import { supabaseAdmin } from '@/lib/supabase'
 import { check } from '@/lib/spelling-bee'
-import { crosswordForDay, type CrosswordPuzzle } from './crossword'
+import { crosswordFirstDay, crosswordForDay, type CrosswordPuzzle } from './crossword'
 import { cellEntry, type Room, type RoomGame, type RoomPuzzle } from './types'
 
 type StoredPuzzle = Extract<RoomPuzzle, { game: 'bee' }> | { game: 'crossword'; board: CrosswordPuzzle }
@@ -67,10 +67,13 @@ function publicRoom(row: Row): Room {
   // A player who rejoins from a new tab takes a new seat, so the roster lists each name once.
   const players = [...new Set(row.players.map((player) => player.name))]
   if (puzzle.game === 'bee') return { id, puzzle, players, words, entries, solved, version }
-  const { date, title, credit, width, height, blocks, clues } = puzzle.board
+  const { date, title, credit, creditUrl, width, height, blocks, clues } = puzzle.board
   return {
     id,
-    puzzle: { game: 'crossword', board: { date, title, credit, width, height, blocks, clues } },
+    puzzle: {
+      game: 'crossword',
+      board: { date, title, credit, ...(creditUrl && { creditUrl }), width, height, blocks, clues },
+    },
     players,
     words,
     entries,
@@ -86,8 +89,8 @@ async function loadRoom(id: string): Promise<Row | null> {
 }
 
 async function getPuzzle(game: RoomGame, day: string, mini: boolean): Promise<StoredPuzzle> {
-  if (!validDay(day) || day < firstDay(game === 'bee' ? 'bee' : 'mini') || day > siteDay())
-    throw new RoomError('Choose a published puzzle date.', 400)
+  const earliest = game === 'bee' ? firstDay('bee') : crosswordFirstDay(mini)
+  if (!validDay(day) || day < earliest || day > siteDay()) throw new RoomError('Choose a published puzzle date.', 400)
   try {
     if (game === 'crossword') return { game, board: await crosswordForDay(day, mini) }
     return { game, board: (await nytPuzzle('bee', day)) as Extract<RoomPuzzle, { game: 'bee' }>['board'] }

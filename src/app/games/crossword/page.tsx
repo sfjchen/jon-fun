@@ -1,3 +1,4 @@
+import { crosswordFirstDay } from '@/lib/puzzle-rooms/crossword'
 import Crossword from '@/components/puzzle-rooms/Crossword'
 
 export const metadata = {
@@ -6,5 +7,5 @@ export const metadata = {
 }
 
 export default function Page() {
-  return <Crossword hasDailyFeed={Boolean(process.env.CROSSWORD_DAILY_FEED_URL)} />
+  return <Crossword firstFullDay={crosswordFirstDay(false)} />
 }

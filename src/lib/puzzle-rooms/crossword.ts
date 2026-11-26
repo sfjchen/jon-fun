@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import schedule from '@/../data/crossword/full-size.json'
+import { NYT_FIRST_DAY, validDay } from '@/lib/daily'
 import { nytPuzzle } from '@/lib/daily/nyt'
 import type { MiniPuzzle } from '@/lib/mini'
 import { supabaseAdmin } from '@/lib/supabase'
@@ -10,6 +12,7 @@ const feedPuzzle = z.object({
   date: z.string(),
   title: z.string().trim().min(1).max(120),
   credit: z.string().trim().min(1).max(300),
+  creditUrl: z.url({ protocol: /^https$/ }).optional(),
   width: z.number().int().min(3).max(25),
   height: z.number().int().min(3).max(25),
   cells: z.array(z.string().min(1).regex(cellEntry).nullable()).max(625),
@@ -27,7 +30,7 @@ const feedPuzzle = z.object({
 })
 
 export function normalizeCrossword(value: unknown, day: string): CrosswordPuzzle {
-  const { cells, clues, width, height, ...meta } = feedPuzzle.parse(value)
+  const { cells, clues, width, height, creditUrl, ...meta } = feedPuzzle.parse(value)
   const covered = new Set<number>()
   const labels = new Set<string>()
   if (meta.date !== day || cells.length !== width * height) throw new Error('Unexpected crossword date or dimensions')
@@ -47,7 +50,15 @@ export function normalizeCrossword(value: unknown, day: string): CrosswordPuzzle
     }
   }
   if (cells.some((cell, i) => cell !== null && !covered.has(i))) throw new Error('Crossword contains unclued cells')
-  return { ...meta, width, height, clues, blocks: cells.map((cell) => cell === null), solution: cells }
+  return {
+    ...meta,
+    ...(creditUrl && { creditUrl }),
+    width,
+    height,
+    clues,
+    blocks: cells.map((cell) => cell === null),
+    solution: cells,
+  }
 }
 
 async function storedCrossword(day: string): Promise<CrosswordPuzzle | null> {
@@ -61,9 +72,20 @@ async function storedCrossword(day: string): Promise<CrosswordPuzzle | null> {
   return data?.payload?.format === 'crossword-feed-v1' ? normalizeCrossword(data.payload.puzzle, day) : null
 }
 
+const editions = new Map(schedule.map((puzzle) => [puzzle.date, puzzle]))
+
+export function crosswordFirstDay(mini: boolean): string {
+  if (mini) return NYT_FIRST_DAY.mini
+  if (process.env.CROSSWORD_DAILY_FEED_URL) {
+    const first = process.env.CROSSWORD_DAILY_FEED_FIRST_DAY
+    return validDay(first) ? first : '1942-02-15'
+  }
+  return schedule[0]!.date
+}
+
 export async function crosswordForDay(day: string, miniOnly: boolean): Promise<CrosswordPuzzle> {
   const feed = process.env.CROSSWORD_DAILY_FEED_URL
-  if (!feed || miniOnly) {
+  if (miniOnly) {
     const mini = (await nytPuzzle('mini', day)) as MiniPuzzle
     return normalizeCrossword(
       {
@@ -73,6 +95,12 @@ export async function crosswordForDay(day: string, miniOnly: boolean): Promise<C
       },
       day,
     )
+  }
+
+  if (!feed) {
+    const puzzle = editions.get(day)
+    if (!puzzle) throw new Error('No full-size crossword is scheduled for that day')
+    return normalizeCrossword(puzzle, day)
   }
 
   const stored = await storedCrossword(day)

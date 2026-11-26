@@ -25,12 +25,10 @@ export async function GET(req: Request) {
       (players) => ({ players }),
       (error) => ({ error: String(error) }),
     ),
-    process.env.CROSSWORD_DAILY_FEED_URL
-      ? crosswordForDay(day, false).then(
-          (puzzle) => ({ sourceDate: puzzle.date }),
-          () => ({ error: 'Could not sync the daily crossword feed' }),
-        )
-      : null,
+    crosswordForDay(day, false).then(
+      (puzzle) => ({ sourceDate: puzzle.date }),
+      () => ({ error: 'Could not load the full-size daily crossword' }),
+    ),
     // A failed cleanup is retried by the next run, so it never fails the puzzle sync.
     pruneRooms().catch((error) => ({ error: String(error) })),
   ])
@@ -40,10 +38,11 @@ export async function GET(req: Request) {
       result.status === 'fulfilled' ? { sourceDate: result.value.sourceDate } : { error: String(result.reason) },
     ]),
   )
-  if (crossword) games.crossword = crossword
+  games.crossword = crossword
   const ok =
     results.every((result) => result.status === 'fulfilled' && result.value.sourceDate === day) &&
-    (!crossword || ('sourceDate' in crossword && crossword.sourceDate === day))
+    'sourceDate' in crossword &&
+    crossword.sourceDate === day
   return NextResponse.json(
     { ok, day, games, previousAnthropeumStats: stats, krillionCurve, roomsDeleted },
     { status: ok ? 200 : 503 },

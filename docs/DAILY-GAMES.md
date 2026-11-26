@@ -88,11 +88,25 @@ of its puzzle and saves shared progress in Supabase. The same tab can resume the
 reload, including edits waiting to sync. A browser that rejoins from new tabs counts as 1 of the
 24 players and keeps its 3 newest seats. The daily cron deletes rooms left untouched for 30 days.
 
-By default, Crossword Together uses the existing daily Mini archive and fetch pipeline. An
-authorized daily crossword feed can be configured with the server-only environment variable
-`CROSSWORD_DAILY_FEED_URL` and an optional `CROSSWORD_DAILY_FEED_TOKEN` bearer token. It receives
-a `date=YYYY-MM-DD` query parameter. The response is a JSON object with `date`, `title`, `credit`,
-`width`, `height`, `cells`, and `clues`. List solution cells in row-major order with `null` for
-blocks, and give each clue a string `number`, an `Across` or `Down` `direction`, plain `text`, and
-zero-based `cells`. The daily cron syncs configured feeds, and the first validated response for each date is stored
-in `daily_game_content`. Rooms started from the Mini page continue to use the Mini.
+Crossword Together opens the original 15×15 daily by default. It publishes a distinct board from
+`data/crossword/full-size.json` each Pacific day. The date picker can reopen older editions. **Switch to
+Mini** and invitations started on the Mini page use the existing NYT Mini source.
+
+The [Open English WordNet](https://en-word.net/downloads) glossary supplies the clues under
+CC BY 4.0. The grids use the MIT-licensed [xfill engine](https://github.com/ekorbia/xword-pipeline)
+and [Crossword Nexus wordlist](https://github.com/Crossword-Nexus/collaborative-word-list).
+To extend the dated schedule, use the WNDB download of Open English WordNet 2025+ and the
+engine's `fill-engine/data/xwordlist.dict`. Run `scripts/build-full-crosswords.py` once to prepare
+a WordNet-matched wordlist, fill new grids with xfill's `library --wordlist` option, then rerun the
+script with `--library LIBRARY --out data/crossword/full-size.json --start FIRST_DATE`. Use the
+schedule's existing first date and a different xfill seed for each batch. Published dates keep
+their original puzzles.
+
+An authorized provider can be configured with the server-only `CROSSWORD_DAILY_FEED_URL`, an
+optional `CROSSWORD_DAILY_FEED_TOKEN` bearer token, and `CROSSWORD_DAILY_FEED_FIRST_DAY` for its
+earliest date. The request includes a `date=YYYY-MM-DD` query parameter. The response is a JSON
+object with `date`, `title`, `credit`, `width`, `height`, `cells`, and `clues`, plus an optional
+HTTPS `creditUrl`. List solution cells in row-major order with `null` for blocks. Each clue has a
+string `number`, an `Across` or `Down` `direction`, plain `text`, and zero-based `cells`. The daily
+cron syncs the configured feed, and saves the first validated response for each date in
+`daily_game_content`.
