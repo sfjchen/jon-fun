@@ -75,17 +75,21 @@ test('every daily game shows without an expander and counts toward wins and prog
   const board = page.getByRole('region', { name: 'Day results' })
   await expect(page.getByRole('button', { name: 'More games' })).toHaveCount(0)
   const standings = page.getByTestId('standings').getByRole('listitem')
+  // Daily counts Wordle only, and the Beta shelf counts Orbs only.
   await expect(standings.filter({ hasText: 'Me' })).toContainText('1 win')
+  await expect(standings.filter({ hasText: 'Jon' })).toContainText('0 wins')
+  await page.getByRole('tab', { name: 'Beta' }).click()
   await expect(standings.filter({ hasText: 'Jon' })).toContainText('1 win')
+  await expect(standings.filter({ hasText: 'Me' })).toContainText('0 wins')
   await board.getByRole('button', { name: 'Orbs', exact: true }).click()
   await expect(page.getByTestId('board-orbs').getByRole('listitem').first()).toContainText('Jon')
   await expect(board.getByText('12/12', { exact: true }).first()).toBeVisible()
 
   await page.route('**/api/orbs/publisher?**', (route) => route.fulfill({ status: 503, json: {} }))
   await page.goto('/games/orbs')
-  await page.getByRole('button', { name: /^Daily, 2 of 10 done today/ }).click()
-  const drawer = page.getByRole('dialog', { name: 'Daily games' })
-  await expect(drawer.getByText('2/15 today', { exact: false })).toBeVisible()
+  await page.getByRole('button', { name: /^Beta, 1 of 9 done today/ }).click()
+  const drawer = page.getByRole('dialog', { name: 'Beta games' })
+  await expect(drawer.getByText('1/9 today', { exact: false })).toBeVisible()
   await expect(drawer.getByRole('button', { name: 'More games' })).toHaveCount(0)
   await expect(drawer.getByRole('link', { name: 'Orbs Completed' })).toBeVisible()
   await expect(drawer.getByRole('link', { name: 'Crossword Not done' })).toBeVisible()
@@ -107,6 +111,13 @@ test('home shelf uses Set and Wordle and links the leaderboard beside Daily', as
     'href',
     '/games/wordle',
   )
-  await expect(shelf.getByRole('link', { name: 'Orbs Not done', exact: true })).toHaveAttribute('href', '/games/orbs')
+  // Orbs sits on the Beta shelf, 1 tab away in the same drawer, which the Beta button also opens.
+  await expect(shelf.getByRole('link', { name: 'Orbs Not done', exact: true })).toHaveCount(0)
+  await shelf.getByRole('tab', { name: 'Beta' }).click()
+  await expect(
+    page.getByRole('dialog', { name: 'Beta games' }).getByRole('link', { name: 'Orbs Not done', exact: true }),
+  ).toHaveAttribute('href', '/games/orbs')
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('button', { name: 'Beta', exact: true })).toBeVisible()
   await expect(shelf.getByRole('link', { name: 'Daily leaderboard', exact: true })).toHaveCount(0)
 })

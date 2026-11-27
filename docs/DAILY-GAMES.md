@@ -4,7 +4,7 @@ Local playable versions of the originals, not embeds. Nothing is ever submitted 
 
 ## Games at a glance
 
-In `GAME_IDS` order, which is the order of the Daily drawer, score grids and boards.
+The first 6 rows of the registry (Connections, Wordle, Mini, Spelling Bee, Krillion, Anthropeum) are the Daily shelf (`DAILY_IDS`). Every other game is on the Beta shelf (`BETA_IDS`), opened by the Beta button beside Daily or the drawer's Beta tab, with its own boards at `/leaderboards?shelf=beta`.
 
 | Game (id)            | Source                            | First day  | Score         | Ranks by                | Shared with the board |
 | -------------------- | --------------------------------- | ---------- | ------------- | ----------------------- | --------------------- |
@@ -87,7 +87,7 @@ Every ranked game plays its publisher's puzzle except the Crossword, which has n
 - Border hop - 2 countries that are 2 to 4 countries apart by land. Countries are named in any order until they link the ends, within the shortest count plus 5. 100 for a shortest route, 15 off per extra country, 0 with no route. Each guess is marked by the detour it adds.
 - Pin drop - 5 cities on the Anthropeum map with city names hidden. A pin scores 1000 × e^(-km / 1000).
 - Ballpark - 3 estimates (a population, an area, a city-to-city distance). Each scores 100 × (1 - |log10(guess / answer)|), floored at 0.
-- All games (`GAME_IDS`) count the same toward overall wins, streaks, Daily drawer progress and nudges, and all show at once in the drawer and score grids.
+- Within a shelf every game counts the same toward overall wins, streaks and drawer progress, and all show at once in its drawer and score grids. Daily and Beta are counted apart, and nudges count Daily games only.
 - Crossword - the full-size daily counts as solved for every player in a room once its grid is correct. The result carries the room and the player's seat, and the server checks both against the day's puzzle and adds the player's word count, so boards show `Solved · 12`. Mini-edition rooms do not count.
 - Boards - 1 page: the day's score grid (its game icons filter to 1 game), standings by wins, and Your stats. Equal results share a rank. Rows stored under an older `SCORING_VERSION`, or with a source date that differs from their day, stay off the current boards.
 

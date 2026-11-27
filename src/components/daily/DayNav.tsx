@@ -16,6 +16,7 @@ import PlayerName from '@/components/PlayerName'
 import { DAILY_EPOCH } from '@/lib/daily'
 import { SHARED_KEYS, type KeyRow } from '@/lib/game-keys'
 import { useSiteDay } from '@/lib/play-day'
+import { shelfOfPath } from '@/lib/results'
 
 const icon =
   'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ' +
@@ -91,10 +92,11 @@ export function Info({ children, keys }: { children: React.ReactNode; keys?: Key
 /**
  * Renders the trophy link to the leaderboard, opened on `day` when given.
  */
-export function BoardLink({ day }: { day?: string | undefined }) {
+export function BoardLink({ day, path = null }: { day?: string | undefined; path?: string | null }) {
+  const query = [day && `d=${day}`, shelfOfPath(path) === 'beta' && 'shelf=beta'].filter(Boolean).join('&')
   return (
     <Link
-      href={day ? `/leaderboards?d=${day}` : '/leaderboards'}
+      href={query ? `/leaderboards?${query}` : '/leaderboards'}
       className={icon}
       aria-label="Leaderboard"
       title="Leaderboard"
@@ -164,7 +166,7 @@ export default function DayNav({
           <h1 className="mr-auto min-w-0 truncate font-lora text-xl font-bold md:text-2xl">{title}</h1>
         </ViewTransition>
         <DailyHeader compact />
-        <BoardLink day={day} />
+        <BoardLink day={day} path={path} />
         <Info keys={keys && [...keys, ...SHARED_KEYS]}>{info}</Info>
       </div>
       <div className="flex flex-wrap items-center gap-x-1 gap-y-1">

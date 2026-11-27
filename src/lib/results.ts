@@ -150,12 +150,10 @@ export const GAMES: Record<
   },
 }
 
-/** Every daily game in the order the Daily drawer, score grids and boards list them. All count the same. */
-export const GAME_IDS: GameId[] = [
-  'connections',
-  'fivefold',
-  'mini',
-  'bee',
+/** The 6 original daily games: the Daily drawer, its boards, streaks and nudges. */
+export const DAILY_IDS: GameId[] = ['connections', 'fivefold', 'mini', 'bee', 'krillion', 'anthropeum']
+/** The games still being built. They have their own Beta drawer and boards and never count toward Daily. */
+export const BETA_IDS: GameId[] = [
   'crossword',
   'kabloom',
   'headcount',
@@ -165,9 +163,30 @@ export const GAME_IDS: GameId[] = [
   'hop',
   'pin',
   'ballpark',
-  'krillion',
-  'anthropeum',
 ]
+/** Every game with a daily puzzle and a verified score, Daily first. Each shelf lists its own in this order. */
+export const GAME_IDS: GameId[] = [...DAILY_IDS, ...BETA_IDS]
+export type Shelf = 'daily' | 'beta'
+/** The 2 shelves of games. Each has its own drawer, score grid, standings, streak and stats. */
+export const SHELVES: Record<Shelf, { title: string; ids: GameId[] }> = {
+  daily: { title: 'Daily', ids: DAILY_IDS },
+  beta: { title: 'Beta', ids: BETA_IDS },
+}
+/**
+ * Returns the shelf a game sits on.
+ */
+export function shelfOf(game: GameId): Shelf {
+  return BETA_IDS.includes(game) ? 'beta' : 'daily'
+}
+/**
+ * Returns the shelf of the game a page belongs to, or Daily for any other page.
+ */
+export function shelfOfPath(path: string | null): Shelf {
+  const game = GAME_IDS.find(
+    (g) => path === GAMES[g].url || path?.startsWith(GAMES[g].url.replace(/\/daily$/, '') + '/'),
+  )
+  return game ? shelfOf(game) : 'daily'
+}
 export type Stats = {
   n?: number
   /** Spelling Bee: the words this player was first on their board to find. */

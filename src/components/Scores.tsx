@@ -19,7 +19,8 @@ import ScoreTable from '@/components/daily/ScoreTable'
 import {
   ADMIN_NAME,
   GAMES,
-  GAME_IDS,
+  SHELVES,
+  shelfOf,
   PUBLIC_GROUP,
   bestGameScore,
   boardChanged,
@@ -488,11 +489,20 @@ export function ScoresHub() {
   const today = siteDay()
   const day = asked && validDay(asked) && asked >= FIRST_DAY ? asked : today
   const game = params.get('game')
-  const [tab, setTab] = useState<Tab>(() => (GAME_IDS.includes(game as GameId) ? (game as GameId) : 'all'))
+  // The page shows 1 shelf at a time: Daily, or Beta with `?shelf=beta` or a Beta game in `?game=`.
+  const linked = game && game in GAMES ? (game as GameId) : null
+  const shelf = params.get('shelf') === 'beta' || (linked && shelfOf(linked) === 'beta') ? 'beta' : 'daily'
+  const ids = SHELVES[shelf].ids
+  const [picked, setTab] = useState<Tab>(linked ?? 'all')
+  // A game picked on the other shelf does not carry over when the shelf changes.
+  const tab: Tab = picked !== 'all' && ids.includes(picked) ? picked : 'all'
   const [span, setSpan] = useState<30 | 0>(30)
   const [copied, setCopied] = useState(false)
   const group = player?.group ?? PUBLIC_GROUP
-  const { rows, legacyRows, loaded, error } = useBoard(group, 6000, day)
+  const board = useBoard(group, 6000, day)
+  const { legacyRows, loaded, error } = board
+  // Every number on the page (wins, streaks, calendar, stats) counts this shelf's games only.
+  const rows = board.rows.filter((r) => ids.includes(r.game))
 
   // Results saved on this device sync on load and on every live refresh, and a synced one reloads the board.
   useEffect(() => {
@@ -502,14 +512,15 @@ export function ScoresHub() {
   }, [group])
 
   const color = playerColors(rows, me)
-  const games = tab === 'all' ? GAME_IDS : [tab]
+  const games = tab === 'all' ? ids : [tab]
   const shown = rows.filter((r) => games.includes(r.game))
   const dayRows = rows.filter((r) => r.day === day)
   const since = span ? shiftDay(day, 1 - span) : DAILY_EPOCH
   const windowRows = shown.filter((r) => r.day >= since && r.day <= day)
   const q = day === today ? '' : `?d=${day}`
   /** Opens the leaderboard on another day. */
-  const pick = (d: string) => router.push(`/leaderboards?d=${d}`, { scroll: false })
+  const beta = shelf === 'beta' ? '&shelf=beta' : ''
+  const pick = (d: string) => router.push(`/leaderboards?d=${d}${beta}`, { scroll: false })
 
   // The standings rows for the window and picked game, most daily wins first.
   const table = (() => {
@@ -578,7 +589,7 @@ export function ScoresHub() {
         <div className="daily-heading flex min-h-12 items-center gap-1 sm:gap-2">
           <HomeLink className="inline-flex h-10 w-10 shrink-0 items-center justify-center" />
           <h1 className="mr-auto min-w-0 truncate font-lora text-xl font-bold md:text-2xl">Leaderboard</h1>
-          <DailyHeader compact />
+          <DailyHeader compact shelf={shelf} />
           {mineToday.length > 0 && (
             <button
               type="button"
@@ -612,20 +623,40 @@ export function ScoresHub() {
           )}
           <Info>
             <ul className="space-y-2">
-              {GAME_IDS.map((g) => (
+              {ids.map((g) => (
                 <li key={g}>
                   <strong>{GAMES[g].title}:</strong> {GAMES[g].rules}
                 </li>
               ))}
             </ul>
             <p>
-              Every game counts the same toward overall daily wins and streaks. A game win needs 2 players that day.
-              Equal results share the rank.
+              Daily and Beta are scored apart. Within each, every game counts the same toward overall daily wins and
+              streaks. A game win needs 2 players that day. Equal results share the rank.
             </p>
           </Info>
         </div>
         <div className="flex flex-wrap items-center gap-1">
-          <DayPicker day={day} today={today} minDay={FIRST_DAY} maxDay={today} go={pick} className="mr-auto" keys />
+          <DayPicker day={day} today={today} minDay={FIRST_DAY} maxDay={today} go={pick} keys />
+          <div role="tablist" aria-label="Shelf" className="mr-auto flex rounded-full bg-[var(--ink-paper)] p-0.5">
+            {(['daily', 'beta'] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                role="tab"
+                aria-selected={s === shelf}
+                title={s === 'beta' ? 'Games still being built' : 'The 6 daily games'}
+                onClick={() =>
+                  router.push(`/leaderboards?d=${day}${s === 'beta' ? '&shelf=beta' : ''}`, { scroll: false })
+                }
+                className={
+                  'rounded-full px-3 py-1 text-xs font-semibold ' +
+                  (s === shelf ? 'bg-[var(--ink-text)] text-[var(--ink-bg)]' : muted)
+                }
+              >
+                {SHELVES[s].title}
+              </button>
+            ))}
+          </div>
           <button
             type="button"
             title="Edit name and group"
@@ -713,6 +744,7 @@ export function ScoresHub() {
                 color={color}
                 game={tab}
                 onGame={(g) => setTab(tab === g ? 'all' : g)}
+                games={ids}
               />
               {tab !== 'all' && (
                 <div className="mt-3 border-t border-[var(--ink-border)] pt-3">
@@ -761,7 +793,7 @@ export function ScoresHub() {
             <div className={`${card} space-y-3 py-6 text-center sm:py-8`}>
               <p className="text-sm">{day === today ? 'Nobody has played yet. Be first.' : 'No scores this day.'}</p>
               <div className="flex flex-wrap justify-center gap-2">
-                {GAME_IDS.map((g) => (
+                {ids.map((g) => (
                   <Link
                     key={g}
                     href={GAMES[g].url + q}
@@ -866,7 +898,7 @@ export function ScoresHub() {
                 document.getElementById('day-results')?.scrollIntoView({ behavior: 'smooth' })
               }}
             />
-            {tab === 'all' && mineAll.some((r) => r.device) && <DeviceSplit rows={mineAll} games={GAME_IDS} />}
+            {tab === 'all' && mineAll.some((r) => r.device) && <DeviceSplit rows={mineAll} games={ids} />}
             {tab !== 'all' && mine.some((r) => r.device) && <DeviceSplit rows={mine} games={games} />}
           </div>
         </section>

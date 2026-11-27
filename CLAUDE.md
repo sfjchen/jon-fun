@@ -32,7 +32,7 @@ Next.js 16 (App Router) + TypeScript + Tailwind v4 + Supabase, deployed to Verce
 ## Design and docs
 
 - Design system: `docs/DESIGN-SYSTEM.md`. Routes, libs, backends: `docs/ARCHITECTURE-MAP.md`.
-- Daily games (sources, cron, rules, score checks): `docs/DAILY-GAMES.md`. Adding or changing a game, including its keyboard shortcuts: follow `docs/GAME-PLAYBOOK.md`.
+- Daily games (sources, cron, rules, score checks, the Daily and Beta shelves): `docs/DAILY-GAMES.md`. Codex reads `AGENTS.md`, so keep it in step with this file. Adding or changing a game, including its keyboard shortcuts: follow `docs/GAME-PLAYBOOK.md`.
 - Notes: `docs/NOTES.md`. Sync, devices and owner access: `docs/SYNC.md`.
 
 ## Conventions

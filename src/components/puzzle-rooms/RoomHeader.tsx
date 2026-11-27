@@ -9,7 +9,7 @@ export default function RoomHeader({ title, children }: { title: string; childre
       <HomeLink className="inline-flex size-10 shrink-0 items-center justify-center" />
       <h1 className="mr-auto min-w-0 truncate font-lora text-xl font-bold sm:text-2xl">{title}</h1>
       <DailyHeader compact />
-      <BoardLink />
+      <BoardLink path="/games/crossword" />
       {children}
     </header>
   )

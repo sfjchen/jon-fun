@@ -8,7 +8,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useHoverTip } from '@/components/HoverTip'
-import { GAMES, GAME_IDS, compareResults, formatTime, resultLabel, type BoardRow, type GameId } from '@/lib/results'
+import { GAMES, compareResults, formatTime, resultLabel, type BoardRow, type GameId } from '@/lib/results'
 
 /**
  * Returns a 1-line label short enough for a grid cell: Connections shows only its solve time (or groups found)
@@ -103,6 +103,8 @@ type ScoreTableProps = {
   onGame?: (g: GameId) => void
   /** Shows a completion mark in each cell in place of the score. */
   marks?: boolean
+  /** The shelf's games, 1 column each. */
+  games: GameId[]
 }
 
 /**
@@ -119,8 +121,8 @@ export default function ScoreTable({
   game = 'all',
   onGame,
   marks,
+  games,
 }: ScoreTableProps) {
-  const games = GAME_IDS
   const rows = allRows.filter((row) => games.includes(row.game))
   const best = new Map(games.map((g) => [g, rows.filter((r) => r.game === g).sort(compareResults)[0]]))
   const tip = useHoverTip()

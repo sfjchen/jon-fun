@@ -1,8 +1,10 @@
 'use client'
 
 /*
- * Home header Daily button and drawer: today's progress, streak, and a day picker beside the title that shows any
- * day's links to the daily games and who has played them that day, as not done, started or completed marks with
+ * Home header Daily and Beta buttons and the drawer they open. Daily holds the 6 original games and Beta the games
+ * still being built, each with its own count, streak and played grid, and the drawer's 2 tabs switch between them.
+ * The drawer shows today's progress, the streak, and a day picker beside the tabs that shows any
+ * day's links to the shelf's games and who has played them that day, as not done, started or completed marks with
  * no scores (Spelling Bee shows its words found). Done state merges the synced board rows with the unsynced local
  * queue for the saved player.
  */
@@ -21,7 +23,8 @@ import { usePlayer } from '@/lib/use-player'
 import { useBoard } from '@/lib/use-board'
 import {
   GAMES,
-  GAME_IDS,
+  SHELVES,
+  shelfOfPath,
   PUBLIC_GROUP,
   PLAYING_KEY,
   RESULT_QUEUED,
@@ -30,15 +33,18 @@ import {
   isPracticeResult,
   GUEST,
   type BoardRow,
+  type GameId,
+  type Shelf,
 } from '@/lib/results'
 import { streaks } from '@/lib/score-stats'
 
 /**
  * Loads the group's last 60 days once for the button's count and streak, and polls the selected day only while the
- * drawer is open, then merges the player's unsynced local queue. Returns the player's done state today and on the
- * selected day, the streak, and everyone's results on the selected day.
+ * drawer is open, then merges the player's unsynced local queue. Returns, for the open shelf's games, the player's
+ * done state on the selected day, everyone's results that day and the friends to nudge, plus each shelf's count
+ * today and streak for the buttons.
  */
-function useDaily(sel: string, open: boolean) {
+function useDaily(sel: string, open: boolean, ids: GameId[]) {
   const player = usePlayer()
   const group = player?.group ?? PUBLIC_GROUP
   const [, setTick] = useState(0)
@@ -49,19 +55,21 @@ function useDaily(sel: string, open: boolean) {
   }, [])
   const day = siteDay()
   const board = useBoard(group, 60, sel, open)
-  const rows = [...board.rows]
+  const all = [...board.rows]
   if (player) {
     const local = queue().filter((q) => (!q.player || q.player.name === player.name) && q.day <= day && GAMES[q.game])
     local.forEach((q) => {
-      if (!rows.some((r) => r.name === player.name && r.game === q.game && r.day === q.day))
-        rows.push({ ...q, name: player.name })
+      if (!all.some((r) => r.name === player.name && r.game === q.game && r.day === q.day))
+        all.push({ ...q, name: player.name })
     })
   }
+  const rows = all.filter((r) => ids.includes(r.game))
+  const shared = ids.includes('crossword')
   // The crossword has no result until it is solved, so its live word counts come from the board's shared grid.
   const [grid, setGrid] = useState<{ key: string; players: { name: string; words: number }[] }>()
   const gridKey = `${group}:${sel}`
   useEffect(() => {
-    if (!open) return
+    if (!open || !shared) return
     let live = true
     void fetch(`/api/puzzle-rooms?group=${group}&day=${sel}`)
       .then((r) => (r.ok ? r.json() : null))
@@ -70,21 +78,25 @@ function useDaily(sel: string, open: boolean) {
     return () => {
       live = false
     }
-  }, [open, group, sel])
-  const filling: BoardRow[] = (grid?.key === gridKey ? grid.players : [])
+  }, [open, shared, group, sel])
+  const filling: BoardRow[] = (shared && grid?.key === gridKey ? grid.players : [])
     .filter((p) => p.name !== GUEST && !rows.some((r) => r.name === p.name && r.game === 'crossword' && r.day === sel))
     .map((p) => ({ name: p.name, game: 'crossword', day: sel, score: 0, stats: { n: p.words } }))
   const mine = player ? rows.filter((r) => r.name === player.name) : []
   const done = (d: string) => new Map(mine.filter((r) => r.day === d).map((r) => [r.game, r]))
   return {
     player,
-    todayCount: rows.filter((row) => row.name === player?.name && row.day === day).length,
+    /** Counts the games of a shelf the player has finished today. */
+    today: (s: Shelf) =>
+      all.filter((r) => r.name === player?.name && r.day === day && SHELVES[s].ids.includes(r.game)).length,
     picked: done(sel),
     everyone: [...rows.filter((r) => r.day === sel), ...filling],
-    streak: streaks(
-      rows.filter((row) => row.name === player?.name),
-      day,
-    ).current,
+    /** Returns the player's run of days with a finished game on a shelf. */
+    streakOf: (s: Shelf) =>
+      streaks(
+        all.filter((r) => r.name === player?.name && SHELVES[s].ids.includes(r.game)),
+        day,
+      ).current,
     loaded: board.loaded,
     // Up to 8 friends who played most in the last week and have games left today, with how many they finished.
     friends: [...new Set(rows.filter((r) => r.day >= shiftDay(day, -7) && r.name !== player?.name).map((r) => r.name))]
@@ -93,7 +105,7 @@ function useDaily(sel: string, open: boolean) {
         done: rows.filter((r) => r.name === n && r.day === day).length,
         days: new Set(rows.filter((r) => r.name === n && r.day >= shiftDay(day, -7)).map((r) => r.day)).size,
       }))
-      .filter((f) => f.done < GAME_IDS.length)
+      .filter((f) => f.done < ids.length)
       .sort((a, b) => b.days - a.days || a.name.localeCompare(b.name))
       .slice(0, 8),
   }
@@ -103,17 +115,17 @@ function useDaily(sel: string, open: boolean) {
 const OPENED = 'sfjc_daily_auto_opened'
 
 /**
- * Draws a ring of 1 slice per daily game, filling a slice for each game finished today, like an activity ring.
+ * Draws a ring of 1 slice per game on a shelf, filling a slice for each game finished today, like an activity ring.
  */
-function Ring({ done, size }: { done: number; size: number }) {
+function Ring({ done, of, size }: { done: number; of: number; size: number }) {
   const r = 6.5,
     c = 2 * Math.PI * r,
-    seg = c / GAME_IDS.length
+    seg = c / of
   return (
     <svg aria-hidden viewBox="0 0 16 16" width={size} height={size} className="-rotate-90">
-      {GAME_IDS.map((g, i) => (
+      {Array.from({ length: of }, (_, i) => (
         <circle
-          key={g}
+          key={i}
           cx="8"
           cy="8"
           r={r}
@@ -130,17 +142,25 @@ function Ring({ done, size }: { done: number; size: number }) {
 }
 
 /**
- * Renders the header Daily button, leaderboard link and the drawer they open. Game headers pass `compact` for a
- * smaller button without the leaderboard link, since they show their own.
+ * Renders the header Daily and Beta buttons, leaderboard link and the drawer they open. Game headers pass `compact`
+ * for 1 smaller button, for the shelf their game sits on, without the leaderboard link, since they show their own.
+ * The other shelf is 1 tap away on the drawer's tabs. A page with no game of its own passes its `shelf`.
  */
-export function DailyHeader({ compact = false }: { compact?: boolean }) {
+export function DailyHeader({ compact = false, shelf: pageShelf }: { compact?: boolean; shelf?: Shelf }) {
   /** Read only in the browser, so a server on another day (or a test clock) never mismatches the page. */
   const now = useSiteDay()
   const [picked, setPicked] = useState('')
   const sel = picked || now || siteDay()
   const [open, setOpen] = useState(false)
   const path = usePathname()
-  const { player, todayCount, picked: done, everyone, streak, loaded, friends } = useDaily(sel, open)
+  const home = pageShelf ?? shelfOfPath(path)
+  // The shelf the drawer shows, which starts as the page's own until a button or tab picks one.
+  const [chosen, setChosen] = useState<Shelf>()
+  const shelf = chosen ?? home
+  const { title, ids } = SHELVES[shelf]
+  const { player, today, picked: done, everyone, streakOf, loaded, friends } = useDaily(sel, open, ids)
+  const todayCount = today(shelf),
+    streak = streakOf(shelf)
   const push = usePushStatus(player)
   const nudges = useNudgeState(player, open)
   const [nudged, setNudged] = useState<Record<string, string>>({})
@@ -232,7 +252,8 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
     if (nudged || first) setOpen(true)
   }, [compact])
   const isToday = !now || sel === now
-  const canNudge = isToday && friends.length > 0
+  // Nudges are about the Daily games, so only that shelf offers them.
+  const canNudge = shelf === 'daily' && isToday && friends.length > 0
   // Today links to the bare game path, which pins the day when it opens, and other days add the ?d= day param.
   const q = isToday ? '' : `?d=${sel}`
   const dayName = isToday
@@ -254,30 +275,40 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
       🔥{streak}
     </span>
   )
-  const status = player
-    ? `Daily, ${todayCount} of ${GAME_IDS.length} done today${streak ? `, ${streak} day streak${risk ? ' at risk' : ''}` : ''}`
-    : 'Daily'
+  /** Names a shelf's button for screen readers: its count today and, for the open shelf's own, the streak. */
+  const status = (s: Shelf) => {
+    const run = streakOf(s)
+    return player
+      ? `${SHELVES[s].title}, ${today(s)} of ${SHELVES[s].ids.length} done today${run ? `, ${run} day streak${today(s) ? '' : ' at risk'}` : ''}`
+      : SHELVES[s].title
+  }
   return (
     <div data-game-theme="daily" className="flex items-center gap-1.5 bg-transparent">
-      <button
-        ref={btn}
-        type="button"
-        aria-haspopup="dialog"
-        aria-label={status}
-        onClick={() => {
-          setPicked('')
-          setOpen(true)
-        }}
-        className={
-          'inline-flex items-center gap-1.5 rounded-full bg-[var(--ink-text)] font-semibold whitespace-nowrap ' +
-          'text-[var(--ink-bg)] hover:opacity-90 ' +
-          (compact ? 'px-2.5 py-1 text-xs' : 'px-3.5 py-1.5 text-sm')
-        }
-      >
-        Daily
-        {player && <Ring done={todayCount} size={compact ? 14 : 16} />}
-        {player && !!streak && !compact && flame}
-      </button>
+      {(compact ? [home] : (['daily', 'beta'] as const)).map((s) => (
+        <button
+          key={s}
+          ref={s === shelf || compact ? btn : undefined}
+          type="button"
+          aria-haspopup="dialog"
+          aria-label={status(s)}
+          title={s === 'beta' ? 'Beta: games still being built' : undefined}
+          onClick={() => {
+            setPicked('')
+            setChosen(s)
+            setOpen(true)
+          }}
+          className={
+            'inline-flex items-center gap-1.5 rounded-full border border-[var(--ink-text)] font-semibold whitespace-nowrap ' +
+            'hover:opacity-90 ' +
+            (s === 'daily' ? 'bg-[var(--ink-text)] text-[var(--ink-bg)] ' : 'text-[var(--ink-text)] ') +
+            (compact ? 'px-2.5 py-1 text-xs' : 'px-3.5 py-1.5 text-sm')
+          }
+        >
+          {SHELVES[s].title}
+          {player && <Ring done={today(s)} of={SHELVES[s].ids.length} size={compact ? 14 : 16} />}
+          {player && s === 'daily' && !!streakOf(s) && !compact && (s === shelf ? flame : `🔥${streakOf(s)}`)}
+        </button>
+      ))}
       {!compact && (
         <Link
           href="/leaderboards"
@@ -304,7 +335,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
           <button
             type="button"
             tabIndex={-1}
-            aria-label="Close daily drawer"
+            aria-label={`Close ${title} drawer`}
             onClick={close}
             className="absolute inset-0 bg-black/40"
           />
@@ -312,7 +343,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
             ref={panel}
             role="dialog"
             aria-modal="true"
-            aria-label="Daily games"
+            aria-label={`${title} games`}
             style={drag ? { transform: `translateY(${drag}px)`, transition: 'none' } : undefined}
             className={
               'absolute inset-x-0 bottom-0 max-h-[88dvh] overflow-y-auto overscroll-contain rounded-t-2xl bg-[var(--ink-bg)] ' +
@@ -324,7 +355,24 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
               <div aria-hidden className="mx-auto mb-2 h-1.5 w-10 rounded-full bg-[var(--ink-border)]" />
             </div>
             <div {...sheet} className="mb-3 flex touch-none items-center gap-1 sm:mb-4 sm:touch-auto">
-              <h2 className="text-xl font-bold tracking-tight">Daily</h2>
+              <h2 className="sr-only">{title} games</h2>
+              <div role="tablist" aria-label="Shelf" className="flex rounded-full bg-[var(--ink-paper)] p-0.5">
+                {(['daily', 'beta'] as const).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    role="tab"
+                    aria-selected={s === shelf}
+                    onClick={() => setChosen(s)}
+                    className={
+                      'rounded-full px-3 py-1.5 text-base font-bold tracking-tight ' +
+                      (s === shelf ? 'bg-[var(--ink-text)] text-[var(--ink-bg)]' : 'text-[var(--ink-muted)]')
+                    }
+                  >
+                    {SHELVES[s].title}
+                  </button>
+                ))}
+              </div>
               <DayPicker day={sel} today={now} minDay={FIRST_DAY} go={setPicked} className="ml-auto" keys />
               <button
                 type="button"
@@ -337,7 +385,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
             </div>
             {player ? (
               <p className="mb-4 text-sm text-[var(--ink-muted)]">
-                {todayCount}/{GAME_IDS.length} today · {flame} · <PlayerName />
+                {todayCount}/{ids.length} today · {flame} · <PlayerName />
                 {(push === 'off' || push === 'on') && (
                   <button
                     type="button"
@@ -369,8 +417,16 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                 Set your name to track scores and streaks: <PlayerName />
               </p>
             )}
+            {shelf === 'beta' && (
+              <p className="mb-3 text-xs text-[var(--ink-muted)]">
+                Still being built. These games can change and never count toward Daily.{' '}
+                <Link href="/leaderboards?shelf=beta" onClick={close} className="underline">
+                  Beta leaderboard
+                </Link>
+              </p>
+            )}
             <ul className="grid grid-cols-2 gap-1.5 sm:gap-2">
-              {GAME_IDS.map((g) => {
+              {ids.map((g) => {
                 const r = done.get(g)
                 // With no result yet, a game this browser has played on the day without finishing it is started.
                 let state: PlayState = playState(r)
@@ -450,7 +506,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                 {isToday ? 'Played today' : `Played · ${dayName}`}
               </h3>
               {everyone.length ? (
-                <ScoreTable rows={everyone} me={player?.name} q={q} marks />
+                <ScoreTable rows={everyone} me={player?.name} q={q} marks games={ids} />
               ) : !loaded ? (
                 <div role="status" aria-label="Loading players" className="animate-pulse space-y-1.5">
                   {[0, 1].map((i) => (
@@ -484,7 +540,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                             ? `You nudged ${f.name} today`
                             : off
                               ? `${f.name} has not turned on nudges, so a nudge cannot reach them yet`
-                              : sent || `Nudge ${f.name}: ${GAME_IDS.length - f.done} games left today`
+                              : sent || `Nudge ${f.name}: ${ids.length - f.done} games left today`
                         }
                         onClick={() => {
                           // Senders turn on their own nudges first, so the tap asks for notifications when they are off.
@@ -513,7 +569,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                       >
                         <span className="max-w-24 truncate font-medium">{f.name}</span>
                         <span className="text-[var(--ink-muted)] tabular-nums">
-                          {f.done}/{GAME_IDS.length}
+                          {f.done}/{ids.length}
                         </span>
                         <span aria-hidden>{sent === 'Nudged' ? '✓' : off ? '🔕' : '👋'}</span>
                       </button>

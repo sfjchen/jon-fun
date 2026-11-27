@@ -17,7 +17,7 @@ The formula for adding or changing a daily game. Follow it top to bottom and the
 | #   | Do                                                                                                                                          | Where                                                                | Caught by               |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ----------------------- |
 | 1   | Study the original: rules, scoring, reset time, keys, help text, share text, credit and licence                                             | Rules line in `DAILY-GAMES.md`                                       | review                  |
-| 2   | Register: `GameId`, a `GAMES` row (title, url, max, unit, rules, `lowerIsBetter`), a place in `GAME_IDS`                                    | `src/lib/results.ts`                                                 | types, registry test    |
+| 2   | Register: `GameId`, a `GAMES` row (title, url, max, unit, rules, `lowerIsBetter`), a place in `BETA_IDS`                                    | `src/lib/results.ts`                                                 | types, registry test    |
 | 3   | First playable day                                                                                                                          | `firstDay` in `src/lib/daily.ts`                                     | silent                  |
 | 4   | Puzzle for a day, loaded by exact date with no other-day fallback                                                                           | `dailyPuzzle` in `src/lib/daily/server.ts`, data in `data/<id>/`     | runtime error           |
 | 5   | Bundle its data files for the server                                                                                                        | `PUZZLES` in `next.config.mjs`                                       | silent, production only |
@@ -33,7 +33,7 @@ The formula for adding or changing a daily game. Follow it top to bottom and the
 | 15  | Tests: the verifier on a real day, 1 play-through to score delivery                                                                         | `tests/<id>.test.ts`, `e2e/daily-games.spec.ts`                      | CI                      |
 | 16  | Check on a production build (`npm run build`, `npx next start -p 3002`), then on sfjc.dev after the deploy                                  | -                                                                    | -                       |
 
-Automatic once step 2 is done - the Daily drawer, score grids, boards, stats, streaks, nudges, Quick jump, the daily cron fetch and the API's game check all read `GAME_IDS`.
+Automatic once step 2 is done - the Daily drawer, score grids, boards, stats, streaks, nudges, Quick jump, the daily cron fetch and the API's game check all read `GAME_IDS`, which is `DAILY_IDS` followed by `BETA_IDS`.
 
 `tests/game-registry.test.ts` is the registry test (listed, routed, in `ownDailyHeader`, themed, has an icon and keys). Steps marked silent are not checked by anything, so do them by hand, and add a check there when one can be tested.
 
@@ -46,7 +46,9 @@ Automatic once step 2 is done - the Daily drawer, score grids, boards, stats, st
 
 ## Order and grouping
 
-- `GAME_IDS` is the only order. The Daily drawer, score grids, boards and Quick jump all follow it.
+- 2 shelves: Daily is the 6 original games (`DAILY_IDS`: Connections, Wordle, Mini, Spelling Bee, Krillion, Anthropeum) and Beta is every game added since (`BETA_IDS`). Each shelf has its own drawer tab, header button, score grid, standings, streak and stats, and a Beta result never counts toward Daily. Nudges are Daily only.
+- A new game starts on Beta. It moves to Daily only when the owner says so, by moving its id between the 2 lists.
+- Within a shelf the list is the only order. The drawer, score grids, boards and Quick jump all follow it.
 - Quick word puzzles first (Connections, Wordle, Mini, Spelling Bee), the crossword beside them, then other publishers' games, with the longest games last (Krillion, Anthropeum).
 - A new game goes next to the games of its kind and before the long ones. Every game counts the same, so the order never changes a score.
 - Games that are not ranked (SET, practice banks) stay out of `GAME_IDS` and off the boards.
