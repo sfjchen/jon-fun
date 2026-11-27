@@ -7,7 +7,7 @@
  */
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { shuffle } from '@/lib/random'
 import {
   PUBLIC_GROUP,
@@ -35,9 +35,6 @@ import {
   score,
   type Puzzle,
 } from '@/lib/spelling-bee'
-
-import RoomLobby, { type RoomBoardProps } from '@/components/puzzle-rooms/RoomLobby'
-import RoomHeader from '@/components/puzzle-rooms/RoomHeader'
 
 type HistoricalPuzzle = Puzzle & { date: string }
 type Words = { words: string[]; bank: string[] }
@@ -303,31 +300,11 @@ function Hints({ pz, found }: { pz: Puzzle; found: string[] }) {
  * Renders the full game page.
  */
 export default function SpellingBee() {
-  const params = useSearchParams()
-  const room = params.get('room')
-  const day = params.get('d')
-  if (room === null && !params.has('co-op')) return <Bee />
-  return (
-    <div className="mx-auto w-full max-w-5xl">
-      <RoomHeader title="Spelling Bee Together" />
-      <RoomLobby game="bee" id={room ?? ''} day={playableDay('bee', day) ? day : siteDay()} board={TeamBee} />
-    </div>
-  )
-}
-
-function TeamBee({ room, edit, controls }: RoomBoardProps) {
-  if (room.puzzle.game !== 'bee') return null
-  return <Bee team={{ puzzle: room.puzzle.board, found: room.words, submit: (word) => edit({ word }), controls }} />
-}
-
-type Team = { puzzle: HistoricalPuzzle; found: string[]; submit: (word: string) => void; controls: ReactNode }
-
-function Bee({ team }: { team?: Team }) {
   const router = useRouter()
   const params = useSearchParams()
   const [wb, setWb] = useState<Words | null>(null)
   const [err, setErr] = useState(false)
-  const [soloFound, setFound] = useState<string[]>([])
+  const [found, setFound] = useState<string[]>([])
   const [entry, setEntry] = useState('')
   const [order, setOrder] = useState([0, 1, 2, 3, 4, 5])
   const [toast, setToast] = useState<{ msg: string; ok: boolean; pts?: number } | null>(null)
@@ -340,24 +317,18 @@ function Bee({ team }: { team?: Team }) {
   const tRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const now = siteDay()
-  const p = team ? null : params.get('p')
+  const p = params.get('p')
   const practice = p && /^[a-rt-z]{7}$/.test(p) && new Set(p).size === 7 ? p : null
-  const archive = team ? null : params.get('a')
+  const archive = params.get('a')
   const requested = params.get('d')
-  const date = usePlayDay(
-    team?.puzzle.date ?? (playableDay('bee', requested) ? requested : null),
-    team ? undefined : 'bee',
-  )
-  const shared = Boolean(team)
-  const teamPuzzle = team?.puzzle
-  const found = team?.found ?? soloFound
+  const date = usePlayDay(playableDay('bee', requested) ? requested : null, 'bee')
 
   useEffect(() => {
     if (practice) loadWords().then(setWb, () => setErr(true))
   }, [practice])
 
   const selectedDay = validDay(archive) ? archive : date
-  const { data: official, error: officialError, retry } = useDailyPuzzle<HistoricalPuzzle>('bee', selectedDay, !shared)
+  const { data: official, error: officialError, retry } = useDailyPuzzle<HistoricalPuzzle>('bee', selectedDay)
   const [previousError, setPreviousError] = useState('')
   const [previous, setPrevious] = useState<HistoricalPuzzle | null>(null)
   useEffect(() => {
@@ -378,13 +349,12 @@ function Bee({ team }: { team?: Team }) {
   }, [modal, date, previous])
 
   const pz = useMemo(() => {
-    if (teamPuzzle) return teamPuzzle
     if (practice && !wb) return null
     const made = practice && wb && makePuzzle(practice, wb.words)
     return made && made.pangrams.length && made.answers.length >= 5 ? made : (official?.puzzle ?? null)
-  }, [wb, practice, official, teamPuzzle])
+  }, [wb, practice, official])
   const isPractice = !!pz && (pz.id === practice || (pz as HistoricalPuzzle).date === archive)
-  const key = !shared && pz ? (isPractice ? `p:${archive ?? 'random'}:${pz.id}` : `${date}:${pz.id}`) : null
+  const key = pz && (isPractice ? `p:${archive ?? 'random'}:${pz.id}` : `${date}:${pz.id}`)
 
   // Whether this browser has added a word of its own to the day's shared list.
   const [mine, setMine] = useState(false)
@@ -410,8 +380,8 @@ function Bee({ team }: { team?: Team }) {
   // up a friend's or a phone's words without a reload. The saved list is re-read when the reply lands, so a word typed
   // meanwhile is kept.
   const [name] = useDeviceName()
-  // A named player's daily hive is shared with their board, like a room is shared with its players.
-  const together = shared || (!isPractice && !!name)
+  // A named player's daily hive is shared with their board.
+  const together = !isPractice && !!name
   useEffect(() => {
     if (!pz || !key || isPractice) return
     let live = true
@@ -447,7 +417,7 @@ function Bee({ team }: { team?: Team }) {
   // Sends this browser's earlier days once, so words found before devices shared them reach the others.
   useEffect(() => {
     try {
-      if (shared || !name || localStorage.getItem('sb:shared')) return
+      if (!name || localStorage.getItem('sb:shared')) return
       for (const k of Object.keys(localStorage)) {
         const day = /^sb:(\d{4}-\d{2}-\d{2}):[a-z]{7}$/.exec(k)?.[1],
           ws = loadFound(k.slice(3))
@@ -462,7 +432,7 @@ function Bee({ team }: { team?: Team }) {
       }
       localStorage.setItem('sb:shared', '1')
     } catch {}
-  }, [name, now, shared])
+  }, [name, now])
 
   const pts = found.reduce((s, w) => s + score(w), 0)
   const rk = pz ? rankIdx(pts, pz.max) : 0
@@ -486,7 +456,7 @@ function Bee({ team }: { team?: Team }) {
   const n = found.length
   useEffect(() => {
     // The found list holds the whole board's words, so a result is saved only once this player has added a word.
-    if (shared || !pz || isPractice || revealed || pts <= 0 || !mine) return
+    if (!pz || isPractice || revealed || pts <= 0 || !mine) return
     const t = setTimeout(
       () =>
         logResult('bee', pts, n, date, {
@@ -499,7 +469,7 @@ function Bee({ team }: { team?: Team }) {
       1500,
     )
     return () => clearTimeout(t)
-  }, [pz, n, found, pts, isPractice, revealed, date, shared, mine])
+  }, [pz, n, found, pts, isPractice, revealed, date, mine])
   // Counts the named players on this board for the day, again whenever this browser's own result is saved.
   useEffect(() => {
     if (!key || isPractice) return
@@ -525,7 +495,7 @@ function Bee({ team }: { team?: Team }) {
 
   const busy = toast?.ok === false
   const submit = useCallback(() => {
-    if (!pz || (!team && !key) || !entry || busy || revealed) return
+    if (!pz || !key || !entry || busy || revealed) return
     const e = check(entry, pz, found)
     if (e) return flash(e, false)
     const nf = [...found, entry]
@@ -534,18 +504,15 @@ function Bee({ team }: { team?: Team }) {
       pz.max,
     )
     setEntry('')
-    if (team) team.submit(entry)
-    else {
-      if (!isPractice) markPracticeIfFuture('bee', date)
-      setFound(nf)
-      setMine(true)
-      try {
-        localStorage.setItem(`sb:${key}`, JSON.stringify(nf))
-        localStorage.setItem(`sb:mine:${key}`, '1')
-      } catch {}
-    }
+    if (!isPractice) markPracticeIfFuture('bee', date)
+    setFound(nf)
+    setMine(true)
+    try {
+      localStorage.setItem(`sb:${key}`, JSON.stringify(nf))
+      localStorage.setItem(`sb:mine:${key}`, '1')
+    } catch {}
     flash(nr === RANKS.length - 1 ? 'Queen Bee! 👑' : praise(entry), true, score(entry))
-  }, [pz, key, entry, found, busy, flash, isPractice, date, revealed, team])
+  }, [pz, key, entry, found, busy, flash, isPractice, date, revealed])
 
   const type = useCallback(
     (c: string) => {
@@ -613,66 +580,54 @@ function Bee({ team }: { team?: Team }) {
         75%{transform:translateX(8px)}}
         @keyframes sb-blink{50%{opacity:0}}`}</style>
 
-      {team ? (
-        <>
-          {team.controls}
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm text-[var(--ink-muted)]">{date}</p>
-            <button className={action} onClick={() => setModal('hints')}>
-              Hints
+      <DayNav
+        publishedOnly
+        minDay={NYT_FIRST_DAY.bee}
+        title="Spelling Bee"
+        path="/games/spelling-bee"
+        day={isPractice ? undefined : date}
+        label={archive ? `Past hive · ${archive} · practice` : 'Random hive · practice'}
+        info={
+          <>
+            <ul className="list-disc space-y-1 pl-4">
+              <li>Make words of 4+ letters from the hive. Every word uses the center letter. Letters can repeat.</li>
+              <li>4-letter words score 1. Longer words score 1 per letter. A pangram uses all 7 letters: +7.</li>
+              <li>Type or tap letters. Enter submits, Space shuffles.</li>
+              <li>Hints shows a grid of words left by first letter and length.</li>
+            </ul>
+            <PastHives archive={archive} go={go} />
+            <button
+              className="underline"
+              onClick={() =>
+                loadWords().then(
+                  ({ bank }) => go(`?p=${bank[Math.floor(Math.random() * bank.length)]}`),
+                  () => setErr(true),
+                )
+              }
+            >
+              Play a random practice hive
             </button>
-          </div>
-        </>
-      ) : (
-        <DayNav
-          publishedOnly
-          minDay={NYT_FIRST_DAY.bee}
-          title="Spelling Bee"
-          path="/games/spelling-bee"
-          day={isPractice ? undefined : date}
-          label={archive ? `Past hive · ${archive} · practice` : 'Random hive · practice'}
-          info={
-            <>
-              <ul className="list-disc space-y-1 pl-4">
-                <li>Make words of 4+ letters from the hive. Every word uses the center letter. Letters can repeat.</li>
-                <li>4-letter words score 1. Longer words score 1 per letter. A pangram uses all 7 letters: +7.</li>
-                <li>Type or tap letters. Enter submits, Space shuffles.</li>
-                <li>Hints shows a grid of words left by first letter and length.</li>
-              </ul>
-              <PastHives archive={archive} go={go} />
-              <button
-                className="underline"
-                onClick={() =>
-                  loadWords().then(
-                    ({ bank }) => go(`?p=${bank[Math.floor(Math.random() * bank.length)]}`),
-                    () => setErr(true),
-                  )
-                }
-              >
-                Play a random practice hive
-              </button>
-            </>
-          }
-        >
-          {isPractice && (
-            <button className={action} onClick={() => go('')}>
-              Today
-            </button>
-          )}
-          <button className={action} title="Words left by letter and length" onClick={() => setModal('hints')}>
-            Hints
+          </>
+        }
+      >
+        {isPractice && (
+          <button className={action} onClick={() => go('')}>
+            Today
           </button>
-          {!isPractice && date > NYT_FIRST_DAY.bee && (
-            <button className={action} title="Yesterday's answers" onClick={() => setModal('yesterday')}>
-              Yesterday
-            </button>
-          )}
-          <button className={action} title="Your stats and share" onClick={() => setModal('stats')}>
-            Stats
+        )}
+        <button className={action} title="Words left by letter and length" onClick={() => setModal('hints')}>
+          Hints
+        </button>
+        {!isPractice && date > NYT_FIRST_DAY.bee && (
+          <button className={action} title="Yesterday's answers" onClick={() => setModal('yesterday')}>
+            Yesterday
           </button>
-        </DayNav>
-      )}
-      {!shared && !isPractice && date <= now && isPracticeResult('bee', date) && (
+        )}
+        <button className={action} title="Your stats and share" onClick={() => setModal('stats')}>
+          Stats
+        </button>
+      </DayNav>
+      {!isPractice && date <= now && isPracticeResult('bee', date) && (
         <p className="mb-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
           Started as a future preview · not ranked
         </p>
@@ -868,7 +823,7 @@ function Bee({ team }: { team?: Team }) {
             >
               {revealed && <p className="mb-3 text-sm">Answers revealed · this puzzle is finished.</p>}
               {revealed ? <WordList words={pz.answers} found={new Set(found)} /> : <WordList words={sorted} />}
-              {!shared && (isPractice || date < now) && !revealed && found.length < pz.answers.length && (
+              {(isPractice || date < now) && !revealed && found.length < pz.answers.length && (
                 // Giving up sits apart from the word list as faint text and needs a 2nd confirming tap, so it is
                 // hard to hit by accident or by a passing temptation.
                 <div className="mt-8 border-t pt-3 text-xs" style={{ borderColor: 'var(--ink-border)' }}>

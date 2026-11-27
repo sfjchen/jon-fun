@@ -21,7 +21,7 @@ const nextConfig = {
     '/api/cron/daily': PUZZLES,
     '/api/cron/krillion': ['./data/krillion/review/**/*'],
     '/api/daily/*': PUZZLES,
-    '/api/puzzle-rooms': ['./public/puzzle-archives/bee/*.json', './public/puzzle-archives/mini/*.json'],
+    '/api/puzzle-rooms': ['./public/puzzle-archives/mini/*.json'],
     '/api/reader/extract-pdf': [
       './node_modules/pdfjs-dist/legacy/build/**/*',
       './node_modules/pdf-parse/node_modules/pdfjs-dist/legacy/build/**/*',

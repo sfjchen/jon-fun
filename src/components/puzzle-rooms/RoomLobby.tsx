@@ -85,14 +85,12 @@ const roomApi = (id: string) => `/api/puzzle-rooms${id ? `/${id}` : ''}`
 
 function sharedProgress(room: Room, pending: RoomEdit[]): Room {
   if (room.solved || !pending.length) return room
-  const words = new Set(room.words)
   const entries = { ...room.entries }
   for (const edit of pending) {
-    if ('word' in edit) words.add(edit.word)
-    else if (edit.value) entries[edit.cell] = edit.value
+    if (edit.value) entries[edit.cell] = edit.value
     else delete entries[edit.cell]
   }
-  return { ...room, words: [...words], entries }
+  return { ...room, entries }
 }
 
 const noopSubscribe = () => () => {}
@@ -146,11 +144,6 @@ function Lobby({ game, id, day, mini, shared, auto, board: Board }: Props) {
       try {
         const next = await request(roomApi(id), undefined, controller.signal)
         if (controller.signal.aborted) return
-        if (next.puzzle.game !== game) {
-          setError('This link is for a different game.')
-          setMissing(true)
-          return
-        }
         accept(next)
         setError('')
       } catch (cause) {
@@ -324,16 +317,13 @@ function Lobby({ game, id, day, mini, shared, auto, board: Board }: Props) {
     opened.current = true
     void enter()
   })
-  const back =
-    game === 'bee' && (room?.puzzle.board.date ?? day)
-      ? `${roomPath.bee}?d=${room?.puzzle.board.date ?? day}`
-      : `${roomPath[game]}?pick=1`
+  const back = `${roomPath[game]}?pick=1`
   if ((!lookup && id) || missing)
     return (
       <div className="space-y-3">
         <p role="alert">{error || 'Invalid room link.'}</p>
         <Link className={button} href={back} prefetch={false}>
-          Back to {game === 'bee' ? 'Spelling Bee' : 'Crossword'}
+          Back to Crossword
         </Link>
       </div>
     )
@@ -378,11 +368,6 @@ function Lobby({ game, id, day, mini, shared, auto, board: Board }: Props) {
             )}
           </form>
         )}
-        {game === 'bee' && (
-          <Link className={button} href={back} prefetch={false}>
-            Back to solo
-          </Link>
-        )}
       </div>
     )
 
@@ -411,7 +396,7 @@ function Lobby({ game, id, day, mini, shared, auto, board: Board }: Props) {
           {copied ? 'Invite copied' : 'Copy invite'}
         </button>
         <Link className={button} href={back} prefetch={false}>
-          {game === 'bee' ? 'Solo' : 'Change puzzle'}
+          Change puzzle
         </Link>
       </div>
       <p className="w-full break-words text-[var(--ink-muted)]">{room.players.join(' · ')}</p>

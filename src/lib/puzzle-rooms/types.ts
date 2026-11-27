@@ -1,5 +1,3 @@
-import type { Puzzle } from '@/lib/spelling-bee'
-
 export type CrosswordClue = {
   number: string
   direction: 'Across' | 'Down'
@@ -18,23 +16,20 @@ export type CrosswordBoard = {
   clues: CrosswordClue[]
 }
 
-export type RoomPuzzle =
-  { game: 'bee'; board: Puzzle & { date: string } } | { game: 'crossword'; board: CrosswordBoard }
+export type RoomPuzzle = { game: 'crossword'; board: CrosswordBoard }
 
 export type RoomGame = RoomPuzzle['game']
-export type RoomEdit = { word: string } | { cell: number; value: string }
+export type RoomEdit = { cell: number; value: string }
 export type Room = {
   id: string
   puzzle: RoomPuzzle
   players: string[]
-  words: string[]
   entries: Record<number, string>
   solved: boolean
   version: number
 }
 
 export const roomPath: Record<RoomGame, string> = {
-  bee: '/games/spelling-bee',
   crossword: '/games/crossword',
 }
 

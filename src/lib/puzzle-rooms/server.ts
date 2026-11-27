@@ -1,24 +1,21 @@
 import { createHash } from 'node:crypto'
 import { z } from 'zod'
-import { firstDay, siteDay, validDay } from '@/lib/daily'
-import { nytPuzzle } from '@/lib/daily/nyt'
+import { siteDay, validDay } from '@/lib/daily'
 import { supabaseAdmin } from '@/lib/supabase'
-import { check } from '@/lib/spelling-bee'
 import { crosswordFirstDay, crosswordForDay, type CrosswordPuzzle } from './crossword'
-import { cellEntry, type Room, type RoomGame, type RoomPuzzle } from './types'
+import { cellEntry, type Room, type RoomGame } from './types'
 
-type StoredPuzzle = Extract<RoomPuzzle, { game: 'bee' }> | { game: 'crossword'; board: CrosswordPuzzle }
+type StoredPuzzle = { game: 'crossword'; board: CrosswordPuzzle }
 type Player = { seat: string; name: string; seq: number; device?: string; late?: true }
 type Row = {
   id: string
   puzzle: StoredPuzzle
   players: Player[]
-  words: string[]
   entries: Record<number, string>
   solved: boolean
   version: number
 }
-type Change = Partial<Pick<Row, 'players' | 'words' | 'entries' | 'solved'>>
+type Change = Partial<Pick<Row, 'players' | 'entries' | 'solved'>>
 
 export class RoomError extends Error {
   constructor(
@@ -37,7 +34,7 @@ const IDLE_DAYS = 30
 /** A browser keeps this many seats, so a few open tabs can all edit while repeat joins stop adding up. */
 const DEVICE_SEATS = 3
 export const createRoomBody = z.object({
-  game: z.enum(['bee', 'crossword']),
+  game: z.literal('crossword'),
   day: z.string(),
   name,
   seat,
@@ -51,28 +48,22 @@ export const createRoomBody = z.object({
   mini: z.boolean().optional(),
 })
 export const roomAction = z.discriminatedUnion('action', [
-  z.object({ action: z.literal('join'), name, seat, device, game: z.enum(['bee', 'crossword']) }),
+  z.object({ action: z.literal('join'), name, seat, device, game: z.literal('crossword') }),
   z.object({
     action: z.literal('edit'),
     seat,
     seq: z.number().int().positive().max(1_000_000_000),
     edits: z
-      .array(
-        z.union([
-          z.object({ word: z.string().regex(/^[a-z]{4,40}$/) }),
-          z.object({ cell: z.number().int().min(0).max(624), value: z.string().regex(cellEntry) }),
-        ]),
-      )
+      .array(z.object({ cell: z.number().int().min(0).max(624), value: z.string().regex(cellEntry) }))
       .min(1)
       .max(32),
   }),
 ])
 
 function publicRoom(row: Row): Room {
-  const { id, puzzle, words, entries, solved, version } = row
+  const { id, puzzle, entries, solved, version } = row
   // A player who rejoins from a new tab takes a new seat, so the roster lists each name once.
   const players = [...new Set(row.players.map((player) => player.name))]
-  if (puzzle.game === 'bee') return { id, puzzle, players, words, entries, solved, version }
   const { date, title, credit, creditUrl, width, height, blocks, clues } = puzzle.board
   return {
     id,
@@ -81,7 +72,6 @@ function publicRoom(row: Row): Room {
       board: { date, title, credit, ...(creditUrl && { creditUrl }), width, height, blocks, clues },
     },
     players,
-    words,
     entries,
     solved,
     version,
@@ -95,11 +85,10 @@ async function loadRoom(id: string): Promise<Row | null> {
 }
 
 async function getPuzzle(game: RoomGame, day: string, mini: boolean): Promise<StoredPuzzle> {
-  const earliest = game === 'bee' ? firstDay('bee') : crosswordFirstDay(mini)
-  if (!validDay(day) || day < earliest || day > siteDay()) throw new RoomError('Choose a published puzzle date.', 400)
+  if (!validDay(day) || day < crosswordFirstDay(mini) || day > siteDay())
+    throw new RoomError('Choose a published puzzle date.', 400)
   try {
-    if (game === 'crossword') return { game, board: await crosswordForDay(day, mini) }
-    return { game, board: (await nytPuzzle('bee', day)) as Extract<RoomPuzzle, { game: 'bee' }>['board'] }
+    return { game, board: await crosswordForDay(day, mini) }
   } catch {
     throw new RoomError(`The puzzle for ${day} is unavailable. Try again or pick another date.`, 503)
   }
@@ -147,7 +136,6 @@ export async function readRoom(id: string) {
 function apply(row: Row, action: z.infer<typeof roomAction>): Change | null {
   const player = row.players.find((player) => player.seat === action.seat)
   if (action.action === 'join') {
-    if (row.puzzle.game !== action.game) throw new RoomError('This link is for a different game.', 400)
     if (player) return null
     // A new tab takes a new seat, since each seat numbers its own edits. Seats are counted per browser, and a
     // browser's oldest seats are dropped, so rejoining never fills the room.
@@ -169,22 +157,10 @@ function apply(row: Row, action: z.infer<typeof roomAction>): Change | null {
   if (row.solved) return null
 
   const players = row.players.map((p) => (p === player ? { ...p, seq: action.seq } : p))
-  if (row.puzzle.game === 'bee') {
-    const words = [...row.words]
-    for (const edit of action.edits) {
-      if (!('word' in edit)) throw new RoomError('Send a word for the hive.', 400)
-      if (words.includes(edit.word)) continue
-      const error = check(edit.word, row.puzzle.board, words)
-      if (error) throw new RoomError(error, 422)
-      words.push(edit.word)
-    }
-    return { players, words, solved: words.length === row.puzzle.board.answers.length }
-  }
-
   const entries = { ...row.entries }
   const { solution } = row.puzzle.board
   for (const edit of action.edits) {
-    if (!('cell' in edit) || !solution[edit.cell]) throw new RoomError('Choose an open square.', 422)
+    if (!solution[edit.cell]) throw new RoomError('Choose an open square.', 422)
     if (edit.value) entries[edit.cell] = edit.value
     else delete entries[edit.cell]
   }
@@ -227,12 +203,7 @@ export async function pruneRooms(): Promise<number> {
  */
 export async function solvedCrossword(id: string, seat: string, day: string): Promise<boolean> {
   const row = await loadRoom(id)
-  if (
-    !row?.solved ||
-    row.puzzle.game !== 'crossword' ||
-    !row.players.some((player) => player.seat === seat && !player.late)
-  )
-    return false
+  if (!row?.solved || !row.players.some((player) => player.seat === seat && !player.late)) return false
   const { solution } = await crosswordForDay(day, false)
   return row.puzzle.board.date === day && row.puzzle.board.solution.join() === solution.join()
 }
