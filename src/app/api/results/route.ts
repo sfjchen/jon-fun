@@ -126,6 +126,8 @@ export async function POST(req: Request) {
   const inserted = await supabaseAdmin.from('game_results').insert(value)
   if (inserted.error && inserted.error.code !== '23505')
     return NextResponse.json({ error: 'Could not save score. It remains queued on your device.' }, { status: 503 })
+  // Set when the day already holds a different finished game, so the sender can show that one in place of its own.
+  let other = false
   if (inserted.error?.code === '23505' && !words) {
     // A result saved before moves were kept gains them when the same game is sent again, matched by its score.
     await supabaseAdmin.from('game_results').update({ moves: m.data }).match(key).eq('score', score).is('moves', null)
@@ -133,14 +135,8 @@ export async function POST(req: Request) {
     // conflict, instead of being dropped. The first result still ranks, and only the first such game is kept.
     const first = await supabaseAdmin.from('game_results').select('device_id,score,moves,conflict').match(key)
     const kept = first.data?.[0]
-    if (
-      kept &&
-      !kept.conflict &&
-      b.deviceId &&
-      kept.device_id &&
-      kept.device_id !== b.deviceId &&
-      (kept.score !== score || (kept.moves && canonical(kept.moves) !== canonical(m.data)))
-    )
+    other = !!kept && (kept.score !== score || (!!kept.moves && canonical(kept.moves) !== canonical(m.data)))
+    if (kept && other && !kept.conflict && b.deviceId && kept.device_id && kept.device_id !== b.deviceId)
       await supabaseAdmin
         .from('game_results')
         .update({ conflict: { score, stats: value.stats, device: b.device ?? null, at: new Date().toISOString() } })
@@ -174,7 +170,7 @@ export async function POST(req: Request) {
   }
   // Every game's first finished result is immutable, so clearing a board or browser data cannot replace it. Spelling
   // Bee only grows, since its score rises as more words are found the same day.
-  return NextResponse.json({ ok: true, name })
+  return NextResponse.json({ ok: true, name, ...(other && { kept: true }) })
 }
 // History reads are large and shared, so the CDN keeps each one for 10 seconds and many open pages cost 1 database
 // read. A device that just posted adds its post time to the address (boardUrl), which skips any copy saved before its

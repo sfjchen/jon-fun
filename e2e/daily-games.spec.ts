@@ -406,3 +406,30 @@ test('a daily game in progress keeps its date across midnight', async ({ page })
   await page.getByRole('button', { name: 'Today', exact: true }).click()
   await expect(picker).toHaveValue('2026-11-20')
 })
+
+test('an open game follows a run played on another device without a reload', async ({ page }) => {
+  await scoreMock(page)
+  const pair = (word: string) => ({ anchors: ['left', 'right'], answers: [{ word, points: 1000 }], accepted: [] })
+  const words = ['one', 'two', 'three', 'four', 'five']
+  await page.route('**/api/daily/chainle?**', (route) =>
+    route.fulfill({ json: { day: today, sourceDate: today, puzzle: { date: today, pairs: words.map(pair) } } }),
+  )
+  await page.clock.install()
+  await page.goto('/games/chainle')
+  await expect(page.getByText('Round 1 of 5')).toBeVisible()
+  // The state mirror writes the other device's newer run and announces it.
+  await page.evaluate(
+    ([key, run]) => {
+      localStorage.setItem(key!, run!)
+      window.dispatchEvent(new CustomEvent('sfjc-state-pulled', { detail: [key] }))
+    },
+    [`chainle:v1:${today}:${today}`, JSON.stringify(words.slice(0, 3))],
+  )
+  await expect(page.getByText('Round 4 of 5')).toBeVisible()
+  // The other device finishes, and the next check for a saved result opens it here.
+  await page.route('**/api/results/run', (route) =>
+    route.fulfill({ json: { result: { score: 4000, stats: { n: 5 }, moves: [...words.slice(0, 4), 'miss'] } } }),
+  )
+  await page.clock.fastForward(16000)
+  await expect(page.getByTestId('chainle-result')).toHaveText('4,000/5,000')
+})

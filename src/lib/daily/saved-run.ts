@@ -5,14 +5,25 @@
  * finished under the same name on another device would otherwise show a fresh board. Before a game mounts, the
  * player's saved result for the day is fetched and, unless this browser already holds a finished run, the run is
  * rebuilt from the saved moves and stored where the game restores it from. The check runs again each time the player
- * returns to an open page, so a day finished on a phone meanwhile shows on the computer without a reload.
+ * returns to an open page and every 15 seconds while it is open, so a day finished on a phone meanwhile shows on the
+ * computer without a reload. A run another device is still playing arrives through the state mirror, and the page
+ * reloads it the same way.
  */
 
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { siteDay } from '@/lib/daily'
 import { artifactScore, type Artifact } from '@/lib/artifact-scoring'
 import { FIVEFOLD_TRIES } from '@/lib/daily/fivefold'
-import { getPlayer, isPracticeResult, onLiveRefresh, PLAYER_CHANGED, type GameId, type Stats } from '@/lib/results'
+import {
+  getPlayer,
+  isPracticeResult,
+  onLiveRefresh,
+  PLAYER_CHANGED,
+  RESULT_KEPT,
+  type GameId,
+  type Stats,
+} from '@/lib/results'
+import { STATE_PULLED } from '@/lib/stateSync'
 
 /** The games that play inside the shared daily shell. Spelling Bee and the crossword rooms have their own pages. */
 export type DailyGameId = Exclude<GameId, 'bee' | 'crossword' | 'orbs'>
@@ -128,7 +139,9 @@ function subscribePlayer(cb: () => void) {
  * Holds a game back until the player's saved result for the day has been checked. `ready` turns true once the
  * browser's run is settled, which takes 1 request, or no time without a name or on a practice day. `played` carries
  * a saved result that has no moves to rebuild from (saved before moves were kept), for the page to show in place
- * of a fresh board. `rev` rises when a later check fills in a run finished elsewhere, for the page to remount the game.
+ * of a fresh board. `rev` rises when a later check fills in a run finished elsewhere, when the board kept another
+ * device's finished game over this one's, or when another device's newer run was mirrored here, for the page to
+ * remount the game.
  */
 export function useSavedRun(
   game: DailyGameId,
@@ -154,6 +167,27 @@ export function useSavedRun(
   const [settled, setSettled] = useState<{ key: string; rev: number; played?: SavedResult }>()
   // Counts the player's returns to the open page. Each one checks again for a run finished on another device.
   const [seen, setSeen] = useState(0)
+  // Counts the results this device sent that lost to an earlier finished game, which then replaces the run here.
+  const [kept, setKept] = useState(0)
+  const replaced = useRef(0)
+  // Counts the newer copies of this day's run that the state mirror wrote here.
+  const [pulled, setPulled] = useState(0)
+  useEffect(() => {
+    const onKept = (e: Event) => {
+      const d = (e as CustomEvent<{ game: GameId; day: string }>).detail
+      if (d.game === game && d.day === day) setKept((n) => n + 1)
+    }
+    const onPulled = (e: Event) => {
+      if ((e as CustomEvent<string[]>).detail.some((k) => k.startsWith(`${PREFIX[game]}:${day}:`)))
+        setPulled((n) => n + 1)
+    }
+    window.addEventListener(RESULT_KEPT, onKept)
+    window.addEventListener(STATE_PULLED, onPulled)
+    return () => {
+      window.removeEventListener(RESULT_KEPT, onKept)
+      window.removeEventListener(STATE_PULLED, onPulled)
+    }
+  }, [game, day])
   const skip = !who || day > siteDay() || isPracticeResult(game, day)
   useEffect(() => {
     if (skip) return
@@ -163,7 +197,7 @@ export function useSavedRun(
       if (Date.now() - last < 2000) return
       last = Date.now()
       setSeen((n) => n + 1)
-    }, false)
+    })
   }, [skip])
   useEffect(() => {
     if (skip) return
@@ -177,10 +211,12 @@ export function useSavedRun(
         return false
       }
     }
+    // The board kept another finished game, so this browser's own run no longer counts as the day's.
+    const force = kept !== replaced.current
     // A run this browser already finished has nothing to gain from a later check.
-    if (checked.current === key && puzzle && done()) return
+    if (checked.current === key && puzzle && done() && !force) return
     // The request starts with the puzzle's own, so the 2 overlap and the game waits for the slower one.
-    const asked = `${key}:${seen}`
+    const asked = `${key}:${seen}:${kept}`
     if (request.current?.key !== asked) {
       const [group, name] = who.split('\n')
       request.current = {
@@ -201,15 +237,16 @@ export function useSavedRun(
     void request.current.saved.then((saved) => {
       if (!live) return
       // A later check that fails or finds nothing new leaves the page as it is.
-      if (checked.current === key && (!saved || done())) return
+      if (checked.current === key && (!saved || (done() && !force))) return
       checked.current = key
+      replaced.current = kept
       try {
-        if (!saved || done()) return setSettled({ key, rev: seen })
+        if (!saved || (done() && !force)) return setSettled({ key, rev: seen })
         if (saved.moves == null) return setSettled({ key, rev: seen, played: saved })
         const local = LOCAL[game](day, puzzle as never)
         for (const [k, v] of Object.entries(local.fill(saved))) localStorage.setItem(k, JSON.stringify(v))
         filled.current = key
-        setSettled({ key, rev: seen })
+        setSettled({ key, rev: seen + kept })
       } catch {
         // Without storage or with moves that no longer fit the puzzle, the saved score still shows.
         setSettled({ key, rev: seen, ...(saved ? { played: saved } : {}) })
@@ -218,9 +255,9 @@ export function useSavedRun(
     return () => {
       live = false
     }
-  }, [skip, key, who, game, day, puzzle, seen])
-  if (skip) return { ready: true, rev: 0 }
+  }, [skip, key, who, game, day, puzzle, seen, kept])
+  if (skip) return { ready: true, rev: pulled }
   return settled?.key === key
-    ? { ready: true, rev: settled.rev, ...(settled.played ? { played: settled.played } : {}) }
+    ? { ready: true, rev: settled.rev + pulled, ...(settled.played ? { played: settled.played } : {}) }
     : { ready: false, rev: 0 }
 }

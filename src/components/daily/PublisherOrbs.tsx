@@ -31,6 +31,7 @@ import {
   type PublisherPuzzle,
 } from '@/lib/publisher-orbs'
 import { GAMES, getPlayer, logResult } from '@/lib/results'
+import { STATE_PULLED } from '@/lib/stateSync'
 
 const path = '/games/orbs'
 const colors: Record<OrbColor, string> = {
@@ -423,6 +424,22 @@ function Edition({ edition, color }: { edition: PublisherOrbsEdition; color: Orb
     const score = ORB_COLORS.reduce((sum, slot) => sum + orbsOrbCount(playable[slot], next[slot].correct.length), 0)
     logResult('orbs', score, score, day, { moves, solved: score === GAMES.orbs.max, sourceDate: day })
   }
+
+  // Rounds another device played arrive through the state mirror and replace this page's copy.
+  useEffect(() => {
+    const onPulled = (e: Event) => {
+      if ((e as CustomEvent<string[]>).detail.some((k) => k.startsWith('sfjc_publisher_orbs:' + day + ':')))
+        setProgress(
+          Object.fromEntries(ORB_COLORS.map((slot) => [slot, loadProgress(storageKey(slot))])) as Record<
+            OrbColor,
+            Progress
+          >,
+        )
+    }
+    window.addEventListener(STATE_PULLED, onPulled)
+    return () => window.removeEventListener(STATE_PULLED, onPulled)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [day])
 
   // A day this player finished on another device opens on that run.
   useEffect(() => {

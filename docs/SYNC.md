@@ -32,4 +32,7 @@ and shown beside it on the daily board.
 Daily games sync by player name, not by sync key. Names are tidied where they are saved (`tidyName`: single
 spaces, first letter capitalized) and matched without regard to case, and a device adopts the spelling its board
 already holds on its next identity link. An open page pulls the name's Spelling Bee words on every live refresh
-and checks for a day finished on another device each time the player returns to it.
+and checks for a day finished on another device every 15 seconds and each time the player returns to it. A run
+still in progress follows the sync key: on a game page the mirror sends and pulls every 10 seconds, and an open game
+reloads a newer run it pulled (`STATE_PULLED`). A device whose finished game lost to an earlier one from another
+device shows the kept game in place of its own (`RESULT_KEPT`).

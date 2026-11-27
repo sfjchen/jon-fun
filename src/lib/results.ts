@@ -202,6 +202,8 @@ export const PLAYER_CHANGED = PLAYER_IDENTITY_CHANGED
 export const RESULTS_CHANGED = 'sfjc-results-changed'
 /** Fires when a result is saved on this device, before it syncs. */
 export const RESULT_QUEUED = 'sfjc-score-queued'
+/** Fired with `{ game, day }` when the board already held a different finished game for a result this device sent. */
+export const RESULT_KEPT = 'sfjc-result-kept'
 export function getPlayer(): Player | null {
   return getDevicePlayer()
 }
@@ -264,7 +266,10 @@ export async function flushResults(): Promise<boolean> {
       if (response.status === 429) break
       if (response.status >= 500) continue
       // The board keeps 1 spelling per name, so adopt its spelling when this device typed the name in another case.
-      const saved = response.ok ? ((await response.json()) as { name?: string }).name : undefined
+      const reply = response.ok ? ((await response.json()) as { name?: string; kept?: boolean }) : undefined
+      const saved = reply?.name
+      if (reply?.kept)
+        window.dispatchEvent(new CustomEvent(RESULT_KEPT, { detail: { game: item.game, day: item.day } }))
       const current = getPlayer()
       if (saved && saved !== owner.name && current?.name === owner.name && current.group === owner.group)
         saveDevicePlayer({ ...current, name: saved })

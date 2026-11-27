@@ -39,6 +39,8 @@ export const MAX_VALUE = 500_000
 export const MAX_BATCH = 100
 const MAX_BODY = 1_000_000
 const API = '/api/sync/state'
+/** Fired on `window` after entries from another device were written here. Its detail lists their keys. */
+export const STATE_PULLED = 'sfjc-state-pulled'
 const META = 'sfjc_state_meta'
 
 export type StateEntry = { key: string; value: string; at: number }
@@ -118,16 +120,22 @@ export async function syncState(pull = true): Promise<void> {
       if (!res.ok) break
       const r = (await res.json()) as { entries: StateEntry[]; since: string; more: boolean }
       for (const e of entries) if (meta.keys[e.key]?.[0] === hash(e.value)) meta.keys[e.key] = [hash(e.value), e.at, 1]
+      const written: string[] = []
       for (const e of r.entries) {
         const m = meta.keys[e.key]
         if (!isSyncedKey(e.key) || (m && e.at <= m[1])) continue
         try {
-          if (localStorage.getItem(e.key) !== e.value) localStorage.setItem(e.key, e.value)
+          if (localStorage.getItem(e.key) !== e.value) {
+            localStorage.setItem(e.key, e.value)
+            written.push(e.key)
+          }
           meta.keys[e.key] = [hash(e.value), e.at, 1]
         } catch {
           /* storage full: the entry stays on the account */
         }
       }
+      // An open game reloads its run from storage when another device's newer copy lands.
+      if (written.length) window.dispatchEvent(new CustomEvent(STATE_PULLED, { detail: written }))
       meta.since = r.since
       pulledAt = Date.now()
       localStorage.setItem(META, JSON.stringify(meta))
@@ -143,15 +151,17 @@ export async function syncState(pull = true): Promise<void> {
 
 /**
  * Keeps the mirror current while the site is open: a full sync on load, on return to the tab and when the sync
- * key changes, a send of changed entries every 30 seconds and when the tab hides, and a pull every 5 minutes.
+ * key changes, a send of changed entries every 10 seconds and when the tab hides, and a pull every 10 seconds on a
+ * game page, where another device may be playing the same run, and every 5 minutes elsewhere.
  * Returns a cleanup function.
  */
 export function startStateSync(): () => void {
   const full = () => void syncState()
   const onVisibility = () => void syncState(document.visibilityState === 'visible')
   const timer = setInterval(() => {
-    if (document.visibilityState === 'visible') void syncState(Date.now() - pulledAt > 300_000)
-  }, 30_000)
+    if (document.visibilityState === 'visible')
+      void syncState(Date.now() - pulledAt > (location.pathname.startsWith('/games/') ? 9_000 : 300_000))
+  }, 10_000)
   full()
   document.addEventListener('visibilitychange', onVisibility)
   window.addEventListener(SYNC_IDENTITY_CHANGED, full)
