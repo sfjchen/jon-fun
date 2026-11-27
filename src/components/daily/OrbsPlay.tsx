@@ -1,16 +1,14 @@
 'use client'
 
-/** Renders the Orbs edition list and the individual puzzle screens. */
+/** Renders a past sfjc.dev-bank Orbs edition, or 1 of its categories, as unranked practice. */
 
 import { gridKey } from '@/lib/keyboard'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
-import { orbsRunKey } from '@/lib/daily/saved-run'
 import {
   ORBS_CATEGORIES,
   ORBS_FORMATS,
-  ORBS_MAX,
   isOrbsCategory,
   orbsWrittenPick,
   type OrbsCategory,
@@ -20,12 +18,9 @@ import {
   type OrbsQuestion,
 } from '@/lib/orbs'
 import { ORBS_LIVES, replayOrbsRound, type OrbsRoundMoves, type OrbsRoundState } from '@/lib/orbs-run'
-import { readOrbsArchive, readOrbsDaily, saveOrbsArchive, saveOrbsDaily } from '@/lib/orbs-storage'
-import { isPracticeResult, logResult, markPracticeIfFuture } from '@/lib/results'
+import { readOrbsArchive, saveOrbsArchive } from '@/lib/orbs-storage'
 
-type Props = { puzzle: OrbsPuzzle; dailyDay: string } & (
-  { mode?: 'daily'; category?: never } | { mode: 'archive'; category?: OrbsCategoryId }
-)
+type Props = { puzzle: OrbsPuzzle; dailyDay: string; category?: OrbsCategoryId }
 type Answer = (clue: number, pick: OrbsPick) => boolean | undefined
 
 const colors: Record<OrbsCategoryId, string> = {
@@ -289,13 +284,9 @@ function PuzzleScreen({
 /** Persists answers independently of which screen is open. */
 export default function OrbsPlay(props: Props) {
   const { puzzle, dailyDay } = props
-  const archive = props.mode === 'archive'
-  const solo = archive ? props.category : undefined
+  const solo = props.category
   const categories = solo ? puzzle.categories.filter((category) => category.id === solo) : puzzle.categories
-  const key = orbsRunKey(dailyDay)
-  const [moves, setMoves] = useState(() =>
-    archive ? categories.map((category) => readOrbsArchive(dailyDay, category)) : readOrbsDaily(key, puzzle),
-  )
+  const [moves, setMoves] = useState(() => categories.map((category) => readOrbsArchive(dailyDay, category)))
   const states = categories.map((category, index) => replayOrbsRound(category, moves[index]!)!)
   const complete = states.every((state) => state.done)
   const score = states.reduce((sum, state) => sum + state.score, 0)
@@ -317,7 +308,7 @@ export default function OrbsPlay(props: Props) {
     return query.size ? `${path}?${query.toString()}` : path
   }
 
-  /** Records a legal attempt and submits only a completed daily edition. */
+  /** Records a legal attempt and saves the round's own mark once it ends. */
   const answer: Answer = (clue, pick) => {
     if (!selected) return
     const index = categories.indexOf(selected)
@@ -327,17 +318,7 @@ export default function OrbsPlay(props: Props) {
     if (!nextState) return
     const next = moves.map((round, i) => (i === index ? nextRound : round))
     setMoves(next)
-    if (archive) {
-      saveOrbsArchive(dailyDay, selected.id, nextRound, nextState.done ? nextState.score : undefined)
-    } else {
-      markPracticeIfFuture('orbs', dailyDay)
-      const allDone = states.every((state, i) => (i === index ? nextState.done : state.done))
-      saveOrbsDaily(key, next, allDone)
-      if (allDone) {
-        const earned = score - states[index]!.score + nextState.score
-        logResult('orbs', earned, earned, dailyDay, { moves: { rounds: next }, solved: earned === ORBS_MAX })
-      }
-    }
+    saveOrbsArchive(dailyDay, selected.id, nextRound, nextState.done ? nextState.score : undefined)
     return pick === selected.questions[clue]?.answer
   }
 
@@ -361,16 +342,10 @@ export default function OrbsPlay(props: Props) {
             <Link href={href()} prefetch={false} data-hotkey="Escape" className="underline underline-offset-4">
               ← Back to puzzles
             </Link>
-          ) : archive ? (
-            solo ? (
-              'Archive puzzle'
-            ) : (
-              'Archived edition'
-            )
-          ) : complete && isPracticeResult('orbs', dailyDay) ? (
-            'Practice complete'
+          ) : solo ? (
+            'Archive puzzle'
           ) : (
-            'Daily edition'
+            'Archived edition'
           )}
         </h2>
         <p className="font-semibold tabular-nums" aria-live="polite" data-testid={complete ? 'orbs-result' : undefined}>
@@ -383,7 +358,7 @@ export default function OrbsPlay(props: Props) {
           category={selected}
           state={states[categories.indexOf(selected)]!}
           answer={answer}
-          replay={archive ? replay : undefined}
+          replay={replay}
         />
       ) : (
         <nav aria-label="Daily Orbs puzzles">

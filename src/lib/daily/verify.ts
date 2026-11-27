@@ -19,8 +19,9 @@ import { roomPoints } from '../headcount'
 import { headcountForDay } from './headcount'
 import { chainleForDay } from './chainle'
 import { chainlePoints } from '../chainle-score'
-import { ORBS_MAX, type OrbsPuzzle } from '@/lib/orbs'
-import { isOrbsMoveSet, replayOrbsDay, type OrbsMoveSet } from '@/lib/orbs-run'
+import { publisherOrbsForDay } from './publisher-orbs'
+import { publisherOrbsPlayable } from './publisher-orbs-play'
+import { ORB_COLORS, orbsDone, orbsOrbCount, PUBLISHER_ORBS_RANKED_FROM, replayOrbs } from '../publisher-orbs'
 import type { MiniPuzzle } from '@/lib/mini'
 import { solvedCrossword } from '@/lib/puzzle-rooms/server'
 import { validRoomId } from '@/lib/puzzle-rooms/types'
@@ -139,7 +140,6 @@ export const VERIFIERS: Record<GameId, Verifier> = {
         : { score: 1, stats: { n: words, solved: true } }
     },
   ),
-  // Orbs replays old single picks and the current per-puzzle lives.
   headcount: verifier(z.array(z.array(z.number()).min(1).max(4)).length(5), async (day, moves) => {
     const party = await headcountForDay(day)
     let score = 0
@@ -155,14 +155,21 @@ export const VERIFIERS: Record<GameId, Verifier> = {
     const score = moves.reduce((sum, word, i) => sum + chainlePoints(puzzle.pairs[i]!, word), 0)
     return { score, stats: { n: 5, solved: score === 5000 } }
   }),
+  // Orbs replays each round's attempts against the publisher's edition of the day: its answers, lives and orb
+  // thresholds. Days before the publisher's editions ranked were scored on the sfjc.dev bank and take no new result.
   orbs: verifier(
-    z.union([z.array(z.number().int().min(0).max(2)).length(ORBS_MAX), z.custom<OrbsMoveSet>(isOrbsMoveSet)]),
+    z.record(z.enum(ORB_COLORS), z.array(z.array(z.string().max(1000)).max(2)).max(400)),
     async (day, moves) => {
-      const { puzzle } = await dailyPuzzle('orbs', day)
-      const states = replayOrbsDay(puzzle as OrbsPuzzle, moves)
-      if (!states?.every((state) => state.done)) return 'Invalid or unfinished Orbs run'
-      const score = states.reduce((sum, state) => sum + state.score, 0)
-      return { score, stats: { n: score, solved: score === ORBS_MAX } }
+      if (day < PUBLISHER_ORBS_RANKED_FROM)
+        return 'Orbs ranks the publisher’s editions from ' + PUBLISHER_ORBS_RANKED_FROM
+      const playable = publisherOrbsPlayable((await publisherOrbsForDay(day)).edition.puzzles)
+      let score = 0
+      for (const color of ORB_COLORS) {
+        const run = replayOrbs(playable[color], moves[color])
+        if (!run || !orbsDone(playable[color], run)) return 'Invalid or unfinished Orbs run'
+        score += orbsOrbCount(playable[color], run.correct.length)
+      }
+      return { score, stats: { n: score, solved: score === 12 } }
     },
   ),
   // Krillion re-judges each round's accepted answer against the original's answer list. A round sends '' when nothing

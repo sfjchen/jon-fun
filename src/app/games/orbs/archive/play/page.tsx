@@ -7,8 +7,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import DayPicker from '@/components/daily/DayPicker'
 import OrbsPlay from '@/components/daily/OrbsPlay'
-import { firstDay, playableDay, shiftDay } from '@/lib/daily'
-import { isOrbsCategory, orbsArchiveHref, type OrbsCategoryId, type OrbsPuzzle } from '@/lib/orbs'
+import { playableDay, shiftDay } from '@/lib/daily'
+import { isOrbsCategory, ORBS_FIRST_DAY, orbsArchiveHref, type OrbsCategoryId, type OrbsPuzzle } from '@/lib/orbs'
 import { useSiteDay } from '@/lib/play-day'
 import { useDailyPuzzle } from '@/lib/use-daily-puzzle'
 
@@ -22,7 +22,7 @@ function Round({ day, today, category }: { day: string; today: string; category:
         <DayPicker
           day={day}
           today=""
-          minDay={firstDay('orbs')}
+          minDay={ORBS_FIRST_DAY}
           maxDay={shiftDay(today, -1)}
           go={(to) => router.replace(orbsArchiveHref(to, category), { scroll: false })}
           className="mr-auto"
@@ -55,7 +55,6 @@ function Round({ day, today, category }: { day: string; today: string; category:
           key={`${day}:${category ?? 'edition'}`}
           puzzle={data.puzzle}
           dailyDay={day}
-          mode="archive"
           {...(category ? { category } : {})}
         />
       ) : (
@@ -77,7 +76,10 @@ function ArchiveRound() {
       <Link href="/games/orbs/archive" className="inline-block text-sm font-medium text-[var(--ink-accent)] underline">
         Back to archive
       </Link>
-      {playableDay('orbs', day) && day < today && (category === null || isOrbsCategory(category)) ? (
+      {playableDay('orbs', day) &&
+      day >= ORBS_FIRST_DAY &&
+      day < today &&
+      (category === null || isOrbsCategory(category)) ? (
         <Round day={day} today={today} category={category ?? undefined} />
       ) : (
         <p role="alert">Choose a past date from the archive.</p>

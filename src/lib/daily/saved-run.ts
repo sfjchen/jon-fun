@@ -11,13 +11,11 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { siteDay } from '@/lib/daily'
 import { artifactScore, type Artifact } from '@/lib/artifact-scoring'
-import { ORBS_BOARD_FIRST_DAY, type OrbsPuzzle } from '@/lib/orbs'
-import { isOrbsMoveSet, legacyOrbsPicks, replayOrbsDay } from '@/lib/orbs-run'
 import { FIVEFOLD_TRIES } from '@/lib/daily/fivefold'
 import { getPlayer, isPracticeResult, onLiveRefresh, PLAYER_CHANGED, type GameId, type Stats } from '@/lib/results'
 
 /** The games that play inside the shared daily shell. Spelling Bee and the crossword rooms have their own pages. */
-export type DailyGameId = Exclude<GameId, 'bee' | 'crossword'>
+export type DailyGameId = Exclude<GameId, 'bee' | 'crossword' | 'orbs'>
 export type SavedResult = { score: number; stats: Stats; moves: unknown }
 
 const PREFIX: Record<DailyGameId, string> = {
@@ -26,7 +24,6 @@ const PREFIX: Record<DailyGameId, string> = {
   connections: 'connections:v2',
   mini: 'mini:v3',
   anthropeum: 'anthropeum:v2',
-  orbs: 'orbs:v1',
   headcount: 'headcount:v1',
   chainle: 'chainle:v1',
 }
@@ -37,11 +34,6 @@ const PREFIX: Record<DailyGameId, string> = {
  */
 export function runKey(game: DailyGameId, day: string, id: string): string {
   return `${PREFIX[game]}:${day}:${id}`
-}
-
-/** Gives revised Orbs boards their own storage entry, keeping earlier dailies and their marks intact. */
-export function orbsRunKey(day: string): string {
-  return runKey('orbs', day, day < ORBS_BOARD_FIRST_DAY ? day : `${day}:board`)
 }
 
 /** A game's stored run: the entry that shows it is finished, the finished test, and the entries a saved result fills. */
@@ -102,21 +94,6 @@ const LOCAL: { [G in DailyGameId]: (day: string, puzzle: never) => Local } = {
           confirmed: [],
         },
       }),
-    }
-  },
-  orbs: (day, puzzle: OrbsPuzzle) => {
-    const key = orbsRunKey(day)
-    const finished = (value: unknown) => {
-      const moves = isOrbsMoveSet(value) ? value : legacyOrbsPicks(value)
-      return replayOrbsDay(puzzle, moves)?.every((state) => state.done) === true
-    }
-    return {
-      key,
-      done: (run: { picks?: unknown } | null) => finished(isOrbsMoveSet(run) ? run : run?.picks),
-      fill: ({ moves }) => {
-        if (!finished(moves)) throw new Error('Invalid saved Orbs run')
-        return { [key]: isOrbsMoveSet(moves) ? { ...moves, complete: true } : { picks: moves } }
-      },
     }
   },
   anthropeum: (day, { date, artifacts }: { date: string; artifacts: Artifact[] }) => {

@@ -1,25 +1,38 @@
 'use client'
 
+/**
+ * Plays the publisher's 4 Daily Orbs puzzles for a date. Every attempt is kept, so a finished day is sent to the
+ * boards and the server replays it for the score.
+ */
+
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import DayNav, { action } from '@/components/daily/DayNav'
 import PublisherOrbsText from '@/components/daily/PublisherOrbsText'
 import { validDay } from '@/lib/daily'
+import { GAME_KEYS } from '@/lib/game-keys'
 import { useSiteDay } from '@/lib/play-day'
 import {
   answerText,
-  findOrbsAnswer,
   ORB_COLORS,
+  ORB_LIVES,
+  orbsDone,
   orbsOrbCount,
+  playOrbs,
   PUBLISHER_ORBS_FIRST_DAY,
+  PUBLISHER_ORBS_RANKED_FROM,
+  replayOrbs,
   type OrbColor,
+  type OrbsMove,
+  type OrbsMoves,
+  type OrbsRun,
   type PublisherOrbsEdition,
   type PublisherPuzzle,
 } from '@/lib/publisher-orbs'
+import { GAMES, getPlayer, logResult } from '@/lib/results'
 
 const path = '/games/orbs'
-const lives = 3
 const colors: Record<OrbColor, string> = {
   orange: 'border-t-orange-500 text-orange-700 dark:text-orange-300',
   green: 'border-t-emerald-500 text-emerald-700 dark:text-emerald-300',
@@ -28,14 +41,14 @@ const colors: Record<OrbColor, string> = {
 }
 const tile = 'w-full min-h-11 rounded-xl border bg-[var(--ink-paper)] p-2 text-sm sm:p-3 sm:text-base'
 const panel = 'rounded-xl border border-[var(--ink-border)] p-3 sm:p-4'
-type Check = (id: string | null, message: string, neutral?: boolean) => void
-type Progress = { correct: string[]; misses: number }
+type Check = (move: OrbsMove) => void
+type Progress = OrbsRun
 
 const editionHref = (day: string, color?: OrbColor) => path + '?d=' + day + (color ? '&puzzle=' + color : '')
 
 function ProgressMarks({ puzzle, progress }: { puzzle: PublisherPuzzle; progress: Progress }) {
   const orbs = orbsOrbCount(puzzle, progress.correct.length)
-  const remaining = lives - progress.misses
+  const remaining = ORB_LIVES - progress.misses
   return (
     <span className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 text-lg leading-none">
       <span role="img" aria-label={orbs + ' of 3 orbs'}>
@@ -43,35 +56,20 @@ function ProgressMarks({ puzzle, progress }: { puzzle: PublisherPuzzle; progress
       </span>
       {puzzle.type !== 'long-list' && (
         <span role="img" aria-label={remaining + ' of 3 lives'}>
-          {'♥'.repeat(remaining) + '♡'.repeat(lives - remaining)}
+          {'♥'.repeat(remaining) + '♡'.repeat(ORB_LIVES - remaining)}
         </span>
       )}
     </span>
   )
 }
 
-function puzzleSize(puzzle: PublisherPuzzle) {
-  switch (puzzle.type) {
-    case 'bijection':
-      return puzzle.pairs.length
-    case 'categorization':
-      return puzzle.items.length
-    case 'themed':
-      return puzzle.clues.length
-    case 'long-list':
-      return Math.min(puzzle.answers.length, puzzle.starThresholds[2])
-    case 'open-ended':
-      return puzzle.answers.length
-  }
-}
-
 function loadProgress(key: string): Progress {
   try {
     const run = JSON.parse(localStorage.getItem(key) ?? 'null') as Progress | null
-    if (run && Array.isArray(run.correct) && Number.isInteger(run.misses) && run.misses >= 0 && run.misses <= lives)
+    if (run && Array.isArray(run.correct) && Number.isInteger(run.misses) && run.misses >= 0 && run.misses <= ORB_LIVES)
       return run
   } catch {}
-  return { correct: [], misses: 0 }
+  return { correct: [], misses: 0, moves: [] }
 }
 
 function Tile({ text, selected, onClick }: { text: string; selected?: boolean; onClick: () => void }) {
@@ -121,21 +119,11 @@ function Matching({
       return
     }
     select(undefined)
-    const itemA = side === 'itemA' ? text : selection.text
-    const itemB = side === 'itemB' ? text : selection.text
-    const matches = (pair: { itemA: string; itemB: string }) => pair.itemA === itemA && pair.itemB === itemB
-    const pair = remaining.find(matches)
-    const neutral = puzzle.neutralPairs?.find(matches)
-    const wrong = puzzle.expectedWrong?.find(matches)
-    check(
-      pair?.id ?? null,
-      pair?.display ?? neutral?.display ?? wrong?.display ?? (pair ? 'Match found.' : 'Try a different match.'),
-      Boolean(neutral),
-    )
+    check(side === 'itemA' ? [text, selection.text] : [selection.text, text])
   }
 
   return (
-    <div className="grid grid-cols-2 gap-2 sm:gap-4">
+    <div className="grid grid-cols-2 gap-2 sm:gap-4" data-arrows="grab">
       {(
         [
           { side: 'itemA', title: puzzle.columnA, values: left },
@@ -166,16 +154,18 @@ function Sorting({
   puzzle,
   correct,
   check,
+  note,
 }: {
   puzzle: Extract<PublisherPuzzle, { type: 'categorization' }>
   correct: string[]
   check: Check
+  note: (message: string) => void
 }) {
   const [selected, select] = useState<string>()
   const remaining = puzzle.items.filter((item) => !correct.includes(item.id))
   const item = remaining.find((item) => item.id === selected)
   return (
-    <div className="grid grid-cols-2 gap-2 sm:gap-4">
+    <div className="grid grid-cols-2 gap-2 sm:gap-4" data-arrows="grab">
       <div className="min-w-0 space-y-2">
         <h3 className="font-semibold">Items</h3>
         {remaining.map((item) => (
@@ -194,13 +184,9 @@ function Sorting({
             key={category}
             text={(puzzle.categoryIcons?.[category] ?? '') + ' ' + category}
             onClick={() => {
-              if (!item) return check(null, 'Choose an item first.', true)
-              const matched = item.category === category
-              if (matched) select(undefined)
-              check(
-                matched ? item.id : null,
-                matched ? (item.reveal ?? 'Correct category.') : 'Try a different category.',
-              )
+              if (!item) return note('Choose an item first.')
+              if (item.category === category) select(undefined)
+              check([item.id, category])
             }}
           />
         ))}
@@ -226,27 +212,8 @@ function Written({
   function submit() {
     if (!input.trim()) return
     setInput('')
-    if (puzzle.type === 'themed') {
-      if (!clue) return
-      const found = findOrbsAnswer(input, clue.answers, puzzle)
-      const unexpected = clue.expectedWrong ?? []
-      const wrong = findOrbsAnswer(input, unexpected, puzzle)
-      if (found >= 0) check(clue.id, clue.reveal ?? answerText(clue.answers[found]!))
-      else check(null, wrong >= 0 ? answerText(unexpected[wrong]!) : 'Try another answer.')
-      return
-    }
-    const found = findOrbsAnswer(input, puzzle.answers, puzzle)
-    const neutral = puzzle.neutralAnswers ?? []
-    const wrong = puzzle.expectedWrong ?? []
-    const neutralIndex = findOrbsAnswer(input, neutral, puzzle)
-    const wrongIndex = findOrbsAnswer(input, wrong, puzzle)
-    if (found >= 0) check(String(found), answerText(puzzle.answers[found]!))
-    else if (neutralIndex >= 0) check(null, answerText(neutral[neutralIndex]!), true)
-    else
-      check(
-        null,
-        wrongIndex >= 0 ? answerText(wrong[wrongIndex]!) : (puzzle.expectedWrongDefault ?? 'Try another answer.'),
-      )
+    if (puzzle.type !== 'themed') check([input])
+    else if (clue) check([clue.id, input])
   }
 
   return (
@@ -349,16 +316,14 @@ function Round({
   save: (next: Progress) => void
 }) {
   const [feedback, setFeedback] = useState<string>()
-  const { correct, misses } = progress
-  const complete = correct.length >= puzzleSize(puzzle)
-  const done = complete || misses >= lives
+  const { correct } = progress
+  const done = orbsDone(puzzle, progress)
 
-  function check(id: string | null, message: string, neutral = false) {
-    if (done) return
-    if (id !== null && correct.includes(id)) return setFeedback('You already found that answer.')
-    setFeedback(message)
-    if (id !== null) save({ correct: [...correct, id], misses })
-    else if (!neutral && puzzle.type !== 'long-list') save({ correct, misses: misses + 1 })
+  function check(move: OrbsMove) {
+    const next = playOrbs(puzzle, progress, move)
+    if (!next) return
+    setFeedback(next.message)
+    if (next.run !== progress) save(next.run)
   }
 
   return (
@@ -379,20 +344,26 @@ function Round({
       </div>
       {done ? (
         <p role="status" className={panel}>
-          {complete ? 'Round complete' : 'Out of lives'} · {correct.length} correct
+          {progress.misses >= ORB_LIVES ? 'Out of lives' : progress.ended ? 'Round ended' : 'Round complete'} ·{' '}
+          {correct.length} correct
         </p>
       ) : (
         <>
           {puzzle.type === 'bijection' ? (
             <Matching puzzle={puzzle} correct={correct} check={check} />
           ) : puzzle.type === 'categorization' ? (
-            <Sorting puzzle={puzzle} correct={correct} check={check} />
+            <Sorting puzzle={puzzle} correct={correct} check={check} note={setFeedback} />
           ) : (
             <Written puzzle={puzzle} correct={correct} check={check} />
           )}
           <p role="status" className="min-h-6 text-sm text-[var(--ink-muted)]">
             {feedback && <PublisherOrbsText text={feedback} />}
           </p>
+          {puzzle.type === 'long-list' && (
+            <button type="button" className={action + ' border border-[var(--ink-border)]'} onClick={() => check([])}>
+              End round
+            </button>
+          )}
         </>
       )}
       <AnswerList puzzle={puzzle} correct={correct} done={done} />
@@ -420,16 +391,78 @@ function Edition({ edition, color }: { edition: PublisherOrbsEdition; color: Orb
         Progress
       >,
   )
-  function save(slot: OrbColor, next: Progress) {
-    setProgress((current) => ({ ...current, [slot]: next }))
-    try {
-      localStorage.setItem(storageKey(slot), JSON.stringify(next))
-    } catch {}
+  const [notice, setNotice] = useState('')
+  const untouched = ORB_COLORS.every((slot) => !progress[slot].correct.length && !progress[slot].misses)
+  const finished = ORB_COLORS.every((slot) => orbsDone(playable[slot], progress[slot]))
+  const ranked = day >= PUBLISHER_ORBS_RANKED_FROM && ORB_COLORS.every((slot) => progress[slot].moves)
+  const orbs = (slot: OrbColor) => orbsOrbCount(playable[slot], progress[slot].correct.length)
+  const total = ORB_COLORS.reduce((sum, slot) => sum + orbs(slot), 0)
+  const share =
+    'Daily Orbs · ' +
+    day +
+    '\n' +
+    ORB_COLORS.map((slot) => '●'.repeat(orbs(slot)) + '○'.repeat(3 - orbs(slot))).join(' ') +
+    '\n' +
+    total +
+    '/' +
+    GAMES.orbs.max +
+    ' · sfjc.dev'
+
+  // Stores the changed rounds only, so a round synced from another device is not overwritten by this page's older
+  // copy. Once all 4 are over, sends the day's attempts for the server to replay.
+  function saveAll(next: Record<OrbColor, Progress>, changed: readonly OrbColor[] = ORB_COLORS, send = true) {
+    setProgress(next)
+    for (const slot of changed)
+      try {
+        localStorage.setItem(storageKey(slot), JSON.stringify(next[slot]))
+      } catch {}
+    if (!send || day < PUBLISHER_ORBS_RANKED_FROM || !ORB_COLORS.every((slot) => orbsDone(playable[slot], next[slot])))
+      return
+    const moves = Object.fromEntries(ORB_COLORS.map((slot) => [slot, next[slot].moves])) as Partial<OrbsMoves>
+    if (!ORB_COLORS.every((slot) => moves[slot])) return
+    const score = ORB_COLORS.reduce((sum, slot) => sum + orbsOrbCount(playable[slot], next[slot].correct.length), 0)
+    logResult('orbs', score, score, day, { moves, solved: score === GAMES.orbs.max, sourceDate: day })
   }
+
+  // A day this player finished on another device opens on that run.
+  useEffect(() => {
+    const player = getPlayer()
+    if (!player || !untouched || day < PUBLISHER_ORBS_RANKED_FROM) return
+    const controller = new AbortController()
+    void fetch('/api/results/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      body: JSON.stringify({ group: player.group, name: player.name, game: 'orbs', day }),
+    })
+      .then((response) => (response.ok ? (response.json() as Promise<{ result: { moves?: OrbsMoves } | null }>) : null))
+      .then((saved) => {
+        const moves = saved?.result?.moves
+        // A round started here while the lookup was out keeps this device's run.
+        if (!moves || ORB_COLORS.some((slot) => loadProgress(storageKey(slot)).moves?.length)) return
+        const runs = ORB_COLORS.map((slot) => replayOrbs(playable[slot], moves[slot] ?? []))
+        if (runs.every((run, i) => run && orbsDone(playable[ORB_COLORS[i]!], run)))
+          saveAll(
+            Object.fromEntries(ORB_COLORS.map((slot, i) => [slot, runs[i]])) as Record<OrbColor, Progress>,
+            ORB_COLORS,
+            false,
+          )
+      })
+      .catch(() => {})
+    return () => controller.abort()
+    // Runs once per edition: a player who has started here keeps this device's run.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [day])
+
   if (color)
     return (
       <>
-        <Link className="inline-block py-2 text-sm font-semibold underline" href={editionHref(day)}>
+        <Link
+          className="inline-block py-2 text-sm font-semibold underline"
+          href={editionHref(day)}
+          prefetch={false}
+          data-hotkey="Escape"
+        >
           ← All four puzzles
         </Link>
         <Round
@@ -437,19 +470,47 @@ function Edition({ edition, color }: { edition: PublisherOrbsEdition; color: Orb
           puzzle={playable[color]}
           color={color}
           progress={progress[color]}
-          save={(next) => save(color, next)}
+          save={(next) => saveAll({ ...progress, [color]: next }, [color])}
         />
       </>
     )
   return (
-    <nav aria-label="Publisher Orbs puzzles" className="space-y-3">
+    <nav aria-label="Publisher Orbs puzzles" className="space-y-3" data-arrows="grab">
       {edition.originalDate && edition.originalDate !== day && (
         <p className="text-sm text-[var(--ink-muted)]">Originally published {edition.originalDate}</p>
       )}
-      {ORB_COLORS.map((slot) => (
+      {finished && (
+        <div className={panel + ' space-y-2 bg-[var(--ink-paper)] text-center'}>
+          <h2 className="text-xl font-bold" data-testid="orbs-result">
+            {total}/{GAMES.orbs.max} orbs
+          </h2>
+          <p className="text-sm text-[var(--ink-muted)]">
+            {ranked ? 'Saved to your daily scores' : 'Practice · not ranked'}
+          </p>
+          <button
+            type="button"
+            className={action + ' border border-[var(--ink-border)]'}
+            data-hotkey="s"
+            onClick={() =>
+              navigator.clipboard.writeText(share).then(
+                () => setNotice('Result copied.'),
+                () => setNotice(share),
+              )
+            }
+          >
+            Copy result
+          </button>
+          <p role="status" className="min-h-5 text-sm whitespace-pre-line text-[var(--ink-muted)]">
+            {notice}
+          </p>
+        </div>
+      )}
+      {ORB_COLORS.map((slot, i) => (
         <Link
           key={slot}
           href={editionHref(day, slot)}
+          prefetch={false}
+          data-hotkey={String(i + 1)}
           className={panel + ' block border-t-4 bg-[var(--ink-paper)] hover:bg-[var(--ink-bg)] ' + colors[slot]}
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -517,11 +578,13 @@ export default function PublisherOrbs() {
         day={day || undefined}
         publishedOnly
         minDay={PUBLISHER_ORBS_FIRST_DAY}
+        keys={GAME_KEYS.orbs}
         info={
           <>
             <p>Pick any puzzle. Tap two tiles to match them, choose a category, or type your answer.</p>
             <p>Correct answers earn orbs. Most rounds give you three lives. Long lists allow unlimited guesses.</p>
-            <p>Publisher edition progress is saved on this device.</p>
+            <p style={{ color: 'var(--ink-muted)' }}>Scoring: {GAMES.orbs.rules}</p>
+            <p style={{ color: 'var(--ink-muted)' }}>Everyone gets the same puzzle each day (Pacific time).</p>
             <p>
               Puzzles by{' '}
               <a className="underline" href="https://dailyorbs.com">
@@ -534,9 +597,6 @@ export default function PublisherOrbs() {
       >
         <Link className={action} href="/games/orbs/archive">
           Archive
-        </Link>
-        <Link className={action} href={'/games/orbs/local' + (day && day !== today ? '?d=' + day : '')}>
-          Ranked Orbs
         </Link>
       </DayNav>
       {day && <LoadEdition key={day} day={day} color={color} />}

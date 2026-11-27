@@ -1,4 +1,4 @@
-/** Verifies archive browsing, random selection and separate daily and archive completions. */
+/** Verifies practice archive browsing, random selection and its own completion marks. */
 
 import { test, expect } from '@playwright/test'
 import { siteDay } from '../src/lib/daily'
@@ -20,7 +20,6 @@ test('a random archive round saves an archive mark and sends no ranked score', a
   await trivia.getByText('Choose a date').click()
   await expect(trivia.getByText(siteDay(), { exact: true })).toHaveCount(0)
   const finishedDaily = trivia.getByRole('listitem').filter({ hasText: '2026-11-21' })
-  await expect(finishedDaily.getByRole('img', { name: 'Daily: Completed' })).toBeVisible()
   await expect(finishedDaily.getByRole('img', { name: 'Archive: Not done' })).toBeVisible()
   await page.evaluate(() => {
     Math.random = () => 0
@@ -38,7 +37,6 @@ test('a random archive round saves an archive mark and sends no ranked score', a
   await trivia.getByText('Choose a date').click()
   const played = trivia.getByRole('listitem').filter({ hasText: day })
   await expect(played.getByRole('img', { name: 'Archive: Completed' })).toBeVisible()
-  await expect(played.getByRole('img', { name: 'Daily: Not done' })).toBeVisible()
   const words = page.getByRole('region', { name: 'Wordplay', exact: true })
   await expect(words.getByText(/^0 of \d+ rounds played$/)).toBeVisible()
   await trivia.getByRole('button', { name: 'Random' }).click()
@@ -50,7 +48,7 @@ test('a random archive round saves an archive mark and sends no ranked score', a
   await expect(page.getByRole('alert').filter({ hasText: 'Choose a past date' })).toBeVisible()
 })
 
-test('Orbs archives reopen the full dated edition with the same puzzles and independent progress', async ({ page }) => {
+test('Orbs archives open the full dated edition and share progress with its category rounds', async ({ page }) => {
   await mockSyncIdentity(page)
   const rankedPosts: string[] = []
   await page.route('**/api/results**', (route) => {
@@ -62,23 +60,12 @@ test('Orbs archives reopen the full dated edition with the same puzzles and inde
   const first = puzzle.categories[0]!
   const editionNav = page.getByRole('navigation', { name: 'Daily Orbs puzzles' })
   const firstQuestion = first.questions[0]!
-  await page.goto(`/games/orbs/local?d=${day}`)
-  await expect(editionNav.getByRole('link')).toHaveCount(4)
-  const dailyTitles = await editionNav.getByRole('link').allTextContents()
-  await editionNav.getByRole('link', { name: new RegExp(first.title) }).click()
-  const dailyClues = await page
-    .getByRole('region', { name: first.title, exact: true })
-    .getByRole('heading', { level: 3 })
-    .allTextContents()
-
   await page.goto('/games/orbs/archive')
   await page.getByText('Browse complete local editions').click()
   await page.getByRole('link', { name: day, exact: true }).click()
   await expect(editionNav.getByRole('link')).toHaveCount(4)
-  expect(await editionNav.getByRole('link').allTextContents()).toEqual(dailyTitles)
   await editionNav.getByRole('link', { name: new RegExp(first.title) }).click()
   const board = page.getByRole('region', { name: first.title, exact: true })
-  expect(await board.getByRole('heading', { level: 3 }).allTextContents()).toEqual(dailyClues)
   await expect(page.getByRole('link', { name: /Publisher’s edition/ })).toHaveAttribute(
     'href',
     `https://dailyorbs.com/${day}`,
@@ -92,6 +79,6 @@ test('Orbs archives reopen the full dated edition with the same puzzles and inde
   await page.goto(`/games/orbs/archive/play?d=${day}&c=${first.id}`)
   await expect(board.getByText(`Correct · ${firstQuestion.options[firstQuestion.answer]}`)).toBeVisible()
   await page.goto(`/games/orbs/local?d=${day}`)
-  await expect(page.getByRole('region', { name: 'Orbs progress' })).toContainText('0/12 orbs')
+  await expect(page).toHaveURL(new RegExp(`/games/orbs\\?d=${day}$`))
   expect(rankedPosts).toEqual([])
 })

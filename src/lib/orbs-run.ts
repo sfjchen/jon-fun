@@ -1,19 +1,11 @@
-/** Replays the same Orbs moves in the player, saved runs, and results API. */
+/** Replays a practice round of the sfjc.dev Orbs bank from its saved moves. */
 
-import {
-  ORBS_CATEGORIES,
-  ORBS_CATEGORY_SIZE,
-  ORBS_MAX,
-  type OrbsCategory,
-  type OrbsPick,
-  type OrbsPuzzle,
-} from '@/lib/orbs'
+import { ORBS_CATEGORY_SIZE, ORBS_MAX, type OrbsCategory, type OrbsPick } from '@/lib/orbs'
 
 export const ORBS_LIVES = 3
 
 type Attempt = { clue: number; pick: OrbsPick }
 export type OrbsRoundMoves = { legacy: (OrbsPick | null)[]; attempts: Attempt[] }
-export type OrbsMoveSet = { rounds: OrbsRoundMoves[] }
 export type OrbsRoundState = { locked: (OrbsPick | null)[]; score: number; lives: number; done: boolean }
 
 /** Checks single-choice indices shared by all puzzle formats. */
@@ -48,18 +40,6 @@ export function isOrbsRound(value: unknown): value is OrbsRoundMoves {
   )
 }
 
-/** Checks the shape of a four-puzzle submission. */
-export function isOrbsMoveSet(value: unknown): value is OrbsMoveSet {
-  return (
-    !!value &&
-    typeof value === 'object' &&
-    'rounds' in value &&
-    Array.isArray(value.rounds) &&
-    value.rounds.length === Object.keys(ORBS_CATEGORIES).length &&
-    value.rounds.every(isOrbsRound)
-  )
-}
-
 /** Restores prior locked picks, then applies new attempts until all clues are locked or lives reach zero. */
 export function replayOrbsRound(category: OrbsCategory, round: OrbsRoundMoves): OrbsRoundState | null {
   const questions = category.questions
@@ -85,21 +65,4 @@ export function replayOrbsRound(category: OrbsCategory, round: OrbsRoundMoves): 
     } else lives--
   }
   return { locked, score, lives, done: lives === 0 || locked.every((pick) => pick !== null) }
-}
-
-/** Converts old flat picks to puzzle order and checks every round of the day. */
-export function replayOrbsDay(puzzle: OrbsPuzzle, moves: OrbsMoveSet | (number | null)[]): OrbsRoundState[] | null {
-  const rounds = 'rounds' in moves ? moves.rounds : splitOrbsPicks(puzzle, legacyOrbsPicks(moves))
-  const states = puzzle.categories.map((category, index) => replayOrbsRound(category, rounds[index]!))
-  return states.every((state) => state !== null) ? states : null
-}
-
-/** Keeps the original ordinals when migrating saved single-attempt answers. */
-export function splitOrbsPicks(puzzle: OrbsPuzzle, picks: (OrbsPick | null)[]): OrbsRoundMoves[] {
-  let offset = 0
-  return puzzle.categories.map((category) => {
-    const start = offset
-    offset += category.questions.length
-    return { legacy: picks.slice(start, offset), attempts: [] }
-  })
 }

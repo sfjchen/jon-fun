@@ -69,12 +69,10 @@ export const GAME_KEYS: Record<GameId, KeyRow[]> = {
   ],
   orbs: [
     ['1 2 3 4', 'Open that puzzle'],
-    ['1 2 3', 'Pick that answer for the first open clue'],
-    ['1 Q A', 'Matching: pick that clue'],
-    ['2 W S', 'Matching: pick that match'],
     ['← ↑ → ↓', 'Walk the tiles'],
-    ['Enter', 'Check a typed answer, or play again'],
+    ['Enter', 'Pick the focused tile, check a typed answer'],
     ['Esc', 'Back to the puzzles'],
+    ['S', 'Copy the result'],
   ],
   krillion: [
     ['Enter Space', 'Start the dive, next prompt'],

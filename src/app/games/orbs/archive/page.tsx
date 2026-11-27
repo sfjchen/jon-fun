@@ -5,30 +5,23 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Mark, playState } from '@/components/daily/ScoreTable'
+import { Mark } from '@/components/daily/ScoreTable'
 import { playableDay, shiftDay } from '@/lib/daily'
-import { orbsRunKey } from '@/lib/daily/saved-run'
 import { ORBS_ROTATION_START, ORBS_CATEGORIES, orbsArchiveHref, type OrbsCategoryId, type OrbsIndex } from '@/lib/orbs'
-import { archiveRoundDone, orbsDailyDone } from '@/lib/orbs-storage'
+import { archiveRoundDone } from '@/lib/orbs-storage'
 import { PUBLISHER_ORBS_FIRST_DAY } from '@/lib/publisher-orbs'
 import { useSiteDay } from '@/lib/play-day'
-import { boardUrl, isPracticeResult, type BoardRow } from '@/lib/results'
-import { usePlayer } from '@/lib/use-player'
 
 const categories = Object.keys(ORBS_CATEGORIES) as OrbsCategoryId[]
 
-/** Loads the category index and the current player's ranked Orbs completions. */
+/** Loads the category index of the sfjc.dev practice bank. */
 export default function ArchivePage() {
   const today = useSiteDay()
   const router = useRouter()
-  const player = usePlayer()
-  const name = player?.name
-  const group = player?.group
   const [index, setIndex] = useState<OrbsIndex>()
   const [error, setError] = useState(false)
   const [attempt, retry] = useState(0)
   const [publisherDay, setPublisherDay] = useState('')
-  const [board, setBoard] = useState<{ name: string; group: string; days: Set<string> }>()
 
   useEffect(() => {
     const controller = new AbortController()
@@ -44,41 +37,16 @@ export default function ArchivePage() {
     return () => controller.abort()
   }, [attempt])
 
-  useEffect(() => {
-    if (!name || !group) return
-    const controller = new AbortController()
-    void fetch(boardUrl({ group, game: 'orbs', days: 6000 }), { signal: controller.signal })
-      .then((response) => (response.ok ? (response.json() as Promise<{ rows: BoardRow[] }>) : null))
-      .then((result) => {
-        if (!result || controller.signal.aborted) return
-        const days = result.rows
-          .filter(
-            (row) => row.game === 'orbs' && row.name.toLowerCase() === name.toLowerCase() && playState(row) === 'done',
-          )
-          .map((row) => row.day)
-        setBoard({ name, group, days: new Set(days) })
-      })
-      .catch(() => {})
-    return () => controller.abort()
-  }, [group, name])
-
   const rotation: string[] = []
   for (let day = ORBS_ROTATION_START; day < today; day = shiftDay(day, 1)) rotation.push(day)
   const editions = [...new Set([...Object.values(index ?? {}).flat(), ...rotation])]
     .filter((day) => playableDay('orbs', day) && day < today)
     .sort((a, b) => b.localeCompare(a))
-  const syncedDays = board && board.name === name && board.group === group ? board.days : undefined
-
-  /** Uses the ranked board or a finished daily run on this device for the daily mark. */
-  function dailyDone(day: string) {
-    return syncedDays?.has(day) || (!isPracticeResult('orbs', day) && orbsDailyDone(orbsRunKey(day)))
-  }
-
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
         <p className="text-[var(--ink-muted)]">
-          Play a publisher edition by date, or browse the local rounds by theme.
+          Play a publisher edition by date, or practise the sfjc.dev rounds by theme. Practice rounds are not ranked.
         </p>
         <Link href="/games/orbs" className="font-medium text-[var(--ink-accent)] underline">
           Play today’s Orbs
@@ -144,7 +112,6 @@ export default function ArchivePage() {
               <p className="mt-2 text-sm text-[var(--ink-muted)]">No past editions yet.</p>
             )}
           </details>
-          <p className="text-xs text-[var(--ink-muted)]">Each theme shows Archive and Daily completion marks.</p>
           <div className="grid gap-3 sm:grid-cols-2">
             {categories.map((category) => {
               const days = [...new Set([...index[category], ...rotation])]
@@ -186,7 +153,6 @@ export default function ArchivePage() {
                               {day}
                             </Link>
                             <Mark state={archiveRoundDone(day, category) ? 'done' : 'none'} label="Archive" size={17} />
-                            <Mark state={dailyDone(day) ? 'done' : 'none'} label="Daily" size={14} />
                           </li>
                         ))}
                       </ul>

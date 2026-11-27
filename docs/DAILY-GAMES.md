@@ -15,11 +15,11 @@ In `GAME_IDS` order, which is the order of the Daily drawer, score grids and boa
 | Crossword            | generated here (xfill, WordNet)   | 2026-11-20 | solved, words | shared solve            | the whole grid        |
 | Headcount            | headcountgame.com, dated party    | 2026-11-26 | of 100        | most points             | no                    |
 | Chainle              | chainle.io, dated edition         | 2026-08-20 | of 5,000      | most points             | no                    |
-| Orbs                 | own bank (`data/orbs`)            | 2026-11-21 | of 12 orbs    | most orbs               | no                    |
+| Orbs                 | dailyorbs.com, dated edition      | 2026-11-26 | of 12 orbs    | most orbs               | no                    |
 | Krillion             | the original's same-date prompts  | 2026-11-01 | of 700        | most points             | no                    |
 | Anthropeum           | the original's artifacts, per day | 2026-11-01 | of 100,000    | most points             | no                    |
 
-Also here but off the boards - a daily SET (`/games/set`), and the publisher editions of Daily Orbs (`/games/orbs`).
+Every ranked game plays its publisher's puzzle except the Crossword, which has no publisher feed yet. Also here but off the boards - a daily SET (`/games/set`), and practice rounds from the sfjc.dev Orbs bank (`/games/orbs/archive`).
 
 ## How a day works
 
@@ -50,11 +50,11 @@ Also here but off the boards - a daily SET (`/games/set`), and the publisher edi
 - Wordle accepts the 14,855 words of the NYT client (`public/fivefold/words.json`, refreshed by `scripts/sync-wordle-words.py`).
 - Krillion uses the original's same-date prompts and answer review (accepted answers, aliases, rarity scores). A day's review is bundled or fetched from the original on first request, then stored.
 - Anthropeum uses the original's public artifacts and historical polygons, bundled per day in `data/anthropeum`.
-- Beginning 2026-12-07, a date without an authored Orbs edition combines four local archive rounds on a fixed schedule. This also works when a year file is absent. Keep the ten source boards (2026-11-27 through 2026-12-06) stable and schedule overrides before a day opens so ranked replays stay valid.
-- The server also reads the approved Daily Orbs feed by exact date through `/api/orbs/publisher?d=YYYY-MM-DD`. It retains the first full published payload in `daily_game_content` under `publisher-orbs`, including the original date on publisher-designated repeat days. Later reads reuse that snapshot. The public route reports edition metadata, and ranked sfjc.dev Orbs uses its own bank.
+- Orbs ranks the publisher's Daily Orbs edition of the date, from 2026-11-26 (`PUBLISHER_ORBS_RANKED_FROM`). The 1 score before that came from the sfjc.dev bank, which is now practice only: `/games/orbs/archive` plays its rounds by category or date, unranked, and `/api/daily/orbs` still serves it. From 2026-12-07 a date without an authored practice edition combines 4 archive rounds on a fixed schedule.
+- The server reads the approved Daily Orbs feed by exact date through `/api/orbs/publisher?d=YYYY-MM-DD`. It retains the first full published payload in `daily_game_content` under `publisher-orbs`, including the original date on publisher-designated repeat days. Later reads and the score check reuse that snapshot.
 - The publisher’s separate archive starts 2026-04-17. The date picker opens the original edition. `python3 scripts/sync-orbs-publisher.py DIRECTORY` saves the native puzzle records for offline use and resumes by skipping existing snapshots. Chainle’s historical editions can be refreshed with `python3 scripts/sync-chainle.py --archive`.
-- Orbs reads original questions from `data/orbs/<year>.json`, starting 2026-11-21. After adding a day, regenerate the date-only archive index with `npx tsx scripts/build-orbs-index.ts`. Use `--check` to verify the index after editing the bank.
-- `/games/orbs/archive` groups past Orbs rounds by category through yesterday. A date can also open its full four-puzzle edition with the same title, clues, option order and player as its daily route. Archive progress is per date, category and browser. Daily marks come from ranked scores or completed local daily runs.
+- The practice bank is `data/orbs/<year>.json`, starting 2026-11-21. After adding a day, regenerate the date-only archive index with `npx tsx scripts/build-orbs-index.ts`. Use `--check` to verify the index after editing the bank.
+- `/games/orbs/archive` groups the practice rounds by category through yesterday, and a date can open its full 4-puzzle practice edition. Progress is per date, category and browser. `/games/orbs/local`, the old address of the bank's daily, redirects to `/games/orbs`.
 - `/games/archives` browses all 4 NYT games by date and offers each year's puzzles and word lists.
 
 ## Cron (`vercel.json`)
@@ -73,7 +73,7 @@ Also here but off the boards - a daily SET (`/games/set`), and the publisher edi
 - Spelling Bee - the day's exact answer list, center letter required, 4-letter minimum, original points and rank thresholds. Found words are shared across the board (see Collaborative games).
 - Krillion - 7 prompts, 25 seconds each on wall time, so a reload never grants a new clock. Wrong answers can be retried, and the draft is judged once at expiry. Answers are judged on the device from the prompt's answer key, with the server as fallback. Matching ignores accents, case, punctuation and a leading "the". From 5 letters, the closest answer within min(3, 0.28 × length) edits comes back as `"typed" → "answer"` and scores when sent again. Rarity scores are 10, 15, 30, 60, 85 or 100, maximum 700. No AI judging.
 - Anthropeum - 10 artifacts, a map pin and a 250-year period each (125-year steps, 3000 BCE to 1750 CE). Up to 5,000 points for place (distance to the nearest polygon edge) and 5,000 for time, 100,000 overall. 3 free hints per game. The results page shows the original's score histogram and estimated placement.
-- Orbs - Four themed puzzles open on separate screens. Formats include written clues, two-tap matching, sorting and a short quiz. Each puzzle has three lives, and a puzzle ends when every clue is solved or the lives run out. The first complete daily ranks with one orb per correct clue, up to 12. An archive round saves only its own mark.
+- Orbs - the publisher's 4 puzzles open on separate screens: matching, sorting, written clues, open answers and long lists. A round has 3 lives and ends when every answer is found or the lives run out. A long list has no lives and ends when full or on End round. Each round earns up to 3 orbs at the publisher's thresholds, and the first finished day ranks, up to 12.
 - SET (`/games/set`) - a generated daily board of 12 cards with exactly 6 sets, not the original's board. Not on the leaderboard. `/games/triples` is the full 81-card game with PIN rooms, where each seat holds a private credential and claims use version checks.
 - All 8 games (`GAME_IDS`) count the same toward overall wins, streaks, Daily drawer progress and nudges, and all show at once in the drawer and score grids.
 - Crossword - the full-size daily counts as solved for every player in a room once its grid is correct. The result carries the room and the player's seat, and the server checks both against the day's puzzle and adds the player's word count, so boards show `Solved · 12`. Mini-edition rooms do not count.
@@ -82,7 +82,7 @@ Also here but off the boards - a daily SET (`/games/set`), and the publisher edi
 ## Verified scores
 
 - Every result sends its moves (`stats.moves`). `/api/results` replays them against the day's puzzle and stores its own score, so a hand-made score cannot be posted.
-- Wordle - guesses, word list, hard mode. Bee - found words. Connections - guesses and give-up. Anthropeum - pins and periods. Krillion - each round's accepted answer, judged again. Mini - the solved grid. Orbs - per-puzzle attempts and life limits. Earlier runs replay their 12 option indices.
+- Wordle - guesses, word list, hard mode. Bee - found words. Connections - guesses and give-up. Anthropeum - pins and periods. Krillion - each round's accepted answer, judged again. Mini - the solved grid. Orbs - each round's attempts, replayed against the publisher's answers, lives and orb thresholds.
 - Solve times (Mini, Connections) and Krillion's round clock cannot be replayed and stay as sent. Mini and Connections times under a floor no person can reach (0.15 s per Mini cell, 1 s per Connections guess) are rejected.
 - Checked moves are kept in a `moves` column that score reads never return, so boards never reveal answers. Only `/api/results/run` reads it, to rebuild a player's finished game. Results saved before 2026-11-21 have no moves and show their score only, until the device that played them opens the day again.
 
@@ -163,7 +163,7 @@ Aditri's daily games list (2026-11-26). Done means playable here with a ranked s
 | Wordle                    | nytimes.com/games/wordle             | Done                                                |
 | Connections               | nytimes.com/games/connections        | Done                                                |
 | Chainle                   | chainle.io                           | Done, with archive                                  |
-| Daily Orbs                | dailyorbs.com                        | Done, with category archive                         |
+| Daily Orbs                | dailyorbs.com                        | Done, ranked as Orbs                                |
 | Headcount                 | headcountgame.com                    | Done                                                |
 | Noillirk                  | noillirk.com (Crowdict)              | To do: embedded only at `/games/noillirk`, no score |
 | Who's More Famous         | whosmorefamous.com                   | To do: outside link in the Daily collection         |

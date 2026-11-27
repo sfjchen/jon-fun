@@ -1,17 +1,9 @@
-/** Browser storage for Orbs daily plays and independent archive plays. */
+/** Browser storage for practice plays of the sfjc.dev Orbs bank. */
 
-import { ORBS_CATEGORY_SIZE, ORBS_MAX, type OrbsCategory, type OrbsCategoryId, type OrbsPuzzle } from '@/lib/orbs'
-import {
-  isOrbsMoveSet,
-  isOrbsRound,
-  legacyOrbsPicks,
-  replayOrbsDay,
-  replayOrbsRound,
-  splitOrbsPicks,
-  type OrbsRoundMoves,
-} from '@/lib/orbs-run'
+import { ORBS_CATEGORY_SIZE, type OrbsCategory, type OrbsCategoryId } from '@/lib/orbs'
+import { isOrbsRound, legacyOrbsPicks, replayOrbsRound, type OrbsRoundMoves } from '@/lib/orbs-run'
 
-type Stored = { picks?: unknown; round?: unknown; rounds?: unknown; complete?: unknown; n?: number; at?: number }
+type Stored = { picks?: unknown; round?: unknown; n?: number; at?: number }
 
 /** Reads one storage entry without requiring storage to be available. */
 function read(key: string): Stored | null {
@@ -27,26 +19,6 @@ function write(key: string, value: Stored): void {
   try {
     localStorage.setItem(key, JSON.stringify(value))
   } catch {}
-}
-
-/** Restores checked daily moves, with support for older flat picks. */
-export function readOrbsDaily(key: string, puzzle: OrbsPuzzle): OrbsRoundMoves[] {
-  const saved = read(key)
-  const picks = legacyOrbsPicks(saved?.picks)
-  if (isOrbsMoveSet(saved) && replayOrbsDay(puzzle, saved)) return saved.rounds
-  return splitOrbsPicks(puzzle, picks)
-}
-
-/** Saves the daily run and the quick completion flag used by the archive list. */
-export function saveOrbsDaily(key: string, rounds: OrbsRoundMoves[], complete: boolean): void {
-  write(key, { rounds, complete })
-}
-
-/** Reads the archive list's completion flag from either storage format. */
-export function orbsDailyDone(key: string): boolean {
-  const saved = read(key)
-  const old = legacyOrbsPicks(saved?.picks)
-  return saved?.complete === true || (old.length === ORBS_MAX && old.every((pick) => pick !== null))
 }
 
 /** Names one independent archive play. */

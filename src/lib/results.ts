@@ -1,5 +1,4 @@
 import { siteDay } from '@/lib/daily'
-import { ORBS_MAX } from '@/lib/orbs'
 import { rankAutochecked, type MiniRun } from '@/lib/mini'
 import {
   getDevicePlayer,
@@ -90,10 +89,11 @@ export const GAMES: Record<
   },
   orbs: {
     title: 'Orbs',
-    url: '/games/orbs/local',
-    max: ORBS_MAX,
+    url: '/games/orbs',
+    max: 12,
     unit: 'orbs',
-    rules: 'Four puzzles with three lives each. One orb per correct answer. Your first finished day counts.',
+    rules:
+      'The 4 Daily Orbs puzzles of the day, each worth up to 3 orbs for its correct answers. Your first finished day counts.',
   },
   crossword: {
     title: 'Crossword',
@@ -139,7 +139,7 @@ export type BoardRow = Result & { name: string; device?: DeviceKind; conflict?: 
 /** The version of the scoring rules that current results use. Rows stored under an older one stay off the boards. */
 export const SCORING_VERSION = 2
 export function formatGameScore(game: GameId, score: number): string {
-  if (game === 'orbs') return `${Number.isInteger(score) ? score : score.toFixed(1)}/${ORBS_MAX}`
+  if (game === 'orbs') return `${Number.isInteger(score) ? score : score.toFixed(1)}/${GAMES.orbs.max}`
   if (game === 'crossword') return score > 0 ? 'Solved' : '–'
   return game === 'mini'
     ? formatTime(Math.round(score))
@@ -301,6 +301,8 @@ export function markPracticeIfFuture(game: GameId, day?: string): void {
 }
 export function isPracticeResult(game: GameId, day: string): boolean {
   if (day > siteDay()) return true
+  // Orbs has no future preview. A flag left by the earlier sfjc.dev-bank Orbs does not apply to the publisher's edition.
+  if (game === 'orbs') return false
   try {
     return localStorage.getItem(`sfjc_future_practice:${game}:${day}`) === '1'
   } catch {

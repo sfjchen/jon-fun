@@ -15,7 +15,7 @@ const PREFIXES = [
   'connections:v2:',
   'mini:v3:',
   'anthropeum:',
-  'orbs:v1:',
+  'sfjc_publisher_orbs:',
   'sfjc_orbs_archive:',
   'set:v1:',
   'sb:',

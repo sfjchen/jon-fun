@@ -21,7 +21,6 @@ import type { ArtifactDay } from '@/components/daily/AnthropeumPlay'
 import type { KrillionPuzzle } from '@/components/daily/KrillionPlay'
 import type { Party } from '@/lib/headcount'
 import type { Edition } from '@/lib/daily/chainle'
-import type { OrbsPuzzle } from '@/lib/orbs'
 import type { FivefoldPuzzle } from '@/components/daily/FivefoldPlay'
 
 /** Each game page downloads only its own player, so Wordle does not carry the Anthropeum map or the Mini grid. */
@@ -32,7 +31,6 @@ const LOAD = {
   connections: () => import('@/components/connections/ConnectionsPlay'),
   anthropeum: () => import('@/components/daily/AnthropeumPlay'),
   krillion: () => import('@/components/daily/KrillionPlay'),
-  orbs: () => import('@/components/daily/OrbsPlay'),
   fivefold: () => import('@/components/daily/FivefoldPlay'),
 }
 const MiniPlay = dynamic(LOAD.mini)
@@ -41,7 +39,6 @@ const AnthropeumPlay = dynamic(LOAD.anthropeum)
 const KrillionPlay = dynamic(LOAD.krillion)
 const HeadcountPlay = dynamic(LOAD.headcount)
 const ChainlePlay = dynamic(LOAD.chainle)
-const OrbsPlay = dynamic(LOAD.orbs)
 const FivefoldPlay = dynamic(LOAD.fivefold)
 
 /** How each game plays, in the order a new player needs it. */
@@ -70,10 +67,6 @@ const HOW: Record<DailyGameId, string[]> = {
   headcount: ['Predict the crowd’s split, ranking, median, underdog and pie. Lock in one guess per room.'],
   chainle: [
     'One word per round. Find the connection between the clues in the first four rounds and the closest word in round five.',
-  ],
-  orbs: [
-    'Open any puzzle to start. In matching puzzles, tap one tile from each column.',
-    'Correct answers earn orbs. A miss uses one of that puzzle’s three lives.',
   ],
   anthropeum: [
     '10 museum artifacts. Pin where each was made and pick a 250-year period.',
@@ -106,11 +99,6 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
       {isNytGame(game) && <p>Original NYT puzzle for the selected publication date.</p>}
       <p style={{ color: 'var(--ink-muted)' }}>Scoring: {GAMES[game].rules}</p>
       <p style={{ color: 'var(--ink-muted)' }}>Everyone gets the same puzzle each day (Pacific time).</p>
-      {game === 'orbs' && (
-        <Link className="block underline" href="/games/orbs/archive">
-          Browse categories
-        </Link>
-      )}
       {isNytGame(game) && (
         <Link className="block underline" href="/games/archives">
           Browse past puzzles
@@ -120,11 +108,11 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
   )
   return (
     <div
-      className={`daily-game mx-auto w-full ${game === 'anthropeum' || game === 'krillion' ? 'max-w-none' : game === 'fivefold' ? 'max-w-lg md:max-w-xl' : game === 'orbs' ? 'max-w-3xl' : 'max-w-4xl'}`}
+      className={`daily-game mx-auto w-full ${game === 'anthropeum' || game === 'krillion' ? 'max-w-none' : game === 'fivefold' ? 'max-w-lg md:max-w-xl' : 'max-w-4xl'}`}
       data-testid={`daily-${game}`}
     >
       <DayNav
-        title={game === 'orbs' ? 'Ranked Orbs' : GAMES[game].title}
+        title={GAMES[game].title}
         path={GAMES[game].url}
         day={day}
         publishedOnly={isNytGame(game) || game === 'chainle' || game === 'headcount'}
@@ -141,16 +129,6 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
           <Link className={action} href={`/games/${game}/archive`}>
             Archive
           </Link>
-        )}
-        {game === 'orbs' && (
-          <>
-            <Link className={action} href="/games/orbs/archive">
-              Archive
-            </Link>
-            <Link className={action} href="/games/orbs">
-              Publisher puzzles
-            </Link>
-          </>
         )}
       </DayNav>
       {data && day <= siteDay() && isPracticeResult(game, day) && (
@@ -188,7 +166,6 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
         />
       )}
       {data && game === 'anthropeum' && <AnthropeumPlay key={key} puzzle={data.puzzle as ArtifactDay} dailyDay={day} />}
-      {data && game === 'orbs' && <OrbsPlay key={key} puzzle={data.puzzle as OrbsPuzzle} dailyDay={day} />}
       {data && game === 'fivefold' && <FivefoldPlay key={key} puzzle={data.puzzle as FivefoldPuzzle} dailyDay={day} />}
       {data && game === 'krillion' && <KrillionPlay key={key} puzzle={data.puzzle as KrillionPuzzle} dailyDay={day} />}
     </div>

@@ -81,7 +81,8 @@ test('every daily game shows without an expander and counts toward wins and prog
   await expect(page.getByTestId('board-orbs').getByRole('listitem').first()).toContainText('Jon')
   await expect(board.getByText('12/12', { exact: true }).first()).toBeVisible()
 
-  await page.goto('/games/orbs/local')
+  await page.route('**/api/orbs/publisher?**', (route) => route.fulfill({ status: 503, json: {} }))
+  await page.goto('/games/orbs')
   await page.getByRole('button', { name: /^Daily, 2 of 10 done today/ }).click()
   const drawer = page.getByRole('dialog', { name: 'Daily games' })
   await expect(drawer.getByText('2/10 today', { exact: false })).toBeVisible()
@@ -106,10 +107,6 @@ test('home shelf uses Set and Wordle and links the leaderboard beside Daily', as
     'href',
     '/games/wordle',
   )
-  await expect(shelf.getByRole('link', { name: 'Orbs Not done', exact: true })).toHaveAttribute(
-    'href',
-    '/games/orbs/local',
-  )
-  await expect(shelf.getByRole('link', { name: 'Daily Orbs', exact: true })).toHaveAttribute('href', '/games/orbs')
+  await expect(shelf.getByRole('link', { name: 'Orbs Not done', exact: true })).toHaveAttribute('href', '/games/orbs')
   await expect(shelf.getByRole('link', { name: 'Daily leaderboard', exact: true })).toHaveCount(0)
 })

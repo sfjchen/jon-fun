@@ -3,7 +3,7 @@
  * helpers and each game's playable range, with no dependencies, so both the browser and the server import it.
  */
 
-import { ORBS_FIRST_DAY } from '@/lib/orbs'
+import { PUBLISHER_ORBS_FIRST_DAY } from '@/lib/publisher-orbs'
 
 /** The first edition in the full-size crossword schedule (`data/crossword/full-size.json`). */
 export const CROSSWORD_FIRST_DAY = '2026-11-20'
@@ -35,7 +35,7 @@ export function isNytGame(game: string): game is NytGame {
 export function firstDay(game: string): string {
   if (game === 'headcount') return '2026-11-26'
   if (game === 'chainle') return '2026-08-20'
-  if (game === 'orbs') return ORBS_FIRST_DAY
+  if (game === 'orbs') return PUBLISHER_ORBS_FIRST_DAY
   if (game === 'crossword') return CROSSWORD_FIRST_DAY
   return isNytGame(game) ? NYT_FIRST_DAY[game] : DAILY_EPOCH
 }

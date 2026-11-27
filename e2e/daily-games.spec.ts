@@ -1,6 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
 import { siteDay, shiftDay } from '../src/lib/daily'
-import { ORBS_FIRST_DAY, type OrbsPuzzle } from '../src/lib/orbs'
 import type { BoardRow } from '../src/lib/results'
 import { mockSyncIdentity } from './helpers/sync-identity-mock'
 const today = siteDay()
@@ -27,49 +26,92 @@ async function scoreMock(page: Page, player = true) {
   })
   return rows
 }
-test('Orbs resumes a partial run, posts its attempts and restores its result', async ({ page }) => {
+test('Orbs plays the publisher edition, posts its attempts and restores its result', async ({ page }) => {
   const rows = await scoreMock(page)
-  const { puzzle }: { puzzle: OrbsPuzzle } = await (
-    await page.request.get(`/api/daily/orbs?d=${ORBS_FIRST_DAY}`)
-  ).json()
-  const questions = puzzle.categories.flatMap((category) => category.questions)
-  const nav = page.getByRole('navigation', { name: 'Daily Orbs puzzles' })
-  const play = async (question: OrbsPuzzle['categories'][number]['questions'][number]) => {
-    await page
-      .getByRole('group', { name: question.prompt, exact: true })
-      .getByRole('button', { name: question.options[question.answer], exact: true })
-      .click()
-  }
-  await page.goto(`/games/orbs/local?d=${ORBS_FIRST_DAY}`)
-  const last = puzzle.categories.at(-1)!
-  await nav.getByRole('link', { name: new RegExp(last.title) }).click()
-  await play(last.questions[1]!)
-  await page.reload()
-  await expect(page.getByText(`Correct · ${last.questions[1]!.options[last.questions[1]!.answer]}`)).toBeVisible()
-  for (const category of puzzle.categories) {
-    await page.getByRole('link', { name: /Back to puzzles/ }).click()
-    await nav.getByRole('link', { name: new RegExp(category.title) }).click()
-    for (const question of category.questions) {
-      if (question !== last.questions[1]) await play(question)
-    }
-  }
-  await expect(page.getByTestId('orbs-result')).toHaveText('12/12 orbs')
-  await expect
-    .poll(() => rows.find((row) => row.game === 'orbs'))
-    .toMatchObject({
-      score: 12,
-      stats: { moves: { rounds: expect.any(Array) } },
-    })
-  await page.reload()
-  await expect(page.getByTestId('orbs-result')).toHaveText('12/12 orbs')
-  await page.evaluate((day) => localStorage.removeItem(`orbs:v1:${day}:${day}`), ORBS_FIRST_DAY)
-  await page.route('**/api/results/run', (route) =>
+  const base = { id: 'example', description: 'Choose the published answer.', starThresholds: [1, 2, 3] }
+  await page.route('**/api/orbs/publisher?**', (route) =>
     route.fulfill({
-      json: { result: { score: 12, stats: { n: 12 }, moves: questions.map((question) => question.answer) } },
+      json: {
+        day: today,
+        playable: {
+          orange: {
+            ...base,
+            type: 'bijection',
+            title: 'Matching round',
+            pairs: [
+              { id: 'a', itemA: 'Maple', itemB: 'Tree' },
+              { id: 'b', itemA: 'Quartz', itemB: 'Mineral' },
+            ],
+          },
+          green: {
+            ...base,
+            type: 'categorization',
+            title: 'Sorting round',
+            categories: ['Liquid', 'Solid'],
+            items: [{ id: 's', text: 'Ice', category: 'Solid' }],
+          },
+          blue: {
+            ...base,
+            type: 'themed',
+            title: 'Written clue',
+            clues: [{ id: 'w', hint: 'South American capital', answers: ['Bogotá'] }],
+          },
+          purple: { ...base, type: 'long-list', title: 'Word list', answers: ['apple', 'pear', 'peach', 'mango'] },
+        },
+      },
     }),
   )
+  const open = async (title: RegExp) => {
+    await page.getByRole('link', { name: /All four puzzles/ }).click()
+    await page.getByRole('link', { name: title }).click()
+  }
+  const tap = (name: string) => page.getByRole('button', { name, exact: true }).click()
+  const type = async (answer: string) => {
+    await page.getByRole('textbox', { name: 'Answer' }).fill(answer)
+    await page.getByRole('button', { name: 'Submit', exact: true }).click()
+  }
+  await page.goto('/games/orbs')
+  await page.getByRole('link', { name: /Matching round/ }).click()
+  await tap('Maple')
+  await tap('Mineral')
+  await tap('Maple')
+  await tap('Tree')
   await page.reload()
-  await expect(page.getByTestId('orbs-result')).toHaveText('12/12 orbs')
+  await expect(page.getByRole('img', { name: '2 of 3 lives' })).toBeVisible()
+  await tap('Quartz')
+  await tap('Mineral')
+  await open(/Sorting round/)
+  await tap('Ice')
+  await tap('Solid')
+  await open(/Written clue/)
+  await type('Bogota')
+  await open(/Word list/)
+  await type('plum')
+  await type('pear')
+  await page.getByRole('button', { name: 'End round' }).click()
+  await page.getByRole('link', { name: /All four puzzles/ }).click()
+  await expect(page.getByTestId('orbs-result')).toHaveText('5/12 orbs')
+  await expect(page.getByText('Saved to your daily scores')).toBeVisible()
+  const moves = {
+    orange: [
+      ['Maple', 'Mineral'],
+      ['Maple', 'Tree'],
+      ['Quartz', 'Mineral'],
+    ],
+    green: [['s', 'Solid']],
+    blue: [['w', 'Bogota']],
+    purple: [['pear'], []],
+  }
+  await expect.poll(() => rows.find((row) => row.game === 'orbs')).toMatchObject({ score: 5, stats: { moves } })
+  await page.evaluate(() => {
+    for (const key of Object.keys(localStorage))
+      if (key.startsWith('sfjc_publisher_orbs:')) localStorage.removeItem(key)
+  })
+  await page.route('**/api/results/run', (route) =>
+    route.fulfill({ json: { result: { score: 5, stats: { n: 5 }, moves } } }),
+  )
+  await page.reload()
+  await expect(page.getByTestId('orbs-result')).toHaveText('5/12 orbs')
 })
 
 test('Mini solves, saves, restores, navigates dates, and ranks only unassisted play', async ({ page }) => {

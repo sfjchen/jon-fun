@@ -49,7 +49,8 @@ Automatic once step 2 is done - the Daily drawer, score grids, boards, stats, st
 - `GAME_IDS` is the only order. The Daily drawer, score grids, boards and Quick jump all follow it.
 - Quick word puzzles first (Connections, Wordle, Mini, Spelling Bee), the crossword beside them, then other publishers' games, with the longest games last (Krillion, Anthropeum).
 - A new game goes next to the games of its kind and before the long ones. Every game counts the same, so the order never changes a score.
-- Games that are not ranked (SET, publisher editions played for history) stay out of `GAME_IDS` and off the boards.
+- Games that are not ranked (SET, practice banks) stay out of `GAME_IDS` and off the boards.
+- Where a publisher's edition and an own-bank version both exist, the publisher's is the ranked game and the default link everywhere. The own bank is practice, reached from the game's Archive.
 
 ## Game record
 
