@@ -81,7 +81,9 @@ export function PageShell({ children }: PageShellProps) {
                     ? 'orbs'
                     : pathname?.startsWith('/games/headcount')
                       ? 'headcount'
-                      : undefined
+                      : pathname?.startsWith('/games/chainle')
+                        ? 'chainle'
+                        : undefined
   /** Pages that play or sync under the player's name ask a visitor with none for it. */
   const usesName =
     ownDailyHeader ||

@@ -31,12 +31,18 @@ export default function ChainlePlay({ puzzle }: { puzzle: Edition }) {
   })
   const total = points.reduce((a, b) => a + b, 0)
   const share = 'Chainle · ' + puzzle.date + '\n' + points.join(' · ') + '\n' + total + '/5000 · sfjc.dev'
+  const card = 'rounded-xl border border-[var(--ink-border)] bg-[var(--ink-paper)] p-4 sm:p-5'
   return (
-    <section className="space-y-4">
-      <p>One guess per round. This local edition awards the published answer points. Unlisted words earn zero.</p>
+    <section className="mx-auto w-full max-w-xl space-y-3">
+      <div className={`${card} flex items-center justify-between py-3 font-semibold`}>
+        <p>{round ? `Round ${moves.length + 1} of 5` : 'Finished'}</p>
+        <p className="tabular-nums" data-testid={round ? undefined : 'chainle-result'}>
+          {total.toLocaleString('en-US')}/5,000
+        </p>
+      </div>
       {round && (
         <form
-          className="space-y-3 rounded-xl border p-5"
+          className={`${card} space-y-3`}
           onSubmit={(e) => {
             e.preventDefault()
             const word = guess.trim().toLowerCase()
@@ -56,36 +62,51 @@ export default function ChainlePlay({ puzzle }: { puzzle: Edition }) {
             setGuess('')
           }}
         >
-          <p>
-            Round {moves.length + 1} of 5 ·{' '}
-            {round.anchors.length === 1 ? 'Closest connection' : 'Find the connecting word'}
+          <p className="text-sm text-[var(--ink-muted)]">
+            {round.anchors.length === 1 ? 'Closest connection' : 'Find the connecting word'} · 1 guess
           </p>
-          <h2 className="text-2xl font-semibold">{round.anchors.join(' · ')}</h2>
-          <label>
-            Your word{' '}
+          <h2 className="text-2xl font-bold">{round.anchors.join(' · ')}</h2>
+          <div className="flex gap-2">
             <input
-              className="rounded border p-2"
+              aria-label="Your word"
+              placeholder="Your word"
+              autoComplete="off"
+              autoCapitalize="none"
+              autoFocus
+              className="min-w-0 flex-1 rounded-lg border border-[var(--ink-border)] bg-[var(--ink-bg)] px-3 py-2"
               required
               maxLength={64}
               value={guess}
               onChange={(e) => setGuess(e.target.value)}
             />
-          </label>
-          <button className="rounded border px-4 py-2">Guess</button>
+            <button className="rounded-lg bg-[var(--game-color)] px-5 py-2 font-semibold text-white">Guess</button>
+          </div>
+          <p className="text-xs text-[var(--ink-muted)]">
+            Published answers earn their listed points. Other words earn 0.
+          </p>
         </form>
       )}
-      <ol>
-        {moves.map((word, i) => (
-          <li key={i}>
-            {i + 1}. {word} · {points[i]} points · Answer: {puzzle.pairs[i]!.answers[0]!.word}
-          </li>
-        ))}
-      </ol>
-      <strong>{total}/5000</strong>
+      {moves.length > 0 && (
+        <ol className={`${card} space-y-2 text-sm`}>
+          {moves.map((word, i) => (
+            <li key={i} className="flex flex-wrap items-baseline justify-between gap-x-3">
+              <span>
+                <span className="text-[var(--ink-muted)]">{puzzle.pairs[i]!.anchors.join(' · ')}</span>{' '}
+                <strong>{word}</strong>
+              </span>
+              <span className="text-[var(--ink-muted)] tabular-nums">
+                {points[i]} · answer {puzzle.pairs[i]!.answers[0]!.word}
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
       {!round && (
-        <div>
+        <div className={`${card} space-y-2 text-center`}>
+          <h2 className="text-xl font-bold">{total.toLocaleString('en-US')} points</h2>
+          <p className="text-sm text-[var(--ink-muted)]">Saved to your daily scores</p>
           <button
-            className="underline"
+            className="rounded-full bg-[var(--game-color)] px-5 py-2 text-sm font-semibold text-white"
             data-hotkey="s"
             onClick={async () => {
               try {
@@ -100,7 +121,7 @@ export default function ChainlePlay({ puzzle }: { puzzle: Edition }) {
           </button>
         </div>
       )}
-      <p role="status" className="whitespace-pre-line">
+      <p role="status" className="min-h-5 text-sm whitespace-pre-line text-[var(--ink-muted)]">
         {notice}
       </p>
     </section>

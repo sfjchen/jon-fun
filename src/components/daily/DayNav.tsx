@@ -88,6 +88,31 @@ export function Info({ children, keys }: { children: React.ReactNode; keys?: Key
 }
 
 /**
+ * Renders the trophy link to the leaderboard, opened on `day` when given.
+ */
+export function BoardLink({ day }: { day?: string | undefined }) {
+  return (
+    <Link
+      href={day ? `/leaderboards?d=${day}` : '/leaderboards'}
+      className={icon}
+      aria-label="Leaderboard"
+      title="Leaderboard"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      >
+        <path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 20h8" />
+      </svg>
+    </Link>
+  )
+}
+
+/**
  * Names a game's title for page transitions, so the Daily drawer row and the game header morph into each other.
  */
 export function titleTransition(path: string): string {
@@ -138,23 +163,7 @@ export default function DayNav({
           <h1 className="mr-auto min-w-0 truncate font-lora text-xl font-bold md:text-2xl">{title}</h1>
         </ViewTransition>
         <DailyHeader compact />
-        <Link
-          href={day ? `/leaderboards?d=${day}` : '/leaderboards'}
-          className={icon}
-          aria-label="Leaderboard"
-          title="Leaderboard"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinejoin="round"
-          >
-            <path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 20h8" />
-          </svg>
-        </Link>
+        <BoardLink day={day} />
         <Info keys={keys && [...keys, ...SHARED_KEYS]}>{info}</Info>
       </div>
       <div className="flex flex-wrap items-center gap-x-1 gap-y-1">

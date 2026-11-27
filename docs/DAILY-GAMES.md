@@ -1,6 +1,25 @@
 # Daily games
 
-Wordle (id `fivefold`), Mini, Connections, Spelling Bee (`bee`), Krillion, Anthropeum and Orbs, plus a daily SET. Local playable versions of the originals, not embeds. Nothing is ever submitted to an upstream game.
+Local playable versions of the originals, not embeds. Nothing is ever submitted to an upstream game. Adding or changing a game follows [GAME-PLAYBOOK.md](GAME-PLAYBOOK.md).
+
+## Games at a glance
+
+In `GAME_IDS` order, which is the order of the Daily drawer, score grids and boards.
+
+| Game (id)            | Source                            | First day  | Score         | Ranks by                | Shared with the board |
+| -------------------- | --------------------------------- | ---------- | ------------- | ----------------------- | --------------------- |
+| Connections          | NYT, exact date                   | 2023-06-12 | groups of 4   | solve time, then groups | no                    |
+| Wordle (`fivefold`)  | NYT, exact date                   | 2021-06-19 | guesses of 6  | fewest guesses          | no                    |
+| Mini                 | NYT, exact date                   | 2014-08-21 | solve time    | lowest unassisted time  | no                    |
+| Spelling Bee (`bee`) | NYT, exact date                   | 2018-05-06 | points        | most points             | found words           |
+| Crossword            | generated here (xfill, WordNet)   | 2026-11-20 | solved, words | shared solve            | the whole grid        |
+| Headcount            | headcountgame.com, dated party    | 2026-11-26 | of 100        | most points             | no                    |
+| Chainle              | chainle.io, dated edition         | 2026-08-20 | of 5,000      | most points             | no                    |
+| Orbs                 | own bank (`data/orbs`)            | 2026-11-21 | of 12 orbs    | most orbs               | no                    |
+| Krillion             | the original's same-date prompts  | 2026-11-01 | of 700        | most points             | no                    |
+| Anthropeum           | the original's artifacts, per day | 2026-11-01 | of 100,000    | most points             | no                    |
+
+Also here but off the boards - a daily SET (`/games/set`), and the publisher editions of Daily Orbs (`/games/orbs`).
 
 ## How a day works
 
@@ -23,8 +42,6 @@ Wordle (id `fivefold`), Mini, Connections, Spelling Bee (`bee`), Krillion, Anthr
 | Page shell for 6 games                        | `src/components/daily/DailyGame.tsx` (Spelling Bee has its own, for practice hives) |
 | Score check                                   | `POST /api/results` → `VERIFIERS` in `src/lib/daily/verify.ts`                      |
 | Boards and stats                              | `/leaderboards` (`src/components/Scores.tsx`), Daily drawer (`DailyDrawer.tsx`)     |
-
-Adding or changing a game - follow [GAME-PLAYBOOK.md](GAME-PLAYBOOK.md): the steps, the keyboard formula, and the look, score and collaboration rules every game shares.
 
 ## Puzzle sources
 
@@ -104,7 +121,7 @@ after a reload, including edits waiting to sync. An invite link opens the same r
 A browser that rejoins from new tabs counts as 1 of the
 100 players and keeps its 3 newest seats. The daily cron deletes rooms left untouched for 30 days.
 
-Crossword Together opens the original 15×15 daily by default. It uses the bundled schedule through
+The crossword opens the original 15×15 daily by default. It uses the bundled schedule through
 March 9, 2027. Later editions are stored by date on the `crossword-schedule` branch. GitHub
 Actions generates seven more boards every week and runs a larger batch when fewer than 45 days
 remain. A manual run with `force` enabled generates a larger batch on demand. If the generated edition is unavailable, the site publishes an encore

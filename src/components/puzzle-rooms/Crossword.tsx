@@ -32,7 +32,7 @@ export default function Crossword({ firstFullDay }: { firstFullDay: string }) {
   const day = validDay(requested) && requested >= minDay && requested <= today ? requested : today
   return (
     <div className="mx-auto w-full max-w-5xl">
-      <RoomHeader title="Crossword Together">
+      <RoomHeader title="Crossword">
         <Info keys={[...GAME_KEYS.crossword, JUMP_KEY]}>
           <ul className="list-disc space-y-1 pl-4">
             <li>Everyone on your board fills the same grid, live. Type in any square.</li>
@@ -226,7 +226,7 @@ function CrosswordGrid({
       </div>
       <div className="grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_minmax(16rem,0.85fr)]">
         <section aria-label="Crossword board">
-          <div className="mb-2 flex min-h-12 items-center justify-between gap-2 rounded-md bg-[var(--ink-paper)] px-3 py-2">
+          <div className="sticky top-0 z-10 mb-2 flex min-h-12 items-center justify-between gap-2 rounded-md bg-[var(--ink-paper)] px-3 py-2">
             {selected && (
               <p className="text-sm">
                 <strong>
