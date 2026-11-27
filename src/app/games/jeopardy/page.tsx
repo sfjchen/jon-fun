@@ -3,9 +3,9 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useCallback, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { readBoardFromFile } from '@/lib/jeopardy'
-import { getRecents, removeRecent, type RecentBoard } from '@/lib/jeopardy-identity'
+import { getRecents, removeRecent, syncRecents, type RecentBoard } from '@/lib/jeopardy-identity'
 import { useJeopardyLibrary } from '@/lib/jeopardy-library-client'
 import { SAMPLE_BOARD } from '@/lib/jeopardy-sample'
 
@@ -34,7 +34,7 @@ export default function JeopardyPage() {
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [joinCode, setJoinCode] = useState('')
-  /* Reads recents from localStorage only after hydration; the version counter re-reads them after a removal. */
+  /* Reads recents from localStorage only after hydration; the version counter re-reads them after a removal or a sync. */
   const hydrated = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -42,6 +42,11 @@ export default function JeopardyPage() {
   )
   const [, setRecentsVer] = useState(0)
   const recents: RecentBoard[] = hydrated ? getRecents() : []
+
+  /* Pulls the boards this sync account opened on other devices. */
+  useEffect(() => {
+    void syncRecents().then(() => setRecentsVer((v) => v + 1))
+  }, [])
 
   const showError = useCallback((msg: string, ttl = 3000) => {
     setError(msg)
@@ -241,7 +246,7 @@ export default function JeopardyPage() {
                 Recent boards
               </div>
               <ul className="space-y-1">
-                {recents.slice(0, 6).map((r) => (
+                {recents.map((r) => (
                   <li key={r.slug} className="flex items-center gap-2">
                     <Link
                       href={`/games/jeopardy/edit/${r.slug}`}
@@ -263,7 +268,7 @@ export default function JeopardyPage() {
                     </Link>
                     <button
                       onClick={() => {
-                        removeRecent(r.slug)
+                        void removeRecent(r.slug)
                         setRecentsVer((v) => v + 1)
                       }}
                       className="rounded-lg border px-2 py-2 text-sm"

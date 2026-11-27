@@ -1,6 +1,6 @@
 # Sync and devices
 
-Daily Learn, Notes and Reader share 1 sync identity (`src/lib/syncIdentity.ts`, server `src/lib/syncAccess.ts`).
+Daily Learn, Notes, Reader and Jeopardy's recent boards share 1 sync identity (`src/lib/syncIdentity.ts`, server `src/lib/syncAccess.ts`).
 
 - Each browser has a device ID and at most 1 sync key in localStorage (`sfjc_device_id`, `sfjc_sync_key`).
   Typing the key once on a browser is all it needs. The key is the account: whoever sends it reads and writes it.
@@ -18,7 +18,8 @@ Daily Learn, Notes and Reader share 1 sync identity (`src/lib/syncIdentity.ts`, 
 Merge rules: Daily Learn keeps the newest `updatedAt` per day, with empty text as a delete tombstone. Devices on
 the same account never conflict. Only the first sync after a device joins a sync key (no `daily_learn_synced:<key>`
 flag yet) can: where the 2 histories hold a different text for a day, the newer shows and the other is kept in the
-entry's `conflict` until the user picks in History. Notes keeps the newest session. Sync never replaces either side. Daily games keep the first finished
+entry's `conflict` until the user picks in History. Notes keeps the newest session. Jeopardy recents
+(`jeopardy_recents`) keep the newest visit per board, and a removal is a tombstone. Sync never replaces either side. Daily games keep the first finished
 result, and a different game sent from another device under the same name is stored in `game_results.conflict`
 and shown beside it on the daily board.
 

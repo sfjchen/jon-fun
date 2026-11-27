@@ -1,11 +1,14 @@
-// Per-device collaborator identity & recent-boards list, persisted to localStorage.
+// Per-device collaborator identity, plus the recent-boards list: kept in localStorage and synced to the sync
+// account (/api/jeopardy/recents), so the list follows the sync key to every device.
 import { v4 as uuidv4 } from 'uuid'
-import { getDevicePlayer, saveDevicePlayer } from '@/lib/syncIdentity'
+import { ensureSyncIdentity, getDevicePlayer, getEffectiveUserId, saveDevicePlayer } from '@/lib/syncIdentity'
 
 const ID_KEY = 'jeopardy:editor-id'
 const NAME_KEY = 'jeopardy:editor-name'
 const COLOR_KEY = 'jeopardy:editor-color'
 const RECENT_KEY = 'jeopardy:recents'
+const RECENTS_API = '/api/jeopardy/recents'
+export const MAX_RECENTS = 12
 
 const COLORS = [
   '#ef4444',
@@ -68,17 +71,61 @@ export function getRecents(): RecentBoard[] {
   }
 }
 
+/**
+ * Sends this device's recents to its sync account and replaces the local list with the merged one, so boards
+ * opened on the account's other devices show here. Visits made while the request is in flight are kept.
+ */
+export async function syncRecents(): Promise<void> {
+  if (typeof window === 'undefined') return
+  const at = Date.now()
+  try {
+    await ensureSyncIdentity()
+    const res = await fetch(RECENTS_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: getEffectiveUserId(), recents: getRecents() }),
+    })
+    if (!res.ok) return
+    const { recents } = (await res.json()) as { recents: RecentBoard[] }
+    const fresh = getRecents().filter((r) => r.visitedAt > at)
+    const merged = [...fresh, ...recents.filter((r) => !fresh.some((f) => f.slug === r.slug))]
+    localStorage.setItem(RECENT_KEY, JSON.stringify(merged.slice(0, MAX_RECENTS)))
+  } catch {
+    /* offline: the local list stands until the next visit */
+  }
+}
+
+let syncTimer: ReturnType<typeof setTimeout> | undefined
+
+/**
+ * Puts a board at the top of the recents list and syncs it shortly after, so a title typed letter by letter
+ * sends 1 request.
+ */
 export function pushRecent(slug: string, title: string): void {
   if (typeof window === 'undefined') return
   const list = getRecents().filter((r) => r.slug !== slug)
   list.unshift({ slug, title: title || slug, visitedAt: Date.now() })
-  localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, 12)))
+  localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, MAX_RECENTS)))
+  clearTimeout(syncTimer)
+  syncTimer = setTimeout(() => void syncRecents(), 1500)
 }
 
-export function removeRecent(slug: string): void {
+/**
+ * Takes a board off the recents list on this device and on its sync account.
+ */
+export async function removeRecent(slug: string): Promise<void> {
   if (typeof window === 'undefined') return
   const list = getRecents().filter((r) => r.slug !== slug)
   localStorage.setItem(RECENT_KEY, JSON.stringify(list))
+  try {
+    await fetch(RECENTS_API, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: getEffectiveUserId(), slug }),
+    })
+  } catch {
+    /* offline: the board returns on the next sync and can be removed again */
+  }
 }
 
 export function initialsFrom(name: string): string {
