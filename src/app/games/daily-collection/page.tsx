@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Lists every daily game in 2 groups: the ones played on this site, and the ones played on their publisher's site,
+ * Lists every daily game in 2 groups: the ones with a page on this site, and the ones played on their publisher's site,
  * whose shared result can be pasted in to keep a personal history on this device and its synced devices.
  */
 
@@ -37,11 +37,7 @@ const titles = [
 
 /** The list in its 2 groups, each with a heading and a line on how its results are kept. */
 const groups = [
-  [
-    'Play here',
-    'Scores save to the Daily drawer and the leaderboard.',
-    titles.filter(([, url]) => url.startsWith('/')),
-  ],
+  ['On sfjc.dev', 'Each opens its own page on this site.', titles.filter(([, url]) => url.startsWith('/'))],
   [
     'On the publisher’s site',
     'Paste the shared result to keep it in your personal history.',
