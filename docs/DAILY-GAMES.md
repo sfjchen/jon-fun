@@ -130,7 +130,7 @@ string `number`, an `Across` or `Down` `direction`, plain `text`, and zero-based
 cron syncs the configured feed, and saves the first validated response for each date in
 `daily_game_content`.
 
-Headcount opens at `/games/headcount`. The local archive starts with party 37 on 2026-11-26. The daily cron reads the public party feed and stores the first snapshot matching the requested party date. Five guesses replay against that snapshot for a score out of 100. Split and pie use percentage error, ranking and underdog allow two-point crowd ties, and the typical answer uses the ratio to the published median. Publisher guestbook submissions and live publisher standings are separate from the sfjc.dev board.
+Headcount opens at `/games/headcount`, in the shared daily theme with 1 card per room. `/games/headcount/archive` lists past parties by month with this device's completion marks and a Random pick. The local archive starts with party 37 on 2026-11-26. The daily cron reads the public party feed and stores the first snapshot matching the requested party date. Five guesses replay against that snapshot for a score out of 100. Split and pie use percentage error, ranking and underdog allow two-point crowd ties, and the typical answer uses the ratio to the published median. Publisher guestbook submissions and live publisher standings are separate from the sfjc.dev board.
 
 ## Game list status
 

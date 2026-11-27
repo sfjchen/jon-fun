@@ -47,6 +47,7 @@ export function PageShell({ children }: PageShellProps) {
     '/games/mini',
     '/games/crossword',
     '/games/headcount',
+    '/games/headcount/archive',
     '/games/chainle',
     '/games/krillion',
     '/games/anthropeum',
@@ -78,7 +79,9 @@ export function PageShell({ children }: PageShellProps) {
                   ? 'fivefold'
                   : pathname === '/games/orbs' || pathname?.startsWith('/games/orbs/')
                     ? 'orbs'
-                    : undefined
+                    : pathname?.startsWith('/games/headcount')
+                      ? 'headcount'
+                      : undefined
   /** Pages that play or sync under the player's name ask a visitor with none for it. */
   const usesName =
     ownDailyHeader ||

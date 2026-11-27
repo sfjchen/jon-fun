@@ -8,6 +8,7 @@
   --g-anthropeum: #9f1239;
   --g-fivefold: #4d7c0f;
   --g-orbs: #344986;
+  --g-headcount: #b45309;
   --game-color: #111318;
   --ink-bg: #fff;
   --ink-paper: #f5f6f8;
@@ -62,6 +63,9 @@
   --ink-paper: #f7f4ed;
   --ink-border: #dfdace;
   --orbs-highlight: #e5e9f8;
+}
+[data-game-theme='headcount'] {
+  --game-color: var(--g-headcount);
 }
 [data-game-theme='fivefold'] {
   --game-color: var(--g-fivefold);

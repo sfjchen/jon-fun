@@ -137,8 +137,8 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
             Play together
           </Link>
         )}
-        {game === 'chainle' && (
-          <Link className={action} href="/games/chainle/archive">
+        {(game === 'chainle' || game === 'headcount') && (
+          <Link className={action} href={`/games/${game}/archive`}>
             Archive
           </Link>
         )}
