@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import schedule from '@/../data/crossword/full-size.json'
-import { NYT_FIRST_DAY, validDay } from '@/lib/daily'
+import { NYT_FIRST_DAY, shiftDay, validDay } from '@/lib/daily'
 import { nytPuzzle } from '@/lib/daily/nyt'
 import type { MiniPuzzle } from '@/lib/mini'
 import { supabaseAdmin } from '@/lib/supabase'
@@ -61,18 +61,76 @@ export function normalizeCrossword(value: unknown, day: string): CrosswordPuzzle
   }
 }
 
-async function storedCrossword(day: string): Promise<CrosswordPuzzle | null> {
+type CrosswordSource = 'crossword-original' | 'crossword-feed'
+
+async function storedCrossword(day: string, game: CrosswordSource): Promise<CrosswordPuzzle | null> {
   const { data, error } = await supabaseAdmin
     .from('daily_game_content')
     .select('payload')
-    .eq('game', 'crossword-feed')
+    .eq('game', game)
     .eq('source_day', day)
     .maybeSingle()
   if (error) throw error
   return data?.payload?.format === 'crossword-feed-v1' ? normalizeCrossword(data.payload.puzzle, day) : null
 }
 
+async function freezeCrossword(day: string, game: CrosswordSource, value: unknown): Promise<CrosswordPuzzle> {
+  const puzzle = feedPuzzle.parse(value)
+  const normalized = normalizeCrossword(puzzle, day)
+  const { data, error } = await supabaseAdmin
+    .from('daily_game_content')
+    .upsert(
+      {
+        game,
+        source_day: day,
+        payload: { format: 'crossword-feed-v1', puzzle },
+      },
+      { onConflict: 'game,source_day', ignoreDuplicates: true },
+    )
+    .select('source_day')
+    .maybeSingle()
+  if (error) throw error
+  if (data) return normalized
+
+  const winner = await storedCrossword(day, game)
+  if (!winner) throw new Error('Could not read the published crossword')
+  return winner
+}
+
 const editions = new Map(schedule.map((puzzle) => [puzzle.date, puzzle]))
+const afterBundle = shiftDay(schedule.at(-1)!.date, 1)
+const generatedSchedule = 'https://raw.githubusercontent.com/sfjchen/jon-fun/crossword-schedule/editions'
+
+function encore(day: string) {
+  const elapsed = Math.round((Date.parse(day) - Date.parse(afterBundle)) / 86_400_000)
+  return { ...schedule[elapsed % schedule.length]!, date: day, title: 'Daily Crossword · Encore' }
+}
+
+async function originalCrossword(day: string): Promise<CrosswordPuzzle> {
+  const bundled = editions.get(day)
+  if (bundled) return normalizeCrossword(bundled, day)
+  if (!validDay(day) || day < afterBundle) throw new Error('No full-size crossword for that day')
+
+  const game = 'crossword-original'
+  const stored = await storedCrossword(day, game)
+  if (stored) return stored
+
+  let puzzle: unknown
+  try {
+    const response = await fetch(`${generatedSchedule}/${day}.json`, {
+      signal: AbortSignal.timeout(4000),
+      cache: 'no-store',
+    })
+    if (!response.ok) throw new Error('Generated edition unavailable')
+    const candidate: unknown = await response.json()
+    const board = normalizeCrossword(candidate, day)
+    if (board.width !== 15 || board.height !== 15) throw new Error('Unexpected daily grid size')
+    puzzle = candidate
+  } catch {
+    puzzle = encore(day)
+  }
+  return freezeCrossword(day, game, puzzle)
+}
 
 export function crosswordFirstDay(mini: boolean): string {
   if (mini) return NYT_FIRST_DAY.mini
@@ -97,13 +155,10 @@ export async function crosswordForDay(day: string, miniOnly: boolean): Promise<C
     )
   }
 
-  if (!feed) {
-    const puzzle = editions.get(day)
-    if (!puzzle) throw new Error('No full-size crossword is scheduled for that day')
-    return normalizeCrossword(puzzle, day)
-  }
+  if (!feed) return originalCrossword(day)
 
-  const stored = await storedCrossword(day)
+  const game = 'crossword-feed'
+  const stored = await storedCrossword(day, game)
   if (stored) return stored
   const url = new URL(feed)
   if (url.protocol !== 'https:') throw new Error('Crossword feed must use HTTPS')
@@ -116,20 +171,5 @@ export async function crosswordForDay(day: string, miniOnly: boolean): Promise<C
     cache: 'no-store',
   })
   if (!response.ok) throw new Error('Daily crossword feed unavailable')
-  const puzzle = feedPuzzle.parse(await response.json())
-  const normalized = normalizeCrossword(puzzle, day)
-  const { data, error } = await supabaseAdmin
-    .from('daily_game_content')
-    .upsert(
-      {
-        game: 'crossword-feed',
-        source_day: day,
-        payload: { format: 'crossword-feed-v1', puzzle },
-      },
-      { onConflict: 'game,source_day', ignoreDuplicates: true },
-    )
-    .select('source_day')
-    .maybeSingle()
-  if (error) throw error
-  return data ? normalized : ((await storedCrossword(day)) ?? normalized)
+  return freezeCrossword(day, game, await response.json())
 }

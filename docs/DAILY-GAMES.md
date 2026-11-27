@@ -101,8 +101,12 @@ after a reload, including edits waiting to sync. An invite link opens the same r
 A browser that rejoins from new tabs counts as 1 of the
 100 players and keeps its 3 newest seats. The daily cron deletes rooms left untouched for 30 days.
 
-Crossword Together opens the original 15×15 daily by default. It publishes a distinct board from
-`data/crossword/full-size.json` each Pacific day. The date picker can reopen older editions. **Switch to
+Crossword Together opens the original 15×15 daily by default. It uses the bundled schedule through
+March 9, 2027. Later editions are stored by date on the `crossword-schedule` branch. A weekly GitHub
+Actions job adds newly generated boards when fewer than 45 days remain. It also supports a manual
+run with `force` enabled. If the generated edition is unavailable, the site publishes an encore
+from the bundled archive. Supabase pins the first board for a date so the daily and its archive
+stay identical, including on an encore day. The date picker can reopen older editions. **Switch to
 Mini** and invitations started on the Mini page use the existing NYT Mini source.
 
 The [Open English WordNet](https://en-word.net/downloads) glossary supplies the clues under

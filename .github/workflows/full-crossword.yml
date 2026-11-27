@@ -1,0 +1,90 @@
+name: Extend full-size crosswords
+
+on:
+  schedule:
+    - cron: '41 13 * * 1'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Generate a batch even when enough days are already scheduled
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: full-crossword-schedule
+  cancel-in-progress: false
+
+jobs:
+  extend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+
+      - name: Check the remaining schedule
+        id: schedule
+        env:
+          FORCE: ${{ inputs.force }}
+        run: |
+          git clone --depth 1 --branch crossword-schedule --single-branch \
+            "https://github.com/${GITHUB_REPOSITORY}.git" "$RUNNER_TEMP/crossword-schedule"
+          python3 <<'PY'
+          import json
+          import os
+          from datetime import date, datetime, timedelta
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+
+          directory = Path(os.environ['RUNNER_TEMP']) / 'crossword-schedule/editions'
+          latest = max((path.stem for path in directory.glob('????-??-??.json')), default='')
+          if not latest:
+              latest = json.loads(Path('data/crossword/full-size.json').read_text())[-1]['date']
+          day = date.fromisoformat(latest)
+          today = datetime.now(ZoneInfo('America/Los_Angeles')).date()
+          refresh = os.environ.get('FORCE') == 'true' or (day - today).days < 45
+          print(f'Editions scheduled through {day}.')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              print(f'refresh={str(refresh).lower()}', file=output)
+              print(f'seed={(day + timedelta(days=1)):%Y%m%d}', file=output)
+          PY
+
+      - name: Generate more editions
+        if: steps.schedule.outputs.refresh == 'true'
+        env:
+          SEED: ${{ steps.schedule.outputs.seed }}
+        run: |
+          work="$RUNNER_TEMP/crossword-build"
+          mkdir -p "$work"
+          git clone --quiet https://github.com/ekorbia/xword-pipeline.git "$work/pipeline"
+          git -C "$work/pipeline" checkout --quiet 2d72733e3ae6eb19026c275b8fd25efaba497a65
+          curl --fail --silent --show-error --location --retry 3 --max-time 60 \
+            https://en-word.net/static/english-wordnet-2025-plus.zip --output "$work/wordnet.zip"
+          printf '8360c45a8e066d9f73ff7682172d70ffae48a2604ac23e5ca7f43abcabc004a6  %s\n' "$work/wordnet.zip" | sha256sum --check
+          engine="$work/pipeline/fill-engine"
+          cargo build --locked --release --bin library --manifest-path "$engine/Cargo.toml"
+          python3 scripts/build-full-crosswords.py "$work/wordnet.zip" "$engine/data/xwordlist.dict" \
+            "$work/wordlist.dict" --bank-output "$work/bank.txt"
+          "$engine/target/release/library" --wordlist "$work/wordlist.dict" --bank "$work/bank.txt" \
+            --bank-fraction 0.9 --blocks 44 --candidates 250 --time 1.5 --keep-mean 76 --max-iffy 3 \
+            --top 105 --per-shape 7 --min-words 70 --seed "$SEED" --workers "$(nproc)" --out "$work/library.json"
+          python3 scripts/build-full-crosswords.py "$work/wordnet.zip" "$engine/data/xwordlist.dict" \
+            "$work/wordlist.dict" --library "$work/library.json" --published-dir "$RUNNER_TEMP/crossword-schedule/editions"
+
+      - name: Publish the puzzle data
+        if: steps.schedule.outputs.refresh == 'true'
+        env:
+          SCHEDULE_TOKEN: ${{ github.token }}
+        working-directory: ${{ runner.temp }}/crossword-schedule
+        run: |
+          git add -- editions/
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -m 'Extend the daily crossword schedule'
+          auth=$(printf 'x-access-token:%s' "$SCHEDULE_TOKEN" | base64 -w0)
+          printf '::add-mask::%s\n' "$auth"
+          GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.https://github.com/.extraheader \
+            GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth" git push origin HEAD:crossword-schedule

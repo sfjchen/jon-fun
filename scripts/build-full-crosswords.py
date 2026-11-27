@@ -9,6 +9,7 @@ import zipfile
 
 WORDNET = 'https://en-word.net/downloads'
 SIZE = 15
+BUNDLED = Path(__file__).resolve().parents[1] / 'data/crossword/full-size.json'
 LETTERS = re.compile(r'[A-Z]{3,15}')
 CREDIT = 'sfjc.dev · Clues adapted from Open English WordNet (CC BY 4.0) and Princeton WordNet'
 
@@ -75,6 +76,47 @@ def to_puzzle(grid, definitions, day):
     }
 
 
+def bundled_editions():
+    return json.loads(BUNDLED.read_text())
+
+
+def write_template_bank(path):
+    shapes = {}
+    for puzzle in bundled_editions():
+        rows = [
+            ''.join('#' if cell is None else '.' for cell in puzzle['cells'][i:i + SIZE])
+            for i in range(0, SIZE * SIZE, SIZE)
+        ]
+        shapes['/'.join(rows)] = None
+    # Refill good shapes with different solver seeds.
+    path.write_text(('\n'.join(shapes) + '\n') * 10)
+
+
+def publish_editions(grids, definitions, directory):
+    directory.mkdir(parents=True, exist_ok=True)
+    schedule = bundled_editions() + [
+        json.loads(path.read_text()) for path in sorted(directory.glob('????-??-??.json'))
+    ]
+    day = date.fromisoformat(schedule[-1]['date'])
+    seen = {tuple(edition['cells']) for edition in schedule}
+    added = 0
+    for grid in grids:
+        puzzle = to_puzzle(grid, definitions, day + timedelta(days=1))
+        fingerprint = tuple(puzzle['cells'])
+        if fingerprint in seen:
+            continue
+        edition = directory / (puzzle['date'] + '.json')
+        with edition.open('x') as output:
+            json.dump(puzzle, output, ensure_ascii=False, separators=(',', ':'))
+            output.write('\n')
+        day += timedelta(days=1)
+        seen.add(fingerprint)
+        added += 1
+    if added == 0:
+        raise ValueError('No distinct new puzzles')
+    print(f'Published {added} editions through {day}')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('wordnet', type=Path, help=f'WNDB archive from {WORDNET}')
@@ -83,17 +125,23 @@ def main():
     parser.add_argument('--library', type=Path, help='Generated xfill library JSON')
     parser.add_argument('--out', type=Path, help='Puzzle schedule to create or extend')
     parser.add_argument('--start', type=date.fromisoformat)
+    parser.add_argument('--bank-output', type=Path, help='Write reusable grid templates derived from the bundled schedule')
+    parser.add_argument('--published-dir', type=Path, help='Append individual dated editions to this directory')
     args = parser.parse_args()
     definitions = read_definitions(args.wordnet)
     filtered = [line for line in args.wordlist.read_text().splitlines() if line.split(';', 1)[0].upper() in definitions]
     args.filtered.write_text('\n'.join(filtered) + '\n')
+    if args.bank_output:
+        write_template_bank(args.bank_output)
     if not args.library:
         print(f'Prepared {len(filtered):,} clueable answers')
         return
-    if not args.out or not args.start:
-        parser.error('--library requires --out and --start')
-
     grids = json.loads(args.library.read_text())['grids']
+    if args.published_dir:
+        publish_editions(grids, definitions, args.published_dir)
+        return
+    if not args.out or not args.start:
+        parser.error('--library requires --published-dir or both --out and --start')
     schedule = json.loads(args.out.read_text()) if args.out.exists() else []
     known = {tuple(puzzle['cells']) for puzzle in schedule}
     first = date.fromisoformat(schedule[0]['date']) if schedule else args.start
