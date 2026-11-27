@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useSyncExternalStore } from 'react'
 import { DailyHeader } from '@/components/daily/DailyDrawer'
 import { HomeLink } from '@/components/HomeLink'
+import { startStateSync } from '@/lib/stateSync'
 import { ensureSyncIdentity } from '@/lib/syncIdentity'
 
 type PageShellProps = {
@@ -36,6 +37,7 @@ function isChwaziPath(pathname: string): boolean {
 export function PageShell({ children }: PageShellProps) {
   useEffect(() => {
     void ensureSyncIdentity()
+    return startStateSync()
   }, [])
   const pathname = usePathname()
   const ownDailyHeader = [

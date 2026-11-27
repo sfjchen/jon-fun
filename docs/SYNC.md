@@ -19,7 +19,13 @@ Merge rules: Daily Learn keeps the newest `updatedAt` per day, with empty text a
 the same account never conflict. Only the first sync after a device joins a sync key (no `daily_learn_synced:<key>`
 flag yet) can: where the 2 histories hold a different text for a day, the newer shows and the other is kept in the
 entry's `conflict` until the user picks in History. Notes keeps the newest session. Jeopardy recents
-(`jeopardy_recents`) keep the newest visit per board, and a removal is a tombstone. Sync never replaces either side. Daily games keep the first finished
+(`jeopardy_recents`) keep the newest visit per board, and a removal is a tombstone.
+
+Everything else a browser keeps only in localStorage (game runs and archives, Spelling Bee words, reader progress,
+bookmarks, annotations and hidden books, personal bests) is mirrored to `account_state` by `src/lib/stateSync.ts`
+(`/api/sync/state`), started in `PageShell`. A new localStorage key that should follow the account goes in its
+`PREFIXES` or `EXACT` list. The newest edit wins per entry, and entries a device held before its first sync count as
+oldest, so a first sync only adds. Removed entries are not synced. Server rows are never expired. Sync never replaces either side. Daily games keep the first finished
 result, and a different game sent from another device under the same name is stored in `game_results.conflict`
 and shown beside it on the daily board.
 
