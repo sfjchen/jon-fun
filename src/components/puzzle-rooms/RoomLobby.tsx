@@ -325,8 +325,9 @@ function Lobby({ game, id, day, mini, auto, board: Board }: Props) {
           >
             {room && (
               <p className="w-full text-sm text-[var(--ink-muted)]">
-                {room.players.join(' · ')} · <time dateTime={room.puzzle.board.date}>{room.puzzle.board.date}</time>{' '}
-                puzzle{room.solved && ' · solved'}
+                {room.players.map((player) => player.name).join(' · ')} ·{' '}
+                <time dateTime={room.puzzle.board.date}>{room.puzzle.board.date}</time> puzzle
+                {room.solved && ' · solved'}
               </p>
             )}
             <label className="grid gap-1 text-sm">
@@ -381,7 +382,9 @@ function Lobby({ game, id, day, mini, auto, board: Board }: Props) {
           Change puzzle
         </Link>
       </div>
-      <p className="w-full break-words text-[var(--ink-muted)]">{room.players.join(' · ')}</p>
+      <p className="w-full break-words text-[var(--ink-muted)]">
+        Words filled: {room.players.map((player) => `${player.name} ${player.words}`).join(' · ')}
+      </p>
       {writeError && (
         <p role="alert" className="w-full text-red-700">
           {writeError}

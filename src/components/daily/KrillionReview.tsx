@@ -120,6 +120,7 @@ export default function KrillionReview({
             <button
               className="rounded border px-4 py-2 disabled:opacity-40"
               disabled={page === 0}
+              data-hotkey="ArrowLeft"
               onClick={() => setPage((p) => p - 1)}
             >
               Previous answers
@@ -130,6 +131,7 @@ export default function KrillionReview({
             <button
               className="rounded border px-4 py-2 disabled:opacity-40"
               disabled={(page + 1) * data.pageSize >= data.total}
+              data-hotkey="ArrowRight"
               onClick={() => setPage((p) => p + 1)}
             >
               Next answers

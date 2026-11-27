@@ -40,7 +40,7 @@ Devices and sync keys are shared by all of them through `/api/sync` (see `SYNC.m
 - `src/lib/supabase.ts` - browser client and the server-only admin client.
 - `src/lib/api-guards.ts` - cron bearer check and a per-address rate limit.
 - `src/components/PageShell.tsx` - picks the shell per route: notebook, game-themed (`data-game-theme`), Notes, full-bleed. A new daily route goes in its `ownDailyHeader` and `gameTheme` lists.
-- `src/components/Hotkeys.tsx` + `src/lib/keyboard.ts` - 1 keydown listener for the site. Mark a control with `data-hotkey="k"`, or a grid with `data-arrows`, instead of adding a listener. Hovering or tabbing to a marked control shows its keys in a chip, and `data-keys="k"` gives the same chip to a control whose keys its page handles.
+- `src/components/Hotkeys.tsx` + `src/lib/keyboard.ts` - 1 keydown listener for the site. Mark a control with `data-hotkey="k"`, or a grid with `data-arrows`, instead of adding a listener. Hovering or tabbing to a marked control shows its keys in a chip, and `data-keys="k"` gives the same chip to a control whose keys its page handles. `src/lib/game-keys.ts` lists each daily game's keys for its ⓘ panel, and `docs/GAME-PLAYBOOK.md` sets which key does what.
 - Party games share `PartyLobbyForm`, `usePartyLobby`, `usePartyRoomActions`, `usePartyRoomData` (Realtime with a 2-second poll fallback) and `partyFetch`.
 
 Poker, the reader and Jeopardy keep separate state and shells on purpose (rooms and chips, IndexedDB books, local boards with a buzzer). Do not merge them into 1 engine.

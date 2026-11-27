@@ -120,7 +120,14 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey || (e.target as HTMLElement)?.closest?.('input,textarea,[role=dialog]'))
+      // A finished game leaves the keys to the result's own shortcuts.
+      if (
+        done ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey ||
+        (e.target as HTMLElement)?.closest?.('input,textarea,[role=dialog]')
+      )
         return
       const k = e.key.toLowerCase()
       if (k === 'enter' || k === 'backspace' || /^[a-z]$/.test(k)) {
@@ -130,7 +137,7 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [press])
+  }, [press, done])
 
   const keyMarks = new Map<string, Mark>()
   for (const g of run.guesses) {
@@ -217,6 +224,7 @@ export default function FivefoldPlay({ puzzle, dailyDay }: { puzzle: FivefoldPuz
           </p>
           <button
             className="rounded-full bg-[var(--game-color)] px-5 py-2 text-sm font-semibold text-white"
+            data-hotkey="s"
             onClick={share}
           >
             {copied ? 'Copied' : 'Copy result'}

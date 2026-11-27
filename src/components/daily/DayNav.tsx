@@ -14,6 +14,7 @@ import { DailyHeader } from '@/components/daily/DailyDrawer'
 import { HomeLink } from '@/components/HomeLink'
 import PlayerName from '@/components/PlayerName'
 import { DAILY_EPOCH } from '@/lib/daily'
+import { SHARED_KEYS, type KeyRow } from '@/lib/game-keys'
 import { useSiteDay } from '@/lib/play-day'
 
 const icon =
@@ -22,9 +23,10 @@ const icon =
 export { action, icon }
 
 /**
- * Renders an ⓘ button that opens a small panel and closes on outside click or Escape.
+ * Renders an ⓘ button that opens a small panel and closes on outside click or Escape. With `keys` the panel ends
+ * with those keyboard shortcuts, on devices with a mouse.
  */
-export function Info({ children }: { children: React.ReactNode }) {
+export function Info({ children, keys }: { children: React.ReactNode; keys?: KeyRow[] | undefined }) {
   const [open, setOpen] = useState(false)
   const box = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -59,10 +61,26 @@ export function Info({ children }: { children: React.ReactNode }) {
         <div
           role="dialog"
           aria-label="How to play"
-          className="absolute top-11 right-0 z-40 w-[min(20rem,calc(100vw-2rem))] space-y-2 rounded-xl border p-4 text-sm shadow-lg"
+          className="absolute top-11 right-0 z-40 max-h-[75vh] w-[min(22rem,calc(100vw-2rem))] space-y-2 overflow-y-auto rounded-xl border p-4 text-sm shadow-lg"
           style={{ backgroundColor: 'var(--ink-paper)', borderColor: 'var(--ink-border)' }}
         >
           {children}
+          {keys && (
+            <dl className="hidden grid-cols-[auto_1fr] items-baseline gap-x-3 gap-y-1 border-t pt-2 text-xs [@media(hover:hover)]:grid">
+              {keys.map(([key, does]) => (
+                <div key={key + does} className="contents">
+                  <dt className="flex flex-wrap gap-1">
+                    {key.split(' ').map((k) => (
+                      <kbd key={k} className="rounded border bg-[var(--ink-bg)] px-1 font-sans font-semibold">
+                        {k}
+                      </kbd>
+                    ))}
+                  </dt>
+                  <dd style={{ color: 'var(--ink-muted)' }}>{does}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
         </div>
       )}
     </div>
@@ -86,6 +104,8 @@ type DayNavProps = {
   label?: string
   /** Rules and notes shown in the ⓘ panel. */
   info: React.ReactNode
+  /** The game's keyboard shortcuts, listed under the rules. */
+  keys?: KeyRow[]
   /** Game-specific actions shown on the day row. */
   children?: React.ReactNode
 }
@@ -99,6 +119,7 @@ export default function DayNav({
   day,
   label,
   info,
+  keys,
   children,
   minDay = DAILY_EPOCH,
   publishedOnly = false,
@@ -134,7 +155,7 @@ export default function DayNav({
             <path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 20h8" />
           </svg>
         </Link>
-        <Info>{info}</Info>
+        <Info keys={keys && [...keys, ...SHARED_KEYS]}>{info}</Info>
       </div>
       <div className="flex flex-wrap items-center gap-x-1 gap-y-1">
         {day ? (

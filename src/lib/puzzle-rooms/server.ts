@@ -6,7 +6,8 @@ import { crosswordFirstDay, crosswordForDay, type CrosswordPuzzle } from './cros
 import { cellEntry, type Room, type RoomGame } from './types'
 
 type StoredPuzzle = { game: 'crossword'; board: CrosswordPuzzle }
-type Player = { seat: string; name: string; seq: number; device?: string; late?: true }
+/** A seat in a room. `words` lists the clues (`12 Across`) this seat was first to fill in, right or wrong. */
+type Player = { seat: string; name: string; seq: number; device?: string; late?: true; words?: string[] }
 type Row = {
   id: string
   puzzle: StoredPuzzle
@@ -60,8 +61,10 @@ export const roomAction = z.discriminatedUnion('action', [
 
 function publicRoom(row: Row): Room {
   const { id, puzzle, entries, solved, version } = row
-  // A player who rejoins from a new tab takes a new seat, so the roster lists each name once.
-  const players = [...new Set(row.players.map((player) => player.name))]
+  // A player who rejoins from a new tab takes a new seat, so the roster lists each name once with all its words.
+  const words = new Map<string, number>()
+  for (const player of row.players) words.set(player.name, (words.get(player.name) ?? 0) + (player.words?.length ?? 0))
+  const players = [...words].map(([name, words]) => ({ name, words }))
   const { date, title, credit, creditUrl, width, height, blocks, clues } = puzzle.board
   return {
     id,
@@ -133,8 +136,16 @@ function apply(row: Row, action: z.infer<typeof roomAction>): Change | null {
     return {
       players: [
         ...row.players.filter((p) => !dropped.includes(p)),
-        // A seat taken after the solve can look at the grid but earns no daily result for it.
-        { name: action.name, seat: action.seat, seq: 0, ...(device && { device }), ...(row.solved && { late: true }) },
+        // A seat taken after the solve can look at the grid but earns no daily result for it. It keeps the words
+        // of the seats it replaces.
+        {
+          name: action.name,
+          seat: action.seat,
+          seq: 0,
+          ...(device && { device }),
+          ...(row.solved && { late: true }),
+          ...(dropped.some((p) => p.words) && { words: dropped.flatMap((p) => p.words ?? []) }),
+        },
       ],
     }
   }
@@ -142,14 +153,22 @@ function apply(row: Row, action: z.infer<typeof roomAction>): Change | null {
   if (action.seq <= player.seq) return null
   if (row.solved) return null
 
-  const players = row.players.map((p) => (p === player ? { ...p, seq: action.seq } : p))
   const entries = { ...row.entries }
-  const { solution } = row.puzzle.board
+  const { solution, clues } = row.puzzle.board
   for (const edit of action.edits) {
     if (!solution[edit.cell]) throw new RoomError('Choose an open square.', 422)
     if (edit.value) entries[edit.cell] = edit.value
     else delete entries[edit.cell]
   }
+  // A word goes to the first player to fill its last open square, right or wrong, and stays theirs if erased.
+  const taken = new Set(row.players.flatMap((p) => p.words ?? []))
+  const words = clues
+    .filter((clue) => clue.cells.every((cell) => entries[cell]) && !clue.cells.every((cell) => row.entries[cell]))
+    .map((clue) => `${clue.number} ${clue.direction}`)
+    .filter((word) => !taken.has(word))
+  const players = row.players.map((p) =>
+    p === player ? { ...p, seq: action.seq, ...(words.length && { words: [...(p.words ?? []), ...words] }) } : p,
+  )
   return { players, entries, solved: solution.every((answer, cell) => !answer || entries[cell] === answer) }
 }
 

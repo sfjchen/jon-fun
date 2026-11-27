@@ -22,6 +22,7 @@ import { useDeviceName } from '@/lib/use-device-name'
 import { NYT_FIRST_DAY, playableDay, shiftDay, siteDay, validDay } from '@/lib/daily'
 import { usePlayDay } from '@/lib/play-day'
 import { useDailyPuzzle } from '@/lib/use-daily-puzzle'
+import { GAME_KEYS } from '@/lib/game-keys'
 import DayNav, { action } from '@/components/daily/DayNav'
 import {
   RANKS,
@@ -587,6 +588,7 @@ export default function SpellingBee() {
         path="/games/spelling-bee"
         day={isPractice ? undefined : date}
         label={archive ? `Past hive · ${archive} · practice` : 'Random hive · practice'}
+        keys={GAME_KEYS.bee}
         info={
           <>
             <ul className="list-disc space-y-1 pl-4">

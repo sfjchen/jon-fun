@@ -2,6 +2,7 @@
 
 /** Renders the Orbs edition list and the individual puzzle screens. */
 
+import { gridKey } from '@/lib/keyboard'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
@@ -100,6 +101,7 @@ function MatchBoard({ category, state, answer }: { category: OrbsCategory; state
                 type="button"
                 className={tile}
                 disabled={state.done || locked}
+                data-hotkey={gridKey(index * 2, 2)}
                 aria-pressed={selected?.side === 'clue' && selected.index === index}
                 onClick={() => tap('clue', index)}
               >
@@ -123,6 +125,7 @@ function MatchBoard({ category, state, answer }: { category: OrbsCategory; state
             type="button"
             className={tile}
             disabled={state.done || used.has(index as OrbsPick)}
+            data-hotkey={gridKey(index * 2 + 1, 2)}
             aria-pressed={selected?.side === 'label' && selected.index === index}
             onClick={() => tap('label', index)}
           >
@@ -188,7 +191,13 @@ function Clue({
       ) : (
         <div className="flex flex-wrap gap-2" role="group" aria-labelledby={id}>
           {question.options.map((option, pick) => (
-            <button type="button" key={option} className={action} onClick={() => answer(index, pick as OrbsPick)}>
+            <button
+              type="button"
+              key={option}
+              className={action}
+              data-hotkey={pick + 1}
+              onClick={() => answer(index, pick as OrbsPick)}
+            >
               {option}
             </button>
           ))}
@@ -222,6 +231,7 @@ function PuzzleScreen({
   return (
     <section
       aria-labelledby="orbs-category-title"
+      data-arrows="grab"
       className="space-y-4 rounded-2xl border border-[var(--ink-border)] bg-[var(--ink-bg)] p-4 sm:p-6"
     >
       <header className="flex items-start justify-between gap-4">
@@ -267,6 +277,7 @@ function PuzzleScreen({
             replay()
           }}
           className={action}
+          data-hotkey="Enter"
         >
           Play again
         </button>
@@ -347,7 +358,7 @@ export default function OrbsPlay(props: Props) {
       >
         <h2 className="font-semibold">
           {selected && !solo ? (
-            <Link href={href()} prefetch={false} className="underline underline-offset-4">
+            <Link href={href()} prefetch={false} data-hotkey="Escape" className="underline underline-offset-4">
               ← Back to puzzles
             </Link>
           ) : archive ? (
@@ -376,12 +387,13 @@ export default function OrbsPlay(props: Props) {
         />
       ) : (
         <nav aria-label="Daily Orbs puzzles">
-          <ul className="space-y-3">
+          <ul className="space-y-3" data-arrows="grab">
             {categories.map((category, index) => (
               <li key={category.id}>
                 <Link
                   href={href(category.id)}
                   prefetch={false}
+                  data-hotkey={index + 1}
                   className={`flex min-h-24 items-start justify-between gap-3 rounded-2xl border border-l-4 bg-[var(--ink-bg)] px-4 py-3 hover:bg-[var(--ink-paper)] sm:px-5 ${colors[category.id]}`}
                 >
                   <div className="min-w-0 text-[var(--ink-text)]">

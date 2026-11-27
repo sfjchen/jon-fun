@@ -56,6 +56,7 @@ export default function ConnectionsResult({
       <div className="flex flex-wrap justify-center gap-2">
         <button
           type="button"
+          data-hotkey="s"
           onClick={share}
           className={btn}
           style={{ backgroundColor: 'var(--ink-text)', borderColor: 'var(--ink-text)', color: 'var(--ink-bg)' }}

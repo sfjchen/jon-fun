@@ -552,6 +552,7 @@ export default function KrillionPlay({ puzzle, dailyDay }: { puzzle: KrillionPuz
               <div className="flex gap-3">
                 <button
                   className="krillion-btn-descend flex-1"
+                  data-hotkey="s"
                   onClick={() => {
                     void navigator.clipboard.writeText(done.share).then(() => {
                       setCopied(true)

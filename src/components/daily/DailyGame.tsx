@@ -13,6 +13,7 @@ import type { MiniPuzzle } from '@/components/mini/MiniPlay'
 import { firstDay, isNytGame, playableDay, siteDay } from '@/lib/daily'
 import { usePlayDay } from '@/lib/play-day'
 import { useDailyPuzzle } from '@/lib/use-daily-puzzle'
+import { GAME_KEYS } from '@/lib/game-keys'
 import { GAMES, getPlayer, isPracticeResult, resultLabel } from '@/lib/results'
 import { useSavedRun, type DailyGameId } from '@/lib/daily/saved-run'
 import type { ConnectionsPuzzle } from '@/lib/connections'
@@ -125,6 +126,7 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
         publishedOnly={isNytGame(game)}
         minDay={firstDay(game)}
         info={info}
+        keys={GAME_KEYS[game]}
       >
         {game === 'mini' && day <= siteDay() && (
           <Link className={action} href={`/games/crossword?edition=mini&d=${day}`}>

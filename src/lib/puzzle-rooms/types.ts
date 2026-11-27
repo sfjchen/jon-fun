@@ -23,7 +23,8 @@ export type RoomEdit = { cell: number; value: string }
 export type Room = {
   id: string
   puzzle: RoomPuzzle
-  players: string[]
+  /** Each player by name, with the number of words they were first to fill in. */
+  players: { name: string; words: number }[]
   entries: Record<number, string>
   solved: boolean
   version: number

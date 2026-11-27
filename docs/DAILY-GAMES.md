@@ -24,7 +24,7 @@ Wordle (id `fivefold`), Mini, Connections, Spelling Bee (`bee`), Krillion, Anthr
 | Score check                                   | `POST /api/results` → `VERIFIERS` in `src/lib/daily/verify.ts`                      |
 | Boards and stats                              | `/leaderboards` (`src/components/Scores.tsx`), Daily drawer (`DailyDrawer.tsx`)     |
 
-Adding a daily game - add it to `GAMES`, give it a verifier (the build fails without one), a branch in `dailyPuzzle`, a player component and its route in `PageShell`.
+Adding or changing a game - follow [GAME-PLAYBOOK.md](GAME-PLAYBOOK.md): the steps, the keyboard formula, and the look, score and collaboration rules every game shares.
 
 ## Puzzle sources
 
@@ -92,7 +92,8 @@ Collaborative games are shared with everyone on a player's board, with no room t
   player's saved words for the day and the page pulls them on load and every 15 seconds. A player's result is saved
   once they add a word of their own, and then carries the shared list.
 - Crossword - `/games/crossword` opens the board's 1 shared grid for the day (a room whose id is derived from the
-  board code, game, day and edition). Every visitor lands in it, and one with no name yet sits in as a guest.
+  board code, game, day and edition). Every visitor lands in it, and one with no name yet sits in as a guest. The roster
+  counts each player's words: a word goes to the first player to fill its last open square, right or wrong.
   **Change puzzle** leads to the date and edition picker, and **Play together** on
   the Mini opens the board's shared Mini grid.
 

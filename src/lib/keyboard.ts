@@ -66,6 +66,13 @@ export function useHotkeys(handle: (key: string, e: KeyboardEvent) => boolean | 
 const GRID_ROWS = ['1234567', 'qwertyu', 'asdfghj', 'zxcvbnm']
 
 /**
+ * Returns the key that points at grid item `index` in a grid `cols` wide, for `data-hotkey` on a tile.
+ */
+export function gridKey(index: number, cols: number): string | undefined {
+  return GRID_ROWS[Math.floor(index / cols)]?.[index % cols]
+}
+
+/**
  * Returns the index of the grid item a key points at for a grid `cols` wide, or -1 when the key is off the grid.
  */
 export function gridKeyIndex(key: string, cols: number): number {

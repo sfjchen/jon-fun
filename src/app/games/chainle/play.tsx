@@ -86,6 +86,7 @@ export default function ChainlePlay({ puzzle }: { puzzle: Edition }) {
         <div>
           <button
             className="underline"
+            data-hotkey="s"
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(share)

@@ -3,10 +3,11 @@
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import { action } from '@/components/daily/DayNav'
+import { action, Info } from '@/components/daily/DayNav'
 import { NYT_FIRST_DAY, validDay } from '@/lib/daily'
 import { useSiteDay } from '@/lib/play-day'
-import { logResult } from '@/lib/results'
+import { GAME_KEYS, JUMP_KEY } from '@/lib/game-keys'
+import { GAMES, logResult } from '@/lib/results'
 import {
   cellEntry,
   cleanCellEntry,
@@ -31,7 +32,16 @@ export default function Crossword({ firstFullDay }: { firstFullDay: string }) {
   const day = validDay(requested) && requested >= minDay && requested <= today ? requested : today
   return (
     <div className="mx-auto w-full max-w-5xl">
-      <RoomHeader title="Crossword Together" />
+      <RoomHeader title="Crossword Together">
+        <Info keys={[...GAME_KEYS.crossword, JUMP_KEY]}>
+          <ul className="list-disc space-y-1 pl-4">
+            <li>Everyone on your board fills the same grid, live. Type in any square.</li>
+            <li>Tap a square twice, or press Space, to switch Across and Down.</li>
+            <li>A word counts for the first player to fill it in, right or wrong.</li>
+          </ul>
+          <p className="text-[var(--ink-muted)]">Scoring: {GAMES.crossword.rules}</p>
+        </Info>
+      </RoomHeader>
       {!id && (
         <div className="mb-5 space-y-3">
           <div className="flex flex-wrap items-center gap-3">
@@ -153,14 +163,30 @@ function CrosswordGrid({
     if (key === 'Backspace' || key === 'Delete') {
       event.preventDefault()
       clear(cell, key === 'Backspace')
-    } else if (key === ' ' || key === 'Enter') {
+    } else if (key === ' ') {
       event.preventDefault()
       const other = crossing.find((clue) => clue !== selected)
       if (other) setDirection(other.direction)
+    } else if (key === 'Tab' || key === 'Enter' || key === '[' || key === ']') {
+      // Steps through the clues in list order, wrapping from the last Down to the first Across.
+      event.preventDefault()
+      const back = key === '[' || (key === 'Tab' && event.shiftKey)
+      const at = selected ? clues.indexOf(selected) : 0
+      pick(clues[(at + (back ? -1 : 1) + clues.length) % clues.length]!)
+    } else if ((key === 'Home' || key === 'End') && selected) {
+      event.preventDefault()
+      focus(selected.cells.at(key === 'Home' ? 0 : -1)!)
+    } else if (key === 'Escape' && !solved) {
+      event.preventDefault()
+      setRebusValue(entries[cell] ?? '')
+      setRebus((open) => !open)
     } else if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(key)) {
       event.preventDefault()
       const horizontal = key === 'ArrowLeft' || key === 'ArrowRight'
       const nextDirection = horizontal ? 'Across' : 'Down'
+      // The first press across the word only turns it, as in the Mini, when the square has a word that way.
+      if (nextDirection !== direction && crossing.some((clue) => clue.direction === nextDirection))
+        return setDirection(nextDirection)
       setDirection(nextDirection)
       const step = (horizontal ? 1 : width) * (key === 'ArrowLeft' || key === 'ArrowUp' ? -1 : 1)
       for (let next = cell + step; next >= 0 && next < blocks.length; next += step) {
@@ -317,7 +343,13 @@ function CrosswordGrid({
                     <input
                       className="w-24 rounded border p-1"
                       maxLength={16}
+                      autoFocus
                       value={rebusValue}
+                      onKeyDown={(event) => {
+                        if (event.key !== 'Escape') return
+                        setRebus(false)
+                        focus(active)
+                      }}
                       onChange={(event) => setRebusValue(cleanCellEntry(event.target.value))}
                     />
                   </label>
