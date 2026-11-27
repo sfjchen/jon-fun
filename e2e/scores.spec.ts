@@ -32,7 +32,7 @@ test('clean leaderboard compares Connections by time and Wordle by guesses, with
   await expect(dayResults.getByLabel('Daily winner')).toHaveCount(2)
   await expect(dayResults.getByRole('listitem').first()).toContainText('3/6')
   await expect(page.getByTestId('board-fivefold').getByRole('listitem')).toHaveCount(2)
-  await page.getByText('Your stats', { exact: true }).click()
+  await expect(page.getByRole('heading', { name: /^Your stats/ })).toBeVisible()
   await expect(page.getByText('Days played', { exact: true })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Calendar' })).toBeVisible()
 })

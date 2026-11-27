@@ -27,8 +27,9 @@ function HomeDoodleIcon({ className }: { className?: string }) {
 }
 
 const variantClass: Record<NonNullable<HomeLinkProps['variant']>, string> = {
+  // A round outlined button the size of its tap area, so the icon fills what a press reaches.
   default:
-    'p-1 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 rounded text-[var(--ink-accent)]',
+    'h-10 w-10 justify-center rounded-full border border-[color-mix(in_srgb,var(--ink-text)_22%,transparent)] hover:bg-[var(--ink-border)]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)] focus-visible:ring-offset-2 text-[var(--ink-accent)]',
   notes:
     'p-0.5 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--uv-accent)] focus-visible:ring-offset-1 rounded text-[var(--uv-text-secondary)] hover:text-[var(--uv-accent)]',
   dark: 'text-white/90 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#05070f] rounded min-h-11 min-w-11 items-center justify-center p-2',
@@ -36,7 +37,7 @@ const variantClass: Record<NonNullable<HomeLinkProps['variant']>, string> = {
 
 /** Standard sfjc.dev home control: house icon only. Header: top-right via PageShell. */
 export function HomeLink({ variant = 'default', className = '', 'data-testid': testId }: HomeLinkProps) {
-  const iconSize = variant === 'dark' ? 'h-6 w-6' : variant === 'notes' ? 'h-4.5 w-4.5' : 'h-5 w-5'
+  const iconSize = variant === 'dark' ? 'h-6 w-6' : variant === 'notes' ? 'h-4.5 w-4.5' : 'h-6 w-6'
 
   return (
     <Link

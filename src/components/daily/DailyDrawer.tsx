@@ -312,7 +312,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                 type="button"
                 onClick={close}
                 aria-label="Close"
-                className="-mr-2 h-9 w-9 shrink-0 rounded-full text-xl hover:bg-[var(--ink-paper)]"
+                className="-mr-1 h-10 w-10 shrink-0 rounded-full border border-[color-mix(in_srgb,var(--ink-text)_22%,transparent)] text-2xl leading-none hover:bg-[var(--ink-paper)]"
               >
                 ×
               </button>

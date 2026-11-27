@@ -18,7 +18,8 @@ import { SHARED_KEYS, type KeyRow } from '@/lib/game-keys'
 import { useSiteDay } from '@/lib/play-day'
 
 const icon =
-  'inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-[var(--ink-border)]/40 ' +
+  'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ' +
+  'border-[color-mix(in_srgb,var(--ink-text)_22%,transparent)] hover:bg-[var(--ink-border)]/40 [&>svg]:h-6 [&>svg]:w-6 ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-accent)]'
 export { action, icon }
 

@@ -10,6 +10,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { DailyHeader } from '@/components/daily/DailyDrawer'
 import { Info, icon } from '@/components/daily/DayNav'
 import DayPicker from '@/components/daily/DayPicker'
 import { HomeLink } from '@/components/HomeLink'
@@ -417,6 +418,7 @@ function DeviceSplit({ rows, games }: { rows: BoardRow[]; games: GameId[] }) {
   const th = 'px-3 py-2 text-right font-normal capitalize'
   return (
     <div className="overflow-x-auto">
+      <h3 className="text-sm font-semibold">Your averages by device</h3>
       <table className="w-full text-sm">
         <thead className={`border-b border-[var(--ink-border)] text-xs ${muted}`}>
           <tr>
@@ -576,6 +578,7 @@ export function ScoresHub() {
         <div className="daily-heading flex min-h-12 items-center gap-1 sm:gap-2">
           <HomeLink className="inline-flex h-10 w-10 shrink-0 items-center justify-center" />
           <h1 className="mr-auto min-w-0 truncate font-lora text-xl font-bold md:text-2xl">Leaderboard</h1>
+          <DailyHeader compact />
           {mineToday.length > 0 && (
             <button
               type="button"
@@ -616,8 +619,8 @@ export function ScoresHub() {
               ))}
             </ul>
             <p>
-              Core games count toward overall daily wins and streaks. Game wins require two players. Equal results share
-              the rank.
+              Every game counts the same toward overall daily wins and streaks. A game win needs 2 players that day.
+              Equal results share the rank.
             </p>
           </Info>
         </div>
@@ -696,6 +699,12 @@ export function ScoresHub() {
           )}
           {dayRows.length ? (
             <div className={card}>
+              <div className="mb-1 flex items-baseline justify-between gap-2 px-2">
+                <h2 className="text-sm font-semibold">{day === today ? 'Today' : 'Scores'}</h2>
+                <p className={`text-xs ${muted}`}>
+                  {tab === 'all' ? 'Tap a game icon for its board' : 'Tap the icon again for all games'}
+                </p>
+              </div>
               <ScoreTable
                 rows={dayRows}
                 me={me}
@@ -824,16 +833,22 @@ export function ScoresHub() {
         </section>
       )}
       {loaded && me && rows.some((r) => r.name === me) && (
-        <details className={card}>
-          <summary className="-my-2 cursor-pointer px-2 py-2 text-sm font-semibold">Your stats</summary>
-          <div className="mt-4 space-y-5 px-2">
-            <div className="grid grid-cols-3 gap-3 text-center">
+        <section aria-label="Your stats" className={card}>
+          <h2 className="px-2 text-sm font-semibold">
+            Your stats
+            {tab !== 'all' && <span className={`font-normal ${muted}`}> · {GAMES[tab].title}</span>}
+          </h2>
+          <div className="mt-3 space-y-5 px-2">
+            <div className="grid grid-cols-3 gap-2 text-center">
               {[
                 ['Days played', new Set(mineAll.map((r) => r.day)).size],
                 ['Current streak', streak.current],
                 ['Longest streak', streak.longest],
               ].map(([label, value]) => (
-                <div key={label}>
+                <div
+                  key={label}
+                  className="rounded-lg border border-[var(--ink-border)] bg-[var(--ink-paper)] px-1 py-3"
+                >
                   <p className="text-3xl font-semibold tracking-tight tabular-nums">{value}</p>
                   <p className={`mt-1 text-xs ${muted}`}>{label}</p>
                 </div>
@@ -854,7 +869,7 @@ export function ScoresHub() {
             {tab === 'all' && mineAll.some((r) => r.device) && <DeviceSplit rows={mineAll} games={GAME_IDS} />}
             {tab !== 'all' && mine.some((r) => r.device) && <DeviceSplit rows={mine} games={games} />}
           </div>
-        </details>
+        </section>
       )}
       <footer className={`space-y-2 px-1 text-xs ${muted}`}>
         <Link href="/leaderboards?tab=multiplayer" className="inline-block py-2 underline">
