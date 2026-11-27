@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState, useSyncExternalStore, type ComponentType, type ReactNode } from 'react'
 import { action as button } from '@/components/daily/DayNav'
+import { getPlayer, PUBLIC_GROUP } from '@/lib/results'
 import { supabase } from '@/lib/supabase'
 import { useDeviceName } from '@/lib/use-device-name'
 import { roomPath, roomTopic, validRoomId, type Room, type RoomEdit, type RoomGame } from '@/lib/puzzle-rooms/types'
@@ -14,6 +15,10 @@ type Props = {
   day: string
   id: string
   mini?: boolean
+  /** Opens the board's 1 shared room for the day in place of a private room. */
+  shared?: boolean
+  /** Enters without waiting for a click once the player has a name. */
+  auto?: boolean
   board: ComponentType<RoomBoardProps>
 }
 
@@ -101,7 +106,7 @@ export default function RoomLobby(props: Props) {
   return <Lobby key={props.id} {...props} />
 }
 
-function Lobby({ game, id, day, mini, board: Board }: Props) {
+function Lobby({ game, id, day, mini, shared, auto, board: Board }: Props) {
   const [name, setName] = useDeviceName()
   const [session, setSession] = useState(() => readSession(id))
   const [room, setRoom] = useState<Room | null>(null)
@@ -291,7 +296,15 @@ function Lobby({ game, id, day, mini, board: Board }: Props) {
       const device = deviceId()
       const next = id
         ? await request(roomApi(id), { action: 'join', name, game, seat, device })
-        : await request(roomApi(''), { name, game, seat, device, day, id: draft.id, mini })
+        : await request(roomApi(''), {
+            name,
+            game,
+            seat,
+            device,
+            day,
+            mini,
+            ...(shared ? { group: getPlayer()?.group ?? PUBLIC_GROUP } : { id: draft.id }),
+          })
       saveSession(next.id, draft.session)
       accept(next)
       setSession(draft.session)
@@ -303,10 +316,18 @@ function Lobby({ game, id, day, mini, board: Board }: Props) {
     }
   }
 
+  // A named player lands straight in the shared grid, like any other daily game. Leaving it for the date and
+  // edition picker carries ?pick, which holds this back.
+  const opened = useRef(false)
+  useEffect(() => {
+    if (!auto || id || opened.current || !name.trim()) return
+    opened.current = true
+    void enter()
+  })
   const back =
     game === 'bee' && (room?.puzzle.board.date ?? day)
       ? `${roomPath.bee}?d=${room?.puzzle.board.date ?? day}`
-      : roomPath[game]
+      : `${roomPath[game]}?pick=1`
   if ((!lookup && id) || missing)
     return (
       <div className="space-y-3">
@@ -348,7 +369,7 @@ function Lobby({ game, id, day, mini, board: Board }: Props) {
               />
             </label>
             <button className={`${button} min-h-10`} disabled={joining || (!day && !id)} type="submit">
-              {joining ? 'Connecting…' : id ? 'Join room' : 'Create room'}
+              {joining ? 'Connecting…' : id ? 'Join room' : shared ? 'Open shared grid' : 'Create room'}
             </button>
             {error && (
               <p role="alert" className="w-full text-sm text-red-700">

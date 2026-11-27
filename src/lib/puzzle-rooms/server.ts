@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { z } from 'zod'
 import { firstDay, siteDay, validDay } from '@/lib/daily'
 import { nytPuzzle } from '@/lib/daily/nyt'
@@ -41,7 +42,12 @@ export const createRoomBody = z.object({
   name,
   seat,
   device,
-  id: z.string(),
+  /** A board code opens that board's shared room for the day, in place of a room under a client-made id. */
+  group: z
+    .string()
+    .regex(/^[a-z0-9-]{3,32}$/)
+    .optional(),
+  id: z.string().optional(),
   mini: z.boolean().optional(),
 })
 export const roomAction = z.discriminatedUnion('action', [
@@ -99,14 +105,24 @@ async function getPuzzle(game: RoomGame, day: string, mini: boolean): Promise<St
   }
 }
 
+/**
+ * Opens a room. With a board code it is the board's 1 shared room for that game, day and edition, which later
+ * players join. Otherwise it is a new private room under the caller's id, which only its creator may reopen.
+ */
 export async function createRoom(input: z.infer<typeof createRoomBody>): Promise<Room> {
-  const { id, game, day, name, seat, device } = input
+  const { game, day, name, seat, device, group } = input
+  const mini = input.mini ?? false
+  const id = group
+    ? createHash('sha256').update(`${group}:${game}:${day}:${mini}`).digest('base64url').slice(0, 16)
+    : (input.id ?? '')
+  const join = () => updateRoom(id, { action: 'join', name, seat, device, game })
   const existing = await loadRoom(id)
   if (existing) {
+    if (group) return join()
     if (existing.players[0]?.seat === seat) return publicRoom(existing)
     throw new RoomError('Could not create a room. Try again.', 409)
   }
-  const puzzle = await getPuzzle(game, day, input.mini ?? false)
+  const puzzle = await getPuzzle(game, day, mini)
   const { data, error } = await supabaseAdmin
     .from('puzzle_rooms')
     .insert({ id, puzzle, players: [{ name, seat, seq: 0, ...(device && { device }) }] })
@@ -114,6 +130,7 @@ export async function createRoom(input: z.infer<typeof createRoomBody>): Promise
     .single()
   if (!error) return publicRoom(data as Row)
   if (error.code === '23505') {
+    if (group) return join()
     const winner = await loadRoom(id)
     if (winner?.players[0]?.seat === seat) return publicRoom(winner)
     throw new RoomError('Could not create a room. Try again.', 409)

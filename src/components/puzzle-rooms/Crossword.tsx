@@ -24,6 +24,7 @@ export default function Crossword({ firstFullDay }: { firstFullDay: string }) {
   const id = params.get('room') ?? ''
   const selected = params.get('d')
   const mini = params.get('edition') === 'mini'
+  const pick = params.has('pick')
   const minDay = mini ? NYT_FIRST_DAY.mini : firstFullDay
   const [draft, setDraft] = useState<{ mini: boolean; date: string }>()
   const requested = draft?.mini === mini ? draft.date : selected
@@ -37,7 +38,7 @@ export default function Crossword({ firstFullDay }: { firstFullDay: string }) {
             <p>{mini ? 'NYT Daily Mini' : 'Full-size daily crossword'}</p>
             <Link
               className={action}
-              href={mini ? '/games/crossword' : '/games/crossword?edition=mini'}
+              href={mini ? '/games/crossword?pick=1' : '/games/crossword?pick=1&edition=mini'}
               prefetch={false}
               onClick={() => setDraft(undefined)}
             >
@@ -57,7 +58,7 @@ export default function Crossword({ firstFullDay }: { firstFullDay: string }) {
           </label>
         </div>
       )}
-      <RoomLobby game="crossword" id={id} day={day} mini={mini} board={SharedCrossword} />
+      <RoomLobby game="crossword" id={id} day={day} mini={mini} shared auto={!pick} board={SharedCrossword} />
     </div>
   )
 }

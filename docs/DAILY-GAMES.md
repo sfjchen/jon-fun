@@ -52,7 +52,7 @@ Adding a daily game - add it to `GAMES`, give it a verifier (the build fails wit
 - Mini - active solve time, paused when you pause or leave. First unassisted time ranks, lower wins. Autocheck ranks. Check and Reveal mark the solve as assisted. Runs finished before 2026-11-24 did not record which help was used, so a finished assisted one counts as an Autocheck solve and is sent once from the device that holds it (`sendAutocheckedMinis`).
 - Connections - 4 groups, 4 mistakes, one-away hint, no repeat guesses. Solved puzzles rank by time. Unsolved ones rank below by groups found and never win the day. Mistakes do not break ties.
 - Wordle - 6 tries, the original's marks and hard mode. The switch is a saved preference for every later puzzle, and a game picks it up only before its first guess. No clock. Ranked by guesses, a loss counts as 7 in averages, hard-mode results show `*`.
-- Spelling Bee - the day's exact answer list, center letter required, 4-letter minimum, original points and rank thresholds.
+- Spelling Bee - the day's exact answer list, center letter required, 4-letter minimum, original points and rank thresholds. Found words are shared across the board (see Collaborative games).
 - Krillion - 7 prompts, 25 seconds each on wall time, so a reload never grants a new clock. Wrong answers can be retried, and the draft is judged once at expiry. Answers are judged on the device from the prompt's answer key, with the server as fallback. Matching ignores accents, case, punctuation and a leading "the". From 5 letters, the closest answer within min(3, 0.28 × length) edits comes back as `"typed" → "answer"` and scores when sent again. Rarity scores are 10, 15, 30, 60, 85 or 100, maximum 700. No AI judging.
 - Anthropeum - 10 artifacts, a map pin and a 250-year period each (125-year steps, 3000 BCE to 1750 CE). Up to 5,000 points for place (distance to the nearest polygon edge) and 5,000 for time, 100,000 overall. 3 free hints per game. The results page shows the original's score histogram and estimated placement.
 - Orbs - Four themed puzzles open on separate screens. Formats include written clues, two-tap matching, sorting and a short quiz. Each puzzle has three lives, and a puzzle ends when every clue is solved or the lives run out. The first complete daily ranks with one orb per correct clue, up to 12. An archive round saves only its own mark.
@@ -83,12 +83,20 @@ Adding a daily game - add it to `GAMES`, give it a verifier (the build fails wit
 - `npm test` runs `tests/*.test.ts` (NYT validation, original mechanics, ranking, SET). `e2e/daily-games.spec.ts` plays each game through to score delivery.
 - `scripts/build-basemap.py` rebuilds the Anthropeum map tiles in `public/maps/basemap`.
 
-## Collaborative puzzle rooms
+## Collaborative games
 
-Use **Play together** on Spelling Bee or Mini, or open **Crossword Together** from the home page.
-Create a room for a published Pacific date and share its invite link. Each room keeps a snapshot
-of its puzzle and saves shared progress in Supabase. The same tab can resume the room after a
-reload, including edits waiting to sync. A browser that rejoins from new tabs counts as 1 of the
+Collaborative games are shared with everyone on a player's board, with no room to create or invite to send.
+
+- Spelling Bee - a named player's daily found list is the whole board's: `/api/spelling-bee/words` merges every
+  player's saved words for the day and the page pulls them on load and every 15 seconds. A player's result is saved
+  once they add a word of their own, and then carries the shared list.
+- Crossword - `/games/crossword` opens the board's 1 shared grid for the day (a room whose id is derived from the
+  board code, game, day and edition). **Change puzzle** leads to the date and edition picker, and **Play together** on
+  the Mini opens the board's shared Mini grid.
+
+Each room keeps a snapshot of its puzzle and saves shared progress in Supabase. The same tab can resume the room
+after a reload, including edits waiting to sync. An invite link opens the same room for someone on another board.
+A browser that rejoins from new tabs counts as 1 of the
 24 players and keeps its 3 newest seats. The daily cron deletes rooms left untouched for 30 days.
 
 Crossword Together opens the original 15×15 daily by default. It publishes a distinct board from

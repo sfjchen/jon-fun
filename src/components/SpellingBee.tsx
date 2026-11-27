@@ -6,7 +6,6 @@
  * The word list, practice bank and past-hive dates load only when practice or the picker asks for them.
  */
 
-import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { shuffle } from '@/lib/random'
@@ -118,7 +117,7 @@ function loadFound(id: string): string[] {
 }
 
 /**
- * Fetches the words this player's other devices found on a day, or none without a name or a connection.
+ * Fetches the words everyone on this player's board found on a day, or none without a name or a connection.
  */
 async function remoteFound(day: string): Promise<string[]> {
   const p = getPlayer()
@@ -387,6 +386,8 @@ function Bee({ team }: { team?: Team }) {
   const isPractice = !!pz && (pz.id === practice || (pz as HistoricalPuzzle).date === archive)
   const key = !shared && pz ? (isPractice ? `p:${archive ?? 'random'}:${pz.id}` : `${date}:${pz.id}`) : null
 
+  // Whether this browser has added a word of its own to the day's shared list.
+  const [mine, setMine] = useState(false)
   const [cur, setCur] = useState<string | null>(null)
   if (key !== cur) {
     setCur(key)
@@ -397,13 +398,20 @@ function Bee({ team }: { team?: Team }) {
     } catch {
       setRevealed(false)
     }
+    try {
+      setMine(Boolean(key && localStorage.getItem(`sb:mine:${key}`)))
+    } catch {
+      setMine(false)
+    }
     setCrowd(null)
   }
 
-  // Merges in the words found under this name on other devices, on load and on every live refresh, so an open page
-  // picks up a phone's words without a reload. The saved list is re-read when the reply lands, so a word typed
+  // Merges in the words everyone on the board has found, on load and on every live refresh, so an open page picks
+  // up a friend's or a phone's words without a reload. The saved list is re-read when the reply lands, so a word typed
   // meanwhile is kept.
   const [name] = useDeviceName()
+  // A named player's daily hive is shared with their board, like a room is shared with its players.
+  const together = shared || (!isPractice && !!name)
   useEffect(() => {
     if (!pz || !key || isPractice) return
     let live = true
@@ -477,7 +485,8 @@ function Bee({ team }: { team?: Team }) {
 
   const n = found.length
   useEffect(() => {
-    if (shared || !pz || isPractice || revealed || pts <= 0) return
+    // The found list holds the whole board's words, so a result is saved only once this player has added a word.
+    if (shared || !pz || isPractice || revealed || pts <= 0 || !mine) return
     const t = setTimeout(
       () =>
         logResult('bee', pts, n, date, {
@@ -490,7 +499,7 @@ function Bee({ team }: { team?: Team }) {
       1500,
     )
     return () => clearTimeout(t)
-  }, [pz, n, found, pts, isPractice, revealed, date, shared])
+  }, [pz, n, found, pts, isPractice, revealed, date, shared, mine])
   // Counts the named players on this board for the day, again whenever this browser's own result is saved.
   useEffect(() => {
     if (!key || isPractice) return
@@ -529,8 +538,10 @@ function Bee({ team }: { team?: Team }) {
     else {
       if (!isPractice) markPracticeIfFuture('bee', date)
       setFound(nf)
+      setMine(true)
       try {
         localStorage.setItem(`sb:${key}`, JSON.stringify(nf))
+        localStorage.setItem(`sb:mine:${key}`, '1')
       } catch {}
     }
     flash(nr === RANKS.length - 1 ? 'Queen Bee! 👑' : praise(entry), true, score(entry))
@@ -643,11 +654,6 @@ function Bee({ team }: { team?: Team }) {
             </>
           }
         >
-          {!practice && selectedDay <= now && (
-            <Link className={action} href={`/games/spelling-bee?co-op=1&d=${selectedDay}`} prefetch={false}>
-              Play together
-            </Link>
-          )}
           {isPractice && (
             <button className={action} onClick={() => go('')}>
               Today
@@ -837,13 +843,13 @@ function Bee({ team }: { team?: Team }) {
             >
               <span className="min-w-0 truncate">
                 {open || found.length === 0 ? (
-                  `${shared ? 'Together you found' : 'You have found'} ${found.length} word${found.length === 1 ? '' : 's'}`
+                  `${together ? 'Together you found' : 'You have found'} ${found.length} word${found.length === 1 ? '' : 's'}`
                 ) : (
                   <span className="capitalize md:hidden">{[...found].reverse().join(' ')}</span>
                 )}
                 {!open && found.length > 0 && (
                   <span className="hidden md:inline">
-                    {shared ? 'Together you found' : 'You have found'} {found.length} word
+                    {together ? 'Together you found' : 'You have found'} {found.length} word
                     {found.length === 1 ? '' : 's'}
                   </span>
                 )}
