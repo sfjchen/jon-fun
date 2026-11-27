@@ -1,6 +1,6 @@
 # Daily games handoff for Codex and Claude
 
-This is a private testing project for two friends who want to play the same daily puzzles, compare scores, and keep their history. The owner reports developer permission to use the originals for this project. Keep new work local for this handoff. The repository is public and pushing to main deploys to sfjc.dev. Keep publisher-provided files outside tracked paths unless their permission also covers public redistribution.
+This is a private testing project for two friends who want to play the same daily puzzles, compare scores, and keep their history. The owner reports developer permission to use the originals for this project. Commit and push finished work: pushing to main deploys to sfjc.dev. Keep publisher-provided files outside tracked paths unless their permission also covers public redistribution.
 
 ## Division of work
 
