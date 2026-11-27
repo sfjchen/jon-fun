@@ -479,10 +479,8 @@ export default function MiniPlay({ puzzle, dailyDay }: { puzzle: MiniPuzzle; dai
                       if (e.key.startsWith('Arrow')) {
                         e.preventDefault()
                         const d = e.key === 'ArrowLeft' || e.key === 'ArrowRight' ? 'Across' : 'Down'
-                        if (d !== direction) {
-                          setDirection(d)
-                          return
-                        }
+                        // An arrow always moves 1 square and the word turns to follow it.
+                        setDirection(d)
                         const step =
                             (e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 1) *
                             (d === 'Across' ? 1 : puzzle.width),

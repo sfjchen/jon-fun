@@ -75,7 +75,7 @@ Rules:
 4. **Every control reachable** - each button has a key or sits in an arrow group.
 5. **Leave the browser's keys** - nothing on Cmd or Ctrl except Quick jump (Ctrl/⌘ K).
 6. **Shown, not memorised** - a hovered or tabbed control shows its keys in a chip, and the ⓘ panel lists the game's `GAME_KEYS` row plus the shared keys. Both hide on touch screens.
-7. **Same key, same job** - a key from the table keeps its job in every game. The 1 exception is rule 2: where the original gives a key another job (Esc is rebus in a crossword), the original wins and the ⓘ row says so.
+7. **Same key, same job** - a key from the table keeps its job in every game. The 1 exception is rule 2: where the original gives a key another job (Esc is rebus in a crossword), the original wins and the ⓘ row says so. The other way round, a letter grid's arrows always move 1 square and turn the word to follow, where the NYT turns first without moving: a press that moves nothing reads as a dead key.
 8. **A game on its own page** (Spelling Bee, the crossword) skips `DailyGame` and the saved run, but still passes its `GAME_KEYS` row to `DayNav` or `Info` and sends results with `logResult`.
 
 | Job                                      | Key                                                       |

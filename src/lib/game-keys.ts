@@ -21,7 +21,7 @@ export const SHARED_KEYS: KeyRow[] = [
 /** The squares, clues and entries of a crossword grid, shared by the Mini and the full-size crossword. */
 const GRID_KEYS: KeyRow[] = [
   ['A-Z', 'Fill the square'],
-  ['← ↑ → ↓', 'Move, or turn the word first'],
+  ['← ↑ → ↓', 'Move 1 square, and the word turns to follow'],
   ['Space', 'Switch Across and Down'],
   ['Tab Enter ]', 'Next clue'],
   ['Shift+Tab [', 'Previous clue'],

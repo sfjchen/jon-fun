@@ -116,6 +116,20 @@ function CrosswordGrid({
   const filled = Object.keys(entries).length
   const total = blocks.filter((block) => !block).length
 
+  // Keeps the selected clue in view in the clue list, where the list scrolls on its own (wide screens). On a phone
+  // the list is part of the page, and the pinned clue bar above the grid shows the clue instead.
+  const lists = useRef<HTMLDivElement>(null)
+  const clueKey = selected && `${selected.number} ${selected.direction}`
+  useEffect(() => {
+    const box = lists.current,
+      row = box?.querySelector<HTMLElement>('[aria-pressed="true"]')
+    if (!box || !row || box.scrollHeight <= box.clientHeight) return
+    const frame = box.getBoundingClientRect(),
+      at = row.getBoundingClientRect()
+    if (at.top >= frame.top && at.bottom <= frame.bottom) return
+    box.scrollTo({ top: box.scrollTop + at.top - frame.top - (frame.height - at.height) / 2, behavior: 'smooth' })
+  }, [clueKey])
+
   function focus(cell: number) {
     setActive(cell)
     const input = inputs.current[cell]
@@ -184,9 +198,7 @@ function CrosswordGrid({
       event.preventDefault()
       const horizontal = key === 'ArrowLeft' || key === 'ArrowRight'
       const nextDirection = horizontal ? 'Across' : 'Down'
-      // The first press across the word only turns it, as in the Mini, when the square has a word that way.
-      if (nextDirection !== direction && crossing.some((clue) => clue.direction === nextDirection))
-        return setDirection(nextDirection)
+      // An arrow always moves 1 square and the word turns to follow it, so no press looks like a dead key.
       setDirection(nextDirection)
       const step = (horizontal ? 1 : width) * (key === 'ArrowLeft' || key === 'ArrowUp' ? -1 : 1)
       for (let next = cell + step; next >= 0 && next < blocks.length; next += step) {
@@ -359,7 +371,7 @@ function CrosswordGrid({
             </div>
           )}
         </section>
-        <div className="grid gap-3 sm:grid-cols-2 md:max-h-[min(70vh,42rem)] md:overflow-y-auto">
+        <div ref={lists} className="grid gap-3 sm:grid-cols-2 md:max-h-[min(70vh,42rem)] md:overflow-y-auto">
           {directions.map((axis) => (
             <section key={axis} aria-label={axis}>
               <h3 className="border-b border-[var(--ink-border)] pb-1 font-semibold">{axis}</h3>
