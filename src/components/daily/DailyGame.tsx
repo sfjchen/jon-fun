@@ -123,7 +123,7 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
         title={game === 'orbs' ? 'Ranked Orbs' : GAMES[game].title}
         path={GAMES[game].url}
         day={day}
-        publishedOnly={isNytGame(game)}
+        publishedOnly={isNytGame(game) || game === 'chainle'}
         minDay={firstDay(game)}
         info={info}
         keys={GAME_KEYS[game]}
@@ -131,6 +131,11 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
         {game === 'mini' && day <= siteDay() && (
           <Link className={action} href={`/games/crossword?edition=mini&d=${day}`}>
             Play together
+          </Link>
+        )}
+        {game === 'chainle' && (
+          <Link className={action} href="/games/chainle/archive">
+            Archive
           </Link>
         )}
         {game === 'orbs' && (

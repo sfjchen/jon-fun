@@ -6,13 +6,13 @@ import { siteDay } from '@/lib/daily'
 
 const titles = [
   ['Krillion', '/games/krillion'],
-  ['Noillirk', 'https://noillirk.com'],
+  ['Noillirk', '/games/noillirk'],
   ['Wordle', '/games/wordle'],
   ['Connections', '/games/connections/daily'],
   ['Who’s More Famous?', 'https://whosmorefamous.com'],
   ['Chainle', '/games/chainle'],
   ['Daily Orbs', '/games/orbs'],
-  ['Kabloom', 'https://kabloom.io'],
+  ['Kabloom', 'https://kabloom.io/play/daily'],
   ['Plain', 'https://playplain.app'],
   ['Bandle', 'https://bandle.app/menu'],
   ['Headcount', 'https://headcountgame.com'],
@@ -55,11 +55,11 @@ export default function Page() {
     setRecords(rows.sort((a, b) => b.day.localeCompare(a.day) || a.title.localeCompare(b.title)))
   }
   useEffect(() => {
-    setDay(siteDay())
-    read()
+    const initialRead = window.setTimeout(read, 0)
     window.addEventListener('storage', read)
     window.addEventListener('focus', read)
     return () => {
+      window.clearTimeout(initialRead)
       window.removeEventListener('storage', read)
       window.removeEventListener('focus', read)
     }
@@ -76,22 +76,27 @@ export default function Page() {
                 {title}
               </Link>
             ) : (
-              <>
-                <a className="font-semibold underline" href={url} target="_blank" rel="noreferrer">
-                  {title} ↗
-                </a>
-                <button
-                  className="text-sm underline"
-                  onClick={() => {
-                    setEditing(title)
-                    setDay(siteDay())
-                    setResult(records.find((r) => r.title === title && r.day === siteDay())?.result ?? '')
-                    setNotice('')
-                  }}
-                >
-                  Log result
-                </button>
-              </>
+              <a className="font-semibold underline" href={url} target="_blank" rel="noreferrer">
+                {title} ↗
+              </a>
+            )}
+            {title === 'Kabloom' && (
+              <a className="text-sm underline" href="https://kabloom.io/archive" target="_blank" rel="noreferrer">
+                Archive on Kabloom ↗
+              </a>
+            )}
+            {(title === 'Noillirk' || !url.startsWith('/')) && (
+              <button
+                className="text-sm underline"
+                onClick={() => {
+                  setEditing(title)
+                  setDay(siteDay())
+                  setResult(records.find((r) => r.title === title && r.day === siteDay())?.result ?? '')
+                  setNotice('')
+                }}
+              >
+                Log result
+              </button>
             )}
             {editing === title && (
               <form
