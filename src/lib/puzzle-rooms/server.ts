@@ -96,13 +96,29 @@ async function getPuzzle(game: RoomGame, day: string, mini: boolean): Promise<St
 }
 
 /**
+ * Returns the id of a board's shared room for a game, day and edition.
+ */
+function sharedRoomId(group: string, game: RoomGame, day: string, mini: boolean): string {
+  return createHash('sha256').update(`${group}:${game}:${day}:${mini}`).digest('base64url').slice(0, 16)
+}
+
+/**
+ * Returns who has filled how many words in a board's full-size crossword for a day, and whether it is solved. A day
+ * nobody opened has no players.
+ */
+export async function crosswordRoster(group: string, day: string) {
+  const row = await loadRoom(sharedRoomId(group, 'crossword', day, false))
+  return row ? { players: publicRoom(row).players, solved: row.solved } : { players: [], solved: false }
+}
+
+/**
  * Opens a board's 1 shared room for a game, day and edition. The first player creates it and every later player
  * joins it, so the whole board solves the same grid.
  */
 export async function createRoom(input: z.infer<typeof createRoomBody>) {
   const { game, day, name, seat, device, group } = input
   const mini = input.mini ?? false
-  const id = createHash('sha256').update(`${group}:${game}:${day}:${mini}`).digest('base64url').slice(0, 16)
+  const id = sharedRoomId(group, game, day, mini)
   const join = () => updateRoom(id, { action: 'join', name, seat, device, game })
   if (await loadRoom(id)) return join()
   const puzzle = await getPuzzle(game, day, mini)

@@ -116,6 +116,10 @@ Collaborative games are shared with everyone on a player's board, with no room t
   **Change puzzle** leads to the date and edition picker, and **Play together** on
   the Mini opens the board's shared Mini grid.
 
+The Daily drawer's Played grid shows each player's own share in these 2 columns: the Spelling Bee words they were
+first on the board to send (`stats.own`, counted by `/api/results`), and the crossword words they filled, read live
+from the shared grid (`GET /api/puzzle-rooms?group=&day=`) until the solve saves it in their result.
+
 Each room keeps a snapshot of its puzzle and saves shared progress in Supabase. The same tab can resume the room
 after a reload, including edits waiting to sync. An invite link opens the same room for someone on another board.
 A browser that rejoins from new tabs counts as 1 of the

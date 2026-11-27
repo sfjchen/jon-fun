@@ -120,6 +120,8 @@ export const GAME_IDS: GameId[] = [
 ]
 export type Stats = {
   n?: number
+  /** Spelling Bee: the words this player was first on their board to find. */
+  own?: number
   seconds?: number
   mistakes?: number
   solved?: boolean

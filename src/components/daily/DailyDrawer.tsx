@@ -13,7 +13,7 @@ import { usePathname } from 'next/navigation'
 import DayPicker from '@/components/daily/DayPicker'
 import { titleTransition } from '@/components/daily/DayNav'
 import PlayerName from '@/components/PlayerName'
-import ScoreTable, { Mark, beeWords, playState, type PlayState } from '@/components/daily/ScoreTable'
+import ScoreTable, { Mark, playState, type PlayState } from '@/components/daily/ScoreTable'
 import { disableNudges, enableNudges, nudge, useNudgeState, usePushStatus } from '@/lib/push'
 import { FIRST_DAY, firstDay, isNytGame, shiftDay, siteDay } from '@/lib/daily'
 import { useSiteDay } from '@/lib/play-day'
@@ -29,6 +29,8 @@ import {
   queue,
   getPlayer,
   isPracticeResult,
+  GUEST,
+  type BoardRow,
 } from '@/lib/results'
 import { streaks } from '@/lib/score-stats'
 
@@ -56,13 +58,30 @@ function useDaily(sel: string, open: boolean) {
         rows.push({ ...q, name: player.name })
     })
   }
+  // The crossword has no result until it is solved, so its live word counts come from the board's shared grid.
+  const [grid, setGrid] = useState<{ key: string; players: { name: string; words: number }[] }>()
+  const gridKey = `${group}:${sel}`
+  useEffect(() => {
+    if (!open) return
+    let live = true
+    void fetch(`/api/puzzle-rooms?group=${group}&day=${sel}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => live && data && setGrid({ key: `${group}:${sel}`, players: data.players }))
+      .catch(() => {})
+    return () => {
+      live = false
+    }
+  }, [open, group, sel])
+  const filling: BoardRow[] = (grid?.key === gridKey ? grid.players : [])
+    .filter((p) => p.name !== GUEST && !rows.some((r) => r.name === p.name && r.game === 'crossword' && r.day === sel))
+    .map((p) => ({ name: p.name, game: 'crossword', day: sel, score: 0, stats: { n: p.words } }))
   const mine = player ? rows.filter((r) => r.name === player.name) : []
   const done = (d: string) => new Map(mine.filter((r) => r.day === d).map((r) => [r.game, r]))
   return {
     player,
     todayCount: rows.filter((row) => row.name === player?.name && row.day === day).length,
     picked: done(sel),
-    everyone: rows.filter((r) => r.day === sel),
+    everyone: [...rows.filter((r) => r.day === sel), ...filling],
     streak: streaks(
       rows.filter((row) => row.name === player?.name),
       day,
@@ -427,7 +446,7 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
                       {!r && isPracticeResult(g, sel) ? (
                         <span className="text-xs text-[var(--ink-muted)]">Practice</span>
                       ) : r?.game === 'bee' ? (
-                        <span className="text-sm font-semibold tabular-nums" title={beeWords(r)}>
+                        <span className="text-sm font-semibold tabular-nums" title={`${r.stats.n ?? 0} words found`}>
                           {r.stats.n ?? 0}
                           <span className="sr-only"> words</span>
                         </span>

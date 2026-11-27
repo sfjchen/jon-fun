@@ -93,6 +93,27 @@ export async function POST(req: Request) {
   const key = { group_code: b.group, name, game: b.game, day: b.today, scoring_version: version }
   // Spelling Bee keeps its checked words in a column the leaderboard never reads, so a player's devices share them.
   const words = b.game === 'bee' ? [...new Set(m.data as string[])] : null
+  // The Spelling Bee list is shared, so a player's own share is the words they were first on the board to send.
+  // A row saved before this count existed starts from the words no other player holds.
+  let own: number | undefined
+  if (words) {
+    const board = await supabaseAdmin
+      .from('game_results')
+      .select('name,words,stats')
+      .eq('group_code', b.group)
+      .eq('game', 'bee')
+      .eq('day', b.today)
+      .eq('scoring_version', version)
+    if (board.error)
+      return NextResponse.json({ error: 'Could not save score. It remains queued on your device.' }, { status: 503 })
+    const list = (r: { words: unknown }) => (r.words as string[] | null) ?? []
+    const mine = board.data.find((r) => r.name === name)
+    const others = new Set(board.data.filter((r) => r !== mine).flatMap(list))
+    const known = new Set(mine ? list(mine) : [])
+    const before =
+      (mine?.stats as { own?: number } | null)?.own ?? [...known].filter((word) => !others.has(word)).length
+    own = before + words.filter((word) => !known.has(word) && !others.has(word)).length
+  }
   const value = {
     ...key,
     score,
@@ -100,7 +121,7 @@ export async function POST(req: Request) {
     moves: words ? null : m.data,
     ...(b.deviceId ? { device_id: b.deviceId } : {}),
     ...(b.device ? { device_kind: b.device } : {}),
-    stats: { ...rest, ...game.stats, scoringVersion: version },
+    stats: { ...rest, ...game.stats, scoringVersion: version, ...(own !== undefined && { own }) },
   }
   const inserted = await supabaseAdmin.from('game_results').insert(value)
   if (inserted.error && inserted.error.code !== '23505')

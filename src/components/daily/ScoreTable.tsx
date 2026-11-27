@@ -3,7 +3,7 @@
 /*
  * Score grid shared by the Daily drawer and the leaderboard: a row per player and a column per daily game, headed by
  * the game's doodle and a dash where a player has no result. The drawer shows a completion
- * mark in each cell, or the words found for Spelling Bee, and the leaderboard shows the score.
+ * mark in each cell, or for the collaborative games the words that player added, and the leaderboard shows the score.
  */
 import Image from 'next/image'
 import Link from 'next/link'
@@ -33,10 +33,23 @@ export function playState(r: BoardRow | undefined): PlayState {
 }
 
 /**
- * Names a Spelling Bee result by its words found, which the drawer shows in place of a completion mark.
+ * Returns the words a player added to a collaborative game, which the drawer shows in place of a completion mark:
+ * the Spelling Bee words they were first to find (all their words on a result saved before that was counted), or
+ * the crossword words they filled in. Any other game has none.
  */
-export function beeWords(r: BoardRow): string {
-  return `${r.stats.n ?? 0} ${r.stats.n === 1 ? 'word' : 'words'}`
+export function ownWords(r: BoardRow): number | undefined {
+  return r.game === 'bee' ? (r.stats.own ?? r.stats.n ?? 0) : r.game === 'crossword' ? r.stats.n : undefined
+}
+
+/**
+ * Names a collaborative result by the player's words and how far the shared game is.
+ */
+export function wordsLabel(r: BoardRow): string {
+  const own = ownWords(r) ?? 0
+  const words = `${own} ${own === 1 ? 'word' : 'words'}`
+  return r.game === 'bee'
+    ? `found ${words}${r.stats.own === undefined ? '' : ` of the ${r.stats.n ?? own} on their list`}`
+    : `filled ${words} · ${r.score > 0 ? 'solved' : 'in progress'}`
 }
 
 /**
@@ -189,9 +202,12 @@ export default function ScoreTable({
                       (top ? 'font-semibold text-[var(--ink-text)]' : 'text-[var(--ink-muted)]')
                     }
                   >
-                    {marks && r?.game === 'bee' ? (
-                      <span className="font-semibold text-[var(--ink-text)]" {...tip.on(`${n} · ${beeWords(r)}`)}>
-                        {r.stats.n ?? 0}
+                    {marks && r && ownWords(r) !== undefined ? (
+                      <span
+                        className="font-semibold text-[var(--ink-text)]"
+                        {...tip.on(`${n} · ${GAMES[g].title} · ${wordsLabel(r)}`)}
+                      >
+                        {ownWords(r)}
                       </span>
                     ) : marks ? (
                       <span {...tip.on(`${n} · ${GAMES[g].title} · ${STATE_NAME[playState(r)]}`)}>
