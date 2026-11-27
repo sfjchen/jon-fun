@@ -1,0 +1,35 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "kabloom",
+  "editionId": "synthetic-resource-planning",
+  "sourceDate": "2000-01-01",
+  "sourceUrl": "https://fixtures.example/kabloom",
+  "scoringVersion": "synthetic",
+  "payload": {
+    "category": "Sample word groups",
+    "readingMs": 2000,
+    "answerMs": 25000,
+    "answers": [
+      { "id": "ember", "label": "Ember", "aliases": ["glowing ember"] },
+      { "id": "coal", "label": "Coal", "aliases": [] },
+      { "id": "twig", "label": "Twig", "aliases": [] },
+      { "id": "reed", "label": "Reed", "aliases": [] },
+      { "id": "birch", "label": "Birch", "aliases": [] },
+      { "id": "elm", "label": "Elm", "aliases": [] },
+      { "id": "oak", "label": "Oak", "aliases": [] }
+    ],
+    "rounds": [
+      { "prompt": "A word from the first pair on the sample sheet", "accepted": ["ember", "coal"] },
+      { "prompt": "A word with five letters from the first pair", "accepted": ["ember"] },
+      { "prompt": "Four letters for a small branch", "accepted": ["twig"] },
+      { "prompt": "A plant found at the water's edge", "accepted": ["reed"] },
+      { "prompt": "A tree associated with peeling bark", "accepted": ["birch"] },
+      { "prompt": "A tree with a three-letter name beginning with E", "accepted": ["elm"] },
+      { "prompt": "A tree associated with acorns", "accepted": ["oak"] }
+    ],
+    "referenceRuns": {
+      "complete": { "answers": ["coal", "ember", "twig", "reed", "birch", "elm", "oak"], "cleared": 7 },
+      "spentAnswer": { "answers": ["ember"], "timesOutAt": 2, "cleared": 1 }
+    }
+  }
+}

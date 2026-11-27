@@ -18,7 +18,7 @@ const titles = [
   ['Who’s More Famous?', 'https://whosmorefamous.com'],
   ['Chainle', '/games/chainle'],
   ['Daily Orbs', '/games/orbs'],
-  ['Kabloom', 'https://kabloom.io/play/daily'],
+  ['Kabloom', '/games/kabloom'],
   ['Plain', 'https://playplain.app'],
   ['Headcount', '/games/headcount'],
   ['Mini', '/games/mini'],
@@ -26,6 +26,7 @@ const titles = [
   ['Spelling Bee', '/games/spelling-bee'],
   ['Anthropeum', '/games/anthropeum'],
   ['Daily Roll', 'https://playdailyroll.com'],
+  ['Bandle', 'https://bandle.app/menu'],
   ['Fermi', 'https://fermi.gg'],
   ['Poople', 'https://poople.io'],
   ['Perceptle', 'https://perceptle.net'],
@@ -110,11 +111,6 @@ export default function Page() {
                 ) : (
                   <a className="font-semibold underline" href={url} target="_blank" rel="noreferrer">
                     {title} ↗
-                  </a>
-                )}
-                {title === 'Kabloom' && (
-                  <a className="text-sm underline" href="https://kabloom.io/archive" target="_blank" rel="noreferrer">
-                    Archive on Kabloom ↗
                   </a>
                 )}
                 {(title === 'Noillirk' || !url.startsWith('/')) && (

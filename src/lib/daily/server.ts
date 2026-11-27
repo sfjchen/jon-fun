@@ -15,6 +15,11 @@ export async function dailyPuzzle(
     const puzzle = await krillionForDay(day)
     return { day, sourceDate: puzzle.date, puzzle }
   }
+  if (game === 'kabloom') {
+    const { kabloomForDay } = await import('./kabloom')
+    const puzzle = await kabloomForDay(day)
+    return { day, sourceDate: puzzle.date, puzzle }
+  }
   if (game === 'headcount') {
     const { headcountForDay } = await import('./headcount')
     const puzzle = await headcountForDay(day)

@@ -7,6 +7,7 @@
 import { ensureSyncIdentity, getEffectiveUserId, SYNC_IDENTITY_CHANGED } from '@/lib/syncIdentity'
 
 const PREFIXES = [
+  'kabloom:v1:',
   'headcount:v1:',
   'chainle:v1:',
   'outline:v1:',

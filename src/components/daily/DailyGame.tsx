@@ -20,12 +20,14 @@ import type { ConnectionsPuzzle } from '@/lib/connections'
 import type { ArtifactDay } from '@/components/daily/AnthropeumPlay'
 import type { KrillionPuzzle } from '@/components/daily/KrillionPlay'
 import type { Party } from '@/lib/headcount'
+import type { KabloomPuzzle } from '@/lib/kabloom'
 import type { Edition } from '@/lib/daily/chainle'
 import type { FivefoldPuzzle } from '@/components/daily/FivefoldPlay'
 import { GEO, type BallparkPuzzle, type HopPuzzle, type OutlinePuzzle, type PinPuzzle } from '@/lib/geo-games'
 
 /** Each game page downloads only its own player, so Wordle does not carry the Anthropeum map or the Mini grid. */
 const LOAD = {
+  kabloom: () => import('@/app/games/kabloom/play'),
   headcount: () => import('@/app/games/headcount/play'),
   chainle: () => import('@/app/games/chainle/play'),
   mini: () => import('@/components/mini/MiniPlay'),
@@ -42,6 +44,7 @@ const MiniPlay = dynamic(LOAD.mini)
 const ConnectionsPlay = dynamic(LOAD.connections)
 const AnthropeumPlay = dynamic(LOAD.anthropeum)
 const KrillionPlay = dynamic(LOAD.krillion)
+const KabloomPlay = dynamic(LOAD.kabloom)
 const HeadcountPlay = dynamic(LOAD.headcount)
 const ChainlePlay = dynamic(LOAD.chainle)
 const FivefoldPlay = dynamic(LOAD.fivefold)
@@ -72,6 +75,12 @@ const HOW: Record<DailyGameId, string[]> = {
     'Find the hidden 5-letter word in 6 tries. Type or tap letters, then Enter.',
     'A green tile is in the right spot. A yellow tile is in the word but in another spot. A gray tile is not in the word.',
     'Hard mode (optional, stays on until you turn it off, starts before a first guess): green letters stay put and yellow letters must be reused.',
+  ],
+  kabloom: [
+    '7 rounds up the volcano. Each prompt has a short reading clock, then 25 seconds to answer.',
+    'Wrong answers can be retried while the clock runs. Each answer works once, so an early pick can leave a later round with nothing left.',
+    'A close misspelling comes back as a suggestion. Send it again to confirm.',
+    'The climb ends at the summit or when a clock runs out.',
   ],
   headcount: ['Predict the crowd’s split, ranking, median, underdog and pie. Lock in one guess per room.'],
   chainle: [
@@ -143,7 +152,7 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
         title={GAMES[game].title}
         path={GAMES[game].url}
         day={day}
-        publishedOnly={isNytGame(game) || game === 'chainle' || game === 'headcount'}
+        publishedOnly={isNytGame(game) || game === 'chainle' || game === 'headcount' || game === 'kabloom'}
         minDay={firstDay(game)}
         info={info}
         keys={GAME_KEYS[game]}
@@ -153,7 +162,7 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
             Play together
           </Link>
         )}
-        {(game === 'chainle' || game === 'headcount') && (
+        {(game === 'chainle' || game === 'headcount' || game === 'kabloom') && (
           <Link className={action} href={`/games/${game}/archive`}>
             Archive
           </Link>
@@ -181,6 +190,7 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
           </p>
         </div>
       )}
+      {data && game === 'kabloom' && <KabloomPlay key={key} puzzle={data.puzzle as KabloomPuzzle} dailyDay={day} />}
       {data && game === 'headcount' && <HeadcountPlay key={key} puzzle={data.puzzle as Party} />}
       {data && game === 'chainle' && <ChainlePlay key={key} puzzle={data.puzzle as Edition} />}
       {data && game === 'mini' && <MiniPlay key={key} puzzle={data.puzzle as MiniPuzzle} dailyDay={day} />}

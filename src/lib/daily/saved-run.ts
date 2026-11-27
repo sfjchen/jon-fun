@@ -36,6 +36,7 @@ const PREFIX: Record<DailyGameId, string> = {
   connections: 'connections:v2',
   mini: 'mini:v3',
   anthropeum: 'anthropeum:v2',
+  kabloom: 'kabloom:v1',
   headcount: 'headcount:v1',
   chainle: 'chainle:v1',
   outline: 'outline:v1',
@@ -74,6 +75,14 @@ function geoLocal(game: GeoGame): (day: string, puzzle: never) => Local {
  * Describes each game's stored run for a day's puzzle, in the shape its player component restores.
  */
 const LOCAL: { [G in DailyGameId]: (day: string, puzzle: never) => Local } = {
+  kabloom: (day) => {
+    const key = runKey('kabloom', day, day)
+    return {
+      key,
+      done: (v: { over?: boolean } | null) => !!v?.over,
+      fill: ({ moves }) => ({ [key]: { moves, start: null, over: true } }),
+    }
+  },
   headcount: (day) => {
     const key = runKey('headcount', day, day)
     return { key, done: (v: unknown) => Array.isArray(v) && v.length === 5, fill: ({ moves }) => ({ [key]: moves }) }

@@ -16,6 +16,8 @@ import { score as beeScore } from '@/lib/spelling-bee'
 import { findMatchingGroup, wordKey, type ConnectionsPuzzle } from '@/lib/connections'
 import { artifactScore, type Artifact } from '@/lib/artifact-scoring'
 import { roomPoints } from '../headcount'
+import { replayKabloom } from '../kabloom'
+import { kabloomForDay } from './kabloom'
 import { headcountForDay } from './headcount'
 import { chainleForDay } from './chainle'
 import { chainlePoints } from '../chainle-score'
@@ -152,6 +154,16 @@ export const VERIFIERS: Record<GameId, Verifier> = {
       return words === null
         ? 'This room has not solved that day’s full-size crossword'
         : { score: 1, stats: { n: words, solved: true } }
+    },
+  ),
+  // Kabloom replays each cleared round's answer against the edition, the 1-use rule and the answer clock.
+  kabloom: verifier(
+    z.array(z.object({ id: z.string().min(1).max(120), ms: z.number().int().min(0) })).max(7),
+    async (day, moves) => {
+      const cleared = replayKabloom(await kabloomForDay(day), moves)
+      return typeof cleared === 'string'
+        ? cleared
+        : { score: cleared, stats: { n: cleared, solved: cleared === 7, max: 7 } }
     },
   ),
   headcount: verifier(z.array(z.array(z.number()).min(1).max(4)).length(5), async (day, moves) => {

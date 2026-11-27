@@ -46,6 +46,8 @@ export function PageShell({ children }: PageShellProps) {
     '/games/triples',
     '/games/mini',
     '/games/crossword',
+    '/games/kabloom',
+    '/games/kabloom/archive',
     '/games/headcount',
     '/games/headcount/archive',
     '/games/chainle',
@@ -83,13 +85,15 @@ export function PageShell({ children }: PageShellProps) {
                   ? 'fivefold'
                   : pathname === '/games/orbs' || pathname?.startsWith('/games/orbs/')
                     ? 'orbs'
-                    : pathname?.startsWith('/games/headcount')
-                      ? 'headcount'
-                      : pathname?.startsWith('/games/chainle')
-                        ? 'chainle'
-                        : ['/games/outline', '/games/hop', '/games/pin', '/games/ballpark'].includes(pathname ?? '')
-                          ? 'geo'
-                          : undefined
+                    : pathname?.startsWith('/games/kabloom')
+                      ? 'kabloom'
+                      : pathname?.startsWith('/games/headcount')
+                        ? 'headcount'
+                        : pathname?.startsWith('/games/chainle')
+                          ? 'chainle'
+                          : ['/games/outline', '/games/hop', '/games/pin', '/games/ballpark'].includes(pathname ?? '')
+                            ? 'geo'
+                            : undefined
   /** Pages that play or sync under the player's name ask a visitor with none for it. */
   const usesName =
     ownDailyHeader ||

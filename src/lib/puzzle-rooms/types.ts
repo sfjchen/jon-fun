@@ -8,11 +8,13 @@ export type CrosswordClue = {
 export type CrosswordBoard = {
   date: string
   title: string
+  editionId?: string
   credit: string
   creditUrl?: string
   width: number
   height: number
   blocks: boolean[]
+  circles?: number[]
   clues: CrosswordClue[]
 }
 

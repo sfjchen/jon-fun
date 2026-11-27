@@ -8,6 +8,7 @@
   --g-anthropeum: #9f1239;
   --g-fivefold: #4d7c0f;
   --g-orbs: #344986;
+  --g-kabloom: #b91c1c;
   --g-headcount: #b45309;
   --g-chainle: #7c3aed;
   --g-geo: #15803d;
@@ -65,6 +66,35 @@
   --ink-paper: #f7f4ed;
   --ink-border: #dfdace;
   --orbs-highlight: #e5e9f8;
+}
+[data-game-theme='kabloom'] {
+  --game-color: var(--g-kabloom);
+}
+/* Kabloom: the climber steps up a ledge per cleared round, and the end card and lava burst pop in once. */
+.kabloom-climber {
+  transition: transform 400ms ease-out;
+}
+.kabloom-erupt {
+  animation: kabloom-erupt 700ms cubic-bezier(0.2, 0.8, 0.3, 1.2) both;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+@keyframes kabloom-erupt {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kabloom-climber,
+  .kabloom-erupt {
+    animation: none;
+    transition: none;
+  }
 }
 [data-game-theme='headcount'] {
   --game-color: var(--g-headcount);

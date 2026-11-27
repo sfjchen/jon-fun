@@ -13,6 +13,7 @@ In `GAME_IDS` order, which is the order of the Daily drawer, score grids and boa
 | Mini                 | NYT, exact date                   | 2014-08-21 | solve time    | lowest unassisted time  | no                    |
 | Spelling Bee (`bee`) | NYT, exact date                   | 2018-05-06 | points        | most points             | found words           |
 | Crossword            | generated here (xfill, WordNet)   | 2026-11-20 | solved, words | shared solve            | the whole grid        |
+| Kabloom              | kabloom.io, local dated export    | 2026-11-01 | rounds of 7   | most rounds             | no                    |
 | Headcount            | headcountgame.com, dated party    | 2026-11-26 | of 100        | most points             | no                    |
 | Chainle              | chainle.io, dated edition         | 2026-08-20 | of 5,000      | most points             | no                    |
 | Orbs                 | dailyorbs.com, dated edition      | 2026-11-26 | of 12 orbs    | most orbs               | no                    |
@@ -53,6 +54,7 @@ Every ranked game plays its publisher's puzzle except the Crossword, which has n
 - Archive coverage starts 2021-06-19 (Wordle), 2018-05-06 (Bee), 2014-08-21 (Mini), 2023-06-12 (Connections). `public/puzzle-archives/manifest.json` records counts, source URLs, hashes and unavailable days (Bee 2018-06-30 has a conflicting answer list and is left out).
 - Wordle accepts the 14,855 words of the NYT client (`public/fivefold/words.json`, refreshed by `scripts/sync-wordle-words.py`).
 - Krillion uses the original's same-date prompts and answer review (accepted answers, aliases, rarity scores). A day's review is bundled or fetched from the original on first request, then stored.
+- Kabloom reads the publisher's `publisher-edition/v1` export for the exact date from `.publisher-editions/kabloom/` (ignored by Git and Vercel, filled by `scripts/publisher-editions.ts refresh|archive kabloom`). A date with no capture shows unavailable, so the game plays only on a machine holding the archive. `/games/kabloom/archive` lists the captured dates before today.
 - Anthropeum uses the original's public artifacts and historical polygons, bundled per day in `data/anthropeum`.
 - Orbs ranks the publisher's Daily Orbs edition of the date, from 2026-11-26 (`PUBLISHER_ORBS_RANKED_FROM`). The 1 score before that came from the sfjc.dev bank, which is now practice only: `/games/orbs/archive` plays its rounds by category or date, unranked, and `/api/daily/orbs` still serves it. From 2026-12-07 a date without an authored practice edition combines 4 archive rounds on a fixed schedule.
 - The server reads the approved Daily Orbs feed by exact date through `/api/orbs/publisher?d=YYYY-MM-DD`. It retains the first full published payload in `daily_game_content` under `publisher-orbs`, including the original date on publisher-designated repeat days. Later reads and the score check reuse that snapshot.
@@ -77,6 +79,7 @@ Every ranked game plays its publisher's puzzle except the Crossword, which has n
 - Wordle - 6 tries, the original's marks and hard mode. The switch is a saved preference for every later puzzle, and a game picks it up only before its first guess. No clock. Ranked by guesses, a loss counts as 7 in averages, hard-mode results show `*`.
 - Spelling Bee - the day's exact answer list, center letter required, 4-letter minimum, original points and rank thresholds. Found words are shared across the board (see Collaborative games).
 - Krillion - 7 prompts, 25 seconds each on wall time, so a reload never grants a new clock. Wrong answers can be retried, and the draft is judged once at expiry. Answers are judged on the device from the prompt's answer key, with the server as fallback. Matching ignores accents, case, punctuation and a leading "the". From 5 letters, the closest answer within min(3, 0.28 × length) edits comes back as `"typed" → "answer"` and scores when sent again. Rarity scores are 10, 15, 30, 60, 85 or 100, maximum 700. No AI judging.
+- Kabloom - 7 rounds, each a reading clock then the edition's answer clock (25 seconds), on wall time so a reload resumes the same deadline. Wrong answers can be retried, each answer clears at most 1 round, and an early pick can leave a later round unsolvable. Matching is Krillion's (accents, case, punctuation, leading "the"), and a close misspelling comes back as a suggestion that counts when sent again. The climb ends at the summit or on the first expired clock, and ranks by rounds cleared.
 - Anthropeum - 10 artifacts, a map pin and a 250-year period each (125-year steps, 3000 BCE to 1750 CE). Up to 5,000 points for place (distance to the nearest polygon edge) and 5,000 for time, 100,000 overall. 3 free hints per game. The results page shows the original's score histogram and estimated placement.
 - Orbs - the publisher's 4 puzzles open on separate screens: matching, sorting, written clues, open answers and long lists. A round has 3 lives and ends when every answer is found or the lives run out. A long list has no lives and ends when full or on End round. Each round earns up to 3 orbs at the publisher's thresholds, and the first finished day ranks, up to 12.
 - SET (`/games/set`) - a generated daily board of 12 cards with exactly 6 sets, not the original's board. Not on the leaderboard. `/games/triples` is the full 81-card game with PIN rooms, where each seat holds a private credential and claims use version checks.
@@ -91,7 +94,7 @@ Every ranked game plays its publisher's puzzle except the Crossword, which has n
 ## Verified scores
 
 - Every result sends its moves (`stats.moves`). `/api/results` replays them against the day's puzzle and stores its own score, so a hand-made score cannot be posted.
-- Wordle - guesses, word list, hard mode. Bee - found words. Connections - guesses and give-up. Anthropeum - pins and periods. Krillion - each round's accepted answer, judged again. Mini - the solved grid. Orbs - each round's attempts, replayed against the publisher's answers, lives and orb thresholds.
+- Wordle - guesses, word list, hard mode. Bee - found words. Connections - guesses and give-up. Anthropeum - pins and periods. Krillion - each round's accepted answer, judged again. Kabloom - each cleared round's answer ID, its round, single use and answer-clock time. Mini - the solved grid. Orbs - each round's attempts, replayed against the publisher's answers, lives and orb thresholds.
 - Solve times (Mini, Connections) and Krillion's round clock cannot be replayed and stay as sent. Mini and Connections times under a floor no person can reach (0.15 s per Mini cell, 1 s per Connections guess) are rejected.
 - Outline, Border hop, Pin drop and Ballpark - the guesses, pins or estimates, replayed against the puzzle drawn again from the date.
 - Checked moves are kept in a `moves` column that score reads never return, so boards never reveal answers. Only `/api/results/run` reads it, to rebuild a player's finished game. Results saved before 2026-11-21 have no moves and show their score only, until the device that played them opens the day again.
@@ -167,19 +170,20 @@ Headcount opens at `/games/headcount`, in the shared daily theme with 1 card per
 
 Aditri's daily games list (2026-11-26). Done means playable here with a ranked score.
 
-| Game                      | Original                             | Status                                              |
-| ------------------------- | ------------------------------------ | --------------------------------------------------- |
-| Krillion                  | krillion.io                          | Done                                                |
-| Wordle                    | nytimes.com/games/wordle             | Done                                                |
-| Connections               | nytimes.com/games/connections        | Done                                                |
-| Chainle                   | chainle.io                           | Done, with archive                                  |
-| Daily Orbs                | dailyorbs.com                        | Done, ranked as Orbs                                |
-| Headcount                 | headcountgame.com                    | Done                                                |
-| Noillirk                  | noillirk.com (Crowdict)              | To do: embedded only at `/games/noillirk`, no score |
-| Who's More Famous         | whosmorefamous.com                   | To do: outside link in the Daily collection         |
-| Kabloom                   | kabloom.io                           | To do: outside link in the Daily collection         |
-| Plain                     | playplain.app                        | To do: outside link in the Daily collection         |
-| Daily Roll                | playdailyroll.com                    | To do: outside link in the Daily collection         |
-| Dartle, Kegillion, Bandle | dartle.net, kegillion.io, bandle.app | Not wanted                                          |
+| Game              | Original                      | Status                                              |
+| ----------------- | ----------------------------- | --------------------------------------------------- |
+| Krillion          | krillion.io                   | Done                                                |
+| Wordle            | nytimes.com/games/wordle      | Done                                                |
+| Connections       | nytimes.com/games/connections | Done                                                |
+| Chainle           | chainle.io                    | Done, with archive                                  |
+| Daily Orbs        | dailyorbs.com                 | Done, ranked as Orbs                                |
+| Headcount         | headcountgame.com             | Done                                                |
+| Noillirk          | noillirk.com (Crowdict)       | To do: embedded only at `/games/noillirk`, no score |
+| Who's More Famous | whosmorefamous.com            | To do: outside link in the Daily collection         |
+| Kabloom           | kabloom.io                    | Native player, waits on the publisher export        |
+| Plain             | playplain.app                 | To do: outside link in the Daily collection         |
+| Daily Roll        | playdailyroll.com             | To do: outside link in the Daily collection         |
+| Bandle            | bandle.app                    | To do: outside link in the Daily collection         |
+| Dartle, Kegillion | dartle.net, kegillion.io      | Not wanted                                          |
 
 Fermi, Worldle, Travle and MapTap stay outside links. Ballpark, Outline, Border hop and Pin drop are sfjc.dev's own games of the same kinds, with its own puzzles.

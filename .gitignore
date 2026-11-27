@@ -69,3 +69,6 @@ e2e/fixtures/dokumen.pub*.epub
 
 # Personal Jeopardy boards stay on this machine (the repo is public). Live copies are in Supabase.
 data/jeopardy/*.jeopardy.json
+
+# Private publisher fixtures for local testing
+/.publisher-editions/

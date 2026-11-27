@@ -278,6 +278,12 @@ function CrosswordGrid({
                   className="relative min-h-0 min-w-0"
                   style={{ background: active === cell ? '#f5d278' : highlighted.has(cell) ? '#dbeafb' : '#fff' }}
                 >
+                  {puzzle.circles?.includes(cell) && (
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-[12%] rounded-full border border-[#536777]"
+                    />
+                  )}
                   {numbers.has(cell) && (
                     <span
                       aria-hidden="true"

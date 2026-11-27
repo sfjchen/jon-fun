@@ -25,10 +25,19 @@ export type GameId =
   | 'crossword'
   | 'chainle'
   | 'headcount'
+  | 'kabloom'
 export const GAMES: Record<
   GameId,
   { title: string; url: string; max: number; unit: string; rules: string; lowerIsBetter?: boolean }
 > = {
+  kabloom: {
+    title: 'Kabloom',
+    url: '/games/kabloom',
+    max: 7,
+    unit: 'rounds',
+    rules:
+      'Climb 7 rounds, 25 seconds each, using each answer once. A point per round cleared. Your first finished climb ranks.',
+  },
   headcount: {
     title: 'Headcount',
     url: '/games/headcount',
@@ -148,6 +157,7 @@ export const GAME_IDS: GameId[] = [
   'mini',
   'bee',
   'crossword',
+  'kabloom',
   'headcount',
   'chainle',
   'orbs',
@@ -181,6 +191,7 @@ export const SCORING_VERSION = 2
 export function formatGameScore(game: GameId, score: number): string {
   if (game === 'orbs') return `${Number.isInteger(score) ? score : score.toFixed(1)}/${GAMES.orbs.max}`
   if (game === 'crossword') return score > 0 ? 'Solved' : '–'
+  if (game === 'kabloom') return `${score}/${GAMES.kabloom.max}`
   return game === 'mini'
     ? formatTime(Math.round(score))
     : game === 'connections'

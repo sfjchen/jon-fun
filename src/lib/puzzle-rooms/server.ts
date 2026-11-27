@@ -65,12 +65,23 @@ function publicRoom(row: Row): Room {
   const words = new Map<string, number>()
   for (const player of row.players) words.set(player.name, (words.get(player.name) ?? 0) + (player.words?.length ?? 0))
   const players = [...words].map(([name, words]) => ({ name, words }))
-  const { date, title, credit, creditUrl, width, height, blocks, clues } = puzzle.board
+  const { date, title, credit, creditUrl, editionId, width, height, blocks, circles, clues } = puzzle.board
   return {
     id,
     puzzle: {
       game: 'crossword',
-      board: { date, title, credit, ...(creditUrl && { creditUrl }), width, height, blocks, clues },
+      board: {
+        date,
+        title,
+        credit,
+        ...(creditUrl && { creditUrl }),
+        ...(editionId && { editionId }),
+        width,
+        height,
+        blocks,
+        ...(circles && { circles }),
+        clues,
+      },
     },
     players,
     entries,

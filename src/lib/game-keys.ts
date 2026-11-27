@@ -58,6 +58,12 @@ export const GAME_KEYS: Record<GameId, KeyRow[]> = {
     ['Space', 'Shuffle'],
   ],
   crossword: GRID_KEYS,
+  kabloom: [
+    ['Enter Space', 'Start the climb'],
+    ['Enter', 'Send the answer, or send a suggestion again to confirm it'],
+    ['Esc', 'Clear the answer'],
+    ['S', 'Copy the result'],
+  ],
   headcount: [
     ['Tab', 'Move between controls'],
     ['← → ↑ ↓', 'Adjust a slider or choose an option'],

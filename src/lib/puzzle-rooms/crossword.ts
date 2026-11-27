@@ -4,6 +4,7 @@ import { NYT_FIRST_DAY, shiftDay, validDay } from '@/lib/daily'
 import { nytPuzzle } from '@/lib/daily/nyt'
 import type { MiniPuzzle } from '@/lib/mini'
 import { supabaseAdmin } from '@/lib/supabase'
+import { crosswordFromIpuz } from './ipuz'
 import { cellEntry, MINI_TITLE, type CrosswordBoard } from './types'
 
 export type CrosswordPuzzle = CrosswordBoard & { solution: (string | null)[] }
@@ -11,10 +12,12 @@ export type CrosswordPuzzle = CrosswordBoard & { solution: (string | null)[] }
 const feedPuzzle = z.object({
   date: z.string(),
   title: z.string().trim().min(1).max(120),
+  editionId: z.string().trim().min(1).max(200).optional(),
   credit: z.string().trim().min(1).max(300),
   creditUrl: z.url({ protocol: /^https$/ }).optional(),
   width: z.number().int().min(3).max(25),
   height: z.number().int().min(3).max(25),
+  circles: z.array(z.number().int().nonnegative()).max(625).optional(),
   cells: z.array(z.string().min(1).regex(cellEntry).nullable()).max(625),
   clues: z
     .array(
@@ -30,7 +33,10 @@ const feedPuzzle = z.object({
 })
 
 export function normalizeCrossword(value: unknown, day: string): CrosswordPuzzle {
-  const { cells, clues, width, height, creditUrl, ...meta } = feedPuzzle.parse(value)
+  const { cells, clues, width, height, creditUrl, editionId, circles, ...meta } = feedPuzzle.parse(value)
+  if (circles && (new Set(circles).size !== circles.length || circles.some((cell) => !cells[cell]))) {
+    throw new Error('Invalid circled crossword squares')
+  }
   const covered = new Set<number>()
   const labels = new Set<string>()
   if (meta.date !== day || cells.length !== width * height) throw new Error('Unexpected crossword date or dimensions')
@@ -53,6 +59,8 @@ export function normalizeCrossword(value: unknown, day: string): CrosswordPuzzle
   return {
     ...meta,
     ...(creditUrl && { creditUrl }),
+    ...(editionId && { editionId }),
+    ...(circles && { circles }),
     width,
     height,
     clues,
@@ -171,5 +179,14 @@ export async function crosswordForDay(day: string, miniOnly: boolean): Promise<C
     cache: 'no-store',
   })
   if (!response.ok) throw new Error('Daily crossword feed unavailable')
-  return freezeCrossword(day, game, await response.json())
+  const source: unknown = await response.json()
+  const puzzle =
+    typeof source === 'object' &&
+    source !== null &&
+    'version' in source &&
+    typeof source.version === 'string' &&
+    /^https?:\/\/ipuz\.org\/v[12]$/.test(source.version)
+      ? crosswordFromIpuz(source, day)
+      : source
+  return freezeCrossword(day, game, puzzle)
 }
