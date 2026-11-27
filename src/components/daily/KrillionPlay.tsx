@@ -102,7 +102,7 @@ export default function KrillionPlay({ puzzle, dailyDay }: { puzzle: KrillionPuz
     } catch {}
     if (run.phase === 'done')
       logResult('krillion', total, run.outcomes.filter((a) => a.accepted).length, dailyDay, {
-        moves: run.outcomes.map((o) => (o.accepted ? o.answer : '')),
+        moves: run.outcomes.map((o) => (o.accepted ? (o.matchedAnswer ?? o.answer) : '')),
         solved: true,
         sourceDate: puzzle.date,
         max: 700,
@@ -144,13 +144,15 @@ export default function KrillionPlay({ puzzle, dailyDay }: { puzzle: KrillionPuz
         index = state.index
       // A blank answer only gets judged when time runs out, so it can close the round.
       if (state.phase !== 'answering' || pending.current || (!answer && !final)) return
-      // A close typo first shows the original's correction; sending the same text again confirms it, and the clock
-      // running out confirms it automatically.
-      const preview = !final && fix?.from !== answer
+      // Anything but an answer's own name first comes back as the original's correction, which replaces the typed
+      // text. Sending it again scores it, and so does the clock running out.
+      const preview = !final
       const apply = (data: KrillionJudgment) => {
         setFix(null)
         if (data.correction && !final && Date.now() < (current.current.endsAt ?? 0)) {
-          setFix(data.correction)
+          const { correction } = data
+          setFix(correction)
+          setRun((r) => ({ ...r, draft: correction.to }))
           input.current?.focus()
           return
         }
@@ -201,7 +203,7 @@ export default function KrillionPlay({ puzzle, dailyDay }: { puzzle: KrillionPuz
         setBusy(false)
       }
     },
-    [dailyDay, finish, fix],
+    [dailyDay, finish, setRun],
   )
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
@@ -703,7 +705,7 @@ export default function KrillionPlay({ puzzle, dailyDay }: { puzzle: KrillionPuz
                 <button aria-label="Dive · submit answer" className={button} disabled={busy || remaining <= 0}>
                   {busy ? 'Checking…' : 'DIVE'}
                 </button>
-                {fix && fix.from === run.draft.trim() ? (
+                {fix && fix.to === run.draft ? (
                   <p role="status" className="krillion-fix">
                     <span>
                       “{fix.from}” → “{fix.to}”

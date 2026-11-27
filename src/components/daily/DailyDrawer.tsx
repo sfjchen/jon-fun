@@ -4,8 +4,9 @@
  * Home header Daily and Beta buttons and the drawer they open. Daily holds the 6 original games and Beta the games
  * still being built, each with its own count, streak and played grid, and the drawer's 2 tabs switch between them.
  * The drawer shows today's progress, the streak, and a day picker beside the tabs that shows any
- * day's links to the shelf's games and who has played them that day, as not done, started or completed marks with
- * no scores (Spelling Bee shows its words found). Done state merges the synced board rows with the unsynced local
+ * day's links to the shelf's games and who has played them that day, as not done, started or completed marks
+ * (Krillion and Anthropeum show their score, Spelling Bee its words found). A shelf's collaborative games sit in
+ * their own "Together" segment below the rest. Done state merges the synced board rows with the unsynced local
  * queue for the saved player.
  */
 import Image from 'next/image'
@@ -15,13 +16,14 @@ import { usePathname } from 'next/navigation'
 import DayPicker from '@/components/daily/DayPicker'
 import { titleTransition } from '@/components/daily/DayNav'
 import PlayerName from '@/components/PlayerName'
-import ScoreTable, { Mark, playState, type PlayState } from '@/components/daily/ScoreTable'
+import ScoreTable, { Mark, playState, shownScore, type PlayState } from '@/components/daily/ScoreTable'
 import { disableNudges, enableNudges, nudge, useNudgeState, usePushStatus } from '@/lib/push'
 import { FIRST_DAY, firstDay, isNytGame, shiftDay, siteDay } from '@/lib/daily'
 import { useSiteDay } from '@/lib/play-day'
 import { usePlayer } from '@/lib/use-player'
 import { useBoard } from '@/lib/use-board'
 import {
+  COLLAB_IDS,
   GAMES,
   SHELVES,
   shelfOfPath,
@@ -32,6 +34,7 @@ import {
   getPlayer,
   isPracticeResult,
   GUEST,
+  resultLabel,
   type BoardRow,
   type GameId,
   type Shelf,
@@ -282,6 +285,78 @@ export function DailyHeader({ compact = false, shelf: pageShelf }: { compact?: b
       ? `${SHELVES[s].title}, ${today(s)} of ${SHELVES[s].ids.length} done today${run ? `, ${run} day streak${today(s) ? '' : ' at risk'}` : ''}`
       : SHELVES[s].title
   }
+  /** Renders a game's tile for the picked day: its link, and the player's mark, score or words found. */
+  const tile = (g: GameId) => {
+    const r = done.get(g)
+    // With no result yet, a game this browser has played on the day without finishing it is started.
+    let state: PlayState = playState(r)
+    try {
+      const mark = JSON.parse(localStorage.getItem(PLAYING_KEY + g) ?? 'null') as {
+        day?: string
+        at?: number
+      }
+      if (!r && mark?.day === sel && mark.at) state = 'started'
+    } catch {
+      /* Storage can be disabled in a private browser. */
+    }
+    const row = 'flex min-w-0 items-center gap-1.5 rounded-xl border border-[var(--ink-border)] p-2 sm:gap-2.5'
+    const name = 'min-w-0 flex-1 truncate text-[13px] font-semibold sm:text-[15px]'
+    const icon = (
+      <Image
+        src={`/doodles/notebook/${g}.svg`}
+        alt=""
+        width={36}
+        height={36}
+        className="h-6 w-6 shrink-0 sm:h-8 sm:w-8"
+      />
+    )
+    // NYT games have no puzzle before their first day or after today, and the rest none before the epoch.
+    if (sel < firstDay(g) || ((isNytGame(g) || g === 'orbs') && now && sel > now)) {
+      return (
+        <li key={g} className={`${row} opacity-40`}>
+          {icon}
+          <span className={name}>{GAMES[g].title}</span>
+          <span className="text-xs text-[var(--ink-muted)]" title="No puzzle">
+            <span className="sr-only">No puzzle</span>
+            <span aria-hidden>–</span>
+          </span>
+        </li>
+      )
+    }
+    return (
+      <li key={g}>
+        <Link
+          href={GAMES[g].url + q}
+          onClick={close}
+          className={`${row} ${r ? 'border-transparent bg-[var(--ink-paper)] hover:brightness-95' : 'hover:bg-[var(--ink-paper)]'}`}
+        >
+          {icon}
+          {/* The open game's own header already holds this name, and a name may appear only once. */}
+          {GAMES[g].url === path ? (
+            <span className={name}>{GAMES[g].title}</span>
+          ) : (
+            <ViewTransition name={titleTransition(GAMES[g].url)}>
+              <span className={name}>{GAMES[g].title}</span>
+            </ViewTransition>
+          )}
+          {!r && isPracticeResult(g, sel) ? (
+            <span className="text-xs text-[var(--ink-muted)]">Practice</span>
+          ) : r?.game === 'bee' ? (
+            <span className="text-sm font-semibold tabular-nums" title={`${r.stats.n ?? 0} words found`}>
+              {r.stats.n ?? 0}
+              <span className="sr-only"> words</span>
+            </span>
+          ) : shownScore(r) ? (
+            <span className="text-sm font-semibold tabular-nums" title={`${resultLabel(r!)} ${GAMES[g].unit}`}>
+              {shownScore(r)}
+            </span>
+          ) : (
+            <Mark state={state} />
+          )}
+        </Link>
+      </li>
+    )
+  }
   return (
     <div data-game-theme="daily" className="flex items-center gap-1.5 bg-transparent">
       {(compact ? [home] : (['daily', 'beta'] as const)).map((s) => (
@@ -426,74 +501,13 @@ export function DailyHeader({ compact = false, shelf: pageShelf }: { compact?: b
               </p>
             )}
             <ul className="grid grid-cols-2 gap-1.5 sm:gap-2">
-              {ids.map((g) => {
-                const r = done.get(g)
-                // With no result yet, a game this browser has played on the day without finishing it is started.
-                let state: PlayState = playState(r)
-                try {
-                  const mark = JSON.parse(localStorage.getItem(PLAYING_KEY + g) ?? 'null') as {
-                    day?: string
-                    at?: number
-                  }
-                  if (!r && mark?.day === sel && mark.at) state = 'started'
-                } catch {
-                  /* Storage can be disabled in a private browser. */
-                }
-                const row =
-                  'flex min-w-0 items-center gap-1.5 rounded-xl border border-[var(--ink-border)] p-2 sm:gap-2.5'
-                const name = 'min-w-0 flex-1 truncate text-[13px] font-semibold sm:text-[15px]'
-                const icon = (
-                  <Image
-                    src={`/doodles/notebook/${g}.svg`}
-                    alt=""
-                    width={36}
-                    height={36}
-                    className="h-6 w-6 shrink-0 sm:h-8 sm:w-8"
-                  />
-                )
-                // NYT games have no puzzle before their first day or after today, and the rest none before the epoch.
-                if (sel < firstDay(g) || ((isNytGame(g) || g === 'orbs') && now && sel > now)) {
-                  return (
-                    <li key={g} className={`${row} opacity-40`}>
-                      {icon}
-                      <span className={name}>{GAMES[g].title}</span>
-                      <span className="text-xs text-[var(--ink-muted)]" title="No puzzle">
-                        <span className="sr-only">No puzzle</span>
-                        <span aria-hidden>–</span>
-                      </span>
-                    </li>
-                  )
-                }
-                return (
-                  <li key={g}>
-                    <Link
-                      href={GAMES[g].url + q}
-                      onClick={close}
-                      className={`${row} ${r ? 'border-transparent bg-[var(--ink-paper)] hover:brightness-95' : 'hover:bg-[var(--ink-paper)]'}`}
-                    >
-                      {icon}
-                      {/* The open game's own header already holds this name, and a name may appear only once. */}
-                      {GAMES[g].url === path ? (
-                        <span className={name}>{GAMES[g].title}</span>
-                      ) : (
-                        <ViewTransition name={titleTransition(GAMES[g].url)}>
-                          <span className={name}>{GAMES[g].title}</span>
-                        </ViewTransition>
-                      )}
-                      {!r && isPracticeResult(g, sel) ? (
-                        <span className="text-xs text-[var(--ink-muted)]">Practice</span>
-                      ) : r?.game === 'bee' ? (
-                        <span className="text-sm font-semibold tabular-nums" title={`${r.stats.n ?? 0} words found`}>
-                          {r.stats.n ?? 0}
-                          <span className="sr-only"> words</span>
-                        </span>
-                      ) : (
-                        <Mark state={state} />
-                      )}
-                    </Link>
-                  </li>
-                )
-              })}
+              {ids.filter((g) => !COLLAB_IDS.includes(g)).map(tile)}
+            </ul>
+            <h3 className="mt-3 mb-1.5 text-sm font-semibold text-[var(--ink-muted)]">
+              Together <span className="font-normal">· 1 puzzle shared with your board</span>
+            </h3>
+            <ul aria-label="Played together" className="grid grid-cols-2 gap-1.5 sm:gap-2">
+              {ids.filter((g) => COLLAB_IDS.includes(g)).map(tile)}
             </ul>
             {nudged[''] && !canNudge && <p className="mt-3 text-xs text-[var(--ink-muted)]">{nudged['']}</p>}
             {push === 'install' && canNudge && (

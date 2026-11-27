@@ -2,13 +2,14 @@
 
 /*
  * Score grid shared by the Daily drawer and the leaderboard: a row per player and a column per daily game, headed by
- * the game's doodle and a dash where a player has no result. The drawer shows a completion
- * mark in each cell, or for the collaborative games the words that player added, and the leaderboard shows the score.
+ * the game's doodle and a dash where a player has no result. A shelf's collaborative games sit last under a
+ * "Together" head, past a rule. The drawer shows a completion mark in each cell, except the score for Krillion and
+ * Anthropeum and the words a player added for the collaborative games. The leaderboard shows the score.
  */
 import Image from 'next/image'
 import Link from 'next/link'
 import { useHoverTip } from '@/components/HoverTip'
-import { GAMES, compareResults, formatTime, resultLabel, type BoardRow, type GameId } from '@/lib/results'
+import { COLLAB_IDS, GAMES, compareResults, formatTime, resultLabel, type BoardRow, type GameId } from '@/lib/results'
 
 /**
  * Returns a 1-line label short enough for a grid cell: Connections shows only its solve time (or groups found)
@@ -19,6 +20,13 @@ function cellLabel(r: BoardRow): string {
     return r.score === 4 && r.stats.seconds !== undefined ? formatTime(r.stats.seconds) : `${r.stats.n ?? r.score}/4`
   if (r.game === 'anthropeum') return `${Math.round(r.score / 1000)}k`
   return resultLabel(r)
+}
+
+/**
+ * Returns the score the drawer shows in place of a completion mark: Krillion and Anthropeum read by their points.
+ */
+export function shownScore(r: BoardRow | undefined): string | undefined {
+  return r && (r.game === 'krillion' || r.game === 'anthropeum') ? cellLabel(r) : undefined
 }
 
 export type PlayState = 'none' | 'started' | 'done'
@@ -110,7 +118,7 @@ type ScoreTableProps = {
 /**
  * Renders the grid. The best result in each column, ties included, is bold, and the saved player's row is shaded.
  * Hovering a cell on a laptop shows the full result. With a picked game the other columns fade. With marks, cells
- * hold only completion marks and no result is bold.
+ * hold completion marks, own words or the 2 shown scores, and no result is bold.
  */
 export default function ScoreTable({
   rows: allRows,
@@ -127,6 +135,9 @@ export default function ScoreTable({
   const best = new Map(games.map((g) => [g, rows.filter((r) => r.game === g).sort(compareResults)[0]]))
   const tip = useHoverTip()
   const count = (n: string) => rows.filter((r) => r.name === n).length
+  // The shelf's collaborative games come last, and the first of them carries the rule that sets the segment apart.
+  const together = games.filter((g) => COLLAB_IDS.includes(g))
+  const rule = (g: GameId) => (g === together[0] ? 'border-l border-[var(--ink-border)]' : '')
   const names = [...new Set(rows.map((r) => r.name))].sort(
     (a, b) =>
       (wins ? (wins.get(b) ?? 0) - (wins.get(a) ?? 0) : Number(b === me) - Number(a === me)) ||
@@ -137,6 +148,18 @@ export default function ScoreTable({
     <div className="-mx-1 overflow-x-auto">
       <table className="w-full border-separate border-spacing-0 text-xs">
         <thead>
+          {together.length > 0 && (
+            <tr>
+              <td colSpan={games.length - together.length + 1} />
+              <th
+                scope="colgroup"
+                colSpan={together.length}
+                className={`pb-0.5 text-center text-[10px] font-normal tracking-wide text-[var(--ink-muted)] uppercase ${rule(together[0]!)}`}
+              >
+                Together
+              </th>
+            </tr>
+          )}
           <tr>
             <th scope="col" className="sr-only">
               Player
@@ -152,7 +175,7 @@ export default function ScoreTable({
                 />
               )
               return (
-                <th key={g} scope="col" className={`pb-1.5 font-normal`}>
+                <th key={g} scope="col" className={`pb-1.5 font-normal ${rule(g)}`}>
                   {onGame ? (
                     <button
                       type="button"
@@ -199,7 +222,7 @@ export default function ScoreTable({
                   <td
                     key={g}
                     className={
-                      `px-0.5 py-1.5 text-center leading-tight tabular-nums transition-opacity ${edge} ` +
+                      `px-0.5 py-1.5 text-center leading-tight tabular-nums transition-opacity ${edge} ${rule(g)} ` +
                       `${game !== 'all' && game !== g ? 'opacity-35' : ''} ` +
                       (top ? 'font-semibold text-[var(--ink-text)]' : 'text-[var(--ink-muted)]')
                     }
@@ -210,6 +233,13 @@ export default function ScoreTable({
                         {...tip.on(`${n} · ${GAMES[g].title} · ${wordsLabel(r)}`)}
                       >
                         {ownWords(r)}
+                      </span>
+                    ) : marks && shownScore(r) ? (
+                      <span
+                        className="font-semibold whitespace-nowrap text-[var(--ink-text)]"
+                        {...tip.on(`${n} · ${GAMES[g].title} · ${resultLabel(r!)} ${GAMES[g].unit}`)}
+                      >
+                        {shownScore(r)}
                       </span>
                     ) : marks ? (
                       <span {...tip.on(`${n} · ${GAMES[g].title} · ${STATE_NAME[playState(r)]}`)}>

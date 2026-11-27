@@ -150,11 +150,12 @@ export const GAMES: Record<
   },
 }
 
+/** The games a board plays together as 1 shared puzzle. Each shelf lists its own last, as a "Together" segment. */
+export const COLLAB_IDS: GameId[] = ['bee', 'crossword']
 /** The 6 original daily games: the Daily drawer, its boards, streaks and nudges. */
-export const DAILY_IDS: GameId[] = ['connections', 'fivefold', 'mini', 'bee', 'krillion', 'anthropeum']
+export const DAILY_IDS: GameId[] = ['connections', 'fivefold', 'mini', 'krillion', 'anthropeum', 'bee']
 /** The games still being built. They have their own Beta drawer and boards and never count toward Daily. */
 export const BETA_IDS: GameId[] = [
-  'crossword',
   'kabloom',
   'headcount',
   'chainle',
@@ -163,6 +164,7 @@ export const BETA_IDS: GameId[] = [
   'hop',
   'pin',
   'ballpark',
+  'crossword',
 ]
 /** Every game with a daily puzzle and a verified score, Daily first. Each shelf lists its own in this order. */
 export const GAME_IDS: GameId[] = [...DAILY_IDS, ...BETA_IDS]

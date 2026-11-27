@@ -78,17 +78,21 @@ export type KrillionResult = {
 }
 /** A judgment, with the suggested answer when a close typo waits for the player to confirm it. */
 export type KrillionJudgment = KrillionResult & { correction?: { from: string; to: string } }
-/** Normalizes like the original: no accents or case, punctuation as single spaces, and no leading "the". */
+/**
+ * Normalizes like the original: no accents, case or apostrophes, "&" as "and", other punctuation as single spaces,
+ * and no leading article.
+ */
 export function answerKey(text: string): string {
   return text
     .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\u0300-\u036f'’‘ʼ`]/g, '')
     .toLowerCase()
+    .replaceAll('&', ' and ')
     .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim()
-    .replace(/^the /, '')
+    .replace(/^(an?|the) /, '')
 }
-/** Bounded edit distance for a conservative silent autocorrect. */
+/** Bounded Levenshtein distance, where a swap of 2 neighbors counts as 2 edits, as in the original. */
 export function editDistance(a: string, b: string, limit: number): number {
   if (Math.abs(a.length - b.length) > limit) return limit + 1
   let prev = Array.from({ length: b.length + 1 }, (_, i) => i)
@@ -101,48 +105,108 @@ export function editDistance(a: string, b: string, limit: number): number {
   }
   return prev[b.length]!
 }
+/**
+ * Returns a bit set of the characters in a text: 1 bit per letter a to z and 1 shared by all others. An edit changes
+ * at most 2 bits, so 2 texts whose sets differ in more than twice the allowed edits cannot be a close match.
+ */
+function charBits(text: string): number {
+  let bits = 0
+  for (let i = 0; i < text.length; i++)
+    bits |= 1 << Math.min(26, text.charCodeAt(i) - 97 < 0 ? 26 : text.charCodeAt(i) - 97)
+  return bits
+}
 export type AnswerLookup = {
   exact: Map<string, KrillionAnswer>
-  compact: Map<string, KrillionAnswer>
-  keys: { key: string; entry: KrillionAnswer; canonical: boolean }[]
+  plural: Map<string, KrillionAnswer>
+  /** Every spelling by its length, so a close match only scans the lengths within its edit allowance. */
+  sized: Map<number, { key: string; words: string[]; bits: number; entry: KrillionAnswer; plural: boolean }[]>
 }
-/** Indexes every normalized answer and alias of a prompt, in list order, keeping the first entry on a duplicate. */
+/**
+ * Indexes every normalized answer and alias of a prompt, keeping the first entry on a duplicate, then the English
+ * plural of each ("ies" for a consonant and "y", "es" after s, x, z, ch or sh, else "s") where no answer has it.
+ */
 export function answerLookup(answers: KrillionAnswer[]): AnswerLookup {
-  const lookup: AnswerLookup = { exact: new Map(), compact: new Map(), keys: [] }
-  for (const entry of answers)
-    [entry.answer, ...(entry.aliases ?? [])].forEach((alias, i) => {
-      const key = answerKey(alias)
-      if (!key || lookup.exact.has(key)) return
-      lookup.exact.set(key, entry)
-      if (!lookup.compact.has(key.replaceAll(' ', ''))) lookup.compact.set(key.replaceAll(' ', ''), entry)
-      lookup.keys.push({ key, entry, canonical: i === 0 })
-    })
+  const lookup: AnswerLookup = { exact: new Map(), plural: new Map(), sized: new Map() }
+  for (const plural of [false, true])
+    for (const entry of answers)
+      for (const alias of [entry.answer, ...(entry.aliases ?? [])]) {
+        const base = answerKey(alias),
+          key = !plural
+            ? base
+            : /[^aeiou]y$/.test(base)
+              ? `${base.slice(0, -1)}ies`
+              : `${base}${/(s|x|z|ch|sh)$/.test(base) ? 'es' : 's'}`
+        if (!base || lookup.exact.has(key) || lookup.plural.has(key)) continue
+        lookup[plural ? 'plural' : 'exact'].set(key, entry)
+        const same = lookup.sized.get(key.length) ?? []
+        if (!same.length) lookup.sized.set(key.length, same)
+        same.push({ key, words: key.split(' '), bits: charBits(key), entry, plural })
+      }
   return lookup
 }
 /**
- * Judges an answer the way probes of the original game showed it works. An exact normalized match to an answer
- * or alias scores at once. Otherwise, from 5 letters up, the closest answer or alias within min(3, 0.28 × its
- * length) Levenshtein edits wins, with spaces counted and ties going to a canonical answer, then list order. The
- * same text without spaces also counts as close. A close match comes back as a correction to the canonical
- * answer while `preview` is on, and scores directly once the player confirms it or the clock runs out.
+ * Judges an answer by the rules that 2,300 probes of the original game's checker fit (2026-11-27).
+ * - Only an exact normalized match to an answer's own name scores at once. An alias, a plural or singular, or a
+ *   close match is a correction to that name.
+ * - Plurals: an answer or alias also counts with its plural ending, and the typed text also counts with a final
+ *   "s", "es" or "ies" taken off, or with "s" or "es" added when that spells an answer exactly.
+ * - Close matches: text of n characters, spaces included, may be min(3, n / 4) edits away in total, so nothing under
+ *   5 characters is corrected. A swap of 2 letters is 2 edits.
+ * - Against a spelling with the same number of words, each word is compared with its own: a pair whose longer word
+ *   has under 5 letters must be equal, 5 to 7 letters allow 1 edit (2 from 6 letters when both start with the same
+ *   2 letters), 8 to 11 allow 2 and 12 or more allow 3.
+ * - Against a spelling with another number of words, the whole texts are compared, each space counting as a letter.
+ * - The closest spelling wins, one that differs only in its spaces first and a real spelling before a made plural.
+ *   The probes do not settle further ties.
+ * A correction comes back for the player to confirm while `preview` is on, and scores directly when it is off.
  */
 export function judgeWith(lookup: AnswerLookup, answer: string, preview = false): KrillionJudgment {
   const key = answerKey(answer),
-    compact = key.replaceAll(' ', '')
-  let matched = key ? lookup.exact.get(key) : undefined
-  const exact = !!matched
-  if (!matched && compact) matched = lookup.compact.get(compact)
-  if (!matched && compact.length >= 5) {
-    let best = { d: 4, canonical: false }
-    for (const c of lookup.keys) {
-      const max = Math.min(3, Math.floor(c.key.length * 0.28))
-      if (!max || Math.abs(c.key.length - key.length) > max) continue
-      const d = editDistance(key, c.key, max)
-      if (d <= max && (d < best.d || (d === best.d && c.canonical && !best.canonical))) {
-        best = { d, canonical: c.canonical }
+    forms = [key]
+  for (const form of forms)
+    for (const [end, to] of [
+      ['ies', 'y'],
+      ['es', ''],
+      ['s', ''],
+    ] as const) {
+      const single = form.slice(0, -end.length) + to
+      if (form.endsWith(end) && single && forms.length < 6 && !forms.includes(single)) forms.push(single)
+    }
+  let matched =
+    forms.map((form) => lookup.exact.get(form) ?? lookup.plural.get(form)).find(Boolean) ??
+    (key ? (lookup.exact.get(`${key}s`) ?? lookup.exact.get(`${key}es`)) : undefined)
+  for (const form of matched ? [] : forms) {
+    const words = form.split(' '),
+      bits = charBits(form),
+      max = form.length < 5 ? 0 : Math.min(3, form.length >> 2)
+    let best = max + 1
+    for (const c of [-3, -2, -1, 0, 1, 2, 3].flatMap((by) =>
+      Math.abs(by) <= max ? (lookup.sized.get(form.length + by) ?? []) : [],
+    )) {
+      let d = 0,
+        apart = 0
+      for (let x = c.bits ^ bits; x; x &= x - 1) apart++
+      if (apart > 2 * max) continue
+      if (c.words.length !== words.length) d = editDistance(form, c.key, max)
+      else
+        for (let i = 0; i < words.length && d <= max; i++) {
+          const a = words[i]!,
+            b = c.words[i]!,
+            len = Math.max(a.length, b.length)
+          if (a === b) continue
+          const cap = len < 5 ? 0 : len >= 12 ? 3 : len >= 8 || (len >= 6 && a.slice(0, 2) === b.slice(0, 2)) ? 2 : 1
+          const edits = cap ? editDistance(a, b, cap) : 1
+          d = edits > cap ? max + 1 : d + edits
+        }
+      if (d > max) continue
+      const spaced = c.words.length !== words.length && c.key.replaceAll(' ', '') === form.replaceAll(' ', ''),
+        rank = d + (c.plural ? 0.25 : 0) - (spaced ? 0.5 : 0)
+      if (rank <= best) {
+        best = rank
         matched = c.entry
       }
     }
+    if (matched) break
   }
   if (!matched)
     return {
@@ -151,7 +215,7 @@ export function judgeWith(lookup: AnswerLookup, answer: string, preview = false)
       score: 0,
       reason: answer.trim() ? 'Not in this prompt’s accepted answer set.' : 'No answer before the clock ran out.',
     }
-  if (!exact && preview)
+  if (preview && answerKey(matched.answer) !== key)
     return {
       answer,
       accepted: false,

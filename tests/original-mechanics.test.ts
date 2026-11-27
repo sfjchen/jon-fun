@@ -15,6 +15,8 @@ import {
   restoreKrillionRun,
   completeKrillionRound,
   pauseKrillionRun,
+  answerLookup,
+  judgeWith,
 } from '../src/lib/krillion'
 import { artifactScore, regionDistance, type Artifact } from '../src/lib/artifact-scoring'
 import { winners } from '../src/lib/score-stats'
@@ -87,6 +89,44 @@ test('Original same-day Krillion key reproduces the completed reference run and 
   assert.equal((await judgeAnswer('2026-11-17', 0, 'The Karnival Kid')).score, 100)
   assert.equal((await judgeAnswer('2026-11-17', 0, 'qzxqzxqzxqzx')).accepted, false)
   assert.equal((await krillionForDay('2026-11-17')).date, '2026-11-17')
+})
+test('Krillion corrections follow verdicts recorded from the original checker', () => {
+  const deep = { tier: 'deepcut', score: 85 } as const
+  const lookup = answerLookup([
+    { answer: 'Tien Shan Pai', ...deep },
+    { answer: 'Unified Weapons Master', ...deep },
+    { answer: 'Squash coach', ...deep },
+    { answer: 'Kickboxing', aliases: ['kick boxing'], ...deep },
+    { answer: 'Yoga', ...deep },
+    { answer: 'Menesh ship', aliases: ['menesh'], ...deep },
+    { answer: 'Burmese martial arts', ...deep },
+  ])
+  const verdicts: Record<string, string | null> = {
+    'a kickboxing': '=Kickboxing',
+    'kick boxing': 'Kickboxing',
+    kickbxoing: 'Kickboxing',
+    kcckbcxtng: null,
+    'tidn shan pai': null,
+    'tienshan pai': 'Tien Shan Pai',
+    tidnshanpai: null,
+    'tien shan pais': 'Tien Shan Pai',
+    'unified weapons mater': 'Unified Weapons Master',
+    'unified wapon master': null,
+    'sqxazh coach': 'Squash coach',
+    'sxuazh coach': null,
+    'squash coahc': null,
+    yogax: 'Yoga',
+    yogw: null,
+    yogaes: 'Yoga',
+    'menesh sh': 'Menesh ship',
+    'menesh xy': null,
+    'burmese martial art': 'Burmese martial arts',
+  }
+  for (const [typed, verdict] of Object.entries(verdicts)) {
+    const j = judgeWith(lookup, typed, true)
+    assert.equal(j.correction?.to ?? (j.accepted ? `=${j.matchedAnswer}` : null), verdict, typed)
+    assert.equal(judgeWith(lookup, typed).accepted, verdict !== null, typed)
+  }
 })
 test('Anthropeum matches original interval and polygon-edge scoring formulas', () => {
   const polygons = [
