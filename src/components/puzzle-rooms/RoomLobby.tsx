@@ -15,21 +15,13 @@ type Props = {
   day: string
   id: string
   mini?: boolean
-  /** Opens the board's 1 shared room for the day in place of a private room. */
-  shared?: boolean
-  /** Enters without waiting for a click once the player has a name. */
+  /** Enters without waiting for a click. */
   auto?: boolean
   board: ComponentType<RoomBoardProps>
 }
 
 const entryClass = 'rounded-md border border-[var(--ink-border)] bg-[var(--ink-bg)] px-3 py-2'
 const keyFor = (id: string) => `puzzle-room:v1:${id}`
-function newRoomId() {
-  const bytes = crypto.getRandomValues(new Uint8Array(12))
-  return btoa(String.fromCharCode(...bytes))
-    .replaceAll('+', '-')
-    .replaceAll('/', '_')
-}
 const defaultSession = (): Session => ({ seat: crypto.randomUUID(), seq: 0, batch: [], queued: [] })
 
 /** Returns this browser's room ID, which lets the server count its tabs as 1 player. It is used nowhere else. */
@@ -104,7 +96,7 @@ export default function RoomLobby(props: Props) {
   return <Lobby key={props.id} {...props} />
 }
 
-function Lobby({ game, id, day, mini, shared, auto, board: Board }: Props) {
+function Lobby({ game, id, day, mini, auto, board: Board }: Props) {
   const [name, setName] = useDeviceName()
   const [session, setSession] = useState(() => readSession(id))
   const [room, setRoom] = useState<Room | null>(null)
@@ -115,7 +107,7 @@ function Lobby({ game, id, day, mini, shared, auto, board: Board }: Props) {
   const [joining, setJoining] = useState(false)
   const [copied, setCopied] = useState(false)
   const [pending, setPending] = useState<RoomEdit[]>(() => (session ? [...session.batch, ...session.queued] : []))
-  const attempt = useRef<{ id: string; day: string; session: Session } | null>(null)
+  const attempt = useRef<{ day: string; session: Session } | null>(null)
   const version = useRef(-1)
   const wake = useRef<(() => void) | null>(null)
   const lookup = validRoomId(id)
@@ -273,31 +265,21 @@ function Lobby({ game, id, day, mini, shared, auto, board: Board }: Props) {
   }
 
   async function enter() {
-    if (joining || !name.trim()) return
+    if (joining) return
     setJoining(true)
     setError('')
     try {
       if (!attempt.current || attempt.current.day !== day) {
-        attempt.current = {
-          id: id || newRoomId(),
-          day,
-          session: defaultSession(),
-        }
+        attempt.current = { day, session: defaultSession() }
       }
       const draft = attempt.current
       const seat = draft.session.seat
       const device = deviceId()
+      // Anyone can solve along: a visitor with no name yet sits in as a guest.
+      const player = { name: name.trim() || 'Guest', game, seat, device }
       const next = id
-        ? await request(roomApi(id), { action: 'join', name, game, seat, device })
-        : await request(roomApi(''), {
-            name,
-            game,
-            seat,
-            device,
-            day,
-            mini,
-            ...(shared ? { group: getPlayer()?.group ?? PUBLIC_GROUP } : { id: draft.id }),
-          })
+        ? await request(roomApi(id), { action: 'join', ...player })
+        : await request(roomApi(''), { ...player, day, mini, group: getPlayer()?.group ?? PUBLIC_GROUP })
       saveSession(next.id, draft.session)
       accept(next)
       setSession(draft.session)
@@ -309,11 +291,11 @@ function Lobby({ game, id, day, mini, shared, auto, board: Board }: Props) {
     }
   }
 
-  // A named player lands straight in the shared grid, like any other daily game. Leaving it for the date and
-  // edition picker carries ?pick, which holds this back.
+  // Every visitor lands straight in the shared grid, like any other daily game, and so does an invite link. Leaving
+  // it for the date and edition picker carries ?pick, which holds this back.
   const opened = useRef(false)
   useEffect(() => {
-    if (!auto || id || opened.current || !name.trim()) return
+    if (!auto || session || opened.current) return
     opened.current = true
     void enter()
   })
@@ -352,14 +334,14 @@ function Lobby({ game, id, day, mini, shared, auto, board: Board }: Props) {
               <input
                 className={entryClass}
                 autoComplete="nickname"
-                required
+                placeholder="Guest"
                 maxLength={32}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
             </label>
             <button className={`${button} min-h-10`} disabled={joining || (!day && !id)} type="submit">
-              {joining ? 'Connecting…' : id ? 'Join room' : shared ? 'Open shared grid' : 'Create room'}
+              {joining ? 'Connecting…' : id ? 'Join shared grid' : 'Open shared grid'}
             </button>
             {error && (
               <p role="alert" className="w-full text-sm text-red-700">
@@ -373,7 +355,7 @@ function Lobby({ game, id, day, mini, shared, auto, board: Board }: Props) {
 
   const controls = (
     <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-[var(--ink-border)] pb-3 text-sm">
-      <span className="font-semibold">Shared room</span>
+      <span className="font-semibold">Shared grid</span>
       <span role="status" className="text-xs text-[var(--ink-muted)]">
         {status === 'live' ? 'Live' : status === 'polling' ? 'Syncing by refresh' : 'Connecting…'}
         {pending.length > 0 && ' · Saving…'}

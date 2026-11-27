@@ -58,7 +58,7 @@ export default function Crossword({ firstFullDay }: { firstFullDay: string }) {
           </label>
         </div>
       )}
-      <RoomLobby game="crossword" id={id} day={day} mini={mini} shared auto={!pick} board={SharedCrossword} />
+      <RoomLobby game="crossword" id={id} day={day} mini={mini} auto={!pick} board={SharedCrossword} />
     </div>
   )
 }

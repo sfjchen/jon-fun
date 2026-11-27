@@ -92,13 +92,14 @@ Collaborative games are shared with everyone on a player's board, with no room t
   player's saved words for the day and the page pulls them on load and every 15 seconds. A player's result is saved
   once they add a word of their own, and then carries the shared list.
 - Crossword - `/games/crossword` opens the board's 1 shared grid for the day (a room whose id is derived from the
-  board code, game, day and edition). **Change puzzle** leads to the date and edition picker, and **Play together** on
+  board code, game, day and edition). Every visitor lands in it, and one with no name yet sits in as a guest.
+  **Change puzzle** leads to the date and edition picker, and **Play together** on
   the Mini opens the board's shared Mini grid.
 
 Each room keeps a snapshot of its puzzle and saves shared progress in Supabase. The same tab can resume the room
 after a reload, including edits waiting to sync. An invite link opens the same room for someone on another board.
 A browser that rejoins from new tabs counts as 1 of the
-24 players and keeps its 3 newest seats. The daily cron deletes rooms left untouched for 30 days.
+100 players and keeps its 3 newest seats. The daily cron deletes rooms left untouched for 30 days.
 
 Crossword Together opens the original 15×15 daily by default. It publishes a distinct board from
 `data/crossword/full-size.json` each Pacific day. The date picker can reopen older editions. **Switch to

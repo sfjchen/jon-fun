@@ -33,18 +33,16 @@ const device = z.uuid().optional()
 const IDLE_DAYS = 30
 /** A browser keeps this many seats, so a few open tabs can all edit while repeat joins stop adding up. */
 const DEVICE_SEATS = 3
+/** A room holds this many browsers, enough for a whole board while a flood of joins cannot grow it without end. */
+const ROOM_BROWSERS = 100
 export const createRoomBody = z.object({
   game: z.literal('crossword'),
   day: z.string(),
   name,
   seat,
   device,
-  /** A board code opens that board's shared room for the day, in place of a room under a client-made id. */
-  group: z
-    .string()
-    .regex(/^[a-z0-9-]{3,32}$/)
-    .optional(),
-  id: z.string().optional(),
+  /** The board whose shared room for the day this opens. */
+  group: z.string().regex(/^[a-z0-9-]{3,32}$/),
   mini: z.boolean().optional(),
 })
 export const roomAction = z.discriminatedUnion('action', [
@@ -95,22 +93,15 @@ async function getPuzzle(game: RoomGame, day: string, mini: boolean): Promise<St
 }
 
 /**
- * Opens a room. With a board code it is the board's 1 shared room for that game, day and edition, which later
- * players join. Otherwise it is a new private room under the caller's id, which only its creator may reopen.
+ * Opens a board's 1 shared room for a game, day and edition. The first player creates it and every later player
+ * joins it, so the whole board solves the same grid.
  */
-export async function createRoom(input: z.infer<typeof createRoomBody>): Promise<Room> {
+export async function createRoom(input: z.infer<typeof createRoomBody>) {
   const { game, day, name, seat, device, group } = input
   const mini = input.mini ?? false
-  const id = group
-    ? createHash('sha256').update(`${group}:${game}:${day}:${mini}`).digest('base64url').slice(0, 16)
-    : (input.id ?? '')
+  const id = createHash('sha256').update(`${group}:${game}:${day}:${mini}`).digest('base64url').slice(0, 16)
   const join = () => updateRoom(id, { action: 'join', name, seat, device, game })
-  const existing = await loadRoom(id)
-  if (existing) {
-    if (group) return join()
-    if (existing.players[0]?.seat === seat) return publicRoom(existing)
-    throw new RoomError('Could not create a room. Try again.', 409)
-  }
+  if (await loadRoom(id)) return join()
   const puzzle = await getPuzzle(game, day, mini)
   const { data, error } = await supabaseAdmin
     .from('puzzle_rooms')
@@ -118,13 +109,8 @@ export async function createRoom(input: z.infer<typeof createRoomBody>): Promise
     .select()
     .single()
   if (!error) return publicRoom(data as Row)
-  if (error.code === '23505') {
-    if (group) return join()
-    const winner = await loadRoom(id)
-    if (winner?.players[0]?.seat === seat) return publicRoom(winner)
-    throw new RoomError('Could not create a room. Try again.', 409)
-  }
-  throw new RoomError('Could not create a room. Try again.', 503)
+  if (error.code === '23505') return join()
+  throw new RoomError('Could not open the shared grid. Try again.', 503)
 }
 
 export async function readRoom(id: string) {
@@ -141,8 +127,8 @@ function apply(row: Row, action: z.infer<typeof roomAction>): Change | null {
     // browser's oldest seats are dropped, so rejoining never fills the room.
     const { device } = action
     const mine = device ? row.players.filter((p) => p.device === device) : []
-    if (!mine.length && new Set(row.players.map((p) => p.device ?? p.seat)).size >= 24)
-      throw new RoomError('This room already has 24 players.', 409)
+    if (!mine.length && new Set(row.players.map((p) => p.device ?? p.seat)).size >= ROOM_BROWSERS)
+      throw new RoomError(`This grid already has ${ROOM_BROWSERS} players.`, 409)
     const dropped = mine.slice(0, Math.max(0, mine.length - DEVICE_SEATS + 1))
     return {
       players: [
