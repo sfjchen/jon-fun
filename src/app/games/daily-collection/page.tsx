@@ -1,7 +1,13 @@
 'use client'
 
+/**
+ * Lists every daily game in 2 groups: the ones played on this site, and the ones played on their publisher's site,
+ * whose shared result can be pasted in to keep a personal history on this device and its synced devices.
+ */
+
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { DailyHeader } from '@/components/daily/DailyDrawer'
 import { siteDay } from '@/lib/daily'
 
 const titles = [
@@ -29,9 +35,26 @@ const titles = [
   ['Contexto', 'https://contexto.me'],
 ] as const
 
+/** The list in its 2 groups, each with a heading and a line on how its results are kept. */
+const groups = [
+  [
+    'Play here',
+    'Scores save to the Daily drawer and the leaderboard.',
+    titles.filter(([, url]) => url.startsWith('/')),
+  ],
+  [
+    'On the publisher’s site',
+    'Paste the shared result to keep it in your personal history.',
+    titles.filter(([, url]) => !url.startsWith('/')),
+  ],
+] as const
+
 const prefix = 'daily-collection:v1:'
 type Saved = { title: string; day: string; result: string }
 
+/**
+ * Renders the game list, the result form of the game being logged, and the saved history with its export.
+ */
 export default function Page() {
   const [records, setRecords] = useState<Saved[]>([])
   const [editing, setEditing] = useState('')
@@ -68,88 +91,96 @@ export default function Page() {
     }
   }, [])
   return (
-    <main className="mx-auto max-w-3xl space-y-5 p-5">
-      <h1 className="text-3xl font-bold">Daily games</h1>
-      <p>For games played on the publisher’s site, paste the shared result to keep it in your personal history.</p>
-      <div className="grid gap-2 sm:grid-cols-2">
-        {titles.map(([title, url]) => (
-          <section key={title} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border p-3">
-            {url.startsWith('/') ? (
-              <Link className="font-semibold underline" href={url}>
-                {title}
-              </Link>
-            ) : (
-              <a className="font-semibold underline" href={url} target="_blank" rel="noreferrer">
-                {title} ↗
-              </a>
-            )}
-            {title === 'Kabloom' && (
-              <a className="text-sm underline" href="https://kabloom.io/archive" target="_blank" rel="noreferrer">
-                Archive on Kabloom ↗
-              </a>
-            )}
-            {(title === 'Noillirk' || !url.startsWith('/')) && (
-              <button
-                className="text-sm underline"
-                onClick={() => {
-                  setEditing(title)
-                  setDay(siteDay())
-                  setResult(records.find((r) => r.title === title && r.day === siteDay())?.result ?? '')
-                  setNotice('')
-                }}
-              >
-                Log result
-              </button>
-            )}
-            {editing === title && (
-              <form
-                className="w-full space-y-2"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  if (!result.trim()) return
-                  try {
-                    localStorage.setItem(
-                      prefix + title + ':' + day,
-                      JSON.stringify({ title, day, result: result.trim() }),
-                    )
-                    read()
-                    setEditing('')
-                    setNotice('Result saved.')
-                  } catch {
-                    setNotice('Could not save this result on this device.')
-                  }
-                }}
-              >
-                <label>
-                  Edition{' '}
-                  <input
-                    required
-                    type="date"
-                    max={siteDay()}
-                    value={day}
-                    onChange={(e) => {
-                      setDay(e.target.value)
-                      setResult(records.find((r) => r.title === title && r.day === e.target.value)?.result ?? '')
+    <div className="mx-auto max-w-3xl space-y-5 pb-5">
+      <header className="flex flex-wrap items-center gap-2">
+        <h1 className="mr-auto text-3xl font-bold">Daily games</h1>
+        <DailyHeader />
+      </header>
+      {groups.map(([heading, note, list]) => (
+        <section key={heading} className="space-y-2" aria-label={heading}>
+          <h2 className="text-xl font-semibold">{heading}</h2>
+          <p className="text-[var(--ink-muted)]">{note}</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {list.map(([title, url]) => (
+              <section key={title} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border p-3">
+                {url.startsWith('/') ? (
+                  <Link className="font-semibold underline" href={url}>
+                    {title}
+                  </Link>
+                ) : (
+                  <a className="font-semibold underline" href={url} target="_blank" rel="noreferrer">
+                    {title} ↗
+                  </a>
+                )}
+                {title === 'Kabloom' && (
+                  <a className="text-sm underline" href="https://kabloom.io/archive" target="_blank" rel="noreferrer">
+                    Archive on Kabloom ↗
+                  </a>
+                )}
+                {(title === 'Noillirk' || !url.startsWith('/')) && (
+                  <button
+                    className="text-sm underline"
+                    onClick={() => {
+                      setEditing(title)
+                      setDay(siteDay())
+                      setResult(records.find((r) => r.title === title && r.day === siteDay())?.result ?? '')
+                      setNotice('')
                     }}
-                  />
-                </label>
-                <textarea
-                  className="w-full rounded border p-2"
-                  aria-label="Shared result"
-                  required
-                  maxLength={5000}
-                  value={result}
-                  onChange={(e) => setResult(e.target.value)}
-                />
-                <button className="underline">Save result</button>{' '}
-                <button type="button" onClick={() => setEditing('')}>
-                  Cancel
-                </button>
-              </form>
-            )}
-          </section>
-        ))}
-      </div>
+                  >
+                    Log result
+                  </button>
+                )}
+                {editing === title && (
+                  <form
+                    className="w-full space-y-2"
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      if (!result.trim()) return
+                      try {
+                        localStorage.setItem(
+                          prefix + title + ':' + day,
+                          JSON.stringify({ title, day, result: result.trim() }),
+                        )
+                        read()
+                        setEditing('')
+                        setNotice('Result saved.')
+                      } catch {
+                        setNotice('Could not save this result on this device.')
+                      }
+                    }}
+                  >
+                    <label>
+                      Edition{' '}
+                      <input
+                        required
+                        type="date"
+                        max={siteDay()}
+                        value={day}
+                        onChange={(e) => {
+                          setDay(e.target.value)
+                          setResult(records.find((r) => r.title === title && r.day === e.target.value)?.result ?? '')
+                        }}
+                      />
+                    </label>
+                    <textarea
+                      className="w-full rounded border p-2"
+                      aria-label="Shared result"
+                      required
+                      maxLength={5000}
+                      value={result}
+                      onChange={(e) => setResult(e.target.value)}
+                    />
+                    <button className="underline">Save result</button>{' '}
+                    <button type="button" onClick={() => setEditing('')}>
+                      Cancel
+                    </button>
+                  </form>
+                )}
+              </section>
+            ))}
+          </div>
+        </section>
+      ))}
       <p role="status">{notice}</p>
       <h2 className="text-xl font-semibold">Personal history ({records.length})</h2>
       {!!records.length && (
@@ -175,6 +206,6 @@ export default function Page() {
           <p className="whitespace-pre-wrap">{r.result}</p>
         </details>
       ))}
-    </main>
+    </div>
   )
 }
