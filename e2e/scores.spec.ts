@@ -82,9 +82,9 @@ test('every daily game shows without an expander and counts toward wins and prog
   await expect(board.getByText('12/12', { exact: true }).first()).toBeVisible()
 
   await page.goto('/games/orbs/local')
-  await page.getByRole('button', { name: /^Daily, 2 of 9 done today/ }).click()
+  await page.getByRole('button', { name: /^Daily, 2 of 10 done today/ }).click()
   const drawer = page.getByRole('dialog', { name: 'Daily games' })
-  await expect(drawer.getByText('2/9 today', { exact: false })).toBeVisible()
+  await expect(drawer.getByText('2/10 today', { exact: false })).toBeVisible()
   await expect(drawer.getByRole('button', { name: 'More games' })).toHaveCount(0)
   await expect(drawer.getByRole('link', { name: 'Orbs Completed' })).toBeVisible()
   await expect(drawer.getByRole('link', { name: 'Crossword Not done' })).toBeVisible()

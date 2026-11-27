@@ -3,6 +3,8 @@ import assert from 'node:assert/strict'
 import { loadEnvConfig } from '@next/env'
 import { NextRequest } from 'next/server'
 loadEnvConfig(process.cwd())
+// Seat tokens are signed with the service key. The database is mocked below, so a stand-in works without .env.local.
+process.env.SUPABASE_SERVICE_ROLE_KEY ||= 'test-only-seat-secret'
 test('room storage failures are retryable, missing rooms are 404, and roster IDs cannot authorize actions', async () => {
   const { supabaseAdmin } = await import('../src/lib/supabase')
   const { playerToken, validPlayerToken } = await import('../src/lib/triples-server')

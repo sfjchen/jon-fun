@@ -1,6 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+/**
+ * Plays a Headcount party: five rooms of crowd questions, each guess saved on the device and the total logged as the day's result.
+ */
+
+import { useState } from 'react'
 import { rooms, roomPoints, type Party, type Question, type Guess } from '@/lib/headcount'
 import { runKey } from '@/lib/daily/saved-run'
 import { logResult } from '@/lib/results'
@@ -128,24 +132,22 @@ function Room({ q, onGuess }: { q: Question; onGuess: (g: Guess) => void }) {
 
 export default function HeadcountPlay({ puzzle }: { puzzle: Party }) {
   const key = runKey('headcount', puzzle.date, puzzle.date)
-  const [moves, setMoves] = useState<Guess[] | null>(null)
-  const [reveal, setReveal] = useState(false)
-  const [notice, setNotice] = useState('')
-  useEffect(() => {
+  // DailyGame mounts this only in the browser, after the puzzle loads, and remounts it per day, so the saved run
+  // can be read once here.
+  const [moves, setMoves] = useState<Guess[]>(() => {
     try {
       const v: unknown = JSON.parse(localStorage.getItem(key) ?? '[]')
-      setMoves(
-        Array.isArray(v) &&
-          v.length <= 5 &&
-          v.every((g, i) => Array.isArray(g) && roomPoints(puzzle.questions[i]!, g) !== null)
-          ? v
-          : [],
-      )
+      return Array.isArray(v) &&
+        v.length <= 5 &&
+        v.every((g, i) => Array.isArray(g) && roomPoints(puzzle.questions[i]!, g) !== null)
+        ? (v as Guess[])
+        : []
     } catch {
-      setMoves([])
+      return []
     }
-  }, [key, puzzle])
-  if (!moves) return <p>Opening the party…</p>
+  })
+  const [reveal, setReveal] = useState(false)
+  const [notice, setNotice] = useState('')
   const points = moves.map((g, i) => roomPoints(puzzle.questions[i]!, g)!)
   const total = points.reduce((a, b) => a + b, 0)
   const index = moves.length - (reveal ? 1 : 0)
