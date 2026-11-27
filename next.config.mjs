@@ -4,6 +4,7 @@ const PUZZLES = [
   './data/anthropeum/**/*',
   './data/krillion/review/**/*',
   './data/orbs/**/*',
+  './data/chainle/*',
 ]
 
 /** @type {import('next').NextConfig} */
@@ -15,6 +16,7 @@ const nextConfig = {
    * serverless bundle, causing "pdf.worker.mjs not found" at runtime. Force-include the worker build.
    */
   outputFileTracingIncludes: {
+    '/games/chainle': ['./data/chainle/*.json'],
     '/api/krillion/*': ['./data/krillion/review/**/*'],
     // The results API replays every daily game's moves against the same puzzles, plus the Wordle word list.
     '/api/results': [...PUZZLES, './public/fivefold/words.json'],

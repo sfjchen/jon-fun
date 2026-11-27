@@ -15,6 +15,8 @@ import { judgeAnswer } from '@/lib/daily/krillion'
 import { score as beeScore } from '@/lib/spelling-bee'
 import { findMatchingGroup, wordKey, type ConnectionsPuzzle } from '@/lib/connections'
 import { artifactScore, type Artifact } from '@/lib/artifact-scoring'
+import { chainleForDay } from './chainle'
+import { chainlePoints } from '../chainle-score'
 import { ORBS_MAX, type OrbsPuzzle } from '@/lib/orbs'
 import { isOrbsMoveSet, replayOrbsDay, type OrbsMoveSet } from '@/lib/orbs-run'
 import type { MiniPuzzle } from '@/lib/mini'
@@ -133,6 +135,11 @@ export const VERIFIERS: Record<GameId, Verifier> = {
         : 'This room has not solved that day’s full-size crossword',
   ),
   // Orbs replays old single picks and the current per-puzzle lives.
+  chainle: verifier(z.array(z.string().trim().min(1).max(64)).length(5), async (day, moves) => {
+    const puzzle = await chainleForDay(day)
+    const score = moves.reduce((sum, word, i) => sum + chainlePoints(puzzle.pairs[i]!, word), 0)
+    return { score, stats: { n: 5, solved: score === 5000 } }
+  }),
   orbs: verifier(
     z.union([z.array(z.number().int().min(0).max(2)).length(ORBS_MAX), z.custom<OrbsMoveSet>(isOrbsMoveSet)]),
     async (day, moves) => {

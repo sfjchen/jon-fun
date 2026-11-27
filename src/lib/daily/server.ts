@@ -15,6 +15,11 @@ export async function dailyPuzzle(
     const puzzle = await krillionForDay(day)
     return { day, sourceDate: puzzle.date, puzzle }
   }
+  if (game === 'chainle') {
+    const { chainleForDay } = await import('./chainle')
+    const puzzle = await chainleForDay(day)
+    return { day, sourceDate: puzzle.date, puzzle }
+  }
   if (game === 'orbs') {
     const { orbsForDay } = await import('@/lib/daily/orbs')
     return { day, sourceDate: day, puzzle: await orbsForDay(day) }

@@ -18,11 +18,13 @@ import { useSavedRun, type DailyGameId } from '@/lib/daily/saved-run'
 import type { ConnectionsPuzzle } from '@/lib/connections'
 import type { ArtifactDay } from '@/components/daily/AnthropeumPlay'
 import type { KrillionPuzzle } from '@/components/daily/KrillionPlay'
+import type { Edition } from '@/lib/daily/chainle'
 import type { OrbsPuzzle } from '@/lib/orbs'
 import type { FivefoldPuzzle } from '@/components/daily/FivefoldPlay'
 
 /** Each game page downloads only its own player, so Wordle does not carry the Anthropeum map or the Mini grid. */
 const LOAD = {
+  chainle: () => import('@/app/games/chainle/play'),
   mini: () => import('@/components/mini/MiniPlay'),
   connections: () => import('@/components/connections/ConnectionsPlay'),
   anthropeum: () => import('@/components/daily/AnthropeumPlay'),
@@ -34,6 +36,7 @@ const MiniPlay = dynamic(LOAD.mini)
 const ConnectionsPlay = dynamic(LOAD.connections)
 const AnthropeumPlay = dynamic(LOAD.anthropeum)
 const KrillionPlay = dynamic(LOAD.krillion)
+const ChainlePlay = dynamic(LOAD.chainle)
 const OrbsPlay = dynamic(LOAD.orbs)
 const FivefoldPlay = dynamic(LOAD.fivefold)
 
@@ -59,6 +62,9 @@ const HOW: Record<DailyGameId, string[]> = {
     'Find the hidden 5-letter word in 6 tries. Type or tap letters, then Enter.',
     'A green tile is in the right spot. A yellow tile is in the word but in another spot. A gray tile is not in the word.',
     'Hard mode (optional, stays on until you turn it off, starts before a first guess): green letters stay put and yellow letters must be reused.',
+  ],
+  chainle: [
+    'One word per round. Find the connection between the clues in the first four rounds and the closest word in round five.',
   ],
   orbs: [
     'Open any puzzle to start. In matching puzzles, tap one tile from each column.',
@@ -153,6 +159,7 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
           </p>
         </div>
       )}
+      {data && game === 'chainle' && <ChainlePlay key={key} puzzle={data.puzzle as Edition} />}
       {data && game === 'mini' && <MiniPlay key={key} puzzle={data.puzzle as MiniPuzzle} dailyDay={day} />}
       {data && game === 'connections' && (
         <ConnectionsPlay

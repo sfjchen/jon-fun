@@ -6,6 +6,14 @@ import type { GameCardGame } from '@/components/GameCard'
 const nb = '/doodles/notebook'
 export const HOME_ITEMS: GameCardGame[] = [
   {
+    id: 'daily-collection',
+    title: 'Daily games',
+    description: 'Play the daily collection and track shared results',
+    icon: `${nb}/daily.svg`,
+    href: '/games/daily-collection',
+    available: true,
+  },
+  {
     id: 'daily-log',
     title: '1 Sentence Everyday',
     description: 'One sentence per day; history, calendar, export',

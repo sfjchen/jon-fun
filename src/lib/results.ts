@@ -11,11 +11,19 @@ import {
   PLAYER_IDENTITY_CHANGED,
   type DeviceKind,
 } from '@/lib/syncIdentity'
-export type GameId = 'bee' | 'connections' | 'mini' | 'krillion' | 'anthropeum' | 'fivefold' | 'orbs' | 'crossword'
+export type GameId =
+  'bee' | 'connections' | 'mini' | 'krillion' | 'anthropeum' | 'fivefold' | 'orbs' | 'crossword' | 'chainle'
 export const GAMES: Record<
   GameId,
   { title: string; url: string; max: number; unit: string; rules: string; lowerIsBetter?: boolean }
 > = {
+  chainle: {
+    title: 'Chainle',
+    url: '/games/chainle',
+    max: 5000,
+    unit: 'points',
+    rules: 'One guess per round. Published answers earn their listed points, up to 5000 across five rounds.',
+  },
   krillion: {
     title: 'Krillion',
     url: '/games/krillion',
@@ -88,6 +96,7 @@ export const GAME_IDS: GameId[] = [
   'mini',
   'bee',
   'crossword',
+  'chainle',
   'orbs',
   'krillion',
   'anthropeum',
