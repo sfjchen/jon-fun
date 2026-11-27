@@ -169,6 +169,8 @@ export function resultLabel(r: Result): string {
     if (r.score === 4 && time) return r.stats.mistakes === undefined ? time : `${time} · ${4 - r.stats.mistakes}♥`
     return [`${r.stats.n ?? r.score}/4`, time].filter(Boolean).join(' · ')
   }
+  // The crossword is solved together, so each player's own number is the words they filled in.
+  if (r.game === 'crossword' && r.score > 0 && r.stats.n !== undefined) return `Solved · ${r.stats.n}`
   // Hard-mode Wordle results carry the same * that Wordle puts on its own share text.
   return formatGameScore(r.game, r.score) + (r.game === 'fivefold' && r.stats.hard ? '*' : '')
 }
@@ -182,6 +184,8 @@ export type Player = { name: string; group: string }
 /** Devices playing under this name can rename and remove players on their board (/api/sync/players). */
 export const ADMIN_NAME = 'jon'
 export const PUBLIC_GROUP = 'public'
+/** The name a visitor with no name plays under in collaborative games. It never shows on a board. */
+export const GUEST = 'Guest'
 /** Collapses a name's spacing and escapes it for a case-insensitive exact match, so "jon" finds "Jon". */
 export function likeName(name: string): string {
   return name.replace(/\s+/g, ' ').replace(/[\\%_]/g, '\\$&')
@@ -203,7 +207,8 @@ export function setPlayer(p: Player): void {
   saveDevicePlayer(p)
   void flushResults()
 }
-type Queued = Result & { player: Player | null }
+/** A result waiting on this device. `shared` marks Spelling Bee words already sent as the guest, still owed to a name. */
+type Queued = Result & { player: Player | null; shared?: true }
 /** Reads the results saved on this device that are not yet synced, under the tidied name they were played as. */
 export function queue(): Queued[] {
   try {
@@ -223,7 +228,6 @@ let flushing = false,
 export async function flushResults(): Promise<boolean> {
   await ensureSyncIdentity()
   const player = getPlayer()
-  if (!player) return true
   // A result queued during a flush gets its own pass right after, instead of waiting for the next timer.
   if (flushing) {
     again = true
@@ -233,7 +237,11 @@ export async function flushResults(): Promise<boolean> {
   try {
     for (const item of queue()) {
       if (item.day > siteDay()) continue
-      const owner = item.player ?? player
+      // With no name yet only Spelling Bee words go out, once, as the public board's guest, so the shared hive gains
+      // them. They stay queued with every other result until a name is saved, then go out under it.
+      const guest = !item.player && !player
+      if (guest && (item.game !== 'bee' || item.shared)) continue
+      const owner = item.player ?? player ?? { name: GUEST, group: PUBLIC_GROUP }
       // A hung request times out, so it cannot hold the queue until the page reloads.
       const response = await fetch('/api/results', {
         method: 'POST',
@@ -259,15 +267,14 @@ export async function flushResults(): Promise<boolean> {
       if (saved && saved !== owner.name && current?.name === owner.name && current.group === owner.group)
         saveDevicePlayer({ ...current, name: saved })
       // Re-read: a newer result may have arrived while this request was in flight.
-      const remaining = queue().filter(
-        (q) =>
-          !(
-            q.game === item.game &&
-            q.day === item.day &&
-            (item.game === 'mini' ? q.score === item.score : q.score <= item.score) &&
-            JSON.stringify(q.player) === JSON.stringify(item.player)
-          ),
-      )
+      const sent = (q: Queued) =>
+        q.game === item.game &&
+        q.day === item.day &&
+        (item.game === 'mini' ? q.score === item.score : q.score <= item.score) &&
+        JSON.stringify(q.player) === JSON.stringify(item.player)
+      const remaining = guest
+        ? queue().map((q) => (sent(q) && response.ok ? { ...q, shared: true as const } : q))
+        : queue().filter((q) => !sent(q))
       localStorage.setItem(QUEUE_KEY, JSON.stringify(remaining))
       sessionStorage.setItem(POSTED_KEY, String(Date.now()))
       window.dispatchEvent(new CustomEvent(RESULTS_CHANGED, { detail: { game: item.game, day: item.day } }))

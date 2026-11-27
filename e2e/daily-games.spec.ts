@@ -226,7 +226,8 @@ test('guest result queues until a name is saved', async ({ page }) => {
   await expect
     .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('sfjc_results_queue_v2') ?? '[]').length))
     .toBe(1)
-  expect(rows).toHaveLength(0)
+  // With no name the words reach the shared hive as the hidden guest, and the result stays queued for a name.
+  expect(rows.every((r) => r.name === 'Guest')).toBe(true)
   await page.goto('/leaderboards')
   await page.getByRole('button', { name: 'Add your name', exact: true }).click()
   await page.getByLabel('Your name', { exact: true }).fill('GuestPlayer')

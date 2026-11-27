@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { GAMES, GAME_IDS, SCORING_VERSION, likeName, type GameId } from '@/lib/results'
+import { GAMES, GAME_IDS, GUEST, SCORING_VERSION, likeName, type GameId } from '@/lib/results'
 import { score as beeScore } from '@/lib/spelling-bee'
 import { firstDay, isNytGame, siteDay, validDay } from '@/lib/daily'
 import { rateLimited } from '@/lib/api-guards'
@@ -51,6 +51,9 @@ export async function POST(req: Request) {
   const b = parsed.data
   if (b.today < firstDay(b.game) || b.today > siteDay())
     return NextResponse.json({ error: 'Date out of range' }, { status: 400 })
+  // The guest name only carries shared Spelling Bee words. It has no scores of its own.
+  if (tidyName(b.name) === GUEST && b.game !== 'bee')
+    return NextResponse.json({ error: 'Add a name to save this score' }, { status: 400 })
   if (isNytGame(b.game) && b.stats?.sourceDate && b.stats.sourceDate !== b.today)
     return NextResponse.json({ error: 'Puzzle source date does not match the result date' }, { status: 400 })
   // Every score is recomputed from the game's moves against the day's puzzle, so a hand-made score cannot be posted.
@@ -184,6 +187,7 @@ export async function GET(req: Request) {
       .from('game_results')
       .select('name,game,day,score,stats,scoring_version,device_kind,conflict')
       .eq('group_code', g.data)
+      .neq('name', GUEST)
       .in('game', game ? [game] : GAME_IDS)
     const dated = day ? query.eq('day', day) : query.gte('day', since)
     const { data, error } = await dated

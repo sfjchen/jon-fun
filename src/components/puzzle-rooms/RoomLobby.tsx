@@ -299,6 +299,16 @@ function Lobby({ game, id, day, mini, auto, board: Board }: Props) {
     opened.current = true
     void enter()
   })
+  // A guest who adds a name mid-game shows under it from then on.
+  const seatName = useRef('')
+  useEffect(() => {
+    const next = name.trim()
+    if (!session || !room || !next || seatName.current === next) return
+    const first = !seatName.current
+    seatName.current = next
+    if (!first || !room.players.some((player) => player.name === next))
+      void request(roomApi(room.id), { action: 'join', name: next, game, seat: session.seat }).then(accept, () => {})
+  })
   const back = `${roomPath[game]}?pick=1`
   if ((!lookup && id) || missing)
     return (

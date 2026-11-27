@@ -125,7 +125,11 @@ export async function readRoom(id: string) {
 function apply(row: Row, action: z.infer<typeof roomAction>): Change | null {
   const player = row.players.find((player) => player.seat === action.seat)
   if (action.action === 'join') {
-    if (player) return null
+    // A seat that joins again only takes its new name, as when a guest adds one.
+    if (player)
+      return player.name === action.name
+        ? null
+        : { players: row.players.map((p) => (p === player ? { ...p, name: action.name } : p)) }
     // A new tab takes a new seat, since each seat numbers its own edits. Seats are counted per browser, and a
     // browser's oldest seats are dropped, so rejoining never fills the room.
     const { device } = action
@@ -136,14 +140,14 @@ function apply(row: Row, action: z.infer<typeof roomAction>): Change | null {
     return {
       players: [
         ...row.players.filter((p) => !dropped.includes(p)),
-        // A seat taken after the solve can look at the grid but earns no daily result for it. It keeps the words
-        // of the seats it replaces.
+        // A seat taken after the solve can look at the grid but earns no daily result for it, unless its browser
+        // was already in before the solve. It keeps the words of the seats it replaces.
         {
           name: action.name,
           seat: action.seat,
           seq: 0,
           ...(device && { device }),
-          ...(row.solved && { late: true }),
+          ...(row.solved && !mine.some((p) => !p.late) && { late: true }),
           ...(dropped.some((p) => p.words) && { words: dropped.flatMap((p) => p.words ?? []) }),
         },
       ],
@@ -203,12 +207,15 @@ export async function pruneRooms(): Promise<number> {
 }
 
 /**
- * Tells whether a seat finished the day's full-size crossword in a room, for the results check. A Mini room, another
- * day's puzzle, or a seat that never joined or joined after the solve does not count.
+ * Returns how many words a seat's player filled in a room that finished the day's full-size crossword, for the
+ * results check, or null when the solve does not count: a Mini room, another day's puzzle, or a seat that never
+ * joined or joined after the solve.
  */
-export async function solvedCrossword(id: string, seat: string, day: string): Promise<boolean> {
+export async function solvedCrossword(id: string, seat: string, day: string): Promise<number | null> {
   const row = await loadRoom(id)
-  if (!row?.solved || !row.players.some((player) => player.seat === seat && !player.late)) return false
+  const player = row?.players.find((p) => p.seat === seat && !p.late)
+  if (!row?.solved || !player) return null
   const { solution } = await crosswordForDay(day, false)
-  return row.puzzle.board.date === day && row.puzzle.board.solution.join() === solution.join()
+  if (row.puzzle.board.date !== day || row.puzzle.board.solution.join() !== solution.join()) return null
+  return row.players.filter((p) => p.name === player.name).reduce((sum, p) => sum + (p.words?.length ?? 0), 0)
 }

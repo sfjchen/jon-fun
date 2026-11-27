@@ -131,10 +131,13 @@ export const VERIFIERS: Record<GameId, Verifier> = {
   // be solved, and have the sender's seat in it. Every player in the room earns the same solve.
   crossword: verifier(
     z.object({ room: z.string().refine(validRoomId), seat: z.uuid() }),
-    async (day, { room, seat }) =>
-      (await solvedCrossword(room, seat, day))
-        ? { score: 1, stats: { n: 1, solved: true } }
-        : 'This room has not solved that day’s full-size crossword',
+    async (day, { room, seat }) => {
+      const words = await solvedCrossword(room, seat, day)
+      // The score is the shared solve, and `n` is the number of words this player filled in.
+      return words === null
+        ? 'This room has not solved that day’s full-size crossword'
+        : { score: 1, stats: { n: words, solved: true } }
+    },
   ),
   // Orbs replays old single picks and the current per-puzzle lives.
   headcount: verifier(z.array(z.array(z.number()).min(1).max(4)).length(5), async (day, moves) => {

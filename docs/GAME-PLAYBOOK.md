@@ -90,7 +90,7 @@ Each game's current keys are the `GAME_KEYS` rows, the 1 place they are written 
 
 ## Collaborative games
 
-- 1 shared board per group, day and edition, opened by visiting the page. A visitor with no name joins as Guest.
+- 1 shared board per group, day and edition, opened by visiting the page. A visitor with no name joins the public board as Guest, which helps the board but never shows on a leaderboard.
 - Each player's share is counted and shown (found words in Spelling Bee, words filled in the crossword, where a word goes to the first player to fill its last open square).
 - Everyone who took part before the finish gets the result. Joining after it earns nothing.
 - Progress is saved on the server, merges across a player's devices, and survives a reload.

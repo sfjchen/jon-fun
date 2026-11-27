@@ -115,16 +115,15 @@ function loadFound(id: string): string[] {
 }
 
 /**
- * Fetches the words everyone on this player's board found on a day, or none without a name or a connection.
+ * Fetches the words everyone on this player's board found on a day, or none without a connection. A visitor with
+ * no name yet reads the public board.
  */
 async function remoteFound(day: string): Promise<string[]> {
-  const p = getPlayer()
-  if (!p) return []
   try {
     const r = await fetch('/api/spelling-bee/words', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...p, day }),
+      body: JSON.stringify({ group: getPlayer()?.group ?? PUBLIC_GROUP, day }),
     })
     return r.ok ? ((await r.json()).words as string[]) : []
   } catch {
@@ -381,8 +380,8 @@ export default function SpellingBee() {
   // up a friend's or a phone's words without a reload. The saved list is re-read when the reply lands, so a word typed
   // meanwhile is kept.
   const [name] = useDeviceName()
-  // A named player's daily hive is shared with their board.
-  const together = !isPractice && !!name
+  // The daily hive is shared with the player's board, or the public board before a name is set.
+  const together = !isPractice
   useEffect(() => {
     if (!pz || !key || isPractice) return
     let live = true

@@ -79,7 +79,7 @@ function SharedCrossword({ room, seat, edit, controls }: RoomBoardProps) {
   const daily = puzzle.game === 'crossword' && puzzle.board.title !== MINI_TITLE
   // A solved full-size room is each player's daily result. The server checks the room and this seat before it counts.
   useEffect(() => {
-    if (solved && daily) logResult('crossword', 1, 1, day, { moves: { room: id, seat }, solved: true })
+    if (solved && daily) logResult('crossword', 1, undefined, day, { moves: { room: id, seat }, solved: true })
   }, [solved, daily, day, id, seat])
   if (room.puzzle.game !== 'crossword') return null
   return (

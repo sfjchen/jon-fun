@@ -59,7 +59,7 @@ Adding or changing a game - follow [GAME-PLAYBOOK.md](GAME-PLAYBOOK.md): the ste
 - Orbs - Four themed puzzles open on separate screens. Formats include written clues, two-tap matching, sorting and a short quiz. Each puzzle has three lives, and a puzzle ends when every clue is solved or the lives run out. The first complete daily ranks with one orb per correct clue, up to 12. An archive round saves only its own mark.
 - SET (`/games/set`) - a generated daily board of 12 cards with exactly 6 sets, not the original's board. Not on the leaderboard. `/games/triples` is the full 81-card game with PIN rooms, where each seat holds a private credential and claims use version checks.
 - All 8 games (`GAME_IDS`) count the same toward overall wins, streaks, Daily drawer progress and nudges, and all show at once in the drawer and score grids.
-- Crossword - the full-size daily counts as solved for every player in a room once its grid is correct. The result carries the room and the player's seat, and the server checks both against the day's puzzle. Mini-edition rooms do not count.
+- Crossword - the full-size daily counts as solved for every player in a room once its grid is correct. The result carries the room and the player's seat, and the server checks both against the day's puzzle and adds the player's word count, so boards show `Solved · 12`. Mini-edition rooms do not count.
 - Boards - 1 page: the day's score grid (its game icons filter to 1 game), standings by wins, and Your stats. Equal results share a rank. Rows stored under an older `SCORING_VERSION`, or with a source date that differs from their day, stay off the current boards.
 
 ## Verified scores
@@ -74,6 +74,7 @@ Adding or changing a game - follow [GAME-PLAYBOOK.md](GAME-PLAYBOOK.md): the ste
 - Games share the device ID of Daily Log and Notes ([SYNC.md](SYNC.md)). The name is stored locally and on the server, and comes back with the device cookie if local storage is cleared.
 - A device playing as `Jon` is an admin of its board: Standings shows rename and remove beside each name (`POST /api/sync/players`, which checks the device's saved name from the sync cookie). A rename moves results and nudge subscriptions, and the renamed player's devices adopt the new name on their next visit (`sync_devices.player_was`). A remove deletes the player's results on that board.
 - Friend nudges are web push (`src/lib/push.ts`, `/api/push/*`, handler in `public/e-reader-sw.js`). A subscription is 1 browser filed under a board name, and a nudge goes to every subscription under the friend's name, so all their devices get it. A browser that turns nudges on gets 1 confirming notification. iPhones need the site on the Home Screen. A desktop browser must be running (no tab needed), and a closed one gets the nudge when it next starts, within 12 hours.
+- A visitor with no name sees a prompt for one at the top of every page that plays or syncs under it (`NamePrompt`, placed by `PageShell`). It never blocks the page, and "Not now" hides it for the visit. Without a name, collaborative games work as a guest and every other result waits on the device until a name is set.
 - Names are unique per board regardless of case, backed by a unique index on the lowercased name. Editing a name does not rewrite earlier results.
 
 ## Scripts and tests
@@ -88,7 +89,8 @@ Adding or changing a game - follow [GAME-PLAYBOOK.md](GAME-PLAYBOOK.md): the ste
 
 Collaborative games are shared with everyone on a player's board, with no room to create or invite to send.
 
-- Spelling Bee - a named player's daily found list is the whole board's: `/api/spelling-bee/words` merges every
+- Spelling Bee - a player's daily found list is the whole board's, and a visitor with no name shares the public
+  board's list (their words are saved under the hidden name `Guest`, which never shows on a board): `/api/spelling-bee/words` merges every
   player's saved words for the day and the page pulls them on load and every 15 seconds. A player's result is saved
   once they add a word of their own, and then carries the shared list.
 - Crossword - `/games/crossword` opens the board's 1 shared grid for the day (a room whose id is derived from the

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useSyncExternalStore } from 'react'
 import { DailyHeader } from '@/components/daily/DailyDrawer'
 import { HomeLink } from '@/components/HomeLink'
+import NamePrompt from '@/components/NamePrompt'
 import { startStateSync } from '@/lib/stateSync'
 import { ensureSyncIdentity } from '@/lib/syncIdentity'
 
@@ -78,6 +79,12 @@ export function PageShell({ children }: PageShellProps) {
                   : pathname === '/games/orbs' || pathname?.startsWith('/games/orbs/')
                     ? 'orbs'
                     : undefined
+  /** Pages that play or sync under the player's name ask a visitor with none for it. */
+  const usesName =
+    ownDailyHeader ||
+    ['/games/poker', '/games/24', '/games/quip-clash', '/games/fib-it', '/games/enough-about-you'].some((route) =>
+      pathname?.startsWith(route),
+    )
   const notesPage = isNotesPage(pathname ?? '')
   const isMobile = useSyncExternalStore(
     (cb) => {
@@ -198,6 +205,7 @@ export function PageShell({ children }: PageShellProps) {
                 } ${isNotebook ? 'min-h-[calc(100vh-6rem)]' : ''}`
         }
       >
+        {usesName && <NamePrompt />}
         {children}
       </main>
     </div>
