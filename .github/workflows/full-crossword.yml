@@ -46,17 +46,19 @@ jobs:
               latest = json.loads(Path('data/crossword/full-size.json').read_text())[-1]['date']
           day = date.fromisoformat(latest)
           today = datetime.now(ZoneInfo('America/Los_Angeles')).date()
-          refresh = os.environ.get('FORCE') == 'true' or (day - today).days < 45
+          bulk = os.environ.get('FORCE') == 'true' or (day - today).days < 45
           print(f'Editions scheduled through {day}.')
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-              print(f'refresh={str(refresh).lower()}', file=output)
+              print(f'candidates={250 if bulk else 70}', file=output)
+              print(f'editions={105 if bulk else 7}', file=output)
               print(f'seed={(day + timedelta(days=1)):%Y%m%d}', file=output)
           PY
 
       - name: Generate more editions
-        if: steps.schedule.outputs.refresh == 'true'
         env:
           SEED: ${{ steps.schedule.outputs.seed }}
+          CANDIDATES: ${{ steps.schedule.outputs.candidates }}
+          EDITIONS: ${{ steps.schedule.outputs.editions }}
         run: |
           work="$RUNNER_TEMP/crossword-build"
           mkdir -p "$work"
@@ -70,13 +72,12 @@ jobs:
           python3 scripts/build-full-crosswords.py "$work/wordnet.zip" "$engine/data/xwordlist.dict" \
             "$work/wordlist.dict" --bank-output "$work/bank.txt"
           "$engine/target/release/library" --wordlist "$work/wordlist.dict" --bank "$work/bank.txt" \
-            --bank-fraction 0.9 --blocks 44 --candidates 250 --time 1.5 --keep-mean 76 --max-iffy 3 \
-            --top 105 --per-shape 7 --min-words 70 --seed "$SEED" --workers "$(nproc)" --out "$work/library.json"
+            --bank-fraction 0.9 --blocks 44 --candidates "$CANDIDATES" --time 1.5 --keep-mean 76 --max-iffy 3 \
+            --top "$CANDIDATES" --per-shape 7 --min-words 70 --seed "$SEED" --workers "$(nproc)" --out "$work/library.json"
           python3 scripts/build-full-crosswords.py "$work/wordnet.zip" "$engine/data/xwordlist.dict" \
-            "$work/wordlist.dict" --library "$work/library.json" --published-dir "$RUNNER_TEMP/crossword-schedule/editions"
+            "$work/wordlist.dict" --library "$work/library.json" --published-dir "$RUNNER_TEMP/crossword-schedule/editions" --limit "$EDITIONS"
 
       - name: Publish the puzzle data
-        if: steps.schedule.outputs.refresh == 'true'
         env:
           SCHEDULE_TOKEN: ${{ github.token }}
         working-directory: ${{ runner.temp }}/crossword-schedule

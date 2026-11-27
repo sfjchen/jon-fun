@@ -102,9 +102,9 @@ A browser that rejoins from new tabs counts as 1 of the
 100 players and keeps its 3 newest seats. The daily cron deletes rooms left untouched for 30 days.
 
 Crossword Together opens the original 15×15 daily by default. It uses the bundled schedule through
-March 9, 2027. Later editions are stored by date on the `crossword-schedule` branch. A weekly GitHub
-Actions job adds newly generated boards when fewer than 45 days remain. It also supports a manual
-run with `force` enabled. If the generated edition is unavailable, the site publishes an encore
+March 9, 2027. Later editions are stored by date on the `crossword-schedule` branch. GitHub
+Actions generates seven more boards every week and runs a larger batch when fewer than 45 days
+remain. A manual run with `force` enabled generates a larger batch on demand. If the generated edition is unavailable, the site publishes an encore
 from the bundled archive. Supabase pins the first board for a date so the daily and its archive
 stay identical, including on an encore day. The date picker can reopen older editions. **Switch to
 Mini** and invitations started on the Mini page use the existing NYT Mini source.
@@ -115,9 +115,8 @@ and [Crossword Nexus wordlist](https://github.com/Crossword-Nexus/collaborative-
 To extend the dated schedule, use the WNDB download of Open English WordNet 2025+ and the
 engine's `fill-engine/data/xwordlist.dict`. Run `scripts/build-full-crosswords.py` once to prepare
 a WordNet-matched wordlist, fill new grids with xfill's `library --wordlist` option, then rerun the
-script with `--library LIBRARY --out data/crossword/full-size.json --start FIRST_DATE`. Use the
-schedule's existing first date and a different xfill seed for each batch. Published dates keep
-their original puzzles.
+script with `--library LIBRARY --published-dir PATH_TO_SCHEDULE_BRANCH/editions`. Use a different
+xfill seed for each batch. The script appends independently dated files and checks for repeated grids.
 
 An authorized provider can be configured with the server-only `CROSSWORD_DAILY_FEED_URL`, an
 optional `CROSSWORD_DAILY_FEED_TOKEN` bearer token, and `CROSSWORD_DAILY_FEED_FIRST_DAY` for its

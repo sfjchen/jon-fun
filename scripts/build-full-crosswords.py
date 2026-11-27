@@ -92,7 +92,7 @@ def write_template_bank(path):
     path.write_text(('\n'.join(shapes) + '\n') * 10)
 
 
-def publish_editions(grids, definitions, directory):
+def publish_editions(grids, definitions, directory, limit):
     directory.mkdir(parents=True, exist_ok=True)
     schedule = bundled_editions() + [
         json.loads(path.read_text()) for path in sorted(directory.glob('????-??-??.json'))
@@ -112,6 +112,8 @@ def publish_editions(grids, definitions, directory):
         day += timedelta(days=1)
         seen.add(fingerprint)
         added += 1
+        if added == limit:
+            break
     if added == 0:
         raise ValueError('No distinct new puzzles')
     print(f'Published {added} editions through {day}')
@@ -127,7 +129,10 @@ def main():
     parser.add_argument('--start', type=date.fromisoformat)
     parser.add_argument('--bank-output', type=Path, help='Write reusable grid templates derived from the bundled schedule')
     parser.add_argument('--published-dir', type=Path, help='Append individual dated editions to this directory')
+    parser.add_argument('--limit', type=int, help='Maximum number of new dated editions to publish')
     args = parser.parse_args()
+    if args.limit is not None and args.limit < 1:
+        parser.error('--limit must be positive')
     definitions = read_definitions(args.wordnet)
     filtered = [line for line in args.wordlist.read_text().splitlines() if line.split(';', 1)[0].upper() in definitions]
     args.filtered.write_text('\n'.join(filtered) + '\n')
@@ -138,7 +143,7 @@ def main():
         return
     grids = json.loads(args.library.read_text())['grids']
     if args.published_dir:
-        publish_editions(grids, definitions, args.published_dir)
+        publish_editions(grids, definitions, args.published_dir, args.limit)
         return
     if not args.out or not args.start:
         parser.error('--library requires --published-dir or both --out and --start')
