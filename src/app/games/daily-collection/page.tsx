@@ -33,6 +33,10 @@ const titles = [
   ['Worldle', 'https://worldle.teuteuf.fr'],
   ['MapTap', 'https://maptap.gg'],
   ['Contexto', 'https://contexto.me'],
+  ['Outline', '/games/outline'],
+  ['Border hop', '/games/hop'],
+  ['Pin drop', '/games/pin'],
+  ['Ballpark', '/games/ballpark'],
 ] as const
 
 /** The list in its 2 groups, each with a heading and a line on how its results are kept. */

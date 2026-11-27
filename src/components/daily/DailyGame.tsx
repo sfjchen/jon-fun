@@ -22,6 +22,7 @@ import type { KrillionPuzzle } from '@/components/daily/KrillionPlay'
 import type { Party } from '@/lib/headcount'
 import type { Edition } from '@/lib/daily/chainle'
 import type { FivefoldPuzzle } from '@/components/daily/FivefoldPlay'
+import { GEO, type BallparkPuzzle, type HopPuzzle, type OutlinePuzzle, type PinPuzzle } from '@/lib/geo-games'
 
 /** Each game page downloads only its own player, so Wordle does not carry the Anthropeum map or the Mini grid. */
 const LOAD = {
@@ -32,6 +33,10 @@ const LOAD = {
   anthropeum: () => import('@/components/daily/AnthropeumPlay'),
   krillion: () => import('@/components/daily/KrillionPlay'),
   fivefold: () => import('@/components/daily/FivefoldPlay'),
+  outline: () => import('@/components/geo/OutlinePlay'),
+  hop: () => import('@/components/geo/HopPlay'),
+  pin: () => import('@/components/geo/PinPlay'),
+  ballpark: () => import('@/components/geo/BallparkPlay'),
 }
 const MiniPlay = dynamic(LOAD.mini)
 const ConnectionsPlay = dynamic(LOAD.connections)
@@ -40,6 +45,10 @@ const KrillionPlay = dynamic(LOAD.krillion)
 const HeadcountPlay = dynamic(LOAD.headcount)
 const ChainlePlay = dynamic(LOAD.chainle)
 const FivefoldPlay = dynamic(LOAD.fivefold)
+const OutlinePlay = dynamic(LOAD.outline)
+const HopPlay = dynamic(LOAD.hop)
+const PinPlay = dynamic(LOAD.pin)
+const BallparkPlay = dynamic(LOAD.ballpark)
 
 /** How each game plays, in the order a new player needs it. */
 const HOW: Record<DailyGameId, string[]> = {
@@ -72,6 +81,24 @@ const HOW: Record<DailyGameId, string[]> = {
     '10 museum artifacts. Pin where each was made and pick a 250-year period.',
     'Each artifact scores up to 5,000 for place and 5,000 for time.',
   ],
+  outline: [
+    'Name the country whose shape is shown. You have 6 guesses.',
+    'A miss shows how far its centre is from the answer’s, and an arrow pointing the way.',
+    'Type a few letters and pick from the list. A name that only 1 country starts with is enough.',
+  ],
+  hop: [
+    'Name countries that link the 2 ends through shared land borders, in any order.',
+    'The game ends when your countries form an unbroken route, or the guesses run out.',
+    'Green is on a shortest route, yellow adds up to 2 countries, red is further off.',
+  ],
+  pin: [
+    'Find 5 cities. Tap the map to place your pin, then lock it in.',
+    'The map names countries but no cities. Closer pins score more, up to 1,000 each.',
+  ],
+  ballpark: [
+    '3 questions with a number for an answer. Type your best estimate.',
+    'You can write 1,200, 3.5 million or 2b. Being 2 times off still scores 70 of 100.',
+  ],
 }
 
 /**
@@ -97,6 +124,7 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
         ))}
       </ul>
       {isNytGame(game) && <p>Original NYT puzzle for the selected publication date.</p>}
+      {game in GEO && <p>Made on sfjc.dev from Natural Earth map data, which is in the public domain.</p>}
       <p style={{ color: 'var(--ink-muted)' }}>Scoring: {GAMES[game].rules}</p>
       <p style={{ color: 'var(--ink-muted)' }}>Everyone gets the same puzzle each day (Pacific time).</p>
       {isNytGame(game) && (
@@ -168,6 +196,10 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
       {data && game === 'anthropeum' && <AnthropeumPlay key={key} puzzle={data.puzzle as ArtifactDay} dailyDay={day} />}
       {data && game === 'fivefold' && <FivefoldPlay key={key} puzzle={data.puzzle as FivefoldPuzzle} dailyDay={day} />}
       {data && game === 'krillion' && <KrillionPlay key={key} puzzle={data.puzzle as KrillionPuzzle} dailyDay={day} />}
+      {data && game === 'outline' && <OutlinePlay key={key} puzzle={data.puzzle as OutlinePuzzle} />}
+      {data && game === 'hop' && <HopPlay key={key} puzzle={data.puzzle as HopPuzzle} />}
+      {data && game === 'pin' && <PinPlay key={key} puzzle={data.puzzle as PinPuzzle} />}
+      {data && game === 'ballpark' && <BallparkPlay key={key} puzzle={data.puzzle as BallparkPuzzle} />}
     </div>
   )
 }

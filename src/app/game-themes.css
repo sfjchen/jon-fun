@@ -10,6 +10,7 @@
   --g-orbs: #344986;
   --g-headcount: #b45309;
   --g-chainle: #7c3aed;
+  --g-geo: #15803d;
   --game-color: #111318;
   --ink-bg: #fff;
   --ink-paper: #f5f6f8;
@@ -70,6 +71,9 @@
 }
 [data-game-theme='chainle'] {
   --game-color: var(--g-chainle);
+}
+[data-game-theme='geo'] {
+  --game-color: var(--g-geo);
 }
 [data-game-theme='fivefold'] {
   --game-color: var(--g-fivefold);

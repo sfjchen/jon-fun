@@ -9,6 +9,10 @@ import { ensureSyncIdentity, getEffectiveUserId, SYNC_IDENTITY_CHANGED } from '@
 const PREFIXES = [
   'headcount:v1:',
   'chainle:v1:',
+  'outline:v1:',
+  'hop:v1:',
+  'pin:v1:',
+  'ballpark:v1:',
   'daily-collection:v1:',
   'fivefold:nyt-v2:',
   'krillion:v3:',

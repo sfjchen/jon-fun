@@ -18,6 +18,10 @@ In `GAME_IDS` order, which is the order of the Daily drawer, score grids and boa
 | Orbs                 | dailyorbs.com, dated edition      | 2026-11-26 | of 12 orbs    | most orbs               | no                    |
 | Krillion             | the original's same-date prompts  | 2026-11-01 | of 700        | most points             | no                    |
 | Anthropeum           | the original's artifacts, per day | 2026-11-01 | of 100,000    | most points             | no                    |
+| Outline              | made here, Natural Earth data     | 2026-11-01 | guesses of 6  | fewest guesses          | no                    |
+| Border hop (`hop`)   | made here, Natural Earth data     | 2026-11-01 | of 100        | most points             | no                    |
+| Pin drop (`pin`)     | made here, Natural Earth data     | 2026-11-01 | of 5,000      | most points             | no                    |
+| Ballpark             | made here, Natural Earth data     | 2026-11-01 | of 300        | most points             | no                    |
 
 Every ranked game plays its publisher's puzzle except the Crossword, which has no publisher feed yet. Also here but off the boards - a daily SET (`/games/set`), and practice rounds from the sfjc.dev Orbs bank (`/games/orbs/archive`).
 
@@ -55,6 +59,7 @@ Every ranked game plays its publisher's puzzle except the Crossword, which has n
 - The publisher’s separate archive starts 2026-04-17. The date picker opens the original edition. `python3 scripts/sync-orbs-publisher.py DIRECTORY` saves the native puzzle records for offline use and resumes by skipping existing snapshots. Chainle’s historical editions can be refreshed with `python3 scripts/sync-chainle.py --archive`.
 - The practice bank is `data/orbs/<year>.json`, starting 2026-11-21. After adding a day, regenerate the date-only archive index with `npx tsx scripts/build-orbs-index.ts`. Use `--check` to verify the index after editing the bank.
 - `/games/orbs/archive` groups the practice rounds by category through yesterday, and a date can open its full 4-puzzle practice edition. Progress is per date, category and browser. `/games/orbs/local`, the old address of the bank's daily, redirects to `/games/orbs`.
+- Outline, Border hop, Pin drop and Ballpark are made on sfjc.dev, not taken from a publisher. `src/lib/geo-games.ts` draws each day's puzzle from the date out of `data/geo/world.json` (193 countries with outline, label point, population, area and land neighbours, and 187 cities), so every date has a puzzle and nothing is fetched or stored. `python3 scripts/build-geo.py COUNTRIES.geojson PLACES.geojson` rebuilds the file from Natural Earth's public-domain `ne_50m_admin_0_countries` and `ne_110m_populated_places_simple`.
 - `/games/archives` browses all 4 NYT games by date and offers each year's puzzles and word lists.
 
 ## Cron (`vercel.json`)
@@ -75,7 +80,11 @@ Every ranked game plays its publisher's puzzle except the Crossword, which has n
 - Anthropeum - 10 artifacts, a map pin and a 250-year period each (125-year steps, 3000 BCE to 1750 CE). Up to 5,000 points for place (distance to the nearest polygon edge) and 5,000 for time, 100,000 overall. 3 free hints per game. The results page shows the original's score histogram and estimated placement.
 - Orbs - the publisher's 4 puzzles open on separate screens: matching, sorting, written clues, open answers and long lists. A round has 3 lives and ends when every answer is found or the lives run out. A long list has no lives and ends when full or on End round. Each round earns up to 3 orbs at the publisher's thresholds, and the first finished day ranks, up to 12.
 - SET (`/games/set`) - a generated daily board of 12 cards with exactly 6 sets, not the original's board. Not on the leaderboard. `/games/triples` is the full 81-card game with PIN rooms, where each seat holds a private credential and claims use version checks.
-- All 8 games (`GAME_IDS`) count the same toward overall wins, streaks, Daily drawer progress and nudges, and all show at once in the drawer and score grids.
+- Outline - a country's shape and 6 guesses. A miss shows the distance between the 2 countries' label points and a compass arrow. Scored like Wordle, 7 minus the guesses.
+- Border hop - 2 countries that are 2 to 4 countries apart by land. Countries are named in any order until they link the ends, within the shortest count plus 5. 100 for a shortest route, 15 off per extra country, 0 with no route. Each guess is marked by the detour it adds.
+- Pin drop - 5 cities on the Anthropeum map with city names hidden. A pin scores 1000 × e^(-km / 1000).
+- Ballpark - 3 estimates (a population, an area, a city-to-city distance). Each scores 100 × (1 - |log10(guess / answer)|), floored at 0.
+- All games (`GAME_IDS`) count the same toward overall wins, streaks, Daily drawer progress and nudges, and all show at once in the drawer and score grids.
 - Crossword - the full-size daily counts as solved for every player in a room once its grid is correct. The result carries the room and the player's seat, and the server checks both against the day's puzzle and adds the player's word count, so boards show `Solved · 12`. Mini-edition rooms do not count.
 - Boards - 1 page: the day's score grid (its game icons filter to 1 game), standings by wins, and Your stats. Equal results share a rank. Rows stored under an older `SCORING_VERSION`, or with a source date that differs from their day, stay off the current boards.
 
@@ -84,6 +93,7 @@ Every ranked game plays its publisher's puzzle except the Crossword, which has n
 - Every result sends its moves (`stats.moves`). `/api/results` replays them against the day's puzzle and stores its own score, so a hand-made score cannot be posted.
 - Wordle - guesses, word list, hard mode. Bee - found words. Connections - guesses and give-up. Anthropeum - pins and periods. Krillion - each round's accepted answer, judged again. Mini - the solved grid. Orbs - each round's attempts, replayed against the publisher's answers, lives and orb thresholds.
 - Solve times (Mini, Connections) and Krillion's round clock cannot be replayed and stay as sent. Mini and Connections times under a floor no person can reach (0.15 s per Mini cell, 1 s per Connections guess) are rejected.
+- Outline, Border hop, Pin drop and Ballpark - the guesses, pins or estimates, replayed against the puzzle drawn again from the date.
 - Checked moves are kept in a `moves` column that score reads never return, so boards never reveal answers. Only `/api/results/run` reads it, to rebuild a player's finished game. Results saved before 2026-11-21 have no moves and show their score only, until the device that played them opens the day again.
 
 ## Players
@@ -171,3 +181,5 @@ Aditri's daily games list (2026-11-26). Done means playable here with a ranked s
 | Plain                     | playplain.app                        | To do: outside link in the Daily collection         |
 | Daily Roll                | playdailyroll.com                    | To do: outside link in the Daily collection         |
 | Dartle, Kegillion, Bandle | dartle.net, kegillion.io, bandle.app | Not wanted                                          |
+
+Fermi, Worldle, Travle and MapTap stay outside links. Ballpark, Outline, Border hop and Pin drop are sfjc.dev's own games of the same kinds, with its own puzzles.

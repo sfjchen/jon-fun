@@ -23,6 +23,8 @@ import { publisherOrbsForDay } from './publisher-orbs'
 import { publisherOrbsPlayable } from './publisher-orbs-play'
 import { ORB_COLORS, orbsDone, orbsOrbCount, PUBLISHER_ORBS_RANKED_FROM, replayOrbs } from '../publisher-orbs'
 import type { MiniPuzzle } from '@/lib/mini'
+import { GEO, type GeoGame, type Run } from '@/lib/geo-games'
+import { geoPuzzle } from './geo'
 import { solvedCrossword } from '@/lib/puzzle-rooms/server'
 import { validRoomId } from '@/lib/puzzle-rooms/types'
 
@@ -38,6 +40,18 @@ type Verifier = { moves: z.ZodType; check: (day: string, moves: never, sent: Sen
 function verifier<T>(moves: z.ZodType<T>, check: (day: string, moves: T, sent: Sent) => Promise<Replayed>): Verifier {
   return { moves, check: check as Verifier['check'] }
 }
+
+/**
+ * Checks a geography daily by drawing the day's puzzle again and replaying the moves, which must reach the end.
+ */
+function geoVerifier<T>(game: GeoGame, moves: z.ZodType<T[]>): Verifier {
+  return verifier(moves, async (day, sent) => {
+    const run = (GEO[game].run as (puzzle: unknown, moves: T[]) => Run | null)(geoPuzzle(game, day), sent)
+    if (!run?.done) return 'Invalid or unfinished run'
+    return { score: run.score, stats: { n: sent.length, solved: run.solved } }
+  })
+}
+const countryIds = z.array(z.string().regex(/^[A-Z]{3}$/)).max(12)
 
 let words: Promise<Set<string>> | null = null
 
@@ -179,4 +193,8 @@ export const VERIFIERS: Record<GameId, Verifier> = {
     const accepted = rounds.filter((r) => r?.accepted)
     return { score: accepted.reduce((t, r) => t + r!.score, 0), stats: { n: accepted.length, solved: true, max: 700 } }
   }),
+  outline: geoVerifier('outline', countryIds),
+  hop: geoVerifier('hop', countryIds),
+  pin: geoVerifier('pin', z.array(z.object({ lat: z.number().min(-90).max(90), lon: z.number() })).max(5)),
+  ballpark: geoVerifier('ballpark', z.array(z.number().positive()).max(3)),
 }

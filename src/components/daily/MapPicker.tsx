@@ -104,11 +104,14 @@ export default function MapPicker({
   onChange,
   target,
   region,
+  hidePlaces,
 }: {
   pin: Pin | null
   onChange: (p: Pin) => void
   target?: Pin | undefined
   region?: number[][][][] | undefined
+  /** Leaves city names off the map, for a game that asks where a city is. */
+  hidePlaces?: boolean
 }) {
   const box = useRef<HTMLDivElement>(null),
     mapRef = useRef<LT.Map | null>(null),
@@ -175,6 +178,7 @@ export default function MapPicker({
           size = map.getSize(),
           placed: number[][] = []
         for (const l of data[1]) {
+          if (hidePlaces && (l.cls === 'place' || l.cls === 'capital')) continue
           if (l.z - LABEL_BIAS > z || (l.m !== undefined && z > l.m + 1)) continue
           if (placed.length >= (size.x * size.y) / 7000) break
           for (const off of OFFSETS) {
@@ -453,7 +457,14 @@ export default function MapPicker({
         </p>
       )}
       <p className="text-xs text-[var(--ink-muted)]">
-        Red: your guess{region ? ' · green: historical origin region' : target ? ' · green: origin' : ''}
+        Red: your guess
+        {region
+          ? ' · green: historical origin region'
+          : target
+            ? hidePlaces
+              ? ' · green: the city'
+              : ' · green: origin'
+            : ''}
       </p>
     </div>
   )

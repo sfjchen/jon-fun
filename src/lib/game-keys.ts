@@ -63,6 +63,26 @@ export const GAME_KEYS: Record<GameId, KeyRow[]> = {
     ['← → ↑ ↓', 'Adjust a slider or choose an option'],
     ['Enter Space', 'Activate the focused button'],
   ],
+  outline: [
+    ['Enter', 'Submit the country'],
+    ['↑ ↓', 'Walk the suggestions'],
+    ['S', 'Copy the result'],
+  ],
+  hop: [
+    ['Enter', 'Submit the country'],
+    ['↑ ↓', 'Walk the suggestions'],
+    ['S', 'Copy the result'],
+  ],
+  pin: [
+    ['Enter', 'Lock in the pin, next city'],
+    ['← ↑ → ↓', 'Pan the map (click it first)'],
+    ['+ - 0', 'Map: zoom in, zoom out, reset'],
+    ['S', 'Copy the result'],
+  ],
+  ballpark: [
+    ['Enter', 'Lock in the estimate'],
+    ['S', 'Copy the result'],
+  ],
   chainle: [
     ['Enter', 'Submit the word'],
     ['S', 'Copy the result'],
