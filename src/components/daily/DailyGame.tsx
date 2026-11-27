@@ -19,12 +19,14 @@ import { useSavedRun, type DailyGameId } from '@/lib/daily/saved-run'
 import type { ConnectionsPuzzle } from '@/lib/connections'
 import type { ArtifactDay } from '@/components/daily/AnthropeumPlay'
 import type { KrillionPuzzle } from '@/components/daily/KrillionPlay'
+import type { Party } from '@/lib/headcount'
 import type { Edition } from '@/lib/daily/chainle'
 import type { OrbsPuzzle } from '@/lib/orbs'
 import type { FivefoldPuzzle } from '@/components/daily/FivefoldPlay'
 
 /** Each game page downloads only its own player, so Wordle does not carry the Anthropeum map or the Mini grid. */
 const LOAD = {
+  headcount: () => import('@/app/games/headcount/play'),
   chainle: () => import('@/app/games/chainle/play'),
   mini: () => import('@/components/mini/MiniPlay'),
   connections: () => import('@/components/connections/ConnectionsPlay'),
@@ -37,6 +39,7 @@ const MiniPlay = dynamic(LOAD.mini)
 const ConnectionsPlay = dynamic(LOAD.connections)
 const AnthropeumPlay = dynamic(LOAD.anthropeum)
 const KrillionPlay = dynamic(LOAD.krillion)
+const HeadcountPlay = dynamic(LOAD.headcount)
 const ChainlePlay = dynamic(LOAD.chainle)
 const OrbsPlay = dynamic(LOAD.orbs)
 const FivefoldPlay = dynamic(LOAD.fivefold)
@@ -64,6 +67,7 @@ const HOW: Record<DailyGameId, string[]> = {
     'A green tile is in the right spot. A yellow tile is in the word but in another spot. A gray tile is not in the word.',
     'Hard mode (optional, stays on until you turn it off, starts before a first guess): green letters stay put and yellow letters must be reused.',
   ],
+  headcount: ['Predict the crowd’s split, ranking, median, underdog and pie. Lock in one guess per room.'],
   chainle: [
     'One word per round. Find the connection between the clues in the first four rounds and the closest word in round five.',
   ],
@@ -123,7 +127,7 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
         title={game === 'orbs' ? 'Ranked Orbs' : GAMES[game].title}
         path={GAMES[game].url}
         day={day}
-        publishedOnly={isNytGame(game) || game === 'chainle'}
+        publishedOnly={isNytGame(game) || game === 'chainle' || game === 'headcount'}
         minDay={firstDay(game)}
         info={info}
         keys={GAME_KEYS[game]}
@@ -171,6 +175,7 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
           </p>
         </div>
       )}
+      {data && game === 'headcount' && <HeadcountPlay key={key} puzzle={data.puzzle as Party} />}
       {data && game === 'chainle' && <ChainlePlay key={key} puzzle={data.puzzle as Edition} />}
       {data && game === 'mini' && <MiniPlay key={key} puzzle={data.puzzle as MiniPuzzle} dailyDay={day} />}
       {data && game === 'connections' && (

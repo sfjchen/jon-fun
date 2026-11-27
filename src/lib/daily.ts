@@ -33,6 +33,7 @@ export function isNytGame(game: string): game is NytGame {
  * Returns the first day a daily game can be played.
  */
 export function firstDay(game: string): string {
+  if (game === 'headcount') return '2026-11-26'
   if (game === 'chainle') return '2026-08-20'
   if (game === 'orbs') return ORBS_FIRST_DAY
   if (game === 'crossword') return CROSSWORD_FIRST_DAY

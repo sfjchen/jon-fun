@@ -45,6 +45,7 @@ export function PageShell({ children }: PageShellProps) {
     '/games/triples',
     '/games/mini',
     '/games/crossword',
+    '/games/headcount',
     '/games/chainle',
     '/games/krillion',
     '/games/anthropeum',

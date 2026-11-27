@@ -7,6 +7,7 @@
 import { ensureSyncIdentity, getEffectiveUserId, SYNC_IDENTITY_CHANGED } from '@/lib/syncIdentity'
 
 const PREFIXES = [
+  'headcount:v1:',
   'chainle:v1:',
   'daily-collection:v1:',
   'fivefold:nyt-v2:',

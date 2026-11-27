@@ -27,6 +27,7 @@ const PREFIX: Record<DailyGameId, string> = {
   mini: 'mini:v3',
   anthropeum: 'anthropeum:v2',
   orbs: 'orbs:v1',
+  headcount: 'headcount:v1',
   chainle: 'chainle:v1',
 }
 
@@ -50,6 +51,10 @@ type Local = { key: string; done: (v: never) => boolean; fill: (s: SavedResult) 
  * Describes each game's stored run for a day's puzzle, in the shape its player component restores.
  */
 const LOCAL: { [G in DailyGameId]: (day: string, puzzle: never) => Local } = {
+  headcount: (day) => {
+    const key = runKey('headcount', day, day)
+    return { key, done: (v: unknown) => Array.isArray(v) && v.length === 5, fill: ({ moves }) => ({ [key]: moves }) }
+  },
   chainle: (day) => {
     const key = runKey('chainle', day, day)
     return { key, done: (v: unknown) => Array.isArray(v) && v.length === 5, fill: ({ moves }) => ({ [key]: moves }) }

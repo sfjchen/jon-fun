@@ -12,11 +12,27 @@ import {
   type DeviceKind,
 } from '@/lib/syncIdentity'
 export type GameId =
-  'bee' | 'connections' | 'mini' | 'krillion' | 'anthropeum' | 'fivefold' | 'orbs' | 'crossword' | 'chainle'
+  | 'bee'
+  | 'connections'
+  | 'mini'
+  | 'krillion'
+  | 'anthropeum'
+  | 'fivefold'
+  | 'orbs'
+  | 'crossword'
+  | 'chainle'
+  | 'headcount'
 export const GAMES: Record<
   GameId,
   { title: string; url: string; max: number; unit: string; rules: string; lowerIsBetter?: boolean }
 > = {
+  headcount: {
+    title: 'Headcount',
+    url: '/games/headcount',
+    max: 100,
+    unit: 'points',
+    rules: 'Predict the party in five rooms. Each room is worth 20 points. Your first finished night ranks.',
+  },
   chainle: {
     title: 'Chainle',
     url: '/games/chainle',
@@ -96,6 +112,7 @@ export const GAME_IDS: GameId[] = [
   'mini',
   'bee',
   'crossword',
+  'headcount',
   'chainle',
   'orbs',
   'krillion',

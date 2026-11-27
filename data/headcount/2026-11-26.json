@@ -1,0 +1,75 @@
+{
+  "date": "2026-11-26",
+  "number": 37,
+  "questions": [
+    {
+      "type": "split",
+      "text": "Would you go Black Friday shopping in a store?",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "crowd": [
+        44,
+        56
+      ],
+      "realCount": 2299
+    },
+    {
+      "type": "ranking",
+      "text": "Worst thing a houseguest can do?",
+      "options": [
+        "Stay too long",
+        "Leave a mess",
+        "Use your things without asking",
+        "Show up late"
+      ],
+      "crowd": [
+        22,
+        39,
+        37,
+        2
+      ],
+      "realCount": 2306
+    },
+    {
+      "type": "typical",
+      "text": "How many days do Thanksgiving leftovers last at your place?",
+      "median": 3,
+      "unit": "days",
+      "realCount": 2301
+    },
+    {
+      "type": "underdog",
+      "text": "Someone waves, you wave back, and they were waving at the person behind you. You...",
+      "options": [
+        "Turn it into a stretch",
+        "Keep waving anyway",
+        "Pretend to fix your hair",
+        "Walk on, red-faced"
+      ],
+      "crowd": [
+        11,
+        10,
+        25,
+        54
+      ],
+      "realCount": 2307
+    },
+    {
+      "type": "pie",
+      "text": "Do you give names to things you own, like a car or a plant?",
+      "options": [
+        "Yes, a few",
+        "Just one",
+        "Never"
+      ],
+      "crowd": [
+        46,
+        22,
+        32
+      ],
+      "realCount": 2297
+    }
+  ]
+}

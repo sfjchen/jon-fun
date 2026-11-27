@@ -15,7 +15,7 @@ const titles = [
   ['Kabloom', 'https://kabloom.io/play/daily'],
   ['Plain', 'https://playplain.app'],
   ['Bandle', 'https://bandle.app/menu'],
-  ['Headcount', 'https://headcountgame.com'],
+  ['Headcount', '/games/headcount'],
   ['Daily Roll', 'https://playdailyroll.com'],
   ['Fermi', 'https://fermi.gg'],
   ['Poople', 'https://poople.io'],

@@ -15,6 +15,8 @@ import { judgeAnswer } from '@/lib/daily/krillion'
 import { score as beeScore } from '@/lib/spelling-bee'
 import { findMatchingGroup, wordKey, type ConnectionsPuzzle } from '@/lib/connections'
 import { artifactScore, type Artifact } from '@/lib/artifact-scoring'
+import { roomPoints } from '../headcount'
+import { headcountForDay } from './headcount'
 import { chainleForDay } from './chainle'
 import { chainlePoints } from '../chainle-score'
 import { ORBS_MAX, type OrbsPuzzle } from '@/lib/orbs'
@@ -135,6 +137,16 @@ export const VERIFIERS: Record<GameId, Verifier> = {
         : 'This room has not solved that day’s full-size crossword',
   ),
   // Orbs replays old single picks and the current per-puzzle lives.
+  headcount: verifier(z.array(z.array(z.number()).min(1).max(4)).length(5), async (day, moves) => {
+    const party = await headcountForDay(day)
+    let score = 0
+    for (const [i, guess] of moves.entries()) {
+      const points = roomPoints(party.questions[i]!, guess)
+      if (points === null) return 'Invalid Headcount guess'
+      score += points
+    }
+    return { score, stats: { n: 5, solved: true } }
+  }),
   chainle: verifier(z.array(z.string().trim().min(1).max(64)).length(5), async (day, moves) => {
     const puzzle = await chainleForDay(day)
     const score = moves.reduce((sum, word, i) => sum + chainlePoints(puzzle.pairs[i]!, word), 0)
