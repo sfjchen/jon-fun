@@ -12,7 +12,7 @@ test('Orbs reveals original written, matching and sorting puzzles from the chose
   const write = puzzle.categories.find((category) => category.format === 'type')!
   const match = puzzle.categories.find((category) => category.format === 'match')!
   const sort = puzzle.categories.find((category) => category.format === 'sort')!
-  await page.goto(`/games/orbs?d=${day}`)
+  await page.goto(`/games/orbs/local?d=${day}`)
   const nav = page.getByRole('navigation', { name: 'Daily Orbs puzzles' })
 
   await nav.getByRole('link', { name: new RegExp(write.title) }).click()

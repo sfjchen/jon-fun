@@ -2,9 +2,9 @@
 
 import { z } from 'zod'
 import { siteDay, validDay } from '@/lib/daily'
+import { PUBLISHER_ORBS_FIRST_DAY } from '@/lib/publisher-orbs'
 import { supabaseAdmin } from '@/lib/supabase'
 
-const FIRST_DAY = '2026-04-17'
 const GAME = 'publisher-orbs'
 const FORMAT = 'publisher-orbs-v1'
 const UPSTREAM = 'https://api.dailyorbs.com/api/game-day'
@@ -31,7 +31,7 @@ const pending = new Map<string, Promise<Snapshot>>()
 
 /** Restricts requests to real dates within the publisher’s archive and the site's current day. */
 export function publisherOrbsDate(day: unknown): day is string {
-  return validDay(day) && day >= FIRST_DAY && day <= siteDay()
+  return validDay(day) && day >= PUBLISHER_ORBS_FIRST_DAY && day <= siteDay()
 }
 
 /** Reads a retained edition and checks that its embedded date matches its storage key. */

@@ -120,7 +120,7 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
       data-testid={`daily-${game}`}
     >
       <DayNav
-        title={GAMES[game].title}
+        title={game === 'orbs' ? 'Ranked Orbs' : GAMES[game].title}
         path={GAMES[game].url}
         day={day}
         publishedOnly={isNytGame(game)}
@@ -134,9 +134,14 @@ export default function DailyGame({ game }: { game: DailyGameId }) {
           </Link>
         )}
         {game === 'orbs' && (
-          <Link className="px-2 py-1.5 text-sm font-medium underline" href="/games/orbs/archive">
-            Archive
-          </Link>
+          <>
+            <Link className={action} href="/games/orbs/archive">
+              Archive
+            </Link>
+            <Link className={action} href="/games/orbs">
+              Publisher puzzles
+            </Link>
+          </>
         )}
       </DayNav>
       {data && day <= siteDay() && isPracticeResult(game, day) && (

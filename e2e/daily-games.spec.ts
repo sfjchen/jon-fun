@@ -40,7 +40,7 @@ test('Orbs resumes a partial run, posts its attempts and restores its result', a
       .getByRole('button', { name: question.options[question.answer], exact: true })
       .click()
   }
-  await page.goto(`/games/orbs?d=${ORBS_FIRST_DAY}`)
+  await page.goto(`/games/orbs/local?d=${ORBS_FIRST_DAY}`)
   const last = puzzle.categories.at(-1)!
   await nav.getByRole('link', { name: new RegExp(last.title) }).click()
   await play(last.questions[1]!)

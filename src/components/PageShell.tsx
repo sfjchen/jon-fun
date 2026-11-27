@@ -50,6 +50,7 @@ export function PageShell({ children }: PageShellProps) {
     '/games/anthropeum',
     '/games/wordle',
     '/games/orbs',
+    '/games/orbs/local',
     '/games/orbs/archive',
     '/games/orbs/archive/play',
     '/games/spelling-bee',
@@ -73,7 +74,7 @@ export function PageShell({ children }: PageShellProps) {
                 ? 'anthropeum'
                 : pathname === '/games/wordle'
                   ? 'fivefold'
-                  : pathname === '/games/orbs' || pathname?.startsWith('/games/orbs/archive')
+                  : pathname === '/games/orbs' || pathname?.startsWith('/games/orbs/')
                     ? 'orbs'
                     : undefined
   const notesPage = isNotesPage(pathname ?? '')

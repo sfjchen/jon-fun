@@ -62,7 +62,7 @@ test('Orbs archives reopen the full dated edition with the same puzzles and inde
   const first = puzzle.categories[0]!
   const editionNav = page.getByRole('navigation', { name: 'Daily Orbs puzzles' })
   const firstQuestion = first.questions[0]!
-  await page.goto(`/games/orbs?d=${day}`)
+  await page.goto(`/games/orbs/local?d=${day}`)
   await expect(editionNav.getByRole('link')).toHaveCount(4)
   const dailyTitles = await editionNav.getByRole('link').allTextContents()
   await editionNav.getByRole('link', { name: new RegExp(first.title) }).click()
@@ -72,7 +72,7 @@ test('Orbs archives reopen the full dated edition with the same puzzles and inde
     .allTextContents()
 
   await page.goto('/games/orbs/archive')
-  await page.getByText('Browse complete editions').click()
+  await page.getByText('Browse complete local editions').click()
   await page.getByRole('link', { name: day, exact: true }).click()
   await expect(editionNav.getByRole('link')).toHaveCount(4)
   expect(await editionNav.getByRole('link').allTextContents()).toEqual(dailyTitles)
@@ -91,7 +91,7 @@ test('Orbs archives reopen the full dated edition with the same puzzles and inde
   await expect(board.getByText(`Correct · ${firstQuestion.options[firstQuestion.answer]}`)).toBeVisible()
   await page.goto(`/games/orbs/archive/play?d=${day}&c=${first.id}`)
   await expect(board.getByText(`Correct · ${firstQuestion.options[firstQuestion.answer]}`)).toBeVisible()
-  await page.goto(`/games/orbs?d=${day}`)
+  await page.goto(`/games/orbs/local?d=${day}`)
   await expect(page.getByRole('region', { name: 'Orbs progress' })).toContainText('0/12 orbs')
   expect(rankedPosts).toEqual([])
 })

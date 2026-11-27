@@ -10,6 +10,7 @@ import { playableDay, shiftDay } from '@/lib/daily'
 import { orbsRunKey } from '@/lib/daily/saved-run'
 import { ORBS_ROTATION_START, ORBS_CATEGORIES, orbsArchiveHref, type OrbsCategoryId, type OrbsIndex } from '@/lib/orbs'
 import { archiveRoundDone, orbsDailyDone } from '@/lib/orbs-storage'
+import { PUBLISHER_ORBS_FIRST_DAY } from '@/lib/publisher-orbs'
 import { useSiteDay } from '@/lib/play-day'
 import { boardUrl, isPracticeResult, type BoardRow } from '@/lib/results'
 import { usePlayer } from '@/lib/use-player'
@@ -76,7 +77,9 @@ export default function ArchivePage() {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-        <p className="text-[var(--ink-muted)]">Pick a date for the full edition, or browse by theme.</p>
+        <p className="text-[var(--ink-muted)]">
+          Play a publisher edition by date, or browse the local rounds by theme.
+        </p>
         <Link href="/games/orbs" className="font-medium text-[var(--ink-accent)] underline">
           Play today’s Orbs
         </Link>
@@ -86,7 +89,7 @@ export default function ArchivePage() {
           className="flex flex-wrap items-center gap-2 text-sm"
           onSubmit={(event) => {
             event.preventDefault()
-            window.location.assign(`https://dailyorbs.com/${publisherDay || today}`)
+            router.push(`/games/orbs?d=${publisherDay || today}`)
           }}
         >
           <label htmlFor="publisher-day">Publisher’s archive</label>
@@ -94,12 +97,12 @@ export default function ArchivePage() {
             id="publisher-day"
             type="date"
             required
-            min="2026-04-17"
+            min={PUBLISHER_ORBS_FIRST_DAY}
             max={today}
             value={publisherDay || today}
             onChange={(event) => setPublisherDay(event.target.value)}
           />
-          <button className="underline">Open original edition ↗</button>
+          <button className="underline">Play publisher edition</button>
         </form>
       )}
       {error ? (
@@ -123,7 +126,7 @@ export default function ArchivePage() {
       ) : (
         <>
           <details className="rounded-2xl border border-[var(--ink-border)] bg-[var(--ink-paper)] p-4">
-            <summary className="cursor-pointer font-semibold">Browse complete editions</summary>
+            <summary className="cursor-pointer font-semibold">Browse complete local editions</summary>
             {editions.length ? (
               <ul className="mt-3 grid gap-2 sm:grid-cols-3">
                 {editions.map((day) => (

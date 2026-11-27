@@ -81,10 +81,10 @@ test('every daily game shows without an expander and counts toward wins and prog
   await expect(page.getByTestId('board-orbs').getByRole('listitem').first()).toContainText('Jon')
   await expect(board.getByText('12/12', { exact: true }).first()).toBeVisible()
 
-  await page.goto('/games/orbs')
-  await page.getByRole('button', { name: /^Daily, 2 of 8 done today/ }).click()
+  await page.goto('/games/orbs/local')
+  await page.getByRole('button', { name: /^Daily, 2 of 9 done today/ }).click()
   const drawer = page.getByRole('dialog', { name: 'Daily games' })
-  await expect(drawer.getByText('2/8 today', { exact: false })).toBeVisible()
+  await expect(drawer.getByText('2/9 today', { exact: false })).toBeVisible()
   await expect(drawer.getByRole('button', { name: 'More games' })).toHaveCount(0)
   await expect(drawer.getByRole('link', { name: 'Orbs Completed' })).toBeVisible()
   await expect(drawer.getByRole('link', { name: 'Crossword Not done' })).toBeVisible()
@@ -106,6 +106,10 @@ test('home shelf uses Set and Wordle and links the leaderboard beside Daily', as
     'href',
     '/games/wordle',
   )
-  await expect(shelf.getByRole('link', { name: 'Orbs Not done', exact: true })).toHaveAttribute('href', '/games/orbs')
+  await expect(shelf.getByRole('link', { name: 'Orbs Not done', exact: true })).toHaveAttribute(
+    'href',
+    '/games/orbs/local',
+  )
+  await expect(shelf.getByRole('link', { name: 'Daily Orbs', exact: true })).toHaveAttribute('href', '/games/orbs')
   await expect(shelf.getByRole('link', { name: 'Daily leaderboard', exact: true })).toHaveCount(0)
 })

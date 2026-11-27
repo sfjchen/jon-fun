@@ -17,6 +17,7 @@ import ScoreTable, { Mark, beeWords, playState, type PlayState } from '@/compone
 import { disableNudges, enableNudges, nudge, useNudgeState, usePushStatus } from '@/lib/push'
 import { FIRST_DAY, firstDay, isNytGame, shiftDay, siteDay } from '@/lib/daily'
 import { useSiteDay } from '@/lib/play-day'
+import { PUBLISHER_ORBS_FIRST_DAY } from '@/lib/publisher-orbs'
 import { usePlayer } from '@/lib/use-player'
 import { useBoard } from '@/lib/use-board'
 import {
@@ -351,6 +352,24 @@ export function DailyHeader({ compact = false }: { compact?: boolean }) {
               </p>
             )}
             <ul className="grid grid-cols-2 gap-1.5 sm:gap-2">
+              {now && sel >= PUBLISHER_ORBS_FIRST_DAY && sel <= now && (
+                <li>
+                  <Link
+                    href={'/games/orbs' + q}
+                    onClick={close}
+                    className="flex min-w-0 items-center gap-1.5 rounded-xl border border-[var(--ink-border)] p-2 hover:bg-[var(--ink-paper)] sm:gap-2.5"
+                  >
+                    <Image
+                      src="/doodles/notebook/orbs.svg"
+                      alt=""
+                      width={36}
+                      height={36}
+                      className="h-6 w-6 shrink-0 sm:h-8 sm:w-8"
+                    />
+                    <span className="min-w-0 flex-1 truncate text-[13px] font-semibold sm:text-[15px]">Daily Orbs</span>
+                  </Link>
+                </li>
+              )}
               {GAME_IDS.map((g) => {
                 const r = done.get(g)
                 // With no result yet, a game this browser has played on the day without finishing it is started.
