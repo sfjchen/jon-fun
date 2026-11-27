@@ -1,6 +1,6 @@
 /**
  * Mirrors this browser's device-only state (game runs and archives, reader progress, bookmarks and annotations,
- * personal bests) to its sync account through /api/sync/state, so it follows the sync key to every device and
+ * personal bests, its Jeopardy sample board) to its sync account through /api/sync/state, so it follows the sync key to every device and
  * survives a storage wipe. Per entry the newest edit wins. Entries a device held before its first sync count as
  * oldest, so a first sync adds to both sides and replaces nothing newer.
  */
@@ -29,6 +29,7 @@ const EXACT = [
   'moc-history-v1',
   'moc-best-v1',
   'fivefold:hard',
+  'jeopardy_sample_slug',
   'reader:v1:last-book',
   'reader:v1:last-route',
   'reader:v1:hidden-books',

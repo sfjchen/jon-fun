@@ -13,7 +13,8 @@ import { SAMPLE_BOARD } from '@/lib/jeopardy-sample'
 // Mirrors `DEFAULT_LIBRARY_PASSCODE` server-side; both must match (or both be overridden via env).
 const LIBRARY_TRIGGER = '890-'
 
-// Remembers this device's sample board slug so "Play a sample board" reuses it.
+// Remembers the sample board's slug so "Play a sample board" reuses it. The state mirror carries it to the
+// account's other devices, so an account has 1 sample board.
 const SAMPLE_SLUG_KEY = 'jeopardy_sample_slug'
 
 const surfaceStyle = {
