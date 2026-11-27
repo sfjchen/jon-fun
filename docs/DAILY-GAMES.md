@@ -131,3 +131,22 @@ cron syncs the configured feed, and saves the first validated response for each 
 `daily_game_content`.
 
 Headcount opens at `/games/headcount`. The local archive starts with party 37 on 2026-11-26. The daily cron reads the public party feed and stores the first snapshot matching the requested party date. Five guesses replay against that snapshot for a score out of 100. Split and pie use percentage error, ranking and underdog allow two-point crowd ties, and the typical answer uses the ratio to the published median. Publisher guestbook submissions and live publisher standings are separate from the sfjc.dev board.
+
+## Game list status
+
+Aditri's daily games list (2026-11-26). Done means playable here with a ranked score.
+
+| Game                      | Original                             | Status                                              |
+| ------------------------- | ------------------------------------ | --------------------------------------------------- |
+| Krillion                  | krillion.io                          | Done                                                |
+| Wordle                    | nytimes.com/games/wordle             | Done                                                |
+| Connections               | nytimes.com/games/connections        | Done                                                |
+| Chainle                   | chainle.io                           | Done, with archive                                  |
+| Daily Orbs                | dailyorbs.com                        | Done, with category archive                         |
+| Headcount                 | headcountgame.com                    | Done                                                |
+| Noillirk                  | noillirk.com (Crowdict)              | To do: embedded only at `/games/noillirk`, no score |
+| Who's More Famous         | whosmorefamous.com                   | To do: outside link in the Daily collection         |
+| Kabloom                   | kabloom.io                           | To do: outside link in the Daily collection         |
+| Plain                     | playplain.app                        | To do: outside link in the Daily collection         |
+| Daily Roll                | playdailyroll.com                    | To do: outside link in the Daily collection         |
+| Dartle, Kegillion, Bandle | dartle.net, kegillion.io, bandle.app | Not wanted                                          |
