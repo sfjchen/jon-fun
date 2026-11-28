@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { siteDay, validDay } from '@/lib/daily'
 
-export const metadata = { title: 'Noillirk · Crowdict' }
+export const metadata = { title: 'Crowdict' }
 
 const firstDay = '2026-10-15'
 const publisher = 'https://crowdict.com'
@@ -22,7 +22,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ d
   return (
     <div className="mx-auto max-w-5xl space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="font-lora text-2xl font-bold">Noillirk · Crowdict</h1>
+        <h1 className="font-lora text-2xl font-bold">Crowdict</h1>
         <Link className="text-sm underline" href="/games/daily-collection">
           Daily games
         </Link>

@@ -11,3 +11,6 @@ export const COLLECTION_PLAYERS = [
   { id: 'perceptle', title: 'Perceptle', site: 'https://perceptle.net' },
   { id: 'contexto', title: 'Contexto', site: 'https://contexto.me' },
 ] as const
+
+/** Identifies publishers that require top-level play. */
+export const TOP_LEVEL_PLAY = new Set(['/games/travle', '/games/plain', '/games/contexto'])

@@ -1,4 +1,4 @@
-/** Worldle's page: a direct link to the publisher's daily and the retired Outline results. */
+/** Worldle's page: the publisher's daily and the retired Outline results. */
 import PublisherPlay from '@/components/PublisherPlay'
 export const metadata = { title: 'Worldle' }
 

@@ -162,7 +162,7 @@ Aditri's daily games list (2026-11-26). Done means playable here with a ranked s
 | Noillirk          | noillirk.com (Crowdict)       | To do: embedded only at `/games/noillirk`, no score |
 | Who's More Famous | whosmorefamous.com            | Publisher player on sfjc.dev; manual result log         |
 | Kabloom           | kabloom.io                    | Native player with dated publisher archive        |
-| Plain             | playplain.app                 | Publisher player on sfjc.dev; manual result log         |
+| Plain             | playplain.app                 | Official player opens separately; manual result log         |
 | Daily Roll        | playdailyroll.com             | Publisher player on sfjc.dev; manual result log         |
 | Bandle            | bandle.app                    | Publisher player on sfjc.dev; manual result log         |
 | Dartle, Kegillion | dartle.net, kegillion.io      | Not wanted                                          |

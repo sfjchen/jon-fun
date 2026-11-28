@@ -147,7 +147,7 @@ Ordered by what unblocks the most play.
 
 ## Publisher editions on November 28, 2026
 
-Worldle, Travle, MapTap and Fermi have canonical sfjc.dev routes. The retired geography game IDs keep their historical scores. Worldle, MapTap and Fermi support the original player in a frame. Travle shows its publisher warning in a cross-origin frame, so its route opens the official player directly. Native sfjc.dev score replay for these 4 remains open.
+Worldle, Travle, MapTap and Fermi have canonical sfjc.dev routes. The retired geography game IDs keep their historical scores. Worldle, MapTap and Fermi support the original player in a frame. Travle shows its publisher warning in a cross-origin frame, so its route opens the official player directly. Plain and Contexto also require top-level play. Bandle, Who’s More Famous?, Poople, Perceptle and Daily Roll render their publisher interfaces in sfjc.dev. Native sfjc.dev score replay for these games remains open.
 
 The `publisher-archive` branch serves dated snapshots. The daily GitHub workflow captures Worldle’s country and bonus sheet, Travle’s exact endpoints and adjacency graph, MapTap’s 5 ordered locations with credits and reveal data, Fermi’s dated questions and answers, and Kabloom’s current climb. Use `node --import tsx scripts/import-geography.mjs GAME YYYY-MM-DD` for a geography date and `node --import tsx scripts/import-fermi.mjs archive` for the published Fermi archive. Initial coverage is 125 Fermi editions from July 27 through November 28, 2 Kabloom climbs and the November 28 editions of Worldle, Travle and MapTap.
 

@@ -4,7 +4,7 @@
  */
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { COLLECTION_PLAYERS } from '@/lib/publisher-collection'
+import { COLLECTION_PLAYERS, TOP_LEVEL_PLAY } from '@/lib/publisher-collection'
 
 type Props = { params: Promise<{ publisherGame: string }> }
 export const dynamicParams = false
@@ -36,12 +36,16 @@ export default async function Page({ params }: Props) {
           Open on {new URL(game.site).host} ↗
         </a>
       </header>
-      <iframe
-        title={game.title + ' daily game'}
-        src={game.site}
-        allow="fullscreen; clipboard-write; autoplay"
-        className="h-[82dvh] min-h-96 w-full rounded-xl border border-[var(--ink-border)]"
-      />
+      {TOP_LEVEL_PLAY.has('/games/' + game.id) ? (
+        <p>Play today’s edition on {game.title}, then save its share text in the daily result log.</p>
+      ) : (
+        <iframe
+          title={game.title + ' daily game'}
+          src={game.site}
+          allow="fullscreen; clipboard-write; autoplay"
+          className="h-[82dvh] min-h-96 w-full rounded-xl border border-[var(--ink-border)]"
+        />
+      )}
     </main>
   )
 }

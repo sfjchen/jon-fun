@@ -11,7 +11,7 @@ import { DailyHeader } from '@/components/daily/DailyDrawer'
 import { siteDay } from '@/lib/daily'
 import { PLAY_IDS, playUrl } from '@/lib/publisher-play'
 
-import { COLLECTION_PLAYERS } from '@/lib/publisher-collection'
+import { COLLECTION_PLAYERS, TOP_LEVEL_PLAY } from '@/lib/publisher-collection'
 
 const titles = [
   ['Krillion', '/games/krillion'],
@@ -34,7 +34,7 @@ const titles = [
 ] as const
 
 /** Whether a game is played on its publisher's site, either straight from this list or from its page here. */
-const elsewhere = (url: string) => url === '/games/travle'
+const elsewhere = (url: string) => TOP_LEVEL_PLAY.has(url)
 
 /** The list in its 2 groups, each with a heading and a line on how its results are kept. */
 const groups = [
@@ -102,7 +102,7 @@ export default function Page() {
               <section key={title} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border p-3">
                 {url.startsWith('/') ? (
                   <Link className="font-semibold underline" href={url}>
-                    {title}
+                    {title === 'Noillirk' ? 'Crowdict' : title}
                   </Link>
                 ) : (
                   <a className="font-semibold underline" href={url} target="_blank" rel="noreferrer">

@@ -1,4 +1,4 @@
-/** Travle's page: a direct link to the publisher's daily and the retired Border hop results. */
+/** Travle's page: the publisher's daily and the retired Border hop results. */
 import PublisherPlay from '@/components/PublisherPlay'
 export const metadata = { title: 'Travle' }
 

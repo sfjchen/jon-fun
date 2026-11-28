@@ -1,8 +1,9 @@
 'use client'
 
 /**
- * The sfjc.dev page of a daily played on its publisher's site: what the game is, a direct link to today's edition, and
- * the results of the sfjc.dev game this page used to play, kept apart from every board.
+ * The sfjc.dev page of a daily scored on its publisher's site: what the game is, the publisher's player inline where
+ * it can be framed, a direct link to today's edition, and the results of the sfjc.dev game this page used to play,
+ * kept apart from every board.
  */
 
 import { useEffect, useState } from 'react'
@@ -28,9 +29,10 @@ export default function PublisherPlay({ id }: { id: PlayId }) {
         const group = getPlayer()?.group ?? PUBLIC_GROUP
         const res = await fetch(boardUrl({ group, game: retired, days: 6000 }))
         if (!res.ok) throw new Error(String(res.status))
-        const body = (await res.json()) as { rows: Row[] }
+        // A later scoring version moves these rows to legacyRows, so both are read to keep the history whole.
+        const body = (await res.json()) as { rows: Row[]; legacyRows: Row[] }
         if (!live) return
-        setRows(body.rows)
+        setRows([...body.rows, ...body.legacyRows].sort((a, b) => b.day.localeCompare(a.day)))
         setFailed(false)
       } catch {
         if (live) setFailed(true)
