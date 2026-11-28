@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 35,
+  "sourceDate": "2026-08-30",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q333",
+        "prompt": "How many David Beckhams does Michelangelo's statue of David weigh?",
+        "unit": "David Beckhams",
+        "answer": 72,
+        "source": "Galleria dell'Accademia di Firenze (David: 517 cm, 5,560 kg with its carved base) and Major League Soccer's official player profile (Beckham listed at 6'0\", 170 lb)"
+      },
+      {
+        "id": "q231",
+        "prompt": "How many ships pass through the Panama Canal on an average day?",
+        "unit": "ships",
+        "answer": 37,
+        "source": "Panama Canal Authority fiscal year 2025 traffic figures"
+      },
+      {
+        "id": "q334",
+        "prompt": "What would it cost to buy every property on a classic Monopoly board?",
+        "unit": "dollars",
+        "answer": 5690,
+        "source": "Hasbro's official Monopoly rules and the 28 title deed cards in the standard edition"
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 109,
+  "sourceDate": "2026-11-12",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q581",
+        "prompt": "By Turkey's official count, how many mosques are there in Istanbul?",
+        "unit": "mosques",
+        "answer": 3623,
+        "source": "Diyanet mosque count, 2025-26"
+      },
+      {
+        "id": "q544",
+        "prompt": "In 2025, how many new Lamborghinis were delivered to buyers per day, on average?",
+        "unit": "cars",
+        "answer": 29,
+        "source": "Automobili Lamborghini, 2025 results"
+      },
+      {
+        "id": "q624",
+        "prompt": "How many BILLY bookcases has IKEA sold since the design launched in 1979?",
+        "unit": "bookcases",
+        "answer": 140000000,
+        "source": "IKEA Retail (Ingka), Dec 2024"
+      }
+    ]
+  }
+}

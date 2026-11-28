@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 83,
+  "sourceDate": "2026-10-17",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q533",
+        "prompt": "How many credit cards would it take to cover the surface of Van Gogh's The Starry Night?",
+        "unit": "credit cards",
+        "answer": 147,
+        "source": "MoMA collection entry (oil on canvas, 73.7 x 92.1 cm) · ISO/IEC 7810 ID-1 card, 85.60 x 53.98 mm"
+      },
+      {
+        "id": "q464",
+        "prompt": "How much money was sitting unspent on Starbucks gift cards and app balances, plus unredeemed Rewards Stars, at the end of the company's 2025 fiscal year?",
+        "unit": "US dollars",
+        "answer": 1750000000,
+        "source": "Starbucks Form 10-K for fiscal 2025 (SEC filing), Note 11 Deferred Revenue: $1,751.7 million in stored value cards and loyalty program at September 28, 2025"
+      },
+      {
+        "id": "q524",
+        "prompt": "How many minutes has Cristiano Ronaldo played in his professional career so far, club and country combined?",
+        "unit": "minutes",
+        "answer": 110000,
+        "source": "messivsronaldo.app all-time career stats, October 2026"
+      }
+    ]
+  }
+}

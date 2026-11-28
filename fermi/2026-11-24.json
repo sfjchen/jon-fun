@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 121,
+  "sourceDate": "2026-11-24",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q690",
+        "prompt": "How many cinema screens did China have at the end of 2025?",
+        "unit": "screens",
+        "answer": 93000,
+        "source": "China Film Administration"
+      },
+      {
+        "id": "q673",
+        "prompt": "Muhammad, in all its spellings, is the most common male name in the world. How many people are named Muhammad?",
+        "unit": "people",
+        "answer": 118000000,
+        "source": "Forebears.io forename index",
+        "qualifier": "Counting Mohammed, Mohamed, Mohammad and the other spellings."
+      },
+      {
+        "id": "q684",
+        "prompt": "How many playing cards would it take to cover Leonardo da Vinci's The Last Supper?",
+        "unit": "cards",
+        "answer": 7200,
+        "source": "Cenacolo Vinciano museum"
+      }
+    ]
+  }
+}

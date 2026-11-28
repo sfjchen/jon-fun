@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 62,
+  "sourceDate": "2026-09-26",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q418",
+        "prompt": "How many kiwifruit would it take to weigh as much as an adult North Island brown kiwi?",
+        "unit": "kiwifruit",
+        "answer": 25,
+        "source": "New Zealand Birds Online (Te Papa and Birds New Zealand), North Island brown kiwi: 2 kg male, 2.7 kg female · Zespri, average Green kiwifruit weight of 92.5 g"
+      },
+      {
+        "id": "q403",
+        "prompt": "How many cigarettes are smoked worldwide every day?",
+        "unit": "cigarettes",
+        "answer": 14000000000,
+        "source": "The Tobacco Atlas (Vital Strategies and Economics for Health): more than 5 trillion cigarettes smoked worldwide in 2019",
+        "qualifier": "Counting factory-made cigarettes, not hand-rolled ones."
+      },
+      {
+        "id": "q453",
+        "prompt": "How many people live north of the Arctic Circle?",
+        "unit": "people",
+        "answer": 1900000,
+        "source": "Nordregio (2018), Arctic settlements of 500+ people in 2017, summed for every town north of the Arctic Circle (66°34'N)"
+      }
+    ]
+  }
+}

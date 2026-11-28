@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 95,
+  "sourceDate": "2026-10-29",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q557",
+        "prompt": "How many Haribo Goldbears gummy bears would it take to weigh as much as an average adult male grizzly bear?",
+        "unit": "gummy bears",
+        "answer": 81000,
+        "source": "NPS (Yellowstone): adult male grizzlies average 187 kg (413 lb) · Haribo US: 13 Goldbears per 30 g"
+      },
+      {
+        "id": "q556",
+        "prompt": "How many drops of hot sauce are in a standard 2 oz (60 ml) bottle of Tabasco?",
+        "unit": "drops",
+        "answer": 720,
+        "source": "McIlhenny Co. Tabasco FAQ: a 2 oz bottle holds at least 720 drops, at 60 drops to a teaspoon"
+      },
+      {
+        "id": "q558",
+        "prompt": "Beekeepers buy live bees by the pound. How many honeybees are in 1 pound (450 g) of bees?",
+        "unit": "bees",
+        "answer": 3500,
+        "source": "MAAREC (University of Delaware Extension) package bees guide: each pound is about 3,500 bees"
+      }
+    ]
+  }
+}

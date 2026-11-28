@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 20,
+  "sourceDate": "2026-08-15",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q254",
+        "prompt": "How much water does the average person drink in a lifetime?",
+        "unit": "liters",
+        "answer": 60000,
+        "source": "WHO global life expectancy · EFSA adequate intake for total water (2010)"
+      },
+      {
+        "id": "q201",
+        "prompt": "How many people worldwide are 80 years or older?",
+        "unit": "people",
+        "answer": 180000000,
+        "source": "UN World Population Prospects, 2024 revision"
+      },
+      {
+        "id": "q6",
+        "prompt": "How many heartbeats are there in the average lifetime of a Timbuktu resident?",
+        "unit": "heartbeats",
+        "answer": 2300000000,
+        "source": "World Bank life expectancy, Mali (60.4 years) · typical adult resting heart rate"
+      }
+    ]
+  }
+}

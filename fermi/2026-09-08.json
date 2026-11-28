@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 44,
+  "sourceDate": "2026-09-08",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q123",
+        "prompt": "About how many stars can you see at one time with the naked eye on a clear, dark night?",
+        "unit": "stars",
+        "answer": 2500,
+        "source": "NASA Ames, Interesting Facts about Stars (November 2020), crediting EarthSky",
+        "qualifier": "Away from city lights, with no Moon and good eyesight."
+      },
+      {
+        "id": "q220",
+        "prompt": "How many words were on Wordle's original answer list when it launched in 2021?",
+        "unit": "words",
+        "answer": 2315,
+        "source": "Original Wordle answer list, archived from the source code by cfreshman"
+      },
+      {
+        "id": "q196",
+        "prompt": "How many people were alive worldwide in 1925?",
+        "unit": "people",
+        "answer": 2000000000,
+        "source": "U.S. Census Bureau historical estimates, interpolated between 1920 and 1930"
+      }
+    ]
+  }
+}

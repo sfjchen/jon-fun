@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 71,
+  "sourceDate": "2026-10-05",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q391",
+        "prompt": "If all the gold ever mined were melted into a single cube, how long would one side be?",
+        "unit": "meters",
+        "answer": 22.6,
+        "source": "World Gold Council above-ground stocks (222,600 tonnes at end-Q2 2026), whose own page puts the resulting cube at about 22.6 metres a side"
+      },
+      {
+        "id": "q475",
+        "prompt": "How many servings of instant noodles were eaten around the world in 2025?",
+        "unit": "servings",
+        "answer": 124200000000,
+        "source": "World Instant Noodles Association (WINA) global demand figures, released August 2026: 124.21 billion servings in 2025, led by China/Hong Kong (43.27 billion), Indonesia (14.54 billion) and India (9.60 billion)"
+      },
+      {
+        "id": "q458",
+        "prompt": "How many people have ever run a mile in under four minutes?",
+        "unit": "people",
+        "answer": 2250,
+        "source": "World Athletics all-time one mile toplist (men, indoor and outdoor): 2,253 athletes under 4:00 as of September 2026. No woman has broken four minutes."
+      }
+    ]
+  }
+}

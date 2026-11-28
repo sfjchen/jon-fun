@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 98,
+  "sourceDate": "2026-11-01",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q561",
+        "prompt": "How many people live closer to the North Pole than to the equator?",
+        "unit": "people",
+        "answer": 670000000,
+        "source": "EU JRC GHSL 2025 population grid: about 670 million people live north of 45°N, 8% of the world"
+      },
+      {
+        "id": "q591",
+        "prompt": "If all the land on Earth were split evenly among everyone alive, how much land would each person get?",
+        "unit": "square feet",
+        "answer": 193000,
+        "source": "CIA World Factbook, 148.94M km² of land ÷ UN WPP 2024, 8.3B people (mid-2026)"
+      },
+      {
+        "id": "q550",
+        "prompt": "How much did the 30 NBA teams pay their players in salaries for the 2025-26 season?",
+        "unit": "dollars",
+        "answer": 5900000000,
+        "source": "SalarySwish 2025-26 team payrolls, all 30 teams summed: $5.92 billion"
+      }
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 111,
+  "sourceDate": "2026-11-14",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q611",
+        "prompt": "How many original Game Boy screens' worth of pixels would it take to fill one 4K TV screen?",
+        "unit": "Game Boy screens",
+        "answer": 360,
+        "source": "Nintendo Game Boy specs · ITU-R BT.2020",
+        "qualifier": "The 1989 Game Boy against a standard 4K UHD television."
+      },
+      {
+        "id": "q7",
+        "prompt": "How many piano keys, laid side by side, would it take to stretch across Tower Bridge from end to end?",
+        "unit": "keys",
+        "answer": 10400,
+        "source": "PBS Building Big · standard piano octave"
+      },
+      {
+        "id": "q595",
+        "prompt": "How much office space is there in Manhattan?",
+        "unit": "square feet",
+        "answer": 450000000,
+        "source": "Savills Manhattan office report, Q4 2025"
+      }
+    ]
+  }
+}

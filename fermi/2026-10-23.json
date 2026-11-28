@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 89,
+  "sourceDate": "2026-10-23",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q445",
+        "prompt": "How many minutes is Harry Potter on screen across all eight Harry Potter films?",
+        "unit": "minutes",
+        "answer": 539,
+        "source": "Fan count by IMDb user ninewheels0, via Screen Rant"
+      },
+      {
+        "id": "q483",
+        "prompt": "Since the Billboard Hot 100 began in 1958, how many different songs have reached No. 1?",
+        "unit": "songs",
+        "answer": 1195,
+        "source": "Billboard Hot 100 chart history (1,195 No. 1s through the chart dated Oct. 24, 2026)"
+      },
+      {
+        "id": "q521",
+        "prompt": "Writing at an average adult's handwriting speed, how many hours would it take to copy out the whole King James Bible by hand?",
+        "unit": "hours",
+        "answer": 764,
+        "source": "KJV's 3,116,480 letters at 68 a minute, the average adult copying speed (ADVANCE for Occupational Therapy)"
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 90,
+  "sourceDate": "2026-10-24",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q515",
+        "prompt": "How many people work in McDonald's restaurants around the world?",
+        "unit": "people",
+        "answer": 2100000,
+        "source": "McDonald's 2025 annual report (10-K): over 2 million in franchised restaurants plus 150,000 staff"
+      },
+      {
+        "id": "q520",
+        "prompt": "Not counting the songs, how many words of dialogue are spoken in the original Toy Story (1995)?",
+        "unit": "words",
+        "answer": 6900,
+        "source": "Toy Story's final-draft screenplay and its subtitle transcript: about 6,900 words of dialogue"
+      },
+      {
+        "id": "q456",
+        "prompt": "How many possible 4-digit PIN codes are there?",
+        "unit": "PIN codes",
+        "answer": 10000,
+        "source": "DataGenetics PIN number analysis (Nick Berry, 2012): 10,000 possible codes, 0000 to 9999"
+      }
+    ]
+  }
+}

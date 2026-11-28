@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 67,
+  "sourceDate": "2026-10-01",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q104",
+        "prompt": "How many YouTube channels have over one million subscribers?",
+        "unit": "channels",
+        "answer": 80000,
+        "source": "vidIQ YouTube Subscriber Benchmarks, July 2026",
+        "qualifier": "(As of July 2026)"
+      },
+      {
+        "id": "q58",
+        "prompt": "How many vending machines are in Japan?",
+        "unit": "machines",
+        "answer": 3900000,
+        "source": "Japan Vending System Manufacturers Association (JVMA), Dec 2024"
+      },
+      {
+        "id": "q444",
+        "prompt": "How many McDonald's Filet-O-Fish would it take to match the calories a great white shark eats in a day?",
+        "unit": "Filet-O-Fish",
+        "answer": 14,
+        "source": "Semmens et al. 2013, Scientific Reports (white shark field energy use); McDonald's US nutrition facts (Filet-O-Fish, 380 Cal)"
+      }
+    ]
+  }
+}

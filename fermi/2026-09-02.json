@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 38,
+  "sourceDate": "2026-09-02",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q297",
+        "prompt": "How long would it take to fill an Olympic swimming pool with a backyard garden hose?",
+        "unit": "days",
+        "answer": 46,
+        "source": "World Aquatics competition pool dimensions (50 × 25 × 2 m) · typical garden hose flow, 10 gal/min"
+      },
+      {
+        "id": "q317",
+        "prompt": "Chicago O'Hare handles more flights than any other airport on Earth. How many planes take off or land there on an average day?",
+        "unit": "planes",
+        "answer": 2350,
+        "source": "FAA preliminary 2025 data (O'Hare, 857,392 operations) and ACI world movement rankings"
+      },
+      {
+        "id": "q326",
+        "prompt": "How many 7-Eleven stores are there worldwide?",
+        "unit": "stores",
+        "answer": 85932,
+        "source": "Seven & i Holdings investor materials: 85,932 stores across 20 countries and regions (Japan 21,743, Asia Pacific 48,673, North America 15,151, Nordics 365)"
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 87,
+  "sourceDate": "2026-10-21",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q497",
+        "prompt": "How many steps does an average runner take to finish a marathon?",
+        "unit": "steps",
+        "answer": 45000,
+        "source": "RunRepeat global marathon finish-time study (average 4:29:53 in 2018) and Garmin's running dynamics cadence percentiles"
+      },
+      {
+        "id": "q474",
+        "prompt": "How many movie screens did the United States have at the end of 2022?",
+        "unit": "screens",
+        "answer": 39000,
+        "source": "National Association of Theatre Owners (now Cinema United), Number of U.S. Movie Screens: 39,007 at the end of 2022"
+      },
+      {
+        "id": "q528",
+        "prompt": "If you laid every grain from a 2 lb (900 g) bag of long-grain white rice end to end, how long would the line be?",
+        "unit": "feet",
+        "answer": 1030,
+        "source": "Arkansas Agricultural Experiment Station rice trials (milled long-grain kernel length and weight)"
+      }
+    ]
+  }
+}

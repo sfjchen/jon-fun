@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 4,
+  "sourceDate": "2026-07-30",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q47",
+        "prompt": "If we brewed coffee in Olympic swimming pools, how many pools would the U.S. drink in a day?",
+        "unit": "pools",
+        "answer": 40,
+        "source": "National Coffee Association · FINA pool spec"
+      },
+      {
+        "id": "q42",
+        "prompt": "How many dimples are on a regulation golf ball?",
+        "unit": "dimples",
+        "answer": 336,
+        "source": "USGA equipment rules · Titleist/Callaway specs"
+      },
+      {
+        "id": "q54",
+        "prompt": "How many official languages exist in the world?",
+        "unit": "languages",
+        "answer": 200,
+        "source": "CIA World Factbook · Ethnologue"
+      }
+    ]
+  }
+}

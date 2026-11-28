@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 88,
+  "sourceDate": "2026-10-22",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q511",
+        "prompt": "How many people around the world turn 18 today?",
+        "unit": "people",
+        "answer": 360000,
+        "source": "UN World Population Prospects 2024: about 142 million births worldwide in 2008"
+      },
+      {
+        "id": "q525",
+        "prompt": "Rowing nonstop at Olympic gold-medal sculling pace, how many days would it take to cross the Atlantic from the Canary Islands to Antigua?",
+        "unit": "days",
+        "answer": 11,
+        "source": "World Rowing, Paris 2024 single sculls (6:37.57); World's Toughest Row course (3,000 mi)"
+      },
+      {
+        "id": "q510",
+        "prompt": "How many people alive today are identical twins?",
+        "unit": "people",
+        "answer": 60000000,
+        "source": "Monden, Pison and Smits, Human Reproduction (2021): about 4 identical pairs per 1,000 deliveries"
+      }
+    ]
+  }
+}

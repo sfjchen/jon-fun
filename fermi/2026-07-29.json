@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 3,
+  "sourceDate": "2026-07-29",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q21",
+        "prompt": "What is the total length of spaghetti in a 16 oz (450 g) box?",
+        "unit": "feet",
+        "answer": 470,
+        "source": "Barilla packaging spec"
+      },
+      {
+        "id": "q128",
+        "prompt": "How far is the world record for the longest football (soccer) drop kick?",
+        "unit": "feet",
+        "answer": 256,
+        "source": "Guinness World Records, longest football (soccer) drop kick (Alireza Beiranvand, 17 April 2019)"
+      },
+      {
+        "id": "q46",
+        "prompt": "How many registered vehicles are on the island of Iceland?",
+        "unit": "vehicles",
+        "answer": 290000,
+        "source": "Icelandic Transport Authority (Samgöngustofa)"
+      }
+    ]
+  }
+}

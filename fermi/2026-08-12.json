@@ -1,0 +1,34 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 17,
+  "sourceDate": "2026-08-12",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q249",
+        "prompt": "How many rubber duckies could fit in a 40-foot (12 meter) shipping container?",
+        "unit": "rubber duckies",
+        "answer": 124000,
+        "source": "ISO equipment spec sheets · Rubber duck retail dimensions"
+      },
+      {
+        "id": "q239",
+        "prompt": "How many pips are on a full set of double-six dominoes?",
+        "unit": "pips",
+        "answer": 168,
+        "source": "Standard double-six domino set composition",
+        "qualifier": "A standard double-six set"
+      },
+      {
+        "id": "q265",
+        "prompt": "How long would it take a Formula 1 car to drive all the way around the Earth's equator?",
+        "unit": "hours",
+        "answer": 108,
+        "source": "NASA Earth Fact Sheet ·  Formula 1 Race Stats",
+        "qualifier": "Flat out, no pitting."
+      }
+    ]
+  }
+}

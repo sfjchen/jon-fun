@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 56,
+  "sourceDate": "2026-09-20",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q400",
+        "prompt": "How many individual Cheerios are in a 12 oz (340 g) box of the original cereal?",
+        "unit": "Cheerios",
+        "answer": 3000,
+        "source": "Bedtime Math hand count (252 Cheerios in one cup) · General Mills Cheerios nutrition label"
+      },
+      {
+        "id": "q356",
+        "prompt": "How much blood does a blue whale's heart pump with a single beat?",
+        "unit": "liters",
+        "answer": 80,
+        "source": "Goldbogen et al., Proceedings of the National Academy of Sciences (2019), via Stanford News"
+      },
+      {
+        "id": "q431",
+        "prompt": "Disney calls its park employees cast members. How many are there worldwide?",
+        "unit": "cast members",
+        "answer": 185000,
+        "source": "The Walt Disney Company, \"Josh D'Amaro Named Next Chief Executive Officer of Disney\" (February 3, 2026) · Disney Experiences, Employee Experience page"
+      }
+    ]
+  }
+}

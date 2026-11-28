@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 39,
+  "sourceDate": "2026-09-03",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q72",
+        "prompt": "How many Oscar statuettes have been awarded since 1929?",
+        "unit": "statuettes",
+        "answer": 3350,
+        "source": "Academy of Motion Picture Arts and Sciences"
+      },
+      {
+        "id": "q103",
+        "prompt": "How many emojis are on the standard Apple keyboard (including variations)?",
+        "unit": "emojis",
+        "answer": 3953,
+        "source": "Emojipedia · Unicode Consortium"
+      },
+      {
+        "id": "q278",
+        "prompt": "How many bicycles are there in Amsterdam?",
+        "unit": "bicycles",
+        "answer": 880000,
+        "source": "CROW-Fietsberaad · City of Amsterdam survey estimate"
+      }
+    ]
+  }
+}

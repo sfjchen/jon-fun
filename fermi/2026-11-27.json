@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 124,
+  "sourceDate": "2026-11-27",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q675",
+        "prompt": "How many native Arabic speakers are there worldwide?",
+        "unit": "people",
+        "answer": 410000000,
+        "source": "Ethnologue, 2025"
+      },
+      {
+        "id": "q678",
+        "prompt": "How many hair salons and barber shops are there in Paris?",
+        "unit": "shops",
+        "answer": 2660,
+        "source": "Apur, Paris shop census (BDCom), 2023"
+      },
+      {
+        "id": "q660",
+        "prompt": "How far is the men's world record javelin throw?",
+        "unit": "meters",
+        "answer": 98.48,
+        "source": "World Athletics men's javelin records"
+      }
+    ]
+  }
+}

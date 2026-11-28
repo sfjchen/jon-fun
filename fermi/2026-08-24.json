@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 29,
+  "sourceDate": "2026-08-24",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q113",
+        "prompt": "How many humans are taller than 6'6\" (198 cm)?",
+        "unit": "people",
+        "answer": 900000,
+        "source": "Derived: NCD-RisC country mean adult heights (2019) with a 7 cm spread, weighted by UN World Population Prospects (2024). No authority publishes a direct count."
+      },
+      {
+        "id": "q315",
+        "prompt": "How much rain falls on the wettest place on Earth in an average year?",
+        "unit": "feet",
+        "answer": 39,
+        "source": "Guinness World Records, wettest place (average annual rainfall): Mawsynram, Meghalaya, India, 11,872 mm (467 in)"
+      },
+      {
+        "id": "q248",
+        "prompt": "How many windows does the Empire State Building have?",
+        "unit": "windows",
+        "answer": 6514,
+        "source": "Empire State Building official facts and figures page (esbnyc.com)"
+      }
+    ]
+  }
+}

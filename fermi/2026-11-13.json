@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 110,
+  "sourceDate": "2026-11-13",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q638",
+        "prompt": "How many British pounds are spent on dog food in the UK every year?",
+        "unit": "British pounds",
+        "answer": 2000000000,
+        "source": "UK Pet Food market data"
+      },
+      {
+        "id": "q590",
+        "prompt": "How many 1 lb (450 g) loaves of white bread can you make from an average acre (0.4 hectare) of US wheat?",
+        "unit": "loaves",
+        "answer": 3400,
+        "source": "USDA NASS 2026 · Kansas Wheat"
+      },
+      {
+        "id": "q630",
+        "prompt": "How much money is 100 kg (220 lb) of $100 bills?",
+        "unit": "dollars",
+        "answer": 10000000,
+        "source": "Bank of Canada",
+        "qualifier": "Canadian $100 bills, in Canadian dollars"
+      }
+    ]
+  }
+}

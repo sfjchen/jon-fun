@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 74,
+  "sourceDate": "2026-10-08",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q473",
+        "prompt": "How many different names appear in the end credits of Avengers: Endgame (2019)?",
+        "unit": "names",
+        "answer": 4400,
+        "source": "Our own count of a fan transcription of the on-screen end credits (JH Movie Collection Wiki): 4,498 entries, 4,419 different names. No published count exists."
+      },
+      {
+        "id": "q461",
+        "prompt": "How many of the 193 UN member countries have fewer people than New York City?",
+        "unit": "countries",
+        "answer": 93,
+        "source": "World Bank World Development Indicators, 2024 population by country · US Census Bureau Vintage 2025 estimate for New York City (8,584,629)"
+      },
+      {
+        "id": "q498",
+        "prompt": "How many 12 oz (355 ml) soda cans could you fill with all the blood in an adult human body?",
+        "unit": "cans",
+        "answer": 14,
+        "source": "American Red Cross (1.2 to 1.5 gallons of blood in a 150 to 180 lb adult) and the standard medical average of about 5 liters"
+      }
+    ]
+  }
+}

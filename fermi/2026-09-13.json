@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 49,
+  "sourceDate": "2026-09-13",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q293",
+        "prompt": "Lil Uzi Vert raps that standing on his money takes him from 5'4\" (163 cm) to 6'6\" (198 cm). If that is a stack of $100 bills under his feet, how much money is he standing on?",
+        "unit": "dollars",
+        "answer": 325000,
+        "source": "U.S. Bureau of Engraving and Printing currency specifications (0.0043 in per note); the line is from Lil Uzi Vert's 'Sanguine Paradise'"
+      },
+      {
+        "id": "q393",
+        "prompt": "How many steps are there from the ground to the top of the Eiffel Tower?",
+        "unit": "steps",
+        "answer": 1665,
+        "source": "Official Eiffel Tower site (toureiffel.paris), Eiffel Tower Vertical race: 279 m of climbing and 1,665 steps from the ground to the top"
+      },
+      {
+        "id": "q213",
+        "prompt": "How many printed books did Amazon sell in the United States in 2024?",
+        "unit": "books",
+        "answer": 370000000,
+        "source": "Circana BookScan 2024 US print unit sales, combined with industry estimates of Amazon's share of the US print book market"
+      }
+    ]
+  }
+}

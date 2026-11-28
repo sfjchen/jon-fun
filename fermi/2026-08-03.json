@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 8,
+  "sourceDate": "2026-08-03",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q53",
+        "prompt": "How many popes has the Roman Catholic Church had?",
+        "unit": "popes",
+        "answer": 267,
+        "source": "Vatican Annuario Pontificio"
+      },
+      {
+        "id": "q80",
+        "prompt": "How many Monopoly sets have ever been sold?",
+        "unit": "sets",
+        "answer": 275000000,
+        "source": "Hasbro Monopoly brand history (275 million as of 2015, no updated total published since)"
+      },
+      {
+        "id": "q78",
+        "prompt": "How many elevators are there in New York City?",
+        "unit": "elevators",
+        "answer": 81001,
+        "source": "NYC Open Data, DOB NOW Elevator Safety Compliance (active devices, August 2026)"
+      }
+    ]
+  }
+}

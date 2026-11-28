@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 75,
+  "sourceDate": "2026-10-09",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q503",
+        "prompt": "How many days does a container ship take to sail from Shanghai to Rotterdam through the Suez Canal?",
+        "unit": "days",
+        "answer": 30,
+        "source": "Notteboom, Pallis & Rodrigue, Port Economics, Management and Policy: Routing Options between Shanghai, Rotterdam and New York"
+      },
+      {
+        "id": "q489",
+        "prompt": "How many wild elephants lived in Africa at the last full continent-wide count, published in 2016?",
+        "unit": "elephants",
+        "answer": 415000,
+        "source": "IUCN SSC African Elephant Specialist Group, African Elephant Status Report 2016"
+      },
+      {
+        "id": "q476",
+        "prompt": "How many Oreo cookies are sold around the world each day?",
+        "unit": "Oreos",
+        "answer": 164000000,
+        "source": "Mondelez International, 2024"
+      }
+    ]
+  }
+}

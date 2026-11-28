@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 34,
+  "sourceDate": "2026-08-29",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q217",
+        "prompt": "How many different move sequences can a game of chess begin with, once White and Black have each played twice?",
+        "unit": "games",
+        "answer": 197281,
+        "source": "Chess Programming Wiki's Perft move-generator validation results (perft(4) = 197,281), also reproduced in Wikipedia's Shannon number article"
+      },
+      {
+        "id": "q244",
+        "prompt": "What is the global bagel market worth in 2025?",
+        "unit": "dollars",
+        "answer": 5970000000,
+        "source": "Fortune Business Insights, Bagel Market Size, Share & Industry Report, 2025"
+      },
+      {
+        "id": "q8",
+        "prompt": "How many slices of pizza are eaten in the U.S. every day?",
+        "unit": "slices",
+        "answer": 130000000,
+        "source": "USDA Food Surveys Research Group, Pizza Consumption in the U.S. (What We Eat in America, NHANES 2017–March 2020)"
+      }
+    ]
+  }
+}

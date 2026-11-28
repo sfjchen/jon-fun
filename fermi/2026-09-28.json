@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 64,
+  "sourceDate": "2026-09-28",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q443",
+        "prompt": "How many times does the name \"Harry\" appear across all seven Harry Potter books?",
+        "unit": "times",
+        "answer": 16557,
+        "source": "UC Business Analytics R Programming Guide (University of Cincinnati), word-frequency analysis of the full text of all seven books: 'harry' appears 16,557 times"
+      },
+      {
+        "id": "q447",
+        "prompt": "What is the combined age of all of the ambassadors to the United Nations?",
+        "unit": "years",
+        "answer": 11800,
+        "source": "UN Protocol list of permanent representatives in New York (as listed on Wikipedia, December 2025), with birth dates from Wikidata for the 58 who have one: average age 61"
+      },
+      {
+        "id": "q449",
+        "prompt": "If everyone on Earth formed one giant human pyramid, with each row one person shorter than the row below, how many rows tall would it be?",
+        "unit": "rows",
+        "answer": 129000,
+        "source": "United Nations World Population Prospects 2024, mid-2026 world population estimate"
+      }
+    ]
+  }
+}

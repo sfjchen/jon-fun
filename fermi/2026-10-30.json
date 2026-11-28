@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 96,
+  "sourceDate": "2026-10-30",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q567",
+        "prompt": "How many ruby-throated hummingbirds would it take to weigh as much as a Hummer H2?",
+        "unit": "hummingbirds",
+        "answer": 830000,
+        "source": "Journey North hummingbird weights; Hummer H2 factory spec via Auto123"
+      },
+      {
+        "id": "q555",
+        "prompt": "Counting every model, from the original Game Boy through the Game Boy Color and every Game Boy Advance, how many Game Boys has Nintendo sold?",
+        "unit": "Game Boys",
+        "answer": 200000000,
+        "source": "Nintendo IR dedicated hardware sales: Game Boy 118.69M plus Game Boy Advance 81.51M"
+      },
+      {
+        "id": "q559",
+        "prompt": "If every LEGO piece ever made were divided equally among everyone alive today, how many pieces would you get?",
+        "unit": "pieces",
+        "answer": 230,
+        "source": "LEGO annual reports, piece counts via TIME and UK IPO · UN World Population Prospects 2024"
+      }
+    ]
+  }
+}

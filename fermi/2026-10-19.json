@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 85,
+  "sourceDate": "2026-10-19",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q536",
+        "prompt": "In 2017, how many sandwiches did Subway serve worldwide each day?",
+        "unit": "sandwiches",
+        "answer": 7000000,
+        "source": "Subway corporate boilerplate, 2017: 7 million made-to-order sandwiches a day"
+      },
+      {
+        "id": "q532",
+        "prompt": "How many 1.8 oz (51 g) Mars bars would it take to weigh as much as NASA's Curiosity rover?",
+        "unit": "Mars bars",
+        "answer": 17600,
+        "source": "NASA Curiosity mission page (899 kg, 1,982 lb) · Mars Wrigley UK standard single bar (51 g)"
+      },
+      {
+        "id": "q529",
+        "prompt": "How much does one million euros weigh in €100 bills?",
+        "unit": "kilograms",
+        "answer": 10,
+        "source": "Oesterreichische Nationalbank, euro banknote specifications (a €100 note weighs about 1 gram)"
+      }
+    ]
+  }
+}

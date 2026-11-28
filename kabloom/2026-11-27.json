@@ -1,0 +1,2012 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "kabloom",
+  "editionId": 33,
+  "sourceDate": "2026-11-27",
+  "sourceUrl": "https://kabloom.io/play/daily",
+  "payload": {
+    "category": "Films",
+    "readingMs": 2000,
+    "answerMs": 25000,
+    "rounds": [
+      {
+        "prompt": "Pick an animated movie whose hero is a big green monster.",
+        "accepted": [
+          "film:=shrek",
+          "film:=monsters inc",
+          "film:grinch",
+          "film:planet hulk",
+          "film:hulk vs"
+        ],
+        "publisherQuestion": {
+          "text": "Pick an animated movie whose hero is a big green monster.",
+          "short": "A big green monster",
+          "seconds": 25,
+          "accept": [
+            "film:Q483815",
+            "film:Q485983",
+            "film:Q486588",
+            "film:Q208131",
+            "film:Q30750216",
+            "film:Q388517",
+            "film:monsters-inc",
+            "film:monsters-university",
+            "film:Q15632949",
+            "film:xf5-planet-hulk",
+            "film:xf5-hulk-vs"
+          ],
+          "obvious": [
+            "film:Q483815"
+          ],
+          "top": [
+            "Shrek",
+            "Shrek 2",
+            "Shrek the Third",
+            "Shrek Forever After",
+            "Shrek 5",
+            "Shrek the Halls",
+            "Monsters, Inc.",
+            "Monsters University"
+          ],
+          "obviousName": "Shrek",
+          "says": {
+            "film:Q131864": "That's the live-action one with Jim Carrey. Think animated.",
+            "film:Q249967": "Frank is green, but Drac is the hero.",
+            "marvel:incredible-hulk": "Not animated, that one.",
+            "film:Q110271518": "Green, but turtles, not one big monster.",
+            "film:Q129193": "A panda, not a green monster."
+          },
+          "hint": "He lives in a swamp."
+        }
+      },
+      {
+        "prompt": "Name a film where the hero discovers a hidden magical world.",
+        "accepted": [
+          "film:=harry potter",
+          "film:fantastic beasts and where to find them",
+          "film:fantastic beasts",
+          "film:chronicles of narnia",
+          "film:percy jackson and the olympians the lightning thief",
+          "film:percy jackson sea of monsters",
+          "film:alice in wonderland",
+          "film:alice through the looking glass",
+          "film:spiderwick chronicles",
+          "film:coraline",
+          "film:spirited away",
+          "film:pans labyrinth",
+          "film:labyrinth",
+          "film:bridge to terabithia",
+          "film:golden compass",
+          "film:stardust",
+          "film:mortal instruments city of bones",
+          "film:hexed",
+          "film:forgotten island",
+          "film:wildwood",
+          "film:atlantis",
+          "film:doctor strange",
+          "film:how to train your dragon",
+          "film:a wrinkle in time",
+          "film:soul",
+          "film:super mario bros",
+          "film:a minecraft movie",
+          "film:coco",
+          "film:shang chi and the legend of the ten rings",
+          "film:frozen",
+          "film:nightmare before christmas",
+          "film:arthur and the minimoys",
+          "film:epic",
+          "film:bfg",
+          "film:suzume",
+          "film:halloweentown",
+          "film:arrietty",
+          "film:book of life",
+          "film:cat returns",
+          "film:boy and the heron",
+          "film:pagemaster",
+          "film:miss peregrines home for peculiar children",
+          "film:shazam",
+          "film:strange world",
+          "film:neverending story",
+          "film:road to el dorado",
+          "film:barbie and the secret door",
+          "film:charlie and the chocolate factory",
+          "film:peter pan",
+          "film:ferngully the last rainforest",
+          "film:wizard of oz"
+        ],
+        "publisherQuestion": {
+          "text": "Name a film where the hero discovers a hidden magical world.",
+          "short": "A hidden magical world",
+          "seconds": 25,
+          "accept": [
+            "film:Q102438",
+            "film:Q102244",
+            "film:Q102448",
+            "film:Q102225",
+            "film:Q102235",
+            "film:Q161687",
+            "film:Q161678",
+            "film:Q232009",
+            "film:Q18199330",
+            "film:Q18199331",
+            "film:Q18199332",
+            "film:Q485803",
+            "film:Q222023",
+            "film:Q474082",
+            "film:Q244333",
+            "film:Q2984104",
+            "film:alice-in-wonderland",
+            "film:Q174385",
+            "film:Q17485699",
+            "film:Q461768",
+            "film:Q632668",
+            "film:Q155653",
+            "film:Q216006",
+            "film:Q278053",
+            "film:Q279274",
+            "film:Q637021",
+            "film:Q244398",
+            "film:Q59346",
+            "film:Q136027913",
+            "film:Q138335503",
+            "film:Q123058740",
+            "film:atlantis",
+            "marvel:doctor-strange",
+            "film:Q22970530",
+            "film:Q24301388",
+            "film:soul",
+            "film:Q108671102",
+            "film:Q40083273",
+            "film:coco",
+            "marvel:shang-chi",
+            "film:frozen-2",
+            "film:Q322328",
+            "film:Q550232",
+            "film:Q2700629",
+            "film:Q19689203",
+            "film:Q110126272",
+            "film:Q1571849",
+            "film:Q699835",
+            "film:Q16248866",
+            "film:Q51543",
+            "film:Q47482560",
+            "film:Q1196110",
+            "film:Q19321019",
+            "film:Q23685878",
+            "film:strange-world",
+            "film:Q316555",
+            "film:Q866358",
+            "film:xf5-barbie-secret-door",
+            "film:Q218235",
+            "film:peter-pan",
+            "film:Q240852",
+            "film:Q193695"
+          ],
+          "obvious": [
+            "film:Q102438"
+          ],
+          "top": [
+            "Harry Potter and the Philosopher's Stone",
+            "Harry Potter and the Chamber of Secrets",
+            "Harry Potter and the Prisoner of Azkaban",
+            "Harry Potter and the Goblet of Fire",
+            "Harry Potter and the Order of the Phoenix",
+            "Harry Potter and the Half-Blood Prince",
+            "Harry Potter and the Deathly Hallows – Part 1",
+            "Harry Potter and the Deathly Hallows – Part 2"
+          ],
+          "obviousName": "Harry Potter and the Philosopher's Stone",
+          "hint": "A boy wizard gets his letter."
+        }
+      },
+      {
+        "prompt": "Think of a film where the characters are stuck inside a video game.",
+        "accepted": [
+          "film:jumanji",
+          "film:free guy",
+          "film:wreck it ralph",
+          "film:ralph breaks the internet",
+          "film:tron",
+          "film:ready player one",
+          "film:spy kids",
+          "film:a minecraft movie",
+          "film:super mario bros",
+          "film:existenz",
+          "film:avalon",
+          "film:sword art online the movie ordinal scale",
+          "film:scooby doo",
+          "film:barbie video game hero",
+          "film:emoji movie"
+        ],
+        "publisherQuestion": {
+          "text": "Think of a film where the characters are stuck inside a video game.",
+          "short": "Inside a video game",
+          "seconds": 25,
+          "accept": [
+            "film:Q20762680",
+            "film:Q60501923",
+            "film:Q38685497",
+            "film:wreck-it-ralph",
+            "film:ralph-breaks-the-internet",
+            "film:Q626483",
+            "film:Q18954",
+            "film:Q120237363",
+            "film:Q22000542",
+            "film:Q550196",
+            "film:Q40083273",
+            "film:Q108671102",
+            "film:Q1050838",
+            "film:xf4-avalon-2001",
+            "film:Q24238538",
+            "film:Q1869550",
+            "film:xf5-barbie-video-game-hero",
+            "film:Q23999306"
+          ],
+          "obvious": [
+            "film:Q20762680",
+            "film:wreck-it-ralph"
+          ],
+          "top": [
+            "Jumanji: Welcome to the Jungle",
+            "Jumanji: The Next Level",
+            "Free Guy",
+            "Wreck-It Ralph",
+            "Ralph Breaks the Internet",
+            "Tron",
+            "Tron: Legacy",
+            "Tron: Ares"
+          ],
+          "obviousName": "Jumanji: Welcome to the Jungle",
+          "says": {
+            "film:Q17182905": "The games come out into the real world there.",
+            "film:Q29906232": "Sonic comes to our world there.",
+            "film:Q1187607": "It plays like a game, but it's a war.",
+            "film:Q753899": "It looks like a game, but it's real life."
+          },
+          "hint": "A board game turns into one."
+        }
+      },
+      {
+        "prompt": "Which thriller is about a man who can't make new memories?",
+        "accepted": [
+          "film:memento",
+          "film:ghajini",
+          "film:lookout",
+          "film:memory",
+          "film:remember"
+        ],
+        "publisherQuestion": {
+          "text": "Which thriller is about a man who can't make new memories?",
+          "short": "Can't make new memories",
+          "seconds": 25,
+          "accept": [
+            "film:Q190525",
+            "film:Q531340",
+            "film:xf4-ghajini-2005",
+            "film:Q931158",
+            "film:Q106513312",
+            "film:Q18153484"
+          ],
+          "obvious": [
+            "film:Q190525"
+          ],
+          "top": [
+            "Memento",
+            "Ghajini",
+            "Ghajini",
+            "The Lookout",
+            "Memory",
+            "Remember"
+          ],
+          "obviousName": "Memento",
+          "says": {
+            "film:Q241482": "It's a woman there, and it's a comedy.",
+            "film:Q14467251": "It's a woman there.",
+            "film:finding-nemo": "Dory is a fish. Think thriller.",
+            "film:finding-dory": "Dory is a fish. Think thriller.",
+            "film:Q105624": "He lost his past, but he makes new memories fine.",
+            "film:Q210364": "His trouble is something else there.",
+            "film:Q25188": "Dreams, not forgetting."
+          }
+        }
+      },
+      {
+        "prompt": "Which movie has a talking donkey?",
+        "accepted": [
+          "film:=shrek",
+          "film:winnie the pooh",
+          "film:many adventures of winnie the pooh",
+          "film:tigger movie",
+          "film:piglets big movie",
+          "film:poohs heffalump movie",
+          "film:poohs grand adventure the search for christopher robin",
+          "film:a very merry pooh year",
+          "film:christopher robin",
+          "film:star",
+          "film:pinocchio",
+          "film:animal farm",
+          "film:donkey xote"
+        ],
+        "publisherQuestion": {
+          "text": "Which movie has a talking donkey?",
+          "short": "A talking donkey",
+          "seconds": 25,
+          "accept": [
+            "film:Q483815",
+            "film:Q485983",
+            "film:Q486588",
+            "film:Q208131",
+            "film:Q30750216",
+            "film:Q388517",
+            "film:winnie-the-pooh-2011",
+            "film:many-adventures-of-winnie-the-pooh",
+            "film:Q374431",
+            "film:Q1406374",
+            "film:Q1361113",
+            "film:Q919563",
+            "film:Q179411",
+            "film:Q24301991",
+            "film:Q28173261",
+            "film:pinocchio",
+            "film:Q2299779",
+            "film:Q142600"
+          ],
+          "obvious": [
+            "film:Q483815"
+          ],
+          "top": [
+            "Shrek",
+            "Shrek 2",
+            "Shrek the Third",
+            "Shrek Forever After",
+            "Shrek 5",
+            "Shrek the Halls",
+            "Winnie the Pooh",
+            "The Many Adventures of Winnie the Pooh"
+          ],
+          "obviousName": "Shrek"
+        }
+      },
+      {
+        "prompt": "Which film stars the actress who played Hermione?",
+        "accepted": [
+          "film:=harry potter",
+          "film:beauty and the beast",
+          "film:little women",
+          "film:perks of being a wallflower",
+          "film:noah",
+          "film:bling ring",
+          "film:this is the end",
+          "film:my week with marilyn",
+          "film:circle",
+          "film:regression",
+          "film:colonia",
+          "film:tale of despereaux"
+        ],
+        "publisherQuestion": {
+          "text": "Which film stars the actress who played Hermione?",
+          "short": "Hermione's actress",
+          "seconds": 25,
+          "accept": [
+            "film:Q102438",
+            "film:Q102244",
+            "film:Q102448",
+            "film:Q102225",
+            "film:Q102235",
+            "film:Q161687",
+            "film:Q161678",
+            "film:Q232009",
+            "film:Q19946102",
+            "film:Q56881140",
+            "film:Q675468",
+            "film:Q286868",
+            "film:Q3077738",
+            "film:Q607363",
+            "film:Q581859",
+            "film:Q21010849",
+            "film:Q16672410",
+            "film:Q18561606",
+            "film:Q840353"
+          ],
+          "obvious": [
+            "film:Q102438"
+          ],
+          "top": [
+            "Harry Potter and the Philosopher's Stone",
+            "Harry Potter and the Chamber of Secrets",
+            "Harry Potter and the Prisoner of Azkaban",
+            "Harry Potter and the Goblet of Fire",
+            "Harry Potter and the Order of the Phoenix",
+            "Harry Potter and the Half-Blood Prince",
+            "Harry Potter and the Deathly Hallows – Part 1",
+            "Harry Potter and the Deathly Hallows – Part 2"
+          ],
+          "obviousName": "Harry Potter and the Philosopher's Stone"
+        }
+      },
+      {
+        "prompt": "Which movie tells its story backwards, from the end to the start?",
+        "accepted": [
+          "film:memento",
+          "film:irreversible",
+          "film:betrayal",
+          "film:5x2",
+          "film:peppermint candy",
+          "film:happy end",
+          "film:two friends",
+          "film:life of chuck",
+          "film:merrily we roll along",
+          "film:shimmer lake"
+        ],
+        "publisherQuestion": {
+          "text": "Which movie tells its story backwards, from the end to the start?",
+          "short": "Told backwards",
+          "seconds": 25,
+          "accept": [
+            "film:Q190525",
+            "film:Q754745",
+            "film:Q3491163",
+            "film:Q245465",
+            "film:xf4-peppermint-candy",
+            "film:xf4-happy-end-1967",
+            "film:xf4-two-friends-1986",
+            "film:Q123169098",
+            "film:xf5-merrily-2025",
+            "film:xf5-shimmer-lake"
+          ],
+          "obvious": [
+            "film:Q190525"
+          ],
+          "top": [
+            "Memento",
+            "Irréversible",
+            "Betrayal",
+            "5x2",
+            "Peppermint Candy",
+            "Happy End",
+            "Two Friends",
+            "The Life of Chuck"
+          ],
+          "obviousName": "Memento",
+          "says": {
+            "film:Q183239": "He ages backwards, but the story goes forwards.",
+            "film:Q63985561": "Time runs backwards in it, but the story is told forwards.",
+            "film:Q208269": "Only the memories run backwards there.",
+            "film:Q104123": "Out of order, but not backwards.",
+            "film:Q20382729": "It plays with time, but it isn't told backwards.",
+            "film:Q25188": "Dreams within dreams, not backwards.",
+            "film:Q13417189": "Time bends there, but the story goes forwards.",
+            "film:Q531340": "It jumps back to the past, but it isn't told backwards.",
+            "film:Q154935": "It jumps around, but it isn't told backwards."
+          }
+        }
+      }
+    ],
+    "answers": [
+      {
+        "id": "film:=shrek",
+        "label": "Shrek the Halls",
+        "aliases": [
+          "shrek 1",
+          "shrek the movie",
+          "srek",
+          "sherk",
+          "Shrek dos",
+          "shrek two",
+          "shrek2",
+          "Shrek 4",
+          "Shrek 4ever After",
+          "Shrek Forever After the Final Chapter",
+          "Shrek: The Final Chapter",
+          "shrek para siempre",
+          "shrek e vissero felici e contenti",
+          "Shrek 3",
+          "shrek three",
+          "shrek tercero",
+          "shrek terzo",
+          "shrek5",
+          "shrek christmas",
+          "shrek christmas special",
+          "Shrek",
+          "Shrek 2",
+          "Shrek the Third",
+          "Shrek Forever After",
+          "Shrek 5"
+        ]
+      },
+      {
+        "id": "film:=monsters inc",
+        "label": "Monsters University",
+        "aliases": [
+          "Monsters Inc",
+          "Monstruos SA",
+          "monsters incorporated",
+          "monstres et cie",
+          "monsters & co",
+          "die monster ag",
+          "monsters u",
+          "monstruos university",
+          "monsters uni",
+          "Monsters, Inc."
+        ]
+      },
+      {
+        "id": "film:grinch",
+        "label": "The Grinch",
+        "aliases": [
+          "Dr. Seuss' The Grinch",
+          "el grinch",
+          "il grinch",
+          "grinch movie",
+          "the grinch movie"
+        ]
+      },
+      {
+        "id": "film:planet hulk",
+        "label": "Planet Hulk",
+        "aliases": []
+      },
+      {
+        "id": "film:hulk vs",
+        "label": "Hulk Vs",
+        "aliases": [
+          "Hulk Vs. Wolverine",
+          "Hulk vs Wolverine",
+          "Hulk Vs. Thor",
+          "Hulk vs Thor",
+          "Hulk versus"
+        ]
+      },
+      {
+        "id": "film:=harry potter",
+        "label": "Harry Potter and the Deathly Hallows – Part 2",
+        "aliases": [
+          "Harry Potter and the Sorcerer's Stone",
+          "Harry Potter 1",
+          "Harry Potter y la piedra filosofal",
+          "Harry Potter à l'école des sorciers",
+          "hp1",
+          "harry potter e a pedra filosofal",
+          "harry potter e la pietra filosofale",
+          "Harry Potter 2",
+          "La cámara secreta",
+          "Potter 2",
+          "harry potter y la camara secreta",
+          "harry potter e la camera dei segreti",
+          "harry potter e a camara secreta",
+          "harry potter et la chambre des secrets",
+          "Harry Potter 4",
+          "harry potter y el caliz de fuego",
+          "harry potter e il calice di fuoco",
+          "harry potter e o calice de fogo",
+          "harry potter et la coupe de feu",
+          "goblet of fir",
+          "Harry Potter 3",
+          "azkaban",
+          "harry potter y el prisionero de azkaban",
+          "harry potter e il prigioniero di azkaban",
+          "harry potter e o prisioneiro de azkaban",
+          "Harry Potter 6",
+          "harry potter y el misterio del principe",
+          "harry potter e il principe mezzosangue",
+          "harry potter e o enigma do principe",
+          "La orden del Fénix",
+          "harry potter 5",
+          "harry potter y la orden del fenix",
+          "harry potter e l'ordine della fenice",
+          "harry potter e a ordem da fenix",
+          "Harry Potter 7",
+          "Deathly Hallows 1",
+          "harry potter 7 part 1",
+          "harry potter y las reliquias de la muerte parte 1",
+          "harry potter e i doni della morte parte 1",
+          "harry potter e as reliquias da morte parte 1",
+          "deathly hollows part 1",
+          "Harry Potter 8",
+          "Deathly Hallows 2",
+          "harry potter 7 part 2",
+          "harry potter y las reliquias de la muerte parte 2",
+          "harry potter e i doni della morte parte 2",
+          "harry potter e as reliquias da morte parte 2",
+          "deathly hollows part 2",
+          "Harry Potter 20th Anniversary: Return to Hogwarts",
+          "Return to Hogwarts",
+          "Harry Potter and the Forbidden Journey",
+          "Harry Potter and the Philosopher's Stone (film)",
+          "Harry Potter and the Chamber of Secrets (film)",
+          "Harry Potter and the Prisoner of Azkaban (film)",
+          "Harry Potter and the Goblet of Fire",
+          "Harry Potter and the Order of the Phoenix (film)",
+          "Harry Potter and the Half-Blood Prince (film)",
+          "Harry Potter and the Deathly Hallows – Part 1"
+        ]
+      },
+      {
+        "id": "film:fantastic beasts and where to find them",
+        "label": "Fantastic Beasts and Where to Find Them",
+        "aliases": [
+          "Fantastic Beasts and Where to Find Them I",
+          "Animales fantásticos y dónde encontrarlos",
+          "Les Animaux fantastiques",
+          "fantastic beasts 1",
+          "fbawtft",
+          "animais fantásticos e onde habitam",
+          "animali fantastici e dove trovarli"
+        ]
+      },
+      {
+        "id": "film:fantastic beasts",
+        "label": "Fantastic Beasts: The Secrets of Dumbledore",
+        "aliases": [
+          "Fantastic Beasts II",
+          "Fantastic Beasts Two",
+          "Los crímenes de Grindelwald",
+          "animales fantásticos los crímenes de grindelwald",
+          "animais fantásticos os crimes de grindelwald",
+          "les animaux fantastiques les crimes de grindelwald",
+          "animales fantasticos 2",
+          "animali fantastici i crimini di grindelwald",
+          "Fantastic Beasts 3",
+          "Fantastic Beasts III",
+          "animales fantasticos 3",
+          "animales fantasticos los secretos de dumbledore",
+          "animali fantastici i segreti di silente",
+          "animais fantasticos os segredos de dumbledore",
+          "Fantastic Beasts: The Crimes of Grindelwald"
+        ]
+      },
+      {
+        "id": "film:chronicles of narnia",
+        "label": "The Chronicles of Narnia: The Voyage of the Dawn Treader",
+        "aliases": [
+          "Le Monde de Narnia",
+          "Las crónicas de Narnia",
+          "narnia",
+          "narnia 1",
+          "el león la bruja y el armario",
+          "o leão a feiticeira e o guarda-roupa",
+          "le lion la sorcière blanche et l'armoire magique",
+          "el león, la bruja y el ropero",
+          "le cronache di narnia",
+          "el principe caspian",
+          "il principe caspian",
+          "principe caspian",
+          "la travesia del viajero del alba",
+          "il viaggio del veliero",
+          "a viagem do peregrino da alvorada",
+          "The Chronicles of Narnia: The Lion, the Witch and the Wardrobe",
+          "The Chronicles of Narnia: Prince Caspian"
+        ]
+      },
+      {
+        "id": "film:percy jackson and the olympians the lightning thief",
+        "label": "Percy Jackson & the Olympians: The Lightning Thief",
+        "aliases": [
+          "percy jackson 1",
+          "percy jackson y el ladron del rayo",
+          "percy jackson e gli dei dell'olimpo il ladro di fulmini",
+          "percy jackson e o ladrao de raios"
+        ]
+      },
+      {
+        "id": "film:percy jackson sea of monsters",
+        "label": "Percy Jackson: Sea of Monsters",
+        "aliases": [
+          "Percy Jackson & The Olympians: The Sea of Monsters",
+          "percy jackson 2",
+          "percy jackson y el mar de los monstruos",
+          "percy jackson e gli dei dell'olimpo il mare dei mostri",
+          "percy jackson e o mar de monstros"
+        ]
+      },
+      {
+        "id": "film:alice in wonderland",
+        "label": "Alice in Wonderland (2010 film)",
+        "aliases": [
+          "alicia en el país de las maravillas",
+          "alice no país das maravilhas",
+          "alice au pays des merveilles",
+          "alice nel paese delle meraviglie",
+          "alice",
+          "Alice in Wonderland (1903 film)",
+          "Alice in Wonderland"
+        ]
+      },
+      {
+        "id": "film:alice through the looking glass",
+        "label": "Alice Through the Looking Glass",
+        "aliases": [
+          "Alice in Wonderland 2",
+          "Alice in Wonderland: Through the Looking Glass",
+          "alice 2",
+          "alicia a traves del espejo",
+          "alice attraverso lo specchio",
+          "alice atraves do espelho",
+          "Alice through the Looking Glass (1998 film)"
+        ]
+      },
+      {
+        "id": "film:spiderwick chronicles",
+        "label": "The Spiderwick Chronicles",
+        "aliases": [
+          "las cronicas de spiderwick",
+          "spiderwick le cronache",
+          "as cronicas de spiderwick",
+          "spyderwick"
+        ]
+      },
+      {
+        "id": "film:coraline",
+        "label": "Coraline",
+        "aliases": [
+          "Coraline 3D",
+          "coraline y la puerta secreta",
+          "coraline e o mundo secreto",
+          "coraline e la porta magica",
+          "coraline et la porte magique",
+          "caroline"
+        ]
+      },
+      {
+        "id": "film:spirited away",
+        "label": "Spirited Away",
+        "aliases": [
+          "Sen to Chihiro no Kamikakushi",
+          "Le Voyage de Chihiro",
+          "el viaje de chihiro",
+          "a viagem de chihiro",
+          "la città incantata",
+          "chihiros reise ins zauberland",
+          "chihiro"
+        ]
+      },
+      {
+        "id": "film:pans labyrinth",
+        "label": "Pan's Labyrinth",
+        "aliases": [
+          "el laberinto del fauno",
+          "laberinto del fauno",
+          "il labirinto del fauno",
+          "o labirinto do fauno",
+          "le labyrinthe de pan"
+        ]
+      },
+      {
+        "id": "film:labyrinth",
+        "label": "Labyrinth",
+        "aliases": [
+          "dentro del laberinto",
+          "labrynth"
+        ]
+      },
+      {
+        "id": "film:bridge to terabithia",
+        "label": "Bridge to Terabithia",
+        "aliases": [
+          "un puente hacia terabithia",
+          "un ponte per terabithia",
+          "ponte para terabitia"
+        ]
+      },
+      {
+        "id": "film:golden compass",
+        "label": "The Golden Compass",
+        "aliases": [
+          "A la croisée des mondes",
+          "la brujula dorada",
+          "la bussola d'oro",
+          "a bussola de ouro"
+        ]
+      },
+      {
+        "id": "film:stardust",
+        "label": "Stardust",
+        "aliases": [
+          "stardust el misterio de la estrella",
+          "star dust"
+        ]
+      },
+      {
+        "id": "film:mortal instruments city of bones",
+        "label": "The Mortal Instruments: City of Bones",
+        "aliases": [
+          "cazadores de sombras",
+          "cazadores de sombras ciudad de hueso",
+          "shadowhunters citta di ossa",
+          "os instrumentos mortais cidade dos ossos"
+        ]
+      },
+      {
+        "id": "film:hexed",
+        "label": "Hexed (2026 film)",
+        "aliases": [
+          "Hexed",
+          "Disney's Hexed"
+        ]
+      },
+      {
+        "id": "film:forgotten island",
+        "label": "Forgotten Island",
+        "aliases": []
+      },
+      {
+        "id": "film:wildwood",
+        "label": "Wildwood",
+        "aliases": []
+      },
+      {
+        "id": "film:atlantis",
+        "label": "Atlantis: The Lost Empire",
+        "aliases": [
+          "Atlantis",
+          "Atlantis: Milo's Return",
+          "Atlantis II: Milo's Return"
+        ]
+      },
+      {
+        "id": "film:doctor strange",
+        "label": "Doctor Strange",
+        "aliases": [
+          "Dr. Strange",
+          "Doctor Strange 1",
+          "doctor extraño",
+          "doutor estranho",
+          "Dr Strange",
+          "Doctor Strange IMAX 3D",
+          "Dr. Strange IMAX 3D",
+          "Doctor Strange in the Multiverse of Madness",
+          "Multiverse of Madness",
+          "Doctor Strange 2",
+          "Dr. Strange 2",
+          "doctor strange mom",
+          "doctor strange en el multiverso de la locura",
+          "doutor estranho no multiverso da loucura",
+          "Doctor Strange: The Sorcerer Supreme",
+          "The Sorcerer Supreme"
+        ]
+      },
+      {
+        "id": "film:how to train your dragon",
+        "label": "How to Train Your Dragon: The Hidden World",
+        "aliases": [
+          "How to Train Your Dragon",
+          "How to Train Your Dragon 3",
+          "HTTYD 3",
+          "HTTYD THW",
+          "How to Train Your Dragon 2",
+          "HTTYD 2",
+          "How to Train Your Dragon (2025 film)"
+        ]
+      },
+      {
+        "id": "film:a wrinkle in time",
+        "label": "A Wrinkle in Time",
+        "aliases": [
+          "Wrinkle in Time"
+        ]
+      },
+      {
+        "id": "film:soul",
+        "label": "Soul",
+        "aliases": []
+      },
+      {
+        "id": "film:super mario bros",
+        "label": "The Super Mario Bros. Movie",
+        "aliases": [
+          "Super Mario Movie",
+          "2023 The Super Mario Bros. Movie",
+          "super mario bros la película",
+          "super mario bros o filme",
+          "super mario bros le film",
+          "mario",
+          "Super Mario Bros. (film)",
+          "Super Mario: Goddess of the Demon World Empire",
+          "1993 Super Mario Bros."
+        ]
+      },
+      {
+        "id": "film:a minecraft movie",
+        "label": "A Minecraft Movie",
+        "aliases": [
+          "Minecraft Movie",
+          "Minecraft: The Movie",
+          "una película de minecraft",
+          "um filme minecraft",
+          "minecraft le film",
+          "minecraft la pelicula",
+          "minecraft o filme"
+        ]
+      },
+      {
+        "id": "film:coco",
+        "label": "Coco",
+        "aliases": [
+          "Coco de Pixar",
+          "coco disney",
+          "disney coco",
+          "coco 2017",
+          "viva a vida é uma festa"
+        ]
+      },
+      {
+        "id": "film:shang chi and the legend of the ten rings",
+        "label": "Shang-Chi and the Legend of the Ten Rings",
+        "aliases": [
+          "Shang-Chi",
+          "shang chi and the legend of the 10 rings",
+          "shang chi y la leyenda de los diez anillos",
+          "shang chi e a lenda dos dez anéis"
+        ]
+      },
+      {
+        "id": "film:frozen",
+        "label": "Frozen",
+        "aliases": [
+          "La Reine des neiges",
+          "frozen 1",
+          "frozen 2013",
+          "frozen una aventura congelada",
+          "frozen el reino del hielo",
+          "frozen uma aventura congelante",
+          "die eiskönigin",
+          "frozen il regno di ghiaccio",
+          "Frozen II",
+          "Frozen 2",
+          "frozen2",
+          "die eiskönigin 2",
+          "Disney's Frozen 2",
+          "Disney's Frozen II",
+          "Frozen Two",
+          "Frozen 3",
+          "Frozen III"
+        ]
+      },
+      {
+        "id": "film:nightmare before christmas",
+        "label": "The Nightmare Before Christmas",
+        "aliases": [
+          "Tim Burton's The Nightmare Before Christmas",
+          "nightmare b4 christmas",
+          "tnbc",
+          "pesadilla antes de navidad",
+          "el extraño mundo de jack",
+          "o estranho mundo de jack",
+          "l'étrange noël de monsieur jack",
+          "nightmare before xmas"
+        ]
+      },
+      {
+        "id": "film:arthur and the minimoys",
+        "label": "Arthur and the Minimoys",
+        "aliases": [
+          "Arthur and the Invisibles"
+        ]
+      },
+      {
+        "id": "film:epic",
+        "label": "Epic",
+        "aliases": []
+      },
+      {
+        "id": "film:bfg",
+        "label": "The BFG",
+        "aliases": [
+          "Roald Dahl's The BFG"
+        ]
+      },
+      {
+        "id": "film:suzume",
+        "label": "Suzume",
+        "aliases": [
+          "Suzume no Tojimari"
+        ]
+      },
+      {
+        "id": "film:halloweentown",
+        "label": "Halloweentown",
+        "aliases": [
+          "Halloweentown II: Kalabar's Revenge"
+        ]
+      },
+      {
+        "id": "film:arrietty",
+        "label": "Arrietty",
+        "aliases": [
+          "The Secret World of Arrietty",
+          "Karigurashi no Arrietty",
+          "The Borrower Arrietty"
+        ]
+      },
+      {
+        "id": "film:book of life",
+        "label": "The Book of Life",
+        "aliases": []
+      },
+      {
+        "id": "film:cat returns",
+        "label": "The Cat Returns",
+        "aliases": [
+          "Baron: The Cat Returns",
+          "Neko no Ongaeshi"
+        ]
+      },
+      {
+        "id": "film:boy and the heron",
+        "label": "The Boy and the Heron",
+        "aliases": [
+          "How Do You Live?",
+          "Kimitachi wa Do Ikiru ka"
+        ]
+      },
+      {
+        "id": "film:pagemaster",
+        "label": "The Pagemaster",
+        "aliases": []
+      },
+      {
+        "id": "film:miss peregrines home for peculiar children",
+        "label": "Miss Peregrine's Home for Peculiar Children",
+        "aliases": []
+      },
+      {
+        "id": "film:shazam",
+        "label": "Shazam!",
+        "aliases": [
+          "shazam 2019",
+          "shazam 1"
+        ]
+      },
+      {
+        "id": "film:strange world",
+        "label": "Strange World",
+        "aliases": [
+          "Searcher Clade"
+        ]
+      },
+      {
+        "id": "film:neverending story",
+        "label": "The NeverEnding Story (film)",
+        "aliases": [
+          "The NeverEnding Story II: The Next Chapter",
+          "NeverEnding Story II: The Next Chapter",
+          "The Neverending Story II",
+          "The Next Chapter"
+        ]
+      },
+      {
+        "id": "film:road to el dorado",
+        "label": "The Road to El Dorado",
+        "aliases": []
+      },
+      {
+        "id": "film:barbie and the secret door",
+        "label": "Barbie and the Secret Door",
+        "aliases": [
+          "Barbie Secret Door"
+        ]
+      },
+      {
+        "id": "film:charlie and the chocolate factory",
+        "label": "Charlie and the Chocolate Factory",
+        "aliases": [
+          "charlie y la fábrica de chocolate",
+          "a fantástica fábrica de chocolate",
+          "charlie et la chocolaterie",
+          "la fabbrica di cioccolato",
+          "charlie und die schokoladenfabrik",
+          "willy wonka",
+          "willy wonka and the chocolate factory 2005"
+        ]
+      },
+      {
+        "id": "film:peter pan",
+        "label": "Peter Pan",
+        "aliases": [
+          "peter pan 1953",
+          "disney peter pan",
+          "peter pan animated",
+          "Peter Pan (film)",
+          "Peter Pan & Wendy"
+        ]
+      },
+      {
+        "id": "film:ferngully the last rainforest",
+        "label": "FernGully: The Last Rainforest",
+        "aliases": [
+          "The Last Rainforest"
+        ]
+      },
+      {
+        "id": "film:wizard of oz",
+        "label": "The Wizard of Oz",
+        "aliases": [
+          "Le Magicien d'Oz",
+          "Il mago di Oz",
+          "O Mágico de Oz",
+          "Der Zauberer von Oz",
+          "The Wizard of Oz (1982 film)",
+          "The Wizard of Oz 1982"
+        ]
+      },
+      {
+        "id": "film:jumanji",
+        "label": "Jumanji: The Next Level",
+        "aliases": [
+          "Jumanji",
+          "Welcome to the Jungle",
+          "Jumanji 2",
+          "jumanji en la selva",
+          "jumanji bienvenidos a la jungla",
+          "jumanji benvenuti nella giungla",
+          "jumanji bem vindo a selva",
+          "Jumanji 3",
+          "jumanji siguiente nivel",
+          "jumanji proxima fase",
+          "Jumanji: Open World",
+          "Jumanji: Welcome to the Jungle"
+        ]
+      },
+      {
+        "id": "film:free guy",
+        "label": "Free Guy",
+        "aliases": [
+          "free guy tomando el control",
+          "free guy eroe per gioco",
+          "free guy assumindo o controle"
+        ]
+      },
+      {
+        "id": "film:wreck it ralph",
+        "label": "Wreck-It Ralph",
+        "aliases": [
+          "wreck it ralph 1",
+          "rompe ralph",
+          "ralph el demoledor",
+          "detona ralph",
+          "les mondes de ralph",
+          "ralph spaccatutto"
+        ]
+      },
+      {
+        "id": "film:ralph breaks the internet",
+        "label": "Ralph Breaks the Internet",
+        "aliases": [
+          "Wreck-It Ralph 2",
+          "ralph rompe internet",
+          "wifi ralph",
+          "ralph 2.0",
+          "ralph reicht's 2",
+          "ralph spacca internet",
+          "Ralph Breaks the Internet Wreck-It Ralph 2",
+          "Ralph Breaks the Internet: Wreck-It Ralph 2",
+          "Ralph Breaks the Internet: Wreck-It Ralph II",
+          "Ralph Breaks the Internet: Wreck-It Ralph Two",
+          "Wreck It Ralph 2",
+          "Wreck It Ralph Breaks the Internet",
+          "Wreck It Ralph II",
+          "Wreck It Ralph Two",
+          "Wreck-It Ralph Breaks the Internet",
+          "Wreck-It Ralph II",
+          "Wreck-It Ralph Two"
+        ]
+      },
+      {
+        "id": "film:tron",
+        "label": "Tron: Ares",
+        "aliases": [
+          "tronn",
+          "tron el legado",
+          "tron o legado",
+          "TR3N",
+          "Tron 3",
+          "Tron III",
+          "Tron",
+          "Tron: Legacy"
+        ]
+      },
+      {
+        "id": "film:ready player one",
+        "label": "Ready Player One",
+        "aliases": [
+          "Ready Player 1",
+          "rpo",
+          "ready player one movie",
+          "ready player one 2018",
+          "ready player one comienza el juego",
+          "ready player one jogador numero 1"
+        ]
+      },
+      {
+        "id": "film:spy kids",
+        "label": "Spy Kids 3-D: Game Over",
+        "aliases": [
+          "Spy Kids",
+          "Spy Kids 3: Game Over",
+          "Spy Kids 3",
+          "Spy Kids 3-D",
+          "spy kids 3d",
+          "mini espias 3",
+          "Spy Kids 2: The Island of Lost Dreams",
+          "Spy Kids 2",
+          "Spy Kids: All the Time in the World",
+          "Spy Kids 4",
+          "Spy Kids 4: All the Time in the World",
+          "Spy Kids 4D",
+          "Spy Kids: All the Time in the World in 4D",
+          "All the Time in the World",
+          "Spy Kids: Armageddon"
+        ]
+      },
+      {
+        "id": "film:existenz",
+        "label": "Existenz",
+        "aliases": []
+      },
+      {
+        "id": "film:avalon",
+        "label": "Avalon (2001 film)",
+        "aliases": [
+          "Avalon",
+          "avallon"
+        ]
+      },
+      {
+        "id": "film:sword art online the movie ordinal scale",
+        "label": "Sword Art Online The Movie: Ordinal Scale",
+        "aliases": [
+          "Sword Art Online The Movie -Ordinal Scale-",
+          "sao ordinal scale"
+        ]
+      },
+      {
+        "id": "film:scooby doo",
+        "label": "Scooby-Doo and the Cyber Chase",
+        "aliases": [
+          "Scooby-Doo (film)",
+          "Scooby-Doo 2: Monsters Unleashed",
+          "Scooby-Doo 2",
+          "Scooby-Doo: Monsters Unleashed",
+          "Scooby-Doo on Zombie Island",
+          "Lian Victor",
+          "Scooby-Doo and the Alien Invaders",
+          "Scooby-Doo! The Mystery Begins",
+          "Scooby-Doo 3",
+          "Scooby-Doo 3: The Mystery Begins",
+          "Scooby-Doo! and the Loch Ness Monster",
+          "Scooby-Doo and the Loch Ness Monster",
+          "Scooby-Doo! and the Legend of the Vampire",
+          "Scooby-Doo! in Where's My Mummy?",
+          "Scooby-Doo in Where's My Mummy?",
+          "Scooby-Doo! and the Goblin King",
+          "Scooby-Doo and the Goblin King",
+          "Scooby-Doo! and the Witch's Ghost",
+          "Scooby-Doo & the Witches Ghost",
+          "Scooby-Doo! Pirates Ahoy!",
+          "Scooby-Doo! Curse of the Lake Monster",
+          "Scooby-Doo 4",
+          "Scooby-Doo 4: Curse of the Lake Monster",
+          "Scooby-Doo Meets the Boo Brothers",
+          "Scooby-Doo! and the Monster of Mexico",
+          "Scooby Doo and the Monster of Mexico",
+          "Scooby-Doo! and the Samurai Sword",
+          "Scooby-Doo! Camp Scare",
+          "Scooby-Doo And The Summer Camp Nightmare",
+          "Scooby-Doo! Music of the Vampire",
+          "Scooby-Doo! WrestleMania Mystery",
+          "Scooby-Doo and the Reluctant Werewolf",
+          "Scooby and the Reluctant Werewolf",
+          "Scooby-Doo and the Ghoul School",
+          "Scooby-Doo! Legend of the Phantosaur",
+          "Scooby-Doo! Mask of the Blue Falcon",
+          "Scooby-Doo: Mask of the Blue Falcon",
+          "Scooby-Doo! and Kiss: Rock and Roll Mystery",
+          "Rock and Roll Mystery",
+          "Scooby-Doo! and WWE: Curse of the Speed Demon",
+          "Scooby-Doo! & WWE: Curse of the Speed Demon",
+          "Curse of the Speed Demon",
+          "Scooby-Doo! Return to Zombie Island",
+          "Scooby-Doo! Shaggy's Showdown",
+          "Scooby-Doo! Wild West",
+          "Scooby-Doo! Abracadabra-Doo",
+          "Scooby-Doo! Adventures: The Mystery Map",
+          "The Mystery Map",
+          "Scooby-Doo! Frankencreepy",
+          "Scooby-Doo! and the Curse of the 13th Ghost"
+        ]
+      },
+      {
+        "id": "film:barbie video game hero",
+        "label": "Barbie Video Game Hero",
+        "aliases": [
+          "Barbie: Video Game Hero"
+        ]
+      },
+      {
+        "id": "film:emoji movie",
+        "label": "The Emoji Movie",
+        "aliases": [
+          "EmojiMovie: Express Yourself"
+        ]
+      },
+      {
+        "id": "film:memento",
+        "label": "Memento",
+        "aliases": [
+          "momento",
+          "memento movie",
+          "memento 2000"
+        ]
+      },
+      {
+        "id": "film:ghajini",
+        "label": "Ghajini (2005 film)",
+        "aliases": [
+          "gajini",
+          "gajni",
+          "ghajni",
+          "Ghazni",
+          "Ghajini"
+        ]
+      },
+      {
+        "id": "film:lookout",
+        "label": "The Lookout",
+        "aliases": [
+          "Lookout",
+          "the look out"
+        ]
+      },
+      {
+        "id": "film:memory",
+        "label": "Memory (2022 film)",
+        "aliases": [
+          "Memory"
+        ]
+      },
+      {
+        "id": "film:remember",
+        "label": "Remember (2015 film)",
+        "aliases": [
+          "Remember",
+          "remeber"
+        ]
+      },
+      {
+        "id": "film:winnie the pooh",
+        "label": "Winnie the Pooh",
+        "aliases": [
+          "winnie the pooh 2011",
+          "winnie l'ourson",
+          "winnie de poeh",
+          "winnie puuh",
+          "ursinho pooh",
+          "pooh",
+          "winny the pooh",
+          "Winnie-the-Pooh: Blood and Honey",
+          "Blood and Honey (Winnie-the-Pooh)",
+          "Winnie the Pooh and the Honey Tree",
+          "Winnie the Pooh and the Blustery Day"
+        ]
+      },
+      {
+        "id": "film:many adventures of winnie the pooh",
+        "label": "The Many Adventures of Winnie the Pooh",
+        "aliases": [
+          "Many Adventures of Winnie the Pooh",
+          "winnie the pooh 1977",
+          "lo mejor de winnie the pooh",
+          "as aventuras do ursinho pooh",
+          "las aventuras de winnie pooh",
+          "le avventure di winnie the pooh",
+          "Winnie the Pooh"
+        ]
+      },
+      {
+        "id": "film:tigger movie",
+        "label": "The Tigger Movie",
+        "aliases": [
+          "Tigger: The Movie",
+          "la pelicula de tigger",
+          "t come tigro",
+          "o filme do tigrao"
+        ]
+      },
+      {
+        "id": "film:piglets big movie",
+        "label": "Piglet's Big Movie",
+        "aliases": [
+          "la gran pelicula de piglet",
+          "pimpi piccolo grande eroe",
+          "o grande filme do leitao",
+          "piglet"
+        ]
+      },
+      {
+        "id": "film:poohs heffalump movie",
+        "label": "Pooh's Heffalump Movie",
+        "aliases": [
+          "winnie pooh y el efelante",
+          "winnie the pooh e gli efelanti"
+        ]
+      },
+      {
+        "id": "film:poohs grand adventure the search for christopher robin",
+        "label": "Pooh's Grand Adventure: The Search for Christopher Robin",
+        "aliases": [
+          "Winnie the Pooh's Most Grand Adventure",
+          "The Search for Christopher Robin",
+          "la gran aventura de pooh",
+          "winnie the pooh alla ricerca di christopher robin"
+        ]
+      },
+      {
+        "id": "film:a very merry pooh year",
+        "label": "A Very Merry Pooh Year",
+        "aliases": [
+          "Very Merry Pooh Year",
+          "Winnie the Pooh: A Very Merry Pooh Year",
+          "pooh christmas",
+          "winnie the pooh christmas"
+        ]
+      },
+      {
+        "id": "film:christopher robin",
+        "label": "Christopher Robin",
+        "aliases": [
+          "christopher robin un reencuentro inolvidable",
+          "ritorno al bosco dei 100 acri",
+          "christopher robin um reencontro inesquecivel"
+        ]
+      },
+      {
+        "id": "film:star",
+        "label": "The Star",
+        "aliases": [
+          "The Star: The Story of the First Christmas",
+          "la estrella",
+          "la estrella de belen",
+          "Star 80"
+        ]
+      },
+      {
+        "id": "film:pinocchio",
+        "label": "Pinocchio",
+        "aliases": [
+          "Pinocchio 2022",
+          "pinochio",
+          "pinocho",
+          "pinóquio",
+          "pinnochio",
+          "Disney's Pinocchio",
+          "1940 Pinocchio",
+          "Pinocchio (film)",
+          "Pinocchio (2022 Disney film)",
+          "Pinocchio: Unstrung"
+        ]
+      },
+      {
+        "id": "film:animal farm",
+        "label": "Animal Farm (1954 film)",
+        "aliases": [
+          "Animal Farm",
+          "rebelion en la granja",
+          "la fattoria degli animali",
+          "a revolucao dos bichos",
+          "la ferme des animaux"
+        ]
+      },
+      {
+        "id": "film:donkey xote",
+        "label": "Donkey Xote",
+        "aliases": []
+      },
+      {
+        "id": "film:beauty and the beast",
+        "label": "Beauty and the Beast (2017 film)",
+        "aliases": [
+          "Beauty and the Beast",
+          "La Bella y la Bestia",
+          "a bela e a fera",
+          "la bella e la bestia",
+          "die schöne und das biest",
+          "belle en het beest",
+          "Beauty and the Beast (1991 film)",
+          "Beauty and the Beast: The Enchanted Christmas",
+          "Beauty and the Beast (1946 film)"
+        ]
+      },
+      {
+        "id": "film:little women",
+        "label": "Little Women (2019 film)",
+        "aliases": [
+          "Mujercitas",
+          "Les Filles du docteur March",
+          "piccole donne",
+          "adoraveis mulheres",
+          "Little Women (1994 film)",
+          "Little Women (1933 film)"
+        ]
+      },
+      {
+        "id": "film:perks of being a wallflower",
+        "label": "The Perks of Being a Wallflower",
+        "aliases": [
+          "perks",
+          "las ventajas de ser invisible",
+          "noi siamo infinito",
+          "as vantagens de ser invisivel",
+          "le monde de charlie",
+          "wallflower"
+        ]
+      },
+      {
+        "id": "film:noah",
+        "label": "Noah",
+        "aliases": []
+      },
+      {
+        "id": "film:bling ring",
+        "label": "The Bling Ring",
+        "aliases": []
+      },
+      {
+        "id": "film:this is the end",
+        "label": "This Is the End",
+        "aliases": [
+          "juerga hasta el fin",
+          "facciamola finita",
+          "e o fim"
+        ]
+      },
+      {
+        "id": "film:my week with marilyn",
+        "label": "My Week with Marilyn",
+        "aliases": [
+          "mi semana con marilyn",
+          "sete dias com marilyn",
+          "marilyn"
+        ]
+      },
+      {
+        "id": "film:circle",
+        "label": "The Circle",
+        "aliases": [
+          "el circulo",
+          "o circulo"
+        ]
+      },
+      {
+        "id": "film:regression",
+        "label": "Regression",
+        "aliases": []
+      },
+      {
+        "id": "film:colonia",
+        "label": "Colonia",
+        "aliases": []
+      },
+      {
+        "id": "film:tale of despereaux",
+        "label": "The Tale of Despereaux",
+        "aliases": [
+          "el valiente despereaux",
+          "le avventure del topino despereaux",
+          "o corajoso ratinho despereaux",
+          "desperaux"
+        ]
+      },
+      {
+        "id": "film:irreversible",
+        "label": "Irréversible",
+        "aliases": []
+      },
+      {
+        "id": "film:betrayal",
+        "label": "Betrayal",
+        "aliases": [
+          "traicion"
+        ]
+      },
+      {
+        "id": "film:5x2",
+        "label": "5x2",
+        "aliases": [
+          "5 x 2",
+          "five times two",
+          "cinq fois deux",
+          "5 por 2"
+        ]
+      },
+      {
+        "id": "film:peppermint candy",
+        "label": "Peppermint Candy",
+        "aliases": [
+          "Bakha Satang"
+        ]
+      },
+      {
+        "id": "film:happy end",
+        "label": "Happy End (1967 film)",
+        "aliases": [
+          "Happy End"
+        ]
+      },
+      {
+        "id": "film:two friends",
+        "label": "Two Friends (1986 film)",
+        "aliases": [
+          "Two Friends",
+          "2 friends"
+        ]
+      },
+      {
+        "id": "film:life of chuck",
+        "label": "The Life of Chuck",
+        "aliases": []
+      },
+      {
+        "id": "film:merrily we roll along",
+        "label": "Merrily We Roll Along (2025 film)",
+        "aliases": [
+          "Merrily We Roll Along"
+        ]
+      },
+      {
+        "id": "film:shimmer lake",
+        "label": "Shimmer Lake",
+        "aliases": []
+      }
+    ],
+    "publisherDay": {
+      "n": 33,
+      "start": "t_film",
+      "questions": [
+        {
+          "text": "Pick an animated movie whose hero is a big green monster.",
+          "short": "A big green monster",
+          "seconds": 25,
+          "accept": [
+            "film:Q483815",
+            "film:Q485983",
+            "film:Q486588",
+            "film:Q208131",
+            "film:Q30750216",
+            "film:Q388517",
+            "film:monsters-inc",
+            "film:monsters-university",
+            "film:Q15632949",
+            "film:xf5-planet-hulk",
+            "film:xf5-hulk-vs"
+          ],
+          "obvious": [
+            "film:Q483815"
+          ],
+          "top": [
+            "Shrek",
+            "Shrek 2",
+            "Shrek the Third",
+            "Shrek Forever After",
+            "Shrek 5",
+            "Shrek the Halls",
+            "Monsters, Inc.",
+            "Monsters University"
+          ],
+          "obviousName": "Shrek",
+          "says": {
+            "film:Q131864": "That's the live-action one with Jim Carrey. Think animated.",
+            "film:Q249967": "Frank is green, but Drac is the hero.",
+            "marvel:incredible-hulk": "Not animated, that one.",
+            "film:Q110271518": "Green, but turtles, not one big monster.",
+            "film:Q129193": "A panda, not a green monster."
+          },
+          "hint": "He lives in a swamp."
+        },
+        {
+          "text": "Name a film where the hero discovers a hidden magical world.",
+          "short": "A hidden magical world",
+          "seconds": 25,
+          "accept": [
+            "film:Q102438",
+            "film:Q102244",
+            "film:Q102448",
+            "film:Q102225",
+            "film:Q102235",
+            "film:Q161687",
+            "film:Q161678",
+            "film:Q232009",
+            "film:Q18199330",
+            "film:Q18199331",
+            "film:Q18199332",
+            "film:Q485803",
+            "film:Q222023",
+            "film:Q474082",
+            "film:Q244333",
+            "film:Q2984104",
+            "film:alice-in-wonderland",
+            "film:Q174385",
+            "film:Q17485699",
+            "film:Q461768",
+            "film:Q632668",
+            "film:Q155653",
+            "film:Q216006",
+            "film:Q278053",
+            "film:Q279274",
+            "film:Q637021",
+            "film:Q244398",
+            "film:Q59346",
+            "film:Q136027913",
+            "film:Q138335503",
+            "film:Q123058740",
+            "film:atlantis",
+            "marvel:doctor-strange",
+            "film:Q22970530",
+            "film:Q24301388",
+            "film:soul",
+            "film:Q108671102",
+            "film:Q40083273",
+            "film:coco",
+            "marvel:shang-chi",
+            "film:frozen-2",
+            "film:Q322328",
+            "film:Q550232",
+            "film:Q2700629",
+            "film:Q19689203",
+            "film:Q110126272",
+            "film:Q1571849",
+            "film:Q699835",
+            "film:Q16248866",
+            "film:Q51543",
+            "film:Q47482560",
+            "film:Q1196110",
+            "film:Q19321019",
+            "film:Q23685878",
+            "film:strange-world",
+            "film:Q316555",
+            "film:Q866358",
+            "film:xf5-barbie-secret-door",
+            "film:Q218235",
+            "film:peter-pan",
+            "film:Q240852",
+            "film:Q193695"
+          ],
+          "obvious": [
+            "film:Q102438"
+          ],
+          "top": [
+            "Harry Potter and the Philosopher's Stone",
+            "Harry Potter and the Chamber of Secrets",
+            "Harry Potter and the Prisoner of Azkaban",
+            "Harry Potter and the Goblet of Fire",
+            "Harry Potter and the Order of the Phoenix",
+            "Harry Potter and the Half-Blood Prince",
+            "Harry Potter and the Deathly Hallows – Part 1",
+            "Harry Potter and the Deathly Hallows – Part 2"
+          ],
+          "obviousName": "Harry Potter and the Philosopher's Stone",
+          "hint": "A boy wizard gets his letter."
+        },
+        {
+          "text": "Think of a film where the characters are stuck inside a video game.",
+          "short": "Inside a video game",
+          "seconds": 25,
+          "accept": [
+            "film:Q20762680",
+            "film:Q60501923",
+            "film:Q38685497",
+            "film:wreck-it-ralph",
+            "film:ralph-breaks-the-internet",
+            "film:Q626483",
+            "film:Q18954",
+            "film:Q120237363",
+            "film:Q22000542",
+            "film:Q550196",
+            "film:Q40083273",
+            "film:Q108671102",
+            "film:Q1050838",
+            "film:xf4-avalon-2001",
+            "film:Q24238538",
+            "film:Q1869550",
+            "film:xf5-barbie-video-game-hero",
+            "film:Q23999306"
+          ],
+          "obvious": [
+            "film:Q20762680",
+            "film:wreck-it-ralph"
+          ],
+          "top": [
+            "Jumanji: Welcome to the Jungle",
+            "Jumanji: The Next Level",
+            "Free Guy",
+            "Wreck-It Ralph",
+            "Ralph Breaks the Internet",
+            "Tron",
+            "Tron: Legacy",
+            "Tron: Ares"
+          ],
+          "obviousName": "Jumanji: Welcome to the Jungle",
+          "says": {
+            "film:Q17182905": "The games come out into the real world there.",
+            "film:Q29906232": "Sonic comes to our world there.",
+            "film:Q1187607": "It plays like a game, but it's a war.",
+            "film:Q753899": "It looks like a game, but it's real life."
+          },
+          "hint": "A board game turns into one."
+        },
+        {
+          "text": "Which thriller is about a man who can't make new memories?",
+          "short": "Can't make new memories",
+          "seconds": 25,
+          "accept": [
+            "film:Q190525",
+            "film:Q531340",
+            "film:xf4-ghajini-2005",
+            "film:Q931158",
+            "film:Q106513312",
+            "film:Q18153484"
+          ],
+          "obvious": [
+            "film:Q190525"
+          ],
+          "top": [
+            "Memento",
+            "Ghajini",
+            "Ghajini",
+            "The Lookout",
+            "Memory",
+            "Remember"
+          ],
+          "obviousName": "Memento",
+          "says": {
+            "film:Q241482": "It's a woman there, and it's a comedy.",
+            "film:Q14467251": "It's a woman there.",
+            "film:finding-nemo": "Dory is a fish. Think thriller.",
+            "film:finding-dory": "Dory is a fish. Think thriller.",
+            "film:Q105624": "He lost his past, but he makes new memories fine.",
+            "film:Q210364": "His trouble is something else there.",
+            "film:Q25188": "Dreams, not forgetting."
+          }
+        },
+        {
+          "text": "Which movie has a talking donkey?",
+          "short": "A talking donkey",
+          "seconds": 25,
+          "accept": [
+            "film:Q483815",
+            "film:Q485983",
+            "film:Q486588",
+            "film:Q208131",
+            "film:Q30750216",
+            "film:Q388517",
+            "film:winnie-the-pooh-2011",
+            "film:many-adventures-of-winnie-the-pooh",
+            "film:Q374431",
+            "film:Q1406374",
+            "film:Q1361113",
+            "film:Q919563",
+            "film:Q179411",
+            "film:Q24301991",
+            "film:Q28173261",
+            "film:pinocchio",
+            "film:Q2299779",
+            "film:Q142600"
+          ],
+          "obvious": [
+            "film:Q483815"
+          ],
+          "top": [
+            "Shrek",
+            "Shrek 2",
+            "Shrek the Third",
+            "Shrek Forever After",
+            "Shrek 5",
+            "Shrek the Halls",
+            "Winnie the Pooh",
+            "The Many Adventures of Winnie the Pooh"
+          ],
+          "obviousName": "Shrek"
+        },
+        {
+          "text": "Which film stars the actress who played Hermione?",
+          "short": "Hermione's actress",
+          "seconds": 25,
+          "accept": [
+            "film:Q102438",
+            "film:Q102244",
+            "film:Q102448",
+            "film:Q102225",
+            "film:Q102235",
+            "film:Q161687",
+            "film:Q161678",
+            "film:Q232009",
+            "film:Q19946102",
+            "film:Q56881140",
+            "film:Q675468",
+            "film:Q286868",
+            "film:Q3077738",
+            "film:Q607363",
+            "film:Q581859",
+            "film:Q21010849",
+            "film:Q16672410",
+            "film:Q18561606",
+            "film:Q840353"
+          ],
+          "obvious": [
+            "film:Q102438"
+          ],
+          "top": [
+            "Harry Potter and the Philosopher's Stone",
+            "Harry Potter and the Chamber of Secrets",
+            "Harry Potter and the Prisoner of Azkaban",
+            "Harry Potter and the Goblet of Fire",
+            "Harry Potter and the Order of the Phoenix",
+            "Harry Potter and the Half-Blood Prince",
+            "Harry Potter and the Deathly Hallows – Part 1",
+            "Harry Potter and the Deathly Hallows – Part 2"
+          ],
+          "obviousName": "Harry Potter and the Philosopher's Stone"
+        },
+        {
+          "text": "Which movie tells its story backwards, from the end to the start?",
+          "short": "Told backwards",
+          "seconds": 25,
+          "accept": [
+            "film:Q190525",
+            "film:Q754745",
+            "film:Q3491163",
+            "film:Q245465",
+            "film:xf4-peppermint-candy",
+            "film:xf4-happy-end-1967",
+            "film:xf4-two-friends-1986",
+            "film:Q123169098",
+            "film:xf5-merrily-2025",
+            "film:xf5-shimmer-lake"
+          ],
+          "obvious": [
+            "film:Q190525"
+          ],
+          "top": [
+            "Memento",
+            "Irréversible",
+            "Betrayal",
+            "5x2",
+            "Peppermint Candy",
+            "Happy End",
+            "Two Friends",
+            "The Life of Chuck"
+          ],
+          "obviousName": "Memento",
+          "says": {
+            "film:Q183239": "He ages backwards, but the story goes forwards.",
+            "film:Q63985561": "Time runs backwards in it, but the story is told forwards.",
+            "film:Q208269": "Only the memories run backwards there.",
+            "film:Q104123": "Out of order, but not backwards.",
+            "film:Q20382729": "It plays with time, but it isn't told backwards.",
+            "film:Q25188": "Dreams within dreams, not backwards.",
+            "film:Q13417189": "Time bends there, but the story goes forwards.",
+            "film:Q531340": "It jumps back to the past, but it isn't told backwards.",
+            "film:Q154935": "It jumps around, but it isn't told backwards."
+          }
+        }
+      ],
+      "route": [
+        "film:monsters-inc",
+        "film:Q632668",
+        "film:Q38685497",
+        "film:Q531340",
+        "film:Q483815",
+        "film:Q102438",
+        "film:Q190525"
+      ],
+      "routeNames": [
+        "Monsters, Inc.",
+        "Coraline",
+        "Free Guy",
+        "Ghajini",
+        "Shrek",
+        "Harry Potter and the Philosopher's Stone",
+        "Memento"
+      ]
+    }
+  }
+}

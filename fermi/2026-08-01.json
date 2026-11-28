@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 6,
+  "sourceDate": "2026-08-01",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q44",
+        "prompt": "How tall is the 22nd tallest building in the world?",
+        "unit": "feet",
+        "answer": 1483,
+        "source": "CTBUH Skyscraper Database"
+      },
+      {
+        "id": "q109",
+        "prompt": "How long would it take to watch every Nicolas Cage movie back-to-back?",
+        "unit": "hours",
+        "answer": 220,
+        "source": "IMDb runtimes"
+      },
+      {
+        "id": "q49",
+        "prompt": "How many bird species are found in North America?",
+        "unit": "species",
+        "answer": 1154,
+        "source": "State of North America's Birds 2016 · Cornell Lab / ABC / Birds Canada / CEC"
+      }
+    ]
+  }
+}

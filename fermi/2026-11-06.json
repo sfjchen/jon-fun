@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 103,
+  "sourceDate": "2026-11-06",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q580",
+        "prompt": "How many Crayola crayons, laid flat side by side, would it take to cover a soccer pitch?",
+        "unit": "crayons",
+        "answer": 9800000,
+        "source": "Crayola: regular crayon 3 5/8 by 5/16 in. FIFA Stadium Guidelines: pitch 105 by 68 m"
+      },
+      {
+        "id": "q622",
+        "prompt": "Shanghai has more Starbucks stores than any other city on Earth. How many does it have?",
+        "unit": "stores",
+        "answer": 1150,
+        "source": "Starbucks China store locator: 1,148 stores in Shanghai, November 2026",
+        "qualifier": "All 16 districts, as of November 2026."
+      },
+      {
+        "id": "q605",
+        "prompt": "How many people speak Mandarin Chinese as their first language?",
+        "unit": "people",
+        "answer": 988000000,
+        "source": "Ethnologue (2026): 988 million first-language speakers of Mandarin Chinese"
+      }
+    ]
+  }
+}

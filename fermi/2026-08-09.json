@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 14,
+  "sourceDate": "2026-08-09",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q98",
+        "prompt": "How many active certified scuba divers are there worldwide?",
+        "unit": "divers",
+        "answer": 6000000,
+        "source": "DEMA Diving Fast Facts"
+      },
+      {
+        "id": "q119",
+        "prompt": "How long would it take a goldfish to escape Alcatraz and swim to the shore of San Francisco?",
+        "unit": "minutes",
+        "answer": 75,
+        "source": "NPS Alcatraz / goldfish swim speed estimates"
+      },
+      {
+        "id": "q48",
+        "prompt": "How many stone blocks were used to build the Great Pyramid of Giza?",
+        "unit": "blocks",
+        "answer": 2300000,
+        "source": "Harvard Giza Project"
+      }
+    ]
+  }
+}

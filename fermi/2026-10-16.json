@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 82,
+  "sourceDate": "2026-10-16",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q534",
+        "prompt": "How many 18.6 oz (527 g) family-size boxes of Lucky Charms would it take to have one marshmallow for every person in the Republic of Ireland?",
+        "unit": "boxes",
+        "answer": 13000,
+        "source": "CSO April 2026 estimate: 5.53M people · 2024 six-box count: about 430 marshmallows per box"
+      },
+      {
+        "id": "q463",
+        "prompt": "How many wheels of Parmigiano Reggiano were made in 2025?",
+        "unit": "wheels",
+        "answer": 4190000,
+        "source": "Consorzio del Parmigiano Reggiano 2025 production figures (annual press conference, Milan, March 26, 2026): 4.19 million wheels"
+      },
+      {
+        "id": "q465",
+        "prompt": "How many bananas would it take to weigh as much as a wild silverback western lowland gorilla?",
+        "unit": "bananas",
+        "answer": 940,
+        "source": "SeaWorld Parks gorilla fact sheet: wild adult male western lowland gorillas weigh about 169.5 kg (374 lb) · Soltani, Alimardani and Omid (2011), physical properties of full-ripe Cavendish bananas: 180.56 g whole fruit"
+      }
+    ]
+  }
+}

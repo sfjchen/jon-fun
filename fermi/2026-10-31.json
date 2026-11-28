@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 97,
+  "sourceDate": "2026-10-31",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q577",
+        "prompt": "Garlic is said to keep vampires away. How much garlic did the world grow in 2024?",
+        "unit": "metric tons",
+        "answer": 29700000,
+        "source": "FAOSTAT (UN FAO), 2024"
+      },
+      {
+        "id": "q576",
+        "prompt": "If a skeleton lost both its hands and both its feet (wrists and ankles included), how many bones would be left?",
+        "unit": "bones",
+        "answer": 100,
+        "source": "Cleveland Clinic and Kenhub anatomy guides"
+      },
+      {
+        "id": "q572",
+        "prompt": "The common vampire bat lives on nothing but blood. How much blood does one bat drink in a year?",
+        "unit": "liters",
+        "answer": 8,
+        "source": "Philadelphia Zoo colony feeding data (AZA Nutrition Advisory Group)"
+      }
+    ]
+  }
+}

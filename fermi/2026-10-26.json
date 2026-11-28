@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 92,
+  "sourceDate": "2026-10-26",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q485",
+        "prompt": "The Milan Cortina 2026 Winter Olympics gave a medal to every athlete on the podium, one each for every member of a winning team. How much did all those medals weigh in total?",
+        "unit": "pounds",
+        "answer": 770,
+        "source": "Milano Cortina 2026 and the Italian State Mint (IPZS), medal unveiling, July 2025: 245 gold, 245 silver and 245 bronze Olympic medals, weighing 506 g, 500 g and 420 g"
+      },
+      {
+        "id": "q462",
+        "prompt": "How much revenue did Apple bring in every minute, on average, in its 2025 fiscal year?",
+        "unit": "US dollars",
+        "answer": 794000,
+        "source": "Apple Inc. Form 10-K for fiscal 2025 (SEC filing): net sales of $416,161 million for the 52 weeks ended September 27, 2025"
+      },
+      {
+        "id": "q517",
+        "prompt": "How long would it take to watch every official James Bond film back to back, from Dr. No (1962) to No Time to Die (2021)?",
+        "unit": "minutes",
+        "answer": 3208,
+        "source": "Running times of the 25 official Eon Bond films (BBFC, via Wikipedia): 3,208 minutes"
+      }
+    ]
+  }
+}

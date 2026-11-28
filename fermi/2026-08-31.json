@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 36,
+  "sourceDate": "2026-08-31",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q313",
+        "prompt": "How much does a single fingernail grow over an average human lifetime?",
+        "unit": "inches",
+        "answer": 120,
+        "source": "Yaemsiri et al. nail growth study (2010) and UN World Population Prospects 2024"
+      },
+      {
+        "id": "q125",
+        "prompt": "How many times does the average person blink in a day?",
+        "unit": "blinks",
+        "answer": 15000,
+        "source": "American Academy of Ophthalmology / Harvard: ~15-20 blinks per minute"
+      },
+      {
+        "id": "q83",
+        "prompt": "How many slot machines are in Las Vegas?",
+        "unit": "slot machines",
+        "answer": 135000,
+        "source": "Nevada Gaming Control Board"
+      }
+    ]
+  }
+}

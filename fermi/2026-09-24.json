@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 60,
+  "sourceDate": "2026-09-24",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q401",
+        "prompt": "How many words are in the Bee Movie script?",
+        "unit": "words",
+        "answer": 9200,
+        "source": "The widely shared Bee Movie (2007) dialogue transcript, about 9,200 words (TeraBox's Bee Movie script guide gives the same figure)",
+        "qualifier": "Just the spoken lines."
+      },
+      {
+        "id": "q167",
+        "prompt": "How many people worldwide live within 10 km (6.2 miles) of an ocean coast?",
+        "unit": "people",
+        "answer": 1090000000,
+        "source": "Scientific Reports (Nature), \"Accelerating growth of human coastal populations at the global and continent levels: 2000-2018\" (Cosby et al., Mississippi State University / Oak Ridge National Laboratory LandScan data)"
+      },
+      {
+        "id": "q399",
+        "prompt": "Czechs drink more beer per person than anyone else in the world. How much beer does the average Czech drink in a year?",
+        "unit": "liters",
+        "answer": 130,
+        "source": "Czech Statistical Office (ČSÚ) food consumption statistics for 2024: 130.5 liters of beer per resident"
+      }
+    ]
+  }
+}

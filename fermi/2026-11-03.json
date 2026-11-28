@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 100,
+  "sourceDate": "2026-11-03",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q600",
+        "prompt": "How many people alive today are 100 years old or older?",
+        "unit": "people",
+        "answer": 670000,
+        "source": "United Nations World Population Prospects, via Joseph Chamie (former UN Population Division director), IPS News, May 2026: about 672,000 centenarians in 2026"
+      },
+      {
+        "id": "q601",
+        "prompt": "How many iPhones are sold worldwide in 100 seconds?",
+        "unit": "iPhones",
+        "answer": 770,
+        "source": "IDC and Omdia smartphone trackers: about 241 to 248 million iPhones shipped in 2025"
+      },
+      {
+        "id": "q602",
+        "prompt": "How much money is in a 100 kg (220 lb) stack of $100 bills?",
+        "unit": "dollars",
+        "answer": 10000000,
+        "source": "US Bureau of Engraving and Printing: every US banknote, whatever the denomination, weighs about 1 gram"
+      }
+    ]
+  }
+}

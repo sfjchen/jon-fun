@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 66,
+  "sourceDate": "2026-09-30",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q407",
+        "prompt": "How many full moons have there been since Cleopatra died?",
+        "unit": "full moons",
+        "answer": 25400,
+        "source": "Encyclopaedia Britannica for the date of death · NASA for the 29.53-day synodic month"
+      },
+      {
+        "id": "q439",
+        "prompt": "How many hands of blackjack are dealt in Las Vegas casinos every day?",
+        "unit": "hands",
+        "answer": 4500000,
+        "source": "Nevada Gaming Control Board Monthly Revenue Report, December 2025 (Twenty One tables, twelve-month average) and Jim Kilby, Casino Operations Management (hands per hour)"
+      },
+      {
+        "id": "q309",
+        "prompt": "What is the combined worldwide box office gross of every film Steven Spielberg has directed?",
+        "unit": "dollars",
+        "answer": 11000000000,
+        "source": "The Numbers worldwide box office for Steven Spielberg as director · Box Office Mojo per-film grosses, aggregated by Statista"
+      }
+    ]
+  }
+}

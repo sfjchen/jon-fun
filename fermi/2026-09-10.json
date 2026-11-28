@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 46,
+  "sourceDate": "2026-09-10",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q225",
+        "prompt": "How many views did KPop Demon Hunters get on Netflix in its first six months?",
+        "unit": "views",
+        "answer": 482000000,
+        "source": "Netflix's \"What We Watched\" engagement report for the second half of 2025 (482 million views) and its weekly Top 10 for June 2025, as covered by Deadline, Animation Magazine and Forbes"
+      },
+      {
+        "id": "q180",
+        "prompt": "How many watches did Rolex produce in 2024?",
+        "unit": "watches",
+        "answer": 1200000,
+        "source": "Industry production estimates from watch-market analysts (e.g. LuxeConsult), since Rolex is privately held and does not publish official figures"
+      },
+      {
+        "id": "q118",
+        "prompt": "What are the average annual sales of a Taco Bell location in the US?",
+        "unit": "dollars",
+        "answer": 2000000,
+        "source": "Yum! Brands 2023 filings; Restaurant Dive (Taco Bell US AUV)"
+      }
+    ]
+  }
+}

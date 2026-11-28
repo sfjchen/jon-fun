@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 84,
+  "sourceDate": "2026-10-18",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q523",
+        "prompt": "Astronauts have lived on the International Space Station nonstop since November 2000. Adding up every stay, how many person-days had they spent aboard by October 2026?",
+        "unit": "person-days",
+        "answer": 48400,
+        "source": "ISS expedition crew dates (Wikipedia, from NASA records), totalled by us to 1 October 2026"
+      },
+      {
+        "id": "q540",
+        "prompt": "In September 2025, how many fully qualified driving instructors were on the official register in Great Britain?",
+        "unit": "instructors",
+        "answer": 43300,
+        "source": "DVSA register figures in a Lords written answer: 43,334 in Great Britain, Sep 2025"
+      },
+      {
+        "id": "q522",
+        "prompt": "How many different athletes have competed at the Olympic Games, from Athens 1896 through Milan Cortina 2026?",
+        "unit": "athletes",
+        "answer": 176000,
+        "source": "Olympedia site statistics: about 176,000 Olympic athletes, 1896 to 2026"
+      }
+    ]
+  }
+}

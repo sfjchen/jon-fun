@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 12,
+  "sourceDate": "2026-08-07",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q108",
+        "prompt": "How long would it take to stay one night in every hotel room in Las Vegas?",
+        "unit": "years",
+        "answer": 411,
+        "source": "LVCVA room inventory"
+      },
+      {
+        "id": "q241",
+        "prompt": "Maria is the most common female name in the world. How many Marias are there?",
+        "unit": "people",
+        "answer": 61130000,
+        "source": "Forebears.io forename index"
+      },
+      {
+        "id": "q22",
+        "prompt": "How long would it take to watch every episode of The Simpsons?",
+        "unit": "hours",
+        "answer": 296,
+        "source": "Wikisimpsons list of episodes"
+      }
+    ]
+  }
+}

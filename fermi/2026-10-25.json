@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 91,
+  "sourceDate": "2026-10-25",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q512",
+        "prompt": "How many people speak Portuguese as their first language?",
+        "unit": "people",
+        "answer": 250000000,
+        "source": "Ethnologue (2026 edition): about 252 million first-language Portuguese speakers"
+      },
+      {
+        "id": "q513",
+        "prompt": "The Soviet Union split into 15 countries in 1991. How many people live in those 15 countries today?",
+        "unit": "people",
+        "answer": 300000000,
+        "source": "World Bank population estimates for 2024, summed across the 15 former Soviet republics"
+      },
+      {
+        "id": "q514",
+        "prompt": "Wembley Stadium is sold out, and every seat holds an adult. How many natural teeth are in the stands?",
+        "unit": "teeth",
+        "answer": 2300000,
+        "source": "Wembley Stadium (90,000 seats) and the Adult Oral Health Survey 2021 (25.4 natural teeth on average)"
+      }
+    ]
+  }
+}

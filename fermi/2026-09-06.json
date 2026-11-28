@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 42,
+  "sourceDate": "2026-09-06",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q349",
+        "prompt": "How many games has Mario appeared in as of April 2025?",
+        "unit": "games",
+        "answer": 255,
+        "source": "Guinness World Records, most ubiquitous videogame character, as of April 30, 2025"
+      },
+      {
+        "id": "q314",
+        "prompt": "What is the fastest recorded speed of a bird in a dive?",
+        "unit": "mph",
+        "answer": 242,
+        "source": "Guinness World Records: Frightful's reported 1999 experimental dive"
+      },
+      {
+        "id": "q281",
+        "prompt": "How many pints of Guinness are sold around the world each day?",
+        "unit": "pints",
+        "answer": 5200000,
+        "source": "Guinness official FAQ (guinness.com), annual worldwide pint sales"
+      }
+    ]
+  }
+}

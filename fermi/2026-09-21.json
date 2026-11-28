@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 57,
+  "sourceDate": "2026-09-21",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q396",
+        "prompt": "How many different people have been aboard the International Space Station?",
+        "unit": "people",
+        "answer": 295,
+        "source": "NASA, International Space Station Visitors by Country (July 2026)"
+      },
+      {
+        "id": "q386",
+        "prompt": "Wang is the most common surname on Earth. How many Wangs are there?",
+        "unit": "people",
+        "answer": 107000000,
+        "source": "Forebears.io surname index (Wang: 107,002,577 worldwide, ranked 1st; 105,459,482 of them in China)"
+      },
+      {
+        "id": "q379",
+        "prompt": "How many people graduated from a computer and information sciences program in Canada last year?",
+        "unit": "graduates",
+        "answer": 35679,
+        "source": "Statistics Canada, \"Canadian postsecondary enrolments and graduates, 2022/2023\", The Daily, November 2024"
+      }
+    ]
+  }
+}

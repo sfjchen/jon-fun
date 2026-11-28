@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 23,
+  "sourceDate": "2026-08-18",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q141",
+        "prompt": "SpaghettiOs pasta only comes in one letter, O. How many cans would it take to have one pasta piece for every letter O in the entire text of the Lord of the Rings trilogy?",
+        "unit": "cans",
+        "answer": 150,
+        "source": "LotrProject word counts for the LOTR trilogy (481,103 words, appendices excluded); Peter Norvig, 'English Letter Frequency Counts: Mayzner Revisited' (Google Books corpus: 4.79 letters/word average, letter 'O' ≈7.64% of all letters); pasta pieces per 15.8 oz can from a hand count of Campbell's SpaghettiOs (≈1,180 pieces), reported by Nerdist and Mashed."
+      },
+      {
+        "id": "q50",
+        "prompt": "If converted to gold at 2026 prices, how much would the U.S. national debt weigh?",
+        "unit": "metric tons",
+        "answer": 280000,
+        "source": "U.S. Treasury 'Debt to the Penny' (Aug 2026, $39.9 T) · gold spot price, Aug 2026 (~$4,430/troy oz)"
+      },
+      {
+        "id": "q60",
+        "prompt": "How many intersections in Manhattan have traffic lights?",
+        "unit": "signalized intersections",
+        "answer": 2900,
+        "source": "NYC Department of Transportation (2022: 13,543 signalized intersections citywide, 2,862 of them in Manhattan)"
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 1,
+  "sourceDate": "2026-07-27",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q5",
+        "prompt": "How many piano tuners work in New York City?",
+        "unit": "tuners",
+        "answer": 130,
+        "source": "Fermi's classic estimation problem"
+      },
+      {
+        "id": "q67",
+        "prompt": "How many McDonald's locations exist globally?",
+        "unit": "restaurants",
+        "answer": 43500,
+        "source": "McDonald's 2024 Restaurant Count by Market (10-K filing)"
+      },
+      {
+        "id": "q18",
+        "prompt": "How long does Google Maps say it takes to walk nonstop from NYC to LA?",
+        "unit": "hours",
+        "answer": 925,
+        "source": "Google Maps walking directions"
+      }
+    ]
+  }
+}

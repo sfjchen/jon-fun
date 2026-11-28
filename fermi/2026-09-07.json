@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 43,
+  "sourceDate": "2026-09-07",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q257",
+        "prompt": "How many paintings are in the State Hermitage Museum in St. Petersburg?",
+        "unit": "paintings",
+        "answer": 17000,
+        "source": "State Hermitage Museum collection statistics (Google Arts & Culture partner page)",
+        "qualifier": "Including paintings in storage."
+      },
+      {
+        "id": "q134",
+        "prompt": "How long would it take the average person to type the entire text of Romeo and Juliet?",
+        "unit": "hours",
+        "answer": 10,
+        "source": "Open Source Shakespeare word count; Ratatype's typical typing-speed benchmark (40 WPM)"
+      },
+      {
+        "id": "q323",
+        "prompt": "If an escalator could take you straight up to the International Space Station, how many days would the ride take?",
+        "unit": "days",
+        "answer": 9,
+        "source": "NASA ISS altitude; ASME A17.1 escalator speed (assuming straight-up travel)"
+      }
+    ]
+  }
+}

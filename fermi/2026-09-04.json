@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 40,
+  "sourceDate": "2026-09-04",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q312",
+        "prompt": "How many 3 oz (85 g) packets of Jell-O would it take to turn an Olympic swimming pool into Jell-O?",
+        "unit": "packets",
+        "answer": 5300000,
+        "source": "Kraft Heinz Jell-O package directions (3 oz box, four 1/2-cup servings) · World Aquatics competition pool dimensions"
+      },
+      {
+        "id": "q273",
+        "prompt": "How many cans of soda are drunk in the U.S. each day?",
+        "unit": "cans",
+        "answer": 350000000,
+        "source": "Beverage Marketing Corporation per-capita carbonated soft drink data, via Beverage Industry (2024)"
+      },
+      {
+        "id": "q351",
+        "prompt": "How many tourists travelled to Antarctica in the 2025-26 season?",
+        "unit": "tourists",
+        "answer": 113518,
+        "source": "IAATO Antarctic tourism statistics, 2025-26 season"
+      }
+    ]
+  }
+}

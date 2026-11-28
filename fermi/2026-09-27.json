@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 63,
+  "sourceDate": "2026-09-27",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q411",
+        "prompt": "How many drives would it take Tiger Woods to golf the length of Central Park?",
+        "unit": "drives",
+        "answer": 14,
+        "source": "Central Park Conservancy · PGA Tour driving distance statistics, 2005 season",
+        "qualifier": "If every drive matched his 2005 PGA Tour average."
+      },
+      {
+        "id": "q440",
+        "prompt": "How much fuel does a Boeing 747 burn per hour at cruising altitude?",
+        "unit": "gallons",
+        "answer": 3400,
+        "source": "Aircraft Commerce 747-400 fuel burn performance analysis (Jeppesen flight plans): 3,350 to 3,400 US gallons an hour in cruise"
+      },
+      {
+        "id": "q430",
+        "prompt": "How much did the world spend on movie tickets in 2025?",
+        "unit": "dollars",
+        "answer": 33500000000,
+        "source": "Gower Street Analytics, 2025 global box office year-end estimate"
+      }
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 108,
+  "sourceDate": "2026-11-11",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q614",
+        "prompt": "How many times is a Visa card used every second?",
+        "unit": "times",
+        "answer": 11300,
+        "source": "Visa operational data, fiscal 2026",
+        "qualifier": "Averaged across Visa's 2026 fiscal year, counting purchases and cash withdrawals."
+      },
+      {
+        "id": "q587",
+        "prompt": "How much maple sap does it take to make 1 gallon (3.8 liters) of maple syrup?",
+        "unit": "gallons",
+        "answer": 40,
+        "source": "Iowa State Extension · NASDA"
+      },
+      {
+        "id": "q607",
+        "prompt": "Eating one potato a day, how many years would it take one person to finish the world's 2023 potato harvest?",
+        "unit": "years",
+        "answer": 5300000000,
+        "source": "FAOSTAT, 2023"
+      }
+    ]
+  }
+}

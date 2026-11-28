@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 7,
+  "sourceDate": "2026-08-02",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q20",
+        "prompt": "How tall would a stack of 1 million $1 bills be?",
+        "unit": "feet",
+        "answer": 358,
+        "source": "U.S. Bureau of Engraving & Printing"
+      },
+      {
+        "id": "q81",
+        "prompt": "How many Starbucks locations are there worldwide?",
+        "unit": "stores",
+        "answer": 41100,
+        "source": "Starbucks annual report"
+      },
+      {
+        "id": "q13",
+        "prompt": "How many people are in the air on airplanes at any given moment?",
+        "unit": "people",
+        "answer": 1150000,
+        "source": "Flightradar24 · IATA load factors"
+      }
+    ]
+  }
+}

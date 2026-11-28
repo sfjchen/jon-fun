@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 112,
+  "sourceDate": "2026-11-15",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q553",
+        "prompt": "As of October 2026, how many views does Pinkfong's \"Baby Shark Dance\", the most-watched video in YouTube history, have?",
+        "unit": "views",
+        "answer": 17500000000,
+        "source": "Guinness World Records · YouTube"
+      },
+      {
+        "id": "q618",
+        "prompt": "How many rivets hold the Eiffel Tower together?",
+        "unit": "rivets",
+        "answer": 2500000,
+        "source": "Official Eiffel Tower site (SETE)"
+      },
+      {
+        "id": "q609",
+        "prompt": "How many cars were on the road worldwide for every public EV charger at the end of 2025?",
+        "unit": "cars",
+        "answer": 200,
+        "source": "IEA Global EV Outlook 2026 · BloombergNEF",
+        "qualifier": "Counting all cars, not only electric ones."
+      }
+    ]
+  }
+}

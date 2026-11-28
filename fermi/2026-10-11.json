@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 77,
+  "sourceDate": "2026-10-11",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q484",
+        "prompt": "LeBron James is about to start his 24th NBA season, his first with the 76ers. How many different teammates did he have in his first 23 seasons?",
+        "unit": "teammates",
+        "answer": 250,
+        "source": "Basketball-Reference, LeBron James teammates and opponents finder: 250 distinct teammates across his Cavaliers, Heat and Lakers seasons through 2025-26"
+      },
+      {
+        "id": "q509",
+        "prompt": "The oldest known living tree is a bristlecone pine in California's White Mountains, dated by counting its growth rings. How many years old is it?",
+        "unit": "years",
+        "answer": 4858,
+        "source": "Guinness World Records, oldest living individual tree: Methuselah, a Great Basin bristlecone pine (4,856 years as of 2024); Rocky Mountain Tree-Ring Research OLDLIST (Methuselah, crossdated, about 4,850 years)"
+      },
+      {
+        "id": "q480",
+        "prompt": "Mongolia has more horses than people. How many horses did the country count in its 2025 livestock census?",
+        "unit": "horses",
+        "answer": 5100000,
+        "source": "National Statistics Office of Mongolia, 2025 livestock census (preliminary results, January 2026): 58.1 million head of livestock, 5.1 million of them horses"
+      }
+    ]
+  }
+}

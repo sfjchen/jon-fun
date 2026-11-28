@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 78,
+  "sourceDate": "2026-10-12",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q471",
+        "prompt": "How many pairs of Crocs were sold in 2025?",
+        "unit": "pairs",
+        "answer": 129000000,
+        "source": "Crocs, Inc. Form 10-K for 2025: Crocs Brand footwear unit sales of 128.9 million pairs"
+      },
+      {
+        "id": "q496",
+        "prompt": "Shrink the entire solar system until the Sun is the size of a basketball. How far away would Earth be?",
+        "unit": "feet",
+        "answer": 84,
+        "source": "NASA Sun Fact Sheet · IAU · NBA Official Rules"
+      },
+      {
+        "id": "q446",
+        "prompt": "How many of London's Big Ben tower, stacked end to end, would it take to reach the top of the Burj Khalifa, the world's tallest building?",
+        "unit": "clock towers",
+        "answer": 9,
+        "source": "CTBUH Skyscraper Center (Burj Khalifa, 828 m); UK Parliament (Elizabeth Tower, 96 m)"
+      }
+    ]
+  }
+}

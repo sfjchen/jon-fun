@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 61,
+  "sourceDate": "2026-09-25",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q394",
+        "prompt": "How many sprays does it take to empty a bottle of Chanel No. 5?",
+        "unit": "sprays",
+        "answer": 1000,
+        "source": "Aptar Beauty fragrance pump specs (70, 100 or 130 µl per spray) and the Basenotes rule of thumb of about 10 sprays per ml",
+        "qualifier": "100 ml (3.4 fl oz) bottle"
+      },
+      {
+        "id": "q426",
+        "prompt": "How far is the world record for the longest paper airplane throw?",
+        "unit": "feet",
+        "answer": 323,
+        "source": "Guinness World Records, farthest flight by a paper aircraft (Liu Liwen and team, China, 28 December 2025)"
+      },
+      {
+        "id": "q404",
+        "prompt": "How much did the 20 Premier League clubs pay in player wages in the 2024/25 season?",
+        "unit": "British pounds",
+        "answer": 3200000000,
+        "source": "Deloitte Annual Review of Football Finance 2026 (Premier League clubs, 2024/25 season); UEFA European Club Finance and Investment Landscape (player share of wages)"
+      }
+    ]
+  }
+}

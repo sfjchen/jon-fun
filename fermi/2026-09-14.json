@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 50,
+  "sourceDate": "2026-09-14",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q353",
+        "prompt": "How many marathons would it take to run the length of the Great Wall of China?",
+        "unit": "marathons",
+        "answer": 502,
+        "source": "China's State Administration of Cultural Heritage, 2012 national Great Wall survey",
+        "qualifier": "Counting every dynasty's wall added together, not just the Ming."
+      },
+      {
+        "id": "q250",
+        "prompt": "How many minutes would it take to watch every movie Quentin Tarantino has directed?",
+        "unit": "minutes",
+        "answer": 1413,
+        "source": "Wikipedia · Quentin Tarantino filmography (official theatrical/general-release running times)"
+      },
+      {
+        "id": "q331",
+        "prompt": "How many baguettes come out of French bakery ovens each day?",
+        "unit": "baguettes",
+        "answer": 16000000,
+        "source": "Confédération Nationale de la Boulangerie-Pâtisserie Française"
+      }
+    ]
+  }
+}

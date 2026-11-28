@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 16,
+  "sourceDate": "2026-08-11",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q274",
+        "prompt": "How many people are watching Netflix at any given moment?",
+        "unit": "people",
+        "answer": 22000000,
+        "source": "Netflix's Engagement Report"
+      },
+      {
+        "id": "q115",
+        "prompt": "How many passes were thrown in the 2025 NFL regular season?",
+        "unit": "passes",
+        "answer": 17439,
+        "source": "NFL.com official team passing stats"
+      },
+      {
+        "id": "q91",
+        "prompt": "How many songs has Taylor Swift released?",
+        "unit": "songs",
+        "answer": 310,
+        "source": "TaylorSwift.com discography · Spotify"
+      }
+    ]
+  }
+}

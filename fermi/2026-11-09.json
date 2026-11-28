@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 106,
+  "sourceDate": "2026-11-09",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q634",
+        "prompt": "How many tickets did Taylor Swift's Eras Tour sell over its 21 month run?",
+        "unit": "tickets",
+        "answer": 10168008,
+        "source": "Taylor Swift Touring, via The NYT"
+      },
+      {
+        "id": "q566",
+        "prompt": "Jonathan, a giant tortoise on the island of St Helena, is the oldest known living land animal. How old does he turn in 2026?",
+        "unit": "years",
+        "answer": 194,
+        "source": "Guinness World Records"
+      },
+      {
+        "id": "q563",
+        "prompt": "When the 2026 FIFA World Cup kicked off, what was the combined age of every player in every squad?",
+        "unit": "years",
+        "answer": 34300,
+        "source": "FIFA squad lists, via RotoWire"
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 105,
+  "sourceDate": "2026-11-08",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q588",
+        "prompt": "How many oranges would it take to fill a standard 55 gallon (208 L) oil drum with orange juice?",
+        "unit": "oranges",
+        "answer": 2500,
+        "source": "USDA and the Florida Dept. of Citrus"
+      },
+      {
+        "id": "q643",
+        "prompt": "The wandering albatross has the longest wingspan of any living bird. How many unfolded iPhone Duos would it take to span it from wingtip to wingtip?",
+        "unit": "iPhones",
+        "answer": 23,
+        "source": "Guinness World Records and Apple"
+      },
+      {
+        "id": "q543",
+        "prompt": "In 2025, how many wristwatches did Switzerland export per day, on average?",
+        "unit": "watches",
+        "answer": 40000,
+        "source": "Federation of the Swiss Watch Industry, 2025"
+      }
+    ]
+  }
+}

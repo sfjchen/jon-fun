@@ -1,0 +1,35 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 114,
+  "sourceDate": "2026-11-17",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q647",
+        "prompt": "How many real earthworms would you have to eat to match the calories in a 100 g (3.5 oz) bag of gummy worms?",
+        "unit": "earthworms",
+        "answer": 90,
+        "source": "USDA FoodData Central and Zoo Biology",
+        "qualifier": "Count each earthworm as a full-grown nightcrawler, about 5 g (a sixth of an ounce)."
+      },
+      {
+        "id": "q626",
+        "prompt": "How many days of the entire world's economic output would add up to Apple's stock market value?",
+        "unit": "days",
+        "answer": 14,
+        "source": "IMF world GDP 2026, Apple close Oct 30",
+        "qualifier": "Apple's value on October 30, 2026, against the IMF's 2026 world GDP."
+      },
+      {
+        "id": "q646",
+        "prompt": "How many claw machines are there in Japan?",
+        "unit": "machines",
+        "answer": 260000,
+        "source": "JAIA arcade industry survey, FY2024",
+        "qualifier": "Counting the crane games in Japan's arcades, as of 2024."
+      }
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 104,
+  "sourceDate": "2026-11-07",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q288",
+        "prompt": "How many times is the word \"bye\" sung in *NSYNC's \"Bye Bye Bye\"?",
+        "unit": "times",
+        "answer": 52,
+        "source": "Genius, Bye Bye Bye lyrics"
+      },
+      {
+        "id": "q642",
+        "prompt": "How many Rolex Submariner watches, laid side by side, would it take to stretch across Big Ben's clock face?",
+        "unit": "watches",
+        "answer": 171,
+        "source": "UK Parliament and Rolex"
+      },
+      {
+        "id": "q628",
+        "prompt": "The Chinese city of Zhuji makes a third of the world's socks. How many pairs does it turn out in a year?",
+        "unit": "pairs",
+        "answer": 25000000000,
+        "source": "Xinhua",
+        "qualifier": "Based on Chinese state media figures for 2024."
+      }
+    ]
+  }
+}

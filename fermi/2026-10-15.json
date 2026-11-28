@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 81,
+  "sourceDate": "2026-10-15",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q530",
+        "prompt": "How many standard 2x4 LEGO bricks would it take to build a solid, full-size copy of the Great Sphinx of Giza?",
+        "unit": "bricks",
+        "answer": 1500000000,
+        "source": "Encyclopaedia Britannica (73 m long, 20 m high) · Wikipedia (19 m wide at the haunches) · LEGO's 8 mm stud, 9.6 mm brick grid"
+      },
+      {
+        "id": "q425",
+        "prompt": "How many cities in the world are home to 1 million people or more, counting each city and its suburbs as one place?",
+        "unit": "cities",
+        "answer": 650,
+        "source": "citypopulation.de (Thomas Brinkhoff), Major Agglomerations of the World, 1 January 2026: 652 urban agglomerations of 1 million or more · cross-check: UN World Urbanization Prospects 2018 (548 in 2018, projected 706 by 2030)"
+      },
+      {
+        "id": "q535",
+        "prompt": "About how many sesame seeds are on the top of a Big Mac bun?",
+        "unit": "sesame seeds",
+        "answer": 178,
+        "source": "Harper's Index: 178 sesame seeds on the average Big Mac bun"
+      }
+    ]
+  }
+}

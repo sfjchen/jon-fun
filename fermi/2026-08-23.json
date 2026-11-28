@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 28,
+  "sourceDate": "2026-08-23",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q276",
+        "prompt": "How long would it take to swim across the English Channel at Michael Phelps' world record pace in the 200-meter freestyle?",
+        "unit": "hours",
+        "answer": 5,
+        "source": "Channel Swimming Association crossing distance · World Aquatics world record progression for the men's 200 m freestyle"
+      },
+      {
+        "id": "q319",
+        "prompt": "How many twenty-foot (6 meter) shipping containers can the world's largest container ship carry?",
+        "unit": "containers",
+        "answer": 24346,
+        "source": "MSC (Mediterranean Shipping Company) vessel specification for MSC Irina, 24,346 TEU, the largest container ship by capacity"
+      },
+      {
+        "id": "q89",
+        "prompt": "How many Coca-Cola servings are consumed each day worldwide?",
+        "unit": "servings",
+        "answer": 1900000000,
+        "source": "The Coca-Cola Company FAQ: \"more than 1.9 billion servings of our drinks are enjoyed in more than 200 countries each day\""
+      }
+    ]
+  }
+}

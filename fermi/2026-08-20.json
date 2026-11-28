@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 25,
+  "sourceDate": "2026-08-20",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q299",
+        "prompt": "How long would it take the world's fastest snail to climb the Burj Khalifa?",
+        "unit": "hours",
+        "answer": 99,
+        "source": "Guinness World Records fastest land snail · Burj Khalifa official height"
+      },
+      {
+        "id": "q307",
+        "prompt": "How tall is the tallest tree in the world?",
+        "unit": "feet",
+        "answer": 381,
+        "source": "Guinness World Records, tallest living tree: Hyperion, a coast redwood measured at 116.22 m (381.3 ft)"
+      },
+      {
+        "id": "q304",
+        "prompt": "How many doors are in Buckingham Palace?",
+        "unit": "doors",
+        "answer": 1514,
+        "source": "The Royal Household's Buckingham Palace facts (royal.uk), which lists 775 rooms; the 1,514 doors and 760 windows figures come from the same Palace-by-numbers set"
+      }
+    ]
+  }
+}

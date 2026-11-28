@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 2,
+  "sourceDate": "2026-07-28",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q27",
+        "prompt": "How long would it take to listen to every Beatles song?",
+        "unit": "minutes",
+        "answer": 620,
+        "source": "2009 Beatles stereo remaster box set official runtime"
+      },
+      {
+        "id": "q126",
+        "prompt": "How many goals were scored at the 2026 FIFA World Cup?",
+        "unit": "goals",
+        "answer": 308,
+        "source": "FIFA 2026 World Cup official tournament statistics, July 2026"
+      },
+      {
+        "id": "q71",
+        "prompt": "How many trees are in Central Park?",
+        "unit": "trees",
+        "answer": 18000,
+        "source": "Central Park Conservancy"
+      }
+    ]
+  }
+}

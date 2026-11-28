@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 76,
+  "sourceDate": "2026-10-10",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q487",
+        "prompt": "The first piece of the International Space Station launched in November 1998. By 1 September 2026, how many times had the station circled the Earth?",
+        "unit": "orbits",
+        "answer": 158000,
+        "source": "Roscosmos, via Interfax, 2025"
+      },
+      {
+        "id": "q470",
+        "prompt": "How many likes does Instagram's most-liked post, Messi's 2022 World Cup photo, have today?",
+        "unit": "likes",
+        "answer": 75000000,
+        "source": "Instagram like count, via Wikipedia's list of most-liked Instagram posts (2026)"
+      },
+      {
+        "id": "q178",
+        "prompt": "How many children aged 10 or younger live in the world today?",
+        "unit": "children",
+        "answer": 1500000000,
+        "source": "United Nations World Population Prospects 2024 age-structure data, cross-checked against UNICEF under-5 population estimates"
+      }
+    ]
+  }
+}

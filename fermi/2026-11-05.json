@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 102,
+  "sourceDate": "2026-11-05",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q636",
+        "prompt": "Lay every string from a Steinway Model D concert grand end to end. How long is all the string?",
+        "unit": "feet",
+        "answer": 520,
+        "source": "Our sum of INRIA's Steinway D string lengths (Chabassier and Durufle, 2012)",
+        "qualifier": "Counting only the part of each string that vibrates."
+      },
+      {
+        "id": "q352",
+        "prompt": "How many active lawyers live in Alaska?",
+        "unit": "lawyers",
+        "answer": 2262,
+        "source": "Alaska Bar Association membership statistics"
+      },
+      {
+        "id": "q589",
+        "prompt": "How many ears of field corn grow on one acre (0.4 hectare) of a typical US cornfield?",
+        "unit": "ears",
+        "answer": 29000,
+        "source": "USDA NASS Crop Production, objective yield survey: 28,550 ears per acre (10 States, 2025)"
+      }
+    ]
+  }
+}

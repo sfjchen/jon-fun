@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 120,
+  "sourceDate": "2026-11-23",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q657",
+        "prompt": "How many cornflakes are in a 500 g (18 oz) box of Kellogg's Corn Flakes?",
+        "unit": "cornflakes",
+        "answer": 7100,
+        "source": "Photographer Luke Stephenson's hand count"
+      },
+      {
+        "id": "q677",
+        "prompt": "How many dentists work in the Republic of Ireland?",
+        "unit": "dentists",
+        "answer": 2670,
+        "source": "Ireland Department of Health, 2025 figures"
+      },
+      {
+        "id": "q663",
+        "prompt": "How many Cristiano Ronaldos would it take to weigh as much as Rio's Christ the Redeemer statue?",
+        "unit": "Ronaldos",
+        "answer": 7560,
+        "source": "Google Arts & Culture and MLS",
+        "qualifier": "Just the 30 m (98 ft) statue, not its 8 m pedestal, with Ronaldo at 84 kg (185 lb)."
+      }
+    ]
+  }
+}

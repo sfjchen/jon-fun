@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 45,
+  "sourceDate": "2026-09-09",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q384",
+        "prompt": "How many olives does it take to fill a bottle of olive oil (1 liter, 34 oz)?",
+        "unit": "olives",
+        "answer": 1700,
+        "source": "International Olive Council production costs study, which puts average mill yield near 18%"
+      },
+      {
+        "id": "q348",
+        "prompt": "How many pizza boxes would you have to stack to reach the top of the Leaning Tower of Pisa?",
+        "unit": "pizza boxes",
+        "answer": 1150,
+        "source": "Opera della Primaziale Pisana, the body that manages the tower"
+      },
+      {
+        "id": "q157",
+        "prompt": "How many people work as flight attendants worldwide?",
+        "unit": "flight attendants",
+        "answer": 750000,
+        "source": "US Bureau of Labor Statistics count scaled by IATA and BTS passenger totals; no body publishes a worldwide figure"
+      }
+    ]
+  }
+}

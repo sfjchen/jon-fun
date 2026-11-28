@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 79,
+  "sourceDate": "2026-10-13",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q539",
+        "prompt": "How many PlayStation home consoles (PS1 through PS5, not counting handhelds) has Sony sold?",
+        "unit": "consoles",
+        "answer": 560000000,
+        "source": "Sony Interactive business data: PS1 102.4M, PS2 160M, PS3 87.4M, PS4 117M, PS5 95M+"
+      },
+      {
+        "id": "q538",
+        "prompt": "About how many popcorn kernels are in one 3.2 oz (90 g) bag of microwave popcorn?",
+        "unit": "kernels",
+        "answer": 440,
+        "source": "Chowhound hand count, 2025: 437 kernels in a 3.2 oz bag · Purdue kernel-size classes"
+      },
+      {
+        "id": "q542",
+        "prompt": "If you wrote out the name of every element on the periodic table, how many letters would that be?",
+        "unit": "letters",
+        "answer": 923,
+        "source": "IUPAC element names (aluminium, caesium, sulfur spellings), letters counted across all 118"
+      }
+    ]
+  }
+}

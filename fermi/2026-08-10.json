@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 15,
+  "sourceDate": "2026-08-10",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q238",
+        "prompt": "How many BIC pens would you use up drawing a line all the way around the Earth?",
+        "unit": "pens",
+        "answer": 20000,
+        "source": "BIC Cristal product claim"
+      },
+      {
+        "id": "q52",
+        "prompt": "How many vehicles has Ford sold since 1903?",
+        "unit": "vehicles",
+        "answer": 420000000,
+        "source": "Ford Motor Company"
+      },
+      {
+        "id": "q15",
+        "prompt": "How many tennis rackets would it take to cover a tennis court?",
+        "unit": "rackets",
+        "answer": 1360,
+        "source": "International Tennis Federation"
+      }
+    ]
+  }
+}

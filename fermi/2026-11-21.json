@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 118,
+  "sourceDate": "2026-11-21",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q582",
+        "prompt": "How many times does a vinyl copy of Thriller spin during one full listen?",
+        "unit": "revolutions",
+        "answer": 1411,
+        "source": "Epic Records, Thriller LP, 1982"
+      },
+      {
+        "id": "q693",
+        "prompt": "How many grains of sugar are in one 0.6-inch (15 mm) sugar cube?",
+        "unit": "grains",
+        "answer": 18000,
+        "source": "Südzucker sugar specs, Wikipedia"
+      },
+      {
+        "id": "q651",
+        "prompt": "How many pizzas does Domino's sell around the world each day?",
+        "unit": "pizzas",
+        "answer": 4000000,
+        "source": "Domino's fun facts sheet, 2026"
+      }
+    ]
+  }
+}

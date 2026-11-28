@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 107,
+  "sourceDate": "2026-11-10",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q599",
+        "prompt": "How many T-shirts can be made from one 480 lb (218 kg) bale of cotton?",
+        "unit": "T-shirts",
+        "answer": 1217,
+        "source": "National Cotton Council"
+      },
+      {
+        "id": "q623",
+        "prompt": "If one year of new Pokémon trading cards were shared out equally, how many would everyone on Earth get?",
+        "unit": "cards",
+        "answer": 1,
+        "source": "The Pokémon Company and the UN, 2026",
+        "qualifier": "One year here is April 2025 to March 2026."
+      },
+      {
+        "id": "q549",
+        "prompt": "Main is the most common street name in America. How many US towns have a Main Street?",
+        "unit": "towns",
+        "answer": 9361,
+        "source": "ThatsThem, via Stacker (Feb 2026)"
+      }
+    ]
+  }
+}

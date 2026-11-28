@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 22,
+  "sourceDate": "2026-08-17",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q28",
+        "prompt": "How many M&M's would it take to fill a basketball?",
+        "unit": "M&Ms",
+        "answer": 7700,
+        "source": "Spalding ball spec · Mars confectionery dimensions"
+      },
+      {
+        "id": "q255",
+        "prompt": "How many people have played at least one game in NBA history?",
+        "unit": "players",
+        "answer": 5106,
+        "source": "Basketball-Reference, unique players in the NBA and BAA season totals, 1946-47 through 2025-26"
+      },
+      {
+        "id": "q124",
+        "prompt": "How long would it take Siri to count from one to a million out loud?",
+        "unit": "days",
+        "answer": 37,
+        "source": "Arithmetic: word count for numbers 1-1,000,000 spoken aloud (American English, no 'and') at an average 150 wpm speaking pace"
+      }
+    ]
+  }
+}

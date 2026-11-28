@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 54,
+  "sourceDate": "2026-09-18",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q428",
+        "prompt": "A London double-decker bus is packed to its official limit, seated and standing. How many fingers and thumbs are on board?",
+        "unit": "fingers and thumbs",
+        "answer": 880,
+        "source": "Mayor of London answer at Mayor's Question Time, for Transport for London: the New Routemaster seats 40 upstairs and 22 downstairs with 25 standing, an overall capacity of 87"
+      },
+      {
+        "id": "q424",
+        "prompt": "How many honeybees does it take, working their whole lives, to make one teaspoon (5 ml) of honey?",
+        "unit": "bees",
+        "answer": 12,
+        "source": "National Honey Board · University of Missouri Extension · UF/IFAS Extension"
+      },
+      {
+        "id": "q429",
+        "prompt": "How many movies have ever made more than $1 billion at the worldwide box office, not adjusted for inflation?",
+        "unit": "movies",
+        "answer": 65,
+        "source": "Box Office Mojo all-time worldwide box office chart"
+      }
+    ]
+  }
+}

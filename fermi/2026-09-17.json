@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 53,
+  "sourceDate": "2026-09-17",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q432",
+        "prompt": "In 117 AD, the Roman Empire's borders were at their largest. How many people live on that same land today?",
+        "unit": "people",
+        "answer": 750000000,
+        "source": "World Bank population estimates for 2024, split along the empire's 117 AD borders with national census and statistics office figures."
+      },
+      {
+        "id": "q327",
+        "prompt": "How many fire hydrants are there in New York City?",
+        "unit": "hydrants",
+        "answer": 109586,
+        "source": "NYC Department of Environmental Protection citywide hydrant records via NYC Open Data"
+      },
+      {
+        "id": "q409",
+        "prompt": "How many pairs of shoes are made worldwide each day?",
+        "unit": "pairs",
+        "answer": 67000000,
+        "source": "APICCAPS World Footwear Yearbook 2026 (24.6 billion pairs produced in 2025)"
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 55,
+  "sourceDate": "2026-09-19",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q395",
+        "prompt": "How far does the winner of Formula 1's Monaco Grand Prix drive, counting every lap from start to finish?",
+        "unit": "miles",
+        "answer": 161.7,
+        "source": "Formula 1 Monaco circuit page · FIA Sporting Regulations Art. B2.5.2"
+      },
+      {
+        "id": "q408",
+        "prompt": "How many billionaires are there in the world, according to Forbes' 2026 list?",
+        "unit": "billionaires",
+        "answer": 3428,
+        "source": "Forbes, The World's Billionaires 2026 (published March 10, 2026)"
+      },
+      {
+        "id": "q402",
+        "prompt": "How many new cars did Ferrari deliver worldwide in 2025?",
+        "unit": "cars",
+        "answer": 13640,
+        "source": "Ferrari N.V. 2025 Annual Report"
+      }
+    ]
+  }
+}

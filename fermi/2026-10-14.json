@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 80,
+  "sourceDate": "2026-10-14",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q504",
+        "prompt": "In 2025, how long did it take Amazon, on average, to sell $1 million worth of stuff?",
+        "unit": "seconds",
+        "answer": 44,
+        "source": "Amazon.com Inc. Form 10-K for 2025 (SEC filing): net sales of $716,924 million"
+      },
+      {
+        "id": "q541",
+        "prompt": "If you went to a different pub every night, how many years would it take to visit every pub in the UK today?",
+        "unit": "years",
+        "answer": 122,
+        "source": "British Beer & Pub Association: 44,656 UK pubs in 2025, about 122 years at one a night"
+      },
+      {
+        "id": "q469",
+        "prompt": "How many Rubik's Cubes have been sold?",
+        "unit": "Rubik's Cubes",
+        "answer": 500000000,
+        "source": "Spin Master, owner of the Rubik's brand, via Fortune (December 2024): roughly 500 million cubes sold since launch"
+      }
+    ]
+  }
+}

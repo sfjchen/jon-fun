@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 19,
+  "sourceDate": "2026-08-14",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q236",
+        "prompt": "How many fast food ketchup packets does it take to fill a classic glass Heinz bottle?",
+        "unit": "packets",
+        "answer": 44,
+        "source": "Heinz foodservice portion packet spec and glass bottle spec"
+      },
+      {
+        "id": "q264",
+        "prompt": "Roughly how many kangaroos are there in Australia?",
+        "unit": "kangaroos",
+        "answer": 42000000,
+        "source": "Australian Government Department of Climate Change, Energy, the Environment and Water (DCCEEW), kangaroo population estimates"
+      },
+      {
+        "id": "q227",
+        "prompt": "How much revenue in US dollars did Costco's $4.99 rotisserie chickens generate in fiscal 2025?",
+        "unit": "US dollars",
+        "answer": 785400000,
+        "source": "Costco Wholesale Q4 fiscal 2025 earnings call (unit count) at Costco's long-standing $4.99 rotisserie chicken price"
+      }
+    ]
+  }
+}

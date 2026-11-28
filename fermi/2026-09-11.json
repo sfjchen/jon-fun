@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 47,
+  "sourceDate": "2026-09-11",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q381",
+        "prompt": "How many copies of Minecraft have been sold worldwide since it launched in 2011?",
+        "unit": "copies",
+        "answer": 350000000,
+        "source": "Guinness World Records, best selling video game, and Mojang's Minecraft Annual 2026"
+      },
+      {
+        "id": "q40",
+        "prompt": "If you dropped a cannonball off a boat over the Mariana Trench, how long would it take to reach the bottom?",
+        "unit": "seconds",
+        "answer": 2500,
+        "source": "NOAA Challenger Deep depth · drag-equation estimate for a solid iron sphere"
+      },
+      {
+        "id": "q344",
+        "prompt": "How many people in the Republic of Ireland have naturally red hair?",
+        "unit": "people",
+        "answer": 550000,
+        "source": "23andMe data on red hair among customers with four Irish-born grandparents"
+      }
+    ]
+  }
+}

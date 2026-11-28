@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 68,
+  "sourceDate": "2026-10-02",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q434",
+        "prompt": "How many coffee beans would it take to brew enough coffee to fill a standard 42 gallon (159 L) oil barrel?",
+        "unit": "beans",
+        "answer": 66000,
+        "source": "Specialty Coffee Association Golden Cup Standard (55 g of coffee per liter of water) · NIST definition of the petroleum barrel (42 US gallons) · Honest Coffee Guide, average roasted bean weight"
+      },
+      {
+        "id": "q466",
+        "prompt": "What is the average depth of the world's oceans?",
+        "unit": "feet",
+        "answer": 12080,
+        "source": "NOAA National Ocean Service: the average depth of the ocean is about 3,682 meters (12,080 feet), from Charette and Smith (2010), Oceanography 23(2)"
+      },
+      {
+        "id": "q433",
+        "prompt": "We all know that 1 lb of feathers weighs more than 1 lb of bricks, but how many chicken feathers does it take to weigh 1 lb (450 g)?",
+        "unit": "feathers",
+        "answer": 43000,
+        "source": "Cobb-Vantress broiler feather data (about 9,000 feathers weighing 74 g) and Feedipedia (FAO/INRAE), feathers as 3 to 7% of a chicken's body weight"
+      }
+    ]
+  }
+}

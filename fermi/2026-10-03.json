@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 69,
+  "sourceDate": "2026-10-03",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q451",
+        "prompt": "How many different products does a typical Walmart Supercenter stock?",
+        "unit": "products",
+        "answer": 120000,
+        "source": "The Wall Street Journal (2015) and Bloomberg (2017): a typical Walmart Supercenter carries about 120,000 items"
+      },
+      {
+        "id": "q183",
+        "prompt": "How many police officers work for the New York City Police Department?",
+        "unit": "officers",
+        "answer": 34000,
+        "source": "NYPD staffing figures via Vital City NYC, 2024"
+      },
+      {
+        "id": "q459",
+        "prompt": "A hockey rink's ice is about 1 inch (2.5 cm) thick. How many rinks' worth of ice could you freeze from the water in one Olympic swimming pool?",
+        "unit": "rinks",
+        "answer": 62,
+        "source": "Science of NHL Hockey (NBC Learn with the National Science Foundation and the NHL): about 10,600 gallons (40,000 liters) of water per NHL ice sheet · Olympic-size pool of 2,500,000 liters (50 × 25 m, 2 m deep)"
+      }
+    ]
+  }
+}

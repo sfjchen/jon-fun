@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 30,
+  "sourceDate": "2026-08-25",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q279",
+        "prompt": "How many seats are there in every NFL stadium combined?",
+        "unit": "seats",
+        "answer": 2090000,
+        "source": "Club and venue published seating capacities, compiled in Wikipedia's list of current National Football League stadiums"
+      },
+      {
+        "id": "q301",
+        "prompt": "How long would it take to listen to every composition Mozart wrote?",
+        "unit": "hours",
+        "answer": 240,
+        "source": "Mozart 225: The New Complete Edition total running time, as published by the Mozarteum Foundation and Decca"
+      },
+      {
+        "id": "q35",
+        "prompt": "How many times is the word \"baby\" sung in Justin Bieber's \"Baby\"?",
+        "unit": "times",
+        "answer": 56,
+        "source": "Genius lyrics annotation"
+      }
+    ]
+  }
+}

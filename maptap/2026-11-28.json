@@ -1,0 +1,499 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "maptap",
+  "editionId": 890,
+  "sourceDate": "2026-11-28",
+  "sourceUrl": "https://maptap.gg/data/this_day_in_history/November28.js",
+  "payload": {
+    "cities": [
+      {
+        "id": "2026-11-28-tiblets",
+        "title": "The Tiblets",
+        "name": "Delhi, Delhi, India",
+        "orangeText": "India's capital since 1911.",
+        "showTriviaPicture": "./assets/November28/dervla8.jpeg",
+        "credit": "Ofner Károly / Fortepan / CC BY-SA 3.0",
+        "p2": "./assets/November28/dervla8.jpeg",
+        "c2": "Ofner Károly / Fortepan / CC BY-SA 3.0",
+        "p3": "./assets/November28/dervla8.jpeg",
+        "c3": "Ofner Károly / Fortepan / CC BY-SA 3.0",
+        "p4": "./assets/November28/dervla9.jpeg",
+        "c4": "Eland Books / CC BY 4.0",
+        "p5": "./assets/November28/dervla9.jpeg",
+        "c5": "Eland Books / CC BY 4.0",
+        "lat": 28.6667,
+        "lng": 77.2167,
+        "labelLat": 30,
+        "labelLng": 110,
+        "trivia": "After weeks in Afghanistan, Dervla continued east through the Khyber Pass, a mountain pass that has been used for centuries by traders, armies and travelers to cross between what is now Afghanistan and Pakistan. In July 1963, about 6 months and thousands of miles after leaving Ireland, she rode her bike into Delhi, India. (p)Four years earlier, the Dalai Lama had fled Tibet after a failed uprising against Chinese rule, and thousands of Tibetan families followed him over the Himalayas into India. Parents found jobs in construction, and children were sent to a nursery in Dharamsala, in the mountains of northern India.(p)Dervla volunteered with 'Save the Children', and spent months with the thousands of refugees. The conditions were terrible, the children struggled with disease and hunger, and they were cared for by just a handful of volunteers. More refugees arrived all the time ... the nursery had been built for 300 children. More than 1,100 arrived. Every day, Dervla checked the children for infection, provided care, and helped distribute food. She adored the Tibetan children, and she called them the \"Tiblets\".(p)In 1964, she returned home. From the pages of her diary, she wrote 'Full Tilt', a story about her journey to India. It was a huge success, and 2 years later, she wrote another, this time, about the Tiblets, titled 'Tibetan Foothold'.(p)\"You are much more likely to make friends with people if you arrive alone on a bicycle.\"",
+        "sources": [
+          "https://en.wikipedia.org/wiki/Tibetan_Foothold",
+          "https://en.wikipedia.org/wiki/Dervla_Murphy",
+          "https://www.rgs.org/about-us/our-work/latest-news/dervla-murphy-obituary/"
+        ]
+      },
+      {
+        "id": "2026-11-28-siberia",
+        "title": "Siberia by Accident",
+        "name": "Havana, Cuba",
+        "orangeText": "On this spot since 1519.",
+        "showTriviaPicture": "./assets/November28/dervla13.jpeg",
+        "credit": "Eland Books / CC BY 4.0",
+        "p2": "./assets/November28/dervla14.jpeg",
+        "c2": "Eland Books / CC BY 4.0",
+        "p3": "./assets/November28/dervla15.jpeg",
+        "c3": "Алексей Задонский / CC BY-SA 4.0",
+        "p4": "./assets/November28/dervla16.jpeg",
+        "c4": "Eland Books / CC BY 4.0",
+        "p5": "./assets/November28/dervla16.jpeg",
+        "c5": "Eland Books / CC BY 4.0",
+        "lat": 23.1136,
+        "lng": -82.3666,
+        "labelLat": 35,
+        "labelLng": -100,
+        "trivia": "In 1966, she walked 1,000 miles (1,600 km) across Ethiopia with a mule she named Jock, named after her publisher. In 1983, she traveled through Madagascar with Rachel (14). Villagers kept steering them back to the main road, because why would foreigners be walking through the mountains?(p)In 1987, they went to Cameroon, where locals thought maybe they were married ... two women traveling alone was too hard to imagine. In the 1990s, she went to Romania, Rwanda, Laos, South Africa, and Kenya, where she biked to Zimbabwe. (p)In 2002, at 71, she set out to bike through Russia's far east. While she was on a train crossing Siberia to get there, she broke her knee. While she was recovering by Lake Baikal, she tore a muscle in her calf. She didn't go home ... she kept going by train, boat and bus, and called the book \"Through Siberia by Accident\".(p)In 2005, she went to Cuba with Rachel and her three granddaughters. (n)(n)Dervla passed away in 2022, at the age of 90. In all, she wrote 26 books and traveled tens of thousands of miles, across 5 continents, either alone or with her daughter in tow. She never learned to drive ... she got everywhere by bicycle, on foot, or with pack animals. And she never thought of herself as brave. (n)(n)\"If you're fearless, you don't need courage.\"",
+        "sources": [
+          "https://en.wikipedia.org/wiki/Through_Siberia_by_Accident",
+          "https://en.wikipedia.org/wiki/The_Island_that_Dared",
+          "https://www.afar.com/magazine/a-tribute-to-the-late-irish-adventure-writer-dervla-murphy"
+        ]
+      },
+      {
+        "id": "2026-11-28-dervla",
+        "title": "A Bicycle and an Atlas",
+        "name": "Waterford, Ireland",
+        "orangeText": "Founded by Vikings in 914, Ireland's oldest city.",
+        "showTriviaPicture": "./assets/November28/dervla1.jpeg",
+        "credit": "Ingo Mehling / CC BY-SA 3.0",
+        "p2": "./assets/November28/dervla2.jpeg",
+        "c2": "Seighean / Public domain",
+        "p3": "./assets/November28/dervla3.jpeg",
+        "c3": "Eland Books / CC BY 4.0",
+        "p4": "./assets/November28/dervla3.jpeg",
+        "c4": "Eland Books / CC BY 4.0",
+        "lat": 52.2593,
+        "lng": -7.1101,
+        "labelLat": 35,
+        "labelLng": -25,
+        "focusOnMe": 1,
+        "trivia": "Dervla Murphy, born November 28, 1931, in a small town near Waterford, Ireland. When Dervla was a baby, her mother developed rheumatoid arthritis. Doctors advised against more children and so Dervla grew up as an only child. Her dad was the county librarian and she was surrounded by books. (p)For her 10th birthday, her parents gave her a used bicycle, and her grandfather gave her a secondhand atlas. She was pedaling up a steep hill near home when \"Half-way up I looked rather proudly at my legs, slowly pushing the pedals around, and the thought came to me 'If I went on doing this for long enough I could get to India.'\"(p)At 14, she started caring for her mother more and more often. She left school, and while she wanted to travel, she mostly couldn't. She'd go to Wales, Belgium, Spain ... places she could visit for a short stretch, so she could get back and check on mom. She wrote a book about Spain, but publishers rejected it.(p)Her father died in 1961. Her mother died in August 1962. Dervla was 30.(n)(n)After her mom died, she decided that it was time to fulfill her childhood dream. She was going to ride her bicycle to India. The winter of 1962-63 was brutal ... she waited an extra week for snow to ease up. When the weather wasn't getting any better, she decided to leave anyway. And on January 14 (ish), 1963, she packed a small pistol, she got on her bicycle ... and she set off. For India. -->",
+        "sources": [
+          "https://en.wikipedia.org/wiki/Dervla_Murphy",
+          "https://www.irishtimes.com/life-and-style/people/dervla-murphy-obituary-a-ground-breaking-and-fearless-travel-writer-1.4886092"
+        ]
+      },
+      {
+        "id": "2026-11-28-roz",
+        "title": "Roz",
+        "name": "Herat, Afghanistan",
+        "orangeText": "Its citadel is said to date back to Alexander the Great.",
+        "showTriviaPicture": "./assets/November28/dervla4.jpeg",
+        "credit": "Dragiša Modrinjak / Večer",
+        "p2": "./assets/November28/dervla5.jpeg",
+        "c2": "Yves Picq / CC BY-SA 3.0",
+        "p3": "./assets/November28/dervla6.jpeg",
+        "c3": "Herbert Maeder / CC BY-SA 4.0",
+        "p4": "./assets/November28/dervla7.jpeg",
+        "c4": "Herbert Maeder / CC BY-SA 4.0",
+        "lat": 34.37385,
+        "lng": 62.1791,
+        "labelLat": 30,
+        "labelLng": 40,
+        "trivia": "Dervla named her bicycle Rozinante (Don Quixote's horse), or Roz for short. In a saddlebag, she carried her passport, a camera, a map, a spare shirt, a toothbrush, two pens, a book of Blake's poems, and her pistol. She started in France, in Europe's coldest winter in 80 years.(p)She took a train across the Alps into Italy, got back on the bike, and rode into Yugoslavia. There, she started a diary. In Yugoslavia, the wind knocked her off the saddle, and she tumbled down a 15-foot (5m) ditch into a stream frozen so solid the ice didn't crack. She got a lift from someone in a truck ... until the truck hit a tree. At the border of Bulgaria, she sat with the border guard and they drank a brandy together.(p)She continued south through Turkey and into Iran. In Tehran, the Afghan embassy refused her entry. She was a woman, traveling alone. It was too dangerous. Eventually a senior official agreed, on one condition: she had to take sole responsibility for her own safety.(p)She crossed into Afghanistan. On a crowded bus in the mountains, an argument broke out over a fare increase ... and she was accidentally struck in the chest. She broke three ribs.(p)In her diary, she wrote about how she was amazed by the beauty of the mountains, \"In my wildest imaginings I never thought any landscape could be so magnificent.\" And of the people, \"I already love the country and the people and somehow language barriers don't matter.\"",
+        "sources": [
+          "https://en.wikipedia.org/wiki/Full_Tilt:_Ireland_to_India_with_a_Bicycle",
+          "https://www.themarginalian.org/2022/09/25/dervla-murphy-full-tilt/"
+        ]
+      },
+      {
+        "id": "2026-11-28-andes",
+        "title": "Eight Feet",
+        "name": "Cajamarca, Peru",
+        "orangeText": "Where Pizarro captured the Inca emperor Atahualpa in 1532.",
+        "showTriviaPicture": "./assets/November28/dervla10.jpeg",
+        "credit": "Eland Books / CC BY 4.0",
+        "p2": "./assets/November28/dervla11.jpeg",
+        "c2": "Euyasik / CC BY 3.0",
+        "p3": "./assets/November28/dervla12.jpeg",
+        "c3": "Nicolas Rénac / CC BY-SA 2.0",
+        "p4": "./assets/November28/dervla10.jpeg",
+        "c4": "Eland Books / CC BY 4.0",
+        "lat": -7.1575,
+        "lng": -78.5175,
+        "labelLat": 35,
+        "labelLng": -170,
+        "trivia": "In 1968, Dervla had a daughter, Rachel. She had never married ... she was a single mom, by choice. For ~5 years, she stayed home and reviewed books. Then she decided it was time to travel again, and now, she had a traveling companion. Dervla believed a child was the perfect partner, because \"children pay little attention to racial or cultural differences\", and strangers relaxed around a mother with a little girl.(p)When Rachel was 5, they went to India. They spent the winter walking through the mountains of northern Pakistan. When Rachel was 9, they traveled to Peru, with a mule named Juana. The three of them walked from Cajamarca to Cuzco, the old capital of the Inca.(p)That's ~1,300 miles (2,100 km), and most of the way was above 10,000 feet (3,000 meters). The people in Peru were a little confused ... \"It is a long way and the roads are bad. It is possible to fly from Cajamarca to Cuzco. It is not necessary to walk.\"(p)They slept in a small tent or wherever villagers would have them, and some days there was no food to buy. After a day of icy wind, hail and rain, Rachel, who kept her own diary, wrote, \"I think this is the best day yet, though every day seems better and better.\" Dervla wrote a book about the trip too, titled 'Eight Feet in the Andes' ... 2 feet were Dervla's, 2 were Rachel's, and the other 4 were Juana's, the mule.",
+        "sources": [
+          "https://en.wikipedia.org/wiki/Eight_Feet_in_the_Andes",
+          "https://hachette.co.uk/titles/dervla-murphy/eight-feet-in-the-andes/9780719565168"
+        ]
+      }
+    ],
+    "readOrder": [
+      "2026-11-28-dervla",
+      "2026-11-28-roz",
+      "2026-11-28-tiblets",
+      "2026-11-28-andes",
+      "2026-11-28-siberia"
+    ],
+    "globeOverlays": [
+      {
+        "kind": "timing",
+        "story": 4,
+        "stepMs": 550,
+        "leadMs": 0
+      },
+      {
+        "kind": "dot",
+        "story": 4,
+        "keep": true,
+        "lat": 51.03,
+        "lng": 2.38,
+        "radiusKm": 28,
+        "color": "#d9c8a0",
+        "opacity": 0.85,
+        "step": 0
+      },
+      {
+        "kind": "line",
+        "story": 4,
+        "keep": true,
+        "points": [
+          [
+            51.03,
+            2.38
+          ],
+          [
+            45.19,
+            5.72
+          ]
+        ],
+        "color": "#d9c8a0",
+        "width": 2.5,
+        "opacity": 0.55,
+        "duration": 500,
+        "step": 0
+      },
+      {
+        "kind": "dot",
+        "story": 4,
+        "keep": true,
+        "lat": 45.19,
+        "lng": 5.72,
+        "radiusKm": 28,
+        "color": "#d9c8a0",
+        "opacity": 0.85,
+        "step": 1
+      },
+      {
+        "kind": "line",
+        "story": 4,
+        "keep": true,
+        "points": [
+          [
+            45.19,
+            5.72
+          ],
+          [
+            45.96,
+            13.65
+          ]
+        ],
+        "color": "#d9c8a0",
+        "width": 2.5,
+        "opacity": 0.55,
+        "duration": 500,
+        "step": 1
+      },
+      {
+        "kind": "dot",
+        "story": 4,
+        "keep": true,
+        "lat": 45.96,
+        "lng": 13.65,
+        "radiusKm": 28,
+        "color": "#d9c8a0",
+        "opacity": 0.85,
+        "step": 2
+      },
+      {
+        "kind": "line",
+        "story": 4,
+        "keep": true,
+        "points": [
+          [
+            45.96,
+            13.65
+          ],
+          [
+            45.81,
+            15.98
+          ]
+        ],
+        "color": "#d9c8a0",
+        "width": 2.5,
+        "opacity": 0.55,
+        "duration": 500,
+        "step": 2
+      },
+      {
+        "kind": "dot",
+        "story": 4,
+        "keep": true,
+        "lat": 45.81,
+        "lng": 15.98,
+        "radiusKm": 28,
+        "color": "#d9c8a0",
+        "opacity": 0.85,
+        "step": 3
+      },
+      {
+        "kind": "line",
+        "story": 4,
+        "keep": true,
+        "points": [
+          [
+            45.81,
+            15.98
+          ],
+          [
+            44.79,
+            20.45
+          ]
+        ],
+        "color": "#d9c8a0",
+        "width": 2.5,
+        "opacity": 0.55,
+        "duration": 500,
+        "step": 3
+      },
+      {
+        "kind": "dot",
+        "story": 4,
+        "keep": true,
+        "lat": 44.79,
+        "lng": 20.45,
+        "radiusKm": 28,
+        "color": "#d9c8a0",
+        "opacity": 0.85,
+        "step": 4
+      },
+      {
+        "kind": "line",
+        "story": 4,
+        "keep": true,
+        "points": [
+          [
+            44.79,
+            20.45
+          ],
+          [
+            42.7,
+            23.32
+          ]
+        ],
+        "color": "#d9c8a0",
+        "width": 2.5,
+        "opacity": 0.55,
+        "duration": 500,
+        "step": 4
+      },
+      {
+        "kind": "dot",
+        "story": 4,
+        "keep": true,
+        "lat": 42.7,
+        "lng": 23.32,
+        "radiusKm": 28,
+        "color": "#d9c8a0",
+        "opacity": 0.85,
+        "step": 5
+      },
+      {
+        "kind": "line",
+        "story": 4,
+        "keep": true,
+        "points": [
+          [
+            42.7,
+            23.32
+          ],
+          [
+            40.05,
+            38.07
+          ]
+        ],
+        "color": "#d9c8a0",
+        "width": 2.5,
+        "opacity": 0.55,
+        "duration": 600,
+        "step": 5
+      },
+      {
+        "kind": "line",
+        "story": 4,
+        "keep": true,
+        "points": [
+          [
+            40.05,
+            38.07
+          ],
+          [
+            35.69,
+            51.39
+          ]
+        ],
+        "color": "#d9c8a0",
+        "width": 2.5,
+        "opacity": 0.55,
+        "duration": 600,
+        "step": 6
+      },
+      {
+        "kind": "dot",
+        "story": 4,
+        "keep": true,
+        "lat": 35.69,
+        "lng": 51.39,
+        "radiusKm": 28,
+        "color": "#d9c8a0",
+        "opacity": 0.85,
+        "step": 7
+      },
+      {
+        "kind": "line",
+        "story": 4,
+        "keep": true,
+        "points": [
+          [
+            35.69,
+            51.39
+          ],
+          [
+            34.35,
+            62.2
+          ]
+        ],
+        "color": "#d9c8a0",
+        "width": 2.5,
+        "opacity": 0.55,
+        "duration": 500,
+        "step": 7
+      },
+      {
+        "kind": "dot",
+        "story": 4,
+        "keep": true,
+        "lat": 34.35,
+        "lng": 62.2,
+        "radiusKm": 28,
+        "color": "#d9c8a0",
+        "opacity": 0.85,
+        "step": 8
+      },
+      {
+        "kind": "line",
+        "story": 4,
+        "keep": true,
+        "points": [
+          [
+            34.35,
+            62.2
+          ],
+          [
+            34.53,
+            69.17
+          ]
+        ],
+        "color": "#d9c8a0",
+        "width": 2.5,
+        "opacity": 0.55,
+        "duration": 500,
+        "step": 8
+      },
+      {
+        "kind": "dot",
+        "story": 4,
+        "keep": true,
+        "lat": 34.53,
+        "lng": 69.17,
+        "radiusKm": 28,
+        "color": "#d9c8a0",
+        "opacity": 0.85,
+        "step": 9
+      },
+      {
+        "kind": "line",
+        "story": 4,
+        "keep": true,
+        "points": [
+          [
+            34.53,
+            69.17
+          ],
+          [
+            34.08,
+            71.15
+          ]
+        ],
+        "color": "#d9c8a0",
+        "width": 2.5,
+        "opacity": 0.55,
+        "duration": 500,
+        "step": 9
+      },
+      {
+        "kind": "dot",
+        "story": 4,
+        "keep": true,
+        "lat": 34.08,
+        "lng": 71.15,
+        "radiusKm": 28,
+        "color": "#d9c8a0",
+        "opacity": 0.85,
+        "step": 10
+      },
+      {
+        "kind": "line",
+        "story": 4,
+        "keep": true,
+        "points": [
+          [
+            34.08,
+            71.15
+          ],
+          [
+            28.61,
+            77.21
+          ]
+        ],
+        "color": "#d9c8a0",
+        "width": 2.5,
+        "opacity": 0.55,
+        "duration": 500,
+        "step": 10
+      },
+      {
+        "kind": "dot",
+        "story": 4,
+        "keep": true,
+        "lat": 28.61,
+        "lng": 77.21,
+        "radiusKm": 28,
+        "color": "#d9c8a0",
+        "opacity": 0.85,
+        "step": 11
+      }
+    ],
+    "scoring": {
+      "_comment": "Round-scoring floors read at runtime by web (index.html/beta.html via js/scoring-config.js) AND iOS (ScoringConfig.swift). Edit roundScoring below to change scoring on BOTH platforms at once — no app release needed. Clients fall back to their built-in defaults (country 25 / continent 10 / cap 80) if this file is unreachable. iOS only picks up changes once a build containing ScoringConfig.swift is live and adopted.",
+      "version": 2,
+      "updated": "2026-06-19",
+      "roundScoring": {
+        "countryFloor": 25,
+        "continentFloor": 10,
+        "scoreCap": 80
+      }
+    }
+  }
+}

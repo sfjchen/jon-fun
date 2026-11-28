@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 72,
+  "sourceDate": "2026-10-06",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q495",
+        "prompt": "How long would it take to listen to every country's national anthem back to back?",
+        "unit": "minutes",
+        "answer": 266,
+        "source": "Alex Marshall, Mail & Guardian (19 August 2008): all 205 national anthems of the Beijing Olympics nations add up to 4 hours, 26 minutes and 25 seconds"
+      },
+      {
+        "id": "q502",
+        "prompt": "If the combined wealth of every billionaire on Forbes' 2026 list were split evenly among everyone on Earth, how much would each person get?",
+        "unit": "US dollars",
+        "answer": 2400,
+        "source": "Forbes, The World's Billionaires 2026: 3,428 billionaires worth a combined $20.1 trillion (net worths as of March 1, 2026) · United Nations, World Population Prospects 2024: about 8.3 billion people in 2026"
+      },
+      {
+        "id": "q481",
+        "prompt": "What is the world record for the most skips of a single stone thrown across water?",
+        "unit": "skips",
+        "answer": 88,
+        "source": "Guinness World Records, most skips of a skimming stone (Kurt Steiner, 2013)"
+      }
+    ]
+  }
+}

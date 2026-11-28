@@ -1,0 +1,2465 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "kabloom",
+  "editionId": 34,
+  "sourceDate": "2026-11-28",
+  "sourceUrl": "https://kabloom.io/play/daily",
+  "payload": {
+    "category": "History",
+    "readingMs": 2000,
+    "answerMs": 25000,
+    "rounds": [
+      {
+        "prompt": "Name a US president who was assassinated.",
+        "accepted": [
+          "person:abraham-lincoln",
+          "person:john-f-kennedy",
+          "person:Q35041",
+          "person:Q34597"
+        ],
+        "publisherQuestion": {
+          "text": "Name a US president who was assassinated.",
+          "short": "Assassinated",
+          "seconds": 25,
+          "accept": [
+            "person:abraham-lincoln",
+            "person:john-f-kennedy",
+            "person:Q35041",
+            "person:Q34597"
+          ],
+          "obvious": [
+            "person:abraham-lincoln"
+          ],
+          "top": [
+            "Abraham Lincoln",
+            "John F. Kennedy",
+            "William McKinley",
+            "James A. Garfield"
+          ],
+          "obviousName": "Abraham Lincoln",
+          "says": {
+            "person:ronald-reagan": "He was shot, but he survived.",
+            "person:theodore-roosevelt": "He was shot, but he survived.",
+            "person:andrew-jackson": "Someone tried, but both pistols misfired.",
+            "person:franklin-d-roosevelt": "Someone tried, but missed him.",
+            "person:Q9582": "Two tried, but he survived both.",
+            "person:martin-luther-king-jr": "He was assassinated, but he was never president.",
+            "person:Q25310": "He was assassinated, but he was never president.",
+            "person:malcolm-x": "He was assassinated, but he was never president."
+          },
+          "hint": "He was shot at Ford's Theatre."
+        }
+      },
+      {
+        "prompt": "Name a king, queen or emperor of France.",
+        "accepted": [
+          "person:napoleon",
+          "person:louis-xiv",
+          "person:louis-xvi",
+          "person:Q7738",
+          "person:Q737533",
+          "person:Q7750",
+          "person:Q7771",
+          "person:Q7721",
+          "person:charlemagne",
+          "person:clovis-i",
+          "person:Q159575",
+          "person:Q81212",
+          "person:Q131552",
+          "person:Q936976",
+          "person:Q129857",
+          "person:louis-ix",
+          "person:Q130969",
+          "person:Q133372",
+          "person:Q193658",
+          "person:Q205289",
+          "person:Q165883",
+          "person:Q134259",
+          "person:Q178918",
+          "person:Q178908",
+          "person:Q58907",
+          "person:Q43974",
+          "person:Q71231",
+          "person:Q182840",
+          "person:Q187519",
+          "person:Q242832",
+          "person:Q109860",
+          "person:Q7723",
+          "person:Q160337",
+          "person:Q193112",
+          "person:Q192846",
+          "person:Q273273",
+          "person:Q7758",
+          "person:marie-antoinette",
+          "person:Q171480",
+          "person:Q157491",
+          "person:Q157130",
+          "person:eleanor-of-aquitaine",
+          "person:Q151209",
+          "person:Q201143",
+          "person:mary-queen-of-scots",
+          "person:Q182021",
+          "person:Q353",
+          "person:Q154064",
+          "person:Q588852",
+          "person:Q231674",
+          "person:Q152549",
+          "person:Q220845",
+          "person:Q229208",
+          "person:Q8058",
+          "person:Q58514",
+          "person:Q160349",
+          "person:Q34428",
+          "person:Q134452",
+          "person:Q53448",
+          "person:Q134309",
+          "person:Q167782",
+          "person:Q132545",
+          "person:Q165284",
+          "person:Q132548",
+          "person:Q170586",
+          "person:Q172203",
+          "person:Q8384",
+          "person:Q169992",
+          "person:Q174964",
+          "person:Q8433",
+          "person:Q8404"
+        ],
+        "publisherQuestion": {
+          "text": "Name a king, queen or emperor of France.",
+          "short": "France's crown",
+          "seconds": 25,
+          "accept": [
+            "person:napoleon",
+            "person:louis-xiv",
+            "person:louis-xvi",
+            "person:Q7738",
+            "person:Q737533",
+            "person:Q7750",
+            "person:Q7771",
+            "person:Q7721",
+            "person:charlemagne",
+            "person:clovis-i",
+            "person:Q159575",
+            "person:Q81212",
+            "person:Q131552",
+            "person:Q936976",
+            "person:Q129857",
+            "person:louis-ix",
+            "person:Q130969",
+            "person:Q133372",
+            "person:Q193658",
+            "person:Q205289",
+            "person:Q165883",
+            "person:Q134259",
+            "person:Q178918",
+            "person:Q178908",
+            "person:Q58907",
+            "person:Q43974",
+            "person:Q71231",
+            "person:Q182840",
+            "person:Q187519",
+            "person:Q242832",
+            "person:Q109860",
+            "person:Q7723",
+            "person:Q160337",
+            "person:Q193112",
+            "person:Q192846",
+            "person:Q273273",
+            "person:Q7758",
+            "person:marie-antoinette",
+            "person:Q171480",
+            "person:Q157491",
+            "person:Q157130",
+            "person:eleanor-of-aquitaine",
+            "person:Q151209",
+            "person:Q201143",
+            "person:mary-queen-of-scots",
+            "person:Q182021",
+            "person:Q353",
+            "person:Q154064",
+            "person:Q588852",
+            "person:Q231674",
+            "person:Q152549",
+            "person:Q220845",
+            "person:Q229208",
+            "person:Q8058",
+            "person:Q58514",
+            "person:Q160349",
+            "person:Q34428",
+            "person:Q134452",
+            "person:Q53448",
+            "person:Q134309",
+            "person:Q167782",
+            "person:Q132545",
+            "person:Q165284",
+            "person:Q132548",
+            "person:Q170586",
+            "person:Q172203",
+            "person:Q8384",
+            "person:Q169992",
+            "person:Q174964",
+            "person:Q8433",
+            "person:Q8404"
+          ],
+          "obvious": [
+            "person:napoleon"
+          ],
+          "top": [
+            "Napoleon Bonaparte",
+            "Louis XIV",
+            "Louis XVI",
+            "Louis XV",
+            "Louis XIII",
+            "Louis XVIII",
+            "Louis Philippe I",
+            "Napoleon III"
+          ],
+          "obviousName": "Napoleon Bonaparte",
+          "was": [
+            "person:charles-de-gaulle",
+            "person:Q3301",
+            "person:cardinal-richelieu",
+            "person:Q166056",
+            "person:maximilien-robespierre",
+            "person:Q5721",
+            "person:Q2038",
+            "person:Q2105",
+            "person:Q2185",
+            "person:Q2124",
+            "person:Q5738",
+            "person:Q191974",
+            "person:Q158838",
+            "person:Q187099",
+            "person:Q158749",
+            "person:Q274540",
+            "person:Q158772",
+            "person:Q12680",
+            "person:Q156511",
+            "person:Q296673",
+            "person:Q217070",
+            "person:Q230861",
+            "person:Q296064",
+            "person:Q296083",
+            "person:Q215778",
+            "person:Q158768",
+            "person:Q296076",
+            "person:Q169502",
+            "person:Q215569",
+            "person:Q315656",
+            "person:Q309995",
+            "person:Q12959",
+            "person:Q63263",
+            "person:Q12946",
+            "person:Q12950",
+            "person:Q12957",
+            "person:Q161076"
+          ],
+          "says": {
+            "person:joan-of-arc": "She led France's army, but she was never crowned.",
+            "person:cardinal-richelieu": "He ran France for the king, but never wore the crown.",
+            "person:maximilien-robespierre": "He ran France for a while, but never wore a crown.",
+            "person:charles-de-gaulle": "He was a president, not a king.",
+            "person:adolf-hitler": "His army occupied France. He never wore its crown.",
+            "person:george-iii": "He only claimed the title. He never ruled France.",
+            "person:henry-viii": "He only claimed the title. He never ruled France.",
+            "person:julius-caesar": "He conquered Gaul, long before there was a France.",
+            "person:queen-elizabeth-ii": "She was never queen of France."
+          },
+          "hint": "He crowned himself emperor."
+        }
+      },
+      {
+        "prompt": "Pick a leader who fought against Hitler in World War II.",
+        "accepted": [
+          "person:winston-churchill",
+          "person:franklin-d-roosevelt",
+          "person:joseph-stalin",
+          "person:charles-de-gaulle",
+          "person:Q11613",
+          "person:dwight-d-eisenhower",
+          "person:chiang-kai-shek",
+          "person:Q127417",
+          "person:Q152025",
+          "person:Q186492",
+          "person:Q124617",
+          "person:Q129006",
+          "person:Q9161",
+          "person:Q217645",
+          "person:Q151414",
+          "person:Q207955",
+          "person:Q128633",
+          "person:Q23375",
+          "person:Q10664",
+          "person:Q214438",
+          "person:Q214321",
+          "person:Q153132",
+          "person:Q21209",
+          "person:Q1503",
+          "person:Q319950",
+          "person:Q156844",
+          "person:Q189139",
+          "person:Q158749",
+          "person:Q280856",
+          "person:Q154927"
+        ],
+        "publisherQuestion": {
+          "text": "Pick a leader who fought against Hitler in World War II.",
+          "short": "Against Hitler",
+          "seconds": 25,
+          "accept": [
+            "person:winston-churchill",
+            "person:franklin-d-roosevelt",
+            "person:joseph-stalin",
+            "person:charles-de-gaulle",
+            "person:Q11613",
+            "person:dwight-d-eisenhower",
+            "person:chiang-kai-shek",
+            "person:Q127417",
+            "person:Q152025",
+            "person:Q186492",
+            "person:Q124617",
+            "person:Q129006",
+            "person:Q9161",
+            "person:Q217645",
+            "person:Q151414",
+            "person:Q207955",
+            "person:Q128633",
+            "person:Q23375",
+            "person:Q10664",
+            "person:Q214438",
+            "person:Q214321",
+            "person:Q153132",
+            "person:Q21209",
+            "person:Q1503",
+            "person:Q319950",
+            "person:Q156844",
+            "person:Q189139",
+            "person:Q158749",
+            "person:Q280856",
+            "person:Q154927"
+          ],
+          "obvious": [
+            "person:winston-churchill",
+            "person:franklin-d-roosevelt"
+          ],
+          "top": [
+            "Winston Churchill",
+            "Franklin D. Roosevelt",
+            "Joseph Stalin",
+            "Charles de Gaulle",
+            "Harry S. Truman",
+            "Dwight D. Eisenhower",
+            "Chiang Kai-shek",
+            "Douglas MacArthur"
+          ],
+          "obviousName": "Winston Churchill",
+          "says": {
+            "person:adolf-hitler": "That's Hitler himself. Who fought him?",
+            "person:Q34296": "He led America in World War I.",
+            "person:john-f-kennedy": "He served in the Pacific, and led nobody yet.",
+            "person:theodore-roosevelt": "That's Teddy. He died in 1919.",
+            "person:benito-mussolini": "He led the other side.",
+            "person:hirohito": "He led the other side.",
+            "person:Q160847": "He led the other side."
+          },
+          "hint": "\"We shall fight on the beaches.\""
+        }
+      },
+      {
+        "prompt": "Which Revolutionary War general crossed the icy Delaware River?",
+        "accepted": [
+          "person:george-washington",
+          "person:alexander-hamilton",
+          "person:Q11815",
+          "person:xh-henry-knox",
+          "person:xh-nathanael-greene",
+          "person:Q6235539",
+          "person:xh-john-sullivan-general",
+          "person:xh-hugh-mercer",
+          "person:Q4019918",
+          "person:xh-arthur-st-clair",
+          "person:xh-adam-stephen"
+        ],
+        "publisherQuestion": {
+          "text": "Which Revolutionary War general crossed the icy Delaware River?",
+          "short": "The Delaware",
+          "seconds": 25,
+          "accept": [
+            "person:george-washington",
+            "person:alexander-hamilton",
+            "person:Q11815",
+            "person:xh-henry-knox",
+            "person:xh-nathanael-greene",
+            "person:Q6235539",
+            "person:xh-john-sullivan-general",
+            "person:xh-hugh-mercer",
+            "person:Q4019918",
+            "person:xh-arthur-st-clair",
+            "person:xh-adam-stephen"
+          ],
+          "obvious": [
+            "person:george-washington"
+          ],
+          "top": [
+            "George Washington",
+            "Alexander Hamilton",
+            "James Monroe",
+            "Henry Knox",
+            "Nathanael Greene",
+            "John Glover",
+            "John Sullivan",
+            "Hugh Mercer"
+          ],
+          "obviousName": "George Washington",
+          "says": {
+            "person:lafayette": "He only reached America months later.",
+            "person:Q298237": "He was away in New England that winter.",
+            "person:benjamin-franklin": "He had just sailed to France.",
+            "person:thomas-jefferson": "He was back home in Virginia.",
+            "person:john-adams": "He was in Congress, not the army.",
+            "person:paul-revere": "He was home in Boston.",
+            "person:abraham-lincoln": "He was born 33 years later.",
+            "person:ulysses-s-grant": "He fought in the Civil War, much later.",
+            "person:robert-e-lee": "He fought in the Civil War, much later."
+          }
+        }
+      },
+      {
+        "prompt": "Name a president carved into Mount Rushmore.",
+        "accepted": [
+          "person:george-washington",
+          "person:thomas-jefferson",
+          "person:theodore-roosevelt",
+          "person:abraham-lincoln"
+        ],
+        "publisherQuestion": {
+          "text": "Name a president carved into Mount Rushmore.",
+          "short": "Mount Rushmore",
+          "seconds": 25,
+          "accept": [
+            "person:george-washington",
+            "person:thomas-jefferson",
+            "person:theodore-roosevelt",
+            "person:abraham-lincoln"
+          ],
+          "obvious": [
+            "person:abraham-lincoln",
+            "person:george-washington"
+          ],
+          "top": [
+            "George Washington",
+            "Thomas Jefferson",
+            "Theodore Roosevelt",
+            "Abraham Lincoln"
+          ],
+          "obviousName": "Abraham Lincoln",
+          "says": {
+            "person:franklin-d-roosevelt": "That's Teddy up there, not Franklin.",
+            "person:john-f-kennedy": "He isn't on the mountain.",
+            "person:ulysses-s-grant": "He isn't on the mountain."
+          }
+        }
+      },
+      {
+        "prompt": "Which commander fought at the Battle of Waterloo?",
+        "accepted": [
+          "person:napoleon",
+          "person:duke-of-wellington",
+          "person:Q131691",
+          "person:Q153522",
+          "person:Q40756",
+          "person:xh-emmanuel-de-grouchy",
+          "person:Q154287",
+          "person:xh-gneisenau",
+          "person:xh-henry-paget-anglesey",
+          "person:xh-thomas-picton",
+          "person:Q151087"
+        ],
+        "publisherQuestion": {
+          "text": "Which commander fought at the Battle of Waterloo?",
+          "short": "Waterloo",
+          "seconds": 25,
+          "accept": [
+            "person:napoleon",
+            "person:duke-of-wellington",
+            "person:Q131691",
+            "person:Q153522",
+            "person:Q40756",
+            "person:xh-emmanuel-de-grouchy",
+            "person:Q154287",
+            "person:xh-gneisenau",
+            "person:xh-henry-paget-anglesey",
+            "person:xh-thomas-picton",
+            "person:Q151087"
+          ],
+          "obvious": [
+            "person:napoleon"
+          ],
+          "top": [
+            "Napoleon Bonaparte",
+            "Duke of Wellington",
+            "Arthur Wellesley, 1st Duke of Wellington",
+            "Gebhard Leberecht von Blücher",
+            "Michel Ney",
+            "Emmanuel de Grouchy",
+            "William II of the Netherlands",
+            "August von Gneisenau"
+          ],
+          "obviousName": "Napoleon Bonaparte",
+          "says": {
+            "person:horatio-nelson": "He died at Trafalgar, ten years before.",
+            "person:Q185801": "He fought Napoleon in Russia, and died in 1813.",
+            "person:Q171480": "She wasn't a commander, and she died in 1814.",
+            "person:Q7721": "He was a boy then. His uncle fought there."
+          }
+        }
+      },
+      {
+        "prompt": "Who has a US state named after them?",
+        "accepted": [
+          "person:george-washington",
+          "person:Q209152",
+          "person:xh-admiral-william-penn",
+          "person:louis-xiv",
+          "person:elizabeth-i",
+          "person:Q131981",
+          "person:charles-i-of-england",
+          "person:Q122553",
+          "person:Q126188",
+          "person:xh-henrietta-maria",
+          "person:xh-lord-de-la-warr"
+        ],
+        "publisherQuestion": {
+          "text": "Who has a US state named after them?",
+          "short": "A state's namesake",
+          "seconds": 25,
+          "accept": [
+            "person:george-washington",
+            "person:Q209152",
+            "person:xh-admiral-william-penn",
+            "person:louis-xiv",
+            "person:elizabeth-i",
+            "person:Q131981",
+            "person:charles-i-of-england",
+            "person:Q122553",
+            "person:Q126188",
+            "person:xh-henrietta-maria",
+            "person:xh-lord-de-la-warr"
+          ],
+          "obvious": [
+            "person:george-washington"
+          ],
+          "top": [
+            "George Washington",
+            "William Penn",
+            "William Penn",
+            "Louis XIV",
+            "Elizabeth I",
+            "George II of Great Britain",
+            "Charles I of England",
+            "Charles II of England"
+          ],
+          "obviousName": "George Washington",
+          "says": {
+            "person:abraham-lincoln": "Lincoln is a capital, Nebraska's. Not a state.",
+            "person:thomas-jefferson": "Jefferson City is a capital. Not a state.",
+            "person:christopher-columbus": "Ohio's capital and D.C. carry his name. No state does.",
+            "person:amerigo-vespucci": "He gave his name to the whole continent.",
+            "person:george-iii": "Georgia is named after his grandfather.",
+            "person:louis-xvi": "Louisiana is named after an older Louis.",
+            "person:mary-i-of-england": "Maryland is named after a different queen.",
+            "person:queen-victoria": "No state carries her name."
+          }
+        }
+      }
+    ],
+    "answers": [
+      {
+        "id": "person:abraham-lincoln",
+        "label": "Abraham Lincoln",
+        "aliases": [
+          "Lincoln",
+          "Abe Lincoln",
+          "Honest Abe",
+          "President Lincoln",
+          "abe",
+          "A. Lincoln",
+          "Uncle Abe",
+          "Linkon",
+          "Abraham Linkin",
+          "Abraham Linkon",
+          "Abraham Lincon",
+          "Lincon"
+        ]
+      },
+      {
+        "id": "person:john-f-kennedy",
+        "label": "John F. Kennedy",
+        "aliases": [
+          "JFK",
+          "John Kennedy",
+          "Jack Kennedy",
+          "John Fitzgerald Kennedy",
+          "Kennedy",
+          "President Kennedy",
+          "JF Kennedy",
+          "John Fitzgerald \"Jack\" Kennedy"
+        ]
+      },
+      {
+        "id": "person:Q35041",
+        "label": "William McKinley",
+        "aliases": [
+          "President McKinley",
+          "President William McKinley",
+          "W. McKinley",
+          "W. McKinley, Jr.",
+          "William M'Kinley",
+          "William McKinley, Jr.",
+          "Mc Kinley",
+          "mckinly"
+        ]
+      },
+      {
+        "id": "person:Q34597",
+        "label": "James A. Garfield",
+        "aliases": [
+          "J. Garfield",
+          "President Garfield",
+          "J. A. Garfield",
+          "James Abram Garfield",
+          "James Garfield",
+          "garfeild"
+        ]
+      },
+      {
+        "id": "person:napoleon",
+        "label": "Napoleon Bonaparte",
+        "aliases": [
+          "Napoleon",
+          "Napoleon I",
+          "Bonaparte",
+          "Napoléon Bonaparte",
+          "Emperor Napoleon",
+          "Napoléon le Grand",
+          "The Little Corporal",
+          "Napoleon I of France",
+          "Emperador dels Francesos Napoleó I",
+          "Empereur des Français Napoléon I",
+          "Little Corporal",
+          "Napoleon Buonaparte",
+          "Napoleone Bonaparte",
+          "Napulione Buonaparte",
+          "Napulione di Buonaparte",
+          "the Corsican Napolean",
+          "Napoleon 1",
+          "Napoleon the First",
+          "Napoleon the 1st",
+          "Nepolian",
+          "Napolian",
+          "Nepolean",
+          "Napeolan",
+          "Nepolan",
+          "Neoplian",
+          "Napolean",
+          "Napoleone",
+          "Napolion"
+        ]
+      },
+      {
+        "id": "person:louis-xiv",
+        "label": "Louis XIV",
+        "aliases": [
+          "Louis XIV of France",
+          "Sun King",
+          "The Sun King",
+          "Louis the Great",
+          "Le Roi Soleil",
+          "Louis Quatorze",
+          "Ludwig XIV",
+          "Luigi XIV",
+          "Louis Dieudonné",
+          "Louis le Grand",
+          "Lewis the Fourteenth",
+          "Lewis XIV",
+          "Louis le Grand Monarque",
+          "Louis the Grand Monarch",
+          "the Sun King",
+          "Louis 14",
+          "Louis the 14th",
+          "King Louis XIV",
+          "Louis the Fourteenth"
+        ]
+      },
+      {
+        "id": "person:louis-xvi",
+        "label": "Louis XVI",
+        "aliases": [
+          "Louis XVI of France",
+          "Louis Capet",
+          "Citizen Capet",
+          "Louis Seize",
+          "Louis Auguste",
+          "Luigi XVI",
+          "ludwig xvi",
+          "Louis I of Navarre",
+          "Louis 16",
+          "Louis the 16th",
+          "King Louis XVI",
+          "Louis the Sixteenth"
+        ]
+      },
+      {
+        "id": "person:Q7738",
+        "label": "Louis XV",
+        "aliases": [
+          "Louis XV of France",
+          "Louis le bien aimé",
+          "Louis the Beloved",
+          "Louis the Well beloved",
+          "Louis 15",
+          "Louis the 15th",
+          "King Louis XV",
+          "Louis Quinze",
+          "louis the fifteenth",
+          "luigi xv"
+        ]
+      },
+      {
+        "id": "person:Q737533",
+        "label": "Louis XIII",
+        "aliases": [
+          "Louis XIII of France",
+          "Louis the Just",
+          "Louis 13",
+          "Louis the 13th",
+          "King Louis XIII"
+        ]
+      },
+      {
+        "id": "person:Q7750",
+        "label": "Louis XVIII",
+        "aliases": [
+          "Louis XVIII of France",
+          "the Desired",
+          "louis 18",
+          "louis 18th"
+        ]
+      },
+      {
+        "id": "person:Q7771",
+        "label": "Louis Philippe I",
+        "aliases": [
+          "Louis Philippe",
+          "Louis-Philippe, Duke of Orleans",
+          "Citizen King",
+          "Louis Philippe, King of the French"
+        ]
+      },
+      {
+        "id": "person:Q7721",
+        "label": "Napoleon III",
+        "aliases": [
+          "Louis Napoleon",
+          "Charles-Louis-Napoléan, Emperor of the French Bonaparte",
+          "Louis-Napoléan, Emperor of the French Bonaparte",
+          "Napoleon 3",
+          "Napoleon the Third",
+          "Napoleon the 3rd",
+          "Louis Napoleon Bonaparte",
+          "Louis-Napoléon Bonaparte"
+        ]
+      },
+      {
+        "id": "person:charlemagne",
+        "label": "Charlemagne",
+        "aliases": [
+          "Charles the Great",
+          "Karl der Große",
+          "Carolus Magnus",
+          "karel de grote",
+          "Charles I",
+          "Karolus Magnus",
+          "Carlus Magnus",
+          "Charlemagne the Franc",
+          "Emperor Charlemagne",
+          "Karl the Great",
+          "Karol Wielki",
+          "Carlo Magno",
+          "Carlomagno"
+        ]
+      },
+      {
+        "id": "person:clovis-i",
+        "label": "Clovis I",
+        "aliases": [
+          "Clovis",
+          "Chlodovech",
+          "Chlodovechus I"
+        ]
+      },
+      {
+        "id": "person:Q159575",
+        "label": "Hugh Capet",
+        "aliases": [
+          "Hugh Capet of France",
+          "Hugh the Great",
+          "first King of the Franks",
+          "Hugues Capet"
+        ]
+      },
+      {
+        "id": "person:Q81212",
+        "label": "Pepin the Short",
+        "aliases": [
+          "Pepin",
+          "Pepin III",
+          "Pepin the Younger",
+          "Pipin pakana",
+          "Pippin III"
+        ]
+      },
+      {
+        "id": "person:Q131552",
+        "label": "Catherine de' Medici",
+        "aliases": [
+          "Catharine de' Medici",
+          "Catherine de Medicis",
+          "Catherine de, Queen, consort of Henry II, King of France Medici",
+          "Catherine de, Queen, consort of Henry II, King of France Médicis",
+          "Catherine of Medici Ji",
+          "Catherine, Queen, consort of Henry II, King of France De Medici",
+          "Catherine, Queen, consort of Henry II, King of France De Médicis",
+          "Queen Catherine de Médicis consort of Henry II King of France",
+          "catalina de médici"
+        ]
+      },
+      {
+        "id": "person:Q936976",
+        "label": "Henry IV of France",
+        "aliases": [
+          "Le Vert Galant",
+          "Henri de Bourbon",
+          "Good King Henry",
+          "Henry the Great",
+          "the Verdant Gallant",
+          "henry 4 of france",
+          "henri de navarre",
+          "enrique iv de francia",
+          "henri quatre"
+        ]
+      },
+      {
+        "id": "person:Q129857",
+        "label": "Francis I of France",
+        "aliases": [
+          "François I",
+          "francis 1",
+          "francis the first",
+          "francois 1er"
+        ]
+      },
+      {
+        "id": "person:louis-ix",
+        "label": "Louis IX",
+        "aliases": [
+          "Saint Louis",
+          "St. Louis",
+          "Louis IX of France",
+          "san luis de francia",
+          "Louis IX the Saint",
+          "Saint Louis IX of France",
+          "Solomon of France"
+        ]
+      },
+      {
+        "id": "person:Q130969",
+        "label": "Philip IV of France",
+        "aliases": [
+          "Philip IV",
+          "philip the fair",
+          "philippe le bel"
+        ]
+      },
+      {
+        "id": "person:Q133372",
+        "label": "Charles VII of France",
+        "aliases": []
+      },
+      {
+        "id": "person:Q193658",
+        "label": "Louis IV of France",
+        "aliases": [
+          "d'Outremer",
+          "Louis d'Outremer",
+          "Transmarinus",
+          "Ludwig IV. König von Frankreich, der Überseeische",
+          "Louis IV"
+        ]
+      },
+      {
+        "id": "person:Q205289",
+        "label": "Louis V of France",
+        "aliases": [
+          "Louis V",
+          "Louis the Do-Nothing"
+        ]
+      },
+      {
+        "id": "person:Q165883",
+        "label": "Louis VI of France",
+        "aliases": [
+          "Louis VI, le Gros",
+          "Luis VI el Gordo o el Batallador",
+          "Louis VI",
+          "Louis le Gros"
+        ]
+      },
+      {
+        "id": "person:Q134259",
+        "label": "Louis VII of France",
+        "aliases": [
+          "Lois VII, the Young",
+          "Louis VII",
+          "Louis the Young",
+          "Louis le Jeune"
+        ]
+      },
+      {
+        "id": "person:Q178918",
+        "label": "Robert II of France",
+        "aliases": [
+          "Robert II le Pieux, King of France"
+        ]
+      },
+      {
+        "id": "person:Q178908",
+        "label": "Henry I of France",
+        "aliases": [
+          "Henri I",
+          "Henri Capet",
+          "Henry Capet"
+        ]
+      },
+      {
+        "id": "person:Q58907",
+        "label": "Philip I of France",
+        "aliases": []
+      },
+      {
+        "id": "person:Q43974",
+        "label": "Louis the Pious",
+        "aliases": [
+          "Hludowicus Pius",
+          "Louis I, le Débonnaire",
+          "Louis the Debonaire",
+          "Louis the Fair",
+          "Ludovicus Pius",
+          "Hludovicus Pius",
+          "Louis I",
+          "Louis I of France"
+        ]
+      },
+      {
+        "id": "person:Q71231",
+        "label": "Charles the Bald",
+        "aliases": [
+          "Carlus Calvus",
+          "Carolus Calvus"
+        ]
+      },
+      {
+        "id": "person:Q182840",
+        "label": "Louis the Stammerer",
+        "aliases": [
+          "Louis II"
+        ]
+      },
+      {
+        "id": "person:Q187519",
+        "label": "Charles the Simple",
+        "aliases": [
+          "Charles the Straightforward"
+        ]
+      },
+      {
+        "id": "person:Q242832",
+        "label": "Lothair of France",
+        "aliases": []
+      },
+      {
+        "id": "person:Q109860",
+        "label": "Dagobert I",
+        "aliases": [
+          "Dagobert I König von Franken"
+        ]
+      },
+      {
+        "id": "person:Q7723",
+        "label": "Napoleon II",
+        "aliases": [
+          "Duke of Reichstadt",
+          "duc de Reichstadt Napoleon II",
+          "Francis-Charles-Joseph, Duke of Reichstadt Bonaparte",
+          "Francois Charles Joseph Bonaparte",
+          "Francois Charles Joseph Napoleon II",
+          "François-Charles-Joseph Bonaparte, duc de Reichstadt",
+          "François-Charles-Joseph, Herzog von Reichstadt Bonaparte",
+          "Franz Joseph Karl, Herzog von Reichstadt Bonaparte",
+          "Napoleon 2",
+          "Napoleon the Second",
+          "Napoleon the 2nd",
+          "L'Aiglon",
+          "The King of Rome"
+        ]
+      },
+      {
+        "id": "person:Q160337",
+        "label": "Henry VI of England",
+        "aliases": []
+      },
+      {
+        "id": "person:Q193112",
+        "label": "Louis III of France",
+        "aliases": [
+          "Louis III"
+        ]
+      },
+      {
+        "id": "person:Q192846",
+        "label": "Carloman II",
+        "aliases": [
+          "Carloman II of France"
+        ]
+      },
+      {
+        "id": "person:Q273273",
+        "label": "Rudolph of France",
+        "aliases": []
+      },
+      {
+        "id": "person:Q7758",
+        "label": "Charles X of France",
+        "aliases": [
+          "Charles X",
+          "Monseigneur d'Artois"
+        ]
+      },
+      {
+        "id": "person:marie-antoinette",
+        "label": "Marie Antoinette",
+        "aliases": [
+          "Maria Antonia",
+          "Queen Marie Antoinette",
+          "Madame Deficit",
+          "María Antonia",
+          "Maria Antonia Josepha Johanna",
+          "Marie Antoinette Joséphe Jeanne of Austria-Lorraine",
+          "Marie-Antoinette Josephus Joan",
+          "Mary Antionette Queen",
+          "Mary Antoinette",
+          "Queen consort of Louis XVI Marie Antoinette",
+          "Queen Marie Antoinette consort of Louis XVI King of France",
+          "Queen of France Marie Antoinette",
+          "Queen, consort of Louis XVI, King of France Marie Antoinette",
+          "The Austrian Woman"
+        ]
+      },
+      {
+        "id": "person:Q171480",
+        "label": "Joséphine de Beauharnais",
+        "aliases": [
+          "Empress consort of Napoleon I Josephine",
+          "Empress Joséphine",
+          "Empress of France Josephine",
+          "Empress of the French Josephine",
+          "Empress, consort of Napoleon I, Emperor of the French Josephine",
+          "Imperatrice",
+          "joséphine bonaparte",
+          "josefina de beauharnais"
+        ]
+      },
+      {
+        "id": "person:Q157491",
+        "label": "Marie Louise, Duchess of Parma",
+        "aliases": [
+          "Marie Louise",
+          "Archduchess of Austria Marie Louise",
+          "Duchess of Parma Maria Luigia",
+          "Duchess of Parma Marie Louise",
+          "Empress of France Marie-Louise",
+          "Empress, consort of Napoleon I Marie Louise",
+          "maria luisa de austria",
+          "marie louise d'autriche"
+        ]
+      },
+      {
+        "id": "person:Q157130",
+        "label": "Eugénie de Montijo",
+        "aliases": [
+          "Eugenia de Montijo",
+          "Eugénie, ex-Empress of the French",
+          "imperatrice consorte di Napoleon III Eugenie de Montijo"
+        ]
+      },
+      {
+        "id": "person:eleanor-of-aquitaine",
+        "label": "Eleanor of Aquitaine",
+        "aliases": [
+          "Aliénor d'Aquitaine",
+          "eleanor",
+          "leonor de aquitania",
+          "leonore von aquitanien",
+          "eleonora d'aquitania",
+          "Aliénor of Aquitaine",
+          "Duchess Eleanor of Aquitaine",
+          "Eleanor of Aquitain",
+          "Eleanor, Duchess of Aquitaine",
+          "Eleanor, Queen Consort of England",
+          "Eleanor, Queen Consort of France",
+          "Queen Eleanor of England",
+          "Queen Eleanor of France"
+        ]
+      },
+      {
+        "id": "person:Q151209",
+        "label": "Anne of Austria",
+        "aliases": [
+          "Ana de Austria",
+          "Anna of Austria (1601-1666)",
+          "Anna van Habsburg (1601-1666)",
+          "Anne d'Autriche",
+          "anna von österreich"
+        ]
+      },
+      {
+        "id": "person:Q201143",
+        "label": "Anne of Brittany",
+        "aliases": [
+          "Anne de Bretagne",
+          "ana de bretaña",
+          "anna di bretagna",
+          "anna von bretagne"
+        ]
+      },
+      {
+        "id": "person:mary-queen-of-scots",
+        "label": "Mary, Queen of Scots",
+        "aliases": [
+          "Mary Queen of Scots",
+          "Mary Stuart",
+          "Mary I of Scotland",
+          "maría estuardo",
+          "maria stuarda",
+          "Mary",
+          "Mary Stewart",
+          "Queen Mary",
+          "Alys Stuart",
+          "Mary Stewart, Queen of Scots",
+          "Mary, Queen of Scotland",
+          "Queen of Scots Mary"
+        ]
+      },
+      {
+        "id": "person:Q182021",
+        "label": "Marie de' Medici",
+        "aliases": [
+          "Marie de Médicis",
+          "consort of Henry IV, King of France Marie de Médicis",
+          "de Médicis, koningin van Frankrijk Maria",
+          "Königin Maria Frankreich",
+          "Maria de', Queen, consort of Henry IV, King of France Medici"
+        ]
+      },
+      {
+        "id": "person:Q353",
+        "label": "Blanche of Castile",
+        "aliases": []
+      },
+      {
+        "id": "person:Q154064",
+        "label": "Isabeau of Bavaria",
+        "aliases": [
+          "Isabella of Bavaria"
+        ]
+      },
+      {
+        "id": "person:Q588852",
+        "label": "Mary Tudor, Queen of France",
+        "aliases": [
+          "Mary Queen of France",
+          "marie tudor",
+          "maría tudor reina de francia"
+        ]
+      },
+      {
+        "id": "person:Q231674",
+        "label": "Marie Leszczyńska",
+        "aliases": [
+          "Marie-Catherine Leszczyńska",
+          "queen of France Marie Leszczyńska",
+          "marie leschzinska"
+        ]
+      },
+      {
+        "id": "person:Q152549",
+        "label": "Maria Theresa of Spain",
+        "aliases": [
+          "Infanta María Teresa of Spain",
+          "Infanta Marie-Thérèse of Spain",
+          "Queen María Teresa, Queen Consort of France",
+          "Queen María Teresa, The Queen Consort of France",
+          "Queen Marie-Thérèse of France",
+          "Queen Marie-Thérèse, Queen Consort of France",
+          "Queen Marie-Thérèse, The Queen Consort of France",
+          "maría teresa de españa"
+        ]
+      },
+      {
+        "id": "person:Q220845",
+        "label": "Margaret of Valois",
+        "aliases": [
+          "Queen Margot",
+          "Marguerite of Navarre",
+          "Marguerite of Valois",
+          "margarita de valois"
+        ]
+      },
+      {
+        "id": "person:Q229208",
+        "label": "Claude of France",
+        "aliases": []
+      },
+      {
+        "id": "person:Q8058",
+        "label": "Louis XI",
+        "aliases": [
+          "Louis XI of France",
+          "Louis the Prudent",
+          "louis 11",
+          "louis 11th"
+        ]
+      },
+      {
+        "id": "person:Q58514",
+        "label": "Louis XII",
+        "aliases": [
+          "Louis XII of France",
+          "Père du Peuple",
+          "louis 12",
+          "louis 12th"
+        ]
+      },
+      {
+        "id": "person:Q160349",
+        "label": "Charles VI of France",
+        "aliases": [
+          "Charles the Beloved",
+          "Charles the Mad"
+        ]
+      },
+      {
+        "id": "person:Q34428",
+        "label": "Philip II of France",
+        "aliases": [
+          "Philip II",
+          "Philippe II",
+          "Philip Augustus",
+          "philippe auguste",
+          "philip augustus"
+        ]
+      },
+      {
+        "id": "person:Q134452",
+        "label": "Charles VIII of France",
+        "aliases": [
+          "Charles 08 Of France"
+        ]
+      },
+      {
+        "id": "person:Q53448",
+        "label": "Henry III of France",
+        "aliases": []
+      },
+      {
+        "id": "person:Q134309",
+        "label": "Charles IX of France",
+        "aliases": [
+          "Charles IX King of France"
+        ]
+      },
+      {
+        "id": "person:Q167782",
+        "label": "Charles V of France",
+        "aliases": [
+          "Charles Le Sage",
+          "Charles the Wise",
+          "the Wise Charles"
+        ]
+      },
+      {
+        "id": "person:Q132545",
+        "label": "Henry II of France",
+        "aliases": []
+      },
+      {
+        "id": "person:Q165284",
+        "label": "Louis VIII of France",
+        "aliases": [
+          "Louis VIII",
+          "Louis VIII, the Lion",
+          "Louis the Lion"
+        ]
+      },
+      {
+        "id": "person:Q132548",
+        "label": "Francis II of France",
+        "aliases": [
+          "Francis II Valois",
+          "Franciscus II de France",
+          "François II de France"
+        ]
+      },
+      {
+        "id": "person:Q170586",
+        "label": "Philip VI of France",
+        "aliases": [
+          "Philip VI",
+          "Philip VI of Valois",
+          "Philippe VI",
+          "Philippe VI de Valois"
+        ]
+      },
+      {
+        "id": "person:Q172203",
+        "label": "Philip III of France",
+        "aliases": []
+      },
+      {
+        "id": "person:Q8384",
+        "label": "Louis X of France",
+        "aliases": [
+          "Louis the Headstrong",
+          "Louis the Quarreler",
+          "Louis the Stubborn",
+          "Louis X",
+          "Louis the Quarreller",
+          "Louis le Hutin"
+        ]
+      },
+      {
+        "id": "person:Q169992",
+        "label": "John II of France",
+        "aliases": [
+          "Jean II of France",
+          "John 02 Of France",
+          "John the Good"
+        ]
+      },
+      {
+        "id": "person:Q174964",
+        "label": "Charles IV of France",
+        "aliases": [
+          "Karlo IV. Lijepi"
+        ]
+      },
+      {
+        "id": "person:Q8433",
+        "label": "Philip V of France",
+        "aliases": [
+          "Philip the Tall",
+          "Philippe V"
+        ]
+      },
+      {
+        "id": "person:Q8404",
+        "label": "John I of France",
+        "aliases": [
+          "Jean I",
+          "Jean Ier le Posthume",
+          "John the Posthumous",
+          "the Posthumous"
+        ]
+      },
+      {
+        "id": "person:winston-churchill",
+        "label": "Winston Churchill",
+        "aliases": [
+          "Churchill",
+          "Sir Winston Churchill",
+          "The British Bulldog",
+          "David Winter",
+          "Mr Green",
+          "Winston Spencer Churchill",
+          "Charles Maurin",
+          "Colonel Warden",
+          "Sir Leonard Spencer",
+          "The Honourable Sir Winston Spencer Churchill",
+          "The Right Honourable Sir Winston Churchill",
+          "The Right Honourable Sir Winston Leonard Spencer Churchill",
+          "The Right Honourable Sir Winston Spencer Churchill"
+        ]
+      },
+      {
+        "id": "person:franklin-d-roosevelt",
+        "label": "Franklin D. Roosevelt",
+        "aliases": [
+          "FDR",
+          "Franklin Roosevelt",
+          "Franklin Delano Roosevelt",
+          "F. D. Roosevelt",
+          "Frank Roosevelt",
+          "President Roosevelt",
+          "F. D. R.",
+          "Rosevelt",
+          "Roosvelt",
+          "Rosavelt"
+        ]
+      },
+      {
+        "id": "person:joseph-stalin",
+        "label": "Joseph Stalin",
+        "aliases": [
+          "Stalin",
+          "Iosif Stalin",
+          "Ioseb Jughashvili",
+          "staline",
+          "stallin",
+          "General Secretary Stalin",
+          "Ioseb Besarionis dze Dzhugashvili",
+          "Ioseb Dzhugashvili",
+          "Ioseb Jugashvili",
+          "Iosif Vissarionovich Dzhugashvili",
+          "Joey Stalin",
+          "Josef Stalin",
+          "Joseph Vissarionovich Stalin",
+          "Joseph Vissarionovitch Stalin",
+          "Yosif Dzhugashvili",
+          "Koba",
+          "Stavros Papadopoulos",
+          "Uncle Joe",
+          "General Secretary Joseph Stalin"
+        ]
+      },
+      {
+        "id": "person:charles-de-gaulle",
+        "label": "Charles de Gaulle",
+        "aliases": [
+          "De Gaulle",
+          "General de Gaulle",
+          "General Charles de Gaulle",
+          "Charles Andre Joseph Marie de Gaulle",
+          "Charles André Joseph Marie de Gaulle"
+        ]
+      },
+      {
+        "id": "person:Q11613",
+        "label": "Harry S. Truman",
+        "aliases": [
+          "Truman",
+          "H. S. Truman",
+          "H. Truman",
+          "Harry Truman",
+          "President Truman"
+        ]
+      },
+      {
+        "id": "person:dwight-d-eisenhower",
+        "label": "Dwight D. Eisenhower",
+        "aliases": [
+          "Eisenhower",
+          "Ike",
+          "Dwight Eisenhower",
+          "General Eisenhower",
+          "dwight eisenhaur",
+          "President Eisenhower",
+          "D. Eisenhower",
+          "Dwight David \"Ike\" Eisenhower",
+          "Ike Eisenhower"
+        ]
+      },
+      {
+        "id": "person:chiang-kai-shek",
+        "label": "Chiang Kai-shek",
+        "aliases": [
+          "Jiang Jieshi",
+          "Chang Kai-shek",
+          "Chiang Chi-chi'ing",
+          "Chiang Chieh-shish",
+          "Chiang Chou-t‘ai",
+          "Chiang Chou-tai",
+          "Chiang Chung-cheng",
+          "Chiang Jui-yuan",
+          "Jiang Ruiyuan",
+          "Jiang Zhiqing",
+          "Jiang Zhongzheng",
+          "Jiǎng Zhōngzhèng",
+          "Jiang Zhoutai",
+          "Jiǎng Zhōutài"
+        ]
+      },
+      {
+        "id": "person:Q127417",
+        "label": "Douglas MacArthur",
+        "aliases": [
+          "MacArthur",
+          "D. MacArthur",
+          "General Douglas MacArthur",
+          "General MacArthur",
+          "mac arthur",
+          "mcarthur"
+        ]
+      },
+      {
+        "id": "person:Q152025",
+        "label": "Bernard Montgomery",
+        "aliases": [
+          "Field Marshal Lord Montgomery",
+          "Field Marshal Montgomery, Viscount of Alamein",
+          "Field Marshall Montgomery",
+          "FM Monty",
+          "General Bernard Montgomery",
+          "Lord Montgomery",
+          "Monty",
+          "bernard law montgomery"
+        ]
+      },
+      {
+        "id": "person:Q186492",
+        "label": "George S. Patton",
+        "aliases": [
+          "The Old Man",
+          "George Patton",
+          "George Smith Patton",
+          "Bandito",
+          "G.S. Patton",
+          "G.S. Patton, Jr.",
+          "General Patton",
+          "George Smith Patton, Jr."
+        ]
+      },
+      {
+        "id": "person:Q124617",
+        "label": "Georgy Zhukov",
+        "aliases": [
+          "Georgy Konstantinovich Zhukov",
+          "zukov",
+          "zhukhov"
+        ]
+      },
+      {
+        "id": "person:Q129006",
+        "label": "Clement Attlee",
+        "aliases": [
+          "Viscount Prestwood",
+          "Clement Richard Lord Attlee",
+          "Earl Attlee",
+          "Lord Attlee",
+          "Clem Attlee",
+          "atlee"
+        ]
+      },
+      {
+        "id": "person:Q9161",
+        "label": "Josip Broz Tito",
+        "aliases": [
+          "Walter",
+          "Tito",
+          "Rudi",
+          "Josip Broz",
+          "Zagorac",
+          "Józef Broz Tito",
+          "Marechal Tito",
+          "Iosephus Broz"
+        ]
+      },
+      {
+        "id": "person:Q217645",
+        "label": "Chester W. Nimitz",
+        "aliases": [
+          "Admiral Chester William Nimitz",
+          "Chester Nimitz",
+          "Chester William Nimitz",
+          "Chester William Nimitz, Sr."
+        ]
+      },
+      {
+        "id": "person:Q151414",
+        "label": "George C. Marshall",
+        "aliases": [
+          "George Marshall",
+          "George Catlett Marshall, Jr."
+        ]
+      },
+      {
+        "id": "person:Q207955",
+        "label": "Omar Bradley",
+        "aliases": [
+          "Omar Nelson Bradley"
+        ]
+      },
+      {
+        "id": "person:Q128633",
+        "label": "William Lyon Mackenzie King",
+        "aliases": [
+          "Mackenzie King"
+        ]
+      },
+      {
+        "id": "person:Q23375",
+        "label": "John Curtin",
+        "aliases": [
+          "John Joseph Curtin",
+          "The Right Honourable John Curtin"
+        ]
+      },
+      {
+        "id": "person:Q10664",
+        "label": "Neville Chamberlain",
+        "aliases": [
+          "Arthur Neville Chamberlain",
+          "Rt. Hon. Arthur Neville Chamberlain",
+          "Chamberlin"
+        ]
+      },
+      {
+        "id": "person:Q214438",
+        "label": "Robert Menzies",
+        "aliases": [
+          "Sir Robert Menzies",
+          "Robert Gordon Menzies",
+          "Sir Robert Gordon Menzies",
+          "The Right Honourable Sir Robert Menzies"
+        ]
+      },
+      {
+        "id": "person:Q214321",
+        "label": "Jan Smuts",
+        "aliases": [
+          "Jan Christiaan Smuts",
+          "Smuts",
+          "J. C. Smuts",
+          "Jan Christian Smuts"
+        ]
+      },
+      {
+        "id": "person:Q153132",
+        "label": "Władysław Sikorski",
+        "aliases": [
+          "Wladyslaw Sikorski"
+        ]
+      },
+      {
+        "id": "person:Q21209",
+        "label": "Claus von Stauffenberg",
+        "aliases": [
+          "Claus Schenk Graf von Stauffenberg",
+          "Claus Philipp Maria Justinian Schenk Graf von Stauffenberg",
+          "claus philipp Marie Schenk von Stauffenberg",
+          "Claus Schenk",
+          "Claus Schenk von Stauffenberg",
+          "Claus Stauffenberg",
+          "Claus von Staufenberg",
+          "Col. Claus von Stauffenberg"
+        ]
+      },
+      {
+        "id": "person:Q1503",
+        "label": "Manuel L. Quezon",
+        "aliases": [
+          "M. L. Q.",
+          "Manuel Luis Quezon",
+          "Manuel Quezon"
+        ]
+      },
+      {
+        "id": "person:Q319950",
+        "label": "Sergio Osmeña",
+        "aliases": [
+          "Sergio Osmeña, Sr."
+        ]
+      },
+      {
+        "id": "person:Q156844",
+        "label": "Getúlio Vargas",
+        "aliases": [
+          "Getúlio Dornelles Vargas"
+        ]
+      },
+      {
+        "id": "person:Q189139",
+        "label": "Ioannis Metaxas",
+        "aliases": []
+      },
+      {
+        "id": "person:Q158749",
+        "label": "Albert Lebrun",
+        "aliases": [
+          "Albert François Lebrun"
+        ]
+      },
+      {
+        "id": "person:Q280856",
+        "label": "George VI",
+        "aliases": [
+          "Prince Albert, Duke of York",
+          "King George VI",
+          "Albert Frederick Arthur George",
+          "Albert Windsor",
+          "H.M. King George VI",
+          "Industrial Prince",
+          "king george the sixth",
+          "george the sixth",
+          "george vi of the united kingdom"
+        ]
+      },
+      {
+        "id": "person:Q154927",
+        "label": "Haakon VII",
+        "aliases": [
+          "Haakon VII of Norway",
+          "Carl of Denmark",
+          "Christian Frederik Carl Georg Valdemar Axel of Denmark",
+          "Prince Carl of Denmark",
+          "Prince Christian Frederik Carl Georg Valdemar Axel of Denmark"
+        ]
+      },
+      {
+        "id": "person:george-washington",
+        "label": "George Washington",
+        "aliases": [
+          "President Washington",
+          "General Washington",
+          "Father of His Country",
+          "g washington",
+          "washinton",
+          "American Cincinnatus",
+          "American Fabius",
+          "Father of the United States"
+        ]
+      },
+      {
+        "id": "person:alexander-hamilton",
+        "label": "Alexander Hamilton",
+        "aliases": [
+          "Hamilton",
+          "alex hamilton",
+          "a hamilton",
+          "hamliton",
+          "Publius",
+          "A. Ham",
+          "Alexander Hamilton, US Treasury secretary"
+        ]
+      },
+      {
+        "id": "person:Q11815",
+        "label": "James Monroe",
+        "aliases": [
+          "J. Monroe",
+          "President Monroe",
+          "monro"
+        ]
+      },
+      {
+        "id": "person:xh-henry-knox",
+        "label": "Henry Knox",
+        "aliases": [
+          "General Knox"
+        ]
+      },
+      {
+        "id": "person:xh-nathanael-greene",
+        "label": "Nathanael Greene",
+        "aliases": [
+          "Nathaniel Greene",
+          "General Greene",
+          "nathan greene"
+        ]
+      },
+      {
+        "id": "person:Q6235539",
+        "label": "John Glover",
+        "aliases": []
+      },
+      {
+        "id": "person:xh-john-sullivan-general",
+        "label": "John Sullivan (general)",
+        "aliases": []
+      },
+      {
+        "id": "person:xh-hugh-mercer",
+        "label": "Hugh Mercer",
+        "aliases": []
+      },
+      {
+        "id": "person:Q4019918",
+        "label": "William Alexander, Lord Stirling",
+        "aliases": [
+          "William Alexander"
+        ]
+      },
+      {
+        "id": "person:xh-arthur-st-clair",
+        "label": "Arthur St. Clair",
+        "aliases": [
+          "Arthur St Clair",
+          "arthur saint clair"
+        ]
+      },
+      {
+        "id": "person:xh-adam-stephen",
+        "label": "Adam Stephen",
+        "aliases": []
+      },
+      {
+        "id": "person:thomas-jefferson",
+        "label": "Thomas Jefferson",
+        "aliases": [
+          "Jefferson",
+          "President Jefferson",
+          "Thomas Jefferson of Virginia",
+          "T. Jefferson"
+        ]
+      },
+      {
+        "id": "person:theodore-roosevelt",
+        "label": "Theodore Roosevelt",
+        "aliases": [
+          "Teddy Roosevelt",
+          "TR",
+          "Ted Roosevelt",
+          "president theodore roosevelt",
+          "teddy",
+          "Theodore Roosevelt, Jr.",
+          "T. Roosevelt",
+          "T. Roosevelt, Jr.",
+          "Rosevelt",
+          "Roosvelt",
+          "Rosavelt",
+          "Teddy Rosevelt"
+        ]
+      },
+      {
+        "id": "person:duke-of-wellington",
+        "label": "Duke of Wellington",
+        "aliases": [
+          "Arthur Wellesley",
+          "Wellington",
+          "The Iron Duke",
+          "1st Duke of Wellington"
+        ]
+      },
+      {
+        "id": "person:Q131691",
+        "label": "Arthur Wellesley, 1st Duke of Wellington",
+        "aliases": [
+          "1st Duke of Wellington Arthur Wellesley",
+          "Arthur Wellesley Wellington 1st Duke of",
+          "Arthur Wellesley, Duke of Wellington",
+          "Arthur Wesley, Duke of Wellington",
+          "Arthur, Duke of Wellington Wellesley",
+          "Duke of Wellington Arthur Wellesley",
+          "Field Marshal Arthur Wellesley, 1st Duke of Wellington",
+          "wellesley",
+          "the iron duke",
+          "iron duke"
+        ]
+      },
+      {
+        "id": "person:Q153522",
+        "label": "Gebhard Leberecht von Blücher",
+        "aliases": [
+          "Marshal Forwards",
+          "bluecher"
+        ]
+      },
+      {
+        "id": "person:Q40756",
+        "label": "Michel Ney",
+        "aliases": [
+          "Bravest of the Brave",
+          "Marshal Ney"
+        ]
+      },
+      {
+        "id": "person:xh-emmanuel-de-grouchy",
+        "label": "Emmanuel de Grouchy",
+        "aliases": [
+          "Marshal Grouchy",
+          "Grouchy"
+        ]
+      },
+      {
+        "id": "person:Q154287",
+        "label": "William II of the Netherlands",
+        "aliases": [
+          "King William II of the Netherlands",
+          "Willem Frederik George Lodewijk",
+          "Willem II of the Netherlands",
+          "prince of orange",
+          "prince william of orange"
+        ]
+      },
+      {
+        "id": "person:xh-gneisenau",
+        "label": "August von Gneisenau",
+        "aliases": [
+          "Gneisenau",
+          "August Neidhardt von Gneisenau"
+        ]
+      },
+      {
+        "id": "person:xh-henry-paget-anglesey",
+        "label": "Henry Paget, 1st Marquess of Anglesey",
+        "aliases": [
+          "Lord Uxbridge",
+          "Earl of Uxbridge",
+          "Marquess of Anglesey",
+          "Henry Paget"
+        ]
+      },
+      {
+        "id": "person:xh-thomas-picton",
+        "label": "Thomas Picton",
+        "aliases": [
+          "General Picton",
+          "sir thomas picton"
+        ]
+      },
+      {
+        "id": "person:Q151087",
+        "label": "Jérôme Bonaparte",
+        "aliases": []
+      },
+      {
+        "id": "person:Q209152",
+        "label": "William Penn",
+        "aliases": []
+      },
+      {
+        "id": "person:xh-admiral-william-penn",
+        "label": "William Penn (admiral)",
+        "aliases": [
+          "Admiral Penn",
+          "Sir William Penn",
+          "Admiral William Penn"
+        ]
+      },
+      {
+        "id": "person:elizabeth-i",
+        "label": "Elizabeth I",
+        "aliases": [
+          "Queen Elizabeth I",
+          "Elizabeth I of England",
+          "The Virgin Queen",
+          "Good Queen Bess",
+          "Gloriana",
+          "isabel i",
+          "isabel i de inglaterra",
+          "Elisabeth I",
+          "Elisabetta I",
+          "Elizabeth I, Queen of England",
+          "Elizabeth the Virgin Queen",
+          "Queen Bess",
+          "Elizabeth Tudor",
+          "Lady Elizabeth",
+          "Virgin Queen",
+          "Princess Elizabeth of England",
+          "Elizabeth 1",
+          "Queen Elizabeth 1",
+          "Elizabeth the First",
+          "Queen Elizabeth the First"
+        ]
+      },
+      {
+        "id": "person:Q131981",
+        "label": "George II of Great Britain",
+        "aliases": [
+          "Georg II",
+          "George Augustus",
+          "George Augustus Hanover",
+          "George Augustus, Prince of Wales",
+          "George II",
+          "George II, Elector of Hanover",
+          "George II, King of Great Britain",
+          "jorge ii de gran bretaña",
+          "george the second"
+        ]
+      },
+      {
+        "id": "person:charles-i-of-england",
+        "label": "Charles I of England",
+        "aliases": [
+          "King Charles I",
+          "Charles I of England and Scotland",
+          "charles 1",
+          "carlos i de inglaterra",
+          "charles the first",
+          "charles stuart",
+          "King Charles the Martyr",
+          "Charles the 1st"
+        ]
+      },
+      {
+        "id": "person:Q122553",
+        "label": "Charles II of England",
+        "aliases": [
+          "charles 2",
+          "king charles ii",
+          "carlos ii de inglaterra",
+          "the merry monarch",
+          "charles the second"
+        ]
+      },
+      {
+        "id": "person:Q126188",
+        "label": "James II of England",
+        "aliases": [
+          "James II and VII",
+          "James II of England and VII of Scotland",
+          "James II Stuart",
+          "James VII",
+          "James VII and II",
+          "James VII of Scotland",
+          "James, Duke of York and Albany",
+          "James, Duke of York Stuart",
+          "james 2",
+          "jacobo ii de inglaterra",
+          "king james ii",
+          "james the second"
+        ]
+      },
+      {
+        "id": "person:xh-henrietta-maria",
+        "label": "Henrietta Maria",
+        "aliases": [
+          "Queen Henrietta Maria",
+          "Henrietta Maria of France"
+        ]
+      },
+      {
+        "id": "person:xh-lord-de-la-warr",
+        "label": "Thomas West, Lord De La Warr",
+        "aliases": [
+          "Lord De La Warr",
+          "De La Warr",
+          "Lord Delaware",
+          "Thomas West",
+          "Baron De La Warr"
+        ]
+      }
+    ],
+    "publisherDay": {
+      "n": 34,
+      "start": "t_history",
+      "questions": [
+        {
+          "text": "Name a US president who was assassinated.",
+          "short": "Assassinated",
+          "seconds": 25,
+          "accept": [
+            "person:abraham-lincoln",
+            "person:john-f-kennedy",
+            "person:Q35041",
+            "person:Q34597"
+          ],
+          "obvious": [
+            "person:abraham-lincoln"
+          ],
+          "top": [
+            "Abraham Lincoln",
+            "John F. Kennedy",
+            "William McKinley",
+            "James A. Garfield"
+          ],
+          "obviousName": "Abraham Lincoln",
+          "says": {
+            "person:ronald-reagan": "He was shot, but he survived.",
+            "person:theodore-roosevelt": "He was shot, but he survived.",
+            "person:andrew-jackson": "Someone tried, but both pistols misfired.",
+            "person:franklin-d-roosevelt": "Someone tried, but missed him.",
+            "person:Q9582": "Two tried, but he survived both.",
+            "person:martin-luther-king-jr": "He was assassinated, but he was never president.",
+            "person:Q25310": "He was assassinated, but he was never president.",
+            "person:malcolm-x": "He was assassinated, but he was never president."
+          },
+          "hint": "He was shot at Ford's Theatre."
+        },
+        {
+          "text": "Name a king, queen or emperor of France.",
+          "short": "France's crown",
+          "seconds": 25,
+          "accept": [
+            "person:napoleon",
+            "person:louis-xiv",
+            "person:louis-xvi",
+            "person:Q7738",
+            "person:Q737533",
+            "person:Q7750",
+            "person:Q7771",
+            "person:Q7721",
+            "person:charlemagne",
+            "person:clovis-i",
+            "person:Q159575",
+            "person:Q81212",
+            "person:Q131552",
+            "person:Q936976",
+            "person:Q129857",
+            "person:louis-ix",
+            "person:Q130969",
+            "person:Q133372",
+            "person:Q193658",
+            "person:Q205289",
+            "person:Q165883",
+            "person:Q134259",
+            "person:Q178918",
+            "person:Q178908",
+            "person:Q58907",
+            "person:Q43974",
+            "person:Q71231",
+            "person:Q182840",
+            "person:Q187519",
+            "person:Q242832",
+            "person:Q109860",
+            "person:Q7723",
+            "person:Q160337",
+            "person:Q193112",
+            "person:Q192846",
+            "person:Q273273",
+            "person:Q7758",
+            "person:marie-antoinette",
+            "person:Q171480",
+            "person:Q157491",
+            "person:Q157130",
+            "person:eleanor-of-aquitaine",
+            "person:Q151209",
+            "person:Q201143",
+            "person:mary-queen-of-scots",
+            "person:Q182021",
+            "person:Q353",
+            "person:Q154064",
+            "person:Q588852",
+            "person:Q231674",
+            "person:Q152549",
+            "person:Q220845",
+            "person:Q229208",
+            "person:Q8058",
+            "person:Q58514",
+            "person:Q160349",
+            "person:Q34428",
+            "person:Q134452",
+            "person:Q53448",
+            "person:Q134309",
+            "person:Q167782",
+            "person:Q132545",
+            "person:Q165284",
+            "person:Q132548",
+            "person:Q170586",
+            "person:Q172203",
+            "person:Q8384",
+            "person:Q169992",
+            "person:Q174964",
+            "person:Q8433",
+            "person:Q8404"
+          ],
+          "obvious": [
+            "person:napoleon"
+          ],
+          "top": [
+            "Napoleon Bonaparte",
+            "Louis XIV",
+            "Louis XVI",
+            "Louis XV",
+            "Louis XIII",
+            "Louis XVIII",
+            "Louis Philippe I",
+            "Napoleon III"
+          ],
+          "obviousName": "Napoleon Bonaparte",
+          "was": [
+            "person:charles-de-gaulle",
+            "person:Q3301",
+            "person:cardinal-richelieu",
+            "person:Q166056",
+            "person:maximilien-robespierre",
+            "person:Q5721",
+            "person:Q2038",
+            "person:Q2105",
+            "person:Q2185",
+            "person:Q2124",
+            "person:Q5738",
+            "person:Q191974",
+            "person:Q158838",
+            "person:Q187099",
+            "person:Q158749",
+            "person:Q274540",
+            "person:Q158772",
+            "person:Q12680",
+            "person:Q156511",
+            "person:Q296673",
+            "person:Q217070",
+            "person:Q230861",
+            "person:Q296064",
+            "person:Q296083",
+            "person:Q215778",
+            "person:Q158768",
+            "person:Q296076",
+            "person:Q169502",
+            "person:Q215569",
+            "person:Q315656",
+            "person:Q309995",
+            "person:Q12959",
+            "person:Q63263",
+            "person:Q12946",
+            "person:Q12950",
+            "person:Q12957",
+            "person:Q161076"
+          ],
+          "says": {
+            "person:joan-of-arc": "She led France's army, but she was never crowned.",
+            "person:cardinal-richelieu": "He ran France for the king, but never wore the crown.",
+            "person:maximilien-robespierre": "He ran France for a while, but never wore a crown.",
+            "person:charles-de-gaulle": "He was a president, not a king.",
+            "person:adolf-hitler": "His army occupied France. He never wore its crown.",
+            "person:george-iii": "He only claimed the title. He never ruled France.",
+            "person:henry-viii": "He only claimed the title. He never ruled France.",
+            "person:julius-caesar": "He conquered Gaul, long before there was a France.",
+            "person:queen-elizabeth-ii": "She was never queen of France."
+          },
+          "hint": "He crowned himself emperor."
+        },
+        {
+          "text": "Pick a leader who fought against Hitler in World War II.",
+          "short": "Against Hitler",
+          "seconds": 25,
+          "accept": [
+            "person:winston-churchill",
+            "person:franklin-d-roosevelt",
+            "person:joseph-stalin",
+            "person:charles-de-gaulle",
+            "person:Q11613",
+            "person:dwight-d-eisenhower",
+            "person:chiang-kai-shek",
+            "person:Q127417",
+            "person:Q152025",
+            "person:Q186492",
+            "person:Q124617",
+            "person:Q129006",
+            "person:Q9161",
+            "person:Q217645",
+            "person:Q151414",
+            "person:Q207955",
+            "person:Q128633",
+            "person:Q23375",
+            "person:Q10664",
+            "person:Q214438",
+            "person:Q214321",
+            "person:Q153132",
+            "person:Q21209",
+            "person:Q1503",
+            "person:Q319950",
+            "person:Q156844",
+            "person:Q189139",
+            "person:Q158749",
+            "person:Q280856",
+            "person:Q154927"
+          ],
+          "obvious": [
+            "person:winston-churchill",
+            "person:franklin-d-roosevelt"
+          ],
+          "top": [
+            "Winston Churchill",
+            "Franklin D. Roosevelt",
+            "Joseph Stalin",
+            "Charles de Gaulle",
+            "Harry S. Truman",
+            "Dwight D. Eisenhower",
+            "Chiang Kai-shek",
+            "Douglas MacArthur"
+          ],
+          "obviousName": "Winston Churchill",
+          "says": {
+            "person:adolf-hitler": "That's Hitler himself. Who fought him?",
+            "person:Q34296": "He led America in World War I.",
+            "person:john-f-kennedy": "He served in the Pacific, and led nobody yet.",
+            "person:theodore-roosevelt": "That's Teddy. He died in 1919.",
+            "person:benito-mussolini": "He led the other side.",
+            "person:hirohito": "He led the other side.",
+            "person:Q160847": "He led the other side."
+          },
+          "hint": "\"We shall fight on the beaches.\""
+        },
+        {
+          "text": "Which Revolutionary War general crossed the icy Delaware River?",
+          "short": "The Delaware",
+          "seconds": 25,
+          "accept": [
+            "person:george-washington",
+            "person:alexander-hamilton",
+            "person:Q11815",
+            "person:xh-henry-knox",
+            "person:xh-nathanael-greene",
+            "person:Q6235539",
+            "person:xh-john-sullivan-general",
+            "person:xh-hugh-mercer",
+            "person:Q4019918",
+            "person:xh-arthur-st-clair",
+            "person:xh-adam-stephen"
+          ],
+          "obvious": [
+            "person:george-washington"
+          ],
+          "top": [
+            "George Washington",
+            "Alexander Hamilton",
+            "James Monroe",
+            "Henry Knox",
+            "Nathanael Greene",
+            "John Glover",
+            "John Sullivan",
+            "Hugh Mercer"
+          ],
+          "obviousName": "George Washington",
+          "says": {
+            "person:lafayette": "He only reached America months later.",
+            "person:Q298237": "He was away in New England that winter.",
+            "person:benjamin-franklin": "He had just sailed to France.",
+            "person:thomas-jefferson": "He was back home in Virginia.",
+            "person:john-adams": "He was in Congress, not the army.",
+            "person:paul-revere": "He was home in Boston.",
+            "person:abraham-lincoln": "He was born 33 years later.",
+            "person:ulysses-s-grant": "He fought in the Civil War, much later.",
+            "person:robert-e-lee": "He fought in the Civil War, much later."
+          }
+        },
+        {
+          "text": "Name a president carved into Mount Rushmore.",
+          "short": "Mount Rushmore",
+          "seconds": 25,
+          "accept": [
+            "person:george-washington",
+            "person:thomas-jefferson",
+            "person:theodore-roosevelt",
+            "person:abraham-lincoln"
+          ],
+          "obvious": [
+            "person:abraham-lincoln",
+            "person:george-washington"
+          ],
+          "top": [
+            "George Washington",
+            "Thomas Jefferson",
+            "Theodore Roosevelt",
+            "Abraham Lincoln"
+          ],
+          "obviousName": "Abraham Lincoln",
+          "says": {
+            "person:franklin-d-roosevelt": "That's Teddy up there, not Franklin.",
+            "person:john-f-kennedy": "He isn't on the mountain.",
+            "person:ulysses-s-grant": "He isn't on the mountain."
+          }
+        },
+        {
+          "text": "Which commander fought at the Battle of Waterloo?",
+          "short": "Waterloo",
+          "seconds": 25,
+          "accept": [
+            "person:napoleon",
+            "person:duke-of-wellington",
+            "person:Q131691",
+            "person:Q153522",
+            "person:Q40756",
+            "person:xh-emmanuel-de-grouchy",
+            "person:Q154287",
+            "person:xh-gneisenau",
+            "person:xh-henry-paget-anglesey",
+            "person:xh-thomas-picton",
+            "person:Q151087"
+          ],
+          "obvious": [
+            "person:napoleon"
+          ],
+          "top": [
+            "Napoleon Bonaparte",
+            "Duke of Wellington",
+            "Arthur Wellesley, 1st Duke of Wellington",
+            "Gebhard Leberecht von Blücher",
+            "Michel Ney",
+            "Emmanuel de Grouchy",
+            "William II of the Netherlands",
+            "August von Gneisenau"
+          ],
+          "obviousName": "Napoleon Bonaparte",
+          "says": {
+            "person:horatio-nelson": "He died at Trafalgar, ten years before.",
+            "person:Q185801": "He fought Napoleon in Russia, and died in 1813.",
+            "person:Q171480": "She wasn't a commander, and she died in 1814.",
+            "person:Q7721": "He was a boy then. His uncle fought there."
+          }
+        },
+        {
+          "text": "Who has a US state named after them?",
+          "short": "A state's namesake",
+          "seconds": 25,
+          "accept": [
+            "person:george-washington",
+            "person:Q209152",
+            "person:xh-admiral-william-penn",
+            "person:louis-xiv",
+            "person:elizabeth-i",
+            "person:Q131981",
+            "person:charles-i-of-england",
+            "person:Q122553",
+            "person:Q126188",
+            "person:xh-henrietta-maria",
+            "person:xh-lord-de-la-warr"
+          ],
+          "obvious": [
+            "person:george-washington"
+          ],
+          "top": [
+            "George Washington",
+            "William Penn",
+            "William Penn",
+            "Louis XIV",
+            "Elizabeth I",
+            "George II of Great Britain",
+            "Charles I of England",
+            "Charles II of England"
+          ],
+          "obviousName": "George Washington",
+          "says": {
+            "person:abraham-lincoln": "Lincoln is a capital, Nebraska's. Not a state.",
+            "person:thomas-jefferson": "Jefferson City is a capital. Not a state.",
+            "person:christopher-columbus": "Ohio's capital and D.C. carry his name. No state does.",
+            "person:amerigo-vespucci": "He gave his name to the whole continent.",
+            "person:george-iii": "Georgia is named after his grandfather.",
+            "person:louis-xvi": "Louisiana is named after an older Louis.",
+            "person:mary-i-of-england": "Maryland is named after a different queen.",
+            "person:queen-victoria": "No state carries her name."
+          }
+        }
+      ],
+      "route": [
+        "person:john-f-kennedy",
+        "person:louis-xiv",
+        "person:winston-churchill",
+        "person:alexander-hamilton",
+        "person:abraham-lincoln",
+        "person:napoleon",
+        "person:george-washington"
+      ],
+      "routeNames": [
+        "John F. Kennedy",
+        "Louis XIV",
+        "Winston Churchill",
+        "Alexander Hamilton",
+        "Abraham Lincoln",
+        "Napoleon Bonaparte",
+        "George Washington"
+      ]
+    }
+  }
+}

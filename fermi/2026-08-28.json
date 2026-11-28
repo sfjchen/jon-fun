@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 33,
+  "sourceDate": "2026-08-28",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q308",
+        "prompt": "How much money is thrown into Rome's Trevi Fountain each year?",
+        "unit": "euros",
+        "answer": 1500000,
+        "source": "Caritas Rome, the Catholic charity that collects and counts the fountain's coins for the Diocese of Rome"
+      },
+      {
+        "id": "q218",
+        "prompt": "How many different games of tic-tac-toe can be played?",
+        "unit": "games",
+        "answer": 255168,
+        "source": "Game researcher Jesper Juul's full game-tree enumeration of tic-tac-toe (The Ludologist)"
+      },
+      {
+        "id": "q100",
+        "prompt": "How many surfboards are sold worldwide each year?",
+        "unit": "surfboards",
+        "answer": 2800000,
+        "source": "Industry Research, Surfing Market report (2.8 million boards sold worldwide in 2024 against a $2.60 billion surfboard segment)"
+      }
+    ]
+  }
+}

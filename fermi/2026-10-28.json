@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 94,
+  "sourceDate": "2026-10-28",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q578",
+        "prompt": "How much did the heaviest pumpkin ever grown weigh?",
+        "unit": "pounds",
+        "answer": 3156,
+        "source": "Guinness World Records, heaviest pumpkin (2026)"
+      },
+      {
+        "id": "q560",
+        "prompt": "How many people holding hands would it take to circle the outside of Stonehenge's ring of giant standing stones?",
+        "unit": "people",
+        "answer": 70,
+        "source": "English Heritage: Stonehenge's sarsen circle is 30 m across. 1.5 m of line per person hand to hand is our estimate"
+      },
+      {
+        "id": "q565",
+        "prompt": "The London Eye opened to the public in 2000. Counting only its public opening hours, how many full turns has it made since then?",
+        "unit": "turns",
+        "answer": 198000,
+        "source": "London Eye's 7,668 turns a year (ITV, Time Out) over 25.8 open years since March 2000"
+      }
+    ]
+  }
+}

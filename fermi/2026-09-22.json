@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 58,
+  "sourceDate": "2026-09-22",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q398",
+        "prompt": "How far is it from the Statue of Liberty in New York to Christ the Redeemer in Rio de Janeiro?",
+        "unit": "miles",
+        "answer": 4810,
+        "source": "Great-circle distance between the statues' Wikipedia coordinates; Travelmath puts NYC to Rio at 4,803 mi"
+      },
+      {
+        "id": "q170",
+        "prompt": "How many hotel rooms are there in London?",
+        "unit": "hotel rooms",
+        "answer": 145984,
+        "source": "HVS Research, \"London Market Pulse 2024\""
+      },
+      {
+        "id": "q421",
+        "prompt": "How many wooden blocks come in a new game of classic Jenga?",
+        "unit": "blocks",
+        "answer": 54,
+        "source": "Hasbro, Classic Jenga product and instructions page · Jenga official site (jenga.com)"
+      }
+    ]
+  }
+}

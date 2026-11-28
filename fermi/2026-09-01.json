@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 37,
+  "sourceDate": "2026-09-01",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q321",
+        "prompt": "How many standard sticky notes, 3 in (76 mm) square, would it take to cover the Mona Lisa?",
+        "unit": "sticky notes",
+        "answer": 70,
+        "source": "Louvre catalogue entry for the Mona Lisa (oil on poplar, 77 x 53 cm) and 3M's standard Post-it sheet, 3 x 3 in (76 x 76 mm)"
+      },
+      {
+        "id": "q325",
+        "prompt": "How many grapes does it take to make one 750 ml (25.4 oz) bottle of champagne?",
+        "unit": "grapes",
+        "answer": 1100,
+        "source": "Comité Champagne appellation press yield of 102 litres of must per 160 kg of grapes, published by the Union des Maisons de Champagne, with an average Champagne berry weight of 1 to 1.2 grams"
+      },
+      {
+        "id": "q73",
+        "prompt": "How many Olympic gold medals has South Korea won all-time?",
+        "unit": "gold medals",
+        "answer": 145,
+        "source": "All-time Olympic medal tables for South Korea (109 Summer golds through Paris 2024, 36 Winter golds through Milan Cortina 2026)"
+      }
+    ]
+  }
+}

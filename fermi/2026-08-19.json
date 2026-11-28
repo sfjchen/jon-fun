@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 24,
+  "sourceDate": "2026-08-19",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q259",
+        "prompt": "How many grains of basmati rice fit in a 500 ml (16.9 oz) water bottle?",
+        "unit": "grains",
+        "answer": 20000,
+        "source": "USDA FoodData Central (uncooked white rice, cup measure)"
+      },
+      {
+        "id": "q2",
+        "prompt": "How many burgers does McDonald's sell worldwide each day?",
+        "unit": "burgers",
+        "answer": 35000000,
+        "source": "McDonald's corporate: 714 million lbs of US beef (2023), 45,356 restaurants at year-end 2025, about 70 million customers a day"
+      },
+      {
+        "id": "q289",
+        "prompt": "How many letters are there in the names of all 195 countries put together?",
+        "unit": "letters",
+        "answer": 1600,
+        "source": "United Nations list of member and observer states, letters counted across their common short-form English names"
+      }
+    ]
+  }
+}

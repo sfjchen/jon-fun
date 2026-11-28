@@ -1,0 +1,18 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "worldle",
+  "editionId": "2026-11-28",
+  "sourceDate": "2026-11-28",
+  "sourceUrl": "https://cdn-assets.teuteuf.fr/data/worldle/games/2026/2026-11-28.json",
+  "payload": {
+    "countryCode": "BE",
+    "landmarkData": {
+      "landmarkCode": 111,
+      "imageCode": 1
+    },
+    "factData": {
+      "generalFactCode": 2,
+      "historyFactCode": 1
+    }
+  }
+}

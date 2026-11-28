@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 119,
+  "sourceDate": "2026-11-22",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q655",
+        "prompt": "Finland drinks more coffee per person than any other country. How many cups of coffee does the average Finn drink in a year?",
+        "unit": "cups",
+        "answer": 1100,
+        "source": "Yle and the Finnish Coffee Association",
+        "qualifier": "Counting everyone, kids included."
+      },
+      {
+        "id": "q662",
+        "prompt": "How long would it take to swim the length of the Amazon River at the men's 1500 m freestyle world-record pace?",
+        "unit": "days",
+        "answer": 43,
+        "source": "World Aquatics and Encyclopaedia Britannica"
+      },
+      {
+        "id": "q667",
+        "prompt": "How many rooms are in the Palace of Versailles?",
+        "unit": "rooms",
+        "answer": 2300,
+        "source": "Château de Versailles"
+      }
+    ]
+  }
+}

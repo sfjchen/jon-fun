@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 115,
+  "sourceDate": "2026-11-18",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q641",
+        "prompt": "How many Harvard alumni are alive today?",
+        "unit": "alumni",
+        "answer": 420000,
+        "source": "Harvard Alumni Association",
+        "qualifier": "Everyone from Harvard College and all of Harvard's graduate and professional schools."
+      },
+      {
+        "id": "q263",
+        "prompt": "How many home runs were hit in the 2025 MLB regular season?",
+        "unit": "home runs",
+        "answer": 5650,
+        "source": "Baseball-Reference 2025 team batting"
+      },
+      {
+        "id": "q586",
+        "prompt": "How many barrels of oil does the world use every second?",
+        "unit": "barrels",
+        "answer": 1200,
+        "source": "Energy Institute Statistical Review 2026"
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 18,
+  "sourceDate": "2026-08-13",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q271",
+        "prompt": "How many tires does the LEGO Group produce in a single day?",
+        "unit": "tires",
+        "answer": 840000,
+        "source": "Guinness World Records, Largest annual volume toy tyre manufacturer ever (The LEGO Group)"
+      },
+      {
+        "id": "q247",
+        "prompt": "How many countries have the color red in their flag?",
+        "unit": "countries",
+        "answer": 148,
+        "source": "Flags of the World (FOTW), Statistics on Flag Colors"
+      },
+      {
+        "id": "q272",
+        "prompt": "How many people worldwide need a wheelchair to get around?",
+        "unit": "people",
+        "answer": 80000000,
+        "source": "World Health Organization wheelchair provision guidelines"
+      }
+    ]
+  }
+}

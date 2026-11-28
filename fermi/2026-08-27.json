@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 32,
+  "sourceDate": "2026-08-27",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q16",
+        "prompt": "How many decks would it take to tile a basketball court with playing cards?",
+        "unit": "decks",
+        "answer": 1490,
+        "source": "NBA court spec · poker card dimensions",
+        "qualifier": "Standard 52 Card Bicycle Deck"
+      },
+      {
+        "id": "q199",
+        "prompt": "How many native Spanish speakers are there worldwide?",
+        "unit": "people",
+        "answer": 519000000,
+        "source": "Instituto Cervantes, 'Spanish: A Language to the World' 2025 report"
+      },
+      {
+        "id": "q240",
+        "prompt": "How many Rubik's Cubes would fit in a Nissan Cube?",
+        "unit": "Rubik's Cubes",
+        "answer": 14000,
+        "source": "Nissan Cube interior volume specification and standard 5.7 cm Rubik's Cube dimensions"
+      }
+    ]
+  }
+}

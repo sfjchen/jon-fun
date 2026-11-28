@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 9,
+  "sourceDate": "2026-08-04",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q139",
+        "prompt": "How many pineapples does it take to weigh 1 US ton (2,000 lbs / 907 kg)?",
+        "unit": "pineapples",
+        "answer": 500,
+        "source": "Blue Book Services produce industry pineapple variety guide"
+      },
+      {
+        "id": "q107",
+        "prompt": "How long would it take to fly to the Moon in a commercial airplane?",
+        "unit": "days",
+        "answer": 18,
+        "source": "NASA mean lunar distance · Boeing cruise specs"
+      },
+      {
+        "id": "q233",
+        "prompt": "How long is Italy's coastline, counting all of its islands?",
+        "unit": "kilometers",
+        "answer": 7600,
+        "source": "CIA World Factbook coastline figures"
+      }
+    ]
+  }
+}

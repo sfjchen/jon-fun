@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 41,
+  "sourceDate": "2026-09-05",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q330",
+        "prompt": "How many licensed gondoliers are there in Venice?",
+        "unit": "gondoliers",
+        "answer": 433,
+        "source": "Comune di Venezia regulation for the public gondola service"
+      },
+      {
+        "id": "q29",
+        "prompt": "How many Monopoly boards would it take to cover an NFL football field?",
+        "unit": "boards",
+        "answer": 22000,
+        "source": "NFL field spec · Hasbro game dimensions"
+      },
+      {
+        "id": "q318",
+        "prompt": "How tall is the tallest natural waterfall in the world?",
+        "unit": "feet",
+        "answer": 3212,
+        "source": "Guinness World Records and National Geographic: Angel Falls, Venezuela, total height 979 m (3,212 ft), including a single uninterrupted drop of 807 m (2,648 ft)"
+      }
+    ]
+  }
+}

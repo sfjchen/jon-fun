@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 52,
+  "sourceDate": "2026-09-16",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q415",
+        "prompt": "How many sailors and aviators live aboard a US Navy Nimitz-class aircraft carrier when deployed?",
+        "unit": "people",
+        "answer": 5000,
+        "source": "US Navy fact file, Aircraft Carriers (CVN), Nimitz class"
+      },
+      {
+        "id": "q397",
+        "prompt": "How many double faults were served in the men's singles main draw of the 2026 US Open?",
+        "unit": "double faults",
+        "answer": 1465,
+        "source": "Tennis My Life match database, 2026 US Open men's singles, summed per match: 1,465"
+      },
+      {
+        "id": "q423",
+        "prompt": "How many kernels are on an average ear of sweet corn?",
+        "unit": "kernels",
+        "answer": 800,
+        "source": "Nebraska Corn Board · Iowa Corn Growers Association"
+      }
+    ]
+  }
+}

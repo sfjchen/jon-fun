@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 10,
+  "sourceDate": "2026-08-05",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q237",
+        "prompt": "If a cheetah could hold its top speed the whole way, how long would it take to run the Boston Marathon?",
+        "unit": "minutes",
+        "answer": 26,
+        "source": "Cincinnati Zoo and Guinness World Records cheetah speed record (Sarah, 2012)"
+      },
+      {
+        "id": "q99",
+        "prompt": "How many people have won an Olympic gold medal?",
+        "unit": "gold medalists",
+        "answer": 27000,
+        "source": "Olympedia · International Olympic Committee"
+      },
+      {
+        "id": "q77",
+        "prompt": "How many cargo ships are at sea right now?",
+        "unit": "cargo ships",
+        "answer": 55000,
+        "source": "UNCTAD Review of Maritime Transport · Equasis world fleet"
+      }
+    ]
+  }
+}

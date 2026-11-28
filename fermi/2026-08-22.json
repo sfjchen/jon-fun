@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 27,
+  "sourceDate": "2026-08-22",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q286",
+        "prompt": "How many hockey pucks would it take to cover an NHL ice rink?",
+        "unit": "pucks",
+        "answer": 303000,
+        "source": "NHL Official Rules rink specifications (200 x 85 ft surface, 28 ft corner radius; puck 3 in diameter)"
+      },
+      {
+        "id": "q310",
+        "prompt": "How many passengers are inside London Heathrow Airport at any given moment?",
+        "unit": "passengers",
+        "answer": 16000,
+        "source": "Heathrow Airport 2025 annual passenger and air transport movement figures"
+      },
+      {
+        "id": "q285",
+        "prompt": "How many Vatican Cities would fit inside Manhattan Island?",
+        "unit": "Vatican Cities",
+        "answer": 130,
+        "source": "Vatican City State official website and CIA World Factbook (Vatican City area, 0.44 km²) · Manhattan Island area, 22.7 sq mi"
+      }
+    ]
+  }
+}

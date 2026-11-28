@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 73,
+  "sourceDate": "2026-10-07",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q494",
+        "prompt": "How many oranges would it take to weigh as much as an adult male orangutan?",
+        "unit": "oranges",
+        "answer": 550,
+        "source": "San Diego Zoo Wildlife Alliance orangutan fact sheet: adult males weigh about 87 kg (192 lb) · USDA FoodData Central, Oranges, raw, with peel (FDC 169919): 1 fruit = 159 g"
+      },
+      {
+        "id": "q499",
+        "prompt": "How many people holding hands would it take to circle the outside of the Colosseum in Rome?",
+        "unit": "people",
+        "answer": 360,
+        "source": "Colosseum dimensions (189 × 156 m, original perimeter 545 m) per Wikipedia and World History Encyclopedia, with 1.5 m of line per person hand to hand"
+      },
+      {
+        "id": "q405",
+        "prompt": "How many atoms thick is a sheet of standard kitchen aluminum foil?",
+        "unit": "atoms",
+        "answer": 56000,
+        "source": "Reynolds Kitchens foil FAQ (standard foil 0.016 mm thick) · aluminum crystal lattice measurements (Arblaster 2018, lattice constant 404.93 pm)"
+      }
+    ]
+  }
+}

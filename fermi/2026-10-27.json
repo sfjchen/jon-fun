@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 93,
+  "sourceDate": "2026-10-27",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q460",
+        "prompt": "How many free throws did Shaquille O'Neal miss in his NBA regular-season career?",
+        "unit": "free throws",
+        "answer": 5317,
+        "source": "Basketball-Reference.com, Shaquille O'Neal career totals: 5,935 made of 11,252 free throws attempted in the regular season"
+      },
+      {
+        "id": "q569",
+        "prompt": "About how many Pringles are in a full-size 5.2 oz (147 g) can of the Original flavor?",
+        "unit": "Pringles",
+        "answer": 80,
+        "source": "Pringles Original label; MEL Magazine hand count, 2021"
+      },
+      {
+        "id": "q568",
+        "prompt": "Counting every word, repeats and all, how many words did Shakespeare write across his 38 plays, sonnets and poems?",
+        "unit": "words",
+        "answer": 884647,
+        "source": "Marvin Spevack's Harvard Concordance to Shakespeare, via the Folger Shakespeare Library"
+      }
+    ]
+  }
+}

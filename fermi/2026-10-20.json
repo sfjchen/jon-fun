@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 86,
+  "sourceDate": "2026-10-20",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q531",
+        "prompt": "How many 30 by 60 inch (76 by 152 cm) beach towels would it take to cover the sand on Sydney's Bondi Beach?",
+        "unit": "beach towels",
+        "answer": 65000,
+        "source": "NSW State Heritage Register, Bondi Beach Cultural Landscape (about 1 km long, 50 to 100 m wide)"
+      },
+      {
+        "id": "q526",
+        "prompt": "How many passengers are aboard ocean cruise ships around the world at any given moment?",
+        "unit": "passengers",
+        "answer": 710000,
+        "source": "CLIA 2026 State of the Cruise Industry: 37.2M passengers in 2025, 7.0-day average"
+      },
+      {
+        "id": "q527",
+        "prompt": "Toyota started selling the Corolla in 1966. By 2026, how many Corollas had it sold worldwide?",
+        "unit": "cars",
+        "answer": 57000000,
+        "source": "Toyota Motor Europe, 60 years of Corolla, 2026 (more than 57 million sold)"
+      }
+    ]
+  }
+}

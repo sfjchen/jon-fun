@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 21,
+  "sourceDate": "2026-08-16",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q14",
+        "prompt": "How many Oreos would it take to cover a queen-size bed?",
+        "unit": "Oreos",
+        "answer": 1820,
+        "source": "Mattress spec · Oreo diameter (1.75 in)"
+      },
+      {
+        "id": "q235",
+        "prompt": "How many shots of vodka are sold in Russia every day?",
+        "unit": "shots",
+        "answer": 41000000,
+        "source": "Rosstat-based retail alcohol sales data reported by RBC",
+        "qualifier": "A \"shot\" is 50 ml (1.7 oz)"
+      },
+      {
+        "id": "q65",
+        "prompt": "How many goals has Lionel Messi scored in his professional career?",
+        "unit": "goals",
+        "answer": 905,
+        "source": "ESPN / messivsronaldo.app, May 2026"
+      }
+    ]
+  }
+}

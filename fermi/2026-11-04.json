@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 101,
+  "sourceDate": "2026-11-04",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q552",
+        "prompt": "What is the combined worldwide box office gross of every Pixar feature film, from Toy Story (1995) through Toy Story 5 (2026)?",
+        "unit": "dollars",
+        "answer": 18700000000,
+        "source": "Box Office Mojo worldwide grosses, all 31 Pixar features summed: $18.7 billion"
+      },
+      {
+        "id": "q632",
+        "prompt": "How many bowling pins could you stand upright on one bowling lane, packed side by side as tightly as they fit?",
+        "unit": "pins",
+        "answer": 1456,
+        "source": "USBC Equipment Specifications Manual: lane length and width, pin diameter",
+        "qualifier": "The whole lane, from the foul line to the back of the pin deck."
+      },
+      {
+        "id": "q598",
+        "prompt": "How much fuel does one of the world's biggest cruise ships burn in a day at sea?",
+        "unit": "gallons",
+        "answer": 75000,
+        "source": "Marine Insight: ships over 300 meters burn 235 to 250 tonnes a day"
+      }
+    ]
+  }
+}

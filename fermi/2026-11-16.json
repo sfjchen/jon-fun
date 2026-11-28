@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 113,
+  "sourceDate": "2026-11-16",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q649",
+        "prompt": "How many bottles of wine would a blue whale need to drink to go over Germany's legal driving limit?",
+        "unit": "bottles",
+        "answer": 390,
+        "source": "StVG § 24a, NOAA Fisheries, Widmark formula",
+        "qualifier": "Germany's limit is 0.05% BAC"
+      },
+      {
+        "id": "q392",
+        "prompt": "How many times is the f-word said in The Wolf of Wall Street, counting every variation?",
+        "unit": "times",
+        "answer": 569,
+        "source": "Vulture's line-by-line tally"
+      },
+      {
+        "id": "q650",
+        "prompt": "If you could travel at the speed of light, how long would it take to drive every road on Earth?",
+        "unit": "seconds",
+        "answer": 215,
+        "source": "CIA World Factbook, Roadways"
+      }
+    ]
+  }
+}

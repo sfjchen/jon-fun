@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 48,
+  "sourceDate": "2026-09-12",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q370",
+        "prompt": "How many cacao beans does it take to make one standard 100 g (3.5 oz) Toblerone bar?",
+        "unit": "beans",
+        "answer": 30,
+        "source": "Toblerone milk chocolate label (100 g bar, 28% cocoa solids minimum)"
+      },
+      {
+        "id": "q336",
+        "prompt": "How many Icelands would it take to cover Greenland?",
+        "unit": "Icelands",
+        "answer": 21,
+        "source": "CIA World Factbook (Greenland, 2,166,086 km²; Iceland, 103,000 km²)"
+      },
+      {
+        "id": "q9",
+        "prompt": "Lionel Messi has won the Ballon d'Or eight times. How many party balloons would it take to lift him off the ground?",
+        "unit": "balloons",
+        "answer": 4800,
+        "source": "Inter Miami CF roster (148 lb) · 11\" latex balloon lift"
+      }
+    ]
+  }
+}

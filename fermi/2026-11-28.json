@@ -1,0 +1,34 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 125,
+  "sourceDate": "2026-11-28",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q672",
+        "prompt": "How many beach volleyball courts would it take to cover Rio's Copacabana Beach?",
+        "unit": "courts",
+        "answer": 2600,
+        "source": "Silva and Lins-de-Barros, Terra Brasilis",
+        "qualifier": "The courts packed edge to edge."
+      },
+      {
+        "id": "q679",
+        "prompt": "Add up every star on the flags of all 193 UN member countries. How many stars is that?",
+        "unit": "stars",
+        "answer": 266,
+        "source": "Wikipedia national flag articles",
+        "qualifier": "Suns do not count."
+      },
+      {
+        "id": "q668",
+        "prompt": "The Árbol del Tule, a cypress in Oaxaca, Mexico, has the widest trunk of any tree on Earth. How far around is it?",
+        "unit": "meters",
+        "answer": 36,
+        "source": "Guinness World Records"
+      }
+    ]
+  }
+}

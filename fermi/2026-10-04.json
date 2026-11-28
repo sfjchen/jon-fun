@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 70,
+  "sourceDate": "2026-10-04",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q36",
+        "prompt": "How many TikToks are uploaded every minute?",
+        "unit": "videos",
+        "answer": 190000,
+        "source": "Steel et al. 2026, \"Just Another Hour on TikTok\""
+      },
+      {
+        "id": "q454",
+        "prompt": "How many people live below the Tropic of Capricorn?",
+        "unit": "people",
+        "answer": 230000000,
+        "source": "UN World Population Prospects 2024 country totals, split at 23.4° S using national census data (IBGE Brazil 2022, Stats SA 2022, Australian Bureau of Statistics): about 230 million people, under 3% of the world"
+      },
+      {
+        "id": "q175",
+        "prompt": "How many people visited St. Peter's Basilica in 2024?",
+        "unit": "visitors",
+        "answer": 10000000,
+        "source": "Vatican tourism estimates compiled by Italian travel-industry statistics (Statista, religious-site visitor tracking)"
+      }
+    ]
+  }
+}

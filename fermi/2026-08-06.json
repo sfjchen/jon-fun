@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 11,
+  "sourceDate": "2026-08-06",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q74",
+        "prompt": "How many people have ever summited Mount Everest?",
+        "unit": "climbers",
+        "answer": 7563,
+        "source": "The Himalayan Database (Dec 2025)"
+      },
+      {
+        "id": "q68",
+        "prompt": "How many babies are born every minute worldwide?",
+        "unit": "babies",
+        "answer": 255,
+        "source": "UN World Population Prospects 2024"
+      },
+      {
+        "id": "q97",
+        "prompt": "How many people visit the Louvre on an average day?",
+        "unit": "visitors",
+        "answer": 24000,
+        "source": "Musée du Louvre 2024 attendance report"
+      }
+    ]
+  }
+}

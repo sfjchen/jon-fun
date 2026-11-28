@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 51,
+  "sourceDate": "2026-09-15",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q347",
+        "prompt": "How many bank robberies happened in the United States in 2023?",
+        "unit": "robberies",
+        "answer": 1263,
+        "source": "FBI Bank Crime Statistics annual report"
+      },
+      {
+        "id": "q343",
+        "prompt": "How many shark attacks were confirmed worldwide last year?",
+        "unit": "attacks",
+        "answer": 65,
+        "source": "Florida Museum's International Shark Attack File annual report"
+      },
+      {
+        "id": "q176",
+        "prompt": "How many cans of their energy drink did Red Bull sell in 2025?",
+        "unit": "cans",
+        "answer": 13969000000,
+        "source": "Red Bull 2025 annual results, reported via company statements and financial press (Bloomberg)"
+      }
+    ]
+  }
+}

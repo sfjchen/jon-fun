@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 5,
+  "sourceDate": "2026-07-31",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q4",
+        "prompt": "How many golf balls fit inside a Volkswagen Golf?",
+        "unit": "golf balls",
+        "answer": 56000,
+        "source": "Volkswagen interior and cargo specs · USGA ball spec"
+      },
+      {
+        "id": "q131",
+        "prompt": "How many people alive today have blue eyes?",
+        "unit": "people",
+        "answer": 750000000,
+        "source": "Genetics-based population estimate widely cited by eye-color researchers (Medical News Today, World Atlas, World Population Review)"
+      },
+      {
+        "id": "q79",
+        "prompt": "How many chickens are alive on Earth right now?",
+        "unit": "chickens",
+        "answer": 33000000000,
+        "source": "FAO FAOSTAT live animal stocks (2023)"
+      }
+    ]
+  }
+}

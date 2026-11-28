@@ -1,0 +1,33 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 31,
+  "sourceDate": "2026-08-26",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q282",
+        "prompt": "How many cans of baked beans would fit inside The Bean in Chicago?",
+        "unit": "cans",
+        "answer": 1100000,
+        "source": "City of Chicago Department of Cultural Affairs, Cloud Gate dimensions · standard 16 oz (450 g) can dimensions"
+      },
+      {
+        "id": "q295",
+        "prompt": "How long would it take to walk all the way around the moon's equator?",
+        "unit": "days",
+        "answer": 91,
+        "source": "NASA Moon Fact Sheet for the circumference",
+        "qualifier": "At a normal walking pace, of course."
+      },
+      {
+        "id": "q136",
+        "prompt": "How many Indian cuisine restaurants are there in Scotland?",
+        "unit": "restaurants",
+        "answer": 900,
+        "source": "Business-directory counts of UK restaurants by cuisine and region (SmartScraper UK restaurant database, cross-checked against the RestaurantListsHQ Scotland directory)"
+      }
+    ]
+  }
+}

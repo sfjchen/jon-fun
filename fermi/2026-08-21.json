@@ -1,0 +1,32 @@
+{
+  "format": "publisher-edition/v1",
+  "game": "fermi",
+  "editionId": 26,
+  "sourceDate": "2026-08-21",
+  "sourceUrl": "https://fermi.gg/",
+  "payload": {
+    "rounds": [
+      {
+        "id": "q305",
+        "prompt": "How many chickens would it take to weigh as much as one adult Tyrannosaurus rex?",
+        "unit": "chickens",
+        "answer": 2700,
+        "source": "National Chicken Council broiler market-weight statistics; T. rex mass from Encyclopedia Britannica"
+      },
+      {
+        "id": "q292",
+        "prompt": "How many Bactrian camels, the two-humped kind, are there in the world?",
+        "unit": "camels",
+        "answer": 1400000,
+        "source": "National Bureau of Statistics of China; Mongolia National Statistics Office livestock census; Kazakhstan Ministry of Agriculture"
+      },
+      {
+        "id": "q51",
+        "prompt": "How many iPhones has Apple sold since the launch in 2007?",
+        "unit": "iPhones",
+        "answer": 3200000000,
+        "source": "Apple Q3 2025 earnings call, July 2025"
+      }
+    ]
+  }
+}
