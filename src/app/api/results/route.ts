@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { GAMES, GAME_IDS, GUEST, SCORING_VERSION, likeName, type GameId } from '@/lib/results'
+import {
+  GAMES,
+  GAME_IDS,
+  GUEST,
+  RETIRED_IDS,
+  SCORING_VERSION,
+  likeName,
+  type GameId,
+  type RetiredId,
+} from '@/lib/results'
 import { score as beeScore } from '@/lib/spelling-bee'
 import { firstDay, isNytGame, siteDay, validDay } from '@/lib/daily'
 import { rateLimited } from '@/lib/api-guards'
@@ -182,14 +191,16 @@ export async function GET(req: Request) {
   if (!g.success) return NextResponse.json({ error: 'Invalid group' }, { status: 400 })
   const game = q.get('game'),
     day = q.get('day')
-  if ((game !== null && !GAME_IDS.includes(game as GameId)) || (day !== null && !validDay(day))) {
+  // A retired game's results stay readable by name, apart from every board, which reads only the live games.
+  const known = (g: string) => GAME_IDS.includes(g as GameId) || RETIRED_IDS.includes(g as RetiredId)
+  if ((game !== null && !known(game)) || (day !== null && !validDay(day))) {
     return NextResponse.json({ error: 'Invalid game or date' }, { status: 400 })
   }
   const days = Math.min(6000, Math.max(1, Number(q.get('days')) || 400)),
     since = new Date(Date.now() - (days + 1) * 86400000).toISOString().slice(0, 10)
   type Row = {
     name: string
-    game: GameId
+    game: GameId | RetiredId
     day: string
     score: number
     stats: Record<string, unknown>

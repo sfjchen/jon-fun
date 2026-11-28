@@ -14,7 +14,6 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { siteDay } from '@/lib/daily'
 import { artifactScore, type Artifact } from '@/lib/artifact-scoring'
 import { FIVEFOLD_TRIES } from '@/lib/daily/fivefold'
-import { GEO, type GeoGame, type Run } from '@/lib/geo-games'
 import {
   getPlayer,
   isPracticeResult,
@@ -39,10 +38,6 @@ const PREFIX: Record<DailyGameId, string> = {
   kabloom: 'kabloom:v1',
   headcount: 'headcount:v1',
   chainle: 'chainle:v1',
-  outline: 'outline:v1',
-  hop: 'hop:v1',
-  pin: 'pin:v1',
-  ballpark: 'ballpark:v1',
 }
 
 /**
@@ -55,21 +50,6 @@ export function runKey(game: DailyGameId, day: string, id: string): string {
 
 /** A game's stored run: the entry that shows it is finished, the finished test, and the entries a saved result fills. */
 type Local = { key: string; done: (v: never) => boolean; fill: (s: SavedResult) => Record<string, unknown> }
-
-/**
- * Describes a geography daily's stored run: its list of moves, finished once their replay reaches the end.
- */
-function geoLocal(game: GeoGame): (day: string, puzzle: never) => Local {
-  return (day, puzzle) => {
-    const key = runKey(game, day, day)
-    return {
-      key,
-      done: (v: unknown) =>
-        Array.isArray(v) && !!(GEO[game].run as (p: unknown, m: unknown[]) => Run | null)(puzzle, v)?.done,
-      fill: ({ moves }) => ({ [key]: moves }),
-    }
-  }
-}
 
 /**
  * Describes each game's stored run for a day's puzzle, in the shape its player component restores.
@@ -150,10 +130,6 @@ const LOCAL: { [G in DailyGameId]: (day: string, puzzle: never) => Local } = {
       }),
     }
   },
-  outline: geoLocal('outline'),
-  hop: geoLocal('hop'),
-  pin: geoLocal('pin'),
-  ballpark: geoLocal('ballpark'),
 }
 
 /**

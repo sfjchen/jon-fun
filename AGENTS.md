@@ -1,5 +1,7 @@
 # sfjc.dev (Jon-fun) - rules for Codex
 
+For every current and future publisher game, use its original name, exact dated edition, accepted answers, rules, scoring, controls, art, animation and share format on sfjc.dev. Add site sync, history and friend stats around that edition. A missing edition stays unavailable. Keep historical scores under their original game IDs.
+
 Read `CLAUDE.md` first: run, test, migrations, deploy, docs and conventions are the same for every agent. This file adds what Claude Code keeps in its own notes, so both agents work from the same facts.
 
 ## Ground rules

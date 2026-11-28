@@ -1,8 +1,6 @@
 name: Extend full-size crosswords
 
 on:
-  schedule:
-    - cron: '41 13 * * 1'
   workflow_dispatch:
     inputs:
       force:

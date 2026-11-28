@@ -1,6 +1,6 @@
 # Daily games handoff for Codex and Claude
 
-This is a private testing project for two friends who want to play the same daily puzzles, compare scores, and keep their history. The owner reports developer permission to use the originals for this project. Commit and push finished work: pushing to main deploys to sfjc.dev. Keep publisher-provided files outside tracked paths unless their permission also covers public redistribution.
+For every current and future publisher game, use its original name, exact dated edition, accepted answers, rules, scoring, controls, art, animation and share format on sfjc.dev. Add site sync, history and friend stats around that edition. A missing edition stays unavailable. Keep historical scores under their original game IDs. The owner reports developer permission to use the originals for this project. Commit and push finished work: pushing to main deploys to sfjc.dev. Keep publisher-provided files outside tracked paths unless their permission also covers public redistribution.
 
 ## Division of work
 
@@ -8,7 +8,7 @@ This is a private testing project for two friends who want to play the same dail
 
 **Codex owns the original presentation and its source materials.** For each supported publisher format, deliver the exact puzzle format, controls and their states, button labels and placement, fonts, theme colors, icons, illustrations, audio and original exports. Capture mobile and desktop references for opening, playing, errors, reveals, winning, losing and sharing. Record animation triggers, duration, delay, easing and sequence. Supply reusable assets, CSS, keyframes or a small renderer for the parts that require exact reproduction. Where the source is unavailable, identify the specific missing item and keep fidelity open. The owner reports permission for private testing.
 
-**Claude owns the rest of the implementation.** Build native players around the Codex materials, implement gameplay and deterministic score replay, hook up the daily shell, run scheduled imports, save snapshots, handle retries, build archives, friend boards, stats, sync, history and exports. Claude owns accessibility, responsive layout, reduced motion, tests, maintenance and release verification. Use the [game playbook](GAME-PLAYBOOK.md) and [daily games notes](DAILY-GAMES.md). Claude should do the initial inventory and run comparisons; return a narrowly identified source or fidelity discrepancy to Codex only when needed.
+**Claude owns the rest of the implementation.** Build native players around the Codex materials, implement gameplay and deterministic score replay, hook up the daily shell, run scheduled imports, save snapshots, handle retries, build archives, friend boards, stats, sync, history and exports. Claude owns accessibility, responsive layout, reduced motion, tests, maintenance and release verification. Use the [game playbook](GAME-PLAYBOOK.md) and [daily games notes](DAILY-GAMES.md). Claude should do the initial inventory and run comparisons; return a narrowly identified source or fidelity discrepancy to Codex when needed. Codex takes over any unfinished Claude implementation.
 
 **Work order.** Start Kabloom first. In parallel Claude can test and integrate the existing Orbs, Chainle and Headcount assets. Reuse source materials across editions of the same format. A handoff includes the loader, fixtures, original visual and motion references, expected score on a perfect and imperfect run, and a sample share result. Claude records which checks actually passed.
 
@@ -112,10 +112,8 @@ styles or variants that could change how entries are interpreted.
 | Contexto                         | The public site requires JavaScript. [Publisher](https://contexto.me/)                                                                                                                                                                                                             | Authorized dated word ranks and input normalization, hint and give-up behavior.                                                                       |
 | Krillion, Wordle and Connections | Existing repository source integrations are in place.                                                                                                                                                                                                                              | This source pass did not re-verify editions or change their player or ranking behavior.                                                               |
 
-The data intake and synthetic references are ready for native player work. Use each publisher
-page as a behavioral reference and use the site's own artwork, styles and motion. There are no
-publisher assets or private responses in the new tracked fixtures. The full-size NYT daily feed
-remains unconfigured.
+The data intake and synthetic references are ready for native player work. Use the original publisher artwork, styles and motion for each game. There are no
+publisher assets or private responses in the new tracked fixtures. The full-size NYT connection is described below.
 
 ## Status on 2026-11-27 01:20 PST
 
@@ -133,24 +131,24 @@ Checked against the working tree of `~/dev/jon-fun`, `.publisher-editions/` and 
 | Classic crossword catalog (42 grids) and ipuz adapter               | `scripts/import-classic-crosswords.py`, `src/lib/puzzle-rooms/ipuz.ts`                                                              | Uncommitted                                                                                                                   |
 | Orbs and Chainle snapshot validation                                | 224 Orbs and 99 Chainle snapshots pass                                                                                              | No code change needed                                                                                                         |
 
-### Done by Claude
-
-- Outline, Border hop, Pin drop and Ballpark are live on main (`a215710`). They are sfjc.dev's own games of the Worldle, Travle, MapTap and Fermi kinds, with puzzles drawn from Natural Earth data, not the publishers' editions. Code in `src/lib/geo-games.ts`, `src/components/geo/`, `data/geo/world.json`.
-- These 4 already have the shell, saved runs, device sync, server replay, boards, keys and share text. A publisher edition can replace the generated puzzle by returning the same puzzle shape from `dailyPuzzle` in `src/lib/daily/server.ts`.
-- That merge is done: this checkout sits on `a215710` with Codex's work on top, and `e2e/scores.spec.ts` counts 15 games.
-
-- All of Codex's work listed above is committed and pushed (`b9c7e0a`). The site now has 2 shelves: Daily (the 6 original games) and Beta (every other game, where new ones start), each with its own drawer, boards and stats.
-
 ### Still needed from Codex
 
 Ordered by what unblocks the most play.
 
-1. **Kabloom** - a daily capture that runs unattended (the game shows unavailable on any day with no file), the dates before 2026-11-27, the publisher's result and share format, and the reading clock, reveal and end-card timings. Decide with the owner whether captures may live in `daily_game_content` so sfjc.dev can serve them, since `.publisher-editions/` is not deployed.
+1. **Kabloom** - capture historical climbs before November 27, compare share and end-card states, and verify timed transitions.
 2. **Crowdict / Noillirk** - dated prompts, accepted aliases and crowd distributions. `/games/noillirk` is still an embed with no score.
 3. **Daily Roll, Who's More Famous, Plain** - a dated edition export for each (categories and accepted lists with rarity, the 5 pairs with both trend series, the 7 targets with the closeness formula). No player exists yet, and Claude builds each one once a fixture in `publisher-edition/v1` lands.
-4. **Worldle, Travle, MapTap, Fermi** - only if the publisher's exact daily is wanted in place of the sfjc.dev puzzle: the date-to-territory map, the dated endpoints and graph, the dated locations with the score formula, and the 3 dated prompts with answers.
+4. **Worldle, Travle, MapTap, Fermi** - replace the retired local editions with the publisher’s exact daily: the date-to-territory map, the dated endpoints and graph, the dated locations with the score formula, and the 3 dated prompts with answers.
 5. **Contexto, Perceptle, Poople** - dated word ranks, seeded stimuli with timing, and 1 real edition with its scoring. Nothing is built for these.
 6. **Chainle** - a scoring source for unlisted related words. They still score 0.
 7. **Headcount** - parties before 2026-11-26 and a per-room comparison with official outcomes.
 8. **Fidelity for every publisher game** - the references hold opening screens only. Playing, error, reveal, win, loss and share states, fonts, colours and animation timings are not captured for any game.
-9. **Bandle** - wanted (owner, 2026-11-27). It is an outside link in the Daily collection for now. Needs the daily stems, song metadata, stage order and accepted titles before a player can be built.
+9. **Bandle** - wanted (owner, 2026-11-27). The publisher player opens at `/games/bandle`. Needs the daily stems, song metadata, stage order and accepted titles before a player can be built.
+
+## Publisher editions on November 28, 2026
+
+Worldle, Travle, MapTap and Fermi have canonical sfjc.dev routes. The retired geography game IDs keep their historical scores. Worldle, MapTap and Fermi support the original player in a frame. Travle shows its publisher warning in a cross-origin frame, so its route opens the official player directly. Native sfjc.dev score replay for these 4 remains open.
+
+The `publisher-archive` branch serves dated snapshots. The daily GitHub workflow captures Worldle’s country and bonus sheet, Travle’s exact endpoints and adjacency graph, MapTap’s 5 ordered locations with credits and reveal data, Fermi’s dated questions and answers, and Kabloom’s current climb. Use `node --import tsx scripts/import-geography.mjs GAME YYYY-MM-DD` for a geography date and `node --import tsx scripts/import-fermi.mjs archive` for the published Fermi archive. Initial coverage is 125 Fermi editions from July 27 through November 28, 2 Kabloom climbs and the November 28 editions of Worldle, Travle and MapTap.
+
+The full-size collaborative crossword uses the NYT dated endpoint starting November 29. Existing rooms through November 28 retain their boards. The generated crossword workflow has no schedule.

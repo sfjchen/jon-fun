@@ -1,0 +1,61 @@
+name: Archive publisher dailies
+on:
+  schedule:
+    - cron: '14 7,8,10 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: publisher-dailies
+  cancel-in-progress: false
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Capture dated editions
+        id: capture
+        shell: bash
+        run: |
+          day=$(TZ=America/Los_Angeles date +%F)
+          failed=0
+          for game in worldle travle maptap; do
+            node --import tsx scripts/import-geography.mjs "$game" "$day" || failed=1
+          done
+          node --import tsx scripts/import-fermi.mjs archive || failed=1
+          if npx --no-install playwright install --with-deps chromium; then
+            node --import tsx scripts/capture-kabloom.mjs || failed=1
+          else
+            failed=1
+          fi
+          echo "failed=$failed" >> "$GITHUB_OUTPUT"
+      - name: Publish newly captured editions
+        shell: bash
+        run: |
+          if git ls-remote --exit-code origin refs/heads/publisher-archive; then
+            git fetch --depth=1 origin publisher-archive
+            git worktree add --detach "$RUNNER_TEMP/archive" FETCH_HEAD
+          else
+            git worktree add --orphan -b publisher-archive "$RUNNER_TEMP/archive"
+          fi
+          for game in worldle travle maptap fermi kabloom; do
+            if [[ -d ".publisher-editions/$game" ]]; then
+              mkdir -p "$RUNNER_TEMP/archive/$game"
+              rsync --ignore-existing .publisher-editions/"$game"/*.json "$RUNNER_TEMP/archive/$game/"
+            fi
+          done
+          cd "$RUNNER_TEMP/archive"
+          git add --all
+          if ! git diff --cached --quiet; then
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "Archive dated publisher editions"
+            git push origin HEAD:refs/heads/publisher-archive
+          fi
+      - name: Report missing sources
+        if: steps.capture.outputs.failed == '1'
+        run: exit 1

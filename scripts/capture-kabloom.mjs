@@ -14,9 +14,11 @@ try {
     const dictionaryUrl = performance
       .getEntriesByType('resource')
       .map((entry) => entry.name)
-      .find((url) => url === 'https://kabloom.io/assets/refused-CiJT93tg.js')
+      .find((url) => /^https:\/\/kabloom\.io\/assets\/refused-[\w-]+\.js$/.test(url))
     if (!dictionaryUrl) throw new Error('Publisher dictionary build needs review')
     const dictionary = await import(dictionaryUrl)
+    if (!['u', 'o', 'p', 'f'].every((key) => typeof dictionary[key] === 'function'))
+      throw new Error('Publisher dictionary API changed')
     await dictionary.u(undefined, ['film', 'music', 'game', 'tv'])
     const deck = dictionary.o({ deck: 'anything' })
     let day

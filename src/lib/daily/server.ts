@@ -30,10 +30,6 @@ export async function dailyPuzzle(
     const puzzle = await chainleForDay(day)
     return { day, sourceDate: puzzle.date, puzzle }
   }
-  if (game === 'outline' || game === 'hop' || game === 'pin' || game === 'ballpark') {
-    const { geoPuzzle } = await import('./geo')
-    return { day, sourceDate: day, puzzle: geoPuzzle(game, day) }
-  }
   if (game === 'orbs') {
     const { orbsForDay } = await import('@/lib/daily/orbs')
     return { day, sourceDate: day, puzzle: await orbsForDay(day) }

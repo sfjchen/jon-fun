@@ -10,6 +10,8 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { GAMES, GAME_IDS } from '@/lib/results'
 import { HOME_ITEMS } from '@/lib/site-links'
+import { COLLECTION_PLAYERS } from '@/lib/publisher-collection'
+import { PLAY_IDS, PUBLISHER_PLAY, playUrl } from '@/lib/publisher-play'
 
 type Item = { title: string; href: string; icon?: string; group: string }
 
@@ -20,6 +22,8 @@ const ITEMS: Item[] = [
     icon: `/doodles/notebook/${g}.svg`,
     group: 'Daily',
   })),
+  ...COLLECTION_PLAYERS.map((game) => ({ title: game.title, href: '/games/' + game.id, group: 'Beta' })),
+  ...PLAY_IDS.map((id) => ({ title: PUBLISHER_PLAY[id].title, href: playUrl(id), group: 'Daily' })),
   { title: 'Leaderboard', href: '/leaderboards', group: 'Pages' },
   { title: 'Past NYT puzzles', href: '/games/archives', group: 'Pages' },
   { title: 'Home', href: '/', group: 'Pages' },

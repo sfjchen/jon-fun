@@ -29,46 +29,13 @@ test('full-size crossword editions have consecutive dates and distinct fully che
   }
 })
 
-test('dates beyond the bundle use the generated schedule and preserve the first published edition', async (t) => {
-  const first = shiftDay(schedule.at(-1)!.date, 1)
-  const unavailable = shiftDay(first, 1)
-  const distant = '2127-06-15'
-  const published = new Map<string, unknown>()
-  const source = t.mock.method(globalThis, 'fetch', async (url: string) => {
-    if (url.endsWith(`${first}.json`)) return Response.json({ ...schedule[1], date: first })
-    return new Response(null, { status: 404 })
-  })
+test('unavailable NYT editions stay unavailable and existing collaborative boards retain their date', async (t) => {
+  const archived = await crosswordForDay('2026-11-28', false)
+  assert.equal(archived.title, 'Daily Crossword')
+  const source = t.mock.method(globalThis, 'fetch', async () => new Response(null, { status: 404 }))
   t.mock.method(supabaseAdmin, 'from', () => ({
-    select: () => ({
-      eq: () => ({
-        eq: (_dateColumn: string, day: string) => ({
-          maybeSingle: async () => ({ data: published.has(day) ? { payload: published.get(day) } : null }),
-        }),
-      }),
-    }),
-    upsert: (row: { game: string; source_day: string; payload: unknown }, options: { ignoreDuplicates: boolean }) => ({
-      select: () => ({
-        maybeSingle: async () => {
-          assert.equal(row.game, 'crossword-original')
-          assert.equal(options.ignoreDuplicates, true)
-          if (published.has(row.source_day)) return { data: null }
-          published.set(row.source_day, row.payload)
-          return { data: { source_day: row.source_day } }
-        },
-      }),
-    }),
+    select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null }) }) }) }),
   }))
-
-  const generated = await crosswordForDay(first, false)
-  assert.deepEqual(generated.solution, schedule[1]!.cells)
-  assert.equal(generated.title, 'Daily Crossword')
-
-  const encore = await crosswordForDay(unavailable, false)
-  assert.equal(encore.title, 'Daily Crossword · Encore')
-  assert.equal(encore.date, unavailable)
-  assert.equal((await crosswordForDay(distant, false)).width, 15)
-
-  source.mock.mockImplementation(async () => Response.json({ ...schedule[2], date: unavailable }))
-  assert.deepEqual(await crosswordForDay(unavailable, false), encore)
-  assert.equal(source.mock.callCount(), 3)
+  await assert.rejects(crosswordForDay('2026-11-29', false), /NYT daily crossword unavailable/)
+  assert.equal(source.mock.callCount(), 1)
 })

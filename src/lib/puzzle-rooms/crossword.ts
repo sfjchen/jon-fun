@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import schedule from '@/../data/crossword/full-size.json'
-import { NYT_FIRST_DAY, shiftDay, validDay } from '@/lib/daily'
+import { NYT_FIRST_DAY, validDay } from '@/lib/daily'
+import { normalizeNytCrossword } from '@/lib/daily/nyt-puzzles'
 import { nytPuzzle } from '@/lib/daily/nyt'
 import type { MiniPuzzle } from '@/lib/mini'
 import { supabaseAdmin } from '@/lib/supabase'
@@ -69,7 +70,7 @@ export function normalizeCrossword(value: unknown, day: string): CrosswordPuzzle
   }
 }
 
-type CrosswordSource = 'crossword-original' | 'crossword-feed'
+type CrosswordSource = 'crossword-nyt' | 'crossword-feed'
 
 async function storedCrossword(day: string, game: CrosswordSource): Promise<CrosswordPuzzle | null> {
   const { data, error } = await supabaseAdmin
@@ -106,40 +107,6 @@ async function freezeCrossword(day: string, game: CrosswordSource, value: unknow
 }
 
 const editions = new Map(schedule.map((puzzle) => [puzzle.date, puzzle]))
-const afterBundle = shiftDay(schedule.at(-1)!.date, 1)
-const generatedSchedule = 'https://raw.githubusercontent.com/sfjchen/jon-fun/crossword-schedule/editions'
-
-function encore(day: string) {
-  const elapsed = Math.round((Date.parse(day) - Date.parse(afterBundle)) / 86_400_000)
-  return { ...schedule[elapsed % schedule.length]!, date: day, title: 'Daily Crossword · Encore' }
-}
-
-async function originalCrossword(day: string): Promise<CrosswordPuzzle> {
-  const bundled = editions.get(day)
-  if (bundled) return normalizeCrossword(bundled, day)
-  if (!validDay(day) || day < afterBundle) throw new Error('No full-size crossword for that day')
-
-  const game = 'crossword-original'
-  const stored = await storedCrossword(day, game)
-  if (stored) return stored
-
-  let puzzle: unknown
-  try {
-    const response = await fetch(`${generatedSchedule}/${day}.json`, {
-      signal: AbortSignal.timeout(4000),
-      cache: 'no-store',
-    })
-    if (!response.ok) throw new Error('Generated edition unavailable')
-    const candidate: unknown = await response.json()
-    const board = normalizeCrossword(candidate, day)
-    if (board.width !== 15 || board.height !== 15) throw new Error('Unexpected daily grid size')
-    puzzle = candidate
-  } catch {
-    puzzle = encore(day)
-  }
-  return freezeCrossword(day, game, puzzle)
-}
-
 export function crosswordFirstDay(mini: boolean): string {
   if (mini) return NYT_FIRST_DAY.mini
   if (process.env.CROSSWORD_DAILY_FEED_URL) {
@@ -163,7 +130,24 @@ export async function crosswordForDay(day: string, miniOnly: boolean): Promise<C
     )
   }
 
-  if (!feed) return originalCrossword(day)
+  if (!validDay(day)) throw new Error('Invalid crossword date')
+  if (!feed) {
+    // Preserve the board identity of existing rooms through the migration day.
+    const legacy = day <= '2026-11-28' ? editions.get(day) : undefined
+    if (legacy) return normalizeCrossword(legacy, day)
+    const saved = await storedCrossword(day, 'crossword-nyt')
+    if (saved) return saved
+    const url = 'https://www.nytimes.com/svc/crosswords/v6/puzzle/daily/' + day + '.json'
+    const response = await fetch(url, { signal: AbortSignal.timeout(12000), cache: 'no-store' })
+    if (!response.ok) throw new Error('NYT daily crossword unavailable')
+    const raw = await response.json()
+    const board = normalizeNytCrossword(raw, day)
+    return freezeCrossword(day, 'crossword-nyt', {
+      ...board, editionId: String(board.id), title: raw.title || 'The New York Times Crossword',
+      credit: [...board.constructors, board.copyright].filter(Boolean).join(' · ') || 'The New York Times',
+      creditUrl: 'https://www.nytimes.com/crosswords/game/daily/' + day.replaceAll('-', '/'),
+    })
+  }
 
   const game = 'crossword-feed'
   const stored = await storedCrossword(day, game)

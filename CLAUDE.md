@@ -1,5 +1,7 @@
 # sfjc.dev (Jon-fun)
 
+For every current and future publisher game, use its original name, exact dated edition, accepted answers, rules, scoring, controls, art, animation and share format on sfjc.dev. Add site sync, history and friend stats around that edition. A missing edition stays unavailable. Keep historical scores under their original game IDs.
+
 Next.js 16 (App Router) + TypeScript + Tailwind v4 + Supabase, deployed to Vercel from `main`. Public repo, never commit secrets.
 
 ## Run

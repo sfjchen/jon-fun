@@ -4,7 +4,8 @@ import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { GAME_KEYS } from '../src/lib/game-keys'
-import { GAMES, GAME_IDS, type GameId } from '../src/lib/results'
+import { PLAY_IDS, PUBLISHER_PLAY, playUrl } from '../src/lib/publisher-play'
+import { GAMES, GAME_IDS, RETIRED_IDS, type GameId } from '../src/lib/results'
 
 test('every daily game is listed, routed, themed, drawn and has keyboard shortcuts', () => {
   const ids = Object.keys(GAMES) as GameId[]
@@ -27,5 +28,18 @@ test('every daily game is listed, routed, themed, drawn and has keyboard shortcu
     )
     assert.ok(existsSync(`public/doodles/notebook/${id}.svg`), `${id} has an icon`)
     assert.ok(GAME_KEYS[id].length > 0, `${id} lists its keys`)
+  }
+})
+
+test('every publisher daily has a page that keeps its retired game, whose old route redirects there', () => {
+  const config = readFileSync('next.config.mjs', 'utf8')
+  assert.deepEqual(PLAY_IDS.map((id) => PUBLISHER_PLAY[id].retired).sort(), [...RETIRED_IDS].sort())
+  for (const id of PLAY_IDS) {
+    const url = playUrl(id)
+    assert.ok(existsSync(`src/app${url}/page.tsx`), `${id} has a page at ${url}`)
+    assert.ok(!GAME_IDS.some((g) => GAMES[g].url === url), `${id} does not take a ranked game's route`)
+    const old = PUBLISHER_PLAY[id].retired
+    const redirect = `{ source: '/games/${old}', destination: '${url}', permanent: true }`
+    assert.ok(config.includes(redirect), `/games/${old} redirects to ${url}`)
   }
 })

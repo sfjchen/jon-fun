@@ -9,44 +9,40 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { DailyHeader } from '@/components/daily/DailyDrawer'
 import { siteDay } from '@/lib/daily'
+import { PLAY_IDS, playUrl } from '@/lib/publisher-play'
+
+import { COLLECTION_PLAYERS } from '@/lib/publisher-collection'
 
 const titles = [
   ['Krillion', '/games/krillion'],
   ['Noillirk', '/games/noillirk'],
   ['Wordle', '/games/wordle'],
   ['Connections', '/games/connections/daily'],
-  ['Who’s More Famous?', 'https://whosmorefamous.com'],
   ['Chainle', '/games/chainle'],
   ['Daily Orbs', '/games/orbs'],
   ['Kabloom', '/games/kabloom'],
-  ['Plain', 'https://playplain.app'],
   ['Headcount', '/games/headcount'],
   ['Mini', '/games/mini'],
   ['Crossword', '/games/crossword'],
   ['Spelling Bee', '/games/spelling-bee'],
   ['Anthropeum', '/games/anthropeum'],
-  ['Daily Roll', 'https://playdailyroll.com'],
-  ['Bandle', 'https://bandle.app/menu'],
-  ['Fermi', 'https://fermi.gg'],
-  ['Poople', 'https://poople.io'],
-  ['Perceptle', 'https://perceptle.net'],
-  ['Travle', 'https://travle.earth'],
-  ['Worldle', 'https://worldle.teuteuf.fr'],
-  ['MapTap', 'https://maptap.gg'],
-  ['Contexto', 'https://contexto.me'],
-  ['Outline', '/games/outline'],
-  ['Border hop', '/games/hop'],
-  ['Pin drop', '/games/pin'],
-  ['Ballpark', '/games/ballpark'],
+  ['Fermi', '/games/fermi'],
+  ['Travle', '/games/travle'],
+  ['Worldle', '/games/worldle'],
+  ['MapTap', '/games/maptap'],
+  ...COLLECTION_PLAYERS.map((game) => [game.title, '/games/' + game.id] as const),
 ] as const
+
+/** Whether a game is played on its publisher's site, either straight from this list or from its page here. */
+const elsewhere = (url: string) => url === '/games/travle'
 
 /** The list in its 2 groups, each with a heading and a line on how its results are kept. */
 const groups = [
-  ['On sfjc.dev', 'Each opens its own page on this site.', titles.filter(([, url]) => url.startsWith('/'))],
+  ['On sfjc.dev', 'Each opens its own page on this site.', titles.filter(([, url]) => !elsewhere(url))],
   [
     'On the publisher’s site',
     'Paste the shared result to keep it in your personal history.',
-    titles.filter(([, url]) => !url.startsWith('/')),
+    titles.filter(([, url]) => elsewhere(url)),
   ],
 ] as const
 
@@ -113,7 +109,9 @@ export default function Page() {
                     {title} ↗
                   </a>
                 )}
-                {(title === 'Noillirk' || !url.startsWith('/')) && (
+                {(title === 'Noillirk' ||
+                  PLAY_IDS.some((id) => playUrl(id) === url) ||
+                  COLLECTION_PLAYERS.some((game) => game.title === title)) && (
                   <button
                     className="text-sm underline"
                     onClick={() => {

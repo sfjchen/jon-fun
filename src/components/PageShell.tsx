@@ -6,6 +6,7 @@ import { useEffect, useSyncExternalStore } from 'react'
 import { DailyHeader } from '@/components/daily/DailyDrawer'
 import { HomeLink } from '@/components/HomeLink'
 import NamePrompt from '@/components/NamePrompt'
+import { PLAY_IDS, playUrl } from '@/lib/publisher-play'
 import { startStateSync } from '@/lib/stateSync'
 import { ensureSyncIdentity } from '@/lib/syncIdentity'
 
@@ -51,10 +52,6 @@ export function PageShell({ children }: PageShellProps) {
     '/games/headcount',
     '/games/headcount/archive',
     '/games/chainle',
-    '/games/outline',
-    '/games/hop',
-    '/games/pin',
-    '/games/ballpark',
     '/games/krillion',
     '/games/anthropeum',
     '/games/wordle',
@@ -91,7 +88,7 @@ export function PageShell({ children }: PageShellProps) {
                         ? 'headcount'
                         : pathname?.startsWith('/games/chainle')
                           ? 'chainle'
-                          : ['/games/outline', '/games/hop', '/games/pin', '/games/ballpark'].includes(pathname ?? '')
+                          : PLAY_IDS.some((id) => playUrl(id) === pathname)
                             ? 'geo'
                             : undefined
   /** Pages that play or sync under the player's name ask a visitor with none for it. */

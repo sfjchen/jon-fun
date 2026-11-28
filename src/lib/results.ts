@@ -11,10 +11,6 @@ import {
   type DeviceKind,
 } from '@/lib/syncIdentity'
 export type GameId =
-  | 'outline'
-  | 'hop'
-  | 'pin'
-  | 'ballpark'
   | 'bee'
   | 'connections'
   | 'mini'
@@ -116,38 +112,30 @@ export const GAMES: Record<
     rules:
       'The full-size 15×15 daily, solved in a shared room alone or with friends. Everyone in the room when the grid is correct gets the solve. The Mini edition does not count here.',
   },
-  outline: {
-    title: 'Outline',
-    url: '/games/outline',
-    max: 6,
-    unit: 'points',
-    rules:
-      'Name the country from its shape in 6 tries. Ranked by fewest guesses, and a miss counts as 7 in averages. Your first finished game counts.',
-  },
-  hop: {
-    title: 'Border hop',
-    url: '/games/hop',
-    max: 100,
-    unit: 'points',
-    rules:
-      'Link 2 countries through their land neighbours. The shortest route scores 100 and each extra country costs 15. Your first finished game counts.',
-  },
-  pin: {
-    title: 'Pin drop',
-    url: '/games/pin',
-    max: 5000,
-    unit: 'points',
-    rules:
-      'Pin 5 cities on the map. Each scores up to 1,000, falling with distance: about 600 at 500 km. Your first finished game counts.',
-  },
-  ballpark: {
-    title: 'Ballpark',
-    url: '/games/ballpark',
-    max: 300,
-    unit: 'points',
-    rules:
-      '3 estimates, 100 points each: 70 for double or half the answer, 0 from 10 times off. Your first finished game counts.',
-  },
+}
+export type RetiredId = 'outline' | 'hop' | 'pin' | 'ballpark'
+/**
+ * sfjc.dev's own geography dailies, retired on 2026-11-28 for the publisher games they imitated. Their stored results
+ * stay readable at the publisher game's page, apart from every board, and take no new results.
+ */
+export const RETIRED: Record<RetiredId, { title: string; rules: string }> = {
+  outline: { title: 'Outline', rules: 'Name the country from its shape in 6 tries.' },
+  hop: { title: 'Border hop', rules: 'Link 2 countries through their land neighbours, 100 for the shortest route.' },
+  pin: { title: 'Pin drop', rules: 'Pin 5 cities on the map, up to 1,000 each.' },
+  ballpark: { title: 'Ballpark', rules: '3 estimates, up to 100 each.' },
+}
+export const RETIRED_IDS = Object.keys(RETIRED) as RetiredId[]
+/**
+ * Formats a 6-try score, stored as 7 minus the guesses used, as guesses out of 6, or X/6 for a miss.
+ */
+function triesLabel(score: number): string {
+  return score > 0 ? `${Number.isInteger(score) ? 7 - score : (7 - score).toFixed(1)}/6` : 'X/6'
+}
+/**
+ * Formats a retired game's stored score the way its page showed it: Outline as guesses out of 6, the rest as points.
+ */
+export function retiredLabel(game: RetiredId, score: number): string {
+  return game === 'outline' ? triesLabel(score) : formatScore(score)
 }
 
 /** The games a board plays together as 1 shared puzzle. Each shelf lists its own last, as a "Together" segment. */
@@ -160,10 +148,6 @@ export const BETA_IDS: GameId[] = [
   'headcount',
   'chainle',
   'orbs',
-  'outline',
-  'hop',
-  'pin',
-  'ballpark',
   'crossword',
 ]
 /** Every game with a daily puzzle and a verified score, Daily first. Each shelf lists its own in this order. */
@@ -217,10 +201,8 @@ export function formatGameScore(game: GameId, score: number): string {
     ? formatTime(Math.round(score))
     : game === 'connections'
       ? `${Number.isInteger(score) ? score : score.toFixed(1)}/4`
-      : game === 'fivefold' || game === 'outline'
-        ? score > 0
-          ? `${Number.isInteger(score) ? 7 - score : (7 - score).toFixed(1)}/6`
-          : 'X/6'
+      : game === 'fivefold'
+        ? triesLabel(score)
         : formatScore(score)
 }
 export function bestGameScore(game: GameId, scores: number[]): number {

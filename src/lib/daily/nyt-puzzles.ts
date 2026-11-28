@@ -125,6 +125,11 @@ export function normalizeNytPuzzle(game: NytGame, value: unknown, day: string) {
       updatedAt: `${day}T00:00:00Z`,
     }
   }
+  return normalizeNytCrossword(value, day)
+}
+
+/** Reads the shared Mini and full-size publisher grid format and checks its publication date. */
+export function normalizeNytCrossword(value: unknown, day: string) {
   const p = z
     .object({
       publicationDate: z.string(),
@@ -160,7 +165,7 @@ export function normalizeNytPuzzle(game: NytGame, value: unknown, day: string) {
     cells.length !== width * height ||
     b.clues.some((c) => c.cells.some((i) => !cells[i]))
   )
-    throw Error('Invalid NYT Mini grid or date')
+    throw Error('Invalid NYT crossword grid or date')
   return {
     date: day,
     id: p.id,

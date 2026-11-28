@@ -45,6 +45,11 @@ const nextConfig = {
       { source: '/theme2/leaderboards', destination: '/leaderboards', permanent: true },
       { source: '/theme2/admin/:path*', destination: '/admin/:path*', permanent: true },
       { source: '/theme2/games/:path*', destination: '/games/:path*', permanent: true },
+      /** sfjc.dev's own geography dailies, retired for the publisher games they imitated. */
+      { source: '/games/outline', destination: '/games/worldle', permanent: true },
+      { source: '/games/hop', destination: '/games/travle', permanent: true },
+      { source: '/games/pin', destination: '/games/maptap', permanent: true },
+      { source: '/games/ballpark', destination: '/games/fermi', permanent: true },
     ]
   },
   async rewrites() {

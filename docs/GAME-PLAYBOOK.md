@@ -52,7 +52,7 @@ Automatic once step 2 is done - the Daily drawer, score grids, boards, stats, st
 - Quick word puzzles first (Connections, Wordle, Mini), then the longer games (Krillion, Anthropeum), and each shelf's collaborative game (`COLLAB_IDS`: Spelling Bee, Crossword) last as its own segment.
 - A new game goes next to the games of its kind and before the long ones. Every game counts the same, so the order never changes a score.
 - Games that are not ranked (SET, practice banks) stay out of `GAME_IDS` and off the boards.
-- Where a publisher's edition and an own-bank version both exist, the publisher's is the ranked game and the default link everywhere. The own bank is practice, reached from the game's Archive.
+- For every current and future publisher game, use its original name, exact dated edition, accepted answers, rules, scoring, controls, art, animation and share format on sfjc.dev. Add site sync, history and friend stats around that edition. A missing edition stays unavailable. Keep historical scores under their original game IDs.
 
 ## Game record
 
@@ -105,7 +105,7 @@ Each game's current keys are the `GAME_KEYS` rows, the 1 place they are written 
 ## Look
 
 - Header - `DayNav` (home, title, Daily drawer, leaderboard, ⓘ, date picker, player name). A game with its own page still uses `Info` and the same order.
-- Theme - `data-game-theme` with 1 accent in `--game-color`, white surfaces, sans controls. Colours come from `--ink-*` tokens, buttons from the shared `action` class ([DESIGN-SYSTEM.md](DESIGN-SYSTEM.md)). Only a game whose look is its identity keeps its own skin (Krillion, Anthropeum).
+- Theme - preserve the publisher’s player typography, assets, motion and palette. Shared site controls use the design system.
 - Phone first - plays at 375 px wide with no sideways scroll, 40 px tap targets, and an on-screen keyboard wherever letters are typed.
 - States every game shows - loading, source unavailable with Try again, future preview (unranked), already played on another device, finished.
 - Words - plain, sentence case, numerals, status in a `role="status"` line, every icon button has an `aria-label`.
